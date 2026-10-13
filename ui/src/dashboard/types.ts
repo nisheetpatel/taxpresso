@@ -1,6 +1,7 @@
 // The /api/state shape (extension/src/api.ts, dashboardState). Kept in step by the API tests.
 import type { Language } from './i18n';
 import type { SecuritiesView } from './Securities';
+import type { CopyPanelState } from './types-copy';
 import type { DocumentsState } from './types-docs';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
@@ -97,6 +98,8 @@ export interface State extends DocumentsState {
     };
   };
   notSupported: string[];
+  /** The values to type into the official declaration, in the form's order (SPEC.md 10.5). */
+  copyPanel: CopyPanelState;
   /** The securities list from broker exports, or null when there is none. */
   securities?: SecuritiesView | null;
   notSupportedMessage: string;

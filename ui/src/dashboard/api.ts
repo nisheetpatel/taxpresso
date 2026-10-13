@@ -81,6 +81,9 @@ export const api = {
     post('/facts/edit', lang, { id, value }),
   setEntered: (id: string, entered: boolean, lang: Language) =>
     post('/facts/entered', lang, { id, entered }),
+  /** A copy panel row ticked as entered (SPEC.md 10.5); kept on this computer. */
+  setFormEntered: (id: string, entered: boolean, lang: Language) =>
+    post('/form/entered', lang, { id, entered }),
   confirmDocument: (id: string, lang: Language) => post('/documents/confirm', lang, { id }),
   replaceDocument: (id: string, by: string, lang: Language) =>
     post('/documents/replace', lang, { id, by }),

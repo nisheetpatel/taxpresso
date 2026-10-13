@@ -54,7 +54,8 @@ describe('the routes from ledger values to rubrics', () => {
       }
       // A salary certificate box goes where the form names that box ("code 2 du CS" takes 2.1 to 2.3).
       if (def.box && typeof route.to !== 'string') {
-        const csBox = FORM_2026.rubrics.find((r) => r.key === route.to.A)!.csBox;
+        const target = route.to.A;
+        const csBox = FORM_2026.rubrics.find((r) => r.key === target)!.csBox;
         expect(csBox, route.key).toBeDefined();
         expect(def.box === csBox || def.box.startsWith(`${csBox}.`), route.key).toBe(true);
       }

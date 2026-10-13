@@ -644,7 +644,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get the values to type into the declaration',
       description:
-        'The values the user types into the official Geneva declaration (e-démarches or GeTax) by hand, in the form\'s order, as in the dashboard\'s copy panel: each with its rubric code, official French label, value as the form expects it and status. Without section: the sections with progress. With section (e.g. "A1"): its values.',
+        'The values the user types by hand into the official Geneva declaration, in the form\'s order, as in the dashboard\'s copy panel: rubric code, French label, value as typed, status. No section: the sections with progress. A section (e.g. "A1"): its values.',
       inputSchema: z.object({
         section: z
           .string()

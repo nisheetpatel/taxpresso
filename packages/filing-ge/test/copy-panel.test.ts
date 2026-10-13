@@ -217,4 +217,31 @@ describe('the copy panel', () => {
     expect(p.sections[0]!.page).toBe('A2');
     expect(row).toMatchObject({ ref: '41.40', copy: '7258', status: 'extracted', final: false });
   });
+
+  it('says how to split a household amount, and writes a line’s fields once', () => {
+    const p = buildCopyPanel({
+      form: FORM_2026,
+      lang: 'en',
+      items: [
+        item('52.21', 'household', 11_412_00),
+        item('55.10', 'p1', 450_00, {
+          column: 'icc_ifd',
+          instance: 'loan',
+          fields: { creditor: 'Banque Exemple SA' },
+        }),
+        item('55.10', 'p1', 15_000_00, {
+          column: 'wealth',
+          instance: 'loan',
+          fields: { creditor: 'Banque Exemple SA' },
+        }),
+      ],
+    });
+    const rows = p.sections.flatMap((s) => s.groups.flatMap((g) => g.rows));
+    expect(rows[0]).toMatchObject({ ref: '52.21', copy: '11412' });
+    expect(rows[0]!.part).toBeUndefined();
+    expect(rows[0]!.splitInto?.map((x) => x.label)).toEqual(['Contr. A', 'Contr. B', 'Enfant(s)']);
+    const [interest, debt] = rows.slice(1);
+    expect(interest!.fields.map((f) => f.value)).toEqual(['Banque Exemple SA']);
+    expect(debt).toMatchObject({ ref: '55.10-1', copy: '15000', fields: [] });
+  });
 });

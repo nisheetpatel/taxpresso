@@ -5,6 +5,7 @@ import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { describe, expect, it } from 'vitest';
+import type { CopyPanelState } from '../../ui/src/dashboard/types-copy.js';
 import { createApi, type DashboardState } from '../src/api.js';
 import type { ApiRequest } from '../src/dashboard.js';
 import { Dashboard } from '../src/dashboard.js';
@@ -70,7 +71,9 @@ describe('the copy panel in the dashboard', () => {
   it('lists the values in the form’s order, as the form wants them, not final until confirmed', async () => {
     const { state } = await setUp();
     const s = await state();
-    expect(s.copyPanel).toMatchObject({
+    // The page's own type for this part of the state (checked by tsc, not at run time).
+    const forThePage: CopyPanelState = s.copyPanel;
+    expect(forThePage).toMatchObject({
       taxYear: 2026,
       formYear: 2025,
       provisional: true,

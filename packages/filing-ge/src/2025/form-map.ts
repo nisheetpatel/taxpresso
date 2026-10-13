@@ -1375,7 +1375,7 @@ export const FORM_PAGES_2025: readonly FormPage[] = [
     'Récapitulation 2025',
     g('Summary: income', 'Récapitulation des revenus'),
     [
-      ['revenu', 'Revenu', g('Income', 'Revenus')],
+      ['revenu', 'Revenu', g('Income', 'Revenu')],
       [
         'renseignements',
         'Renseignements',
@@ -1416,7 +1416,7 @@ export const FORM_PAGES_2025: readonly FormPage[] = [
     'Activité dépendante 2025',
     g('Salaried work, taxpayer A', 'Travail salarié, contribuable A'),
     [
-      ['revenu', 'Revenu', g('Income', 'Revenus')],
+      ['revenu', 'Revenu', g('Income', 'Revenu')],
       [
         'autres-renseignements',
         'Autres renseignements figurant sur le certificat de salaire',
@@ -1435,7 +1435,7 @@ export const FORM_PAGES_2025: readonly FormPage[] = [
     'Activité dépendante 2025',
     g('Salaried work, taxpayer B', 'Travail salarié, contribuable B'),
     [
-      ['revenu', 'Revenu', g('Income', 'Revenus')],
+      ['revenu', 'Revenu', g('Income', 'Revenu')],
       [
         'autres-renseignements',
         'Autres renseignements figurant sur le certificat de salaire',

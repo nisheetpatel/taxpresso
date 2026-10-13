@@ -83,8 +83,10 @@ export interface CopyRow {
   copy?: string;
   /** The form wants whole francs and the exact amount has centimes. */
   rounded: boolean;
-  /** The line's other fields, e.g. the employer's name on 11.10. */
+  /** The line's other fields, e.g. the employer's name on 11.10 (on the line's first value only). */
   fields: { id: string; label: string; value: string }[];
+  /** A household amount on a rubric the form splits per person: the parts to split it into. */
+  splitInto?: { label: string; gloss: string }[];
   status: FactStatus;
   /** false while the value needs the user's OK or is an estimate: never shown as final. */
   final: boolean;
@@ -243,16 +245,21 @@ export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): 
   });
 
   const rows = new Map<FormRubric, CopyRow[]>();
+  const linesWithFields = new Set<string>();
   for (const [id, cell] of sorted) {
     const { rubric, item } = cell;
     const line = lineNumber(rubric, item.instance);
     const final = isFinal(item.status);
     const copy = formText(rubric.format, item);
-    const fields = (rubric.lineFields ?? []).flatMap((f) => {
-      const value = item.fields?.[f.id];
-      const typed = value === undefined ? undefined : formText(f.format, { text: value });
-      return typed ? [{ id: f.id, label: f.label, value: typed }] : [];
-    });
+    const lineKey = `${rubric.page}|${rubric.key}|${rubric.person}|${item.instance ?? '-'}`;
+    const fields = linesWithFields.has(lineKey)
+      ? []
+      : (rubric.lineFields ?? []).flatMap((f) => {
+          const value = item.fields?.[f.id];
+          const typed = value === undefined ? undefined : formText(f.format, { text: value });
+          return typed ? [{ id: f.id, label: f.label, value: typed }] : [];
+        });
+    if (fields.length) linesWithFields.add(lineKey);
     const hasValue =
       copy !== undefined || (rubric.format === 'tick' && item.tick === true) || fields.length > 0;
     if (!hasValue) continue;
@@ -295,6 +302,14 @@ export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): 
       ...(copy !== undefined ? { copy } : {}),
       rounded: rubric.format === 'money' && item.amount !== undefined && item.amount % 100 !== 0,
       fields,
+      ...(rubric.parts && !cell.part
+        ? {
+            splitInto: rubric.parts.map((p) => ({
+              label: PART_LABELS[p].label,
+              gloss: PART_LABELS[p].gloss[lang],
+            })),
+          }
+        : {}),
       status: item.status,
       final,
       enterable,

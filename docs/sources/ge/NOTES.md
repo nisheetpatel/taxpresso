@@ -9,6 +9,12 @@
 - The online return pre-fills only from last year's declaration, and only if that one was sent electronically. (https://www.ge.ch/getax/declaration-ligne-particuliers)
 - Supporting documents can be attached as PDF; GeTax rejects a file already imported, even if renamed. (https://www.ge.ch/getax/retour-declarations-internet)
 
+## Declaration form (tax year 2025)
+- The official form is published as a specimen of the handwritten declaration (manifest id ge-2025-declaration-specimen), 26 pages: PG1 to PG4, annexes A1, A2, B1 to B4, C1 to C4, D1 to D4, E1, E2, F1 to F4, G1, G2. The guide's short link to it (www.ge.ch/c/imp-spde25, guide p. 9) answered 404 on 2026-10-13. (https://www.ge.ch/document/42265/telecharger ; https://www.ge.ch/document/declaration-impot-2025-documents-envoyes)
+- Amounts are rounded to the franc, without centimes, except the imputations of annexe F (specimen p. 21; guide p. 9 for handwritten forms). Whether the online declaration accepts centimes is not stated on the pages read. (https://www.ge.ch/document/42265/telecharger)
+- Annexe A names the salary certificate box of each rubric: 11.10 takes box 1, boxes 2 to 7 have rubrics of their own, box 8 (their total) is not typed. (https://www.ge.ch/document/42265/telecharger, p. 5)
+- The online declaration offers the same features, checks and printouts as GeTax; its screens are not documented publicly. (https://www.ge.ch/getax/declaration-ligne-particuliers)
+
 ## Third-party software
 - Approved ("homologué") software may print barcoded forms or transmit online; non-approved software makes the return valid only on the signed official form. (https://www.getax.ch/support/sites/default/files/D_3_17.03_-_Rglt_relatif_aux_declarations_impot.pdf.pdf)
 - Approved list: DrTax (years 2006 to 2024), WindFisc (to 2021), Pebe Impots (2006 to 2009). No 2025 entry is shown. Queries: hotline@getax.ch. (https://www.getax.ch/support/homologation)
