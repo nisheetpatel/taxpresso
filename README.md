@@ -1,6 +1,6 @@
 # Taxpresso
 
-Your taxes, in one espresso. Vos impôts, le temps d’un espresso. Steuern, in einem Espresso erledigt.
+Your taxes, done over an espresso. Vos impôts, le temps d’un espresso.
 
 Taxpresso helps you prepare your Geneva tax return with Claude, inside Claude Desktop. It runs on your own computer: the extension makes no network requests, and your documents stay in your Taxpresso folder. You review the official declaration and transmit it yourself.
 

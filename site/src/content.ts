@@ -37,7 +37,7 @@ const fr = {
   nav: { how: 'Comment ça marche', principles: 'Principes', faq: 'Questions', start: 'Commencer' },
 
   tagline: 'Vos impôts, le temps d’un espresso.',
-  lead: 'Taxpresso prépare votre déclaration d’impôt genevoise avec Claude, sur votre ordinateur. Une quinzaine de questions, vos documents en vrac, et chaque déduction avec sa valeur en francs.',
+  lead: 'Répondez à quelques questions. Taxpresso s’occupe du reste.',
   available: 'Disponible pour les déclarations 2026.',
   getStarted: 'Commencer',
   seeHow: 'Voir comment ça marche',
@@ -287,7 +287,7 @@ const fr = {
 export type Copy = typeof fr;
 
 const en: Copy = {
-  htmlTitle: 'Taxpresso: your taxes, in one espresso',
+  htmlTitle: 'Taxpresso: your taxes, done over an espresso',
   metaDescription:
     'Taxpresso prepares your Geneva tax return with Claude, on your own computer. Free and open source.',
   skip: 'Skip to content',
@@ -296,8 +296,8 @@ const en: Copy = {
   suggestLanguage: 'Suggest a language',
   nav: { how: 'How it works', principles: 'Principles', faq: 'Questions', start: 'Get started' },
 
-  tagline: 'Your taxes, in one espresso.',
-  lead: 'Taxpresso prepares your Geneva tax return with Claude, on your own computer. About 15 questions, your documents in any order, and every deduction with its value in francs.',
+  tagline: 'Your taxes, done over an espresso.',
+  lead: 'Answer a few questions. Taxpresso does the rest.',
   available: 'Available for 2026 tax returns.',
   getStarted: 'Get started',
   seeHow: 'See how it works',

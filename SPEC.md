@@ -4,7 +4,7 @@ Product name: Taxpresso (code slug `taxpresso`). An AI tax filer for Geneva indi
 
 Brand: playful, sells the promise (fast), Swiss café. Taglines:
 - FR: Vos impôts, le temps d’un espresso.
-- EN: Your taxes, in one espresso.
+- EN: Your taxes, done over an espresso.
 - DE: Steuern, in einem Espresso erledigt.
 
 This file is the source of truth for the build. It is written for Claude Code: work phase by phase, meet each phase's acceptance criteria before moving on, and stop and ask the human for anything marked [HUMAN].

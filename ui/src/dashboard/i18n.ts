@@ -4,7 +4,7 @@ const NB = String.fromCharCode(0xa0);
 
 export const messages = {
   en: {
-    docTitle: 'Taxpresso · Your taxes, in one espresso.',
+    docTitle: 'Taxpresso · Your taxes, done over an espresso.',
     yearPill: 'Tax year {year} · Geneva',
     localOnly: 'On this computer only',
     steps: 'Steps',
