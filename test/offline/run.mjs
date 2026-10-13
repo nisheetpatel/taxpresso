@@ -320,6 +320,40 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.ok(facts.every((f) => f.source.method === 'export'));
   });
 
+  test("last year's declaration in the folder is read offline into suggestions and figures (SPEC.md 5.4)", async () => {
+    writeFileSync(
+      path.join(vault, '2026', 'declaration-2025.pdf'),
+      readFileSync(path.join(root, 'test', 'fixtures', 'dupont-declaration-2025.pdf')),
+    );
+    const res = await client.callTool({ name: 'ingest_vault', arguments: {} });
+    assert.ok(!res.isError);
+    assert.match(
+      res.content[0].text,
+      /declaration-2025\.pdf \(read as last year's declaration, 2025\)/,
+    );
+    const docs = JSON.parse(readFileSync(path.join(vault, '2026', 'documents.json'), 'utf8'));
+    const doc = docs.documents.find((d) => d.filename === 'declaration-2025.pdf');
+    assert.deepEqual([doc.kind, doc.taxYear, doc.parse.ok], ['prior_declaration', 2025, true]);
+    const ledger = JSON.parse(readFileSync(path.join(vault, '2026', 'ledger.json'), 'utf8'));
+    const pillar3a = ledger.facts.find(
+      (f) => f.key === 'prior.person.icc' && f.instance === 'A1-31.40',
+    );
+    assert.deepEqual(
+      [pillar3a.value, pillar3a.status, pillar3a.person],
+      [700000, 'extracted', 'p1'],
+    );
+    // Suggestions only: no answer is ever saved from the document.
+    const fromDoc = ledger.facts.filter((f) => f.source.docId === doc.id);
+    assert.ok(fromDoc.every((f) => f.status === 'extracted' && f.source.method === 'pdf_text'));
+    // Nothing that identifies the taxpayer is stored.
+    const stored = readFileSync(path.join(vault, '2026', 'ledger.json'), 'utf8');
+    for (const s of ['DUPONT', '01.01.1980', '756.0000', '000.00.0000-0', '1214 Vernier']) {
+      assert.ok(!stored.includes(s), s);
+    }
+    const last = await client.callTool({ name: 'get_last_year', arguments: {} });
+    assert.match(last.content[0].text, /31\.40 Pillar 3a .*ICC CHF 7’000/);
+  });
+
   test('Claude reads a PDF on this computer, proposes values, the user confirms them (C7)', async () => {
     assert.ok(dashboardSession, 'the dashboard test ran first');
     const { origin, host, cookie, csrf } = dashboardSession;

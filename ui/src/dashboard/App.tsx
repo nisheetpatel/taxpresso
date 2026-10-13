@@ -8,6 +8,7 @@ import { Assessment } from './Assessment';
 import { Checks } from './Checks';
 import { DocumentCards } from './DocumentCards';
 import { isMessageKey, t, type Language } from './i18n';
+import { LastYear } from './LastYear';
 import { Securities } from './Securities';
 import type { Question, RequirementView, State, Value } from './types';
 
@@ -137,9 +138,10 @@ export function App(): JSX.Element {
               ) : null}
               {question ? (
                 <QuestionCard
-                  key={`${question.id}:${L}:${editing ? 'edit' : 'ask'}`}
+                  key={`${question.id}:${L}:${editing ? 'edit' : 'ask'}:${JSON.stringify(question.suggested ?? null)}`}
                   q={question}
                   lang={L}
+                  taxYear={state.taxYear}
                   editing={editing !== null}
                   position={
                     editing ? null : { n: state.progress.answered + 1, total: state.progress.total }
@@ -167,6 +169,7 @@ export function App(): JSX.Element {
             <Assessment state={state} lang={L} />
             <Documents state={state} lang={L} busy={busy} act={act} />
             <Securities view={state.securities} year={state.taxYear} lang={L} />
+            <LastYear view={state.lastYear} year={state.taxYear} lang={L} />
             <DocumentCards state={state} lang={L} act={act} />
           </div>
           <aside class="side-col">
@@ -420,6 +423,7 @@ function Header({
 interface CardProps {
   q: Question;
   lang: Language;
+  taxYear: number;
   editing: boolean;
   position: { n: number; total: number } | null;
   busy: boolean;
@@ -431,16 +435,28 @@ interface CardProps {
 }
 
 function initialDraft(q: Question): Value | undefined {
-  if (q.value === undefined)
+  // A suggestion (from last year's declaration) is preselected: the user confirms or changes it.
+  const value = q.value ?? q.suggested;
+  if (value === undefined)
     return q.type === 'multi' ? [] : q.type === 'number' ? (q.min ?? 0) : undefined;
-  if (q.type === 'yesno') return q.value ? 'yes' : 'no';
-  return q.value;
+  if (q.type === 'yesno') return value ? 'yes' : 'no';
+  return value;
+}
+
+/** Where a suggestion comes from, in words. */
+function suggestionNote(q: Question, lang: Language, taxYear: number): string {
+  const from = q.suggestedFrom ?? {};
+  const vars = { year: from.year ?? '', page: from.page ?? '', taxYear };
+  if (from.kind !== 'prior_declaration') return t(lang, 'suggestedFromDoc', vars);
+  return t(lang, from.year ? 'suggestedFromPrior' : 'suggestedFromPriorNoYear', vars);
 }
 
 function QuestionCard(p: CardProps) {
   const { q, lang } = p;
   const [draft, setDraft] = useState<Value | undefined>(initialDraft(q));
-  const [touchedMulti, setTouchedMulti] = useState(q.value !== undefined);
+  const [touchedMulti, setTouchedMulti] = useState(
+    q.value !== undefined || q.suggested !== undefined,
+  );
   const selected = (v: string) => (Array.isArray(draft) ? draft.includes(v) : draft === v);
   const ready = q.type === 'multi' ? touchedMulti : draft !== undefined && draft !== '';
   const pickedUnsupported = (q.options ?? []).some((o) => o.notSupported && selected(o.value));
@@ -560,6 +576,12 @@ function QuestionCard(p: CardProps) {
         {q.help ? <p class="muted">{q.help}</p> : null}
         {q.skipped ? <p class="muted small-text">{t(lang, 'skippedNote')}</p> : null}
       </div>
+      {q.suggested !== undefined && q.value === undefined ? (
+        <p class="suggestion" role="note">
+          <span class="chip chip-needs-ok">{t(lang, 'statusNeedsOk')}</span>
+          <span>{suggestionNote(q, lang, p.taxYear)}</span>
+        </p>
+      ) : null}
       {control}
       {pickedUnsupported ? (
         <p class="banner banner-estimate">{t(lang, 'notSupportedPick')}</p>
@@ -588,7 +610,7 @@ function QuestionCard(p: CardProps) {
             </button>
           )}
           <button type="button" class="primary" onClick={submit} disabled={!ready || p.busy}>
-            {t(lang, p.editing ? 'save' : 'next')}
+            {t(lang, p.editing ? 'save' : q.suggested !== undefined ? 'confirmNext' : 'next')}
           </button>
         </div>
       </div>
@@ -742,7 +764,7 @@ function Documents({
                     <option value="household">{t(lang, 'both')}</option>
                   </select>
                 ) : null}
-                {d.kindSource === 'export' ? (
+                {d.kindSource === 'export' || d.kindSource === 'pdf_text' ? (
                   <span class="chip chip-verified">{t(lang, 'statusRecognised')}</span>
                 ) : (
                   <span

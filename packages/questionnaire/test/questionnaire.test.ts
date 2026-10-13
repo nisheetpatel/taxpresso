@@ -229,4 +229,46 @@ describe('Geneva questionnaire 2026', () => {
       ['health_premiums:p2', 'satisfied'],
     ]);
   });
+
+  it('shows a value read from a document as a suggestion, never as an answer (C7)', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const read = { method: 'pdf_text', docId: 'd_prior', page: 1 } as const;
+    const suggested = ledger.append({
+      key: 'profile.civil_status',
+      person: 'household',
+      value: 'married',
+      status: 'extracted',
+      source: read,
+    });
+    ledger.append({
+      key: 'profile.income_sources',
+      person: 'p2',
+      value: ['salary'],
+      status: 'extracted',
+      source: read,
+    });
+    let snap = e.snapshot(ledger);
+    const slot = snap.slots.find((s) => s.id === 'civil_status')!;
+    expect(slot.value).toBeUndefined();
+    expect(slot.suggested).toBe('married');
+    // Not an answer: no partner yet, nothing answered, the question still comes first.
+    expect(snap.people).toEqual(['p1']);
+    expect(snap.answers.size).toBe(0);
+    expect(e.next(snap)?.id).toBe('civil_status');
+    expect(e.render(slot, snap, 'en')).toMatchObject({ suggested: 'married' });
+    expect(e.render(slot, snap, 'en').value).toBeUndefined();
+    expect(e.describe(slot, 'fr', slot.suggested)).toBe('Marié(e)');
+    expect(e.chips(snap, 'en')).toEqual([]);
+
+    // The user answers: the answer replaces the suggestion, and the partner's suggestion shows.
+    const answer = e.answer(ledger, 'civil_status', 'married', { method: 'user', via: 'chat' });
+    expect(answer).toMatchObject({ status: 'stated', supersedes: suggested.id });
+    snap = e.snapshot(ledger);
+    expect(snap.people).toEqual(['p1', 'p2']);
+    expect(snap.slots.find((s) => s.id === 'income_sources:p2')).toMatchObject({
+      suggested: ['salary'],
+    });
+    expect(snap.slots.find((s) => s.id === 'income_sources:p2')?.value).toBeUndefined();
+  });
 });

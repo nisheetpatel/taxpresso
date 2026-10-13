@@ -36,6 +36,15 @@ import {
   type SecuritiesView,
 } from './securities.js';
 import {
+  currentPriorDocument,
+  isPriorOrProfile,
+  lastYearView,
+  PRIOR_METHOD,
+  recognisePriorDeclarations,
+  recordPriorDeclaration,
+  type LastYearView,
+} from './prior.js';
+import {
   coerceValue,
   ExtractionError,
   formValue,
@@ -223,9 +232,12 @@ export class Workspace {
     );
   }
 
-  /** Values read from documents that still need the user's OK. */
+  /**
+   * Values read from documents that still need the user's OK. Suggested answers wait in their
+   * questions instead, and last year's figures are only compared, never confirmed.
+   */
   toConfirm(): Fact[] {
-    return this.countedFacts().filter((f) => f.status === 'extracted');
+    return this.countedFacts().filter((f) => f.status === 'extracted' && !isPriorOrProfile(f));
   }
 
   /** Whether the user ticked this value as entered on the official form (and it hasn't changed). */
@@ -293,6 +305,7 @@ export class Workspace {
         this.#documents.push(result.document);
         await this.vault.saveDocuments(this.#documents);
         await this.#importExports([result.document]);
+        await this.#importPrior([result.document]);
         this.record(via === 'chat' ? 'claude' : 'you', 'document', result.document.filename);
       }
       return result;
@@ -307,6 +320,7 @@ export class Workspace {
         this.#documents.push(...found);
         await this.vault.saveDocuments(this.#documents);
         await this.#importExports(found);
+        await this.#importPrior(found);
       }
       this.record(by, 'scan', String(found.length));
       return found;
@@ -331,6 +345,10 @@ export class Workspace {
       else delete doc.person;
       await this.vault.saveDocuments(this.#documents);
       if (wasExport || kind === 'broker_export') await this.#syncSecurities();
+      // The user says it is last year's declaration: read it, if Taxpresso hasn't yet.
+      if (kind === 'prior_declaration' && doc.parse.method !== PRIOR_METHOD) {
+        await this.#importPrior([doc], true);
+      }
       this.record('you', 'kind', kind);
       return doc;
     });
@@ -705,6 +723,36 @@ export class Workspace {
   securities(lang: Lang): SecuritiesView | undefined {
     const s = this.#securities ?? { summary: emptySummary(this.engine.taxYear), unreadable: [] };
     return securitiesView(this.ledger, s.summary, lang, s.unreadable);
+  }
+
+  /** Last year's declaration that counts (SPEC.md 5.4), if Taxpresso read one. */
+  priorDocument(): VaultDocument | undefined {
+    return currentPriorDocument(this.activeDocuments());
+  }
+
+  /** The "Last year" card: last year's main figures and the suggestions still waiting. */
+  lastYear(lang: Lang): LastYearView | undefined {
+    return lastYearView(this.ledger, this.activeDocuments(), this.engine.taxYear, lang);
+  }
+
+  /**
+   * New documents that are a previous year's declaration: read them on this computer, then record
+   * the one that counts (the latest year) as suggested answers and last year's figures.
+   */
+  async #importPrior(added: VaultDocument[], force = false): Promise<void> {
+    const read = await recognisePriorDeclarations(this.vault, added, this.engine.taxYear, force);
+    const current = this.priorDocument();
+    const chosen = read.find((r) => r.doc === current);
+    if (chosen) {
+      const { figures, suggestions, problems } = recordPriorDeclaration(
+        this.ledger,
+        chosen.doc,
+        chosen.decl,
+      );
+      chosen.doc.parse.warnings.push(...problems);
+      if (figures || suggestions) await this.vault.saveLedger(this.ledger);
+    }
+    if (read.length || force) await this.vault.saveDocuments(this.#documents);
   }
 
   /** Reads the broker exports in the vault into the securities list; writes nothing. */

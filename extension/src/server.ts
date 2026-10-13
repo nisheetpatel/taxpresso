@@ -11,6 +11,8 @@ import type { Dashboard } from './dashboard.js';
 import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './extraction.js';
 import { INSTRUCTIONS } from './instructions.js';
 import { KIND_LABELS } from './kinds.js';
+import { PRIOR_METHOD, priorStatusText } from './prior.js';
+import { registerLastYearTool } from './prior-tool.js';
 import { securitiesStatusText } from './securities.js';
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
@@ -64,8 +66,29 @@ const QuestionOut = z.object({
     .optional(),
   min: z.number().optional(),
   max: z.number().optional(),
+  suggested: z
+    .object({
+      value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
+      text: z.object({ en: z.string(), fr: z.string() }),
+      from: z.string(),
+    })
+    .optional()
+    .describe(
+      "A value read from a document (last year's declaration), not an answer: the user confirms or changes it.",
+    ),
 });
 type QuestionOut = z.infer<typeof QuestionOut>;
+
+/** "last year's declaration (2025), page 1": where a suggestion was read. */
+function suggestionSource(ws: Workspace, slot: Slot): string {
+  const source = slot.suggestion?.source;
+  const doc = ws.documents.find((d) => d.id === source?.docId);
+  const what =
+    doc?.kind === 'prior_declaration'
+      ? `last year's declaration${doc.taxYear ? ` (${doc.taxYear})` : ''}`
+      : `“${doc?.filename ?? 'a document'}”`;
+  return `${what}${source?.page ? `, page ${source.page}` : ''}`;
+}
 
 function questionOut(ws: Workspace, slot: Slot): QuestionOut {
   const en: RenderedQuestion = ws.render(slot, 'en');
@@ -89,6 +112,18 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
       : {}),
     ...(en.min !== undefined ? { min: en.min } : {}),
     ...(en.max !== undefined ? { max: en.max } : {}),
+    ...(slot.suggested !== undefined
+      ? {
+          suggested: {
+            value: slot.suggested,
+            text: {
+              en: ws.engine.describe(slot, 'en', slot.suggested),
+              fr: ws.engine.describe(slot, 'fr', slot.suggested),
+            },
+            from: suggestionSource(ws, slot),
+          },
+        }
+      : {}),
   };
 }
 
@@ -132,6 +167,11 @@ function questionText(q: QuestionOut): string {
     ...(q.help ? [`Help: ${q.help.en}`] : []),
     ...(q.explain ? [`If the user asks what this means: ${q.explain.en}`] : []),
     how,
+    ...(q.suggested
+      ? [
+          `Suggested from ${q.suggested.from}: ${q.suggested.text.en || 'none of these'} (${JSON.stringify(q.suggested.value)}). It is not an answer yet: ask whether it is still right this year, then save what the user says with answer_question.`,
+        ]
+      : []),
   ].join('\n');
 }
 
@@ -283,6 +323,12 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       await ws.ready();
       const exportNote = (id: string) => {
         const doc = ws.documents.find((d) => d.id === id);
+        if (doc?.kind === 'prior_declaration') {
+          if (doc.parse.method !== PRIOR_METHOD) return '';
+          return doc.parse.ok
+            ? ` (${doc.taxYear ?? 'year unknown'}, read by Taxpresso: answers suggested in the questions, figures in get_last_year)`
+            : ` (not read by Taxpresso: ${doc.parse.warnings[0] ?? ''})`;
+        }
         if (doc?.kind !== 'broker_export') return '';
         const n = doc.parse.warnings.length;
         return ` (${doc.issuer ?? 'not readable'}${n ? `, ${n} warning${n === 1 ? '' : 's'} in the dashboard` : ''})`;
@@ -305,6 +351,8 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         : ['No documents yet.'];
       const securities = securitiesStatusText(ws.securities('en'));
       if (securities) lines.push(securities);
+      const lastYear = priorStatusText(ws.lastYear('en'));
+      if (lastYear) lines.push(lastYear);
       lines.push(`Still missing: ${missing.length ? missing.join('; ') : 'nothing'}`);
       return {
         content: [{ type: 'text', text: lines.join('\n') }],
@@ -318,7 +366,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Check the Taxpresso folder',
       description:
-        "Looks in the user's Taxpresso folder for files they put there themselves and adds them to the document list; broker exports (Interactive Brokers Flex Query XML, DEGIRO CSV) are read into the securities list. Call it when the user says they added files.",
+        "Looks in the user's Taxpresso folder for files they put there themselves and adds them to the document list. Broker exports (Interactive Brokers, DEGIRO) and last year's declaration are read on this computer. Call it when the user says they added files.",
       outputSchema: z.object({ added: z.array(z.string()) }),
       annotations: { title: 'Check the Taxpresso folder', ...RW, idempotentHint: true },
     },
@@ -328,21 +376,30 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       const named = found.map((d) =>
         d.kind === 'broker_export'
           ? `${d.filename} (read as a broker export: ${d.issuer})`
-          : d.filename,
+          : d.kind === 'prior_declaration'
+            ? `${d.filename} (read as last year's declaration${d.taxYear ? `, ${d.taxYear}` : ''})`
+            : d.filename,
       );
       const toIdentify = found.some((d) => !d.kind);
       const securities = found.some((d) => d.kind === 'broker_export')
         ? securitiesStatusText(ws.securities('en'))
         : undefined;
+      const lastYear = found.some((d) => d.kind === 'prior_declaration')
+        ? priorStatusText(ws.lastYear('en'))
+        : undefined;
       const text = added.length
         ? [
             `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}`,
             ...(securities ? [securities] : []),
+            ...(lastYear ? [lastYear] : []),
           ].join('\n')
         : `No new files in ${ws.vaultInfo().path}.`;
       return { content: [{ type: 'text', text }], structuredContent: { added } };
     },
   );
+
+  // get_last_year: last year's figures, for comparison only (./prior-tool.ts).
+  registerLastYearTool(server, ws);
 
   server.registerTool(
     'list_optimizations',

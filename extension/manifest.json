@@ -49,6 +49,10 @@
       "description": "Adds files you put in your Taxpresso folder yourself."
     },
     {
+      "name": "get_last_year",
+      "description": "Last year's figures, read from your previous declaration, to compare with this year."
+    },
+    {
       "name": "list_optimizations",
       "description": "Ways to lower your tax with their CHF value. For now: pillar 3a before 31 December."
     },

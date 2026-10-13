@@ -35,6 +35,13 @@ export interface Slot {
   person: Owner;
   value?: FactValue;
   fact?: Fact;
+  /**
+   * A value read from a document (status "extracted", e.g. from last year's declaration) that the
+   * user hasn't confirmed: shown with the question as a suggestion, never counted as an answer
+   * (SPEC.md C7). Answering the question, with this value or another, replaces it.
+   */
+  suggested?: FactValue;
+  suggestion?: Fact;
 }
 
 export interface Snapshot {
@@ -60,6 +67,8 @@ export interface RenderedQuestion {
   min?: number;
   max?: number;
   value?: FactValue;
+  /** Not an answer yet: a value read from a document, for the user to confirm or change. */
+  suggested?: FactValue;
 }
 
 export class QuestionnaireError extends Error {}
@@ -161,13 +170,17 @@ export class QuestionnaireEngine {
       for (const person of owners) {
         if (question.when && !this.#holds(question.when, person, answers, people())) continue;
         const fact = ledger.get(question.key, person);
+        // Read from a document and not confirmed yet: a suggestion, not an answer.
+        const suggestion = fact?.status === 'extracted' ? fact : undefined;
+        const answer = suggestion ? undefined : fact;
         const slot: Slot = {
           id: question.perPerson ? `${question.id}:${person}` : question.id,
           question,
           person,
-          ...(fact ? { value: fact.value, fact } : {}),
+          ...(answer ? { value: answer.value, fact: answer } : {}),
+          ...(suggestion ? { suggested: suggestion.value, suggestion } : {}),
         };
-        if (fact) answers.set(slotKey(question.key, person), fact.value);
+        if (answer) answers.set(slotKey(question.key, person), answer.value);
         slots.push(slot);
       }
     }
@@ -321,17 +334,18 @@ export class QuestionnaireEngine {
       ...(q.min !== undefined ? { min: q.min } : {}),
       ...(q.max !== undefined ? { max: q.max } : {}),
       ...(slot.value !== undefined ? { value: slot.value } : {}),
+      ...(slot.suggested !== undefined ? { suggested: slot.suggested } : {}),
     };
   }
 
-  /** The answer of a slot in words. */
-  describe(slot: Slot, lang: Lang): string {
+  /** The answer of a slot in words (or another value of it, such as its suggestion). */
+  describe(slot: Slot, lang: Lang, value: FactValue | undefined = slot.value): string {
     const q = slot.question;
-    if (slot.value === undefined) return '';
-    if (q.type === 'commune') return this.#communeName(String(slot.value));
-    if (q.type === 'yesno') return YES_NO[lang][slot.value ? 0 : 1];
-    if (q.type === 'number') return String(slot.value);
-    const labels = this.#selected(slot).map((o) => o.label[lang]);
+    if (value === undefined) return '';
+    if (q.type === 'commune') return this.#communeName(String(value));
+    if (q.type === 'yesno') return YES_NO[lang][value ? 0 : 1];
+    if (q.type === 'number') return String(value);
+    const labels = this.#selected(slot, value).map((o) => o.label[lang]);
     return labels.length ? labels.join(', ') : (q.none?.[lang] ?? '');
   }
 
@@ -339,10 +353,10 @@ export class QuestionnaireEngine {
     return this.file.notSupported[lang];
   }
 
-  #selected(slot: Slot) {
-    const values = Array.isArray(slot.value) ? slot.value : [String(slot.value)];
+  #selected(slot: Slot, value: FactValue | undefined = slot.value) {
+    const values = Array.isArray(value) ? value : [String(value)];
     return (slot.question.options ?? []).filter(
-      (o) => slot.value !== undefined && values.includes(o.value),
+      (o) => value !== undefined && values.includes(o.value),
     );
   }
 

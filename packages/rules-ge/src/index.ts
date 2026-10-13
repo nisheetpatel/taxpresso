@@ -24,6 +24,27 @@ export {
 } from './2026/ifd.js';
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from './2026/keys-securities.js';
+export {
+  KEYS_PRIOR_2026,
+  parsePriorInstance,
+  PRIOR_FORMS,
+  PRIOR_MAIN_LINES_2026,
+  priorInstance,
+  priorLines,
+  type PriorForm,
+  type PriorKey,
+  type PriorLine,
+  type PriorMainLine,
+  type PriorRef,
+  type PriorSection,
+} from './2026/keys-prior.js';
+export {
+  COMMUNE_CODES,
+  COMMUNE_CODES_SOURCE,
+  communeByCode,
+  communeByName,
+  foldName,
+} from './2026/commune-codes.js';
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
 export {
   DOCUMENT_FIELDS_2026,
