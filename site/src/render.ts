@@ -83,6 +83,15 @@ const CARD_LOOK = [
 
 const TONE_CLASS: Record<Tone, string> = { ok: 'st st-ok', confirm: 'st st-confirm', plain: 'st' };
 
+const OG_LOCALE: Record<Lang, string> = {
+  fr: 'fr_CH',
+  en: 'en',
+  de: 'de_CH',
+  it: 'it_CH',
+  es: 'es_ES',
+  pt: 'pt_PT',
+};
+
 function head(lang: Lang, title: string, description: string, cssVersion: string, alt: string[]) {
   return `<!doctype html>
 <html lang="${lang}">
@@ -95,7 +104,7 @@ function head(lang: Lang, title: string, description: string, cssVersion: string
 <meta name="description" content="${esc(description)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
-<meta property="og:locale" content="${lang === 'fr' ? 'fr_CH' : lang === 'de' ? 'de_CH' : 'en'}">
+<meta property="og:locale" content="${OG_LOCALE[lang]}">
 ${LANGS.map((l, i) => `<link rel="alternate" hreflang="${l.lang}" href="${alt[i]}">`).join('\n')}
 <link rel="alternate" hreflang="x-default" href="${alt[0]}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
