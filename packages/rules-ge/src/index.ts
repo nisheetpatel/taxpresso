@@ -25,6 +25,31 @@ export {
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from './2026/keys-securities.js';
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
+// Source tax (2025, 2026), TOU, pension fund buy-ins and the 3a catch-up (SPEC.md section 8).
+export {
+  normalizeTariff,
+  SOURCE_TAX_SOURCES,
+  SOURCE_TAX_YEARS,
+  sourceTax,
+  SourceTaxError,
+  sourceTaxTariffs,
+  type SourceTaxPeriod,
+  type SourceTaxResult,
+  type SourceTaxYear,
+} from './source-tax/index.js';
+export {
+  TOU_2026_GROSS_THRESHOLD,
+  TOU_2026_OTHER_INCOME_THRESHOLD,
+  TOU_2026_WEALTH_FREE,
+  TOU_FACTS,
+  touDeadline,
+} from './2026/tou.js';
+export {
+  LPP_BUYIN_FACTS,
+  PILLAR3A_2025,
+  PILLAR3A_CATCHUP_2026,
+  PILLAR3A_CATCHUP_FACTS,
+} from './2026/pension.js';
 export {
   DOCUMENT_FIELDS_2026,
   DOCUMENT_KEYS_2026,
