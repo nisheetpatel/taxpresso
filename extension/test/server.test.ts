@@ -49,6 +49,7 @@ describe('MCP surface', () => {
       'get_document_for_review',
       'get_form_values',
       'get_holdings',
+      'get_last_year',
       'get_status',
       'ingest_vault',
       'list_documents',

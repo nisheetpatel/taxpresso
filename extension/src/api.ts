@@ -17,6 +17,7 @@ import {
   planningReady,
   planningView,
 } from './planning.js';
+import type { Slot } from '@taxpresso/questionnaire';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
 const Answer = z.object({
@@ -68,6 +69,20 @@ const LineOwnerChange = z.object({
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
 
+/** Where a question's suggestion comes from: last year's declaration, its year and page. */
+function suggestedFrom(ws: Workspace, slot: Slot) {
+  const source = slot.suggestion?.source;
+  if (!source?.docId) return {};
+  const doc = ws.documents.find((d) => d.id === source.docId);
+  return {
+    suggestedFrom: {
+      ...(doc?.kind ? { kind: doc.kind } : {}),
+      ...(doc?.taxYear ? { year: doc.taxYear } : {}),
+      ...(source.page ? { page: source.page } : {}),
+    },
+  };
+}
+
 export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
   const snap = ws.snapshot();
   const people = ws.engine.file.people;
@@ -87,7 +102,13 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       answered: snap.slots.filter((s) => s.value !== undefined).length,
       total: snap.slots.length,
     },
-    question: next ? { ...ws.render(next, lang), skipped: ws.skipped.includes(next.id) } : null,
+    question: next
+      ? {
+          ...ws.render(next, lang),
+          skipped: ws.skipped.includes(next.id),
+          ...suggestedFrom(ws, next),
+        }
+      : null,
     chips: ws.engine.chips(snap, lang),
     answers: snap.slots
       .filter((s) => s.value !== undefined)
@@ -150,6 +171,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     notSupported: ws.engine.notSupported(snap).map((n) => n.what[lang]),
     securities: ws.securities(lang) ?? null,
     holdings: holdingsView(ws, lang) ?? null,
+    // Last year's declaration: main figures to compare, never filed (SPEC.md 5.4).
+    lastYear: ws.lastYear(lang) ?? null,
     notSupportedMessage: ws.engine.notSupportedMessage(lang),
     activity: ws.activity().map((a) => {
       if (a.what === 'answer' && a.detail) {

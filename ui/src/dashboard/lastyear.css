@@ -1,0 +1,139 @@
+/* "Last year" card (LastYear.tsx). Tokens and chips come from ../shared/tokens.css; no colors here. */
+
+.ly-official {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.ly-card {
+  padding: 8px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ly-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.ly-suggest {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ly-section {
+  border-top: 1px solid var(--line-soft);
+}
+
+.ly-section summary {
+  cursor: pointer;
+  min-height: var(--touch);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.ly-section h3 {
+  display: inline;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.ly-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ly-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.ly-row:last-child {
+  border-bottom: none;
+}
+
+.ly-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ly-label strong {
+  font-weight: 600;
+}
+
+.ly-figures {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(110px, auto));
+  gap: 4px 16px;
+}
+
+.ly-figures dt {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.ly-figures dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
+.ly-warnings summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ly-warnings ul {
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .ly-figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+}
+
+/* The suggestion under a question (App.tsx, QuestionCard): read from last year's declaration. */
+.suggestion {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}

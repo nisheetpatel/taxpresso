@@ -10,6 +10,7 @@ import { DOCUMENT_KEYS_2026 } from './document-keys.js';
 import { sourceTaxTariffs } from '../source-tax/index.js';
 import { LPP_BUYIN_FACTS } from './pension.js';
 import { TOU_FACTS } from './tou.js';
+import { KEYS_PRIOR_2026 } from './keys-prior.js';
 
 export const KEYS_2026 = {
   'profile.civil_status': {
@@ -232,6 +233,8 @@ export const KEYS_2026 = {
   ...KEYS_WEALTH_2026,
   // Values read from documents, one per document (./document-keys.ts).
   ...DOCUMENT_KEYS_2026,
+  // Last year's figures from the prior-year declaration, for comparison only (./keys-prior.ts).
+  ...KEYS_PRIOR_2026,
 } as const satisfies KeyRegistry;
 
 export type Key2026 = keyof typeof KEYS_2026;

@@ -8,3 +8,9 @@ Synthetic documents only (SPEC.md section 13). Never real personal data: the dem
 - `dupont-scan-3a-2026.pdf`: one page with an image and no text, like a scan.
 
 Both are written byte by byte by `node test/fixtures/make-fixtures.mjs`; rerun it after changing them.
+
+Last year's declaration (SPEC.md section 5.4), written by `node test/fixtures/make-prior-fixtures.mjs` the same way, with a text layer laid out like a declaration printed by tax software (page codes, rubric lines with ICC and IFD columns, amounts with apostrophes, "Page n/N" footers). Every name, date and number is fake, and page 1 carries a line that tries to give instructions:
+
+- `dupont-declaration-2025.pdf`: Jean and Marie Dupont, Vernier, 2025, GeTax page codes (GAPP25-1 to -4, GAPP25A1, A2, C4, F1), one employer each.
+- `ribeiro-declaration-2025.pdf`: Ana Ribeiro, single, Meyrin.
+- `dupont-declaration-2025-two-employers.pdf`: the Dupont couple from another program (DrTax): no GAPP codes, other column positions, two employers for A, annex A1 over two pages, the commune given by its code.
