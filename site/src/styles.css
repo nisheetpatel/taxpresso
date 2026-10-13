@@ -1417,6 +1417,18 @@ a:hover {
   text-decoration: none;
 }
 
+/* Privacy policy: a guide page with its date under the title. */
+
+.policy {
+  padding-top: 24px;
+}
+
+.updated {
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: var(--mocha);
+}
+
 /* Footer */
 
 .foot {

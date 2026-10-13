@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { BASE_URL, copy, LANGS, SOURCE_URL } from '../src/content.ts';
 import { GUIDE_IDS, GUIDE_SOURCES, guidePath, guides, guidesPath } from '../src/guides.ts';
 import { builtPages, PAGES, robots, sitemap } from '../src/pages.ts';
-import { render, renderGuide, renderGuides, renderStart } from '../src/render.ts';
+import { privacy, privacyPath } from '../src/privacy.ts';
+import { render, renderGuide, renderGuides, renderPrivacy, renderStart } from '../src/render.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DASHES = new RegExp('[\\u2013\\u2014]');
@@ -178,6 +179,29 @@ describe('guides', () => {
       const link = `href="${guidesPath(p)}"`;
       expect(render(lang).split(link).length - 1, lang).toBe(2);
       expect(renderStart(lang).split(link).length - 1, lang).toBe(2);
+    }
+  });
+});
+
+describe('privacy policy', () => {
+  it('has the same structure in every language as in French, with no en or em dashes', () => {
+    for (const { lang } of LANGS) {
+      expect(shape(privacy[lang]), lang).toEqual(shape(privacy.fr));
+      for (const s of strings(privacy[lang])) expect(s, `${lang}: ${s}`).not.toMatch(DASHES);
+    }
+  });
+
+  it('renders in every language with its date and the contact address, and is in every footer', () => {
+    for (const { lang, path: p } of LANGS) {
+      const html = renderPrivacy(lang);
+      expect(html).toContain(`<html lang="${lang}">`);
+      expect(html).toContain(`<link rel="canonical" href="${BASE_URL}${privacyPath(p)}">`);
+      expect(html).toContain('href="mailto:hello@taxpresso.ch"');
+      expect(html).toMatch(/<p class="updated">[^<{]*2026<\/p>/);
+      expect(html).not.toMatch(RUNNABLE_SCRIPT);
+      for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
+      for (const page of [render(lang), renderStart(lang), renderGuides(lang), html])
+        expect(page).toContain(`<a href="${privacyPath(p)}">${privacy[lang].link}</a>`);
     }
   });
 });

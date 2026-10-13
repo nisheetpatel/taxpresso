@@ -15,20 +15,33 @@ import {
   startPath,
   type Tone,
 } from './content.ts';
-import { GUIDE_IDS, GUIDE_SOURCES, type GuideId, guidePath, guides, guidesPath } from './guides.ts';
+import {
+  frenchSpacing,
+  GUIDE_IDS,
+  GUIDE_SOURCES,
+  type GuideId,
+  guidePath,
+  guides,
+  guidesPath,
+  type Section,
+} from './guides.ts';
+import { privacy, PRIVACY_UPDATED, privacyPath } from './privacy.ts';
 import { absoluteUrl, alternates, jsonLd, ORGANIZATION, plain } from './seo.ts';
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/** Escapes, then turns [text](https://...) into an outbound link and [text](/path/) into a link on the site. */
+/**
+ * Escapes, then turns [text](https://...) into an outbound link, [text](/path/) into a link on the
+ * site and [text](mailto:...) into an email link.
+ */
 const rich = (s: string) =>
   esc(s).replace(
-    /\[([^\]]+)\]\((https:\/\/[^)\s]+|\/[^)\s]*)\)/g,
+    /\[([^\]]+)\]\((https:\/\/[^)\s]+|\/[^)\s]*|mailto:[^)\s]+)\)/g,
     (_, text: string, href: string) =>
-      href.startsWith('/')
-        ? `<a href="${href}">${text}</a>`
-        : `<a href="${href}" rel="noopener">${text}</a>`,
+      href.startsWith('https:')
+        ? `<a href="${href}" rel="noopener">${text}</a>`
+        : `<a href="${href}">${text}</a>`,
   );
 
 /** Opens in a new tab, so the page stays where it was. */
@@ -129,6 +142,27 @@ interface Meta {
   data?: Record<string, unknown>[];
 }
 
+/** Numbers and dates are written the Swiss way, in the page's language. */
+const LOCALE: Record<Lang, string> = {
+  fr: 'fr-CH',
+  en: 'en-CH',
+  de: 'de-CH',
+  it: 'it-CH',
+  es: 'es-CH',
+  pt: 'pt-CH',
+};
+
+/** A day (YYYY-MM-DD) written out: "14 October 2026", "14 octobre 2026". */
+function longDate(lang: Lang, iso: string): string {
+  const s = new Intl.DateTimeFormat(LOCALE[lang], {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${iso}T00:00:00Z`));
+  return lang === 'fr' ? frenchSpacing(s) : s;
+}
+
 function head(lang: Lang, meta: Meta, cssVersion: string) {
   const here = LANGS.find((l) => l.lang === lang)!;
   const url = absoluteUrl(meta.at(here.path));
@@ -191,7 +225,7 @@ function footer(lang: Lang) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   return `<footer class="foot">
-<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
+<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="${privacyPath(here.path)}">${esc(privacy[lang].link)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
 <p>${esc(t.footer.independent)}</p>
 <p>${esc(t.footer.noTracking)}</p>
 <p>© 2026 Taxpresso</p>
@@ -502,20 +536,24 @@ ${cards}
 ${footer(lang)}`;
 }
 
+/** Short sections of a reading page: a heading, paragraphs, then an optional list. */
+const sectionsHtml = (sections: Section[]) =>
+  sections
+    .map(
+      (s) =>
+        `<section>\n<h2>${esc(s.h)}</h2>\n${s.p.map((p) => `<p>${rich(p)}</p>\n`).join('')}${
+          s.list ? `<ul>\n${s.list.map((li) => `<li>${rich(li)}</li>`).join('\n')}\n</ul>\n` : ''
+        }</section>`,
+    )
+    .join('\n');
+
 /** One guide: short sections, then the official sources, then the other guides. */
 export function renderGuide(lang: Lang, id: GuideId, cssVersion = ''): string {
   const g = guides[lang];
   const guide = g.guides[id];
   const here = LANGS.find((l) => l.lang === lang)!;
 
-  const sections = guide.sections
-    .map(
-      (s) =>
-        `<section>\n<h2>${esc(s.h)}</h2>\n${s.p.map((p) => `<p>${rich(p)}</p>`).join('\n')}${
-          s.list ? `\n<ul>\n${s.list.map((li) => `<li>${rich(li)}</li>`).join('\n')}\n</ul>` : ''
-        }\n</section>`,
-    )
-    .join('\n');
+  const sections = sectionsHtml(guide.sections);
   const sources = GUIDE_SOURCES[id]
     .map((url, i) => `<li><a ${out(url)}>${esc(guide.sources[i] ?? url)}</a></li>`)
     .join('\n');
@@ -576,6 +614,28 @@ ${more}
 </ul>
 </nav>
 <p class="back"><a href="${guidesPath(here.path)}">${esc(g.all)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
+/** The privacy policy: what stays on your computer, what Claude sees, what this site keeps. */
+export function renderPrivacy(lang: Lang, cssVersion = ''): string {
+  const t = privacy[lang];
+  const here = LANGS.find((l) => l.lang === lang)!;
+
+  return `${head(lang, { title: t.htmlTitle, description: t.metaDescription, at: privacyPath }, cssVersion)}
+<body>
+${header(lang, privacyPath)}
+
+<main id="main" class="guides">
+<article class="guide policy">
+<h1>${esc(t.title)}</h1>
+<p class="updated">${esc(t.updated.replace('{date}', longDate(lang, PRIVACY_UPDATED)))}</p>
+<p class="lead">${esc(t.lead)}</p>
+${sectionsHtml(t.sections)}
+</article>
+<p class="back"><a href="${here.path}">${esc(copy[lang].start.back)}</a></p>
 </main>
 
 ${footer(lang)}`;

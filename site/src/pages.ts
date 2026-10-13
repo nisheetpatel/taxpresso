@@ -2,7 +2,8 @@
 // them, and the tests check the links between them.
 import { LANGS, type Lang, startPath } from './content.ts';
 import { GUIDE_IDS, guidePath, guidesPath } from './guides.ts';
-import { render, renderGuide, renderGuides, renderStart } from './render.ts';
+import { privacyPath } from './privacy.ts';
+import { render, renderGuide, renderGuides, renderPrivacy, renderStart } from './render.ts';
 import { absoluteUrl, alternates } from './seo.ts';
 
 export interface Page {
@@ -19,6 +20,7 @@ export const PAGES: readonly Page[] = [
     at: (p) => guidePath(p, id),
     render: (lang, css) => renderGuide(lang, id, css),
   })),
+  { at: privacyPath, render: renderPrivacy },
 ];
 
 /** Every page in every language, with its path. */
