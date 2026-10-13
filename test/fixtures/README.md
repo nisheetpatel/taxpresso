@@ -8,3 +8,11 @@ Synthetic documents only (SPEC.md section 13). Never real personal data: the dem
 - `dupont-scan-3a-2026.pdf`: one page with an image and no text, like a scan.
 
 Both are written byte by byte by `node test/fixtures/make-fixtures.mjs`; rerun it after changing them.
+
+`barcodes/`: documents whose values are in a barcode (SPEC.md sections 5 and 13, item 4), for the Dupont household, every value made up (AHV number 756.0000..., IBANs CH00 0000..., `TXPRS` ISINs, employer and bank):
+
+- `dupont-certificat-salaire-2026-code-barres.pdf`: a salary certificate whose page is one JPEG image (1190 x 1684 pixels, 144 ppi, like a scan), with its PDF417 printed vertically at the left: 14 Swissdec control bytes, then a ZIP holding the TxAB XML. Its box 15 remark tries to give instructions: it is data.
+- `dupont-certificat-salaire-2026-vectoriel.pdf`: the same barcode drawn as filled rectangles.
+- `dupont-releve-fiscal-2026.pdf`: a bank e-tax statement (eCH-0196): a content page and a barcode sheet with the ZLIB-compressed XML in Macro PDF417 segments (290 x 35 pixel images) and an eCH-0270 Code 128 page barcode on each page.
+
+They are written by `node test/fixtures/make-barcode-fixtures.mjs`, with the generators in `packages/intake/test/barcode-fixtures.mjs` (which the intake and extension tests also use to build such documents on the fly).

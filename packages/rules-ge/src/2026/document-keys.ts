@@ -196,6 +196,43 @@ export const DOCUMENT_KEYS_2026 = {
     'Observations',
     'p. 19 (Cm 64)',
   ),
+  // Boxes the salary certificate barcode carries too (Swissdec SalaryDeclarationTxAB.xsd:
+  // Charges/Education is c13.3, OtherFringeBenefits c14, StandardRemark and Remark c15).
+  'salary.education': box(
+    '13.3',
+    'Further training paid by your employer',
+    'Formation continue payée par l’employeur',
+    'Contributions de l’employeur pour la formation continue ou le perfectionnement professionnel',
+    'p. 18 (Cm 61)',
+  ),
+  'salary.relocation_costs': box(
+    '15',
+    'Moving costs paid by your employer (remark in box 15)',
+    'Frais de déménagement payés par l’employeur (remarque au chiffre 15)',
+    'Frais de déménagement',
+    'p. 19 (Cm 71)',
+  ),
+  'salary.other_fringe_note': {
+    type: 'string',
+    perPerson: true,
+    multiple: true,
+    label: {
+      en: 'Other benefits, described without an amount (box 14)',
+      fr: 'Autres prestations salariales accessoires, sans montant (chiffre 14)',
+    },
+    official: 'Autres prestations salariales accessoires',
+    source: `${WAGE_GUIDE} p. 18 (Cm 62)`,
+    box: '14',
+  },
+  'salary.remarks': {
+    type: 'string',
+    perPerson: true,
+    multiple: true,
+    label: { en: 'Remarks (box 15)', fr: 'Observations (chiffre 15)' },
+    official: 'Observations',
+    source: `${WAGE_GUIDE} p. 19 (Cm 63)`,
+    box: '15',
+  },
 
   // Other attestations.
   'pillar3a.paid': money(
@@ -409,6 +446,47 @@ export const DOCUMENT_KEYS_2026 = {
     `${GE_GUIDE} p. 37`,
   ),
 
+  // A bank's e-tax statement (relevé fiscal, eCH-0196): its totals, as the "Relevés fiscaux" lines
+  // of the securities list ask for them (ge-2025-guide-declaration-pp p. 43: one grouped line per
+  // statement instead of every position). The same amounts as the statement's accounts and
+  // securities (keys-ech0196.ts and keys-securities.ts): never add both.
+  'statement.value_chf': money(
+    false,
+    {
+      en: 'Taxable value on 31 December (statement total)',
+      fr: 'Valeur imposable au 31 décembre (total du relevé)',
+    },
+    'Valeur imposable',
+    `${GE_GUIDE} p. 43`,
+  ),
+  'statement.income_a_chf': money(
+    false,
+    {
+      en: 'Gross income with Swiss withholding tax (statement total)',
+      fr: 'Rendements bruts soumis à l’impôt anticipé (total du relevé)',
+    },
+    'Rendements bruts soumis à l’impôt anticipé',
+    `${GE_GUIDE} p. 43`,
+  ),
+  'statement.income_b_chf': money(
+    false,
+    {
+      en: 'Gross income without Swiss withholding tax (statement total)',
+      fr: 'Rendements bruts non soumis à l’impôt anticipé (total du relevé)',
+    },
+    'Rendements bruts non soumis à l’impôt anticipé',
+    `${GE_GUIDE} p. 43`,
+  ),
+  'statement.withholding_swiss_chf': money(
+    false,
+    {
+      en: 'Swiss withholding tax to reclaim (statement total)',
+      fr: 'Impôt anticipé à récupérer (total du relevé)',
+    },
+    'impôt anticipé (IA)',
+    `${GE_GUIDE} p. 38`,
+  ),
+
   // A short note from the user that settles a "Check this" item (SPEC.md section 5.8).
   // The instance is the check id.
   'check.note': {
@@ -447,9 +525,19 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
     'salary.allowance_representation',
     'salary.allowance_car',
     'salary.allowance_other',
+    'salary.education',
+    'salary.other_fringe_note',
     'salary.free_transport',
     'salary.canteen',
     'salary.indemnities_included',
+    'salary.relocation_costs',
+    'salary.remarks',
+  ],
+  ech0196_statement: [
+    'statement.value_chf',
+    'statement.income_a_chf',
+    'statement.income_b_chf',
+    'statement.withholding_swiss_chf',
   ],
   pillar3a_attestation: ['pillar3a.paid'],
   lpp_buyin: ['lpp.buyin'],

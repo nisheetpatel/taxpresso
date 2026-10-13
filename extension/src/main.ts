@@ -2,7 +2,9 @@
 // stdout carries MCP messages only; anything else goes to stderr.
 
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
+import { setBarcodeWasmPath } from '@taxpresso/intake';
 import { geQuestionnaire2026, QuestionnaireEngine } from '@taxpresso/questionnaire';
 import { COMMUNES_2026, KEYS_2026 } from '@taxpresso/rules-ge';
 import { createApi } from './api.js';
@@ -15,6 +17,9 @@ import { Workspace } from './workspace.js';
 for (const level of ['log', 'info', 'debug'] as const) console[level] = console.error.bind(console);
 
 const config = readConfig();
+// The barcode reader's WebAssembly ships next to this bundle (extension/scripts/build.mjs) and is
+// read from disk: never located or downloaded.
+setBarcodeWasmPath(path.join(path.dirname(fileURLToPath(import.meta.url)), 'zxing_reader.wasm'));
 const engine = new QuestionnaireEngine(geQuestionnaire2026(), KEYS_2026, COMMUNES_2026);
 const workspace = new Workspace(config, engine, KEYS_2026);
 const dashboard = new Dashboard({

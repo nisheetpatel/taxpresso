@@ -24,6 +24,7 @@ export {
 } from './2026/ifd.js';
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from './2026/keys-securities.js';
+export { KEYS_ECH0196_2026, type Ech0196Key } from './2026/keys-ech0196.js';
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
 export {
   DOCUMENT_FIELDS_2026,

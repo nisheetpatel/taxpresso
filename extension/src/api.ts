@@ -5,6 +5,7 @@ import { NBSP, QuestionnaireError, type Lang } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
 import type { ApiRequest, ApiResponse } from './dashboard.js';
 import { documentCards, documentChecks, assessmentCards } from './document-views.js';
+import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import { ExtractionError } from './extraction.js';
 import { KIND_LABELS } from './kinds.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
@@ -83,6 +84,10 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       ...(d.kind ? { kind: d.kind, kindLabel: KIND_LABELS[d.kind][lang] } : {}),
       ...(d.kindSource ? { kindSource: d.kindSource } : {}),
       ...(d.person ? { person: d.person } : {}),
+      // Read from its barcode; "pending" while whose it is isn't known (./barcode.ts).
+      ...(isBarcodeDocument(d)
+        ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
+        : {}),
     })),
     kinds: KIND_ORDER.map((k) => ({ value: k, label: KIND_LABELS[k][lang] })),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,

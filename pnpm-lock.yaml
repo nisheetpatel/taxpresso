@@ -272,10 +272,16 @@ importers:
       unpdf:
         specifier: 1.8.1
         version: 1.8.1
+      zxing-wasm:
+        specifier: 3.1.4
+        version: 3.1.4(@types/emscripten@1.41.6)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.1
+      bwip-js:
+        specifier: 4.11.4
+        version: 4.11.4
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -843,6 +849,9 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
+  '@types/emscripten@1.41.6':
+    resolution: {integrity: sha512-uN+9i8bFT5CUcZfyIEYDrSueACEyKGbUs5kC/72DGlZZoinh84sJfVV0i8UOJD1asdzkvLPBRrKs41kZ8MdEXg==}
+
   '@types/esrecurse@4.3.1':
     resolution: {integrity: sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw==}
 
@@ -973,6 +982,10 @@ packages:
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
+
+  bwip-js@4.11.4:
+    resolution: {integrity: sha512-FOXnOQkinxog8FwxdnPB+8k2wRqwPnqXwxX37KcXOtMNW+9CinOkGv9MtIoRC4HX/UyogT0/9lIp6FDm2DcquQ==}
+    hasBin: true
 
   cacheable@2.5.0:
     resolution: {integrity: sha512-60cyAOytib/OzBw1JNSoSV/boK1AtHryDIjvVBk7XbN4ugfkM3+Sry7fEjNgPMGgOjuaZPAp8ruZ0Cxafwyq9g==}
@@ -1439,6 +1452,10 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
+  tagged-tag@1.0.0:
+    resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
+    engines: {node: '>=20'}
+
   tinybench@6.2.0:
     resolution: {integrity: sha512-78U2TlB2CnVenajOFzf3BKSm0J6oz5L0NV7g32LCPccvYc0lbWvys4d3uUUCS2B1N8PAf2+aekR8i1KbC3HO7Q==}
     engines: {node: '>=20.0.0'}
@@ -1468,6 +1485,10 @@ packages:
   type-fest@0.21.3:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
+
+  type-fest@5.10.0:
+    resolution: {integrity: sha512-NoSdpq/WEiAg5sjmBkmV/hfxv6HJH4NqPNrqjtSO5CwRmpsDfaf4begxW34KdJykH/l1yHtwBWQkCRdoXO8mPA==}
+    engines: {node: '>=20'}
 
   typescript-eslint@8.71.1:
     resolution: {integrity: sha512-oiNVPC3/NbV1FpaHU07l8O6ynqG9v4PAiW2WvTrAmZdR0f2HI/gE668ElMLCK7Xbsu5k2fK5C4fXNiq05j7/nQ==}
@@ -1628,6 +1649,11 @@ packages:
 
   zod@4.6.5:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+
+  zxing-wasm@3.1.4:
+    resolution: {integrity: sha512-1+v8p7sauddySVNG+ye7GD/0TS95BG2ycdkrC+EnBrFBFkHeIghzUt2yVjtx3NucJeNrQnhT8yGAIz60Vx9o0w==}
+    peerDependencies:
+      '@types/emscripten': '>=1.39.6'
 
 snapshots:
 
@@ -1988,6 +2014,8 @@ snapshots:
 
   '@types/deep-eql@4.0.2': {}
 
+  '@types/emscripten@1.41.6': {}
+
   '@types/esrecurse@4.3.1': {}
 
   '@types/estree@1.0.9': {}
@@ -2140,6 +2168,8 @@ snapshots:
   brace-expansion@5.0.12:
     dependencies:
       balanced-match: 4.0.4
+
+  bwip-js@4.11.4: {}
 
   cacheable@2.5.0:
     dependencies:
@@ -2577,6 +2607,8 @@ snapshots:
     dependencies:
       ansi-regex: 5.0.1
 
+  tagged-tag@1.0.0: {}
+
   tinybench@6.2.0: {}
 
   tinyexec@1.3.1: {}
@@ -2599,6 +2631,10 @@ snapshots:
       prelude-ls: 1.2.1
 
   type-fest@0.21.3: {}
+
+  type-fest@5.10.0:
+    dependencies:
+      tagged-tag: 1.0.0
 
   typescript-eslint@8.71.1(eslint@10.12.0)(typescript@6.0.3):
     dependencies:
@@ -2686,3 +2722,8 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.6.5: {}
+
+  zxing-wasm@3.1.4(@types/emscripten@1.41.6):
+    dependencies:
+      '@types/emscripten': 1.41.6
+      type-fest: 5.10.0

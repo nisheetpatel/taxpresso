@@ -742,7 +742,11 @@ function Documents({
                     <option value="household">{t(lang, 'both')}</option>
                   </select>
                 ) : null}
-                {d.kindSource === 'export' ? (
+                {d.barcode === 'pending' ? (
+                  <span class="chip chip-needs-ok">{t(lang, 'barcodeWhose')}</span>
+                ) : d.barcode === 'read' ? (
+                  <span class="chip chip-verified">{t(lang, 'statusFromBarcode')}</span>
+                ) : d.kindSource === 'export' ? (
                   <span class="chip chip-verified">{t(lang, 'statusRecognised')}</span>
                 ) : (
                   <span

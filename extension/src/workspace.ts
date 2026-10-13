@@ -26,6 +26,7 @@ import {
 } from '@taxpresso/rules-ge';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import { displayPath, type Config } from './config.js';
+import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';
 import {
   applyReports,
   emptySummary,
@@ -89,8 +90,9 @@ export interface ExtractionResult {
   document: VaultDocument;
 }
 
-export const enteredSlot = (docId: string, key: string, person: Owner) =>
-  `${docId}|${key}|${person}`;
+/** One value of one document; a value about one of its accounts names the account too. */
+export const enteredSlot = (docId: string, key: string, person: Owner, instance?: string) =>
+  `${docId}|${key}|${person}${instance && instance !== docId ? `|${instance}` : ''}`;
 
 /** Planning inputs the user can give in the dashboard or the chat (never filed). */
 export const PLAN_KEYS = [
@@ -233,7 +235,11 @@ export class Workspace {
     const def = this.keys[fact.key];
     if (!def || !fact.source.docId) return false;
     const typed = formValue(def, fact.value) ?? JSON.stringify(fact.value);
-    return this.#entered.entered[enteredSlot(fact.source.docId, fact.key, fact.person)] === typed;
+    return (
+      this.#entered.entered[
+        enteredSlot(fact.source.docId, fact.key, fact.person, fact.instance)
+      ] === typed
+    );
   }
 
   render(slot: Slot, lang: Lang): RenderedQuestion {
@@ -251,6 +257,7 @@ export class Workspace {
       const before = new Set(this.requirements().map((r) => r.id));
       const fact = this.engine.answer(this.ledger, slotId, value, { method: 'user', via });
       await this.vault.saveLedger(this.ledger);
+      await this.#importBarcodes(this.#documents.filter((d) => d.parse.method === BARCODE_PENDING));
       if (this.#prefs.skipped.includes(slotId)) {
         this.#prefs.skipped = this.#prefs.skipped.filter((id) => id !== slotId);
         await this.#savePrefs();
@@ -293,6 +300,7 @@ export class Workspace {
         this.#documents.push(result.document);
         await this.vault.saveDocuments(this.#documents);
         await this.#importExports([result.document]);
+        await this.#importBarcodes([result.document]);
         this.record(via === 'chat' ? 'claude' : 'you', 'document', result.document.filename);
       }
       return result;
@@ -307,6 +315,7 @@ export class Workspace {
         this.#documents.push(...found);
         await this.vault.saveDocuments(this.#documents);
         await this.#importExports(found);
+        await this.#importBarcodes(found);
       }
       this.record(by, 'scan', String(found.length));
       return found;
@@ -331,6 +340,7 @@ export class Workspace {
       else delete doc.person;
       await this.vault.saveDocuments(this.#documents);
       if (wasExport || kind === 'broker_export') await this.#syncSecurities();
+      if (doc.parse.method === BARCODE_PENDING) await this.#importBarcodes([doc]);
       this.record('you', 'kind', kind);
       return doc;
     });
@@ -408,6 +418,11 @@ export class Workspace {
       const doc = this.#document(docId);
       const people = this.snapshot().people;
       const userSaid = doc.kindSource === 'user';
+      if (details.kind && doc.kindSource === 'barcode' && doc.kind && details.kind !== doc.kind) {
+        throw new ExtractionError(
+          `This document's barcode says it is a ${doc.kind}. Ask the user before reading it as a ${details.kind}; they can change it in the dashboard.`,
+        );
+      }
       if (details.kind && userSaid && doc.kind && details.kind !== doc.kind) {
         throw new ExtractionError(
           `The user said this document is a ${doc.kind}. Ask them before reading it as a ${details.kind}; they can change it in the dashboard.`,
@@ -496,7 +511,7 @@ export class Workspace {
       }
 
       // Details: the user's own choices always win.
-      if (details.kind && !(userSaid && doc.kind)) {
+      if (details.kind && !(userSaid && doc.kind) && doc.kindSource !== 'barcode') {
         doc.kind = details.kind;
         doc.kindSource = 'claude';
       }
@@ -505,7 +520,11 @@ export class Workspace {
       if (periodFrom) doc.periodFrom = periodFrom;
       if (periodTo) doc.periodTo = periodTo;
       if (details.issuer?.trim()) doc.issuer = details.issuer.trim().slice(0, 120);
-      doc.parse = { method: 'claude', ok: true, warnings: [] };
+      const pending = doc.parse.method === BARCODE_PENDING;
+      // A document read from its barcode stays so; Claude only adds what the barcode lacks.
+      if (doc.parse.method !== 'barcode' && !pending) {
+        doc.parse = { method: 'claude', ok: true, warnings: [] };
+      }
 
       const result: ExtractionResult = { saved: 0, unchanged: 0, kept: [], document: doc };
       for (const r of ready) {
@@ -538,6 +557,7 @@ export class Workspace {
       }
       await this.vault.saveLedger(this.ledger);
       await this.vault.saveDocuments(this.#documents);
+      if (pending) await this.#importBarcodes([doc]);
       this.record('claude', 'extract', doc.filename);
       return result;
     });
@@ -682,7 +702,7 @@ export class Workspace {
     return this.#write(async () => {
       const fact = this.#currentFact(factId);
       const def = this.keys[fact.key]!;
-      const slot = enteredSlot(fact.source.docId!, fact.key, fact.person);
+      const slot = enteredSlot(fact.source.docId!, fact.key, fact.person, fact.instance);
       if (entered) {
         this.#entered.entered[slot] = formValue(def, fact.value) ?? JSON.stringify(fact.value);
       } else {
@@ -741,6 +761,41 @@ export class Workspace {
     }
     await this.vault.saveDocuments(this.#documents);
     if (appended.length) await this.vault.saveLedger(this.ledger);
+  }
+
+  /**
+   * Barcodes first (SPEC.md section 5): reads the barcodes of new documents and of certificates
+   * waiting for whose they are, and records what a complete, schema-valid barcode gives.
+   */
+  async #importBarcodes(docs: readonly VaultDocument[]): Promise<void> {
+    let changed = false;
+    let facts = false;
+    for (const doc of docs) {
+      const fresh = doc.parse.method === 'none' && doc.kindSource !== 'export';
+      if (!fresh && doc.parse.method !== BARCODE_PENDING) continue;
+      const result = await readDocumentBarcodes(this.vault, doc);
+      if (!result) continue;
+      const before = JSON.stringify(doc);
+      const applied = applyBarcode(this.ledger, this.keys, doc, result, this.#owner(doc));
+      if (JSON.stringify(doc) !== before) changed = true;
+      if (applied.recorded) facts = true;
+    }
+    if (changed) await this.vault.saveDocuments(this.#documents);
+    if (facts) await this.vault.saveLedger(this.ledger);
+  }
+
+  /**
+   * Whose a certificate is, when that is certain: the person the user (or Claude, relaying the
+   * user) gave the document, or the only person of a household known to be single. Names on the
+   * certificate are not used: the household's names are not asked.
+   */
+  #owner(doc: VaultDocument): 'p1' | 'p2' | undefined {
+    const snap = this.snapshot();
+    if ((doc.person === 'p1' || doc.person === 'p2') && snap.people.includes(doc.person)) {
+      return doc.person;
+    }
+    const answered = snap.answers.has('profile.civil_status|household');
+    return answered && snap.people.length === 1 ? 'p1' : undefined;
   }
 
   #document(id: string): VaultDocument {

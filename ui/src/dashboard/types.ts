@@ -50,6 +50,8 @@ export interface DocumentView {
   /** How the kind is known: 'export' when read from the file's structure (a broker export); 'claude' while it is only Claude's reading, not confirmed by the user. */
   kindSource?: string;
   person?: string;
+  /** Read from its barcode (verified values); "pending" until the user says whose it is. */
+  barcode?: 'read' | 'pending';
 }
 
 export interface Activity {
