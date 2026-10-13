@@ -18,7 +18,7 @@ export async function makeUiDir(): Promise<string> {
   );
   await writeFile(path.join(dir, 'dashboard', 'assets', 'app.js'), 'console.log(1);');
   await writeFile(path.join(dir, 'dashboard', 'notes.unknown'), 'not served');
-  await writeFile(path.join(dir, 'views', 'open-dashboard.html'), '<!doctype html><p>card</p>');
+  await writeFile(path.join(dir, 'views', 'dashboard.html'), '<!doctype html><p>dashboard</p>');
   return dir;
 }
 

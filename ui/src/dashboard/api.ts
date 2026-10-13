@@ -1,32 +1,27 @@
-// Talks to the extension on 127.0.0.1 only (same origin; the page's CSP allows nothing else).
+// Every request of the dashboard, whatever carries it: HTTP on 127.0.0.1 in the browser, or the
+// host's tool calls when the dashboard runs inside the conversation (./transport.ts).
 import type { Language } from './i18n';
+import { ApiError, type ApiRequest, type Transport } from './transport';
 import type { Question, State, Value } from './types';
 import type { PlanningField } from './types-planning';
 
-export class ApiError extends Error {}
+export { ApiError };
 
+let transport: Transport | undefined;
 let csrf = '';
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await fetch(path, {
-    ...init,
-    cache: 'no-store',
-    credentials: 'same-origin',
-    headers: { ...(init.method === 'POST' ? { 'X-Taxpresso-CSRF': csrf } : {}), ...init.headers },
-  });
-  const body = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new ApiError(body.error ?? `HTTP ${res.status}`);
-  return body;
+/** How this page reaches the extension: set once at start (main.tsx, or the MCP Apps view). */
+export function setTransport(next: Transport): void {
+  transport = next;
 }
 
-async function post(path: string, lang: Language, body: unknown): Promise<State> {
-  return remember(
-    await call<State>(`/api${path}?lang=${lang}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }),
-  );
+async function call<T>(req: Omit<ApiRequest, 'csrf'>): Promise<T> {
+  if (!transport) throw new ApiError('The dashboard has no connection to Taxpresso.');
+  return (await transport.send(req.method === 'POST' ? { ...req, csrf } : req)) as T;
+}
+
+async function post(path: string, lang: Language, body: Record<string, unknown>): Promise<State> {
+  return remember(await call<State>({ method: 'POST', path, query: { lang }, body }));
 }
 
 function remember(state: State): State {
@@ -37,9 +32,9 @@ function remember(state: State): State {
 export const api = {
   /** Without a language, the server answers in the one set at install. */
   state: async (lang?: Language) =>
-    remember(await call<State>(`/api/state${lang ? `?lang=${lang}` : ''}`)),
+    remember(await call<State>({ method: 'GET', path: '/state', query: lang ? { lang } : {} })),
   question: (id: string, lang: Language) =>
-    call<Question>(`/api/question?id=${encodeURIComponent(id)}&lang=${lang}`),
+    call<Question>({ method: 'GET', path: '/question', query: { id, lang } }),
   answer: (id: string, value: Value, lang: Language) => post('/answer', lang, { id, value }),
   skip: (id: string, lang: Language) => post('/skip', lang, { id }),
   waive: (id: string, waived: boolean, lang: Language) => post('/waive', lang, { id, waived }),
@@ -68,22 +63,13 @@ export const api = {
     /** The document this file replaces, if any. */
     replace?: string,
   ) => {
-    const query = new URLSearchParams({ lang });
+    const query: Record<string, string> = { lang };
     if (preset) {
-      query.set('kind', preset.kind);
-      if (preset.person) query.set('person', preset.person);
+      query.kind = preset.kind;
+      if (preset.person) query.person = preset.person;
     }
-    if (replace) query.set('replace', replace);
-    return remember(
-      await call<State>(`/api/documents?${query.toString()}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          'X-Filename': encodeURIComponent(file.name),
-        },
-        body: file,
-      }),
-    );
+    if (replace) query.replace = replace;
+    return remember(await call<State>({ method: 'POST', path: '/documents', query, file }));
   },
   // Values read from documents (SPEC.md 5.5), checks (5.8) and the "Entered" ticks (10.5).
   confirmFact: (id: string, lang: Language) => post('/facts/confirm', lang, { id }),

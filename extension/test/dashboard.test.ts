@@ -76,8 +76,8 @@ describe('Dashboard', () => {
     const get = (p: string) => request(origin, { path: p, headers: { Cookie: cookie } });
     expect((await get('/assets/app.js')).status).toBe(200);
     expect((await get('/assets/')).status).toBe(404);
-    expect((await get('/../views/open-dashboard.html')).status).toBe(404);
-    expect((await get('/%2e%2e/views/open-dashboard.html')).status).toBe(404);
+    expect((await get('/../views/dashboard.html')).status).toBe(404);
+    expect((await get('/%2e%2e/views/dashboard.html')).status).toBe(404);
     expect((await get('/notes.unknown')).status).toBe(404);
     expect((await request(url, { method: 'POST' })).status).toBe(405);
     expect(

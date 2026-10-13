@@ -46,6 +46,7 @@ describe('MCP surface', () => {
     expect(tools.map((t) => t.name).sort()).toEqual([
       'answer_question',
       'compute_tax',
+      'dashboard_api',
       'decide_optimization',
       'export_bundle',
       'get_document_for_review',

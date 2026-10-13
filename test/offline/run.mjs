@@ -30,7 +30,7 @@ const guardLog = path.join(work, 'net-guard.log');
 const vault = path.join(work, 'Taxpresso'); // deliberately not created
 
 const REMOTE_REF = /\b(?:src|href)\s*=\s*["']?\s*(?:https?:)?\/\/(?!127\.0\.0\.1[:/])/i;
-const VIEW_URI = 'ui://taxpresso/open-dashboard.html';
+const VIEW_URI = 'ui://taxpresso/dashboard.html';
 
 /** Raw HTTP GET to 127.0.0.1 so the test controls the Host header and the exact path. */
 function get(url, { headers = {}, method = 'GET', path: rawPath, body } = {}) {
@@ -124,7 +124,9 @@ describe('offline end to end', { timeout: 60_000 }, () => {
   test('every tool is narrow and annotated (C6), and matches the manifest', async () => {
     const { tools } = await client.listTools();
     const manifest = JSON.parse(readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
-    assert.deepEqual(tools.map((t) => t.name).sort(), manifest.tools.map((t) => t.name).sort());
+    // The manifest lists what Claude can call; a tool only the dashboard view calls is not in it.
+    const forClaude = tools.filter((t) => t._meta?.ui?.visibility?.join() !== 'app');
+    assert.deepEqual(forClaude.map((t) => t.name).sort(), manifest.tools.map((t) => t.name).sort());
     for (const tool of tools) {
       assert.ok(tool.name.length < 64, tool.name);
       assert.ok(tool.description && tool.description.length <= 300, `${tool.name} description`);
@@ -238,17 +240,48 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
   });
 
-  test('open_dashboard declares an MCP Apps view that loads nothing remote', async () => {
+  test('open_dashboard shows the dashboard in the chat: one self-contained view', async () => {
     const { tools } = await client.listTools();
     const tool = tools.find((t) => t.name === 'open_dashboard');
     assert.equal(tool._meta?.ui?.resourceUri, VIEW_URI);
     const { contents } = await client.readResource({ uri: VIEW_URI });
+    const html = contents[0].text;
     assert.equal(contents[0].mimeType, 'text/html;profile=mcp-app');
-    assert.match(contents[0].text, /<script type="module">/);
-    assert.doesNotMatch(
-      contents[0].text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ''),
-      REMOTE_REF,
-    );
+    // It asks for no outside domain: no connection, no remote script, style, font or frame.
+    const csp = contents[0]._meta?.ui?.csp ?? {};
+    for (const list of ['connectDomains', 'resourceDomains', 'frameDomains']) {
+      assert.deepEqual(csp[list] ?? [], [], list);
+    }
+    // Everything is inline: one module script, styles, fonts as bytes. Nothing to load.
+    assert.match(html, /<script type="module">/);
+    assert.equal((html.match(/<script\b/gi) ?? []).length, 1, 'one inline script');
+    assert.doesNotMatch(html, /<script\b[^>]*\bsrc\s*=/i);
+    assert.doesNotMatch(html, /<link\b/i);
+    const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+    assert.doesNotMatch(markup, REMOTE_REF);
+    assert.doesNotMatch(markup, /url\(\s*["']?\s*(?:https?:)?\/\//i, 'no remote url() in styles');
+    assert.doesNotMatch(markup, /@import/i);
+    assert.doesNotMatch(html, /fonts\.(googleapis|gstatic)\.com/);
+    assert.doesNotMatch(markup, /@font-face/, 'fonts come as bytes, not from a font source');
+    assert.match(html, /Geist Mono Variable/);
+  });
+
+  test('the view reaches the same API through dashboard_api, with the same checks', async () => {
+    assert.ok(dashboardSession, 'the dashboard test ran first');
+    const { tools } = await client.listTools();
+    assert.deepEqual(tools.find((t) => t.name === 'dashboard_api')?._meta?.ui?.visibility, ['app']);
+    const view = (args) => client.callTool({ name: 'dashboard_api', arguments: args });
+    const state = await view({ method: 'GET', path: '/state', query: { lang: 'fr' } });
+    assert.ok(!state.isError);
+    const { origin, host, cookie } = dashboardSession;
+    const http = await get(`${origin}/api/state?lang=fr`, {
+      headers: { Host: host, Cookie: cookie },
+    });
+    assert.deepEqual(state.structuredContent.body, JSON.parse(http.body));
+    const refused = await view({ method: 'POST', path: '/skip', body: { id: 'children' } });
+    assert.equal(refused.isError, true);
+    assert.equal(refused.structuredContent.status, 403);
+    assert.equal((await view({ method: 'GET', path: '/nope' })).structuredContent.status, 404);
   });
 
   test('answers in the chat and in the dashboard, and documents, all land in the folder', async () => {

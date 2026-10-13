@@ -22,6 +22,12 @@
       "port": 4311
     },
     {
+      "name": "ui-preview-live",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["ui/scripts/preview-serve.mjs", "--demo", "--lang", "fr", "--port", "4313"],
+      "port": 4313
+    },
+    {
       "name": "site",
       "runtimeExecutable": "python3",
       "runtimeArgs": [
