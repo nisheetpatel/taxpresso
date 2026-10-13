@@ -1,6 +1,6 @@
 {
   "name": "@taxpresso/extension",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "private": true,
   "description": "The Taxpresso Claude Desktop extension: local MCP server, localhost dashboard, .mcpb packaging.",
   "license": "AGPL-3.0-or-later",
