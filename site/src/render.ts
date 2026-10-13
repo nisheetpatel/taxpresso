@@ -16,6 +16,7 @@ import {
   type Tone,
 } from './content.ts';
 import { GUIDE_IDS, GUIDE_SOURCES, type GuideId, guidePath, guides, guidesPath } from './guides.ts';
+import { absoluteUrl, alternates, jsonLd, ORGANIZATION, plain } from './seo.ts';
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -116,7 +117,22 @@ const OG_LOCALE: Record<Lang, string> = {
   pt: 'pt_PT',
 };
 
-function head(lang: Lang, title: string, description: string, cssVersion: string, alt: string[]) {
+/** What the <head> says about a page, for browsers, search engines and link previews. */
+interface Meta {
+  title: string;
+  description: string;
+  /** The page's path from a language's prefix ('/en/' -> '/en/start/'). */
+  at: (prefix: string) => string;
+  /** Open Graph type: 'article' for the guides, 'website' for the rest. */
+  type?: 'website' | 'article';
+  /** Structured data (JSON-LD), one block per object. */
+  data?: Record<string, unknown>[];
+}
+
+function head(lang: Lang, meta: Meta, cssVersion: string) {
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const url = absoluteUrl(meta.at(here.path));
+  const others = LANGS.filter((l) => l.lang !== lang);
   return `<!doctype html>
 <html lang="${lang}">
 <head>
@@ -124,17 +140,24 @@ function head(lang: Lang, title: string, description: string, cssVersion: string
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>${esc(title)}</title>
-<meta name="description" content="${esc(description)}">
-<meta property="og:title" content="${esc(title)}">
-<meta property="og:description" content="${esc(description)}">
+<title>${esc(meta.title)}</title>
+<meta name="description" content="${esc(meta.description)}">
+<link rel="canonical" href="${url}">
+${alternates(meta.at)
+  .map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${a.href}">`)
+  .join('\n')}
+<meta property="og:type" content="${meta.type ?? 'website'}">
+<meta property="og:site_name" content="Taxpresso">
+<meta property="og:title" content="${esc(meta.title)}">
+<meta property="og:description" content="${esc(meta.description)}">
+<meta property="og:url" content="${url}">
 <meta property="og:locale" content="${OG_LOCALE[lang]}">
-${LANGS.map((l, i) => `<link rel="alternate" hreflang="${l.lang}" href="${alt[i]}">`).join('\n')}
-<link rel="alternate" hreflang="x-default" href="${alt[0]}">
+${others.map((l) => `<meta property="og:locale:alternate" content="${OG_LOCALE[l.lang]}">`).join('\n')}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles.css${cssVersion ? `?v=${cssVersion}` : ''}">
-</head>`;
+${(meta.data ?? []).map(jsonLd).join('\n')}
+</head>`.replace(/\n\n/g, '\n');
 }
 
 /**
@@ -223,12 +246,35 @@ export function render(lang: Lang, cssVersion = ''): string {
     .map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${rich(a)}</p></details>`)
     .join('\n');
 
+  const app = {
+    '@type': 'SoftwareApplication',
+    name: 'Taxpresso',
+    description: t.metaDescription,
+    url: absoluteUrl(here.path),
+    inLanguage: lang,
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Linux, macOS, Windows',
+    softwareRequirements: 'Claude Desktop',
+    downloadUrl: DOWNLOAD_URL,
+    license: 'https://www.gnu.org/licenses/agpl-3.0.html',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'CHF' },
+    author: ORGANIZATION,
+  };
+  const faqData = {
+    '@type': 'FAQPage',
+    inLanguage: lang,
+    mainEntity: t.faq.items.map(([q, a]) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: plain(a) },
+    })),
+  };
+
   return `${head(
     lang,
-    t.htmlTitle,
-    t.metaDescription,
+    { title: t.htmlTitle, description: t.metaDescription, at: (p) => p, data: [app, faqData] },
     cssVersion,
-    LANGS.map((l) => l.path),
   )}
 <body>
 ${header(lang)}
@@ -365,12 +411,24 @@ export function renderStart(lang: Lang, cssVersion = ''): string {
     .map(([title, text]) => `<li class="note"><h3>${esc(title)}</h3><p>${rich(text)}</p></li>`)
     .join('\n');
 
+  const howTo = {
+    '@type': 'HowTo',
+    name: s.htmlTitle,
+    description: s.metaDescription,
+    inLanguage: lang,
+    tool: [{ '@type': 'HowToTool', name: 'Claude Desktop' }],
+    step: s.steps.map(([name, text], i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      name,
+      text: plain(text),
+    })),
+  };
+
   return `${head(
     lang,
-    s.htmlTitle,
-    s.metaDescription,
+    { title: s.htmlTitle, description: s.metaDescription, at: startPath, data: [howTo] },
     cssVersion,
-    LANGS.map((l) => startPath(l.path)),
   )}
 <body>
 ${header(lang, startPath)}
@@ -425,13 +483,7 @@ export function renderGuides(lang: Lang, cssVersion = ''): string {
       `<li><a class="guide-card" href="${guidePath(here.path, id)}"><h2>${esc(g.guides[id].title)}</h2><p>${esc(g.guides[id].summary)}</p><span class="guide-go" aria-hidden="true">${esc(g.read)}</span></a></li>`,
   ).join('\n');
 
-  return `${head(
-    lang,
-    g.htmlTitle,
-    g.metaDescription,
-    cssVersion,
-    LANGS.map((l) => guidesPath(l.path)),
-  )}
+  return `${head(lang, { title: g.htmlTitle, description: g.metaDescription, at: guidesPath }, cssVersion)}
 <body>
 ${header(lang, guidesPath)}
 
@@ -474,12 +526,30 @@ export function renderGuide(lang: Lang, id: GuideId, cssVersion = ''): string {
     )
     .join('\n');
 
+  const at = (p: string) => guidePath(p, id);
+  const article = {
+    '@type': 'Article',
+    headline: guide.title,
+    description: guide.summary,
+    inLanguage: lang,
+    url: absoluteUrl(at(here.path)),
+    mainEntityOfPage: absoluteUrl(at(here.path)),
+    isAccessibleForFree: true,
+    author: ORGANIZATION,
+    publisher: ORGANIZATION,
+    citation: GUIDE_SOURCES[id],
+  };
+
   return `${head(
     lang,
-    `${guide.title} · Taxpresso`,
-    guide.summary,
+    {
+      title: `${guide.title} · Taxpresso`,
+      description: guide.summary,
+      at,
+      type: 'article',
+      data: [article],
+    },
     cssVersion,
-    LANGS.map((l) => guidePath(l.path, id)),
   )}
 <body>
 ${header(lang, (p) => guidePath(p, id))}

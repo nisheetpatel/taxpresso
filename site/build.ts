@@ -1,17 +1,17 @@
-// Builds the static website into site/dist: the home page, the Get started page and the guides
-// for every language in LANGS (French at /, then /en/, /de/, /it/, /es/, /pt/); styles.css with the logo's
-// rules and only the Latin Geist subsets; the fonts and their license; the favicon from the logo.
+// Builds the static website into site/dist: every page in PAGES (src/pages.ts) for every language
+// in LANGS (/en/, /fr/, /de/, /it/, /es/, /pt/); sitemap.xml and robots.txt; styles.css with the
+// logo's rules and only the Latin Geist subsets; the fonts and their license; the favicon from the
+// logo. Fails if the sitemap and the pages written differ.
 // Usage: node site/build.ts   (Node 22.18+ runs TypeScript directly)
 
 import { createHash } from 'node:crypto';
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ICON_SVG } from '../ui/src/shared/logo.ts';
-import { LANGS, startPath } from './src/content.ts';
-import { GUIDE_IDS, guidePath, guidesPath } from './src/guides.ts';
-import { render, renderGuide, renderGuides, renderStart } from './src/render.ts';
+import { BASE_URL, LANGS } from './src/content.ts';
+import { builtPages, PAGES, robots, sitemap } from './src/pages.ts';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(root, 'dist');
@@ -49,24 +49,24 @@ const css = `/* Geist and Geist Mono, SIL Open Font License 1.1: /fonts/OFL.txt 
 const cssVersion = createHash('sha256').update(css).digest('hex').slice(0, 10);
 await writeFile(path.join(dist, 'styles.css'), css);
 await writeFile(path.join(dist, 'favicon.svg'), ICON_SVG);
-await writeFile(path.join(dist, 'robots.txt'), 'User-agent: *\nAllow: /\n');
-
-for (const { lang, path: urlPath } of LANGS) {
-  const dir = path.join(dist, urlPath);
-  await mkdir(path.join(dir, 'start'), { recursive: true });
-  await writeFile(path.join(dir, 'index.html'), render(lang, cssVersion));
-  await writeFile(path.join(dir, 'start', 'index.html'), renderStart(lang, cssVersion));
-  await mkdir(path.join(dist, guidesPath(urlPath)), { recursive: true });
-  await writeFile(
-    path.join(dist, guidesPath(urlPath), 'index.html'),
-    renderGuides(lang, cssVersion),
-  );
-  for (const id of GUIDE_IDS) {
-    const guideDir = path.join(dist, guidePath(urlPath, id));
-    await mkdir(guideDir, { recursive: true });
-    await writeFile(path.join(guideDir, 'index.html'), renderGuide(lang, id, cssVersion));
-  }
+for (const page of builtPages(cssVersion)) {
+  const dir = path.join(dist, page.path);
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'index.html'), page.html());
 }
-console.log(
-  `site/dist: ${LANGS.flatMap((l) => [l.path, startPath(l.path), guidesPath(l.path)]).join(' ')}, ${GUIDE_IDS.length} guides per language`,
-);
+const map = sitemap();
+await writeFile(path.join(dist, 'sitemap.xml'), map);
+await writeFile(path.join(dist, 'robots.txt'), robots());
+
+// Every page written is in the sitemap, and the sitemap lists nothing else.
+const written = (await readdir(dist, { recursive: true }))
+  .filter((f) => path.basename(f) === 'index.html')
+  .map((f) => `${BASE_URL}/${path.dirname(f).split(path.sep).join('/')}/`)
+  .sort();
+const listed = [...map.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!).sort();
+const missing = written.filter((u) => !listed.includes(u));
+const extra = listed.filter((u) => !written.includes(u));
+if (missing.length || extra.length)
+  throw new Error(`sitemap.xml: missing ${missing.join(' ')}; not built ${extra.join(' ')}`);
+
+console.log(`site/dist: ${PAGES.length} pages in ${LANGS.length} languages, all in sitemap.xml`);
