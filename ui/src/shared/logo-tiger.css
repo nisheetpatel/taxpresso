@@ -1,0 +1,361 @@
+/* Not wired in: the tiger crema motion, kept for later (see logo-tiger.ts). */
+/* The Taxpresso mark, motion "tiger crema", see logo-tiger.ts. The rim takes the text color, so the
+   wordmark works on light and dark grounds. It plays once (1.85 s) under `tp-play`: the espresso
+   pours, the tiger crema blooms and swirls, then it draws itself together into the check. From
+   1.84 s the cup is pixel for pixel the static mark (animations that end on the static value use
+   `backwards`, so nothing lingers). At rest, and with reduced motion, the finished mark shows.
+   `--tp-delay` on an ancestor shifts the whole timeline; the website's hero uses it to start the
+   cup when the tagline's pour reaches it. */
+.tp-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.02em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.tp-word .tp-cup {
+  width: 0.86em;
+  height: 0.86em;
+  margin-top: 0.19em;
+  flex: none;
+}
+.tp-cup {
+  overflow: visible;
+}
+.tp-rim {
+  fill: none;
+  stroke: var(--tp-rim, currentColor);
+  stroke-width: 14;
+}
+.tp-coffee {
+  fill: var(--tp-coffee, #4a2c1d);
+}
+/* Used by the latte-art cups on the website. */
+.tp-crema {
+  fill: var(--tp-crema, #9a5a28);
+}
+.tp-check {
+  fill: none;
+  stroke: var(--tp-check, #d7a86e);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The crema, only drawn while the cup plays. Every stripe is a spiral arm with an uneven dash
+   pattern, so the striping breaks into streaks and flecks instead of a regular pinwheel. */
+.tp-fx {
+  display: none;
+}
+.tp-gather {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tp-bands,
+.tp-lines,
+.tp-glints,
+.tp-flecks,
+.tp-specks {
+  fill: none;
+  stroke-linecap: round;
+}
+/* Broad soft bands, blurred: the darker tiger striping. */
+.tp-bands {
+  stroke: #62290f;
+  stroke-width: 4.2;
+  stroke-opacity: 0.68;
+  stroke-dasharray: 9 2.5 4 3.5 13 2 6 4.5;
+}
+/* Golden glints, blurred too, where the foam is thickest. */
+.tp-glints {
+  stroke: #efca93;
+  stroke-width: 2.2;
+  stroke-opacity: 0.75;
+  stroke-dasharray: 6 2.4 2.5 3 9 4;
+}
+/* Fine streaks between the bands. */
+.tp-lines {
+  stroke: #66300f;
+  stroke-width: 0.65;
+  stroke-opacity: 0.5;
+  stroke-dasharray: 2.6 1.9 0.7 2.8 4.2 1.6 1.3 3.4 0.5 2.2;
+}
+/* Flecks and specks: zero-length dashes with round caps are dots, unevenly spaced. */
+.tp-flecks {
+  stroke: #57280f;
+  stroke-width: 0.85;
+  stroke-opacity: 0.72;
+  stroke-dasharray: 0.01 1.5 0.01 2.7 0.01 1.1 0.01 3.6 0.01 1.9 0.01 4.4 0.01 2.3;
+}
+.tp-specks {
+  stroke: #5e2c12;
+  stroke-width: 0.6;
+  stroke-opacity: 0.6;
+  stroke-dasharray: 0.01 1.2 0.01 2.1 0.01 0.9 0.01 2.8 0.01 1.6;
+}
+.tp-stream {
+  fill: #e9bf85;
+  opacity: 0;
+}
+.tp-solid {
+  fill: var(--tp-check, #d7a86e);
+  opacity: 0;
+}
+.tp-coffee,
+.tp-draw,
+.tp-foam,
+.tp-spin,
+.tp-stream {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tp-play .tp-fx {
+    display: inline;
+    animation: tp-handoff 0.28s cubic-bezier(0.4, 0, 0.6, 1) both;
+    animation-delay: calc(var(--tp-delay, 0s) + 1.56s);
+  }
+  /* The espresso spreads from where the stream lands, overshoots a touch and settles. */
+  .tp-play .tp-coffee {
+    animation: tp-pour 0.75s cubic-bezier(0.3, 1.25, 0.5, 1) backwards;
+    animation-delay: var(--tp-delay, 0s);
+    animation-timing-function: linear(
+      0,
+      0.051,
+      0.172,
+      0.323,
+      0.479,
+      0.623,
+      0.745,
+      0.843,
+      0.918,
+      0.97,
+      1.005,
+      1.026,
+      1.036,
+      1.038,
+      1.036,
+      1.032,
+      1.026,
+      1.02,
+      1.014,
+      1.01,
+      1.006,
+      1.003,
+      1
+    );
+  }
+  /* The crema rides just behind the espresso's edge. */
+  .tp-play .tp-foam {
+    animation: tp-bloom 0.85s cubic-bezier(0.3, 1.2, 0.5, 1) both;
+    animation-delay: calc(var(--tp-delay, 0s) + 0.04s);
+    animation-timing-function: linear(
+      0,
+      0.051,
+      0.172,
+      0.323,
+      0.479,
+      0.623,
+      0.745,
+      0.843,
+      0.918,
+      0.97,
+      1.005,
+      1.026,
+      1.036,
+      1.038,
+      1.036,
+      1.032,
+      1.026,
+      1.02,
+      1.014,
+      1.01,
+      1.006,
+      1.003,
+      1
+    );
+  }
+  /* Three layers turn at different speeds, so the stripes shear and curl as the swirl slows; the
+     streaks and flecks also drift outward along their arms. */
+  .tp-play .tp-spin-a {
+    animation: tp-spin-a 1.8s cubic-bezier(0.2, 0.55, 0.35, 1) both;
+    animation-delay: var(--tp-delay, 0s);
+  }
+  .tp-play .tp-spin-b {
+    animation: tp-spin-b 1.8s cubic-bezier(0.2, 0.55, 0.35, 1) both;
+    animation-delay: var(--tp-delay, 0s);
+  }
+  .tp-play .tp-spin-c {
+    animation: tp-spin-c 1.8s cubic-bezier(0.2, 0.55, 0.35, 1) both;
+    animation-delay: var(--tp-delay, 0s);
+  }
+  .tp-play .tp-bands {
+    animation: tp-drift-bands 1.8s cubic-bezier(0.25, 0.5, 0.4, 1) both;
+    animation-delay: var(--tp-delay, 0s);
+  }
+  .tp-play .tp-lines {
+    animation: tp-drift-lines 1.8s cubic-bezier(0.25, 0.5, 0.4, 1) both;
+    animation-delay: var(--tp-delay, 0s);
+  }
+  .tp-play .tp-flecks,
+  .tp-play .tp-specks {
+    animation: tp-drift-flecks 1.8s cubic-bezier(0.25, 0.5, 0.4, 1) both;
+    animation-delay: var(--tp-delay, 0s);
+  }
+  .tp-play .tp-stream {
+    animation: tp-stream 0.9s cubic-bezier(0.4, 0, 0.6, 1) both;
+    animation-delay: var(--tp-delay, 0s);
+  }
+  /* The crema draws together: the foam pulls in while its edge closes around the check, then it
+     turns to plain crema and hands over to the crisp mark. */
+  .tp-play .tp-draw {
+    animation: tp-draw-in 0.9s cubic-bezier(0.45, 0, 0.25, 1) both;
+    animation-delay: calc(var(--tp-delay, 0s) + 0.74s);
+  }
+  .tp-play .tp-gather {
+    animation: tp-gather 0.9s cubic-bezier(0.42, 0, 0.18, 1) both;
+    animation-delay: calc(var(--tp-delay, 0s) + 0.74s);
+  }
+  .tp-play .tp-solid {
+    animation: tp-solid 0.42s cubic-bezier(0.4, 0, 0.4, 1) both;
+    animation-delay: calc(var(--tp-delay, 0s) + 1.12s);
+  }
+  .tp-play .tp-check {
+    animation: tp-under 0.01s backwards;
+    animation-delay: calc(var(--tp-delay, 0s) + 0.7s);
+  }
+}
+
+@keyframes tp-pour {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes tp-bloom {
+  from {
+    opacity: 0;
+    transform: scale(0.12);
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes tp-spin-a {
+  from {
+    transform: rotate(120deg) scale(0.86);
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+  }
+}
+@keyframes tp-spin-b {
+  from {
+    transform: rotate(190deg) scale(0.8);
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+  }
+}
+@keyframes tp-spin-c {
+  from {
+    transform: rotate(260deg) scale(0.74);
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+  }
+}
+/* Fresh crema is at its most tigered, then mellows as it settles. */
+@keyframes tp-drift-bands {
+  from {
+    stroke-dashoffset: 14;
+    stroke-opacity: 0.85;
+  }
+  to {
+    stroke-dashoffset: 0;
+    stroke-opacity: 0.6;
+  }
+}
+@keyframes tp-drift-lines {
+  from {
+    stroke-dashoffset: 12;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes tp-drift-flecks {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes tp-stream {
+  from {
+    opacity: 0.9;
+    transform: scale(0.5);
+  }
+  30% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+@keyframes tp-draw-in {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(-20deg) scale(0.88);
+  }
+}
+@keyframes tp-gather {
+  from {
+    stroke-width: 50;
+  }
+  to {
+    stroke-width: 7;
+  }
+}
+@keyframes tp-solid {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes tp-under {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes tp-handoff {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

@@ -20,7 +20,7 @@ Early preview for tax year 2026 (returns filed in early 2027).
 2. Double-click it, or drag it onto Claude Desktop's Settings, Extensions page. Click Install.
 3. In a new chat, ask Claude: "Help me with my Geneva taxes."
 
-Your tax folder is `~/Documents/Taxpresso` unless you choose another one at install. The website has a [Get started](https://taxpresso-zeta.vercel.app/en/start/) page with every step.
+Your tax folder is `~/Documents/Taxpresso` unless you choose another one at install. The website has a [Get started](https://taxpresso.ch/en/start/) page with every step.
 
 Nothing leaves your computer, except what you share with the AI you use: today that's Claude, under your own account and your own privacy settings. ChatGPT isn't available yet.
 
@@ -38,9 +38,13 @@ pnpm build:site     # the landing page, into site/dist
 
 `SPEC.md` is the source of truth for what Taxpresso does and how. `CLAUDE.md` lists the rules for working on the code, with or without Claude Code.
 
+## Contact
+
+hello@taxpresso.ch
+
 ## Contributing
 
-Bug reports, tax rules, translations, new cantons and fixes are all welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md). Never put real personal or tax data in an issue, a pull request or a test.
+Bug reports, tax rules, translations, new cantons and fixes are all welcome. To ask for your canton or language, add a 👍 in the pinned votes: [cantons](https://github.com/nisheetpatel/taxpresso/issues/1), [languages](https://github.com/nisheetpatel/taxpresso/issues/2). Start with [CONTRIBUTING.md](CONTRIBUTING.md). Never put real personal or tax data in an issue, a pull request or a test.
 
 ## Say thanks
 

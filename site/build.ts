@@ -43,7 +43,8 @@ for (const [pkg, stem] of [
 
 const styles = await readFile(path.join(root, 'src', 'styles.css'), 'utf8');
 const logo = await readFile(path.join(root, '..', 'ui', 'src', 'shared', 'logo.css'), 'utf8');
-const css = `/* Geist and Geist Mono, SIL Open Font License 1.1: /fonts/OFL.txt */\n${fontCss}${styles}\n${logo}`;
+const hero = await readFile(path.join(root, 'src', 'hero.css'), 'utf8');
+const css = `/* Geist and Geist Mono, SIL Open Font License 1.1: /fonts/OFL.txt */\n${fontCss}${styles}\n${hero}\n${logo}`;
 const cssVersion = createHash('sha256').update(css).digest('hex').slice(0, 10);
 await writeFile(path.join(dist, 'styles.css'), css);
 await writeFile(path.join(dist, 'favicon.svg'), ICON_SVG);

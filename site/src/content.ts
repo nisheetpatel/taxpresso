@@ -16,11 +16,15 @@ export type Art = 'heart' | 'tulip' | 'dot' | 'rosetta' | 'check' | 'swirl';
 /** The public repository, where releases, issues and the contributing guide live. */
 export const SOURCE_URL = 'https://github.com/nisheetpatel/taxpresso';
 export const DOWNLOAD_URL = `${SOURCE_URL}/releases/latest`;
+export const CONTACT_EMAIL = 'hello@taxpresso.ch';
 export const ISSUE_URL = {
   bug: `${SOURCE_URL}/issues/new?template=bug.yml`,
   idea: `${SOURCE_URL}/issues/new?template=idea.yml`,
-  language: `${SOURCE_URL}/issues/new?template=language.yml`,
+  /** The pinned votes: one comment per canton or language, a 👍 is a vote. */
+  canton: `${SOURCE_URL}/issues/1`,
+  language: `${SOURCE_URL}/issues/2`,
   code: `${SOURCE_URL}/blob/main/CONTRIBUTING.md`,
+  contact: `mailto:${CONTACT_EMAIL}`,
 };
 
 /** Tips go straight to Precious Plastic Bugoma; Taxpresso never handles money (SPEC.md section 12). */
@@ -158,14 +162,28 @@ const fr = {
       ],
       [
         'Proposer une idée',
-        'Une fonction, un canton, un mot plus clair : nous lisons tout.',
+        'Une fonction, un canton, un mot plus clair\u00a0: nous lisons tout.',
         'idea',
       ],
-      ['Ajouter une langue', 'Aidez à traduire Taxpresso dans votre langue.', 'language'],
+      [
+        'Demander votre canton',
+        'Votez sur GitHub pour le prochain canton que vous voulez.',
+        'canton',
+      ],
+      [
+        'Votez pour votre langue',
+        'Votez pour la prochaine langue, ou proposez de traduire.',
+        'language',
+      ],
       [
         'Écrire du code',
         'Lisez le guide de contribution, choisissez un ticket et proposez vos changements.',
         'code',
+      ],
+      [
+        'Écrivez-nous',
+        `Une question, une idée ou un petit mot${NB}: hello@taxpresso.ch`,
+        'contact',
       ],
     ] as [string, string, keyof typeof ISSUE_URL][],
   },
@@ -176,6 +194,10 @@ const fr = {
       [
         `Faut-il Claude${NB}?`,
         'Oui, pour l’instant. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. ChatGPT n’est pas encore disponible.',
+      ],
+      [
+        `Et les autres cantons${NB}?`,
+        `Genève d’abord. Zurich, Berne, Vaud, Bâle, Fribourg, le Tessin et Lucerne sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
       ],
       [
         `Taxpresso transmet-il ma déclaration${NB}?`,
@@ -417,8 +439,10 @@ const en: Copy = {
         'bug',
       ],
       ['Suggest an idea', 'A feature, a canton, a clearer word: we read everything.', 'idea'],
-      ['Add a language', 'Help translate Taxpresso into your language.', 'language'],
+      ['Ask for your canton', 'Vote on GitHub for the canton you want next.', 'canton'],
+      ['Vote for your language', 'Vote for the next language, or offer to translate.', 'language'],
       ['Write code', 'Read the contributing guide, pick an issue and send your changes.', 'code'],
+      ['Write to us', 'A question, an idea or a kind word: hello@taxpresso.ch', 'contact'],
     ],
   },
 
@@ -428,6 +452,10 @@ const en: Copy = {
       [
         'Do I need Claude?',
         'Yes, for now. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. ChatGPT isn’t available yet.',
+      ],
+      [
+        'What about other cantons?',
+        `Geneva comes first. Zurich, Bern, Vaud, Basel, Fribourg, Ticino and Lucerne are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
       ],
       [
         'Does Taxpresso file my return?',
@@ -671,12 +699,22 @@ const de: Copy = {
         'Eine Funktion, ein Kanton, ein klareres Wort: Wir lesen alles.',
         'idea',
       ],
-      ['Sprache hinzufügen', 'Hilf mit, Taxpresso in deine Sprache zu übersetzen.', 'language'],
+      [
+        'Deinen Kanton wünschen',
+        'Stimm auf GitHub für den Kanton ab, den du als Nächstes willst.',
+        'canton',
+      ],
+      [
+        'Für deine Sprache stimmen',
+        'Stimm für die nächste Sprache ab oder hilf beim Übersetzen.',
+        'language',
+      ],
       [
         'Code beitragen',
         'Lies die Anleitung für Beiträge, such dir eine Aufgabe aus und schick deine Änderungen.',
         'code',
       ],
+      ['Schreib uns', 'Eine Frage, eine Idee oder ein nettes Wort: hello@taxpresso.ch', 'contact'],
     ],
   },
 
@@ -686,6 +724,10 @@ const de: Copy = {
       [
         'Brauche ich Claude?',
         'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar.',
+      ],
+      [
+        'Und die anderen Kantone?',
+        `Genf kommt zuerst. Zürich, Bern, Waadt, Basel, Freiburg, Tessin und Luzern sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
       ],
       [
         'Übermittelt Taxpresso meine Erklärung?',
@@ -930,12 +972,14 @@ const it: Copy = {
         'Una funzione, un cantone, una parola più chiara: leggiamo tutto.',
         'idea',
       ],
-      ['Aggiungi una lingua', 'Aiutaci a tradurre Taxpresso nella tua lingua.', 'language'],
+      ['Chiedi il tuo cantone', 'Vota su GitHub il prossimo cantone che vuoi.', 'canton'],
+      ['Vota la tua lingua', 'Vota la prossima lingua, o aiutaci a tradurre.', 'language'],
       [
         'Scrivi codice',
         'Leggi la guida per contribuire, scegli un ticket e proponi le tue modifiche.',
         'code',
       ],
+      ['Scrivici', 'Una domanda, un’idea o un saluto: hello@taxpresso.ch', 'contact'],
     ],
   },
 
@@ -945,6 +989,10 @@ const it: Copy = {
       [
         'Mi serve Claude?',
         'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile.',
+      ],
+      [
+        'E gli altri cantoni?',
+        `Prima Ginevra. Poi sono previsti Zurigo, Berna, Vaud, Basilea, Friburgo, Ticino e Lucerna. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
       ],
       [
         'Taxpresso trasmette la mia dichiarazione?',
@@ -1184,12 +1232,14 @@ const es: Copy = {
         'bug',
       ],
       ['Propón una idea', 'Una función, un cantón, una palabra más clara: lo leemos todo.', 'idea'],
-      ['Añade un idioma', 'Ayuda a traducir Taxpresso a tu idioma.', 'language'],
+      ['Pide tu cantón', 'Vota en GitHub por el próximo cantón que quieres.', 'canton'],
+      ['Vota por tu idioma', 'Vota por el próximo idioma, o ayúdanos a traducir.', 'language'],
       [
         'Escribe código',
         'Lee la guía de contribución, elige una incidencia y envía tus cambios.',
         'code',
       ],
+      ['Escríbenos', 'Una pregunta, una idea o unas palabras: hello@taxpresso.ch', 'contact'],
     ],
   },
 
@@ -1199,6 +1249,10 @@ const es: Copy = {
       [
         '¿Necesito Claude?',
         'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible.',
+      ],
+      [
+        '¿Y los demás cantones?',
+        `Primero Ginebra. Después están previstos Zúrich, Berna, Vaud, Basilea, Friburgo, Tesino y Lucerna. [Vota por tu cantón](${ISSUE_URL.canton}).`,
       ],
       [
         '¿Taxpresso presenta mi declaración?',
@@ -1442,11 +1496,17 @@ const pt: Copy = {
         'Uma funcionalidade, um cantão, uma palavra mais clara: lemos tudo.',
         'idea',
       ],
-      ['Acrescenta uma língua', 'Ajuda a traduzir o Taxpresso para a tua língua.', 'language'],
+      ['Pede o teu cantão', 'Vota no GitHub no próximo cantão que queres.', 'canton'],
+      ['Vota na tua língua', 'Vota na próxima língua, ou ajuda a traduzir.', 'language'],
       [
         'Escreve código',
         'Lê o guia de contribuição, escolhe uma tarefa e envia as tuas alterações.',
         'code',
+      ],
+      [
+        'Escreve-nos',
+        'Uma pergunta, uma ideia ou uma palavra simpática: hello@taxpresso.ch',
+        'contact',
       ],
     ],
   },
@@ -1457,6 +1517,10 @@ const pt: Copy = {
       [
         'Preciso do Claude?',
         'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível.',
+      ],
+      [
+        'E os outros cantões?',
+        `Primeiro Genebra. A seguir estão previstos Zurique, Berna, Vaud, Basileia, Friburgo, Ticino e Lucerna. [Vota no teu cantão](${ISSUE_URL.canton}).`,
       ],
       [
         'O Taxpresso envia a minha declaração?',

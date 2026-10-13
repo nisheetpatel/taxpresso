@@ -65,8 +65,22 @@ describe('landing page', () => {
     }
   });
 
+  it('keeps the tagline as plain text in the heading, with the cup drawn over its last o', () => {
+    for (const { lang } of LANGS) {
+      const h1 = /<h1>(.*?)<\/h1>/s.exec(render(lang))?.[1] ?? '';
+      const text = h1
+        .replace(/<svg[\s\S]*?<\/svg>/g, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&');
+      expect(text, lang).toBe(copy[lang].tagline);
+      expect(h1, lang).toContain('class="cupo tp-play"');
+    }
+  });
+
   it('styles load nothing from elsewhere', async () => {
-    const css = await readFile(path.join(here, '..', 'src', 'styles.css'), 'utf8');
-    for (const re of REMOTE_LOAD) expect(css).not.toMatch(re);
+    for (const file of ['styles.css', 'hero.css']) {
+      const css = await readFile(path.join(here, '..', 'src', file), 'utf8');
+      for (const re of REMOTE_LOAD) expect(css, file).not.toMatch(re);
+    }
   });
 });

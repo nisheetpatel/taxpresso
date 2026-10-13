@@ -4,6 +4,7 @@
 import { CUP_SVG, ICON_SVG, wordmark } from '../../ui/src/shared/logo.ts';
 import {
   type Art,
+  CONTACT_EMAIL,
   copy,
   DONATE_URL,
   DOWNLOAD_URL,
@@ -30,6 +31,21 @@ const out = (href: string) => `href="${href}" target="_blank" rel="noopener"`;
 
 const icon = (d: string, size = 22) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+/**
+ * The tagline with the last o of "espresso" (or "expresso") drawn as the logo's cup (hero.css). The
+ * letter stays in the text for screen readers, search and copy; the cup is drawn over it.
+ */
+function cupO(tagline: string): string {
+  const m = /^(.*\be[sx]press)(o)(\S*)$/i.exec(tagline);
+  if (!m) return esc(tagline);
+  const [, before = '', o = '', after = ''] = m;
+  const cut = before.lastIndexOf(' ') + 1;
+  return (
+    esc(before.slice(0, cut)) +
+    `<span class="cupo-word">${esc(before.slice(cut))}<span class="cupo tp-play">${o}${CUP_SVG}</span>${esc(after)}</span>`
+  );
+}
+
 const CHECK = icon('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 16);
 const GLOBE = icon(
   '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/>',
@@ -50,6 +66,10 @@ const HELP_ICON: Record<keyof typeof ISSUE_URL, string> = {
     '<path d="M4 6h9M8.5 4v2M6 6c.6 3 2.6 5.6 5 7M11 6c-.8 3.6-3.4 6.6-7 8M13 20l4-9 4 9M14.4 17h5.2"/>',
   ),
   code: icon('<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>'),
+  canton: icon(
+    '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+  ),
+  contact: icon('<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>'),
 };
 /** The Swiss cross: a white cross with arms one sixth longer than wide, on red. */
 const SWISS = `<svg class="ch" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="4" fill="#DA291C"/><path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" fill="#FFFFFF"/></svg>`;
@@ -140,7 +160,7 @@ function footer(lang: Lang) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   return `<footer class="foot">
-<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a></div>
+<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
 <p>${esc(t.footer.independent)}</p>
 <p>${esc(t.footer.noTracking)}</p>
 <p>© 2026 Taxpresso</p>
@@ -187,7 +207,7 @@ export function render(lang: Lang, cssVersion = ''): string {
   const help = t.contribute.items
     .map(
       ([title, text, kind]) =>
-        `<li><a class="help-card" ${out(ISSUE_URL[kind])}>${HELP_ICON[kind]}<h3>${esc(title)}</h3><p>${esc(text)}</p></a></li>`,
+        `<li><a class="help-card" ${kind === 'contact' ? `href="${ISSUE_URL[kind]}"` : out(ISSUE_URL[kind])}>${HELP_ICON[kind]}<h3>${esc(title)}</h3><p>${esc(text)}</p></a></li>`,
     )
     .join('\n');
 
@@ -208,7 +228,7 @@ ${header(lang, false)}
 <main id="main">
 <section class="hero">
 <div class="hero-text">
-<h1>${esc(t.tagline)}</h1>
+<h1>${cupO(t.tagline)}</h1>
 <p class="lead">${esc(t.lead)}</p>
 <div class="cta">
 <a class="btn btn-primary" href="${startPath(here.path)}">${esc(t.getStarted)}</a>

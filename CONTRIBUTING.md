@@ -7,7 +7,7 @@ Thank you for helping. Taxpresso belongs to the people who use it and improve it
 - Report a wrong number, a confusing question or a bug. Say what you expected and where it is written (the page of the official guide, if you know it).
 - Fix or add a tax rule, with its official source.
 - Translate the app or the landing page, or review a translation in your language.
-- Add a canton: start by collecting its official documents (below).
+- Add a canton: start by collecting its official documents (below). To ask for a canton, add a 👍 to its comment in the [canton vote](https://github.com/nisheetpatel/taxpresso/issues/1); for a language, in the [language vote](https://github.com/nisheetpatel/taxpresso/issues/2).
 - Improve the docs.
 
 ## Never share real tax data
@@ -65,4 +65,4 @@ Taxpresso is licensed under the GNU AGPL, version 3 or later. By sending a contr
 
 ## Security
 
-If you find a security problem, please tell the maintainers privately rather than in a public issue. (A private contact will be listed here when the repository is published.)
+If you find a security problem, please write to hello@taxpresso.ch rather than opening a public issue.

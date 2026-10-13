@@ -6,8 +6,13 @@
   "description": "Your taxes, done over an espresso. Prepare your Geneva tax return with Claude; your documents stay on this computer.",
   "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, reads them with Claude when you ask (you confirm every value), checks them against each other, tells you what is still missing, estimates what a pillar 3a payment before 31 December would save you, and later checks your assessment against what you declared. The full tax calculation comes in the next versions.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
   "author": {
-    "name": "Taxpresso contributors"
+    "name": "Taxpresso contributors",
+    "email": "hello@taxpresso.ch",
+    "url": "https://taxpresso.ch"
   },
+  "homepage": "https://taxpresso.ch",
+  "documentation": "https://taxpresso.ch/en/start/",
+  "support": "https://github.com/nisheetpatel/taxpresso/issues",
   "license": "AGPL-3.0-or-later",
   "icon": "icon.png",
   "server": {

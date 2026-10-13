@@ -1,6 +1,7 @@
 /* The Taxpresso mark, see logo.ts. The rim takes the text color, so the wordmark works on light and
    dark grounds. Motion: sugar cube. It plays once (1.43 s) under `tp-play`; at rest, and with
-   reduced motion, the finished mark shows, the same cup as the static mark. */
+   reduced motion, the finished mark shows, the same cup as the static mark. Set --tp-delay on an
+   ancestor to start a cup later. */
 .tp-word {
   display: inline-flex;
   align-items: center;
@@ -57,20 +58,22 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .tp-play .tp-coffee {
-    animation: tp-pour 0.42s 0.02s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+    animation: tp-pour 0.42s calc(var(--tp-delay, 0s) + 0.02s) cubic-bezier(0.3, 0.7, 0.2, 1) both;
   }
   .tp-play .tp-cube {
-    animation: tp-drop 0.9s 0.16s linear both;
+    animation: tp-drop 0.9s calc(var(--tp-delay, 0s) + 0.16s) linear both;
   }
   .tp-play .tp-ripple {
-    animation: tp-ripple 0.75s 0.52s cubic-bezier(0.2, 0.6, 0.35, 1) both;
+    animation: tp-ripple 0.75s calc(var(--tp-delay, 0s) + 0.52s) cubic-bezier(0.2, 0.6, 0.35, 1)
+      both;
   }
   .tp-play .tp-ripple-b {
-    animation: tp-ripple 0.75s 0.68s cubic-bezier(0.2, 0.6, 0.35, 1) both;
+    animation: tp-ripple 0.75s calc(var(--tp-delay, 0s) + 0.68s) cubic-bezier(0.2, 0.6, 0.35, 1)
+      both;
   }
   .tp-play .tp-check {
     stroke-dasharray: 100 110;
-    animation: tp-draw 0.42s 1s ease-out both;
+    animation: tp-draw 0.42s calc(var(--tp-delay, 0s) + 1s) ease-out both;
   }
 }
 

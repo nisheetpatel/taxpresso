@@ -1,0 +1,80 @@
+/* The hero's tagline: the last o of "espresso" is the cup from the logo (render.ts cupO()). It plays
+   the logo's motion once, a moment after the logo in the bar, and a warm glow blooms behind it when
+   the check lands. The letter stays in the text, transparent, and the cup is drawn over it. With
+   reduced motion the cup shows the finished mark and nothing glows. */
+
+.hero h1 {
+  position: relative;
+  z-index: 0;
+}
+
+/* The cup is wider than the letter o: let the heading reach into the gap beside it, so it wraps as
+   the plain text would. */
+@media (min-width: 961px) {
+  .hero h1 {
+    margin-right: -0.36em;
+  }
+}
+
+.hero .cupo-word {
+  white-space: nowrap;
+}
+
+.hero .cupo {
+  --tp-delay: 0.35s;
+  position: relative;
+  display: inline-block;
+  width: 0.86em;
+  margin: 0 0.012em 0 0.04em;
+  color: transparent;
+  text-align: center;
+}
+
+.hero .cupo .tp-cup {
+  position: absolute;
+  left: 0;
+  bottom: -0.035em;
+  width: 0.86em;
+  height: 0.86em;
+  color: var(--espresso);
+}
+
+.hero .cupo::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: 0.395em;
+  width: 2.2em;
+  height: 2.2em;
+  margin: 0 0 -1.1em -1.1em;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(215 168 110 / 0.5),
+    rgb(215 168 110 / 0.18) 55%,
+    rgb(215 168 110 / 0)
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero .cupo::before {
+    animation: cupo-bloom 1.5s calc(var(--tp-delay) + 1.2s) cubic-bezier(0.3, 0, 0.3, 1) backwards;
+  }
+}
+
+@keyframes cupo-bloom {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
