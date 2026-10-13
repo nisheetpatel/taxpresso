@@ -1333,3 +1333,21 @@ a:hover {
     height: 72px;
   }
 }
+
+/* Very narrow phones (320 px): the header still fits on one line. */
+@media (max-width: 380px) {
+  .top {
+    gap: 8px;
+  }
+  .brand {
+    font-size: 21px;
+  }
+  .top-start {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  .langs summary {
+    padding: 0 8px;
+    gap: 4px;
+  }
+}
