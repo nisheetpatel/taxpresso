@@ -333,6 +333,10 @@ export class Workspace {
         throw new WorkspaceError(`No ${person} in this household.`);
       }
       const wasExport = doc.kind === 'broker_export';
+      // A certificate read from its barcode that the user says is something else: read otherwise.
+      if (doc.parse.method === BARCODE_PENDING && doc.kind !== kind) {
+        doc.parse = { method: 'none', ok: false, warnings: [] };
+      }
       doc.kind = kind;
       doc.kindSource = 'user';
       // 'household' = the whole household, e.g. one family statement for both partners.
@@ -773,6 +777,8 @@ export class Workspace {
     for (const doc of docs) {
       const fresh = doc.parse.method === 'none' && doc.kindSource !== 'export';
       if (!fresh && doc.parse.method !== BARCODE_PENDING) continue;
+      // A certificate waiting for whose it is: read again only once that is known.
+      if (doc.parse.method === BARCODE_PENDING && !this.#owner(doc)) continue;
       const result = await readDocumentBarcodes(this.vault, doc);
       if (!result) continue;
       const before = JSON.stringify(doc);

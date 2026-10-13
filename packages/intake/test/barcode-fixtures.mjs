@@ -373,6 +373,23 @@ export const blank = (width, height) => ({
   data: new Uint8Array(width * height).fill(255),
 });
 
+/** Shrinks an image by an integer factor, averaging the pixels it merges. */
+export function shrink({ width, height, data }, f) {
+  const w = Math.floor(width / f);
+  const h = Math.floor(height / f);
+  const out = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sum = 0;
+      for (let dy = 0; dy < f; dy++) {
+        for (let dx = 0; dx < f; dx++) sum += data[(y * f + dy) * width + x * f + dx];
+      }
+      out[y * w + x] = Math.round(sum / (f * f));
+    }
+  }
+  return { width: w, height: h, data: out };
+}
+
 // --- Baseline JPEG (grayscale) -------------------------------------------------------------------
 
 const ZIGZAG = (() => {
@@ -681,17 +698,25 @@ export const zlibCompress = (xml) => deflateSync(Buffer.from(xml, 'utf8'), { lev
  * A one-page salary certificate like the ones whose page is a single scanned JPEG: A4 at 144 ppi
  * (1190 x 1684 pixels), the PDF417 symbols printed vertically along the left margin.
  */
-export async function salaryCertificateJpegPdf({ xml = txabXml(), parts = 1, quality = 80 } = {}) {
+export async function salaryCertificateJpegPdf({
+  xml = txabXml(),
+  parts = 1,
+  quality = 80,
+  module = 2,
+} = {}) {
   const page = blank(1190, 1684);
   // A few dark rules, like the printed form, so the page isn't only the barcode.
   for (const y of [200, 420, 640, 860]) page.data.fill(40, y * 1190 + 300, y * 1190 + 1100);
   let y = 120;
   for (const symbol of txabSymbols(txabZip(xml), { parts })) {
-    const img = render(await pdf417Matrix(symbol, { columns: 8 }), {
-      module: 2,
-      row: 6,
+    // Drawn 4 times larger, then shrunk with averaging: modules of `module` pixels, fractions
+    // included (12 mil at 144 ppi is about 1.7 pixels), with grey edges as in a scan.
+    const big = render(await pdf417Matrix(symbol, { columns: 8 }), {
+      module: Math.round(module * 4),
+      row: Math.round(module * 12),
       rotate: true,
     });
+    const img = shrink(big, 4);
     paste(page, img, 60, y);
     y += img.height + 60;
   }

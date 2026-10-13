@@ -145,6 +145,24 @@ describe('the salary certificate barcode', () => {
   );
 
   it(
+    'lets the user say it is something else: their word wins, and it is read the other ways',
+    async () => {
+      await call('answer_question', { id: 'civil_status', value: 'married' });
+      const { document } = await ws.addDocument(
+        await salaryCertificateJpegPdf(),
+        'Certificat.pdf',
+        'dashboard',
+      );
+      await ws.setDocumentKind(document.id, 'pension_certificate', 'p1');
+      expect(document.parse.method).toBe('none');
+      expect(verified()).toEqual([]);
+      expect(ws.toRead().map((d) => d.id)).toEqual([document.id]);
+      expect(text(await call('get_status'))).not.toMatch(/waiting for the user/);
+    },
+    TIMEOUT,
+  );
+
+  it(
     'waits for the household, when the document comes first',
     async () => {
       const { document } = await ws.addDocument(

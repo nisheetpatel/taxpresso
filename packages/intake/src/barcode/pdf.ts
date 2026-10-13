@@ -26,7 +26,7 @@ export interface PageBitmap {
 /** Images and rasters larger than this many pixels are left out (a 600 dpi A4 scan is ~35 M). */
 const MAX_PIXELS = 40_000_000;
 /** Below this width an image is treated as a small barcode image and enlarged. */
-const SMALL_IMAGE = 800;
+export const SMALL_IMAGE = 800;
 /** Most filled rectangles looked at on one page (a dense PDF417 has a few thousand). */
 const MAX_RECTS = 60_000;
 /** A rectangle larger than this (in points) is a frame or a table rule, not a bar. */
@@ -136,6 +136,34 @@ export function prepareImage(img: GrayImage): GrayImage {
   // A strip much wider than high: rows are probably one pixel each.
   const sy = img.width > 4 * img.height ? sx * 3 : sx;
   return enlarge(img, sx, sy, 12 * sx);
+}
+
+/**
+ * Bilinear enlargement by `f`. A scanned page whose PDF417 modules are a fraction of a pixel wider
+ * than one (12 mil at 144 ppi is about 1.7 pixels) can defeat the binarizer; enlarged 1.5 or 2
+ * times it reads (measured on the synthetic fixtures, docs/spikes/S2.md).
+ */
+export function upscale(img: GrayImage, f: number): GrayImage {
+  const width = Math.round(img.width * f);
+  const height = Math.round(img.height * f);
+  const data = new Uint8Array(width * height);
+  const src = img.data;
+  for (let y = 0; y < height; y++) {
+    const sy = Math.min(img.height - 1, Math.max(0, (y + 0.5) / f - 0.5));
+    const y0 = Math.floor(sy);
+    const y1 = Math.min(img.height - 1, y0 + 1);
+    const fy = sy - y0;
+    for (let x = 0; x < width; x++) {
+      const sx = Math.min(img.width - 1, Math.max(0, (x + 0.5) / f - 0.5));
+      const x0 = Math.floor(sx);
+      const x1 = Math.min(img.width - 1, x0 + 1);
+      const fx = sx - x0;
+      const top = src[y0 * img.width + x0]! * (1 - fx) + src[y0 * img.width + x1]! * fx;
+      const bottom = src[y1 * img.width + x0]! * (1 - fx) + src[y1 * img.width + x1]! * fx;
+      data[y * width + x] = Math.round(top * (1 - fy) + bottom * fy);
+    }
+  }
+  return { width, height, data };
 }
 
 /** Nearest-neighbour enlargement with a white border of `pad` pixels. */

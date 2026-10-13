@@ -62,6 +62,20 @@ describe('salary certificate barcode, end to end', () => {
   );
 
   it(
+    'reads scans whose modules are fractions of a pixel over 1 (12 mil at 144 ppi is about 1.7)',
+    async () => {
+      for (const module of [1.75, 1.5, 1.25]) {
+        const result = await readBarcodes(
+          await salaryCertificateJpegPdf({ module, quality: 70 }),
+          'scan.pdf',
+        );
+        expect(result.found, `module ${module}`).toBe('txab');
+      }
+    },
+    TIMEOUT,
+  );
+
+  it(
     'reads a certificate split over two symbols, joined by their counters',
     async () => {
       const result = await readBarcodes(await salaryCertificateJpegPdf({ parts: 2 }), 'x.pdf');

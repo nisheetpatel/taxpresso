@@ -68,12 +68,14 @@ export const BARCODE_PENDING = 'barcode_pending';
 export const isBarcodeDocument = (doc: VaultDocument): boolean =>
   doc.parse.method === BARCODE_READ || doc.parse.method === BARCODE_PENDING;
 
-/** Reads a document's barcodes, PDFs and photos only. Undefined when there is nothing to read. */
+/**
+ * Reads a document's barcodes: PDFs, JPEG and PNG photos, told apart by their content (anything
+ * else comes back as "none"). Undefined when the file can't be read.
+ */
 export async function readDocumentBarcodes(
   vault: Vault,
   doc: VaultDocument,
 ): Promise<BarcodeResult | undefined> {
-  if (!/\.(pdf|jpe?g|png)$/i.test(doc.filename)) return undefined;
   let bytes: Buffer;
   try {
     bytes = await vault.readDocument(doc);
@@ -153,6 +155,10 @@ function statementFacts(s: Ech0196Statement, doc: VaultDocument): Wanted[] {
     if (value !== undefined && value !== '')
       out.push({ key, person: 'household', instance, value });
   };
+  // An account's or a loan's income and tax: only when there is some (an empty cell on the form).
+  const some = (key: string, instance: string, centimes: number) => {
+    if (centimes !== 0) add(key, instance, centimes);
+  };
   add('statement.value_chf', doc.id, s.totals.valueChf);
   add('statement.income_a_chf', doc.id, s.totals.incomeA);
   add('statement.income_b_chf', doc.id, s.totals.incomeB);
@@ -166,9 +172,9 @@ function statementFacts(s: Ech0196Statement, doc: VaultDocument): Wanted[] {
     add('accounts.currency', id, a.currency);
     add('accounts.balance_original', id, a.balance);
     add('accounts.value_chf', id, a.valueChf);
-    add('accounts.income_a_chf', id, a.incomeA);
-    add('accounts.income_b_chf', id, a.incomeB);
-    add('accounts.withholding_swiss_chf', id, a.withholding);
+    some('accounts.income_a_chf', id, a.incomeA);
+    some('accounts.income_b_chf', id, a.incomeB);
+    some('accounts.withholding_swiss_chf', id, a.withholding);
     add('accounts.opened', id, a.openingDate);
     add('accounts.closed', id, a.closingDate);
   });
@@ -177,7 +183,7 @@ function statementFacts(s: Ech0196Statement, doc: VaultDocument): Wanted[] {
     add('liabilities.creditor', id, s.institution);
     add('liabilities.name', id, l.name.slice(0, 200));
     add('liabilities.balance_chf', id, l.valueChf);
-    add('liabilities.interest_chf', id, l.interest);
+    some('liabilities.interest_chf', id, l.interest);
   });
   s.securities.forEach((sec) => {
     const id = sec.isin ?? instanceId(`${doc.id}.p${sec.positionId}`, `${doc.id}.p`);
@@ -236,7 +242,11 @@ export function applyBarcode(
       : result.certificate.form === 'A'
         ? 'pension_certificate'
         : 'salary_certificate';
-  if (userKind && userKind !== kind) return { recorded: 0, read: false, pending: false };
+  if (userKind && userKind !== kind) {
+    // The user says it is something else: their word wins, and it is read the other ways.
+    if (isBarcodeDocument(doc)) doc.parse = { method: 'none', ok: false, warnings: [] };
+    return { recorded: 0, read: false, pending: false };
+  }
 
   doc.kind = kind;
   if (!userKind) doc.kindSource = 'barcode';

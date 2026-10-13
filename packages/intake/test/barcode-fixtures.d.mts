@@ -56,6 +56,7 @@ export function render(
 export function rotate90(img: Gray): Gray;
 export function paste(dst: Gray, src: Gray, x: number, y: number): void;
 export function blank(width: number, height: number): Gray;
+export function shrink(img: Gray, factor: number): Gray;
 export function encodeJpeg(img: Gray, quality?: number): Buffer;
 export function pdf(objects: (string | Buffer)[]): Buffer;
 export function stream(dict: string, data: string | Buffer): Buffer;
@@ -74,6 +75,8 @@ export function salaryCertificateJpegPdf(opts?: {
   xml?: string;
   parts?: number;
   quality?: number;
+  /** Module width in pixels on the 144 ppi page, fractions allowed. Default 2. */
+  module?: number;
 }): Promise<Buffer>;
 export function salaryCertificateVectorPdf(opts?: { xml?: string }): Promise<Buffer>;
 export function statementPdf(opts?: {

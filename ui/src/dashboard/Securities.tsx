@@ -136,7 +136,7 @@ export function Securities({
         </span>
       </div>
       <div class="card sec-card">
-        <p class="sec-note">{tr(lang, 'note', { year })}</p>
+        {rows.some((r) => r.estimate) ? <p class="sec-note">{tr(lang, 'note', { year })}</p> : null}
         {rows.length ? (
           <ul class="sec-list">
             {rows.map((r) => (

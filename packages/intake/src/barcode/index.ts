@@ -10,7 +10,10 @@ import {
   type Compression,
   type Ech0196Statement,
 } from './ech0196.js';
-import { pdfBitmaps } from './pdf.js';
+import { pdfBitmaps, SMALL_IMAGE, upscale } from './pdf.js';
+
+/** Largest page image rescanned enlarged, in pixels after enlargement. */
+const MAX_UPSCALED_PIXELS = 20_000_000;
 import { assembleTxab, readTxab, type TxabCertificate } from './txab.js';
 import { scanGray, scanImageFile, type FoundSymbol } from './zxing.js';
 
@@ -85,7 +88,18 @@ export async function readBarcodes(
         done: () => complete(symbols),
       })) {
         if (!diagnostics.pages.includes(bitmap.page)) diagnostics.pages.push(bitmap.page);
-        add(await scanGray(bitmap.image), bitmap.source);
+        const found = await scanGray(bitmap.image);
+        add(found, bitmap.source);
+        // A page image with no PDF417 found: once more, enlarged (fine modules, docs/spikes/S2.md).
+        const { width, height } = bitmap.image;
+        if (
+          bitmap.source === 'image' &&
+          width >= SMALL_IMAGE &&
+          !found.some((s) => s.format === 'PDF417')
+        ) {
+          const f = [2, 1.5].find((k) => width * height * k * k <= MAX_UPSCALED_PIXELS);
+          if (f) add(await scanGray(upscale(bitmap.image, f)), 'image');
+        }
       }
     } else if (format === 'jpeg' || format === 'png') {
       add(await scanImageFile(bytes), 'file');
@@ -161,7 +175,15 @@ export {
   type Ech0196Security,
   type Ech0196Statement,
 } from './ech0196.js';
-export { clusterBars, enlarge, imageToGray, pdfBitmaps, prepareImage, rasterize } from './pdf.js';
+export {
+  clusterBars,
+  enlarge,
+  imageToGray,
+  pdfBitmaps,
+  prepareImage,
+  rasterize,
+  upscale,
+} from './pdf.js';
 export {
   assembleTxab,
   parseTxabHeader,
