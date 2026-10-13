@@ -3,6 +3,7 @@
 import { DOCUMENT_KINDS, LedgerError, VaultError } from '@taxpresso/ledger';
 import { NBSP, QuestionnaireError, type Lang } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
+import { copyPanelView, setRowEntered } from './copy-panel.js';
 import type { ApiRequest, ApiResponse } from './dashboard.js';
 import { documentCards, documentChecks, assessmentCards } from './document-views.js';
 import { ExtractionError } from './extraction.js';
@@ -41,6 +42,7 @@ const FactEdit = z.object({
   value: z.union([z.string().max(60), z.boolean()]),
 });
 const Entered = z.object({ id: z.string().max(80), entered: z.boolean() });
+const RowEntered = z.object({ id: z.string().max(240), entered: z.boolean() });
 const Replace = z.object({ id: z.string().max(80), by: z.string().max(80) });
 const Resolve = z.object({ id: z.string().max(120), note: z.string().max(500) });
 /** "Something else" last in the list of kinds. */
@@ -93,6 +95,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       .map((d) => ({ id: d.id, filename: d.filename, by: d.replacedBy! })),
     checks: documentChecks(ws, lang),
     assessments: assessmentCards(ws, lang),
+    // The values to type into the official declaration, in the form's order (SPEC.md 10.5).
+    copyPanel: copyPanelView(ws, lang),
     toConfirm: ws.toConfirm().length,
     requirements: ws.requirements().map((r) => ({
       id: r.id,
@@ -236,6 +240,11 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
         case '/facts/entered': {
           const { id, entered } = parse(Entered, req.body);
           await ws.setEntered(id, entered);
+          return state();
+        }
+        case '/form/entered': {
+          const { id, entered } = parse(RowEntered, req.body);
+          await setRowEntered(ws, id, entered);
           return state();
         }
         case '/checks/resolve': {
