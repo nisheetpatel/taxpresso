@@ -36,7 +36,7 @@ pnpm check:bundle             # after build: C2 dependency allowlist and shipped
 pnpm test:offline             # after build: end to end over stdio, network guard in the server process
 pnpm test:offline:sandbox     # same, inside a macOS sandbox with no network
 pnpm build:site               # website into site/dist (FR at /, /en/, /de/, each with start/); copy in site/src/content.ts
-(cd site/dist && vercel link --yes --project taxpresso && vercel deploy --prod --yes)   # publish the website (asks first)
+pnpm deploy:site             # build and publish the website to Vercel (project taxpresso; needs site/.vercel/project.json)
 node scripts/fetch-sources.mjs   # dev tool, needs network: official documents into docs/sources/*/files (kept local, never committed)
 ```
 

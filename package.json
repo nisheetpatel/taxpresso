@@ -22,7 +22,8 @@
     "check:bundle": "node scripts/check-bundle.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "sources:fetch": "node scripts/fetch-sources.mjs",
-    "sources:merge": "node scripts/merge-manifests.mjs"
+    "sources:merge": "node scripts/merge-manifests.mjs",
+    "deploy:site": "pnpm build:site && mkdir -p site/dist/.vercel && cp site/.vercel/project.json site/dist/.vercel/ && cd site/dist && vercel deploy --prod --yes"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -22,3 +22,6 @@ private/
 # Official documents: downloaded locally by scripts/fetch-sources.mjs, never committed
 # (they belong to their publishers; lock.json pins their checksums).
 docs/sources/*/files/
+
+# Vercel project link for the website (local only).
+.vercel/

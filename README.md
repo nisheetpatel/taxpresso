@@ -20,7 +20,7 @@ Early preview for tax year 2026 (returns filed in early 2027).
 2. Double-click it, or drag it onto Claude Desktop's Settings, Extensions page. Click Install.
 3. In a new chat, ask Claude: "Help me with my Geneva taxes."
 
-Your tax folder is `~/Documents/Taxpresso` unless you choose another one at install. The website has a [Get started](https://taxpresso.ch/en/start/) page with every step.
+Your tax folder is `~/Documents/Taxpresso` unless you choose another one at install. The website has a [Get started](https://taxpresso-zeta.vercel.app/en/start/) page with every step.
 
 Nothing leaves your computer, except what you share with the AI you use: today that's Claude, under your own account and your own privacy settings. ChatGPT isn't available yet.
 
