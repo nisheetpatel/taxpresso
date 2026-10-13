@@ -195,6 +195,22 @@
       "notes": "rsGE D 3 08, adopted 27 September 2009, in force 1 January 2010, last amended 1 January 2026. Contains no electronic filing provision."
     },
     {
+      "id": "ge-na-law-lisp",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi sur l'imposition à la source des personnes physiques et morales (LISP), rsGE D 3 20",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_20.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2026-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Cantonal source-tax law: compulsory TOU (art. 4) and TOU on request (art. 5), deadline 31 March, applies until the end of source taxation.",
+      "notes": "Adopted 16 January 2020, in force 1 January 2021, last amended 1 January 2026. The page is windows-1252 encoded."
+    },
+    {
       "id": "ge-na-law-lpfisc",
       "canton": "GE",
       "doc_type": "law",
@@ -209,6 +225,22 @@
       "priority": "core",
       "why_needed": "Filing obligation, return deadline (art. 27), electronic filing basis (art. 29A) and appeal time limits.",
       "notes": "rsGE D 3 17, adopted 4 October 2001, last amended 1 January 2026. Art. 27: at least 30 days from delivery of the form, with extensions under al. 2. Art. 49: 30 days to appeal."
+    },
+    {
+      "id": "ge-na-law-risp",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Règlement d'application de la loi sur l'imposition à la source des personnes physiques et morales (RISP), rsGE D 3 20.01",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_20p01.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2024-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Tariff groups (art. 1), compulsory TOU threshold for residents (art. 7) and TOU on request: 31 March deadline, cannot be withdrawn (art. 8 al. 1).",
+      "notes": "Adopted 30 September 2020, in force 1 January 2021, last amended 1 January 2024. The page is windows-1252 encoded."
     },
     {
       "id": "ge-na-other-demander-delai",
@@ -227,6 +259,22 @@
       "notes": "Initial deadline 31 March. Requests from 1 January to 31 October online, by phone or by post; from 1 November to 31 December by post only. Fees of CHF 20, 40 or 60 by length of extension. Page does not give 2025 dates."
     },
     {
+      "id": "ge-2026-source-directives",
+      "canton": "GE",
+      "doc_type": "source_tax",
+      "title": "Directives concernant l'impôt à la source 2026",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/42009/annexe/file/580297",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-02-09",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "How Geneva computes source tax (annual model, ch. 2 and 4) and the TOU rules for 2026: compulsory cases, request, deadline and irrevocability (ch. 8.2).",
+      "notes": "65 pages, PDF dated 9 February 2026. Page: https://www.ge.ch/document/directives-concernant-imposition-source-2026 (its summary still says valid from 1 January 2025; the PDF itself is the 2026 edition)."
+    },
+    {
       "id": "ge-2025-dris-tou-page",
       "canton": "GE",
       "doc_type": "source_tax",
@@ -241,6 +289,38 @@
       "priority": "core",
       "why_needed": "DRIS and TOU deadline and procedure for source-taxed persons.",
       "notes": "Page last updated 2026-03-13. DRIS/TOU form due by 31 March of the year after withholding (31 March 2026 for 2025 withholding, inferred). Filed online via e-démarches, or on paper if received by post. Irrevocability not stated."
+    },
+    {
+      "id": "ge-na-tou-quand-page",
+      "canton": "GE",
+      "doc_type": "source_tax",
+      "title": "Quand demander ou annoncer une Taxation Ordinaire Ultérieure?",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure/quand-demander-annoncer-taxation-ordinaire-ulterieure",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-03-13",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "When TOU is compulsory or on request for residents, which deductions it allows, and that it then applies every following year.",
+      "notes": "Sub-page of ge-2025-dris-tou-page, last updated 13 March 2026. Lists one compulsory case (spouse without activity) that ge-2026-source-directives p. 51 does not: see ge/NOTES.md."
+    },
+    {
+      "id": "ge-2026-source-tariff-ascii",
+      "canton": "GE",
+      "doc_type": "tariff",
+      "title": "Barèmes 2026 de perception de l'impôt à la source au format ASCII (tar26GE.zip)",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/41859/telecharger",
+      "format": "zip",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2025-12-10",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Machine-readable source-tax tables A, B, C and H for 2026, read by scripts/source-tax-tables.mjs into data/ge/2026/source-tax.",
+      "notes": "ZIP with tar26ge.txt in the ESTV record format (ch-na-is-recordformat-salaires): monthly incomes, rates in hundredths of a percent, only codes ending in N (Geneva publishes no church-tax variant). Page: https://www.ge.ch/document/baremes-2026-perception-impot-source-au-format-ascii . The readable tables are ge-2026-source-tariff-pdf."
     },
     {
       "id": "ge-2026-source-tariff-pdf",
@@ -273,6 +353,38 @@
       "priority": "core",
       "why_needed": "Cantonal and communal income and wealth tax tables for 2025.",
       "notes": "Base tables with examples; surcharges come from the communal centimes files. Federal tax not included. HTML page: https://www.ge.ch/document/baremes-icc-impots-revenu-fortune-avec-exemples-calcul-2025"
+    },
+    {
+      "id": "ge-2025-source-tariff-ascii",
+      "canton": "GE",
+      "doc_type": "tariff",
+      "title": "Barèmes 2025 de perception de l'impôt à la source au format ASCII (tar25GE.zip)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/38091/telecharger",
+      "format": "zip",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2025-01-02",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Machine-readable source-tax tables A, B, C and H for 2025, read by scripts/source-tax-tables.mjs into data/ge/2025/source-tax.",
+      "notes": "ZIP with tar25ge.txt in the ESTV record format. Page: https://www.ge.ch/document/baremes-2025-perception-impot-source-au-format-ascii . The readable tables are ge-2025-source-tariff-pdf."
+    },
+    {
+      "id": "ge-2025-source-tariff-pdf",
+      "canton": "GE",
+      "doc_type": "tariff",
+      "title": "Barèmes 2025 impôt à la source",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/37992/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2025-01-21",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Readable 2025 source-tax tables, to check the values read from the ASCII file.",
+      "notes": "Page: https://www.ge.ch/document/baremes-2025-perception-impot-source . Annexes on that page (not listed here): barème G and barèmes A1 to A5."
     },
     {
       "id": "ge-2026-communal-centimes-arca",
@@ -385,6 +497,22 @@
       "priority": "useful",
       "why_needed": "Source-taxed employees declare their family and income situation to the employer for 2025 withholding.",
       "notes": "Given to the employer, not the tax office. Form code 24.00.00-1552A. Page: https://www.ge.ch/document/formulaire-declaration-prelevement-impot-source-2025 . English PDF: https://www.ge.ch/document/37885/annexe/file/371411 (not opened). No filing deadline stated; changes must be reported within 14 days."
+    },
+    {
+      "id": "ge-2025-source-directives",
+      "canton": "GE",
+      "doc_type": "source_tax",
+      "title": "Directives concernant l'impôt à la source 2025",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/38036/annexe/file/374849",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2024-12-20",
+      "verified_on": "2026-10-13",
+      "priority": "useful",
+      "why_needed": "The 2025 edition of the source-tax directives, for the 2025 tables.",
+      "notes": "Page: https://www.ge.ch/document/directives-concernant-imposition-source-2025"
     },
     {
       "id": "vd-2026-communal-arretes-imposition",
@@ -8531,6 +8659,38 @@
       "notes": "Consolidated text, état le 1er janvier 2026 (Fedlex filestore PDF/A, 116 pages). Art. 132 and 133 are on p. 71 of the PDF. The fedlex.admin.ch page needs a browser; this filestore link downloads the PDF directly. Check for a newer consolidation before each release."
     },
     {
+      "id": "ch-na-law-lpp",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Loi fédérale sur la prévoyance professionnelle vieillesse, survivants et invalidité (LPP), RS 831.40",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1983/797_797_797/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1983-797_797_797-20250101-fr-pdf-a-7.pdf",
+      "format": "pdf",
+      "publisher": "Chancellerie fédérale (Fedlex)",
+      "published": "2025-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Pension fund buy-ins (art. 79b): only up to the regulatory benefits, and no lump-sum withdrawal of bought-in benefits for three years.",
+      "notes": "Consolidated text, état le 1er janvier 2025, the latest consolidation listed by Fedlex on 13 October 2026 (84 pages). Art. 79b starts on p. 65, al. 3 is on p. 66."
+    },
+    {
+      "id": "ch-na-law-opp3",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Ordonnance sur les déductions admises fiscalement pour les cotisations versées à des formes reconnues de prévoyance (OPP 3), RS 831.461.3",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1985/1778_1778_1778/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1985-1778_1778_1778-20250101-fr-pdf-a-1.pdf",
+      "format": "pdf",
+      "publisher": "Chancellerie fédérale (Fedlex)",
+      "published": "2025-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Pillar 3a limits (art. 7) and the 3a catch-up payments (rachat, art. 7a and 7b) with its transitional provision (gaps from 2025 only).",
+      "notes": "Consolidated text, état le 1er janvier 2025 (10 pages). Fedlex also lists a version applicable from 1 June 2027: re-check before the 2027 tax year."
+    },
+    {
       "id": "ch-na-oiis",
       "canton": "CH",
       "doc_type": "law",
@@ -8625,6 +8785,22 @@
       "priority": "core",
       "why_needed": "Official FAQ on source-tax circular 45 (employee withholding rules)",
       "notes": "FAQ attached to circular 45; the base circular itself was not located. Question 15.1 marked as revised 09/22."
+    },
+    {
+      "id": "ch-na-is-recordformat-salaires",
+      "canton": "CH",
+      "doc_type": "source_tax",
+      "title": "Structure et formats d'enregistrement des barèmes de l'impôt à la source pour l'importation dans les systèmes de comptabilité salariale (dès 2025)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.estv.admin.ch/dam/fr/sd-web/AvojuyFCZY95/qst-tarife-recordformate-loehne-2025-fr.pdf",
+      "format": "pdf",
+      "publisher": "Administration fédérale des contributions (AFC)",
+      "published": null,
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Record layout of the cantonal source-tax tariff files (tarjjkt.txt): fields, tariff codes, church-tax letter, monthly incomes.",
+      "notes": "11 pages, valid from 1 January 2025 (no later edition listed on https://www.estv.admin.ch/fr/baremes-impot-a-la-source-importation-systemes-de-comptabilite-salariale on 13 October 2026)."
     },
     {
       "id": "ch-2026-ifd-tarif-personnes-physiques",

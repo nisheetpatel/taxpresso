@@ -50,7 +50,11 @@
     },
     {
       "name": "list_optimizations",
-      "description": "Ways to lower your tax with their CHF value. For now: pillar 3a before 31 December."
+      "description": "Ways to lower your tax with their CHF value: before 31 December (pillar 3a, a pension fund buy-in, the 3a catch-up), and TOU if you are taxed at source."
+    },
+    {
+      "name": "decide_optimization",
+      "description": "Records your own choice about TOU (taxation ordinaire ultérieure), once you have seen the comparison. It never sends anything."
     },
     {
       "name": "set_fact",

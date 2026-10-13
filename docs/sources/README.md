@@ -38,7 +38,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 
 | Folder | Entries | Core | PDFs | Tax year 2026 items |
 |---|---|---|---|---|
-| ge | 24 | 17 | 8 | 2 |
+| ge | 32 | 24 | 11 | 4 |
 | vd | 40 | 22 | 33 | 12 |
 | vs | 13 | 11 | 5 | 3 |
 | fr | 49 | 34 | 34 | 12 |
@@ -53,7 +53,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 | ag | 33 | 16 | 23 | 12 |
 | sg | 35 | 20 | 31 | 7 |
 | zg | 35 | 17 | 22 | 16 |
-| ch | 15 | 11 | 12 | 5 |
+| ch | 22 | 17 | 18 | 5 |
 | standards | 9 | 6 | 6 | 0 |
 
 "html" entries are official pages, either because the document only exists as a page or because the PDF behind it couldn't be fetched by the collecting tool. The fetch script saves a snapshot of each page; the first person to run it should open these and add the direct PDF links they lead to.
@@ -72,6 +72,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 - Pillar 3a 2025 maximum: the federal key-figures table extracted the same value for 2025 and 2026. Read it from the PDF before hard-coding anything.
 - Federal 2027 cold-progression circular is already published: never reuse 2026 amounts for 2027.
 - Geneva: the published approved-software list stops at tax year 2024 (Dr. Tax). Ask the AFC how approval works today.
+- Geneva TOU: the AFC's TOU page lists a married couple with one spouse without activity as a compulsory TOU case; the 2026 source-tax directives (p. 51) and the law (LISP art. 4) don't. Taxpresso shows it as "to check with the AFC". See ge/NOTES.md.
 - Valais: the 2025 guide says 15 days to correct after online filing, the VSTax FAQ says 10.
 - Vaud: the communal coefficient tables and the consolidated LI and RDVE texts could not be read by the tool; open them in a browser.
 - Several agents could read PDF text only through automated summaries. Never copy a number from a NOTES.md file; read it in the document.

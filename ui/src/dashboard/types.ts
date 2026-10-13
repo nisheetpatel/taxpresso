@@ -3,6 +3,7 @@ import type { Language } from './i18n';
 import type { CopyPanelState } from './types-copy';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
+import type { PlanningState } from './types-planning';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
@@ -105,6 +106,8 @@ export interface State extends DocumentsState {
       sources: string[];
     };
   };
+  /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. */
+  planning: PlanningState;
   notSupported: string[];
   /** The values to type into the official declaration, in the form's order (SPEC.md 10.5). */
   copyPanel: CopyPanelState;

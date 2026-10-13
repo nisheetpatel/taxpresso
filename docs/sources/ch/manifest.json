@@ -302,5 +302,53 @@
     "priority": "useful",
     "why_needed": "The official price list (Kursliste): closing prices of the last trading day of December, taxable value at 31 December (LHID art. 14 and 17 al. 1); searchable online by valor number or ISIN in ICTax (https://www.ictax.admin.ch/extern/fr.html). The extension never fetches it; the user looks values up.",
     "notes": "The page is rendered by JavaScript; the snapshot holds its summary text only. The ICTax application itself needs a browser. Added by the securities agent."
+  },
+  {
+    "id": "ch-na-is-recordformat-salaires",
+    "canton": "CH",
+    "doc_type": "source_tax",
+    "title": "Structure et formats d'enregistrement des barèmes de l'impôt à la source pour l'importation dans les systèmes de comptabilité salariale (dès 2025)",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/AvojuyFCZY95/qst-tarife-recordformate-loehne-2025-fr.pdf",
+    "format": "pdf",
+    "publisher": "Administration fédérale des contributions (AFC)",
+    "published": null,
+    "verified_on": "2026-10-13",
+    "priority": "core",
+    "why_needed": "Record layout of the cantonal source-tax tariff files (tarjjkt.txt): fields, tariff codes, church-tax letter, monthly incomes.",
+    "notes": "11 pages, valid from 1 January 2025 (no later edition listed on https://www.estv.admin.ch/fr/baremes-impot-a-la-source-importation-systemes-de-comptabilite-salariale on 13 October 2026)."
+  },
+  {
+    "id": "ch-na-law-lpp",
+    "canton": "CH",
+    "doc_type": "law",
+    "title": "Loi fédérale sur la prévoyance professionnelle vieillesse, survivants et invalidité (LPP), RS 831.40",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1983/797_797_797/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1983-797_797_797-20250101-fr-pdf-a-7.pdf",
+    "format": "pdf",
+    "publisher": "Chancellerie fédérale (Fedlex)",
+    "published": "2025-01-01",
+    "verified_on": "2026-10-13",
+    "priority": "core",
+    "why_needed": "Pension fund buy-ins (art. 79b): only up to the regulatory benefits, and no lump-sum withdrawal of bought-in benefits for three years.",
+    "notes": "Consolidated text, état le 1er janvier 2025, the latest consolidation listed by Fedlex on 13 October 2026 (84 pages). Art. 79b starts on p. 65, al. 3 is on p. 66."
+  },
+  {
+    "id": "ch-na-law-opp3",
+    "canton": "CH",
+    "doc_type": "law",
+    "title": "Ordonnance sur les déductions admises fiscalement pour les cotisations versées à des formes reconnues de prévoyance (OPP 3), RS 831.461.3",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1985/1778_1778_1778/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1985-1778_1778_1778-20250101-fr-pdf-a-1.pdf",
+    "format": "pdf",
+    "publisher": "Chancellerie fédérale (Fedlex)",
+    "published": "2025-01-01",
+    "verified_on": "2026-10-13",
+    "priority": "core",
+    "why_needed": "Pillar 3a limits (art. 7) and the 3a catch-up payments (rachat, art. 7a and 7b) with its transitional provision (gaps from 2025 only).",
+    "notes": "Consolidated text, état le 1er janvier 2025 (10 pages). Fedlex also lists a version applicable from 1 June 2027: re-check before the 2027 tax year."
   }
 ]

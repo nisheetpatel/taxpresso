@@ -10,6 +10,8 @@ import { CopyPanel } from './CopyPanel';
 import { DocumentCards } from './DocumentCards';
 import { isMessageKey, t, type Language } from './i18n';
 import { Holdings } from './Holdings';
+import { tp } from './i18n-planning';
+import { MoreBeforeDecember, TouCard } from './Planning';
 import type { OfficialLink, Question, RequirementView, State, Value } from './types';
 
 const POLL_MS = 2000;
@@ -103,7 +105,9 @@ export function App(): JSX.Element {
                   <strong>{t(L, 'folderProblem')}</strong> {state.vault.problem}
                 </div>
               ) : null}
+              <TouCard state={state} lang={L} act={act} />
               <Plan3a state={state} lang={L} act={act} />
+              <MoreBeforeDecember state={state} lang={L} act={act} />
               {state.chips.length ? (
                 <div class="chips">
                   {state.chips.map((c) => (
@@ -274,6 +278,9 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
           />
         ))}
       </div>
+      {state.planning.needsTou ? (
+        <p class="banner banner-estimate">{tp(lang, 'onlyWithTou')}</p>
+      ) : null}
       <div class="plan-points">
         <div>
           <strong>{t(lang, 'planGood')}</strong>

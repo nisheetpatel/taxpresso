@@ -45,6 +45,7 @@ describe('MCP surface', () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
       'answer_question',
+      'decide_optimization',
       'get_document_for_review',
       'get_form_values',
       'get_holdings',

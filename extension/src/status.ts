@@ -175,7 +175,7 @@ export function statusText(s: Status): string {
   lines.push(
     `Folder: ${s.vault.path}${s.vault.exists ? '' : ' (created with the first answer or document)'}`,
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,
-    'Savings to look at now: list_optimizations (pillar 3a before 31 December).',
+    'Savings to look at now: list_optimizations (before 31 December: pillar 3a, pension fund buy-in, 3a catch-up; TOU for people taxed at source).',
     `Next step: ${s.nextStep}`,
   );
   if (s.runtime) {

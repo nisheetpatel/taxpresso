@@ -1,6 +1,7 @@
 // Talks to the extension on 127.0.0.1 only (same origin; the page's CSP allows nothing else).
 import type { Language } from './i18n';
 import type { Question, State, Value } from './types';
+import type { PlanningField } from './types-planning';
 
 export class ApiError extends Error {}
 
@@ -49,6 +50,15 @@ export const api = {
     value: number | boolean,
     lang: Language,
   ) => post('/plan', lang, { person, field, value }),
+  // Pension fund buy-in, 3a catch-up and TOU (extension/src/planning.ts).
+  planning: (
+    person: string,
+    field: PlanningField,
+    value: number | boolean | string,
+    lang: Language,
+  ) => post('/planning', lang, { person, field, value }),
+  decide: (choice: 'request' | 'decline', confirmed: boolean, lang: Language) =>
+    post('/decide', lang, { id: 'tou', choice, confirmed }),
   setKind: (id: string, kind: string, person: string | undefined, lang: Language) =>
     post('/documents/kind', lang, { id, kind, ...(person ? { person } : {}) }),
   upload: async (

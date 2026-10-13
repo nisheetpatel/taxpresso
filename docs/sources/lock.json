@@ -5512,5 +5512,115 @@
     "content_type": "text/html;charset=utf-8",
     "retrieved_at": "2026-10-13T21:35:24.085Z",
     "status": "ok"
+  },
+  "ge-na-law-lisp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_20.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_20.htm",
+    "file": "ge/files/ge-na-law-lisp.html",
+    "bytes": 36421,
+    "sha256": "b95c958a1575d2fb123c0b36701a093836451db71c97bdc392a32f284423cc9e",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-13T21:35:59.232Z",
+    "status": "ok"
+  },
+  "ge-na-law-risp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_20p01.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_20p01.htm",
+    "file": "ge/files/ge-na-law-risp.html",
+    "bytes": 49590,
+    "sha256": "9f9348644f8f087f4ebd30b59649ad32bcb5c1390098c5b6a36ea83f6fa44fdf",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-13T21:35:59.246Z",
+    "status": "ok"
+  },
+  "ge-na-tou-quand-page": {
+    "url": "https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure/quand-demander-annoncer-taxation-ordinaire-ulterieure",
+    "final_url": "https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure/quand-demander-annoncer-taxation-ordinaire-ulterieure",
+    "file": "ge/files/ge-na-tou-quand-page.html",
+    "bytes": 121049,
+    "sha256": "251e172e33ab6ea6a0ab585f032fe38f38e7db4f637ddb67ed0493928b1d5898",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T21:35:59.340Z",
+    "status": "ok"
+  },
+  "ge-2025-source-tariff-ascii": {
+    "url": "https://www.ge.ch/document/38091/telecharger",
+    "final_url": "https://www.ge.ch/document/38091/telecharger",
+    "file": "ge/files/ge-2025-source-tariff-ascii.zip",
+    "bytes": 178973,
+    "sha256": "af9e67b5c4eba577bd32646791bd31127ed6004cb780b4fded2933ee9e9c2db6",
+    "content_type": "application/zip",
+    "retrieved_at": "2026-10-13T21:35:59.445Z",
+    "status": "ok"
+  },
+  "ge-2026-source-tariff-ascii": {
+    "url": "https://www.ge.ch/document/41859/telecharger",
+    "final_url": "https://www.ge.ch/document/41859/telecharger",
+    "file": "ge/files/ge-2026-source-tariff-ascii.zip",
+    "bytes": 179197,
+    "sha256": "075204040fca1c5fc9b4099a6ffe41b9456d974a58f40f67ae523057cbee366c",
+    "content_type": "application/zip",
+    "retrieved_at": "2026-10-13T21:35:59.542Z",
+    "status": "ok"
+  },
+  "ge-2025-source-tariff-pdf": {
+    "url": "https://www.ge.ch/document/37992/telecharger",
+    "final_url": "https://www.ge.ch/document/37992/telecharger",
+    "file": "ge/files/ge-2025-source-tariff-pdf.pdf",
+    "bytes": 755632,
+    "sha256": "adad7ab134943db9aa2e6cc84f95823666dcfbaee222beb6bbba375fe7eade75",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:59.649Z",
+    "status": "ok"
+  },
+  "ge-2026-source-directives": {
+    "url": "https://www.ge.ch/document/42009/annexe/file/580297",
+    "final_url": "https://www.ge.ch/document/42009/annexe/file/580297",
+    "file": "ge/files/ge-2026-source-directives.pdf",
+    "bytes": 1605408,
+    "sha256": "013c820a35143f5a4b6faaa5052aac67cfbcebfbf6de0ed8bdec883a8501b678",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:59.721Z",
+    "status": "ok"
+  },
+  "ch-na-law-lpp": {
+    "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1983/797_797_797/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1983-797_797_797-20250101-fr-pdf-a-7.pdf",
+    "final_url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1983/797_797_797/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1983-797_797_797-20250101-fr-pdf-a-7.pdf",
+    "file": "ch/files/ch-na-law-lpp.pdf",
+    "bytes": 973223,
+    "sha256": "578aff110f74c3a11d259c2bfb41dcdb3bd7f39ddd28ce2879bf800924955917",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:59.862Z",
+    "status": "ok"
+  },
+  "ch-na-law-opp3": {
+    "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1985/1778_1778_1778/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1985-1778_1778_1778-20250101-fr-pdf-a-1.pdf",
+    "final_url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1985/1778_1778_1778/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1985-1778_1778_1778-20250101-fr-pdf-a-1.pdf",
+    "file": "ch/files/ch-na-law-opp3.pdf",
+    "bytes": 237734,
+    "sha256": "21d2716293454de7a9814add1c8aa97aac7a583787548cb0af72d4dc9910016f",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:59.887Z",
+    "status": "ok"
+  },
+  "ch-na-is-recordformat-salaires": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/AvojuyFCZY95/qst-tarife-recordformate-loehne-2025-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/AvojuyFCZY95/qst-tarife-recordformate-loehne-2025-fr.pdf",
+    "file": "ch/files/ch-na-is-recordformat-salaires.pdf",
+    "bytes": 279055,
+    "sha256": "9a7a04df607422324bd4d6609df30212d624ec1d7bf603132b17915651fd6b05",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:36:00.101Z",
+    "status": "ok"
+  },
+  "ge-2025-source-directives": {
+    "url": "https://www.ge.ch/document/38036/annexe/file/374849",
+    "final_url": "https://www.ge.ch/document/38036/annexe/file/374849",
+    "file": "ge/files/ge-2025-source-directives.pdf",
+    "bytes": 1990268,
+    "sha256": "6eff76df0082855229aa2916d40739b1c626d6d9be5ae5517c84d3c9298910e0",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:36:00.694Z",
+    "status": "ok"
   }
 }
