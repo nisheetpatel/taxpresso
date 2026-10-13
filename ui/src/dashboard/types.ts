@@ -6,6 +6,11 @@ import type { DocumentsState } from './types-docs';
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
 
+export interface OfficialLink {
+  url: string;
+  label: string;
+}
+
 export interface Question {
   id: string;
   questionId: string;
@@ -15,6 +20,8 @@ export interface Question {
   text: string;
   help?: string;
   explain?: string;
+  /** An official page on the topic, shown as "Official page" in the explanation. */
+  learnMore?: OfficialLink;
   options?: { value: string; label: string; notSupported: boolean }[];
   none?: string;
   min?: number;
@@ -28,6 +35,7 @@ export interface RequirementView {
   label: string;
   reason: string;
   explain?: string;
+  learnMore?: OfficialLink;
   /** Same for every person's copy of one requirement (e.g. health premiums for you and your partner). */
   group: string;
   status: 'missing' | 'satisfied' | 'estimated' | 'waived';

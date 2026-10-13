@@ -27,6 +27,12 @@ questions:
     explain:
       en: 'Your situation on 31 December decides whether you file alone or as a couple, on one declaration together.'
       fr: 'Votre situation au 31 décembre décide si vous déclarez seul ou en couple, sur une seule déclaration commune.'
+    # ge-2025-guide-declaration-pp p. 53
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
+      label:
+        en: 'Geneva tax guide 2025, p. 53: changes of situation'
+        fr: 'Guide fiscal 2025, p. 53 : Changements de situation'
     text:
       en: 'What was your civil status on 31 December 2026?'
       fr: 'Quel était votre état civil au 31 décembre 2026 ?'
@@ -50,6 +56,12 @@ questions:
     explain:
       en: 'Count the children who live with you or whom you support financially. Unsure about an adult child? Ask Claude.'
       fr: 'Comptez les enfants qui vivent avec vous ou que vous entretenez. Un doute pour un enfant majeur ? Demandez à Claude.'
+    # ge-2025-guide-declaration-pp p. 46
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=46'
+      label:
+        en: 'Geneva tax guide 2025, p. 46: children you support'
+        fr: 'Guide fiscal 2025, p. 46 : Enfant(s) à charge'
     text:
       en: 'How many children did you support in 2026?'
       fr: 'Combien d’enfants aviez-vous à charge en 2026 ?'
@@ -68,6 +80,12 @@ questions:
     explain:
       en: 'Who the children mainly live with. Shared custody means they live with each parent about half the time.'
       fr: 'Chez qui les enfants vivent surtout. En garde partagée, ils vivent environ la moitié du temps chez chaque parent.'
+    # ge-2025-guide-declaration-pp p. 45
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=45'
+      label:
+        en: 'Geneva tax guide 2025, p. 45: family, scale and splitting'
+        fr: 'Guide fiscal 2025, p. 45 : Barème et splitting'
     text:
       en: 'Where did the children live in 2026?'
       fr: 'Où vivaient les enfants en 2026 ?'
@@ -87,6 +105,12 @@ questions:
     explain:
       en: 'What you paid so someone looks after your children while you work: crèche, day care, after-school care or a nanny.'
       fr: 'Ce que vous avez payé pour faire garder vos enfants pendant que vous travaillez : crèche, garderie, parascolaire ou nourrice.'
+    # ge-2025-guide-declaration-pp p. 30
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=30'
+      label:
+        en: 'Geneva tax guide 2025, p. 30: childcare costs'
+        fr: 'Guide fiscal 2025, p. 30 : Frais de garde des enfants'
     text:
       en: 'Did you pay for childcare in 2026?'
       fr: 'Avez-vous payé des frais de garde en 2026 ?'
@@ -109,6 +133,12 @@ questions:
     explain:
       en: 'The municipality where you lived on 31 December. Each commune adds its own share of tax (centimes additionnels).'
       fr: 'La commune où vous habitiez au 31 décembre. Chaque commune ajoute sa propre part d’impôt (centimes additionnels).'
+    # ge-2025-taux-donnees-fiscales
+    learnMore:
+      url: 'https://www.ge.ch/taux-donnees-fiscales'
+      label:
+        en: 'Tax rates and data, with the communal centimes (ge.ch)'
+        fr: 'Taux et données fiscales, dont les centimes additionnels (ge.ch)'
     text:
       en: 'Which commune did you live in on 31 December 2026?'
       fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
@@ -122,6 +152,12 @@ questions:
     explain:
       en: 'A move within Geneva changes little. Arriving from abroad means you were taxed here for part of the year only.'
       fr: 'Un déménagement dans le canton change peu de choses. Arriver de l’étranger signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+    # ge-2025-guide-declaration-pp p. 53
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
+      label:
+        en: 'Geneva tax guide 2025, p. 53: changes of situation, arriving in Geneva'
+        fr: 'Guide fiscal 2025, p. 53 : Changements de situation'
     text:
       en: 'Did you move in 2026?'
       fr: 'Avez-vous déménagé en 2026 ?'
@@ -149,6 +185,12 @@ questions:
     explain:
       en: 'Benefits: money paid by unemployment, sickness or accident insurance. Pension: a regular payment from AVS, AI or a pension fund.'
       fr: 'Indemnités : l’argent versé par l’assurance chômage, maladie ou accident. Rente : un versement régulier de l’AVS, de l’AI ou d’une caisse de pension.'
+    # ge-2025-guide-declaration-pp p. 25
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=25'
+      label:
+        en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
+        fr: 'Guide fiscal 2025, p. 25 : Rentes, pensions et autres prestations'
     text:
       p1:
         en: 'What income did you have in 2026?'
@@ -191,6 +233,12 @@ questions:
     explain:
       en: 'Count every employer you worked for during the year, even briefly. Each one gives you a salary certificate.'
       fr: 'Comptez tous les employeurs de l’année, même pour peu de temps. Chacun vous remet un certificat de salaire.'
+    # ge-2025-guide-declaration-pp p. 17
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=17'
+      label:
+        en: 'Geneva tax guide 2025, p. 17: employment income'
+        fr: 'Guide fiscal 2025, p. 17 : Activité dépendante'
     text:
       p1:
         en: 'How many employers paid you a salary in 2026?'
@@ -213,6 +261,12 @@ questions:
     explain:
       en: 'Your employer took tax off your salary before paying you. Common with a B or L permit. Your salary certificate shows it.'
       fr: 'Votre employeur a retenu l’impôt sur votre salaire avant de vous le verser. Fréquent avec un permis B ou L. Votre certificat de salaire l’indique.'
+    # ge-2025-dris-tou-page
+    learnMore:
+      url: 'https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure'
+      label:
+        en: 'Tax at source: correction or TOU (ge.ch)'
+        fr: 'Demande de rectification ou taxation ordinaire ultérieure (ge.ch)'
     text:
       p1:
         en: 'Was your salary taxed at source in 2026?'
@@ -233,6 +287,12 @@ questions:
     explain:
       en: 'TOU (taxation ordinaire ultérieure): instead of the tax taken from your salary being final, you file a normal declaration and can claim deductions. Once you ask for it, you can’t go back.'
       fr: 'TOU (taxation ordinaire ultérieure) : au lieu que l’impôt retenu sur votre salaire soit définitif, vous remplissez une déclaration normale et pouvez faire valoir des déductions. Une fois demandée, on ne peut plus revenir en arrière.'
+    # ge-2025-guide-declaration-pp p. 52
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=52'
+      label:
+        en: 'Geneva tax guide 2025, p. 52: TOU for people taxed at source'
+        fr: 'Guide fiscal 2025, p. 52 : La TOU pour les contribuables imposés à la source'
     text:
       p1:
         en: 'Are you taxed ordinarily instead (TOU), or thinking about it?'
@@ -261,6 +321,12 @@ questions:
     explain:
       en: 'Pillar 3a (3e pilier A) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.'
       fr: 'Le 3e pilier A est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.'
+    # ge-2025-guide-declaration-pp p. 18
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
+      label:
+        en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
+        fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
     text:
       p1:
         en: 'Did you pay into a pillar 3a account in 2026?'
@@ -281,6 +347,12 @@ questions:
     explain:
       en: 'Your pension fund at work (2nd pillar, LPP) takes contributions from your salary every month. A buy-in (rachat) is an extra payment you chose to make on top. Most people never make one.'
       fr: 'Votre caisse de pension (2e pilier, LPP) prélève des cotisations sur votre salaire chaque mois. Un rachat est un versement supplémentaire que vous avez choisi de faire en plus. La plupart des gens n’en font jamais.'
+    # ge-2025-guide-declaration-pp p. 18
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
+      label:
+        en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
+        fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
     text:
       p1:
         en: 'Did you buy into your pension fund (2nd pillar) in 2026?'
@@ -301,6 +373,12 @@ questions:
     explain:
       en: 'Getting to work can be deducted as travel costs (frais de déplacement). Your usual way of getting there is enough for now.'
       fr: 'Le trajet pour le travail peut être déduit comme frais de déplacement. Votre moyen habituel suffit pour l’instant.'
+    # ge-2025-guide-declaration-pp p. 19
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=19'
+      label:
+        en: 'Geneva tax guide 2025, p. 19: travel costs'
+        fr: 'Guide fiscal 2025, p. 19 : Frais de déplacements'
     text:
       p1:
         en: 'How did you mostly get to work in 2026?'
@@ -327,6 +405,12 @@ questions:
     explain:
       en: 'Every bank where you had an account, savings or investments on 31 December, including your children’s accounts.'
       fr: 'Toutes les banques où vous aviez un compte, de l’épargne ou des placements au 31 décembre, y compris les comptes de vos enfants.'
+    # ge-na-other-e-releve-fiscal
+    learnMore:
+      url: 'https://www.ge.ch/node/13593'
+      label:
+        en: 'The e-tax statement (e-relevé fiscal) on ge.ch'
+        fr: 'Déclarez vos titres avec le e-relevé fiscal (ge.ch)'
     text:
       en: 'With how many banks did you have accounts or securities on 31 December 2026?'
       fr: 'Dans combien de banques aviez-vous des comptes ou des titres au 31 décembre 2026 ?'
@@ -343,6 +427,12 @@ questions:
     explain:
       en: 'Coins or tokens you owned on 31 December count as part of your wealth (fortune), like money in a bank.'
       fr: 'Les cryptos que vous déteniez au 31 décembre font partie de votre fortune, comme l’argent à la banque.'
+    # ge-2025-guide-declaration-pp p. 40
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=40'
+      label:
+        en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
+        fr: 'Guide fiscal 2025, p. 40 : Comptes bancaires et postaux'
     text:
       en: 'Did you hold cryptocurrencies on 31 December 2026?'
       fr: 'Déteniez-vous des crypto-monnaies au 31 décembre 2026 ?'
@@ -354,6 +444,12 @@ questions:
     explain:
       en: 'Each of these can lower your tax if you keep the proof.'
       fr: 'Chacun de ces frais peut diminuer votre impôt si vous en gardez la preuve.'
+    # ge-2025-guide-declaration-pp p. 11
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=11'
+      label:
+        en: 'Geneva tax guide 2025, p. 11: the main deductions'
+        fr: 'Guide fiscal 2025, p. 11 : Principales déductions'
     text:
       en: 'Which of these did you pay in 2026?'
       fr: 'Lesquels de ces frais avez-vous payés en 2026 ?'
@@ -393,6 +489,12 @@ questions:
     explain:
       en: 'These situations need checks that Taxpresso can’t do yet. Better to know now than in March.'
       fr: 'Ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars.'
+    # ge-2025-getax-software
+    learnMore:
+      url: 'https://www.ge.ch/getax/telecharger-installer-getax-particuliers'
+      label:
+        en: 'GeTax, the canton’s free software (ge.ch)'
+        fr: 'GeTax, le logiciel gratuit du canton (ge.ch)'
     text:
       en: 'Do any of these apply to you in 2026?'
       fr: 'Une de ces situations vous concerne-t-elle en 2026 ?'
@@ -438,6 +540,12 @@ requirements:
     explain:
       en: 'The yearly summary of your salary and deductions that each employer gives you, usually in January or February.'
       fr: 'Le récapitulatif annuel de votre salaire et des retenues que chaque employeur vous remet, en général en janvier ou février.'
+    # ge-2025-guide-declaration-pp p. 17
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=17'
+      label:
+        en: 'Geneva tax guide 2025, p. 17: employment income'
+        fr: 'Guide fiscal 2025, p. 17 : Activité dépendante'
     reason: { en: 'One from each employer.', fr: 'Un par employeur.' }
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
@@ -449,6 +557,12 @@ requirements:
     explain:
       en: 'A yearly attestation from the unemployment fund or the insurer that paid you benefits.'
       fr: 'Une attestation annuelle de la caisse de chômage ou de l’assurance qui vous a versé des indemnités.'
+    # ge-2025-guide-declaration-pp p. 10
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=10'
+      label:
+        en: 'Geneva tax guide 2025, p. 10: supporting documents'
+        fr: 'Guide fiscal 2025, p. 10 : Les justificatifs'
     reason:
       {
         en: 'From the unemployment fund or the insurer.',
@@ -464,6 +578,12 @@ requirements:
     explain:
       en: 'A yearly statement from AVS, AI or your pension fund showing the pension paid to you.'
       fr: 'Un relevé annuel de l’AVS, de l’AI ou de votre caisse de pension indiquant la rente versée.'
+    # ge-2025-guide-declaration-pp p. 25
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=25'
+      label:
+        en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
+        fr: 'Guide fiscal 2025, p. 25 : Rentes, pensions et autres prestations'
     reason:
       { en: 'From AVS/AI or the pension fund.', fr: 'De l’AVS/AI ou de la caisse de pension.' }
     source: 'ge-2025-guide-declaration-pp p. 8'
@@ -476,6 +596,12 @@ requirements:
     explain:
       en: 'A yearly attestation from your bank or insurer showing what you paid into your 3a account. It usually arrives in January.'
       fr: 'Une attestation annuelle de votre banque ou assurance indiquant ce que vous avez versé sur votre 3e pilier A. Elle arrive en général en janvier.'
+    # ge-2025-guide-declaration-pp p. 18
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
+      label:
+        en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
+        fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
     reason: { en: 'From your bank or insurer.', fr: 'De votre banque ou de votre assurance.' }
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
@@ -487,6 +613,12 @@ requirements:
     explain:
       en: 'Only needed if you made an extra, voluntary payment into your pension fund. The fund confirms it on form 21EDP. No buy-in? Change your answer and this goes away.'
       fr: 'Seulement si vous avez fait un versement volontaire supplémentaire dans votre caisse de pension. La caisse le confirme sur le formulaire 21EDP. Pas de rachat ? Modifiez votre réponse et cette ligne disparaît.'
+    # ge-2025-guide-declaration-pp p. 18
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
+      label:
+        en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
+        fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
     reason:
       {
         en: 'Form 21EDP from your pension fund.',
@@ -501,6 +633,12 @@ requirements:
     explain:
       en: 'Your health insurer’s yearly statement of premiums paid, basic and supplementary. One family statement can cover several people.'
       fr: 'Le relevé annuel des primes payées, de base et complémentaires, envoyé par votre assureur. Un relevé familial peut couvrir plusieurs personnes.'
+    # ge-2025-guide-declaration-pp p. 29
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=29'
+      label:
+        en: 'Geneva tax guide 2025, p. 29: health and accident insurance'
+        fr: 'Guide fiscal 2025, p. 29 : Assurances maladie et accidents'
     reason:
       {
         en: 'Your insurer’s annual attestation, basic and supplementary.',
@@ -519,6 +657,12 @@ requirements:
     explain:
       en: 'The statement each bank gives for your taxes, with balances on 31 December. Ask for the e-tax statement (e-relevé fiscal) if your bank offers it. For a broker such as Interactive Brokers or DEGIRO, add its export too (Flex Query XML, or the CSV of the portfolio and of the account statement): Taxpresso reads your securities from it.'
       fr: 'Le relevé fiscal de chaque banque, avec les soldes au 31 décembre. Demandez le e-relevé fiscal si votre banque le propose. Pour un courtier comme Interactive Brokers ou DEGIRO, ajoutez aussi son export (Flex Query XML, ou le CSV du portefeuille et du relevé de compte) : Taxpresso y lit vos titres.'
+    # ge-na-other-e-releve-fiscal
+    learnMore:
+      url: 'https://www.ge.ch/node/13593'
+      label:
+        en: 'The e-tax statement (e-relevé fiscal) on ge.ch'
+        fr: 'Déclarez vos titres avec le e-relevé fiscal (ge.ch)'
     reason:
       {
         en: 'One per bank, ideally the e-tax statement (e-relevé fiscal).',
@@ -533,6 +677,12 @@ requirements:
     explain:
       en: 'A statement from each exchange or wallet showing what you held on 31 December.'
       fr: 'Un relevé de chaque plateforme ou portefeuille indiquant ce que vous déteniez au 31 décembre.'
+    # ge-2025-guide-declaration-pp p. 40
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=40'
+      label:
+        en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
+        fr: 'Guide fiscal 2025, p. 40 : Comptes bancaires et postaux'
     reason:
       {
         en: 'A statement from each exchange or wallet.',
@@ -547,6 +697,12 @@ requirements:
     explain:
       en: 'Invoices or the yearly attestation from the crèche, day care or nanny.'
       fr: 'Les factures ou l’attestation annuelle de la crèche, de la garderie ou de la nourrice.'
+    # ge-2025-guide-declaration-pp p. 30
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=30'
+      label:
+        en: 'Geneva tax guide 2025, p. 30: childcare costs'
+        fr: 'Guide fiscal 2025, p. 30 : Frais de garde des enfants'
     reason: { en: 'Invoices or the annual attestation.', fr: 'Factures ou attestation annuelle.' }
     source: 'ge-2025-guide-declaration-pp p. 8'
 
@@ -557,6 +713,12 @@ requirements:
     explain:
       en: 'Your insurer’s statement of costs it didn’t reimburse (décompte LAMal), plus invoices you never sent to the insurer.'
       fr: 'Le décompte LAMal des frais non remboursés par votre assureur, plus les factures que vous ne lui avez pas envoyées.'
+    # ge-2025-guide-declaration-pp p. 14
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=14'
+      label:
+        en: 'Geneva tax guide 2025, p. 14: medical costs'
+        fr: 'Guide fiscal 2025, p. 14 : Déductions des frais médicaux'
     reason:
       {
         en: 'Your insurer’s statement of costs it didn’t cover (décompte LAMal).',
@@ -571,6 +733,12 @@ requirements:
     explain:
       en: 'Receipts from the charities or political parties you gave to.'
       fr: 'Les reçus des associations ou des partis politiques à qui vous avez donné.'
+    # ge-2025-guide-declaration-pp p. 15
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=15'
+      label:
+        en: 'Geneva tax guide 2025, p. 15: donations'
+        fr: 'Guide fiscal 2025, p. 15 : Déductions des dons'
     reason:
       {
         en: 'Receipts from the charities or parties.',
@@ -585,6 +753,12 @@ requirements:
     explain:
       en: 'The lender’s statement of interest paid in the year and what you still owed on 31 December.'
       fr: 'Le relevé du prêteur indiquant les intérêts payés dans l’année et le solde dû au 31 décembre.'
+    # ge-2025-guide-declaration-pp p. 37
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=37'
+      label:
+        en: 'Geneva tax guide 2025, p. 37: interest and debts'
+        fr: 'Guide fiscal 2025, p. 37 : Intérêts et dettes'
     reason:
       {
         en: 'The lender’s statement of interest and balance on 31 December.',
@@ -602,6 +776,12 @@ requirements:
     explain:
       en: 'Proof of the amounts paid or received, such as bank transfers or a statement.'
       fr: 'La preuve des montants versés ou reçus, par exemple des virements bancaires ou un relevé.'
+    # ge-2025-guide-declaration-pp p. 29
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=29'
+      label:
+        en: 'Geneva tax guide 2025, p. 29: alimony paid'
+        fr: 'Guide fiscal 2025, p. 29 : Pensions, contributions d’entretien versées'
     reason:
       { en: 'Proof of the amounts paid or received.', fr: 'Preuve des montants versés ou reçus.' }
     source: 'ge-2025-guide-declaration-pp p. 8'
@@ -617,6 +797,12 @@ requirements:
     explain:
       en: 'The court decision or agreement that sets the alimony. Only if it’s new in 2026 or changed.'
       fr: 'La décision du tribunal ou la convention qui fixe la pension. Seulement si elle est nouvelle en 2026 ou a changé.'
+    # ge-2025-guide-declaration-pp p. 10
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=10'
+      label:
+        en: 'Geneva tax guide 2025, p. 10: supporting documents'
+        fr: 'Guide fiscal 2025, p. 10 : Les justificatifs'
     reason:
       {
         en: 'Only if it’s new in 2026 or changed.',
@@ -631,5 +817,11 @@ requirements:
     explain:
       en: 'Last year’s declaration or tax assessment, if you have it. It helps fill in your situation faster.'
       fr: 'La déclaration ou l’avis de taxation de l’an dernier, si vous l’avez. Cela aide à remplir votre situation plus vite.'
+    # ge-na-efiling-espace-fiscal
+    learnMore:
+      url: 'https://www.ge.ch/espace-fiscal-e-demarches/gerer-mes-declarations-impot'
+      label:
+        en: 'Your past returns in e-démarches (ge.ch)'
+        fr: 'Gérer mes déclarations d’impôt (ge.ch)'
     reason:
       { en: 'If you have it: it speeds things up.', fr: 'Si vous l’avez : cela va plus vite.' }

@@ -40,6 +40,39 @@ export const Condition: z.ZodType<Condition> = z.lazy(() =>
     .refine((c) => (c.any || c.all ? !c.key : !!c.key), 'a condition needs a key, or any/all'),
 );
 
+/** Government sites whose pages are listed in docs/sources/<canton>/manifest.json (each opened and checked). */
+export const OFFICIAL_HOSTS = [
+  'ge.ch',
+  'getax.ch',
+  'silgeneve.ch',
+  'ch.ch',
+  'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
+] as const;
+
+const isOfficialPage = (raw: string): boolean => {
+  if (!URL.canParse(raw)) return false;
+  const url = new URL(raw);
+  return (
+    url.protocol === 'https:' &&
+    !url.search && // no tracking or other parameters
+    !url.username &&
+    OFFICIAL_HOSTS.some((h) => url.hostname === h || url.hostname.endsWith(`.${h}`)) &&
+    (!url.hash || /^#page=\d+$/.test(url.hash)) // a PDF can open at its page
+  );
+};
+
+/**
+ * An official page that explains the topic, chosen from docs/sources/<canton>/manifest.json. The
+ * dashboard shows it as "Official page" next to the explanation, and Claude can point to it.
+ */
+export const LearnMore = z
+  .object({
+    url: z.url().refine(isOfficialPage, 'learnMore.url must be an official https page'),
+    label: Text,
+  })
+  .strict();
+export type LearnMore = z.infer<typeof LearnMore>;
+
 const Option = z
   .object({
     value: z.string(),
@@ -60,6 +93,7 @@ export const Question = z
     help: Text.optional(),
     /** Plain-language "what is this?", shown on hover and given to Claude. */
     explain: Text.optional(),
+    learnMore: LearnMore.optional(),
     options: z.array(Option).optional(),
     none: Text.optional(),
     min: z.number().int().optional(),
@@ -82,6 +116,7 @@ export const RequirementDef = z
     label: Text,
     reason: Text,
     explain: Text.optional(),
+    learnMore: LearnMore.optional(),
     source: z.string().optional(),
   })
   .strict();

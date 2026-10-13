@@ -57,6 +57,8 @@ const QuestionOut = z.object({
   text: z.object({ en: z.string(), fr: z.string() }),
   help: z.object({ en: z.string(), fr: z.string() }).optional(),
   explain: z.object({ en: z.string(), fr: z.string() }).optional(),
+  /** An official page on the topic, to give the user; label in English. */
+  learnMore: z.object({ url: z.string(), label: z.string() }).optional(),
   options: z
     .array(
       z.object({ value: z.string(), en: z.string(), fr: z.string(), notSupported: z.boolean() }),
@@ -77,6 +79,7 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
     text: { en: en.text, fr: fr.text },
     ...(en.help && fr.help ? { help: { en: en.help, fr: fr.help } } : {}),
     ...(en.explain && fr.explain ? { explain: { en: en.explain, fr: fr.explain } } : {}),
+    ...(en.learnMore ? { learnMore: en.learnMore } : {}),
     ...(en.options && en.type !== 'commune'
       ? {
           options: en.options.map((o, i) => ({
@@ -131,6 +134,7 @@ function questionText(q: QuestionOut): string {
     `EN: ${q.text.en}`,
     ...(q.help ? [`Help: ${q.help.en}`] : []),
     ...(q.explain ? [`If the user asks what this means: ${q.explain.en}`] : []),
+    ...(q.learnMore ? [`Official page (${q.learnMore.label}): ${q.learnMore.url}`] : []),
     how,
   ].join('\n');
 }

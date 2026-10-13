@@ -99,6 +99,9 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       label: r.label[lang],
       reason: r.reason[lang],
       ...(r.explain ? { explain: r.explain[lang] } : {}),
+      ...(r.learnMore
+        ? { learnMore: { url: r.learnMore.url, label: r.learnMore.label[lang] } }
+        : {}),
       group: r.id.split(':')[0] ?? r.id,
       status: r.status,
       have: r.have,
