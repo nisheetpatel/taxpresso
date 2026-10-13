@@ -39,6 +39,19 @@ function worst(statuses: InputStatus[]): InputStatus {
   return 'verified';
 }
 
+/** Salary certificate boxes 1 to 7, whose sum is box 8 (ge-2025-declaration-specimen p. 5). */
+const BOXES_1_TO_7 = [
+  'salary.base',
+  'salary.board_lodging',
+  'salary.company_car',
+  'salary.other_fringe',
+  'salary.non_periodic',
+  'salary.capital',
+  'salary.participations',
+  'salary.board_fees',
+  'salary.other_benefits',
+] as const;
+
 function amountOf(facts: readonly Fact[]): Amount | undefined {
   const money = facts.filter((f) => typeof f.value === 'number');
   if (!money.length) return undefined;
@@ -157,14 +170,32 @@ export function engineInputFromFacts(
   }
 
   const people: PersonInput[] = ids.map((id) => {
-    // One employment per salary certificate (the instance is the document id).
-    const certs = new Set(of('salary.gross', id).map((f) => f.instance ?? f.id));
+    // One employment per salary certificate (the instance is the document id): any certificate
+    // with its total (box 8) or one of the boxes it adds up.
+    const certs = new Set(
+      [...of('salary.gross', id), ...BOXES_1_TO_7.flatMap((k) => of(k, id))].map(
+        (f) => f.instance ?? f.id,
+      ),
+    );
     const box = (key: string, doc: string) =>
       amountOf(of(key, id).filter((f) => (f.instance ?? f.id) === doc));
     const tick = (key: string, doc: string) =>
       of(key, id).some((f) => (f.instance ?? f.id) === doc && f.value === true);
     const employments: EmploymentInput[] = [...certs].map((doc) => {
-      const e: EmploymentInput = { id: doc, gross: box('salary.gross', doc)! };
+      let gross = box('salary.gross', doc);
+      if (!gross) {
+        // Box 8 not read: it is the sum of boxes 1 to 7 (ge-2025-declaration-specimen p. 5).
+        gross = amountOf(
+          BOXES_1_TO_7.flatMap((k) => of(k, id).filter((f) => (f.instance ?? f.id) === doc)),
+        )!;
+        note(
+          t(
+            'A salary certificate’s total (box 8) isn’t read: Taxpresso adds up boxes 1 to 7, as box 8 does. Check the total on the certificate.',
+            `Le total d’un certificat de salaire (chiffre 8) n’est pas lu${NB}: Taxpresso additionne les chiffres 1 à 7, comme le chiffre 8. Vérifiez le total sur le certificat.`,
+          ),
+        );
+      }
+      const e: EmploymentInput = { id: doc, gross };
       const social = box('salary.social_contributions', doc);
       const lpp = box('salary.lpp_ordinary', doc);
       const buy = box('salary.lpp_buyin', doc);

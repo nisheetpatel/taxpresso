@@ -157,6 +157,31 @@ describe('engine input from the ledger', () => {
     expect(notes.map((n) => n.en).join(' ')).toMatch(/another tax year/);
   });
 
+  it('adds up boxes 1 to 7 when a certificate’s total (box 8) was not read, and says so', () => {
+    const { facts, documents } = dupont();
+    const l = new Ledger(2026, KEYS_2026);
+    for (const f of facts.filter((x) => !(x.key === 'salary.gross' && x.person === 'p2'))) {
+      const { id: _id, at: _at, ...rest } = f as typeof f & { at?: string };
+      l.append(rest as Parameters<typeof l.append>[0]);
+    }
+    const marie = (key: string, value: number) =>
+      l.append({
+        key,
+        person: 'p2',
+        instance: 'd_cert_marie',
+        value,
+        status: 'extracted',
+        source: { method: 'claude', docId: 'd_cert_marie', page: 1 },
+      });
+    marie('salary.base', 2_800_000);
+    marie('salary.non_periodic', 200_000);
+    const { input, notes } = engineInputFromFacts(2026, l.view(), documents);
+    const p2 = input!.people[1]!;
+    expect(p2.employments).toHaveLength(1);
+    expect(p2.employments![0]!.gross).toMatchObject({ value: 3_000_000, status: 'extracted' });
+    expect(notes.map((n) => n.en).join(' ')).toMatch(/adds up boxes 1 to 7/);
+  });
+
   it('computes from it, flagging what is an estimate and what needs the user’s OK', () => {
     const { facts, documents } = dupont();
     const r = computeReturn(engineInputFromFacts(2026, facts, documents).input!);
