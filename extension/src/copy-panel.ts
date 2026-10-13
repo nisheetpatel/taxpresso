@@ -7,6 +7,7 @@
 import type { FactStatus, Owner } from '@taxpresso/ledger';
 import {
   buildCopyPanel,
+  ENGINE_RUBRICS_2026,
   enteredValue,
   FORM_2025,
   FORM_2026,
@@ -21,10 +22,10 @@ import type { Line } from '@taxpresso/rules-ge';
 import type { Lang } from '@taxpresso/questionnaire';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
-/** Rubrics the form works out and the engine computes, by the column they fill. */
+/** Rubrics the engine computes, by the column they fill (@taxpresso/filing-ge, cited there). */
 const ENGINE_RUBRICS = {
-  icc: new Set(['31.50', '41.50', '31.95', '41.95', '61.25', '61.30']),
-  ifd: new Set(['31.20', '41.20', '31.90', '41.90', '59.20', '61.20']),
+  icc: new Set<string>(ENGINE_RUBRICS_2026.icc),
+  ifd: new Set<string>(ENGINE_RUBRICS_2026.ifd),
 };
 
 /** The engine's values for the rubrics it computes (SPEC.md section 7), as form items. */

@@ -1,17 +1,20 @@
 // The adaptive questionnaire (SPEC.md section 6). Answers are facts in the ledger (status
 // "stated"); everything else here (which questions apply, what is still missing, what is not
 // supported) is computed from the ledger and the vault documents, so chat and UI always agree.
-import type {
-  Fact,
-  FactSource,
-  FactValue,
-  KeyDef,
-  KeyRegistry,
-  Ledger,
-  Owner,
-  Person,
-  Requirement,
-  VaultDocument,
+import {
+  formatMoneyPlain,
+  invalidValue,
+  parseMoney,
+  type Fact,
+  type FactSource,
+  type FactValue,
+  type KeyDef,
+  type KeyRegistry,
+  type Ledger,
+  type Owner,
+  type Person,
+  type Requirement,
+  type VaultDocument,
 } from '@taxpresso/ledger';
 import {
   NBSP,
@@ -115,6 +118,7 @@ export class QuestionnaireEngine {
       commune: 'enum',
       yesno: 'boolean',
       number: 'integer',
+      money: 'money',
       multi: 'enum_list',
     };
     const checkCondition = (c: Condition | undefined, where: string): void => {
@@ -171,7 +175,10 @@ export class QuestionnaireEngine {
       const owners: Owner[] = question.perPerson ? people() : ['household'];
       for (const person of owners) {
         if (question.when && !this.#holds(question.when, person, answers, people())) continue;
-        const fact = ledger.get(question.key, person);
+        const stored = ledger.get(question.key, person);
+        // An answer the key no longer accepts (an option that was replaced) is asked again.
+        const def = this.keys[question.key];
+        const fact = stored && def && invalidValue(def, stored.value) ? undefined : stored;
         // Read from a document and not confirmed yet: a suggestion, not an answer.
         const suggestion = fact?.status === 'extracted' ? fact : undefined;
         const answer = suggestion ? undefined : fact;
@@ -351,6 +358,7 @@ export class QuestionnaireEngine {
     if (q.type === 'commune') return this.#communeName(String(value));
     if (q.type === 'yesno') return YES_NO[lang][value ? 0 : 1];
     if (q.type === 'number') return String(value);
+    if (q.type === 'money') return typeof value === 'number' ? chfText(value) : String(value);
     const labels = this.#selected(slot, value).map((o) => o.label[lang]);
     return labels.length ? labels.join(', ') : (q.none?.[lang] ?? '');
   }
@@ -450,6 +458,26 @@ export class QuestionnaireEngine {
         }
         return n;
       }
+      case 'money': {
+        // Francs as a number (790, 790.5) or as text ("1'250.50", "CHF 790"), never via floats:
+        // the text is read digit by digit into centimes.
+        const text =
+          typeof raw === 'number' && Number.isFinite(raw)
+            ? String(raw)
+            : typeof raw === 'string'
+              ? raw
+              : '';
+        const parsed = parseMoney(text);
+        if (!parsed.ok)
+          return bad(`expected an amount in CHF, e.g. 790 or 1'250.50 (${parsed.reason})`);
+        if (parsed.value < 0) return bad('expected an amount of zero or more');
+        const max = this.keys[q.key]?.max;
+        if (max !== undefined && parsed.value > max) return bad(`expected at most ${chfText(max)}`);
+        return parsed.value;
+      }
     }
   }
 }
+
+/** "CHF 1250.50": centimes as the form writes them, with the currency. */
+const chfText = (centimes: number) => `CHF ${formatMoneyPlain(centimes)}`;

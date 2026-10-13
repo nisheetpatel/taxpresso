@@ -423,6 +423,10 @@ export class Workspace {
             known: {
               ...(known.household ? { household: known.household } : {}),
               ...(known.wealthItems ? { wealthItems: known.wealthItems } : {}),
+              ...(known.childSupport ? { childSupport: known.childSupport } : {}),
+              ...(known.ifdParentalScale !== undefined
+                ? { ifdParentalScale: known.ifdParentalScale }
+                : {}),
             },
           }
         : {}),

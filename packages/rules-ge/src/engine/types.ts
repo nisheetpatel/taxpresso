@@ -74,16 +74,39 @@ export interface PersonInput {
   pensionBuyIn?: Amount;
   /** Member of a pension fund (2nd pillar). Default: when a certificate shows box 10.1. */
   hasPensionFund?: boolean;
-  /** Actual yearly cost of getting to work (public transport pass, bike flat, car equivalent). */
+  /**
+   * Yearly cost of getting to work as an amount: the public transport paid, or for a driver who
+   * could have used public transport, what it would have cost (Form. 2a 2026 p. 6).
+   */
   commuteCost?: Amount;
+  /** How the person got to work, when that, not an amount, sets the travel costs. */
+  commuteMode?: CommuteMode;
   /** Working days with a main meal away from home (15 a day). */
   mealDays?: number;
+  /** The facts behind mealDays. */
+  mealFacts?: readonly string[];
   /** ICC meal deduction allowed: more than 2 hours a day by public transport (guide p. 19). */
   mealsIccAllowed?: boolean;
   /** 31.63: other actual professional costs (union dues, tools...). */
   otherProfessionalCosts?: Amount;
   /** 59.50: professional training paid. */
   trainingCosts?: Amount;
+}
+
+/**
+ * The way to work, for travel costs (frais de déplacement): ch-2026-ifd-instructions-personnes-
+ * physiques p. 6, ge-2025-guide-declaration-pp p. 19 to 22.
+ */
+export interface CommuteMode {
+  /** bike: bike, e-bike or moped with a yellow plate; motorbike: white plate. */
+  by: 'public_transport' | 'car' | 'motorbike' | 'bike' | 'walk' | 'home';
+  /** Car or motorbike: whether public transport could have been used for the trip. */
+  transitUsable?: boolean;
+  /** Car or motorbike without usable public transport: kilometres one way, and days driven. */
+  kmOneWay?: number;
+  days?: number;
+  status?: InputStatus;
+  facts?: readonly string[];
 }
 
 export interface ChildInput {
@@ -138,8 +161,17 @@ export interface EngineInput {
   /** Override the ICC splitting derived from the household. */
   splitting?: IccSplitting;
   /**
-   * Federal parental scale for a single parent sharing custody: the documents in the library don't
-   * say which parent gets it, so it must be given; without it the federal tax is not computed.
+   * A parent without a partner sharing custody: child support (contribution d'entretien) for the
+   * children. 'receives': the children count in full here (child deductions, splitting, parental
+   * scale); 'pays': they count for the other parent; 'none': half each, and the parental scale goes
+   * to the parent who earns more (ifdParentalScale). ch-na-circulaire-30-epoux-famille p. 24, 32
+   * and 33 (ch. 13.4.2, 14.4, 14.5); ge-2025-guide-declaration-pp p. 45 and 46.
+   */
+  childSupport?: 'receives' | 'pays' | 'none';
+  /**
+   * Federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24, ch. 13.4.2; p. 32, ch. 14.4.2).
+   * Unknown, the federal tax is not computed.
    */
   ifdParentalScale?: boolean;
   household?: {

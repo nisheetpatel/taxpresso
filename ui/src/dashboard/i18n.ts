@@ -34,6 +34,7 @@ export const messages = {
     confirmNext: 'Confirm and continue',
     none: 'None of these',
     chooseCommune: 'Choose your commune',
+    amountPlaceholder: 'e.g. 790',
     notSupportedPick: 'Taxpresso can’t prepare this part yet.',
     allDone: 'That’s all the questions for now.',
     allDoneLead: 'Next, the documents below. Your estimate updates as they come in.',
@@ -175,6 +176,7 @@ export const messages = {
     confirmNext: 'Confirmer et continuer',
     none: 'Aucun de ceux-là',
     chooseCommune: 'Choisissez votre commune',
+    amountPlaceholder: 'p. ex. 790',
     notSupportedPick: 'Taxpresso ne peut pas encore préparer cette partie.',
     allDone: 'C’est tout pour les questions, pour l’instant.',
     allDoneLead:

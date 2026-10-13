@@ -89,12 +89,110 @@ export const KEYS_2026 = {
     label: { en: 'Pension fund buy-in', fr: 'Rachat de cotisations 2e pilier' },
     official: 'rachat 2e pilier (LPP)',
   },
+  // Travel to work and lunches away from home (frais de déplacement, frais de repas): what people
+  // know, which the engine turns into 31.60, 31.70 and 31.71 (../engine/compute.ts). The rules:
+  // ch-2026-ifd-instructions-personnes-physiques p. 6 (federal: public transport paid; bike or
+  // moped with a yellow plate, a flat amount; car or motorbike with a white plate, the price of
+  // public transport, or by the kilometre when it can't be used; meals per day), and
+  // ge-2025-guide-declaration-pp p. 19 to 22 (Geneva: the same costs, a lower cap; meals only when
+  // the trip by public transport takes over 2 hours a day).
   'profile.commute': {
     type: 'enum',
-    values: ['public_transport', 'car_or_motorbike', 'bike_or_walk', 'mostly_home'],
+    values: [
+      'public_transport',
+      'public_transport_long',
+      'car',
+      'motorbike',
+      'bike',
+      'walk',
+      'mostly_home',
+    ],
     perPerson: true,
     label: { en: 'Way to work', fr: 'Trajet pour le travail' },
     official: 'frais de déplacement',
+    source:
+      'ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 19, 20 and 22',
+  },
+  'commute.transit_cost': {
+    type: 'money',
+    min: 0,
+    max: 2_000_000,
+    perPerson: true,
+    label: {
+      en: 'Public transport to work, paid in the year',
+      fr: 'Transports publics pour le travail, payés dans l’année',
+    },
+    official: 'frais de déplacement',
+    source: 'ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 22',
+  },
+  'commute.transit_usable': {
+    type: 'enum',
+    values: ['yes', 'yes_long', 'no'],
+    perPerson: true,
+    label: {
+      en: 'Could the trip to work be made by public transport',
+      fr: 'Le trajet pour le travail était-il possible en transports publics',
+    },
+    source: 'ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 19',
+  },
+  'commute.transit_equivalent': {
+    type: 'money',
+    min: 0,
+    max: 2_000_000,
+    perPerson: true,
+    label: {
+      en: 'What public transport to work would have cost',
+      fr: 'Ce qu’auraient coûté les transports publics pour le travail',
+    },
+    official: 'frais de déplacement',
+    source: 'ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 20',
+  },
+  'commute.distance_km': {
+    type: 'integer',
+    min: 1,
+    max: 300,
+    perPerson: true,
+    label: {
+      en: 'Home to work, one way, in kilometres',
+      fr: 'Domicile au lieu de travail, aller simple, en kilomètres',
+    },
+    source: 'ch-2026-ifd-instructions-personnes-physiques p. 6',
+  },
+  'commute.drive_days': {
+    type: 'integer',
+    min: 1,
+    max: 366,
+    perPerson: true,
+    label: { en: 'Days driven to work', fr: 'Jours de trajet en véhicule pour le travail' },
+    source: 'ch-2026-ifd-instructions-personnes-physiques p. 6',
+  },
+  'meals.days': {
+    type: 'integer',
+    min: 0,
+    max: 366,
+    perPerson: true,
+    label: {
+      en: 'Work days with lunch away from home',
+      fr: 'Jours de travail avec repas de midi hors du domicile',
+    },
+    official: 'frais de repas',
+    source: 'ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 19',
+  },
+  // Shared custody without a partner: who gets the federal parental scale and the child
+  // deductions depends on child support (ch-na-circulaire-30-epoux-famille p. 24, p. 32 and 33:
+  // ch. 13.4.2, 14.4, 14.5), and the Geneva family charge and splitting too
+  // (ge-2025-guide-declaration-pp p. 45 and 46).
+  'profile.child_support': {
+    type: 'enum',
+    values: ['i_receive', 'i_pay', 'none_i_earn_more', 'none_other_earns_more', 'none_unsure'],
+    perPerson: false,
+    label: {
+      en: 'Child support between the parents',
+      fr: 'Contribution d’entretien entre les parents',
+    },
+    official: 'contribution d’entretien',
+    source:
+      'ch-na-circulaire-30-epoux-famille p. 24, p. 32 and 33; ge-2025-guide-declaration-pp p. 45 and 46',
   },
   'profile.childcare': {
     type: 'enum',

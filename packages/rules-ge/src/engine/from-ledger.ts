@@ -120,6 +120,41 @@ export function engineInputFromFacts(
     for (let i = 0; i < count; i++)
       children.push({ custody: custody === 'shared' ? 'shared' : 'full' });
   }
+  // Shared custody without a partner: child support, and without it who earns more, decide who
+  // gets the parental scale and the child deductions (ch-na-circulaire-30-epoux-famille p. 24).
+  const support =
+    count > 0 && custody === 'shared' && !couple ? answer('profile.child_support') : undefined;
+  const sharing: Pick<EngineInput, 'childSupport' | 'ifdParentalScale'> =
+    support === 'i_receive'
+      ? { childSupport: 'receives' }
+      : support === 'i_pay'
+        ? { childSupport: 'pays' }
+        : support === 'none_i_earn_more'
+          ? { childSupport: 'none', ifdParentalScale: true }
+          : support === 'none_other_earns_more'
+            ? { childSupport: 'none', ifdParentalScale: false }
+            : support === 'none_unsure'
+              ? { childSupport: 'none' }
+              : {};
+  // Alimony and child support amounts have no key yet: they are not in the calculation.
+  const paysAlimony = answer('profile.payments');
+  const receivesAlimony = counted.some(
+    (f) =>
+      f.key === 'profile.income_sources' && Array.isArray(f.value) && f.value.includes('alimony'),
+  );
+  if (
+    support === 'i_receive' ||
+    support === 'i_pay' ||
+    receivesAlimony ||
+    (Array.isArray(paysAlimony) && paysAlimony.includes('alimony_paid'))
+  ) {
+    note(
+      t(
+        'Alimony and child support (contribution d’entretien): Taxpresso can’t take their amounts yet, so they are not in the calculation (received: income, 13.10; paid: deduction, 53.10).',
+        `Pensions et contributions d’entretien${NB}: Taxpresso ne peut pas encore en reprendre les montants, ils ne sont donc pas dans le calcul (reçues${NB}: revenu, 13.10${NB}; versées${NB}: déduction, 53.10).`,
+      ),
+    );
+  }
 
   const people: PersonInput[] = ids.map((id) => {
     // One employment per salary certificate (the instance is the document id).
@@ -191,6 +226,52 @@ export function engineInputFromFacts(
     if (occupational) p.pensionOccupational = occupational;
     if (other) p.pensionOther = other;
 
+    // The way to work and lunches away from home: the answers, read only along the questions that
+    // apply to them (an amount left from an earlier answer doesn't count).
+    const one = (key: string) => of(key, id)[0];
+    const way = one('profile.commute');
+    const by = way?.value;
+    const usable = one('commute.transit_usable');
+    if (by === 'public_transport' || by === 'public_transport_long') {
+      p.commuteMode = { by: 'public_transport', facts: [way!.id] };
+      const paid = amountOf(of('commute.transit_cost', id));
+      if (paid) p.commuteCost = paid;
+    } else if (by === 'car' || by === 'motorbike') {
+      const facts = [way!.id, ...(usable ? [usable.id] : [])];
+      if (usable?.value === 'yes' || usable?.value === 'yes_long') {
+        p.commuteMode = { by, transitUsable: true, facts };
+        const price = amountOf(of('commute.transit_equivalent', id));
+        if (price) p.commuteCost = price;
+      } else if (usable?.value === 'no') {
+        const km = one('commute.distance_km');
+        const days = one('commute.drive_days');
+        p.commuteMode = {
+          by,
+          transitUsable: false,
+          ...(typeof km?.value === 'number' ? { kmOneWay: km.value } : {}),
+          ...(typeof days?.value === 'number' ? { days: days.value } : {}),
+          status: worst([km, days].flatMap((f) => (f ? [statusOf(f.status)] : []))),
+          facts: [...facts, ...[km, days].flatMap((f) => (f ? [f.id] : []))],
+        };
+      } else {
+        p.commuteMode = { by, facts };
+      }
+    } else if (by === 'bike' || by === 'walk') {
+      p.commuteMode = { by, facts: [way!.id] };
+    } else if (by === 'mostly_home') {
+      p.commuteMode = { by: 'home', facts: [way!.id] };
+    }
+    const mealDays = one('meals.days');
+    if (by !== undefined && by !== 'mostly_home' && typeof mealDays?.value === 'number') {
+      p.mealDays = mealDays.value;
+      p.mealFacts = [mealDays.id];
+      // Geneva counts meals only when the trip by public transport takes over 2 hours a day
+      // (ge-2025-guide-declaration-pp p. 19).
+      p.mealsIccAllowed =
+        by === 'public_transport_long' ||
+        ((by === 'car' || by === 'motorbike') && usable?.value === 'yes_long');
+    }
+
     const pillar3a = amountOf(of('pillar3a.paid', id));
     if (pillar3a) p.pillar3a = pillar3a;
     const buyIn = amountOf(of('lpp.buyin', id));
@@ -228,6 +309,7 @@ export function engineInputFromFacts(
       civilStatus,
       people,
       children,
+      ...sharing,
       household: hh,
       wealthItems,
     },

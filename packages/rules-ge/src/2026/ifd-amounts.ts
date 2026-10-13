@@ -22,6 +22,13 @@ export const IFD_2026: IfdAmounts = {
     source: `${INSTRUCTIONS} p. 6; ${CIRCULAR} p. 2`,
   },
   commuteMax: { value: 330_000, source: `${CIRCULAR} p. 1 (art. 26 al. 1 let. a)` },
+  /** Bike, e-bike or moped with a yellow plate: 700 a year. */
+  commuteBike: { value: 70_000, source: `${CIRCULAR} p. 1; ${INSTRUCTIONS} p. 6` },
+  /** No usable public transport: motorbike (white plate) 0.40, car 0.75 per km (0.70 in 2025). */
+  commuteKm: {
+    value: { car: 75, motorbike: 40 },
+    source: `${CIRCULAR} p. 1; ${INSTRUCTIONS} p. 6`,
+  },
   meals: {
     value: { perDay: 1_500, perYear: 320_000, halfPerDay: 750, halfPerYear: 160_000 },
     source: `${CIRCULAR} p. 2; ${INSTRUCTIONS} p. 6`,

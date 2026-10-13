@@ -7,6 +7,7 @@ export { FORM_2025, FORM_PAGES_2025, FORM_RUBRICS_2025 } from './2025/form-map.j
 export { COMMUNE_CODES_2025, COMMUNE_CODES_2025_SOURCE } from './2025/commune-codes.js';
 export { FORM_2026 } from './2026/form-map.js';
 export {
+  ENGINE_RUBRICS_2026,
   itemsFromLedger,
   LEDGER_ROUTES_2026,
   mergeItems,

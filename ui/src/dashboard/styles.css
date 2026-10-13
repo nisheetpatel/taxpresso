@@ -422,6 +422,28 @@ h2 {
   background: var(--surface);
 }
 
+.money {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.money-unit {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.money input {
+  width: 180px;
+  max-width: 100%;
+  min-height: var(--touch);
+  padding: 0 12px;
+  font-size: 20px;
+  border: 1px solid #d9cbbb;
+  border-radius: var(--radius-button);
+  background: var(--surface);
+}
+
 .select {
   min-height: var(--touch);
   max-width: 100%;

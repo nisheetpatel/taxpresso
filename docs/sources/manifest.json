@@ -8659,6 +8659,22 @@
       "notes": "État le 1er février 2026; the annex says it is valid for income due in 2025 (p. 2). The list for income due in 2026 is expected in early 2027 (each list is published the February after the income year): add it as ch-2026-oiis-dff-annexe. Notes A to E are on p. 10 to 18. The ESTV forms page (ch-na-formulaires-impot-federal-direct) links this ordinance as the official list for DA-1 to DA-3. Added by the securities agent."
     },
     {
+      "id": "ch-na-circulaire-30-epoux-famille",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Circulaire n° 30 du 21 décembre 2010: Imposition des époux et de la famille selon la loi fédérale sur l’impôt fédéral direct (LIFD)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.estv.admin.ch/dam/fr/sd-web/2YuHXYYJMbn9/dbst-ks-2010-1-030-d-fr.pdf",
+      "format": "pdf",
+      "publisher": "AFC (ESTV)",
+      "published": "2010-12-21",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "Who gets the federal parental scale (barème parental), the child deduction and the insurance deduction per child when separated or divorced parents share custody, with or without child support (ch. 13.4, 14.3 to 14.5).",
+      "notes": "Listed on https://www.estv.admin.ch/fr/imposition-du-couple-et-famille (section 2006 - 2010), the only circular on family taxation there on 14 October 2026. 2nd edition, 41 pages. Its amounts are those of 2010 (tax reduction 251 per child, childcare 10,100): read amounts in the yearly circulars, rules here. Parental scale: p. 23 to 25 (ch. 13.4); separated parents: p. 31 to 33 (ch. 14.3 to 14.5)."
+    },
+    {
       "id": "ch-na-law-lia",
       "canton": "CH",
       "doc_type": "law",

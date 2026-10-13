@@ -98,6 +98,66 @@ questions:
       - value: elsewhere
         label: { en: 'Mostly with the other parent', fr: 'Surtout chez l’autre parent' }
 
+  # Parents who share custody without a partner: child support decides who gets the federal
+  # parental scale and the child deductions (ch-na-circulaire-30-epoux-famille p. 24, ch. 13.4.2;
+  # p. 32 and 33, ch. 14.4 and 14.5), and the Geneva family charge and splitting
+  # (ge-2025-guide-declaration-pp p. 45 and 46).
+  - id: child_support
+    key: profile.child_support
+    type: choice
+    when:
+      all:
+        - { key: profile.children_custody, in: [shared] }
+        - { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+    explain:
+      en: 'With shared custody, only one parent gets the federal parental scale (barème parental), a lower rate: the one who receives child support or, without child support, the one who earns more. Without child support, you each get half the child deductions.'
+      fr: 'En garde partagée, un seul parent a droit au barème parental fédéral, un taux plus bas : celui qui reçoit la contribution d’entretien ou, sans contribution, celui qui gagne le plus. Sans contribution d’entretien, chacun a la moitié des déductions pour enfants.'
+    # ch-na-circulaire-30-epoux-famille p. 24
+    learnMore:
+      url: 'https://www.estv.admin.ch/dam/fr/sd-web/2YuHXYYJMbn9/dbst-ks-2010-1-030-d-fr.pdf#page=24'
+      label:
+        en: 'Federal tax circular 30, p. 24: the parental scale when parents live apart'
+        fr: 'Circulaire AFC n° 30, p. 24 : Barème parental des parents séparés'
+    text:
+      en: 'In 2026, did you or the other parent pay child support for the children?'
+      fr: 'En 2026, vous ou l’autre parent avez-vous versé une contribution d’entretien pour les enfants ?'
+    help:
+      en: 'Child support (contribution d’entretien) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
+      fr: 'La contribution d’entretien est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
+    options:
+      - value: i_receive
+        label:
+          {
+            en: 'The other parent paid me child support',
+            fr: 'L’autre parent m’a versé une contribution d’entretien',
+          }
+        chip: { en: 'Receives child support', fr: 'Reçoit une contribution' }
+      - value: i_pay
+        label:
+          {
+            en: 'I paid child support to the other parent',
+            fr: 'J’ai versé une contribution d’entretien à l’autre parent',
+          }
+        chip: { en: 'Pays child support', fr: 'Verse une contribution' }
+      - value: none_i_earn_more
+        label:
+          {
+            en: 'No child support, and I earn more than the other parent',
+            fr: 'Pas de contribution, et je gagne plus que l’autre parent',
+          }
+      - value: none_other_earns_more
+        label:
+          {
+            en: 'No child support, and the other parent earns more',
+            fr: 'Pas de contribution, et l’autre parent gagne plus',
+          }
+      - value: none_unsure
+        label:
+          {
+            en: 'No child support, and I don’t know who earns more',
+            fr: 'Pas de contribution, et je ne sais pas qui gagne le plus',
+          }
+
   - id: childcare
     key: profile.childcare
     type: choice
@@ -371,14 +431,15 @@ questions:
     perPerson: true
     when: { key: profile.income_sources, includes: salary }
     explain:
-      en: 'Getting to work can be deducted as travel costs (frais de déplacement). Your usual way of getting there is enough for now.'
-      fr: 'Le trajet pour le travail peut être déduit comme frais de déplacement. Votre moyen habituel suffit pour l’instant.'
-    # ge-2025-guide-declaration-pp p. 19
+      en: 'Getting to work can be deducted as travel costs (frais de déplacement). How you get there decides how they are counted. A trip by public transport of over 2 hours a day, there and back, also lets your lunches count for the Geneva tax.'
+      fr: 'Le trajet pour le travail se déduit comme frais de déplacement. Votre moyen de transport décide comment ils sont comptés. Un trajet en transports publics de plus de 2 heures par jour, aller et retour, permet aussi de déduire vos repas pour l’impôt genevois.'
+    # ch-2026-ifd-instructions-personnes-physiques p. 6 (federal rules by means of transport);
+    # ge-2025-guide-declaration-pp p. 19 (Geneva: meals only over 2 hours a day by public transport).
     learnMore:
-      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=19'
+      url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
-        en: 'Geneva tax guide 2025, p. 19: travel costs'
-        fr: 'Guide fiscal 2025, p. 19 : Frais de déplacements'
+        en: 'Federal tax instructions 2026, p. 6: travel costs'
+        fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
     text:
       p1:
         en: 'How did you mostly get to work in 2026?'
@@ -387,15 +448,217 @@ questions:
         en: 'How did your spouse or partner mostly get to work in 2026?'
         fr: 'Comment votre conjoint ou partenaire se rendait-il surtout au travail en 2026 ?'
     help:
-      en: 'On the official form: frais de déplacement.'
-      fr: 'Sur le formulaire officiel : frais de déplacement.'
+      en: 'Choose how you went on most work days. On the official form: frais de déplacement.'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire officiel : frais de déplacement.'
     options:
       - { value: public_transport, label: { en: 'Public transport', fr: 'Transports publics' } }
-      - { value: car_or_motorbike, label: { en: 'Car or motorbike', fr: 'Voiture ou moto' } }
-      - { value: bike_or_walk, label: { en: 'Bike or on foot', fr: 'Vélo ou à pied' } }
+      - value: public_transport_long
+        label:
+          {
+            en: 'Public transport, over 2 hours a day there and back',
+            fr: 'Transports publics, plus de 2 heures par jour aller et retour',
+          }
+        chip: { en: 'Long trip to work', fr: 'Long trajet' }
+      - { value: car, label: { en: 'Car', fr: 'Voiture' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied' } }
       - value: mostly_home
-        label: { en: 'Mostly from home', fr: 'Surtout en télétravail' }
+        label: { en: 'From home, almost every day', fr: 'Depuis chez moi, presque tous les jours' }
         chip: { en: 'Works from home', fr: 'Télétravail' }
+
+  - id: commute_transit_cost
+    key: commute.transit_cost
+    type: money
+    perPerson: true
+    when: { key: profile.commute, in: [public_transport, public_transport_long] }
+    explain:
+      en: 'For the federal tax you deduct what you actually paid to get to work, up to a yearly limit. The Geneva tax has a much lower limit.'
+      fr: 'Pour l’impôt fédéral, vous déduisez ce que vous avez réellement payé pour aller au travail, jusqu’à une limite annuelle. L’impôt genevois a une limite bien plus basse.'
+    # ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 22
+    learnMore:
+      url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
+      label:
+        en: 'Federal tax instructions 2026, p. 6: travel costs'
+        fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
+    text:
+      p1:
+        en: 'How much did you pay in 2026 for public transport to get to work?'
+        fr: 'Combien avez-vous payé en 2026 de transports publics pour aller au travail ?'
+      p2:
+        en: 'How much did your spouse or partner pay in 2026 for public transport to get to work?'
+        fr: 'Combien votre conjoint ou partenaire a-t-il payé en 2026 de transports publics pour aller au travail ?'
+    help:
+      en: 'Your yearly pass, or your monthly passes and tickets added up, in CHF. Leave out what your employer paid back.'
+      fr: 'Votre abonnement annuel, ou vos abonnements mensuels et billets additionnés, en CHF. Sans ce que votre employeur vous a remboursé.'
+
+  - id: commute_transit_usable
+    key: commute.transit_usable
+    type: choice
+    perPerson: true
+    when: { key: profile.commute, in: [car, motorbike] }
+    explain:
+      en: 'For the federal tax, a driver deducts what public transport would have cost. Only when you can’t use it (no line nearby, a disability, working hours with no service) do the kilometres count.'
+      fr: 'Pour l’impôt fédéral, un conducteur déduit ce qu’auraient coûté les transports publics. Ce n’est que si vous ne pouvez pas les utiliser (pas de ligne à proximité, un handicap, des horaires sans desserte) que les kilomètres comptent.'
+    # ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 19
+    learnMore:
+      url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
+      label:
+        en: 'Federal tax instructions 2026, p. 6: travel costs'
+        fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
+    text:
+      p1:
+        en: 'Could you have made that trip by public transport?'
+        fr: 'Auriez-vous pu faire ce trajet en transports publics ?'
+      p2:
+        en: 'Could your spouse or partner have made that trip by public transport?'
+        fr: 'Votre conjoint ou partenaire aurait-il pu faire ce trajet en transports publics ?'
+    help:
+      en: 'Over 2 hours a day there and back by public transport also lets your lunches count for the Geneva tax.'
+      fr: 'Plus de 2 heures par jour aller et retour en transports publics permet aussi de déduire vos repas pour l’impôt genevois.'
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, in 2 hours a day or less, there and back',
+            fr: 'Oui, en 2 heures par jour ou moins, aller et retour',
+          }
+      - value: yes_long
+        label:
+          {
+            en: 'Yes, but it takes over 2 hours a day, there and back',
+            fr: 'Oui, mais il faut plus de 2 heures par jour, aller et retour',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No, there is no public transport I can use',
+            fr: 'Non, aucun transport public que je puisse utiliser',
+          }
+
+  - id: commute_transit_equivalent
+    key: commute.transit_equivalent
+    type: money
+    perPerson: true
+    when: { key: commute.transit_usable, in: ['yes', yes_long] }
+    explain:
+      en: 'That price is what the federal tax lets you deduct for driving to work, up to a yearly limit.'
+      fr: 'C’est ce prix que l’impôt fédéral vous laisse déduire pour le trajet en véhicule, jusqu’à une limite annuelle.'
+    # ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-guide-declaration-pp p. 20
+    learnMore:
+      url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
+      label:
+        en: 'Federal tax instructions 2026, p. 6: travel costs'
+        fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
+    text:
+      p1:
+        en: 'What would a public transport pass for that trip have cost for 2026?'
+        fr: 'Combien aurait coûté un abonnement de transports publics pour ce trajet en 2026 ?'
+      p2:
+        en: 'What would a public transport pass for your spouse or partner’s trip have cost for 2026?'
+        fr: 'Combien aurait coûté un abonnement de transports publics pour le trajet de votre conjoint ou partenaire en 2026 ?'
+    help:
+      en: 'The cheapest pass covering the trip, for the months worked, in CHF.'
+      fr: 'L’abonnement le moins cher couvrant le trajet, pour les mois travaillés, en CHF.'
+
+  - id: commute_distance
+    key: commute.distance_km
+    type: number
+    perPerson: true
+    min: 1
+    max: 300
+    when: { key: commute.transit_usable, in: ['no'] }
+    explain:
+      en: 'Without public transport you can use, the federal tax counts a fixed amount per kilometre, there and back once a day, up to a yearly limit.'
+      fr: 'Sans transport public utilisable, l’impôt fédéral compte un montant fixe par kilomètre, un aller et retour par jour, jusqu’à une limite annuelle.'
+    # ch-2026-ifd-instructions-personnes-physiques p. 6
+    learnMore:
+      url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
+      label:
+        en: 'Federal tax instructions 2026, p. 6: travel costs'
+        fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
+    text:
+      p1:
+        en: 'How many kilometres is it from your home to your workplace, one way?'
+        fr: 'Combien de kilomètres y a-t-il de votre domicile à votre lieu de travail, aller simple ?'
+      p2:
+        en: 'How many kilometres is it from your spouse or partner’s home to their workplace, one way?'
+        fr: 'Combien de kilomètres y a-t-il du domicile de votre conjoint ou partenaire à son lieu de travail, aller simple ?'
+    help:
+      en: 'Round to the nearest kilometre.'
+      fr: 'Arrondi au kilomètre.'
+
+  - id: commute_drive_days
+    key: commute.drive_days
+    type: number
+    perPerson: true
+    min: 1
+    max: 366
+    when: { key: commute.transit_usable, in: ['no'] }
+    explain:
+      en: 'The kilometres count for each day you drove to work, once there and back.'
+      fr: 'Les kilomètres comptent pour chaque jour de trajet au travail, un aller et retour.'
+    # ch-2026-ifd-instructions-personnes-physiques p. 6
+    learnMore:
+      url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
+      label:
+        en: 'Federal tax instructions 2026, p. 6: travel costs'
+        fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
+    text:
+      p1:
+        en: 'On how many days did you drive to work in 2026?'
+        fr: 'Combien de jours avez-vous pris votre véhicule pour aller au travail en 2026 ?'
+      p2:
+        en: 'On how many days did your spouse or partner drive to work in 2026?'
+        fr: 'Combien de jours votre conjoint ou partenaire a-t-il pris son véhicule pour aller au travail en 2026 ?'
+    help:
+      en: 'Leave out holidays, sick days and days worked from home.'
+      fr: 'Sans les vacances, les jours de maladie et les jours de télétravail.'
+
+  # Lunches away from home (frais de repas): federal, per day up to a yearly limit, half with box G;
+  # Geneva, only over 2 hours a day by public transport (ge-2025-guide-declaration-pp p. 19). No
+  # deduction when the meal costs 10 francs or less (ch-2026-ifd-instructions-personnes-physiques
+  # p. 6); none on days worked from home (guide p. 20).
+  - id: meal_days
+    key: meals.days
+    type: number
+    perPerson: true
+    min: 0
+    max: 366
+    when:
+      {
+        key: profile.commute,
+        in: [public_transport, public_transport_long, car, motorbike, bike, walk],
+      }
+    explain:
+      en: 'Lunch away from home because of work costs more than at home. The federal tax counts a fixed amount per day, up to a yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate). The Geneva tax counts it only when your trip by public transport takes over 2 hours a day.'
+      fr: 'Manger à l’extérieur à cause du travail coûte plus cher qu’à la maison. L’impôt fédéral compte un montant fixe par jour, jusqu’à une limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire). L’impôt genevois ne le compte que si votre trajet en transports publics dépasse 2 heures par jour.'
+    # ge-2025-guide-declaration-pp p. 19
+    learnMore:
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=19'
+      label:
+        en: 'Geneva tax guide 2025, p. 19: meals'
+        fr: 'Guide fiscal 2025, p. 19 : Frais de repas'
+    text:
+      p1:
+        en: 'On how many work days in 2026 did you have lunch away from home?'
+        fr: 'Combien de jours de travail en 2026 avez-vous pris votre repas de midi hors de chez vous ?'
+      p2:
+        en: 'On how many work days in 2026 did your spouse or partner have lunch away from home?'
+        fr: 'Combien de jours de travail en 2026 votre conjoint ou partenaire a-t-il pris son repas de midi hors de chez lui ?'
+    help:
+      en: 'Count the days your lunch cost you more than 10 francs; 0 if you usually ate at home. On the official form: frais de repas.'
+      fr: 'Comptez les jours où votre repas vous a coûté plus de 10 francs ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
 
   - id: banks
     key: profile.banks

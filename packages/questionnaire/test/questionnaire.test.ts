@@ -47,6 +47,8 @@ const SINGLE_EMPLOYEE = {
   'pillar3a:p1': 'yes',
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
+  'commute_transit_cost:p1': "CHF 1'250.50",
+  'meal_days:p1': 0,
   banks: 2,
   crypto: 'non',
   payments: [],
@@ -63,12 +65,15 @@ describe('Geneva questionnaire 2026', () => {
     expect('fr' in q.text && q.text.fr).toMatch(new RegExp(`2026${NBSP}\\?$`));
   });
 
-  it('asks a single employee 14 questions, then lists what is missing', () => {
+  it('asks a single employee 16 questions, then lists what is missing', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     const asked = walk(e, ledger, SINGLE_EMPLOYEE);
     expect(asked).toEqual(Object.keys(SINGLE_EMPLOYEE));
-    expect(asked.length).toBeLessThanOrEqual(15);
+    // About 15 for a typical household (SPEC.md section 6): the commute adds its cost and the
+    // lunches away from home, which the federal travel and meal deductions need.
+    expect(asked.length).toBeLessThanOrEqual(16);
+    expect(ledger.get('commute.transit_cost', 'p1')?.value).toBe(125_050);
     const snap = e.snapshot(ledger);
     expect(e.next(snap)).toBeUndefined();
     expect(ledger.get('profile.commune')?.value).toBe('meyrin');
@@ -158,6 +163,7 @@ describe('Geneva questionnaire 2026', () => {
       civil_status: 'single',
       children: 2,
       children_custody: 'shared',
+      child_support: 'none_i_earn_more',
       childcare: 'creche_or_daycare',
     });
     expect(e.requirements(e.snapshot(ledger), []).map((r) => r.id)).toContain('childcare');
@@ -181,6 +187,125 @@ describe('Geneva questionnaire 2026', () => {
     const what = e.notSupported(e.snapshot(ledger)).map((n) => n.what.en);
     expect(what).toEqual(['Moving from another canton', 'Self-employment (annexe B)']);
     expect(e.notSupportedMessage('en')).toMatch(/GeTax/);
+  });
+
+  it('asks about the way to work only what that way needs', () => {
+    const START = {
+      civil_status: 'single',
+      children: 0,
+      commune: 'Onex',
+      moved: 'no',
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'taxed_at_source:p1': false,
+      'pillar3a:p1': false,
+      'lpp_buyin:p1': false,
+    };
+    const after = (answers: Record<string, unknown>) => {
+      const e = engine();
+      const ledger = new Ledger(2026, KEYS_2026);
+      const asked = walk(e, ledger, { ...START, ...answers });
+      return { asked: asked.slice(Object.keys(START).length), next: e.next(e.snapshot(ledger)) };
+    };
+    // By car, with public transport possible: its price, then lunches.
+    expect(
+      after({
+        'commute:p1': 'car',
+        'commute_transit_usable:p1': 'yes_long',
+        'commute_transit_equivalent:p1': 900,
+        'meal_days:p1': 200,
+      }),
+    ).toMatchObject({
+      asked: [
+        'commute:p1',
+        'commute_transit_usable:p1',
+        'commute_transit_equivalent:p1',
+        'meal_days:p1',
+      ],
+      next: { id: 'banks' },
+    });
+    // By car, no public transport possible: the kilometres and the days instead.
+    expect(
+      after({
+        'commute:p1': 'car',
+        'commute_transit_usable:p1': 'no',
+        'commute_distance:p1': 18,
+        'commute_drive_days:p1': 210,
+        'meal_days:p1': 0,
+      }).next?.id,
+    ).toBe('banks');
+    // By bike: lunches only. From home: nothing more.
+    expect(after({ 'commute:p1': 'bike' }).next?.id).toBe('meal_days:p1');
+    expect(after({ 'commute:p1': 'mostly_home' }).next?.id).toBe('banks');
+  });
+
+  it('takes amounts in CHF as centimes, and refuses what is not an amount', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      civil_status: 'single',
+      children: 0,
+      commune: 'Onex',
+      moved: 'no',
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'taxed_at_source:p1': false,
+      'pillar3a:p1': false,
+      'lpp_buyin:p1': false,
+      'commute:p1': 'public_transport_long',
+    });
+    const id = 'commute_transit_cost:p1';
+    expect(() => e.answer(ledger, id, 'a lot', USER)).toThrow(/amount in CHF/);
+    expect(() => e.answer(ledger, id, -5, USER)).toThrow(/zero or more/);
+    expect(() => e.answer(ledger, id, 25_000, USER)).toThrow(/at most CHF 20000\.00/);
+    e.answer(ledger, id, 790.5, USER);
+    expect(ledger.get('commute.transit_cost', 'p1')?.value).toBe(79_050);
+    const snap = e.snapshot(ledger);
+    const slot = snap.slots.find((s) => s.id === id)!;
+    expect(e.describe(slot, 'en')).toBe('CHF 790.50');
+    expect(e.render(slot, snap, 'fr')).toMatchObject({ type: 'money', value: 79_050 });
+    expect(e.chips(snap, 'en')).toContain('Long trip to work');
+  });
+
+  it('asks about child support only when a parent without a partner shares custody', () => {
+    const e = engine();
+    const asks = (status: string, custody: string) => {
+      const ledger = new Ledger(2026, KEYS_2026);
+      walk(e, ledger, { civil_status: status, children: 1, children_custody: custody });
+      return e.next(e.snapshot(ledger))?.id === 'child_support';
+    };
+    expect(asks('divorced', 'shared')).toBe(true);
+    expect(asks('single', 'shared')).toBe(true);
+    expect(asks('married', 'shared')).toBe(false);
+    expect(asks('divorced', 'with_household')).toBe(false);
+  });
+
+  it('asks again an answer whose option no longer exists', () => {
+    const e = engine();
+    const answered = (key: string, person: 'p1' | 'household', value: string | number) => ({
+      id: `f_${key}`,
+      key,
+      person,
+      taxYear: 2026,
+      value,
+      status: 'stated' as const,
+      source: { method: 'user' as const },
+      createdAt: '2026-10-01T00:00:00.000Z',
+    });
+    // "Bike or on foot" was one option before the way to work was asked in detail.
+    const ledger = new Ledger(2026, KEYS_2026, [
+      answered('profile.civil_status', 'household', 'single'),
+      answered('profile.commute', 'p1', 'bike_or_walk'),
+    ]);
+    const slot = e.snapshot(ledger).slots.find((s) => s.question.key === 'profile.commute');
+    expect(slot).toBeUndefined(); // only once a salary is said
+    const withSalary = new Ledger(2026, KEYS_2026, [
+      answered('profile.civil_status', 'household', 'single'),
+      { ...answered('profile.income_sources', 'p1', 'x'), value: ['salary'] },
+      answered('profile.commute', 'p1', 'bike_or_walk'),
+    ]);
+    const commute = e.snapshot(withSalary).slots.find((s) => s.id === 'commute:p1')!;
+    expect(commute.value).toBeUndefined();
   });
 
   it('understands answers in words, and refuses wrong ones clearly', () => {
