@@ -13,6 +13,7 @@ import { Holdings } from './Holdings';
 import { tp } from './i18n-planning';
 import { LastYear } from './LastYear';
 import { MoreBeforeDecember, TouCard } from './Planning';
+import { Reconcile } from './Reconcile';
 import type { OfficialLink, Question, RequirementView, State, Value } from './types';
 
 const POLL_MS = 2000;
@@ -177,6 +178,7 @@ export function App(): JSX.Element {
             <LastYear view={state.lastYear} year={state.taxYear} lang={L} />
             <DocumentCards state={state} lang={L} act={act} />
             <CopyPanel state={state} lang={L} act={act} />
+            <Reconcile state={state} lang={L} act={act} />
           </div>
           <aside class="side-col">
             <Missing state={state} lang={L} act={act} />

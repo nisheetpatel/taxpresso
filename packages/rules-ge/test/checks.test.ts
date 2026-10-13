@@ -209,6 +209,10 @@ describe('consistency checks (SPEC.md 5.8)', () => {
     expect(run([icc, ifd], ledger).map((c) => c.rule)).toEqual(['duplicate']);
     extracted(ledger, 'assessment.tax', 'household', ifd.id, 'ifd');
     expect(run([icc, ifd], ledger)).toEqual([]);
+    // This year's declaration downloaded again after a fix: not a copy, the latest is checked.
+    const first = doc({ kind: 'official_declaration', taxYear: 2026, issuer: 'GeTax' });
+    const again = doc({ kind: 'official_declaration', taxYear: 2026, issuer: 'GeTax' });
+    expect(run([first, again])).toEqual([]);
   });
 
   it('marks a check settled once the user wrote a note', () => {

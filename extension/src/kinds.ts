@@ -30,4 +30,9 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string }> = {
     en: 'Life insurance attestation (pillar 3b)',
     fr: 'Attestation d’assurance-vie (3e pilier B)',
   },
+  // SPEC.md 10.4: the PDF of this year's declaration, checked before the user transmits it.
+  official_declaration: {
+    en: 'This year’s declaration (PDF to check)',
+    fr: 'Déclaration de cette année (PDF à vérifier)',
+  },
 };

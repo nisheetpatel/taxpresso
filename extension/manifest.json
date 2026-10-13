@@ -105,6 +105,10 @@
       "description": "Records whose a document is, when you say so: yours, your partner's or both."
     },
     {
+      "name": "check_declaration_pdf",
+      "description": "Compares the PDF of your declaration, downloaded from GeTax or the online declaration, with the values you had to type: what differs and what is missing. It never transmits anything."
+    },
+    {
       "name": "open_dashboard",
       "description": "Opens your Taxpresso dashboard, which runs on this computer only."
     }

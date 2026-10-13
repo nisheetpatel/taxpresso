@@ -70,6 +70,9 @@ export const DOCUMENT_KINDS = [
   'tax_assessment',
   // A life insurance (pillar 3b) attestation: surrender value and premiums (ge-2025-guide-declaration-pp p. 8, p. 28).
   'life_insurance_attestation',
+  // The PDF of this year's own declaration, downloaded from GeTax or the online declaration before
+  // the user transmits it, to check it against the values to type (SPEC.md 10.4). Never a source of values.
+  'official_declaration',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 

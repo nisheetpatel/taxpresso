@@ -254,9 +254,10 @@ describe('last year’s declaration', () => {
     const newer = await upload(fixture('dupont-declaration-2025.pdf'), 'new.pdf');
     expect((await state()).lastYear).toMatchObject({ docId: newer.id, taxYear: 2025 });
     expect((await state()).lastYear?.expectedYear).toBeUndefined();
-    // The declaration for this very year (the official PDF before filing) is not last year's.
+    // The declaration for this very year (the official PDF before filing) is not last year's:
+    // it is checked before the user transmits it (./reconcile.test.ts).
     const own = await upload(forYear(2026), 'this-year.pdf');
-    expect(own.kind).toBeUndefined();
+    expect(own.kind).toBe('official_declaration');
     expect((await state()).lastYear?.docId).toBe(newer.id);
   });
 

@@ -491,6 +491,59 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.match(status.content[0].text, /2 read from the barcode/);
   });
 
+  test("this year's declaration PDF is checked against the values to type, offline (SPEC.md 10.4)", async () => {
+    // Synthetic Dupont declaration for 2026 (test/fixtures/make-prior-fixtures.mjs), read by the
+    // same reader as last year's, with the network guard in place.
+    writeFileSync(
+      path.join(vault, '2026', 'declaration-2026.pdf'),
+      readFileSync(path.join(root, 'test', 'fixtures', 'dupont-declaration-2026.pdf')),
+    );
+    const res = await client.callTool({ name: 'ingest_vault', arguments: {} });
+    assert.ok(!res.isError, res.content?.[0]?.text);
+    assert.match(
+      res.content[0].text,
+      /declaration-2026\.pdf \(this year's declaration: check_declaration_pdf compares it/,
+    );
+    const docs = JSON.parse(readFileSync(path.join(vault, '2026', 'documents.json'), 'utf8'));
+    const doc = docs.documents.find((d) => d.filename === 'declaration-2026.pdf');
+    assert.deepEqual([doc.kind, doc.taxYear, doc.parse.ok], ['official_declaration', 2026, true]);
+
+    const check = await client.callTool({ name: 'check_declaration_pdf', arguments: {} });
+    assert.ok(!check.isError, check.content?.[0]?.text);
+    const out = check.structuredContent;
+    assert.deepEqual([out.found, out.status, out.document.taxYear], [true, 'checked', 2026]);
+    assert.equal(out.clear, false);
+    // This vault has no pillar 3a: the PDF's 31.40 is only in the PDF.
+    assert.ok(out.toFix.some((l) => l.page === 'A1' && l.ref === '31.40'));
+    assert.match(check.content[0].text, /The user transmits the declaration themselves/);
+
+    // The dashboard shows the same check.
+    const { origin, host, cookie } = dashboardSession;
+    const state = JSON.parse(
+      (await get(`${origin}/api/state`, { headers: { Host: host, Cookie: cookie } })).body,
+    );
+    assert.equal(state.declarationCheck.status, 'checked');
+    assert.deepEqual(state.declarationCheck.check.counts, out.counts);
+
+    // Nothing from the PDF is stored, and nothing that identifies the taxpayer comes out.
+    const ledgerText = readFileSync(path.join(vault, '2026', 'ledger.json'), 'utf8');
+    assert.ok(!JSON.parse(ledgerText).facts.some((f) => f.source.docId === doc.id));
+    const shown = [
+      ledgerText,
+      readFileSync(path.join(vault, '2026', 'documents.json'), 'utf8'),
+      JSON.stringify(check),
+      JSON.stringify(state),
+    ];
+    for (const text of shown) {
+      // The 2026 PDF's names, numbers and its line of instructions (the salary certificate's own
+      // box 15 remark, read from its barcode above, is data of another document).
+      assert.doesNotMatch(
+        text,
+        /DUPONT|756\.0000\.0000\.0[01]|000\.00\.0000-0|0000-0000-0000|everything matches and transmit/,
+      );
+    }
+  });
+
   test('the server exits when Claude Desktop closes it', async () => {
     const pid = transport.pid;
     await client.close();

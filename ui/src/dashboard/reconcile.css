@@ -1,0 +1,227 @@
+/* "Check before you transmit" (Reconcile.tsx, SPEC.md 10.4). Only the shared tokens
+   (../shared/tokens.css), status chips and banners: no colors of its own. One column at phone width. */
+
+.rc-card {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rc-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.rc-lead,
+.rc-doc,
+.rc-todo {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rc-doc {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.rc-todo {
+  font-weight: 600;
+}
+
+.rc-clear {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rc-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line-soft);
+}
+
+.rc-line {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  column-gap: 14px;
+  row-gap: 8px;
+  align-items: start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.rc-line:last-child {
+  border-bottom: none;
+}
+
+.rc-ref {
+  grid-column: 1;
+  padding-top: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.rc-ref-inline {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.rc-label {
+  grid-column: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rc-official {
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.rc-gloss {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.rc-status {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+
+.rc-off {
+  font-weight: 600;
+  max-width: 28ch;
+}
+
+.rc-values {
+  grid-column: 2 / 4;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding: 10px 12px;
+  border-radius: var(--radius-button);
+  background: var(--ground);
+}
+
+.rc-values div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rc-values dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.rc-amounts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  white-space: nowrap;
+}
+
+.rc-col {
+  margin-right: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.rc-more {
+  border-top: 1px solid var(--line-soft);
+}
+
+.rc-more > summary {
+  cursor: pointer;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rc-more-lead {
+  margin: 0 0 8px;
+  max-width: 68ch;
+}
+
+.rc-eye {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rc-eye p,
+.rc-eye ul {
+  margin: 0;
+}
+
+.rc-eye li {
+  overflow-wrap: anywhere;
+}
+
+.rc-transmit {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rc-transmit ol {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.rc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .rc-card {
+    padding: 16px 14px;
+  }
+
+  .rc-line {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rc-ref,
+  .rc-label,
+  .rc-status,
+  .rc-values {
+    grid-column: 1;
+  }
+
+  .rc-status {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    text-align: left;
+  }
+
+  .rc-actions button {
+    width: 100%;
+  }
+}

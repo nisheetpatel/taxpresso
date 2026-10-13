@@ -1,7 +1,8 @@
 // Geneva filing side (SPEC.md section 10). So far: the official form map (every page, section and
 // rubric code of the declaration, cited), the items the tax engine and the ledger give per rubric,
-// and the copy panel that places them on the form for manual entry (10.5). Fill plans for browser
-// filling and the reconciliation against the official PDF come later (10.1 to 10.4).
+// the copy panel that places them on the form for manual entry (10.5), and the check of the
+// official PDF against it before the user transmits (10.4). Fill plans for browser filling come
+// later (10.1 to 10.3).
 export * from './form.js';
 export { FORM_2025, FORM_PAGES_2025, FORM_RUBRICS_2025 } from './2025/form-map.js';
 export { COMMUNE_CODES_2025, COMMUNE_CODES_2025_SOURCE } from './2025/commune-codes.js';
@@ -28,3 +29,17 @@ export {
   type CopySection,
   type Lang,
 } from './copy-panel.js';
+export {
+  reconcileDeclaration,
+  type ByEyeLine,
+  type CheckCell,
+  type CheckColumn,
+  type CheckLine,
+  type CheckOutcome,
+  type CheckRow,
+  type CheckSection,
+  type ComputedLine,
+  type DeclarationCheck,
+  type PrintedLine,
+  type ReconcileInput,
+} from './reconcile.js';
