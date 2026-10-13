@@ -62,6 +62,8 @@ export function pillar3aPlan(h: HouseholdInput): Pillar3aResult {
   const sources = [PILLAR3A_2026.source, ...ESTIMATE_SOURCES];
   const estimator = ordinaryTaxEstimator(h);
   if (!estimator) return { people, roomCentimes, assumptions: [...assumptions], sources };
+  // The engine says what it assumed for this household.
+  assumptions.clear();
   for (const a of estimator.assumptions) assumptions.add(a);
   // The room paid in on top of what each person already paid: the engine run with and without.
   const paid = h.people.map((p) => ({
