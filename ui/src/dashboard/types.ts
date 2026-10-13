@@ -1,5 +1,6 @@
 // The /api/state shape (extension/src/api.ts, dashboardState). Kept in step by the API tests.
 import type { Language } from './i18n';
+import type { EstimateView } from './Estimate';
 import type { SecuritiesView } from './Securities';
 import type { DocumentsState } from './types-docs';
 
@@ -99,6 +100,8 @@ export interface State extends DocumentsState {
   notSupported: string[];
   /** The securities list from broker exports, or null when there is none. */
   securities?: SecuritiesView | null;
+  /** The tax from the rules engine ("Your estimate"). */
+  estimate?: EstimateView;
   notSupportedMessage: string;
   activity: Activity[];
 }

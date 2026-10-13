@@ -1,0 +1,111 @@
+/* "Your estimate" card (Estimate.tsx). Tokens and chips come from ../shared/tokens.css; no colors
+   here. */
+
+.est-official {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.est-card {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.est-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.est-total strong {
+  font-size: 28px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.est-rows,
+.est-items,
+.est-details ul,
+.est-flagged ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.est-row,
+.est-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.est-row:last-child,
+.est-item:last-child {
+  border-bottom: 0;
+}
+
+.est-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.est-code {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.est-amount {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.est-subtitle {
+  margin: 4px 0 0;
+  font-size: 15px;
+}
+
+.est-details summary {
+  cursor: pointer;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  color: var(--link);
+}
+
+.est-details li,
+.est-flagged li {
+  padding: 4px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.est-flagged {
+  padding: 12px 14px;
+  border-radius: var(--radius-button);
+  background: var(--accent-soft);
+}
+
+.est-flagged strong {
+  font-size: 13px;
+}
+
+.est-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}

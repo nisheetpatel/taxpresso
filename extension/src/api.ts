@@ -5,6 +5,7 @@ import { NBSP, QuestionnaireError, type Lang } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
 import type { ApiRequest, ApiResponse } from './dashboard.js';
 import { documentCards, documentChecks, assessmentCards } from './document-views.js';
+import { estimateView } from './estimate.js';
 import { ExtractionError } from './extraction.js';
 import { KIND_LABELS } from './kinds.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
@@ -120,6 +121,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     },
     notSupported: ws.engine.notSupported(snap).map((n) => n.what[lang]),
     securities: ws.securities(lang) ?? null,
+    // The tax from the rules engine (./estimate.ts).
+    estimate: estimateView(ws, lang),
     notSupportedMessage: ws.engine.notSupportedMessage(lang),
     activity: ws.activity().map((a) => {
       if (a.what === 'answer' && a.detail) {

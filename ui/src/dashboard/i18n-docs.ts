@@ -67,7 +67,7 @@ const messages = {
     notDeclared: 'Nothing declared to compare',
     item: 'Item',
     totalsTitle: 'Totals on your assessment',
-    totalsNote: 'Taxpresso can’t compare these yet: the tax calculation comes in a later version.',
+    totalsNote: 'Taxpresso doesn’t compare these with its own calculation yet.',
     unconfirmed:
       '{n} values read from your assessment still need your OK, in the card “What Claude read in your documents”.',
     declaredUnconfirmed: '{n} declared value(s) still need your OK: not counted.',
@@ -134,7 +134,7 @@ const messages = {
     notDeclared: 'Rien de déclaré à comparer',
     item: 'Élément',
     totalsTitle: 'Totaux de votre taxation',
-    totalsNote: `Taxpresso ne peut pas encore les comparer${NB}: le calcul de l’impôt arrive dans une prochaine version.`,
+    totalsNote: 'Taxpresso ne les compare pas encore avec son propre calcul.',
     unconfirmed: `{n} valeurs lues dans votre avis de taxation sont encore à confirmer, dans la carte «${NB}Ce que Claude a lu dans vos documents${NB}».`,
     declaredUnconfirmed: '{n} valeur(s) déclarée(s) encore à confirmer, non comptée(s).',
     notifiedOn: 'Taxation datée du {date}',

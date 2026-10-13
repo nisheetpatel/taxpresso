@@ -98,7 +98,7 @@ export const ASSESSMENT_ITEMS_2026: readonly { assessed: string; declared: reado
   { assessed: 'assessment.debt_interest', declared: ['debt.interest'] },
 ];
 
-/** Totals the assessment shows that Taxpresso can't compare yet (no tax engine in this version). */
+/** Totals the assessment shows that Taxpresso doesn't compare with its engine's figures yet. */
 export const ASSESSMENT_TOTALS_2026 = [
   'assessment.taxable_income',
   'assessment.taxable_wealth',

@@ -30,8 +30,7 @@ export const messages = {
     chooseCommune: 'Choose your commune',
     notSupportedPick: 'Taxpresso can’t prepare this part yet.',
     allDone: 'That’s all the questions for now.',
-    allDoneLead:
-      'Next, the documents below. The tax calculation comes in a later version of Taxpresso.',
+    allDoneLead: 'Next, the documents below. Your estimate updates as they come in.',
     documents: 'Your documents',
     documentOne: '1 document',
     documentsMany: '{n} documents',
@@ -162,7 +161,7 @@ export const messages = {
     notSupportedPick: 'Taxpresso ne peut pas encore préparer cette partie.',
     allDone: 'C’est tout pour les questions, pour l’instant.',
     allDoneLead:
-      'Place aux documents, ci-dessous. Le calcul de l’impôt arrive dans une prochaine version de Taxpresso.',
+      'Place aux documents, ci-dessous. Votre estimation se met à jour au fur et à mesure.',
     documents: 'Vos documents',
     documentOne: '1 document',
     documentsMany: '{n} documents',

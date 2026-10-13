@@ -9,6 +9,7 @@ import type { RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
 import type { Dashboard } from './dashboard.js';
 import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './extraction.js';
+import { computeTaxOutput } from './estimate.js';
 import { INSTRUCTIONS } from './instructions.js';
 import { KIND_LABELS } from './kinds.js';
 import { securitiesStatusText } from './securities.js';
@@ -383,6 +384,32 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         content: [{ type: 'text', text: lines.join('\n') }],
         structuredContent: { pillar3a: { ...plan } },
       };
+    },
+  );
+
+  server.registerTool(
+    'compute_tax',
+    {
+      title: 'Compute the tax',
+      description:
+        "The user's Geneva cantonal and communal tax (ICC) and federal tax (IFD) from Taxpresso's rules engine: totals, main items by rubric code, what is an estimate or still needs the user's OK. detail: true explains every line with its official source.",
+      inputSchema: z.object({
+        detail: z
+          .boolean()
+          .optional()
+          .describe('Also return every item and tax line, how it was computed and its source.'),
+      }),
+      outputSchema: z.looseObject({
+        taxYear: z.number(),
+        computed: z.boolean(),
+        missing: z.array(z.string()),
+      }),
+      annotations: { title: 'Compute the tax', ...RO },
+    },
+    async ({ detail }) => {
+      await ws.ready();
+      const { text, structured } = computeTaxOutput(ws, detail === true);
+      return { content: [{ type: 'text', text }], structuredContent: structured };
     },
   );
 

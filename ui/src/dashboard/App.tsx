@@ -7,6 +7,7 @@ import { api, ApiError } from './api';
 import { Assessment } from './Assessment';
 import { Checks } from './Checks';
 import { DocumentCards } from './DocumentCards';
+import { Estimate } from './Estimate';
 import { isMessageKey, t, type Language } from './i18n';
 import { Securities } from './Securities';
 import type { Question, RequirementView, State, Value } from './types';
@@ -164,6 +165,7 @@ export function App(): JSX.Element {
                 </div>
               )}
             </section>
+            <Estimate view={state.estimate} lang={L} />
             <Assessment state={state} lang={L} />
             <Documents state={state} lang={L} busy={busy} act={act} />
             <Securities view={state.securities} year={state.taxYear} lang={L} />

@@ -45,6 +45,7 @@ describe('MCP surface', () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
       'answer_question',
+      'compute_tax',
       'get_document_for_review',
       'get_status',
       'ingest_vault',
@@ -143,6 +144,38 @@ describe('MCP surface', () => {
     expect(text(after)).toMatch(/Estimated tax saving .* about CHF [\d,]+/);
     expect(text(after)).toMatch(/Don't recommend specific 3a providers/);
     expect(text(after)).toMatch(/ch-2026-ifd-instructions-personnes-physiques p\. 8/);
+  });
+
+  it('computes the tax with the rules engine, flags estimates, and explains with detail', async () => {
+    const none = await call('compute_tax');
+    expect(structured<{ computed: boolean }>(none).computed).toBe(false);
+    expect(text(none)).toMatch(/needs your civil status and your commune/);
+
+    await call('answer_question', { id: 'civil_status', value: 'single' });
+    await call('answer_question', { id: 'children', value: 0 });
+    await call('answer_question', { id: 'commune', value: 'Carouge' });
+    await call('set_fact', { key: 'plan.gross_salary', value: 85_000 });
+    const res = await call('compute_tax');
+    const s = structured<{
+      computed: boolean;
+      total: number;
+      icc: { total: number };
+      ifd: { tax: number };
+      estimates: string[];
+    }>(res);
+    expect(s.computed).toBe(true);
+    expect(s.total).toBe(s.icc.total + s.ifd.tax);
+    expect(s.estimates.join(' ')).toMatch(/January 2027/);
+    expect(text(res)).toMatch(/Cantonal and communal tax \(ICC\): CHF/);
+    expect(text(res)).toMatch(/11\.10 Salaires bruts \(you\) CHF 85’000\.00 \[estimate\]/);
+    expect(text(res)).toMatch(/detail: true/);
+
+    const detailed = await call('compute_tax', { detail: true });
+    expect(text(detailed)).toMatch(/- 31\.50 Déduction forfaitaire ICC pour frais professionnels/);
+    expect(text(detailed)).toMatch(/ge-2025-guide-declaration-pp p\. 11, p\. 19 \(31\.50\)/);
+    expect(structured<{ detail: { lines: { id: string }[] } }>(detailed).detail.lines).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'icc.incomeBase' })]),
+    );
   });
 
   it('refuses facts outside the planning inputs', async () => {
