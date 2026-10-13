@@ -237,7 +237,7 @@ Build order: implement tax year 2025 first (guide fiscal 2025 and GeTax 2025 exi
 
 ## 7b. Official sources library
 
-`docs/sources/` holds the official documents for Geneva, Vaud, Valais, Fribourg, Neuchâtel, Jura, Bern, Ticino, Basel-Stadt, Basel-Landschaft and Zurich, plus federal tax (`ch`) and the eCH standards (`standards`). Per canton: `manifest.json` (verified URLs with type, tax year, priority), `NOTES.md` (filing channels, third-party rules, deadlines, source tax, gaps, each fact with its URL) and `files/` (downloads). Read `docs/sources/README.md` first: it lists known conflicts between documents.
+`docs/sources/` holds the official documents for Geneva, Vaud, Valais, Fribourg, Neuchâtel, Jura, Bern, Ticino, Basel-Stadt, Basel-Landschaft, Zurich, Lucerne, Aargau, St. Gallen and Zug, plus federal tax (`ch`) and the eCH standards (`standards`). Per canton: `manifest.json` (verified URLs with type, tax year, priority), `NOTES.md` (filing channels, third-party rules, deadlines, source tax, gaps, each fact with its URL) and `files/` (downloads). Read `docs/sources/README.md` first: it lists known conflicts between documents.
 
 How they are used: they are the authority, not a script to follow line by line.
 - Whenever anyone (Claude Code while building, or Claude at runtime) is in doubt about a rule, a value, a deadline or a label, they consult the relevant document before deciding, and cite its id.

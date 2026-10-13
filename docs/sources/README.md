@@ -1,6 +1,6 @@
 # Official sources library
 
-Official tax documents for Geneva, its neighbours and the large cantons, plus federal tax and the eCH data standards. Collected 13 October 2026 by one agent per canton, every URL opened and checked against its title and tax year. Official government sites only.
+Official tax documents for Geneva, its neighbours and the large cantons (eighteen folders: sixteen cantons, federal tax and the eCH data standards). Collected 13 and 14 October 2026 by one agent per canton, every URL opened and checked against its title and tax year. Official government sites only.
 
 ## How these documents are used
 
@@ -19,7 +19,7 @@ When a document and the code, the spec or Claude's own knowledge disagree, the d
 - `manifest.json`: all entries merged. Regenerate with `node scripts/merge-manifests.mjs`.
 - `lock.json`: size, sha256 and retrieval time of every downloaded file (created by the fetch script).
 
-Folders: `ge` `vd` `vs` `fr` `ne` `ju` `be` `ti` `bs` `bl` `zh`, plus `ch` (federal: IFD tariffs and deductions, source tax, withholding tax) and `standards` (eCH-0196, eCH-0270, eCH-0278, eCH-0119, salary certificate guide).
+Folders: `ge` `vd` `vs` `fr` `ne` `ju` `be` `ti` `bs` `bl` `zh` `lu` `ag` `sg` `zg`, plus `ch` (federal: IFD tariffs and deductions, source tax, withholding tax) and `standards` (eCH-0196, eCH-0270, eCH-0278, eCH-0119, salary certificate guide).
 
 ## Getting the files
 
@@ -38,24 +38,33 @@ The script checks that each file really is what the manifest says (a PDF starts 
 
 | Folder | Entries | Core | PDFs | Tax year 2026 items |
 |---|---|---|---|---|
-| ge | 22 | 16 | 7 | 2 |
-| vd | 22 | 15 | 17 | 3 |
+| ge | 24 | 17 | 8 | 2 |
+| vd | 40 | 22 | 33 | 12 |
 | vs | 13 | 11 | 5 | 3 |
-| fr | 24 | 15 | 12 | 3 |
+| fr | 49 | 34 | 34 | 12 |
 | ne | 17 | 11 | 10 | 2 |
 | ju | 21 | 14 | 9 | 5 |
-| be | 13 | 11 | 13 | 2 |
-| ti | 25 | 20 | 12 | 3 |
-| bs | 26 | 15 | 22 | 4 |
-| bl | 22 | 15 | 7 | 2 |
-| zh | 24 | 16 | 12 | 6 |
-| ch | 14 | 10 | 11 | 5 |
+| be | 39 | 23 | 22 | 7 |
+| ti | 39 | 32 | 25 | 9 |
+| bs | 29 | 16 | 25 | 5 |
+| bl | 50 | 24 | 40 | 9 |
+| zh | 68 | 40 | 53 | 24 |
+| lu | 35 | 17 | 27 | 12 |
+| ag | 33 | 16 | 23 | 12 |
+| sg | 35 | 20 | 31 | 7 |
+| zg | 35 | 17 | 22 | 16 |
+| ch | 15 | 11 | 12 | 5 |
 | standards | 9 | 6 | 6 | 0 |
 
 "html" entries are official pages, either because the document only exists as a page or because the PDF behind it couldn't be fetched by the collecting tool. The fetch script saves a snapshot of each page; the first person to run it should open these and add the direct PDF links they lead to.
 
 ## Known conflicts and open points (check before relying on them)
 
+- Lucerne: the childcare cap in the tax law (StG § 40/42) differs from the canton's own deduction overviews and guide; the law text on life annuities differs from the 2025 guide; Steuerbuch § 145 still describes the old downloadable software. See `lu/NOTES.md`.
+- Aargau: the eTAX start date (26 January vs 1 February 2026) and the change window after submitting (24 vs 48 hours) differ between official pages; the 2025 Progressionsverordnung differs from the StG. See `ag/NOTES.md`.
+- St. Gallen: Steuerbuch chapters dated 2021 quote older caps than the 2025 guide; use them for conditions only. See `sg/NOTES.md`.
+- Zug: tariff headers give different index dates; a sample form says 60 days while the guide says 30 April. See `zg/NOTES.md`.
+- Basel-Landschaft: six baselland.ch HTML pages refuse scripted downloads (Cloudflare challenge); open them in a browser. See `bl/NOTES.md`.
 - Barcode compression: the eCH-0196 barcode annex describes ZLIB-compressed XML, while eCH-0270 says "ZIP". The decoder must handle both until a real bank statement settles it (spike S2).
 - Salary certificate 2D barcode: no official specification was found on the ESTV or CSI pages reviewed. Don't assume it follows eCH-0270; determine it from a real certificate (spike S2).
 - eCH-0278 status: the cover says approved 2026-02-05, but the body mentions a later decision and calls it a proposal. Confirm before building on it. Its XSD and Excel annexes weren't found.
