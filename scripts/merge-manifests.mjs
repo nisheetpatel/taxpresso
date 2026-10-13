@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const srcDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'docs', 'sources');
-const ORDER = ['ge', 'vd', 'vs', 'fr', 'ne', 'ju', 'be', 'ti', 'bs', 'bl', 'zh', 'ch', 'standards'];
+const ORDER = ['ge', 'vd', 'vs', 'fr', 'ne', 'ju', 'be', 'ti', 'bs', 'bl', 'zh', 'lu', 'ag', 'sg', 'zg', 'ch', 'standards'];
 const REQUIRED = ['id', 'canton', 'doc_type', 'title', 'tax_year', 'language', 'url', 'format', 'publisher', 'published', 'verified_on', 'priority', 'why_needed'];
 const TYPES = new Set(['guide', 'form', 'tariff', 'communal_rates', 'deductions', 'source_tax', 'efiling_rules', 'law', 'other']);
 const FORMATS = new Set(['pdf', 'html', 'xlsx', 'xls', 'csv', 'zip', 'xml', 'xsd']);
