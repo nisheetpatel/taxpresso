@@ -145,6 +145,26 @@ describe('the salary certificate barcode', () => {
   );
 
   it(
+    'takes whose it is from the chat too (set_document_owner)',
+    async () => {
+      await call('answer_question', { id: 'civil_status', value: 'married' });
+      const { document } = await ws.addDocument(
+        await salaryCertificateJpegPdf(),
+        'Certificat.pdf',
+        'dashboard',
+      );
+      expect(document.parse.method).toBe('barcode_pending');
+      const res = await call('set_document_owner', { id: document.id, person: 'p2' });
+      expect(res.isError).toBeFalsy();
+      expect(text(res)).toMatch(/your partner's/);
+      expect(document.parse.method).toBe('barcode');
+      expect(value('salary.gross', 'p2')).toBe(8_500_000);
+      expect(text(await call('get_status'))).not.toMatch(/waiting for the user/);
+    },
+    TIMEOUT,
+  );
+
+  it(
     'lets the user say it is something else: their word wins, and it is read the other ways',
     async () => {
       await call('answer_question', { id: 'civil_status', value: 'married' });

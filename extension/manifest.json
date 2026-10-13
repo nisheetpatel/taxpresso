@@ -101,6 +101,10 @@
       "description": "Records that one of your documents replaces another, such as a corrected salary certificate. The old file stays in your folder."
     },
     {
+      "name": "set_document_owner",
+      "description": "Records whose a document is, when you say so: yours, your partner's or both."
+    },
+    {
       "name": "open_dashboard",
       "description": "Opens your Taxpresso dashboard, which runs on this computer only."
     }
@@ -116,7 +120,7 @@
   "prompts_generated": false,
   "keywords": ["tax", "impôts", "geneva", "genève", "switzerland", "declaration"],
   "compatibility": {
-    "platforms": ["darwin", "win32"],
+    "platforms": ["darwin", "linux", "win32"],
     "runtimes": {
       "node": ">=20.0.0"
     }

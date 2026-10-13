@@ -147,7 +147,7 @@ export function buildStatus(
       ? "Ask the next question: call next_questions. When a question comes with a suggestion from last year's declaration, ask the user whether it is still right, then save their answer with answer_question."
       : 'Ask the next question: call next_questions.';
   } else if (whose > 0) {
-    nextStep = `${whose} certificate${whose === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${whose === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Documents), and the values fill in.`;
+    nextStep = `${whose} certificate${whose === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${whose === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Documents), or tell you and you save it with set_document_owner; then the values fill in.`;
   } else if (toRead > 0) {
     nextStep = `${toRead} document${toRead === 1 ? '' : 's'} not read yet. Offer to read them: get_document_for_review sends that document's content to Claude, so ask the user first. Then propose what you read with propose_extraction. The user can also say what each one is in the dashboard.`;
   } else if (toConfirm > 0) {

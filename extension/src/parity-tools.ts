@@ -1,7 +1,8 @@
-// Chat equivalents of four dashboard actions: whatever the user can click in the dashboard, they
+// Chat equivalents of dashboard actions: whatever the user can click in the dashboard, they
 // can also ask Claude for, with the same result (SPEC.md section 6). Each tool calls the function
 // its dashboard route calls: mark_entered (/form/entered, /facts/entered), skip_question (/skip),
-// waive_requirement (/waive), replace_document (/documents/replace). C6: narrow descriptions,
+// waive_requirement (/waive), replace_document (/documents/replace), set_document_owner (the
+// dashboard's "whose" choice, /documents/kind). C6: narrow descriptions,
 // annotations, concise results.
 import type { McpServer } from '@modelcontextprotocol/server';
 import { enteredValue } from '@taxpresso/filing-ge';
@@ -391,6 +392,49 @@ export function registerParityTools(server: McpServer, ws: Workspace): void {
         return {
           content: [{ type: 'text', text }],
           structuredContent: { replaced: id, by: doc.id, read },
+        };
+      } catch (err) {
+        return toolError(err);
+      }
+    },
+  );
+
+  server.registerTool(
+    'set_document_owner',
+    {
+      title: 'Say whose a document is',
+      description:
+        "Records whose a document is, when the user says so: theirs (p1), their partner's (p2) or both (household). A salary certificate read from its barcode waits for this in a couple. Never from a name printed in the document alone: ask the user.",
+      inputSchema: z.object({
+        id: z.string().max(80).describe('The document id from list_documents.'),
+        person: z
+          .enum(['p1', 'p2', 'household'])
+          .describe('p1 the user, p2 their spouse or partner, household both.'),
+      }),
+      outputSchema: z.object({ id: z.string(), person: z.string(), values: z.number() }),
+      annotations: { title: 'Say whose a document is', ...ANNOTATIONS },
+    },
+    async ({ id, person }) => {
+      try {
+        const current = ws.documents.find((d) => d.id === id);
+        if (!current) throw new WorkspaceError('No such document. Use an id from list_documents.');
+        if (!current.kind) {
+          throw new WorkspaceError(
+            'Say what the document is first (propose_extraction or the dashboard), then whose it is.',
+          );
+        }
+        const doc = await ws.setDocumentKind(id, current.kind, person);
+        const values = ws.countedFacts().filter((f) => f.source.docId === doc.id).length;
+        const whose =
+          person === 'p1' ? 'yours' : person === 'p2' ? "your partner's" : 'both of yours';
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `“${doc.filename}” is ${whose}.${values ? ` ${plural(values, 'value')} from it now count${values === 1 ? 's' : ''}.` : ''}`,
+            },
+          ],
+          structuredContent: { id: doc.id, person, values },
         };
       } catch (err) {
         return toolError(err);
