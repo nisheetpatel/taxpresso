@@ -350,5 +350,21 @@
     "priority": "useful",
     "why_needed": "GeTax imports banks' electronic tax statements (eCH-0196); no direct bank-to-AFC transmission",
     "notes": "Verified in the main session."
+  },
+  {
+    "id": "ge-2025-declaration-specimen",
+    "canton": "GE",
+    "doc_type": "form",
+    "title": "Déclaration fiscale 2025 manuscrite (spécimen)",
+    "tax_year": 2025,
+    "language": "fr",
+    "url": "https://www.ge.ch/document/42265/telecharger",
+    "format": "pdf",
+    "publisher": "Administration fiscale cantonale (AFC), Genève",
+    "published": "2026-01-26",
+    "verified_on": "2026-10-13",
+    "priority": "core",
+    "why_needed": "The official 2025 paper form with every rubric code: récapitulation (PG2 to PG4: 14.00 revenu brut mobilier and fortune brute mobilière, 16.00, 16.70, 55.00, 56.20) and the état des titres (F1 récapitulation and imputations, F2 comptes bancaires et postaux, F3 titres suisses et étrangers, F4 relevés fiscaux), C2 (16.40), C3 (52.11, 56.30), E1 (55.10).",
+    "notes": "File declaration-PP-2025-specimen.pdf, 26 pages, each page watermarked SPECIMEN. Page found on https://www.ge.ch/document/declaration-impot-2025-documents-envoyes . The guide's short link www.ge.ch/c/imp-spde25 answers 404. Page numbers cited are PDF pages: PG2 p. 2, PG3 p. 3, PG4 p. 4, C2 p. 12, C3 p. 13, E1 p. 19, F1 p. 21, F2 p. 22, F3 p. 23, F4 p. 24. Added by the securities agent."
   }
 ]

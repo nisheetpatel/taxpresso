@@ -65,6 +65,14 @@
       "description": "Saves the values Claude read in a document, with their page and box, for you to confirm."
     },
     {
+      "name": "get_holdings",
+      "description": "Your securities list (état des titres) and other wealth: each line, whose it is, its value and income, the withholding tax you get back, and what is missing."
+    },
+    {
+      "name": "set_holding",
+      "description": "Saves what you tell Claude about your securities and accounts: the official value of a security, whose a line is, or an account or asset without a document."
+    },
+    {
       "name": "open_dashboard",
       "description": "Opens your Taxpresso dashboard, which runs on this computer only."
     }

@@ -6,6 +6,7 @@ import * as z from 'zod/v4';
 import type { ApiRequest, ApiResponse } from './dashboard.js';
 import { documentCards, documentChecks, assessmentCards } from './document-views.js';
 import { ExtractionError } from './extraction.js';
+import { documentPerson, holdingsView, saveHolding } from './holdings.js';
 import { KIND_LABELS } from './kinds.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
@@ -43,6 +44,17 @@ const FactEdit = z.object({
 const Entered = z.object({ id: z.string().max(80), entered: z.boolean() });
 const Replace = z.object({ id: z.string().max(80), by: z.string().max(80) });
 const Resolve = z.object({ id: z.string().max(120), note: z.string().max(500) });
+// "Your securities and accounts" (./holdings.ts): an official value, or whose a line is.
+const Official = z.object({
+  id: z.string().max(64),
+  value: z.string().max(40),
+  from: z.string().max(200),
+});
+const LineOwnerChange = z.object({
+  id: z.string().max(80),
+  origin: z.enum(['broker_export', 'document', 'you']),
+  owner: z.enum(['p1', 'p2', 'joint', 'children']),
+});
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
 
@@ -120,6 +132,7 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     },
     notSupported: ws.engine.notSupported(snap).map((n) => n.what[lang]),
     securities: ws.securities(lang) ?? null,
+    holdings: holdingsView(ws, lang) ?? null,
     notSupportedMessage: ws.engine.notSupportedMessage(lang),
     activity: ws.activity().map((a) => {
       if (a.what === 'answer' && a.detail) {
@@ -236,6 +249,28 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
         case '/facts/entered': {
           const { id, entered } = parse(Entered, req.body);
           await ws.setEntered(id, entered);
+          return state();
+        }
+        case '/holdings/official': {
+          const { id, value, from } = parse(Official, req.body);
+          await saveHolding(ws, { security: id, officialValue: value, from }, 'dashboard');
+          return state();
+        }
+        case '/holdings/owner': {
+          const { id, origin, owner } = parse(LineOwnerChange, req.body);
+          if (origin === 'document') {
+            // Lines read from a document belong to whoever the document is for.
+            const doc = ws.activeDocuments().find((d) => d.id === id);
+            const person = documentPerson(owner);
+            if (!doc?.kind || !person) throw new WorkspaceError('This line can’t take that owner.');
+            await ws.setDocumentKind(doc.id, doc.kind, person);
+          } else {
+            await saveHolding(
+              ws,
+              origin === 'you' ? { item: id, owner } : { security: id, owner },
+              'dashboard',
+            );
+          }
           return state();
         }
         case '/checks/resolve': {

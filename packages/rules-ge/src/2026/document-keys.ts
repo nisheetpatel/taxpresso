@@ -7,6 +7,7 @@
 //   January 2027 and re-opens every label that cites it);
 // - the assessment and the objection: ge-na-law-lpfisc and ch-na-law-lifd.
 import type { DocumentKind, KeyDef, KeyRegistry } from '@taxpresso/ledger';
+import { DOCUMENT_FIELDS_WEALTH_2026, DOCUMENT_KEYS_WEALTH_2026 } from './document-keys-wealth.js';
 
 const WAGE_GUIDE = 'std-lohnausweis-wegleitung-2026-fr';
 const GE_GUIDE = 'ge-2025-guide-declaration-pp';
@@ -409,6 +410,9 @@ export const DOCUMENT_KEYS_2026 = {
     `${GE_GUIDE} p. 37`,
   ),
 
+  // Bank statements, tax statements, crypto and life insurance: ./document-keys-wealth.ts.
+  ...DOCUMENT_KEYS_WEALTH_2026,
+
   // A short note from the user that settles a "Check this" item (SPEC.md section 5.8).
   // The instance is the check id.
   'check.note': {
@@ -483,6 +487,7 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
     'assessment.donations',
     'assessment.debt_interest',
   ],
+  ...DOCUMENT_FIELDS_WEALTH_2026,
 };
 
 /** The keys a document of this kind can give, or none. */

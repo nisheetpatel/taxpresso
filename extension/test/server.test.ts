@@ -46,6 +46,7 @@ describe('MCP surface', () => {
     expect(tools.map((t) => t.name).sort()).toEqual([
       'answer_question',
       'get_document_for_review',
+      'get_holdings',
       'get_status',
       'ingest_vault',
       'list_documents',
@@ -54,6 +55,7 @@ describe('MCP surface', () => {
       'open_dashboard',
       'propose_extraction',
       'set_fact',
+      'set_holding',
     ]);
     for (const tool of tools) {
       expect(tool.name.length).toBeLessThan(64);

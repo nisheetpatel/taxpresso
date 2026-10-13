@@ -21,6 +21,7 @@ import { swissDate, warning } from './messages.js';
 import type {
   BrokerCashflow,
   BrokerFormat,
+  CashflowKind,
   BrokerStatement,
   BrokerWarning,
   ChfAmount,
@@ -56,6 +57,11 @@ export interface SecurityLine {
   income: Money[];
   incomeChf?: number;
   incomeNote?: string;
+  /**
+   * What the income was: only dividends, only interest, or 'mixed' (both, or payments in lieu of
+   * dividends). The foreign tax credit differs by kind (ch-na-oiis art. 8 al. 3).
+   */
+  incomeKind?: 'dividend' | 'interest' | 'mixed';
   /** Tax withheld (positive), per currency. */
   withheld: Money[];
   withholdingSwissChf?: number;
@@ -104,6 +110,7 @@ interface Acc {
   valueChf?: ChfSum;
   income: Map<string, Decimal>;
   incomeChf?: ChfSum;
+  incomeKinds: Set<CashflowKind>;
   withheld: Map<string, Decimal>;
   swiss?: ChfSum;
   foreign?: ChfSum;
@@ -272,6 +279,7 @@ export function summarizeSecurities(
         id,
         values: new Map(),
         income: new Map(),
+        incomeKinds: new Set(),
         withheld: new Map(),
         withholdingUnknown: false,
         inLieu: new Map(),
@@ -374,6 +382,11 @@ export function summarizeSecurities(
     const incomeChf = a.incomeChf ? centimes(a.incomeChf) : hasCash ? 0 : undefined;
     if (incomeChf !== undefined) line.incomeChf = incomeChf;
     if (a.incomeChf) line.incomeNote = note(a.incomeChf)!;
+    if (a.incomeKinds.size) {
+      const [only] = a.incomeKinds;
+      line.incomeKind =
+        a.incomeKinds.size === 1 && (only === 'dividend' || only === 'interest') ? only : 'mixed';
+    }
     if (hasCash && !a.withholdingUnknown) {
       const swiss = a.swiss ? centimes(a.swiss) : 0;
       const foreign = a.foreign ? centimes(a.foreign) : 0;
@@ -405,6 +418,7 @@ function addFlow(a: Acc, f: BrokerCashflow): void {
     return;
   }
   addMoney(a.income, f.amount);
+  a.incomeKinds.add(f.kind);
   if (f.kind === 'payment_in_lieu') addMoney(a.inLieu, f.amount);
   a.incomeChf = addChf(a.incomeChf, f.chf, f.amount);
 }

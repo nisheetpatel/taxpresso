@@ -5,6 +5,7 @@
 import type { KeyRegistry } from '@taxpresso/ledger';
 import { COMMUNES_2026 } from './communes.js';
 import { KEYS_SECURITIES_2026 } from './keys-securities.js';
+import { KEYS_WEALTH_2026 } from './keys-wealth.js';
 import { DOCUMENT_KEYS_2026 } from './document-keys.js';
 
 export const KEYS_2026 = {
@@ -155,6 +156,8 @@ export const KEYS_2026 = {
   },
   // The securities list (état des titres), one instance per security: keys-securities.ts.
   ...KEYS_SECURITIES_2026,
+  // Accounts, crypto, loans, life insurance, valuables and debts the user describes: keys-wealth.ts.
+  ...KEYS_WEALTH_2026,
   // Values read from documents, one per document (./document-keys.ts).
   ...DOCUMENT_KEYS_2026,
 } as const satisfies KeyRegistry;

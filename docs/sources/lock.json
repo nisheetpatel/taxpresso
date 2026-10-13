@@ -2448,5 +2448,55 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-13T17:31:37.505Z",
     "status": "ok"
+  },
+  "ch-2025-oiis-dff-annexe": {
+    "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/2020/29/20260201/fr/pdf-a/fedlex-data-admin-ch-eli-cc-2020-29-20260201-fr-pdf-a.pdf",
+    "final_url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/2020/29/20260201/fr/pdf-a/fedlex-data-admin-ch-eli-cc-2020-29-20260201-fr-pdf-a.pdf",
+    "file": "ch/files/ch-2025-oiis-dff-annexe.pdf",
+    "bytes": 692588,
+    "sha256": "6f57adb464b918cffb4d502eeec92042c9a472546239584847a9f23f5e33a99b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:23.872Z",
+    "status": "ok"
+  },
+  "ch-na-law-lia": {
+    "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1966/371_385_384/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1966-371_385_384-20250101-fr-pdf-a.pdf",
+    "final_url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1966/371_385_384/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1966-371_385_384-20250101-fr-pdf-a.pdf",
+    "file": "ch/files/ch-na-law-lia.pdf",
+    "bytes": 475152,
+    "sha256": "591d65c2e7542a55ecca2d6f4b3c2258adde6faa9ec55791c5142a435c26a36a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:23.895Z",
+    "status": "ok"
+  },
+  "ch-na-oiis": {
+    "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1967/1129_1169_1163/20240101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1967-1129_1169_1163-20240101-fr-pdf-a.pdf",
+    "final_url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1967/1129_1169_1163/20240101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1967-1129_1169_1163-20240101-fr-pdf-a.pdf",
+    "file": "ch/files/ch-na-oiis.pdf",
+    "bytes": 238943,
+    "sha256": "234fe5700fba55069975c7dd856bde9d28ecd73c71fb628ce54e1b15586e330c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:23.911Z",
+    "status": "ok"
+  },
+  "ch-na-listes-des-cours-ictax": {
+    "url": "https://www.estv.admin.ch/fr/listes-des-cours-ictax",
+    "final_url": "https://www.estv.admin.ch/fr/listes-des-cours-ictax",
+    "file": "ch/files/ch-na-listes-des-cours-ictax.html",
+    "bytes": 330373,
+    "sha256": "a215eb926e41695ebefb28e4dfe40fc4cfb442608e4dff8dffed96c9bff7df77",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T21:35:24.085Z",
+    "status": "ok"
+  },
+  "ge-2025-declaration-specimen": {
+    "url": "https://www.ge.ch/document/42265/telecharger",
+    "final_url": "https://www.ge.ch/document/42265/telecharger",
+    "file": "ge/files/ge-2025-declaration-specimen.pdf",
+    "bytes": 908608,
+    "sha256": "3ee8eaf20c161f637f1e5d83bb79339f0382fe83fbbd41abafaf7483a33f7e07",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:24.145Z",
+    "status": "ok"
   }
 }

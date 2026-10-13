@@ -52,6 +52,12 @@ describe('the securities list from broker exports', () => {
       withholdingForeignChf: 0,
     });
     expect(lines.IETXPRS00038).toMatchObject({ quantity: '3.5', valueChf: 28_028, incomeChf: 111 });
+    // What the income was, for the foreign tax credit: a payment in lieu is not a dividend.
+    expect(summary.lines.map((l) => [l.id, l.incomeKind])).toEqual([
+      ['IETXPRS00038', 'mixed'],
+      ['CHTXPRS00026', 'dividend'],
+      ['USTXPRS00017', 'dividend'],
+    ]);
     for (const l of summary.lines) {
       for (const v of [l.valueChf, l.incomeChf, l.withholdingSwissChf, l.withholdingForeignChf]) {
         if (v !== undefined) expect(Number.isSafeInteger(v)).toBe(true);

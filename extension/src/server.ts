@@ -11,6 +11,7 @@ import type { Dashboard } from './dashboard.js';
 import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './extraction.js';
 import { INSTRUCTIONS } from './instructions.js';
 import { KIND_LABELS } from './kinds.js';
+import { registerHoldingTools } from './holdings-tools.js';
 import { securitiesStatusText } from './securities.js';
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
@@ -637,6 +638,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       }
     },
   );
+
+  // The securities list (état des titres) and other wealth: get_holdings, set_holding.
+  registerHoldingTools(server, ws);
 
   server.registerTool(
     'open_dashboard',
