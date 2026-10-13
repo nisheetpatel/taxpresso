@@ -1,4 +1,5 @@
-// Website copy: the home page and the Get started page. French first (Geneva), then English,
+// Website copy: the home page and the Get started page (the guides are in guides.ts). French
+// first (Geneva), then English,
 // German, Italian, Spanish and Portuguese; a native speaker reviews each before launch (SPEC.md
 // section 1). Second person, plain words, no en or em dashes, official French terms next to their
 // gloss. French says vous; German, Italian, Spanish and Portuguese use the informal you (du, tu,
@@ -40,7 +41,13 @@ const fr = {
   navLabel: 'Sections',
   langLabel: 'Langue',
   suggestLanguage: 'Proposer une langue',
-  nav: { how: 'Comment ça marche', principles: 'Principes', faq: 'Questions', start: 'Commencer' },
+  nav: {
+    how: 'Comment ça marche',
+    principles: 'Principes',
+    faq: 'Questions',
+    guides: 'Guides',
+    start: 'Commencer',
+  },
 
   tagline: 'Vos impôts, le temps d’un espresso.',
   lead: 'Répondez à quelques questions. Taxpresso s’occupe du reste.',
@@ -190,6 +197,7 @@ const fr = {
 
   faq: {
     title: 'Questions',
+    more: `Une autre question${NB}? [Lisez nos guides](/guides/), avec les liens vers les pages officielles.`,
     items: [
       [
         `Faut-il Claude${NB}?`,
@@ -237,6 +245,7 @@ const fr = {
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
     platforms: ['Linux (bêta)', 'macOS', 'Windows'],
     needsTitle: 'Ce qu’il vous faut',
+    guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/guides/) expliquent l’essentiel, avec les liens officiels.`,
     needs: [
       [
         'Claude Desktop',
@@ -318,7 +327,13 @@ const en: Copy = {
   navLabel: 'Sections',
   langLabel: 'Language',
   suggestLanguage: 'Suggest a language',
-  nav: { how: 'How it works', principles: 'Principles', faq: 'Questions', start: 'Get started' },
+  nav: {
+    how: 'How it works',
+    principles: 'Principles',
+    faq: 'Questions',
+    guides: 'Guides',
+    start: 'Get started',
+  },
 
   tagline: 'Your taxes, done over an espresso.',
   lead: 'Answer a few questions. Taxpresso does the rest.',
@@ -448,6 +463,7 @@ const en: Copy = {
 
   faq: {
     title: 'Questions',
+    more: 'Another question? [Read our guides](/en/guides/), with links to the official pages.',
     items: [
       [
         'Do I need Claude?',
@@ -495,6 +511,8 @@ const en: Copy = {
     downloadNote: 'Free. One file, for Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'What you need',
+    guides:
+      'Which documents to gather, pillar 3a, TOU, your assessment: [our guides](/en/guides/) explain the basics, with the official links.',
     needs: [
       [
         'Claude Desktop',
@@ -574,7 +592,13 @@ const de: Copy = {
   navLabel: 'Abschnitte',
   langLabel: 'Sprache',
   suggestLanguage: 'Sprache vorschlagen',
-  nav: { how: 'So funktioniert’s', principles: 'Grundsätze', faq: 'Fragen', start: 'Loslegen' },
+  nav: {
+    how: 'So funktioniert’s',
+    principles: 'Grundsätze',
+    faq: 'Fragen',
+    guides: 'Ratgeber',
+    start: 'Loslegen',
+  },
 
   tagline: 'Deine Steuern, erledigt bei einem Espresso.',
   lead: 'Beantworte ein paar Fragen. Taxpresso macht den Rest.',
@@ -720,6 +744,7 @@ const de: Copy = {
 
   faq: {
     title: 'Fragen',
+    more: 'Noch eine Frage? [Lies unsere Ratgeber](/de/guides/), mit Links zu den offiziellen Seiten.',
     items: [
       [
         'Brauche ich Claude?',
@@ -767,6 +792,8 @@ const de: Copy = {
     downloadNote: 'Kostenlos. Eine Datei, für Claude Desktop.',
     platforms: ['Linux (Beta)', 'macOS', 'Windows'],
     needsTitle: 'Was du brauchst',
+    guides:
+      'Welche Dokumente du sammelst, Säule 3a, TOU, deine Veranlagung: [Unsere Ratgeber](/de/guides/) erklären das Wichtigste, mit den offiziellen Links.',
     needs: [
       [
         'Claude Desktop',
@@ -847,7 +874,13 @@ const it: Copy = {
   navLabel: 'Sezioni',
   langLabel: 'Lingua',
   suggestLanguage: 'Proponi una lingua',
-  nav: { how: 'Come funziona', principles: 'Principi', faq: 'Domande', start: 'Inizia' },
+  nav: {
+    how: 'Come funziona',
+    principles: 'Principi',
+    faq: 'Domande',
+    guides: 'Guide',
+    start: 'Inizia',
+  },
 
   tagline: 'Le tue tasse, il tempo di un espresso.',
   lead: 'Rispondi a qualche domanda. Al resto ci pensa Taxpresso.',
@@ -985,6 +1018,7 @@ const it: Copy = {
 
   faq: {
     title: 'Domande',
+    more: 'Un’altra domanda? [Leggi le nostre guide](/it/guides/), con i link alle pagine ufficiali.',
     items: [
       [
         'Mi serve Claude?',
@@ -1032,6 +1066,8 @@ const it: Copy = {
     downloadNote: 'Gratis. Un solo file, per Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Cosa ti serve',
+    guides:
+      'Quali documenti raccogliere, il pilastro 3a, la TOU, la tua tassazione: [le nostre guide](/it/guides/) spiegano l’essenziale, con i link ufficiali.',
     needs: [
       [
         'Claude Desktop',
@@ -1111,7 +1147,13 @@ const es: Copy = {
   navLabel: 'Secciones',
   langLabel: 'Idioma',
   suggestLanguage: 'Propón un idioma',
-  nav: { how: 'Cómo funciona', principles: 'Principios', faq: 'Preguntas', start: 'Empieza' },
+  nav: {
+    how: 'Cómo funciona',
+    principles: 'Principios',
+    faq: 'Preguntas',
+    guides: 'Guías',
+    start: 'Empieza',
+  },
 
   tagline: 'Tus impuestos, mientras te tomas un espresso.',
   lead: 'Responde unas preguntas. Taxpresso se encarga del resto.',
@@ -1245,6 +1287,7 @@ const es: Copy = {
 
   faq: {
     title: 'Preguntas',
+    more: '¿Otra pregunta? [Lee nuestras guías](/es/guides/), con enlaces a las páginas oficiales.',
     items: [
       [
         '¿Necesito Claude?',
@@ -1292,6 +1335,8 @@ const es: Copy = {
     downloadNote: 'Gratis. Un solo archivo, para Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Qué necesitas',
+    guides:
+      'Qué documentos reunir, el pilar 3a, la TOU, tu liquidación: [nuestras guías](/es/guides/) explican lo esencial, con los enlaces oficiales.',
     needs: [
       [
         'Claude Desktop',
@@ -1371,7 +1416,13 @@ const pt: Copy = {
   navLabel: 'Secções',
   langLabel: 'Idioma',
   suggestLanguage: 'Sugere um idioma',
-  nav: { how: 'Como funciona', principles: 'Princípios', faq: 'Perguntas', start: 'Começa' },
+  nav: {
+    how: 'Como funciona',
+    principles: 'Princípios',
+    faq: 'Perguntas',
+    guides: 'Guias',
+    start: 'Começa',
+  },
 
   tagline: 'Os teus impostos, no tempo de um expresso.',
   lead: 'Responde a algumas perguntas. O Taxpresso trata do resto.',
@@ -1513,6 +1564,7 @@ const pt: Copy = {
 
   faq: {
     title: 'Perguntas',
+    more: 'Outra pergunta? [Lê os nossos guias](/pt/guides/), com ligações para as páginas oficiais.',
     items: [
       [
         'Preciso do Claude?',
@@ -1560,6 +1612,8 @@ const pt: Copy = {
     downloadNote: 'Grátis. Um só ficheiro, para o Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Do que precisas',
+    guides:
+      'Que documentos juntar, o pilar 3a, a TOU, a tua liquidação: [os nossos guias](/pt/guides/) explicam o essencial, com as ligações oficiais.',
     needs: [
       [
         'Claude Desktop',

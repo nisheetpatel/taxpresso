@@ -9,7 +9,7 @@ import { Checks } from './Checks';
 import { DocumentCards } from './DocumentCards';
 import { isMessageKey, t, type Language } from './i18n';
 import { Securities } from './Securities';
-import type { Question, RequirementView, State, Value } from './types';
+import type { OfficialLink, Question, RequirementView, State, Value } from './types';
 
 const POLL_MS = 2000;
 
@@ -555,7 +555,9 @@ function QuestionCard(p: CardProps) {
         {q.who ? <span class="who">{t(lang, 'forWho', { who: q.who })}</span> : null}
         <h2 id="q-title">
           {q.text}
-          {q.explain ? <Explain text={q.explain} topic={q.text} lang={lang} question /> : null}
+          {q.explain ? (
+            <Explain text={q.explain} topic={q.text} lang={lang} link={q.learnMore} question />
+          ) : null}
         </h2>
         {q.help ? <p class="muted">{q.help}</p> : null}
         {q.skipped ? <p class="muted small-text">{t(lang, 'skippedNote')}</p> : null}
@@ -853,7 +855,9 @@ function RequirementGroup({
     <li class="req">
       <strong>
         {first.label}
-        {first.explain ? <Explain text={first.explain} topic={first.label} lang={lang} /> : null}
+        {first.explain ? (
+          <Explain text={first.explain} topic={first.label} lang={lang} link={first.learnMore} />
+        ) : null}
       </strong>
       <span class="muted small-text">{first.reason}</span>
       <div class="req-actions">
@@ -913,7 +917,9 @@ function RequirementRow({ r, lang, act }: { r: RequirementView; lang: Language; 
       <strong>
         {r.label}
         {r.who ? <span class="muted"> · {r.who}</span> : null}
-        {r.explain ? <Explain text={r.explain} topic={r.label} lang={lang} /> : null}
+        {r.explain ? (
+          <Explain text={r.explain} topic={r.label} lang={lang} link={r.learnMore} />
+        ) : null}
       </strong>
       <span class="muted small-text">{r.reason}</span>
       <div class="req-actions">
@@ -955,17 +961,20 @@ function RequirementRow({ r, lang, act }: { r: RequirementView; lang: Language; 
 /**
  * A "?" that opens a plain-language explanation on hover, focus or tap, with a way to ask Claude.
  * The page can't talk to Claude itself (our code never calls a model, SPEC.md C1): it copies a
- * ready question for the user's Claude chat, where they can also speak it.
+ * ready question for the user's Claude chat, where they can also speak it. An official page on the
+ * topic, when there is one, opens in a new tab: a plain link, the extension fetches nothing (C2).
  */
 function Explain({
   text,
   topic,
   lang,
+  link,
   question = false,
 }: {
   text: string;
   topic: string;
   lang: Language;
+  link?: OfficialLink | undefined;
   question?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -1000,6 +1009,13 @@ function Explain({
       {open ? (
         <span class="explain-pop" role="tooltip">
           <span class="explain-text">{text}</span>
+          {link ? (
+            <a class="explain-link" href={link.url} target="_blank" rel="noopener noreferrer">
+              <span class="explain-link-text">{t(lang, 'officialPage')}</span>
+              <span aria-hidden="true"> ↗</span>
+              <span class="explain-note">{link.label}</span>
+            </a>
+          ) : null}
           <button type="button" class="ask" onClick={() => void ask()}>
             {t(lang, 'askClaude')}
           </button>

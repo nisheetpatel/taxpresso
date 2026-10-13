@@ -1203,6 +1203,220 @@ a:hover {
   font-weight: 600;
 }
 
+/* Links to the guides, under the questions and on the Get started page */
+
+.qa-more,
+.start-guides {
+  margin: 22px 0 0 !important;
+  max-width: 46em;
+  font-size: 16px;
+  color: var(--mocha);
+}
+
+.qa-more a,
+.start-guides a {
+  font-weight: 600;
+  color: var(--espresso);
+}
+
+/* Guides: an index of cards, then one quiet reading page per guide. */
+
+.guides {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 24px var(--gutter) 64px;
+}
+
+.guides-hero {
+  padding: 44px 48px;
+  border-radius: 32px;
+  background: var(--espresso);
+  color: #f3ebe1;
+}
+
+.guides-hero h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+.guides-hero .lead {
+  color: #d9c8b4;
+}
+
+.guide-list {
+  margin: 40px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.guide-card {
+  height: 100%;
+  padding: 24px 24px 22px;
+  border-radius: 20px;
+  background: var(--cup);
+  box-shadow: inset 0 0 0 1px var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.guide-card:hover {
+  color: inherit;
+  box-shadow: inset 0 0 0 2px var(--crema);
+}
+
+.guide-card h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.guide-card p {
+  margin: 0;
+  font-size: 15.5px;
+  color: var(--mocha);
+}
+
+.guide-go {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--caramel);
+}
+
+.guide-basis {
+  margin: 32px 0 0;
+  max-width: 46em;
+  font-size: 14.5px;
+  color: var(--mocha);
+}
+
+.guide {
+  max-width: 46em;
+}
+
+.crumb {
+  margin: 12px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.guide h1 {
+  margin: 14px 0 0;
+  font-size: clamp(2.1rem, 5vw, 3.2rem);
+  line-height: 1.06;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.guide .lead {
+  margin-top: 18px;
+}
+
+.guide section {
+  margin-top: 40px;
+}
+
+.guide h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.guide p {
+  margin: 0 0 12px;
+}
+
+.guide section ul {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
+}
+
+.guide section li {
+  margin: 6px 0;
+}
+
+.guide-sources {
+  margin-top: 48px;
+  padding: 26px 28px;
+  border-radius: 20px;
+  background: var(--latte);
+}
+
+.guide-sources h2 {
+  font-size: 20px;
+}
+
+.guide-sources ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-sources li {
+  margin: 8px 0;
+}
+
+.guide-sources a {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.guide-sources a::after {
+  content: ' ↗';
+}
+
+.guide-sources p {
+  margin: 12px 0 0;
+  font-size: 14.5px;
+  color: #4e443d;
+}
+
+.guide-more {
+  margin-top: 56px;
+  max-width: 46em;
+}
+
+.guide-more h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 650;
+}
+
+.guide-more ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.guide-more li {
+  border-bottom: 1px solid var(--line);
+}
+
+.guide-more a {
+  min-height: 52px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 /* Footer */
 
 .foot {
@@ -1272,6 +1486,9 @@ a:hover {
   .start-hero {
     grid-template-columns: minmax(0, 1fr);
   }
+  .guide-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .start-hero-art {
     display: none;
   }
@@ -1312,12 +1529,17 @@ a:hover {
   }
   .pgrid,
   .help-grid,
-  .notes {
+  .notes,
+  .guide-list {
     grid-template-columns: minmax(0, 1fr);
   }
-  .start-hero {
+  .start-hero,
+  .guides-hero {
     padding: 28px 22px;
     border-radius: 24px;
+  }
+  .guide-sources {
+    padding: 22px 20px;
   }
   .mock-body {
     flex-wrap: wrap;

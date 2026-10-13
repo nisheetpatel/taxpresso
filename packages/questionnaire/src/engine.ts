@@ -55,6 +55,8 @@ export interface RenderedQuestion {
   text: string;
   help?: string;
   explain?: string;
+  /** An official page on the topic, in the user's language. */
+  learnMore?: { url: string; label: string };
   options?: { value: string; label: string; notSupported: boolean }[];
   none?: string;
   min?: number;
@@ -233,6 +235,7 @@ export class QuestionnaireEngine {
           label: def.label,
           reason: def.reason,
           ...(def.explain ? { explain: def.explain } : {}),
+          ...(def.learnMore ? { learnMore: def.learnMore } : {}),
           expects: { kinds: [...def.expects.kinds], count: need },
           person,
           status: have >= need ? 'satisfied' : waived.includes(id) ? 'waived' : 'missing',
@@ -316,6 +319,9 @@ export class QuestionnaireEngine {
       text,
       ...(q.help ? { help: q.help[lang] } : {}),
       ...(q.explain ? { explain: q.explain[lang] } : {}),
+      ...(q.learnMore
+        ? { learnMore: { url: q.learnMore.url, label: q.learnMore.label[lang] } }
+        : {}),
       ...(options ? { options } : {}),
       ...(q.none ? { none: q.none[lang] } : {}),
       ...(q.min !== undefined ? { min: q.min } : {}),

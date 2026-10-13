@@ -26,6 +26,11 @@ describe('dashboard API', () => {
     const state = res.body as DashboardState;
     expect(state).toMatchObject({ lang: 'fr', csrf: 'csrf-token', progress: { answered: 0 } });
     expect(state.question?.text).toBe(`Quel était votre état civil au 31 décembre 2026${NBSP}?`);
+    // The official page shown under "Page officielle" in the explanation, in the page language.
+    expect(state.question?.learnMore).toEqual({
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53',
+      label: `Guide fiscal 2025, p. 53${NBSP}: Changements de situation`,
+    });
   });
 
   it('answers, skips and records who did it', async () => {
@@ -60,9 +65,9 @@ describe('dashboard API', () => {
     let state = (await api(upload)).body as DashboardState;
     const doc = state.documents[0]!;
     expect(doc.filename).toBe('Certificat de salaire 2026.pdf');
-    expect(state.requirements.find((r) => r.id === 'salary_certificate:p1')?.status).toBe(
-      'missing',
-    );
+    const certificate = state.requirements.find((r) => r.id === 'salary_certificate:p1');
+    expect(certificate?.status).toBe('missing');
+    expect(certificate?.learnMore?.url).toMatch(/^https:\/\/www\.ge\.ch\//);
     state = (await api(req('POST', '/documents/kind', { id: doc.id, kind: 'salary_certificate' })))
       .body as DashboardState;
     expect(state.documents[0]?.kindLabel).toBe('Certificat de salaire');

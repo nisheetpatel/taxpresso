@@ -1,8 +1,10 @@
+import { readFileSync } from 'node:fs';
 import { Ledger, type VaultDocument } from '@taxpresso/ledger';
 import { COMMUNES_2026, KEYS_2026 } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
   geQuestionnaire2026,
+  LearnMore,
   NBSP,
   QuestionnaireEngine,
   QuestionnaireError,
@@ -208,6 +210,35 @@ describe('Geneva questionnaire 2026', () => {
       expect(item.explain?.en, item.id).toBeTruthy();
       expect(item.explain?.fr, item.id).toBeTruthy();
     }
+  });
+
+  it('links every question and every document to an official page from the sources library', () => {
+    // Only pages that were opened and checked (docs/sources/*/manifest.json, SPEC.md section 7b).
+    const manifest = JSON.parse(
+      readFileSync(new URL('../../../docs/sources/manifest.json', import.meta.url), 'utf8'),
+    ) as { entries: { url: string }[] };
+    const official = new Set(manifest.entries.map((e) => e.url));
+    const file = geQuestionnaire2026();
+    for (const item of [...file.questions, ...file.requirements]) {
+      expect(item.learnMore, item.id).toBeDefined();
+      expect(official, item.id).toContain(item.learnMore!.url.replace(/#page=\d+$/, ''));
+      expect(item.learnMore!.label.en, item.id).toBeTruthy();
+      expect(item.learnMore!.label.fr, item.id).toBeTruthy();
+    }
+  });
+
+  it('accepts only official https pages as learnMore, without parameters', () => {
+    const label = { en: 'Page', fr: 'Page' };
+    const ok = (url: string) => LearnMore.safeParse({ url, label }).success;
+    expect(ok('https://www.ge.ch/taux-donnees-fiscales')).toBe(true);
+    expect(ok('https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=7')).toBe(
+      true,
+    );
+    expect(ok('http://www.ge.ch/taux-donnees-fiscales')).toBe(false);
+    expect(ok('https://www.ge.ch/taux-donnees-fiscales?utm_source=taxpresso')).toBe(false);
+    expect(ok('https://example.com/ge.ch')).toBe(false);
+    expect(ok('https://notge.ch/')).toBe(false);
+    expect(ok('not a url')).toBe(false);
   });
 
   it('lets one document cover both partners', () => {

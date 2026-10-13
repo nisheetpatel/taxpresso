@@ -76,6 +76,13 @@ describe('MCP surface', () => {
   it('asks the questions and saves answers given in the chat', async () => {
     const q = await call('next_questions');
     expect(text(q)).toMatch(/\[civil_status\] Quel était votre état civil/);
+    // An official page Claude can give the user, from the sources library.
+    expect(text(q)).toMatch(
+      /Official page \(Geneva tax guide 2025, p\. 53: [^)]+\): https:\/\/www\.ge\.ch\//,
+    );
+    expect(
+      structured<{ questions: { learnMore?: { url: string } }[] }>(q).questions[0]?.learnMore?.url,
+    ).toMatch(/^https:\/\/www\.ge\.ch\/.+#page=53$/);
     const saved = await call('answer_question', { id: 'civil_status', value: 'single' });
     expect(text(saved)).toMatch(/Saved: Single\./);
     expect(text(saved)).toMatch(/Next question:\n\[children\]/);
