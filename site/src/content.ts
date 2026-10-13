@@ -197,7 +197,7 @@ const fr = {
 
   faq: {
     title: 'Questions',
-    more: `Une autre question${NB}? [Lisez nos guides](/guides/), avec les liens vers les pages officielles.`,
+    more: `Une autre question${NB}? [Lisez nos guides](/fr/guides/), avec les liens vers les pages officielles.`,
     items: [
       [
         `Faut-il Claude${NB}?`,
@@ -245,7 +245,7 @@ const fr = {
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
     platforms: ['Linux (bêta)', 'macOS', 'Windows'],
     needsTitle: 'Ce qu’il vous faut',
-    guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/guides/) expliquent l’essentiel, avec les liens officiels.`,
+    guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/fr/guides/) expliquent l’essentiel, avec les liens officiels.`,
     needs: [
       [
         'Claude Desktop',
@@ -1687,10 +1687,11 @@ const pt: Copy = {
 
 export const copy: Record<Lang, Copy> = { fr, en, de, it, es, pt };
 
-/** Where each language lives on the site. French is the default: Geneva. */
+/** Where each language lives on the site, in menu order. English is the default: taxpresso.ch
+ * redirects to /en/ (vercel.json). */
 export const LANGS: { lang: Lang; path: string; label: string; name: string }[] = [
-  { lang: 'fr', path: '/', label: 'FR', name: 'Français' },
   { lang: 'en', path: '/en/', label: 'EN', name: 'English' },
+  { lang: 'fr', path: '/fr/', label: 'FR', name: 'Français' },
   { lang: 'de', path: '/de/', label: 'DE', name: 'Deutsch' },
   { lang: 'it', path: '/it/', label: 'IT', name: 'Italiano' },
   { lang: 'es', path: '/es/', label: 'ES', name: 'Español' },

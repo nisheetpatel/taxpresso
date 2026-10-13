@@ -11,13 +11,46 @@
           "key": "Content-Security-Policy",
           "value": "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
         },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/en/",
+      "permanent": false
+    },
+    {
+      "source": "/start",
+      "destination": "/fr/start/",
+      "permanent": true
+    },
+    {
+      "source": "/start/",
+      "destination": "/fr/start/",
+      "permanent": true
+    },
+    {
+      "source": "/guides",
+      "destination": "/fr/guides/",
+      "permanent": true
+    },
+    {
+      "source": "/guides/:path*",
+      "destination": "/fr/guides/:path*",
+      "permanent": true
     }
   ]
 }
