@@ -2,6 +2,7 @@
 import type { Language } from './i18n';
 import type { SecuritiesView } from './Securities';
 import type { DocumentsState } from './types-docs';
+import type { PlanningState } from './types-planning';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
@@ -96,6 +97,8 @@ export interface State extends DocumentsState {
       sources: string[];
     };
   };
+  /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. */
+  planning: PlanningState;
   notSupported: string[];
   /** The securities list from broker exports, or null when there is none. */
   securities?: SecuritiesView | null;

@@ -7,6 +7,14 @@ import type { ApiRequest, ApiResponse } from './dashboard.js';
 import { documentCards, documentChecks, assessmentCards } from './document-views.js';
 import { ExtractionError } from './extraction.js';
 import { KIND_LABELS } from './kinds.js';
+import {
+  decide,
+  DecisionInput,
+  PLANNING_FIELDS,
+  PlanningInput,
+  planningReady,
+  planningView,
+} from './planning.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
 const Answer = z.object({
@@ -118,6 +126,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       })),
       result: ws.plan(),
     },
+    // Pension fund buy-in, 3a catch-up and TOU (SPEC.md section 8, groups B and C): ./planning.ts.
+    planning: planningView(ws),
     notSupported: ws.engine.notSupported(snap).map((n) => n.what[lang]),
     securities: ws.securities(lang) ?? null,
     notSupportedMessage: ws.engine.notSupportedMessage(lang),
@@ -161,6 +171,7 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
     const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf) });
     try {
       await ws.ready();
+      await planningReady(ws);
       if (req.method === 'GET') {
         if (req.path === '/state') return state();
         if (req.path === '/question') {
@@ -189,6 +200,14 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
           await ws.setPlan(person, PLAN_FIELD[field], value, 'dashboard');
           return state();
         }
+        case '/planning': {
+          const { person, field, value } = parse(PlanningInput, req.body);
+          await ws.setPlan(person, PLANNING_FIELDS[field], value, 'dashboard');
+          return state();
+        }
+        case '/decide':
+          await decide(ws, parse(DecisionInput, req.body), 'dashboard');
+          return state();
         case '/scan':
           await ws.scan('you');
           return state();

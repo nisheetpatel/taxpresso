@@ -20,6 +20,7 @@ import {
   assessmentViews,
   consistencyChecks,
   documentFields,
+  normalizeTariff,
   type AssessmentView,
   type CommuneSlug,
   type ConsistencyCheck,
@@ -61,7 +62,8 @@ export interface ActivityEntry {
     | 'extract'
     | 'confirm'
     | 'check'
-    | 'replace';
+    | 'replace'
+    | 'decide';
   /** Language-neutral: a question slot id, a document kind, a file name or a count. */
   detail?: string;
 }
@@ -98,6 +100,14 @@ export const PLAN_KEYS = [
   'plan.net_salary',
   'plan.has_pension_fund',
   'plan.pillar3a_paid',
+  // Pension fund buy-in, 3a catch-up and TOU (./planning.ts).
+  'plan.lpp_buyin_capacity',
+  'plan.lpp_buyin_amount',
+  'plan.pillar3a_paid_2025',
+  'plan.source_tax_withheld',
+  'plan.source_tax_tariff',
+  'plan.tou_other_income',
+  'plan.tou_taxable_wealth',
 ] as const;
 export type PlanKey = (typeof PLAN_KEYS)[number];
 
@@ -371,24 +381,44 @@ export class Workspace {
     return pillar3aPlan(this.planInput());
   }
 
-  /** Saves one planning input. Money in CHF from the user, stored as centimes; 0 clears a salary. */
-  async setPlan(person: string, key: PlanKey, value: number | boolean, via: Via): Promise<void> {
+  /**
+   * Saves one planning input. Money in CHF from the user, stored as centimes; 0 clears a salary.
+   * Yes/no and choices (the source-tax tariff) are stored as the user said them.
+   */
+  async setPlan(
+    person: string,
+    key: PlanKey,
+    value: number | boolean | string,
+    via: Via,
+  ): Promise<void> {
     return this.#write(async () => {
       this.#usable();
       if (!PLAN_KEYS.includes(key)) throw new WorkspaceError(`Not a planning value: ${key}`);
-      if (!this.snapshot().people.includes(person as 'p1' | 'p2')) {
+      const def = this.keys[key]!;
+      const owner: Owner = def.perPerson ? (person as 'p1' | 'p2') : 'household';
+      if (def.perPerson && !this.snapshot().people.includes(person as 'p1' | 'p2')) {
         throw new WorkspaceError(`No ${person} in this household.`);
       }
-      const isMoney = key !== 'plan.has_pension_fund';
-      if (isMoney !== (typeof value === 'number')) throw new WorkspaceError('Wrong kind of value.');
-      const stored = typeof value === 'number' ? Math.round(value * 100) : value;
-      this.ledger.append({
-        key,
-        person: person as 'p1' | 'p2',
-        value: stored,
-        status: isMoney ? 'estimate' : 'stated',
-        source: { method: 'user', via },
-      });
+      const isMoney = def.type === 'money';
+      const expected = isMoney ? 'number' : def.type === 'boolean' ? 'boolean' : 'string';
+      if (typeof value !== expected) throw new WorkspaceError('Wrong kind of value.');
+      const stored =
+        typeof value === 'number'
+          ? Math.round(value * 100)
+          : typeof value === 'string' && key === 'plan.source_tax_tariff'
+            ? this.#tariff(value)
+            : value;
+      try {
+        this.ledger.append({
+          key,
+          person: owner,
+          value: stored,
+          status: isMoney ? 'estimate' : 'stated',
+          source: { method: 'user', via },
+        });
+      } catch (err) {
+        throw new WorkspaceError((err as Error).message);
+      }
       await this.vault.saveLedger(this.ledger);
     });
   }
@@ -764,6 +794,15 @@ export class Workspace {
       throw new WorkspaceError('This value is no longer there. Reload the dashboard.');
     }
     return current;
+  }
+
+  /** A source-tax tariff as written on a payslip ("A0", "b2n"), as its official code. */
+  #tariff(code: string): string {
+    try {
+      return normalizeTariff(this.engine.taxYear, code);
+    } catch (err) {
+      throw new WorkspaceError((err as Error).message);
+    }
   }
 
   #coerce(key: string, raw: unknown): FactValue {
