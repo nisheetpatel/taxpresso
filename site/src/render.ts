@@ -1,6 +1,6 @@
-// Renders one language of the website to complete static HTML documents: the home page and the
-// Get started page. No JavaScript; the logo animation is CSS (ui/src/shared/logo.css) and the
-// language menu is a <details> element.
+// Renders one language of the website to complete static HTML documents: the home page, the
+// Get started page and the guides. No JavaScript; the logo animation is CSS
+// (ui/src/shared/logo.css) and the language menu is a <details> element.
 import { CUP_SVG, ICON_SVG, wordmark } from '../../ui/src/shared/logo.ts';
 import {
   type Art,
@@ -15,15 +15,19 @@ import {
   startPath,
   type Tone,
 } from './content.ts';
+import { GUIDE_IDS, GUIDE_SOURCES, type GuideId, guidePath, guides, guidesPath } from './guides.ts';
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/** Escapes, then turns [text](https://...) into an outbound link. */
+/** Escapes, then turns [text](https://...) into an outbound link and [text](/path/) into a link on the site. */
 const rich = (s: string) =>
   esc(s).replace(
-    /\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g,
-    (_, text: string, href: string) => `<a href="${href}" rel="noopener">${text}</a>`,
+    /\[([^\]]+)\]\((https:\/\/[^)\s]+|\/[^)\s]*)\)/g,
+    (_, text: string, href: string) =>
+      href.startsWith('/')
+        ? `<a href="${href}">${text}</a>`
+        : `<a href="${href}" rel="noopener">${text}</a>`,
   );
 
 /** Opens in a new tab, so the page stays where it was. */
@@ -133,14 +137,18 @@ ${LANGS.map((l, i) => `<link rel="alternate" hreflang="${l.lang}" href="${alt[i]
 </head>`;
 }
 
-function header(lang: Lang, onStart: boolean) {
+/**
+ * The top bar. `alt` gives this page's address in another language (its path prefix in), for the
+ * language menu; on any page but the home page, the section links go back to the home page.
+ */
+function header(lang: Lang, alt: (path: string) => string = (p) => p) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   const choices = LANGS.map((l) => {
-    const href = onStart ? startPath(l.path) : l.path;
-    return `<li><a href="${href}" hreflang="${l.lang}" lang="${l.lang}"${l.lang === lang ? ' aria-current="page"' : ''}><span>${l.name}</span><span class="code">${l.label}</span></a></li>`;
+    return `<li><a href="${alt(l.path)}" hreflang="${l.lang}" lang="${l.lang}"${l.lang === lang ? ' aria-current="page"' : ''}><span>${l.name}</span><span class="code">${l.label}</span></a></li>`;
   }).join('\n');
-  const home = onStart ? here.path : '';
+  const home = alt(here.path) === here.path ? '' : here.path;
+  const onStart = alt(here.path) === startPath(here.path);
   return `<a class="skip" href="#main">${esc(t.skip)}</a>
 <header class="top">
 <a class="brand" href="${here.path}">${wordmark(true)}</a>
@@ -160,7 +168,7 @@ function footer(lang: Lang) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   return `<footer class="foot">
-<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
+<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
 <p>${esc(t.footer.independent)}</p>
 <p>${esc(t.footer.noTracking)}</p>
 <p>© 2026 Taxpresso</p>
@@ -223,7 +231,7 @@ export function render(lang: Lang, cssVersion = ''): string {
     LANGS.map((l) => l.path),
   )}
 <body>
-${header(lang, false)}
+${header(lang)}
 
 <main id="main">
 <section class="hero">
@@ -310,6 +318,7 @@ ${help}
 <div class="qa">
 ${faq}
 </div>
+<p class="qa-more">${rich(t.faq.more)}</p>
 </section>
 
 <section class="band fine" aria-labelledby="fine-title">
@@ -364,7 +373,7 @@ export function renderStart(lang: Lang, cssVersion = ''): string {
     LANGS.map((l) => startPath(l.path)),
   )}
 <body>
-${header(lang, true)}
+${header(lang, startPath)}
 
 <main id="main" class="start">
 <section class="start-hero">
@@ -385,6 +394,7 @@ ${header(lang, true)}
 <ul class="needs">
 ${needs}
 </ul>
+<p class="start-guides">${rich(s.guides)}</p>
 </section>
 
 <section class="start-sec" aria-labelledby="steps-title">
@@ -401,6 +411,101 @@ ${notes}
 </section>
 
 <p class="back"><a href="${here.path}">${esc(s.back)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
+/** The guides index: one card per guide. */
+export function renderGuides(lang: Lang, cssVersion = ''): string {
+  const g = guides[lang];
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const cards = GUIDE_IDS.map(
+    (id) =>
+      `<li><a class="guide-card" href="${guidePath(here.path, id)}"><h2>${esc(g.guides[id].title)}</h2><p>${esc(g.guides[id].summary)}</p><span class="guide-go" aria-hidden="true">${esc(g.read)}</span></a></li>`,
+  ).join('\n');
+
+  return `${head(
+    lang,
+    g.htmlTitle,
+    g.metaDescription,
+    cssVersion,
+    LANGS.map((l) => guidesPath(l.path)),
+  )}
+<body>
+${header(lang, guidesPath)}
+
+<main id="main" class="guides">
+<section class="guides-hero">
+<h1>${esc(g.title)}</h1>
+<p class="lead">${esc(g.lead)}</p>
+</section>
+<ul class="guide-list">
+${cards}
+</ul>
+<p class="guide-basis">${esc(g.basis)} ${esc(g.disclaimer)}</p>
+<p class="back"><a href="${here.path}">${esc(copy[lang].start.back)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
+/** One guide: short sections, then the official sources, then the other guides. */
+export function renderGuide(lang: Lang, id: GuideId, cssVersion = ''): string {
+  const g = guides[lang];
+  const guide = g.guides[id];
+  const here = LANGS.find((l) => l.lang === lang)!;
+
+  const sections = guide.sections
+    .map(
+      (s) =>
+        `<section>\n<h2>${esc(s.h)}</h2>\n${s.p.map((p) => `<p>${rich(p)}</p>`).join('\n')}${
+          s.list ? `\n<ul>\n${s.list.map((li) => `<li>${rich(li)}</li>`).join('\n')}\n</ul>` : ''
+        }\n</section>`,
+    )
+    .join('\n');
+  const sources = GUIDE_SOURCES[id]
+    .map((url, i) => `<li><a ${out(url)}>${esc(guide.sources[i] ?? url)}</a></li>`)
+    .join('\n');
+  const more = GUIDE_IDS.filter((other) => other !== id)
+    .map(
+      (other) =>
+        `<li><a href="${guidePath(here.path, other)}">${esc(g.guides[other].title)}</a></li>`,
+    )
+    .join('\n');
+
+  return `${head(
+    lang,
+    `${guide.title} · Taxpresso`,
+    guide.summary,
+    cssVersion,
+    LANGS.map((l) => guidePath(l.path, id)),
+  )}
+<body>
+${header(lang, (p) => guidePath(p, id))}
+
+<main id="main" class="guides">
+<article class="guide">
+<p class="crumb"><a href="${guidesPath(here.path)}">${esc(g.title)}</a></p>
+<h1>${esc(guide.title)}</h1>
+<p class="lead">${esc(guide.summary)}</p>
+${sections}
+<aside class="guide-sources" aria-labelledby="sources-title">
+<h2 id="sources-title">${esc(g.sourcesTitle)}</h2>
+<ul>
+${sources}
+</ul>
+<p>${esc(g.sourcesNote)}</p>
+</aside>
+<p class="guide-basis">${esc(g.basis)} ${esc(g.disclaimer)}</p>
+</article>
+<nav class="guide-more" aria-labelledby="more-title">
+<h2 id="more-title">${esc(g.moreTitle)}</h2>
+<ul>
+${more}
+</ul>
+</nav>
+<p class="back"><a href="${guidesPath(here.path)}">${esc(g.all)}</a></p>
 </main>
 
 ${footer(lang)}`;
