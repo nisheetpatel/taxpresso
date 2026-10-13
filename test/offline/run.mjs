@@ -455,6 +455,42 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
   });
 
+  test('barcodes are read on this computer: verified values, nothing personal kept (SPEC.md 5)', async () => {
+    // Synthetic Dupont documents (test/fixtures/make-barcode-fixtures.mjs). The barcode reader is
+    // the WebAssembly shipped in server/, read from disk, with the network guard in place.
+    const fixtures = path.join(root, 'test', 'fixtures', 'barcodes');
+    for (const name of [
+      'dupont-certificat-salaire-2026-code-barres.pdf',
+      'dupont-releve-fiscal-2026.pdf',
+    ]) {
+      writeFileSync(path.join(vault, '2026', name), readFileSync(path.join(fixtures, name)));
+    }
+    const res = await client.callTool({ name: 'ingest_vault', arguments: {} });
+    assert.ok(!res.isError, res.content?.[0]?.text);
+    assert.match(
+      res.content[0].text,
+      /code-barres\.pdf \(Salary certificate, 2026, Espresso Industries SA: read from the barcode \(verified\), \d+ values\)/,
+    );
+    assert.match(
+      res.content[0].text,
+      /releve-fiscal-2026\.pdf \(Bank e-tax statement, 2026, Banque Fictive Espresso SA: read from the barcode \(verified\)/,
+    );
+    const ledgerText = readFileSync(path.join(vault, '2026', 'ledger.json'), 'utf8');
+    const documentsText = readFileSync(path.join(vault, '2026', 'documents.json'), 'utf8');
+    const ledger = JSON.parse(ledgerText);
+    const barcode = ledger.facts.filter((f) => f.source.method === 'barcode');
+    assert.ok(barcode.every((f) => f.status === 'verified'));
+    const gross = barcode.find((f) => f.key === 'salary.gross');
+    assert.deepEqual([gross.value, gross.person, gross.source.field], [8_500_000, 'p1', '8']);
+    const statement = barcode.find((f) => f.key === 'tax_statement.taxable_value');
+    assert.equal(statement.value, 1_429_965);
+    for (const text of [ledgerText, documentsText]) {
+      assert.doesNotMatch(text, /756\.0000\.0000\.17|Dupont|Chemin des Exemples|TXP-000001/);
+    }
+    const status = await client.callTool({ name: 'get_status', arguments: {} });
+    assert.match(status.content[0].text, /2 read from the barcode/);
+  });
+
   test('the server exits when Claude Desktop closes it', async () => {
     const pid = transport.pid;
     await client.close();

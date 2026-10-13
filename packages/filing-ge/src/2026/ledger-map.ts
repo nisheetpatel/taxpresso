@@ -146,6 +146,10 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'salary.expenses_other': `Refunded actual expenses (box 13.1.2) have no rubric on the form (${SPEC} p. 5).`,
   'salary.indemnities_included':
     'A remark used by the checks across documents, not a value to type.',
+  'salary.education': `Box 13.3 (further training paid by your employer) has no rubric on the form (${SPEC} p. 5).`,
+  'salary.relocation_costs': `Moving costs noted in box 15 have no rubric on the form (${SPEC} p. 5).`,
+  'salary.other_fringe_note': `Box 14 describes benefits without an amount; it has no rubric on the form (${SPEC} p. 5).`,
+  'salary.remarks': `Box 15 holds remarks, not an amount for the form (${SPEC} p. 5).`,
   'replacement.type': 'Says what kind of benefit it is; the amount is what goes on the form.',
   'replacement.paid_to_employer': 'Says whether the benefit is already in the salary (box 7).',
   'pension.type': 'Says which rubric the pension goes to (17.10, 13.20 or 13.40).',

@@ -436,9 +436,13 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
     return owner;
   };
 
-  // F3: securities from broker exports, one per ISIN.
+  // F3: securities from broker exports, one per ISIN. A bank's e-tax statement lists its
+  // securities too, but they are inside its one grouped line (F4, ge-2025-guide-declaration-pp p. 43).
+  const fromStatement = (f: Fact) =>
+    f.source.docId !== undefined && docById.get(f.source.docId)?.kind === 'ech0196_statement';
   for (const nameFact of input.facts.filter(
-    (f) => f.key === 'securities.name' && f.person === 'household' && f.instance,
+    (f) =>
+      f.key === 'securities.name' && f.person === 'household' && f.instance && !fromStatement(f),
   )) {
     const id = nameFact.instance!;
     const g = getter(id);
@@ -807,6 +811,34 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
       }
       if ((credit ?? 0) > 0) raw.foreign = { withheld: credit!, credit: credit! };
       raws.push(raw);
+      // Loans and mortgages the statement lists are debts (E1, 55.10), one line each.
+      for (const loan of input.facts.filter(
+        (f) =>
+          f.key === 'liabilities.balance_chf' &&
+          f.person === 'household' &&
+          f.instance &&
+          f.source.docId === doc.id,
+      )) {
+        const l = getter(loan.instance!);
+        const balance = num(loan);
+        const interest = num(l('liabilities.interest_chf'));
+        const states = ['liabilities.balance_chf', 'liabilities.interest_chf']
+          .map((k) => l(k))
+          .filter((f): f is Fact => !!f)
+          .map((f) => stateOf(f.status));
+        other.push({
+          rubric: 'debts',
+          id: loan.instance!,
+          origin: 'document',
+          docId: doc.id,
+          name: str(l('liabilities.name')) ?? name,
+          ...(owner ? { owner } : {}),
+          ...(balance !== undefined ? { value: roundFranc(balance) } : {}),
+          ...(interest !== undefined ? { flow: roundFranc(interest) } : {}),
+          state: worst(states),
+          complete: balance !== undefined,
+        });
+      }
     } else if (doc.kind === 'crypto_statement') {
       const keys = ['crypto.value_chf', 'crypto.income_chf'];
       if (notRead('accounts', keys)) continue;

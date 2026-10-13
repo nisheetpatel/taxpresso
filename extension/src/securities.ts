@@ -328,9 +328,13 @@ export function securitiesStatusText(view: SecuritiesView | undefined): string |
   if (!view) return undefined;
   const held = view.rows.filter((r) => r.quantity && r.quantity !== '0').length;
   const chf = (c: number) => `CHF ${francs(c).toLocaleString('en-US')}`;
+  // Positions can also come from bank e-tax statements read from their barcode (verified values).
+  const broker = view.rows.some((r) => r.estimate);
   const parts = [
-    `${held} position${held === 1 ? '' : 's'} from ${view.exports} broker export${view.exports === 1 ? '' : 's'}`,
-    `value about ${chf(view.totals.valueChf)} at the broker's prices (estimate until the official price list)`,
+    `${held} position${held === 1 ? '' : 's'} from ${view.exports ? `${view.exports} broker export${view.exports === 1 ? '' : 's'}` : 'bank e-tax statements'}`,
+    broker
+      ? `value about ${chf(view.totals.valueChf)} at the broker's prices (estimate until the official price list)`
+      : `value ${chf(view.totals.valueChf)}`,
     `gross income ${chf(view.totals.incomeChf)}`,
   ];
   if (view.totals.incomplete) parts.push('some CHF amounts missing (no rate in the export)');

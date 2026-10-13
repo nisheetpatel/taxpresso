@@ -82,6 +82,16 @@ await writeFile(
 await cp(path.join(uiDist, 'dashboard'), path.join(dist, 'ui', 'dashboard'), { recursive: true });
 await cp(path.join(uiDist, 'views'), path.join(dist, 'ui', 'views'), { recursive: true });
 await cp(path.join(extDir, 'icon.png'), path.join(dist, 'icon.png'));
+// The barcode reader (ZXing-C++ as WebAssembly, from zxing-wasm): the server reads this file from
+// disk at start (extension/src/main.ts). Only the reader ships, not the writer.
+const zxingDir = Object.keys(result.metafile.inputs)
+  .map((input) => input.match(/^(.*node_modules\/zxing-wasm)\//)?.[1])
+  .find(Boolean);
+if (!zxingDir) throw new Error('zxing-wasm is not in the server bundle');
+await cp(
+  path.resolve(extDir, zxingDir, 'dist', 'reader', 'zxing_reader.wasm'),
+  path.join(dist, 'server', 'zxing_reader.wasm'),
+);
 // Taxpresso's own license (AGPL-3.0-or-later) travels with every copy.
 await cp(path.join(repoRoot, 'LICENSE'), path.join(dist, 'LICENSE.txt'));
 
@@ -110,6 +120,13 @@ for (const name of [
 // Software bundled inside a package's own build, whose license file isn't in that package.
 const EMBEDDED = {
   unpdf: [{ name: 'PDF.js (in unpdf)', license: 'Apache-2.0', file: 'licenses/pdfjs-LICENSE.txt' }],
+  'zxing-wasm': [
+    {
+      name: 'ZXing-C++ and stb_image (in zxing-wasm, server/zxing_reader.wasm)',
+      license: 'Apache-2.0; stb_image MIT',
+      file: 'licenses/zxing-cpp-LICENSE.txt',
+    },
+  ],
 };
 const notices = [];
 for (const [name, dir] of packageDirs) {

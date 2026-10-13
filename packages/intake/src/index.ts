@@ -1,7 +1,9 @@
 // PDF text, barcode decoders (eCH-0270, eCH-0196, salary certificate), document classifier and
-// broker exports (SPEC.md section 5). So far: broker exports (5.7), and reading one document for
-// Claude's review (5.5), text by page or page images, and last year's declaration (5.4).
+// broker exports (SPEC.md section 5). So far: the salary certificate and e-tax statement barcodes
+// (5.1 to 5.3), broker exports (5.7), reading one document for Claude's review (5.5), text by page
+// or page images, and last year's declaration (5.4).
 export * from './broker/index.js';
+export * from './barcode/index.js';
 export * from './prior/index.js';
 export { downscale, encodePng, toGray, type RawImage } from './png.js';
 export {

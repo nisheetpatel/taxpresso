@@ -92,6 +92,7 @@ export {
   communeByName,
   foldName,
 } from './2026/commune-codes.js';
+export { KEYS_ECH0196_2026, type Ech0196Key } from './2026/keys-ech0196.js';
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
 // Source tax (2025, 2026), TOU, pension fund buy-ins and the 3a catch-up (SPEC.md section 8).
 export {

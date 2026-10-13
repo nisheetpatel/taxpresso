@@ -17,6 +17,7 @@ import { decide, DecisionInput, planningReady, planningText, planningView } from
 import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
 import { securitiesStatusText } from './securities.js';
+import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
 import { formatDay, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ge';
@@ -319,6 +320,10 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
             kind: z.string().optional(),
             person: z.string().optional(),
             read: z.boolean(),
+            fromBarcode: z
+              .boolean()
+              .optional()
+              .describe('Read from its barcode: its values are verified, nothing to read.'),
             toConfirm: z.number().int(),
           }),
         ),
@@ -347,13 +352,21 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         ...(d.kind ? { kind: d.kind } : {}),
         ...(d.person ? { person: d.person } : {}),
         read: d.parse.method !== 'none',
+        ...(isBarcodeDocument(d) ? { fromBarcode: true } : {}),
         toConfirm: pending.filter((f) => f.source.docId === d.id).length,
       }));
+      const counted = ws.countedFacts();
+      const readNote = (id: string) => {
+        const doc = ws.documents.find((x) => x.id === id);
+        return doc && isBarcodeDocument(doc)
+          ? barcodeNote(doc, fromBarcode(counted, id).length)
+          : undefined;
+      };
       const missing = buildStatus(ws, { dashboardRunning: dashboard.running }).missing;
       const lines = documents.length
         ? documents.map(
             (d) =>
-              `- ${d.id} ${d.filename}: ${d.kind ? KIND_LABELS[d.kind].en : 'not identified yet'}${exportNote(d.id)}${d.person ? `, ${WHO[d.person] ?? d.person}` : ''}; ${d.read ? (d.toConfirm ? `${d.toConfirm} value${d.toConfirm === 1 ? ' needs' : 's need'} the user's OK` : 'read') : 'not read yet'}`,
+              `- ${d.id} ${d.filename}: ${d.kind ? KIND_LABELS[d.kind].en : 'not identified yet'}${exportNote(d.id)}${d.person ? `, ${WHO[d.person] ?? d.person}` : ''}; ${readNote(d.id) ?? (d.read ? (d.toConfirm ? `${d.toConfirm} value${d.toConfirm === 1 ? ' needs' : 's need'} the user's OK` : 'read') : 'not read yet')}`,
           )
         : ['No documents yet.'];
       const securities = securitiesStatusText(ws.securities('en'));
@@ -373,20 +386,26 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Check the Taxpresso folder',
       description:
-        "Looks in the user's Taxpresso folder for files they put there themselves and adds them to the document list. Broker exports (Interactive Brokers, DEGIRO) and last year's declaration are read on this computer. Call it when the user says they added files.",
+        "Looks in the user's Taxpresso folder for files they added themselves and reads them on this computer: barcodes (salary certificates, bank e-tax statements), broker exports (IBKR, DEGIRO) and last year's declaration. Call it when the user says they added files.",
       outputSchema: z.object({ added: z.array(z.string()) }),
       annotations: { title: 'Check the Taxpresso folder', ...RW, idempotentHint: true },
     },
     async () => {
       const found = await ws.scan('claude');
       const added = found.map((d) => d.filename);
-      const named = found.map((d) =>
-        d.kind === 'broker_export'
-          ? `${d.filename} (read as a broker export: ${d.issuer})`
-          : d.kind === 'prior_declaration'
-            ? `${d.filename} (read as last year's declaration${d.taxYear ? `, ${d.taxYear}` : ''})`
-            : d.filename,
-      );
+      const counted = ws.countedFacts();
+      const named = found.map((d) => {
+        if (d.kind === 'broker_export')
+          return `${d.filename} (read as a broker export: ${d.issuer})`;
+        if (d.kind === 'prior_declaration')
+          return `${d.filename} (read as last year's declaration${d.taxYear ? `, ${d.taxYear}` : ''})`;
+        if (isBarcodeDocument(d) && d.kind) {
+          const what = [KIND_LABELS[d.kind].en, d.taxYear, d.issuer].filter(Boolean).join(', ');
+          return `${d.filename} (${what}: ${barcodeNote(d, fromBarcode(counted, d.id).length)})`;
+        }
+        return d.filename;
+      });
+      const waiting = found.filter((d) => d.parse.method === BARCODE_PENDING).length;
       const toIdentify = found.some((d) => !d.kind);
       const securities = found.some((d) => d.kind === 'broker_export')
         ? securitiesStatusText(ws.securities('en'))
@@ -396,7 +415,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         : undefined;
       const text = added.length
         ? [
-            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}`,
+            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}${waiting ? ' Ask the user whose each certificate read from its barcode is (theirs or their partner’s); they choose it in the dashboard (Documents).' : ''}`,
             ...(securities ? [securities] : []),
             ...(lastYear ? [lastYear] : []),
           ].join('\n')

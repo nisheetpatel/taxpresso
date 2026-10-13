@@ -3,6 +3,7 @@ import { UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
+import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import type { Workspace } from './workspace.js';
 
 export const StatusSchema = z.object({
@@ -21,6 +22,16 @@ export const StatusSchema = z.object({
     documents: z.number().int(),
     documentsToIdentify: z.number().int(),
     documentsToRead: z.number().int().describe('Documents Claude has not read yet.'),
+    documentsFromBarcode: z
+      .number()
+      .int()
+      .describe('Documents read from their barcode: verified values, nothing for Claude to read.'),
+    documentsWaitingForWhose: z
+      .number()
+      .int()
+      .describe(
+        'Certificates read from their barcode whose owner the user still has to say (dashboard).',
+      ),
     valuesToConfirm: z
       .number()
       .int()
@@ -84,6 +95,8 @@ export function buildStatus(
   const toIdentify = documents.filter((d) => !d.kind).length;
   const toRead = ws.toRead().length;
   const toConfirm = ws.toConfirm().length;
+  const fromBarcode = documents.filter(isBarcodeDocument).length;
+  const whose = documents.filter((d) => d.parse.method === BARCODE_PENDING).length;
   const checks = ws
     .checks()
     .filter((c) => !c.resolved)
@@ -117,6 +130,8 @@ export function buildStatus(
     nextStep = lastYear?.suggestions
       ? "Ask the next question: call next_questions. When a question comes with a suggestion from last year's declaration, ask the user whether it is still right, then save their answer with answer_question."
       : 'Ask the next question: call next_questions.';
+  } else if (whose > 0) {
+    nextStep = `${whose} certificate${whose === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${whose === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Documents), and the values fill in.`;
   } else if (toRead > 0) {
     nextStep = `${toRead} document${toRead === 1 ? '' : 's'} not read yet. Offer to read them: get_document_for_review sends that document's content to Claude, so ask the user first. Then propose what you read with propose_extraction. The user can also say what each one is in the dashboard.`;
   } else if (toConfirm > 0) {
@@ -152,6 +167,8 @@ export function buildStatus(
       documents: documents.length,
       documentsToIdentify: toIdentify,
       documentsToRead: toRead,
+      documentsFromBarcode: fromBarcode,
+      documentsWaitingForWhose: whose,
       valuesToConfirm: toConfirm,
     },
     missing,
@@ -183,7 +200,7 @@ export function statusText(s: Status): string {
     `Taxpresso ${s.version}, tax year ${s.taxYear}, Geneva`,
     `Household: ${s.household.started ? s.household.summary.join(', ') || 'started' : 'not started'}`,
     `Questions: ${s.progress.questionsAnswered} answered, ${s.progress.questionsOpen} to go`,
-    `Documents: ${s.progress.documents}${s.progress.documentsToIdentify ? ` (${s.progress.documentsToIdentify} to identify)` : ''}${s.progress.documentsToRead ? `, ${s.progress.documentsToRead} not read yet` : ''}`,
+    `Documents: ${s.progress.documents}${s.progress.documentsToIdentify ? ` (${s.progress.documentsToIdentify} to identify)` : ''}${s.progress.documentsFromBarcode ? `, ${s.progress.documentsFromBarcode} read from the barcode` : ''}${s.progress.documentsWaitingForWhose ? ` (${s.progress.documentsWaitingForWhose} waiting for the user to say whose it is)` : ''}${s.progress.documentsToRead ? `, ${s.progress.documentsToRead} not read yet` : ''}`,
     ...(s.progress.valuesToConfirm
       ? [`Values that need the user's OK: ${s.progress.valuesToConfirm}`]
       : []),
