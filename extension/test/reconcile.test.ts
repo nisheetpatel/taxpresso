@@ -196,10 +196,16 @@ describe('check before you transmit', () => {
       taxpressoOnly: 1,
       pdfOnly: 0,
       toFix: 2,
-      computedOff: 0,
+      // B's flat deduction (41.50) is printed one franc too high: 3 % of 46'280 is 1'388.40.
+      computedOff: 1,
       notFinal: 0,
     });
     expect(check.clear).toBe(false);
+    expect(check.sections.flatMap((s) => s.computed).find((l) => l.check === 'off')).toMatchObject({
+      ref: '41.50',
+      person: 'B',
+      cells: [{ column: 'icc', pdf: 1_389, expected: 1_388 }],
+    });
     expect(check.sections.map((s) => s.page)).toEqual([
       'PG1',
       'PG2',
@@ -238,7 +244,8 @@ describe('check before you transmit', () => {
       part: { id: 'A' },
       cells: [{ column: 'amount', taxpresso: 1_200, pdf: 1_200 }],
     });
-    // Every total of the fixture adds up; lines worked out by a rule are only shown.
+    // Every total of the fixture adds up; lines worked out by a rule are checked against the
+    // engine (B's 41.50 is one franc off), or only shown when the engine has no figure for them.
     const computed = check.sections.flatMap((s) => s.computed.map((x) => [s.page, x.ref, x.check]));
     expect(computed).toEqual(
       expect.arrayContaining([
@@ -248,7 +255,8 @@ describe('check before you transmit', () => {
         ['PG3', '71.00', 'shown'],
         ['PG3', '92.40', 'adds_up'],
         ['A1', '31.00', 'adds_up'],
-        ['A1', '31.20', 'shown'],
+        ['A1', '31.20', 'adds_up'],
+        ['A2', '41.50', 'off'],
         ['A2', '41.00', 'adds_up'],
         ['C4', '59.00', 'adds_up'],
       ]),

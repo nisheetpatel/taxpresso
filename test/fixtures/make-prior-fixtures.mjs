@@ -635,6 +635,8 @@ function dupont2026() {
       ['41.10', 'Cotisations AVS / AI / APG / Chômage', { icc: "3'120", ifd: "3'120", box: '9' }],
       ['41.12', 'Cotisations 2e pilier', { icc: "2'600", ifd: "2'600", box: '10.1' }],
       ['41.40', 'Cotisations 3e pilier A', { icc: "7'258", ifd: "7'258" }],
+      // One franc too high: 3 % of the net salary 46'280 is 1'388.40, so 1'388. The check flags it as
+      // a computed line that is off (extension/test/reconcile.test.ts).
       ['41.50', 'Déduction forfaitaire ICC frais prof.', { icc: "1'389" }],
       ['41.20', 'Déduction forfaitaire IFD frais prof.', { ifd: "2'000" }],
       ['41.00', 'Total des déductions', { icc: "14'367", ifd: "14'978" }],

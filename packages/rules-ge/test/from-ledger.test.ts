@@ -161,8 +161,8 @@ describe('engine input from the ledger', () => {
     const { facts, documents } = dupont();
     const l = new Ledger(2026, KEYS_2026);
     for (const f of facts.filter((x) => !(x.key === 'salary.gross' && x.person === 'p2'))) {
-      const { id: _id, at: _at, ...rest } = f as typeof f & { at?: string };
-      l.append(rest as Parameters<typeof l.append>[0]);
+      const { key, person, value, status, source, instance } = f;
+      l.append({ key, person, value, status, source, ...(instance ? { instance } : {}) });
     }
     const marie = (key: string, value: number) =>
       l.append({
