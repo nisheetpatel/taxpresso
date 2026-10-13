@@ -164,3 +164,24 @@ export { bracketTax, federalScaleTax, chf } from './engine/calc.js';
 export type * from './engine/types.js';
 export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';
+export {
+  finalCheck,
+  limitPosition,
+  nearMargin,
+  NEAR_LIMIT,
+  type FinalCheck,
+  type FinalCheckInput,
+  type FinalCheckItem,
+  type FinalCheckKind,
+  type FinalCheckStatus,
+  type FinalRequirement,
+  type LimitPosition,
+  type OfficialPdfState,
+  type PendingValue,
+} from './engine/final-check.js';
+export {
+  OFFICIAL_DOCUMENTS,
+  officialLinks,
+  type OfficialDocument,
+  type OfficialLink,
+} from './law/official-documents.js';

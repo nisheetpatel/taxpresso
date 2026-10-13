@@ -23,6 +23,7 @@ import {
 import type { Slot } from '@taxpresso/questionnaire';
 import { exportFolder, exportView } from './export.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
+import { finalCheckView } from './final-check.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
 const Answer = z.object({
@@ -151,6 +152,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     declarationCheck: declarationCheckView(ws, lang),
     // "A copy of your folder": the ZIP made last, if any (./export.ts).
     folderExport: exportView(ws),
+    // "Final check" before filling in the official form (SPEC.md 10.0, ./final-check.ts).
+    finalCheck: finalCheckView(ws, lang),
     toConfirm: ws.toConfirm().length,
     requirements: ws.requirements().map((r) => ({
       id: r.id,

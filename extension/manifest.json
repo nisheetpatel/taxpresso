@@ -117,6 +117,10 @@
       "description": "Compares the PDF of your declaration, downloaded from GeTax or the online declaration, with the values you had to type: what differs and what is missing. It never transmits anything."
     },
     {
+      "name": "final_check",
+      "description": "Before you fill in the official form: what to fix first (values to confirm, estimates, open checks, missing documents) and what is good to know (amounts at or near a limit, each with its official source)."
+    },
+    {
       "name": "export_bundle",
       "description": "Saves one ZIP file of your tax folder for the year, with your documents, in your Taxpresso folder on this computer. Nothing is sent anywhere."
     },

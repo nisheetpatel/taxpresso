@@ -30,6 +30,7 @@ import type {
   EstimateNote,
   Item,
   ItemPerson,
+  LimitApplied,
   Line,
   PersonInput,
   TaxResult,
@@ -53,8 +54,34 @@ class Notes {
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A limit a rule applied (SPEC.md 10.0), cited by the constant `p` that sets it: on `code` for
+   * `person` in `tax`, `given` before the rule, `limit` as applied, `counted` after it.
+   */
+  limit(
+    p: Pick<Param<unknown>, 'source' | 'estimate'>,
+    kind: LimitApplied['kind'],
+    [code, person, tax]: [string, ItemPerson, LimitApplied['tax']],
+    given: number,
+    limit: number,
+    counted: number,
+  ) {
+    const estimate = p.estimate ? { estimate: true } : {};
+    this.limits.push({
+      code,
+      person,
+      tax,
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      ...estimate,
+    });
   }
 }
 
@@ -329,6 +356,7 @@ function personItems(
       }
     }
     const v = Math.min(paid, cap);
+    if (paid) notes.limit(F.pillar3a, 'cap', [codeFor(code3a, p.id), p.id, 'both'], paid, cap, v);
     if (catchUp) tTrace.src('ch-2026-ifd-instructions-personnes-physiques p. 8');
     both(
       item(
@@ -390,6 +418,13 @@ function personItems(
         `${days} jours de repas hors du domicile x ${chf(perDay)}${canteen ? ' (moitié${NB}: l’employeur en paie une partie, case G)' : ''}, au plus ${chf(perYear)} par an${NB}: ${chf(v)}.`,
       );
     };
+    /** The yearly limit of the meals deduction, as applied. */
+    const mealsLimit = (m: Param<MealAmounts>, v: number, tax: 'icc' | 'ifd') => {
+      const [day, year] = canteen
+        ? [m.value.halfPerDay, m.value.halfPerYear]
+        : [m.value.perDay, m.value.perYear];
+      notes.limit(m, 'cap', [codeFor('31.60', p.id), p.id, tax], days * day, year, v);
+    };
 
     // ICC: the flat 3 % covers every professional cost (LIPP art. 29 al. 2); actual costs instead
     // when higher (guide p. 22).
@@ -402,6 +437,13 @@ function personItems(
     const mealsIccParams = mTrace.p(I.meals);
     const mealsIcc = p.mealsIccAllowed ? meals(mealsIccParams) : 0;
     const actual = commuteIcc + mealsIcc + other;
+    const choice = (tax: 'icc' | 'ifd'): [string, ItemPerson, 'icc' | 'ifd'] => [
+      codeFor(tax === 'icc' ? '31.50' : '31.20', p.id),
+      p.id,
+      tax,
+    ];
+    const usedIcc = Math.max(actual, flat);
+    if (actual) notes.limit(I.professionalFlat, 'choice', choice('icc'), actual, flat, usedIcc);
     if (actual > flat) {
       notes.add(
         notes.assumptions,
@@ -412,6 +454,8 @@ function personItems(
       );
       if (commuteIcc && way) {
         if (way.federalPricing) notes.add(notes.unverified, NOTE.iccCommutePricing);
+        const at: [string, ItemPerson, 'icc'] = [codeFor('31.70', p.id), p.id, 'icc'];
+        notes.limit(I.commuteMax, 'cap', at, commute, I.commuteMax.value, commuteIcc);
         icc.push(
           item(
             '31.70',
@@ -425,8 +469,10 @@ function personItems(
           ),
         );
       }
-      if (mealsIcc)
+      if (mealsIcc) {
+        mealsLimit(I.meals, mealsIcc, 'icc');
         icc.push(item('31.60', p.id, mTrace, -mealsIcc, mealsHow(mealsIccParams, mealsIcc)));
+      }
       if (other)
         icc.push(
           item(
@@ -456,6 +502,8 @@ function personItems(
     const fTrace = new Trace().with(gTrace, sTrace, lTrace);
     const ff = fTrace.p(F.professionalFlat);
     const flatIfd = flatProfessional(net, ff);
+    const usedIfd = Math.max(other, flatIfd);
+    if (other) notes.limit(F.professionalFlat, 'choice', choice('ifd'), other, flatIfd, usedIfd);
     if (other > flatIfd) {
       ifd.push(
         item(
@@ -488,6 +536,8 @@ function personItems(
         notes.add(notes.unverified, NOTE.bikeFlat);
       const tr = new Trace().with(costTrace).src(...costTrace.sources);
       const v = Math.min(commute, tr.p(F.commuteMax));
+      const at: [string, ItemPerson, 'ifd'] = [codeFor('31.71', p.id), p.id, 'ifd'];
+      notes.limit(F.commuteMax, 'cap', at, commute, F.commuteMax.value, v);
       ifd.push(
         item(
           '31.71',
@@ -514,6 +564,7 @@ function personItems(
     const mealsIfdParams = mfTrace.p(F.meals);
     const mealsIfd = meals(mealsIfdParams);
     if (mealsIfd) {
+      mealsLimit(F.meals, mealsIfd, 'ifd');
       ifd.push(item('31.60', p.id, mfTrace, -mealsIfd, mealsHow(mealsIfdParams, mealsIfd)));
     }
   }
@@ -524,6 +575,7 @@ function personItems(
   if (training > 0) {
     const ti = new Trace().with(trTrace);
     const vi = Math.min(training, ti.p(I.trainingMax));
+    notes.limit(I.trainingMax, 'cap', ['59.50', p.id, 'icc'], training, I.trainingMax.value, vi);
     icc.push(
       item(
         '59.50',
@@ -538,6 +590,7 @@ function personItems(
     );
     const tf = new Trace().with(trTrace);
     const vf = Math.min(training, tf.p(F.trainingMax));
+    notes.limit(F.trainingMax, 'cap', ['59.50', p.id, 'ifd'], training, F.trainingMax.value, vf);
     ifd.push(
       item(
         '59.50',
@@ -819,6 +872,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     );
     const cap = [...adults, ...kids].reduce((s, v) => s + v, 0);
     const v = Math.min(premiums, cap);
+    notes.limit(I.healthCap, 'cap', ['52.21', 'household', 'icc'], premiums, cap, v);
     icc.push(
       item(
         '52.21',
@@ -845,6 +899,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     const { exact, cap } = lifeInsuranceCap(li.p(I.lifeInsurance), couple, contributing, charges);
     if (cap !== exact) notes.add(notes.unverified, NOTE.halfFranc);
     const v = Math.min(life, cap);
+    notes.limit(I.lifeInsurance, 'cap', ['52.15', 'household', 'icc'], life, cap, v);
     icc.push(
       item(
         '52.15',
@@ -878,6 +933,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (shared) insTrace.src(`${CIRCULAR30} p. 11 and 32 (ch. 7, 14.4.1)`);
     const cap = base + ins.perChild * full + halfChild * shared;
     const v = Math.min(insurance, cap);
+    notes.limit(F.insurance, 'cap', ['52.00', 'household', 'ifd'], insurance, cap, v);
     const plus = (perChild: number, n: number, en: string, fr: string) =>
       n
         ? { en: ` + ${chf(perChild)} x ${n} ${en}`, fr: ` + ${chf(perChild)} x ${n} ${fr}` }
@@ -932,6 +988,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     const extra = ci.p(I.debtInterestExtra);
     const capI = wealthIncome + extra;
     const vi = Math.min(interest, capI);
+    notes.limit(I.debtInterestExtra, 'cap', ['55.10', 'household', 'icc'], interest, capI, vi);
     icc.push(
       item(
         '55.10',
@@ -947,6 +1004,8 @@ export function computeReturn(input: EngineInput): TaxResult {
     const cf = new Trace().with(diTrace);
     const ef = cf.p(F.debtInterestExtra);
     const vf = Math.min(interest, wealthIncome + ef);
+    const capF = wealthIncome + ef;
+    notes.limit(F.debtInterestExtra, 'cap', ['55.10', 'household', 'ifd'], interest, capF, vf);
     ifd.push(
       item(
         '55.10',
@@ -997,6 +1056,8 @@ export function computeReturn(input: EngineInput): TaxResult {
       const ci = new Trace().with(ccTrace);
       const maxI = ci.p(I.childcareMax);
       const vi = Math.min(care, maxI * counted.length);
+      const capI = maxI * counted.length;
+      notes.limit(I.childcareMax, 'cap', ['59.10', 'household', 'icc'], care, capI, vi);
       icc.push(
         item(
           '59.10',
@@ -1012,6 +1073,8 @@ export function computeReturn(input: EngineInput): TaxResult {
       const cf = new Trace().with(ccTrace);
       const maxF = cf.p(F.childcareMax);
       const vf = Math.min(care, maxF * counted.length);
+      const capF = maxF * counted.length;
+      notes.limit(F.childcareMax, 'cap', ['59.12', 'household', 'ifd'], care, capF, vf);
       ifd.push(
         item(
           '59.12',
@@ -1056,6 +1119,8 @@ export function computeReturn(input: EngineInput): TaxResult {
     const tr = new Trace().with(mTrace).from(s9220);
     const rate = tr.p(bp);
     const { threshold: floor, deduction: v } = medicalDeduction(medical, s9220.amount, rate);
+    const taxId = tax === 'ICC' ? 'icc' : 'ifd';
+    notes.limit(bp, 'threshold', ['71.00', 'household', taxId], medical, floor, v);
     if (v > 0)
       list.push(
         item(
@@ -1094,6 +1159,7 @@ export function computeReturn(input: EngineInput): TaxResult {
       s.amount,
       ti.p(I.donationsShareBp),
     );
+    notes.limit(I.donationsShareBp, 'cap', ['73.00', 'household', 'icc'], gifts, capI, vi);
     if (vi > 0)
       icc.push(
         item(
@@ -1111,6 +1177,9 @@ export function computeReturn(input: EngineInput): TaxResult {
     const tf = new Trace().with(gTrace).from(sf);
     const d = tf.p(F.donations);
     const { cap: capF, deduction: vf } = donationDeduction(gifts, sf.amount, d.shareBp, d.min);
+    notes.limit(F.donations, 'minimum', ['73.00', 'household', 'ifd'], gifts, d.min, vf);
+    if (gifts >= d.min)
+      notes.limit(F.donations, 'cap', ['73.00', 'household', 'ifd'], gifts, capF, vf);
     if (vf > 0)
       ifd.push(
         item(
@@ -1138,6 +1207,7 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (party > 0) {
     const ti = new Trace().with(pTrace);
     const vi = Math.min(party, ti.p(I.partyMax));
+    notes.limit(I.partyMax, 'cap', ['74.00', 'household', 'icc'], party, I.partyMax.value, vi);
     icc.push(
       item(
         '74.00',
@@ -1152,6 +1222,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     );
     const tf = new Trace().with(pTrace);
     const vf = Math.min(party, tf.p(F.partyMax));
+    notes.limit(F.partyMax, 'cap', ['74.00', 'household', 'ifd'], party, F.partyMax.value, vf);
     ifd.push(
       item(
         '74.00',
@@ -1368,6 +1439,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     notCounted: notes.notCounted,
     unsupported: notes.unsupported,
     unverifiedRules: notes.unverified,
+    limits: notes.limits,
   };
 }
 

@@ -18,6 +18,7 @@ import { decide, DecisionInput, planningReady, planningText, planningView } from
 import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
 import { registerDeclarationCheckTool } from './reconcile-tool.js';
+import { registerFinalCheckTool } from './final-check.js';
 import { registerExportTool } from './export-tool.js';
 import { registerReviewTool } from './last-year-review.js';
 import { securitiesStatusText } from './securities.js';
@@ -911,6 +912,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
 
   // The dashboard view (ui://) and dashboard_api, which only that view calls.
   registerDashboardView(server, ws, dashboard);
+
+  // final_check: what to fix before filling in the official form, and what is good to know.
+  registerFinalCheckTool(server, ws);
 
   server.registerPrompt(
     'start_geneva_tax_return',

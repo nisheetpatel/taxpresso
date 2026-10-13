@@ -1,0 +1,168 @@
+/* "Final check" (FinalCheck.tsx, SPEC.md 10.0). Only the shared tokens (../shared/tokens.css),
+   status chips and banners: no colors of its own. One column at phone width. */
+
+.fc-card {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fc-lead,
+.fc-group-lead {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.fc-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--ground);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.fc-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fc-group-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.fc-items {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line-soft);
+  counter-reset: fc;
+}
+
+ol.fc-items > .fc-item {
+  counter-increment: fc;
+  position: relative;
+  padding-left: 30px;
+}
+
+ol.fc-items > .fc-item::before {
+  content: counter(fc);
+  position: absolute;
+  left: 0;
+  top: 13px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+  min-width: 0;
+}
+
+.fc-item:last-child {
+  border-bottom: none;
+}
+
+.fc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px 12px;
+}
+
+.fc-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.fc-head .chip {
+  flex: 0 0 auto;
+}
+
+.fc-detail,
+.fc-todo,
+.fc-sources,
+.fc-list {
+  margin: 0;
+  max-width: 72ch;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.fc-detail {
+  font-size: 14px;
+}
+
+.fc-list {
+  padding-left: 18px;
+}
+
+.fc-sources a,
+.fc-more-time a {
+  color: var(--link);
+  text-underline-offset: 3px;
+}
+
+.fc-more {
+  border-top: 1px solid var(--line-soft);
+}
+
+.fc-more > summary {
+  cursor: pointer;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* What the engine assumed or left out: short sentences, one per line. */
+.fc-folded {
+  margin: 0 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 72ch;
+  line-height: 1.5;
+}
+
+.fc-more-time,
+.fc-near {
+  margin: 4px 0 0;
+  max-width: 68ch;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .fc-card {
+    padding: 16px 14px;
+  }
+
+  .fc-head {
+    flex-direction: column;
+  }
+}
