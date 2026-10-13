@@ -25,4 +25,9 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string }> = {
   other: { en: 'Something else', fr: 'Autre chose' },
   // ge-2025-guide-declaration-pp p. 53: the bordereaux ICC and IFD and the avis de taxation.
   tax_assessment: { en: 'Tax assessment', fr: 'Avis de taxation et bordereau' },
+  // ge-2025-guide-declaration-pp p. 8: "Attestation des primes d'assurance-vie et contrat".
+  life_insurance_attestation: {
+    en: 'Life insurance attestation (pillar 3b)',
+    fr: 'Attestation d’assurance-vie (3e pilier B)',
+  },
 };

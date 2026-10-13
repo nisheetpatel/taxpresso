@@ -131,6 +131,9 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
   },
 ];
 
+const ETAT = (page: string, pdfPage: number) =>
+  `A line of the securities list (état des titres, ${page}, ${SPEC} p. ${pdfPage}): the dashboard's securities card lists it, and its totals go to F1 and 14.00.`;
+
 /**
  * Values read from documents that are not typed into the declaration, and why. Every other value a
  * document gives has a route above (a test keeps the two lists complete).
@@ -164,6 +167,28 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'assessment.donations': 'The tax office’s assessment is checked, never typed.',
   'assessment.debt_interest': 'The tax office’s assessment is checked, never typed.',
   'check.note': 'A note settling a check, not a value of the declaration.',
+  // Accounts, crypto and bank tax statements are lines of the securities list (état des titres),
+  // summed by packages/rules-ge (etatDesTitres) into F1 and 14.00, not routed one value at a time.
+  'bank.account_number': ETAT('F2', 22),
+  'bank.currency': ETAT('F2', 22),
+  'bank.balance': ETAT('F2', 22),
+  'bank.interest_gross': ETAT('F2', 22),
+  'bank.balance_in_currency': ETAT('F2', 22),
+  'bank.interest_in_currency': ETAT('F2', 22),
+  'bank.withholding_swiss': ETAT('F2', 22),
+  'bank.fees': ETAT('F2', 22),
+  'bank.abroad': ETAT('F2', 22),
+  'crypto.value_chf': ETAT('F2', 22),
+  'crypto.income_chf': ETAT('F2', 22),
+  'tax_statement.deposit_number': ETAT('F4', 24),
+  'tax_statement.income_subject_ia': ETAT('F4', 24),
+  'tax_statement.income_not_subject_ia': ETAT('F4', 24),
+  'tax_statement.taxable_value': ETAT('F4', 24),
+  'tax_statement.withholding_swiss': ETAT('F4', 24),
+  'tax_statement.foreign_tax_credit': ETAT('F4', 24),
+  'tax_statement.fees': ETAT('F4', 24),
+  'life_insurance.surrender_value': `Goes to 16.70 (C3) through the securities list's other wealth (${SPEC} p. 13); the dashboard's securities card shows it until the engine places it.`,
+  'life_insurance.premiums': `Goes to 52.11 (C3) through the securities list's other wealth (${SPEC} p. 13); the dashboard's securities card shows it until the engine places it.`,
 };
 
 /** A value from the ledger that has no place on the form yet, and why. */

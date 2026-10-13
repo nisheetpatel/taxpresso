@@ -9,7 +9,7 @@ import { Checks } from './Checks';
 import { CopyPanel } from './CopyPanel';
 import { DocumentCards } from './DocumentCards';
 import { isMessageKey, t, type Language } from './i18n';
-import { Securities } from './Securities';
+import { Holdings } from './Holdings';
 import type { OfficialLink, Question, RequirementView, State, Value } from './types';
 
 const POLL_MS = 2000;
@@ -167,7 +167,7 @@ export function App(): JSX.Element {
             </section>
             <Assessment state={state} lang={L} />
             <Documents state={state} lang={L} busy={busy} act={act} />
-            <Securities view={state.securities} year={state.taxYear} lang={L} />
+            <Holdings state={state} lang={L} act={act} />
             <DocumentCards state={state} lang={L} act={act} />
             <CopyPanel state={state} lang={L} act={act} />
           </div>

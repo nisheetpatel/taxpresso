@@ -89,4 +89,9 @@ export const api = {
     post('/documents/replace', lang, { id, by }),
   resolveCheck: (id: string, note: string, lang: Language) =>
     post('/checks/resolve', lang, { id, note }),
+  // "Your securities and accounts": a security's official value, and whose a line is.
+  holdingOfficial: (id: string, value: string, from: string, lang: Language) =>
+    post('/holdings/official', lang, { id, value, from }),
+  holdingOwner: (id: string, origin: string, owner: string, lang: Language) =>
+    post('/holdings/owner', lang, { id, origin, owner }),
 };

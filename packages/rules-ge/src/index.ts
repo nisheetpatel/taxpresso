@@ -24,6 +24,53 @@ export {
 } from './2026/ifd.js';
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from './2026/keys-securities.js';
+// The securities list (état des titres), other movable wealth and the withholding tax claimed back.
+export {
+  KEYS_WEALTH_2026,
+  OWNERS,
+  WEALTH_KINDS,
+  type LineOwner,
+  type WealthKey,
+  type WealthKind,
+} from './2026/keys-wealth.js';
+export {
+  DOCUMENT_FIELDS_WEALTH_2026,
+  DOCUMENT_KEYS_WEALTH_2026,
+} from './2026/document-keys-wealth.js';
+export {
+  CIVILITE,
+  etatDesTitres,
+  lineOwner,
+  OFFICIAL_VALUE_HELP,
+  RUBRICS_2026,
+  SECTIONS_2026,
+  type Columns,
+  type EtatDesTitres,
+  type EtatInput,
+  type EtatIssue,
+  type EtatLine,
+  type ForeignTax,
+  type OtherLine,
+  type Rubric,
+  type Section,
+  type ValueState,
+  type WealthItem,
+} from './2026/etat-des-titres.js';
+export {
+  FOREIGN_RESIDUAL_RATES,
+  IA_DEPOSIT_INTEREST_EXEMPT,
+  IA_RATE,
+  IA_ROUNDING,
+  IES_MINIMUM,
+  iaClaim,
+  iaOn,
+  residualRate,
+  roundFranc,
+  splitForeignTax,
+  type ForeignIncomeKind,
+  type ResidualRate,
+} from './2026/withholding.js';
+export { OFFICIAL_RATES, officialChf, type Conversion } from './2026/exchange-rates.js';
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
 export {
   DOCUMENT_FIELDS_2026,

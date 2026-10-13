@@ -679,6 +679,39 @@ export class Workspace {
     });
   }
 
+  /**
+   * What the user said about the securities list and other wealth (official values, owners,
+   * accounts without a document), already checked by holdings.ts. Appended in one write.
+   */
+  async saveHolding(
+    facts: readonly {
+      key: string;
+      instance: string;
+      value: FactValue;
+      status: 'stated' | 'estimate';
+      note?: string;
+    }[],
+    via: Via,
+  ): Promise<Fact[]> {
+    return this.#write(async () => {
+      this.#usable();
+      const saved = facts.map((f) =>
+        this.ledger.append({
+          key: f.key,
+          person: 'household',
+          instance: f.instance,
+          value: f.value,
+          status: f.status,
+          source: { method: 'user', via },
+          ...(f.note ? { note: f.note } : {}),
+        }),
+      );
+      if (saved.length) await this.vault.saveLedger(this.ledger);
+      this.record(via === 'chat' ? 'claude' : 'you', 'confirm');
+      return saved;
+    });
+  }
+
   /** The user ticks (or unticks) a value as entered on the official form. Local only. */
   async setEntered(factId: string, entered: boolean): Promise<void> {
     return this.#write(async () => {

@@ -143,7 +143,7 @@
       "published": "2026-01-26",
       "verified_on": "2026-10-13",
       "priority": "core",
-      "why_needed": "The official 2025 declaration form itself: every page (PG1 to PG4, annexes A1 to G2), every rubric code and its printed French label. Source of the form map behind the copy panel (SPEC.md 10.5).",
+      "why_needed": "The official 2025 declaration form itself: every page (PG1 to PG4, annexes A1 to G2), every rubric code and its printed French label. Source of the form map behind the copy panel (SPEC.md 10.5) and of the rubric codes of the récapitulation (PG2 to PG4: 14.00, 16.00, 16.70, 55.00, 56.20), the état des titres (F1 to F4), C2 (16.40), C3 (52.11, 56.30) and E1 (55.10).",
       "notes": "26 pages, marked SPECIMEN (not for filing). Page n of the PDF is one form page: 1 PG1, 2 PG2, 3 PG3, 4 PG4, 5 A1, 6 A2, 7 B1, 8 B2, 9 B3, 10 B4, 11 C1, 12 C2, 13 C3, 14 C4, 15 D1, 16 D2, 17 D3, 18 D4, 19 E1, 20 E2, 21 F1, 22 F2, 23 F3, 24 F4, 25 G1, 26 G2. The guide (ge-2025-guide-declaration-pp p. 9) links it as www.ge.ch/c/imp-spde25, a short link that no longer resolves. Landing page: ge-2025-documents-envoyes-page."
     },
     {
@@ -8483,6 +8483,38 @@
       "notes": "Printed as Instructions 2026 concernant la déclaration des personnes physiques, form 605.040.11.1f. Contains the 2026 federal tariff schedules."
     },
     {
+      "id": "ch-2025-oiis-dff-annexe",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Ordonnance 1 du DFF relative à l'imputation d'impôts étrangers prélevés à la source, RS 672.201.1, avec son annexe (liste des États contractants)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/2020/29/20260201/fr/pdf-a/fedlex-data-admin-ch-eli-cc-2020-29-20260201-fr-pdf-a.pdf",
+      "format": "pdf",
+      "publisher": "Chancellerie fédérale (Fedlex)",
+      "published": "2026-02-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "The non-recoverable foreign withholding tax rates per treaty state and kind of income (dividends, interest), which the DA-1 credit is computed from.",
+      "notes": "État le 1er février 2026; the annex says it is valid for income due in 2025 (p. 2). The list for income due in 2026 is expected in early 2027 (each list is published the February after the income year): add it as ch-2026-oiis-dff-annexe. Notes A to E are on p. 10 to 18. The ESTV forms page (ch-na-formulaires-impot-federal-direct) links this ordinance as the official list for DA-1 to DA-3. Added by the securities agent."
+    },
+    {
+      "id": "ch-na-law-lia",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Loi fédérale sur l'impôt anticipé (LIA), RS 642.21",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1966/371_385_384/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1966-371_385_384-20250101-fr-pdf-a.pdf",
+      "format": "pdf",
+      "publisher": "Chancellerie fédérale (Fedlex)",
+      "published": "2025-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Swiss withholding tax (impôt anticipé): the 35 % rate on income from movable capital (art. 13 al. 1 let. a, p. 10) and the exemption of client-deposit interest up to CHF 200 a year (art. 5 al. 1 let. c, p. 4), for the état des titres and the refund it claims.",
+      "notes": "Consolidated text, état le 1er janvier 2025, the latest consolidation on Fedlex on 13 October 2026 (found through the Fedlex SPARQL endpoint). 36 pages. Added by the securities agent."
+    },
+    {
       "id": "ch-na-law-lifd",
       "canton": "CH",
       "doc_type": "law",
@@ -8497,6 +8529,22 @@
       "priority": "core",
       "why_needed": "Federal direct tax law: notification of the assessment (art. 116, art. 131) and objection (réclamation, art. 132 and 133), and every federal rule the engine cites.",
       "notes": "Consolidated text, état le 1er janvier 2026 (Fedlex filestore PDF/A, 116 pages). Art. 132 and 133 are on p. 71 of the PDF. The fedlex.admin.ch page needs a browser; this filestore link downloads the PDF directly. Check for a newer consolidation before each release."
+    },
+    {
+      "id": "ch-na-oiis",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Ordonnance relative à l'imputation d'impôts étrangers prélevés à la source (OIIS), RS 672.201",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1967/1129_1169_1163/20240101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1967-1129_1169_1163-20240101-fr-pdf-a.pdf",
+      "format": "pdf",
+      "publisher": "Chancellerie fédérale (Fedlex)",
+      "published": "2024-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Credit of foreign withholding tax (DA-1): who may claim it, income declared gross (art. 3, p. 3), deduction from gross income instead (art. 2 al. 3, p. 2), no credit when the non-recoverable taxes total CHF 100 or less (art. 7, p. 4), amount and maximum (art. 8 and 9, p. 5 and 6).",
+      "notes": "Consolidated text, état le 1er janvier 2024, the latest consolidation on Fedlex on 13 October 2026. 12 pages. The list of treaty states and rates is in the DFF ordinance (ch-2025-oiis-dff-annexe). Added by the securities agent."
     },
     {
       "id": "ch-na-ifd-chiffres-reperes-3a",
@@ -8657,6 +8705,22 @@
       "priority": "useful",
       "why_needed": "Hub for the 2026 federal forms and instructions (PDF) for individuals",
       "notes": "2025 forms are only in a 44.5 MB ZIP (https://www.estv.admin.ch/dam/fr/sd-web/YWTRg69NFR9O/dbst-form-2025-fr.zip), not opened."
+    },
+    {
+      "id": "ch-na-listes-des-cours-ictax",
+      "canton": "CH",
+      "doc_type": "other",
+      "title": "Listes des cours pour l'évaluation des titres et des devises (ICTax)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.estv.admin.ch/fr/listes-des-cours-ictax",
+      "format": "html",
+      "publisher": "AFC (ESTV)",
+      "published": null,
+      "verified_on": "2026-10-13",
+      "priority": "useful",
+      "why_needed": "The official price list (Kursliste): closing prices of the last trading day of December, taxable value at 31 December (LHID art. 14 and 17 al. 1); searchable online by valor number or ISIN in ICTax (https://www.ictax.admin.ch/extern/fr.html). The extension never fetches it; the user looks values up.",
+      "notes": "The page is rendered by JavaScript; the snapshot holds its summary text only. The ICTax application itself needs a browser. Added by the securities agent."
     },
     {
       "id": "ch-na-simulateur-fiscal",
