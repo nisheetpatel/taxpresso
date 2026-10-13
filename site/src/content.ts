@@ -14,6 +14,9 @@ export type Tone = 'ok' | 'confirm' | 'plain';
 /** Latte art drawn in each principle's cup (render.ts). */
 export type Art = 'heart' | 'tulip' | 'dot' | 'rosetta' | 'check' | 'swirl';
 
+/** Where the site lives: canonical links, hreflang links, the sitemap and structured data. */
+export const BASE_URL = 'https://www.taxpresso.ch';
+
 /** The public repository, where releases, issues and the contributing guide live. */
 export const SOURCE_URL = 'https://github.com/nisheetpatel/taxpresso';
 export const DOWNLOAD_URL = `${SOURCE_URL}/releases/latest`;
@@ -1697,6 +1700,9 @@ export const LANGS: { lang: Lang; path: string; label: string; name: string }[] 
   { lang: 'es', path: '/es/', label: 'ES', name: 'Español' },
   { lang: 'pt', path: '/pt/', label: 'PT', name: 'Português' },
 ];
+
+/** The language search engines get when none of the others fits (hreflang x-default). */
+export const DEFAULT_LANG: Lang = 'en';
 
 /** The Get started page of a language. */
 export const startPath = (path: string) => `${path}start/`;

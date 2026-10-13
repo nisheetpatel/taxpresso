@@ -90,7 +90,7 @@ export const GUIDE_SOURCES: Record<GuideId, string[]> = {
 const NB = String.fromCharCode(0xa0);
 const MONTHS =
   /(\d(?:er)?) (janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)/g;
-function frenchSpacing<T>(v: T): T {
+export function frenchSpacing<T>(v: T): T {
   if (typeof v === 'string')
     return v
       .replace(/ ([?!:;»])/g, `${NB}$1`)

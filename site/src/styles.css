@@ -1417,6 +1417,216 @@ a:hover {
   text-decoration: none;
 }
 
+/* Privacy policy: a guide page with its date under the title. */
+
+.policy {
+  padding-top: 24px;
+}
+
+.updated {
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: var(--mocha);
+}
+
+/* Geneva reference pages: quiet tables and cards, every figure in mono with its source under it. */
+
+.ref-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ref-year {
+  width: fit-content;
+  margin: 16px 0 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--latte);
+  color: var(--espresso);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ref .ref-year {
+  margin: 16px 0 0;
+}
+
+.guides-hero .ref-year {
+  margin-top: 22px;
+  background: var(--crema);
+}
+
+.fig {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.94em;
+  white-space: nowrap;
+}
+
+/* Dates aren't amounts: they keep the text font. */
+.fig-date {
+  font-family: var(--font);
+  font-size: 1em;
+  white-space: normal;
+}
+
+.ref section {
+  margin-top: 32px;
+}
+
+.ref-table {
+  width: 100%;
+  margin-top: 28px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 14px;
+  background: var(--cup);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 16px;
+}
+
+.ref-table th,
+.ref-table td {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.ref-table thead th {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mocha);
+}
+
+.ref-table tbody th {
+  font-weight: 600;
+}
+
+.ref-table tbody tr:last-child th,
+.ref-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ref-table .ref-num {
+  text-align: right;
+}
+
+.ref .cite {
+  margin: 4px 0 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4e443d;
+}
+
+.cite-label,
+.cite-year {
+  font-weight: 600;
+}
+
+.cite a,
+.cite-inline a {
+  overflow-wrap: anywhere;
+}
+
+.cite-inline a {
+  font-weight: 600;
+}
+
+.cite a::after,
+.cite-inline a::after {
+  content: ' ↗';
+}
+
+.ref-cards {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.ref-card {
+  padding: 22px 24px;
+  border-radius: 14px;
+  background: var(--cup);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ref .ref-card h2 {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 650;
+}
+
+.ref-when {
+  margin: 8px 0 6px !important;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--roast);
+}
+
+.ref-when .fig {
+  font-size: 1em;
+}
+
+.ref-card .cite:last-child {
+  margin-bottom: 0;
+}
+
+.ref-lines {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ref-lines li {
+  margin: 8px 0;
+}
+
+.ref-tax {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mocha);
+}
+
+.ref-check {
+  margin: 36px 0 0 !important;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: var(--latte);
+  font-weight: 600;
+  max-width: 46em;
+}
+
+.ref-cta {
+  max-width: 46em;
+  margin-top: 40px;
+  padding: 28px;
+  border-radius: 20px;
+  background: var(--espresso);
+  color: #f3ebe1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 28px;
+}
+
+.ref-cta h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.ref-cta p {
+  margin: 6px 0 0;
+  max-width: 30em;
+  color: #d9c8b4;
+}
+
 /* Footer */
 
 .foot {
@@ -1540,6 +1750,23 @@ a:hover {
   }
   .guide-sources {
     padding: 22px 20px;
+  }
+  .ref-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ref-table th,
+  .ref-table td {
+    padding: 9px 10px;
+  }
+  .ref-table {
+    font-size: 15px;
+  }
+  .ref-card,
+  .ref-cta {
+    padding: 20px;
+  }
+  .ref-when {
+    font-size: 19px;
   }
   .mock-body {
     flex-wrap: wrap;
