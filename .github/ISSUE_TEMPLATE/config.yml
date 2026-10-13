@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Get started with Taxpresso
+    url: https://taxpresso-zeta.vercel.app/en/start/
+    about: How to install Taxpresso in Claude Desktop, step by step.

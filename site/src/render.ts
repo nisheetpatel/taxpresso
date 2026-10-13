@@ -1,11 +1,13 @@
 // Renders one language of the website to complete static HTML documents: the home page and the
-// Get started page. No JavaScript; the logo animation is CSS (ui/src/shared/logo.css).
-import { CUP_SVG, wordmark } from '../../ui/src/shared/logo.ts';
+// Get started page. No JavaScript; the logo animation is CSS (ui/src/shared/logo.css) and the
+// language menu is a <details> element.
+import { CUP_SVG, ICON_SVG, wordmark } from '../../ui/src/shared/logo.ts';
 import {
   type Art,
   copy,
   DONATE_URL,
   DOWNLOAD_URL,
+  ISSUE_URL,
   type Lang,
   LANGS,
   SOURCE_URL,
@@ -23,12 +25,37 @@ const rich = (s: string) =>
     (_, text: string, href: string) => `<a href="${href}" rel="noopener">${text}</a>`,
   );
 
-const CHECK = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+/** Opens in a new tab, so the page stays where it was. */
+const out = (href: string) => `href="${href}" target="_blank" rel="noopener"`;
+
+const icon = (d: string, size = 22) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const CHECK = icon('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 16);
+const GLOBE = icon(
+  '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/>',
+  18,
+);
+const CHEVRON = icon('<path d="M6 9l6 6 6-6"/>', 14);
+const STAR = icon(
+  '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
+);
+const HELP_ICON: Record<keyof typeof ISSUE_URL, string> = {
+  bug: icon(
+    '<rect x="8" y="7" width="8" height="12" rx="4"/><path d="M12 7V5M9 5l1.2 2M15 5l-1.2 2M8 11H4M8 15H4.5M16 11h4M16 15h3.5M12 11v8"/>',
+  ),
+  idea: icon(
+    '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 3.5 10.9c-.6.5-1 1.2-1 2V16h-5v-.1c0-.8-.4-1.5-1-2A6 6 0 0 1 12 3z"/>',
+  ),
+  language: icon(
+    '<path d="M4 6h9M8.5 4v2M6 6c.6 3 2.6 5.6 5 7M11 6c-.8 3.6-3.4 6.6-7 8M13 20l4-9 4 9M14.4 17h5.2"/>',
+  ),
+  code: icon('<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>'),
+};
 /** The Swiss cross: a white cross with arms one sixth longer than wide, on red. */
 const SWISS = `<svg class="ch" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="4" fill="#DA291C"/><path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" fill="#FFFFFF"/></svg>`;
 
 /** Milk shapes on the crema, on a 96-unit grid centred on 0. */
-const ART: Record<Art | 'swiss', string> = {
+const ART: Record<Art, string> = {
   heart:
     '<path class="la" d="M0 12C-3 9-15 2-15-5C-15-11-9-14-5-12C-2-11 0-8 0-6C0-8 2-11 5-12C9-14 15-11 15-5C15 2 3 9 0 12Z"/>',
   tulip:
@@ -39,10 +66,9 @@ const ART: Record<Art | 'swiss', string> = {
   check: '<path class="la-line la-thick" d="M-12 0C-12 4 -8 6.5 -4 9.5L13 -9"/>',
   swirl:
     '<path class="la-line" d="M0 0A3 3 0 0 0 6 0A6 6 0 0 0 -6 0A9 9 0 0 0 12 0A12 12 0 0 0 -12 0A15 15 0 0 0 18 0"/>',
-  swiss: '<path class="la" d="M-3-10h6v7h7v6h-7v7h-6v-7h-7v-6h7z"/>',
 };
 
-const latte = (art: Art | 'swiss') =>
+const latte = (art: Art) =>
   `<svg class="pc-cup" viewBox="0 0 96 96" aria-hidden="true"><g transform="translate(48 48)"><circle class="tp-rim" r="40"/><circle class="tp-coffee" r="24"/><circle class="tp-crema" r="21"/>${ART[art]}</g></svg>`;
 
 /** One look per principle card, in the order of the copy; the Swiss card comes last. */
@@ -81,17 +107,23 @@ ${LANGS.map((l, i) => `<link rel="alternate" hreflang="${l.lang}" href="${alt[i]
 function header(lang: Lang, onStart: boolean) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
-  const langLinks = LANGS.map((l) => {
+  const choices = LANGS.map((l) => {
     const href = onStart ? startPath(l.path) : l.path;
-    return `<a href="${href}" hreflang="${l.lang}" lang="${l.lang}" title="${l.name}"${l.lang === lang ? ' aria-current="page"' : ''}>${l.label}</a>`;
-  }).join('');
+    return `<li><a href="${href}" hreflang="${l.lang}" lang="${l.lang}"${l.lang === lang ? ' aria-current="page"' : ''}><span>${l.name}</span><span class="code">${l.label}</span></a></li>`;
+  }).join('\n');
   const home = onStart ? here.path : '';
   return `<a class="skip" href="#main">${esc(t.skip)}</a>
 <header class="top">
 <a class="brand" href="${here.path}">${wordmark(true)}</a>
 <nav class="sections" aria-label="${esc(t.navLabel)}"><a href="${home}#how">${esc(t.nav.how)}</a><a href="${home}#principles">${esc(t.nav.principles)}</a><a href="${home}#faq">${esc(t.nav.faq)}</a></nav>
 <a class="top-start" href="${startPath(here.path)}"${onStart ? ' aria-current="page"' : ''}>${esc(t.nav.start)}</a>
-<nav class="langs" aria-label="${esc(t.langLabel)}">${langLinks}</nav>
+<details class="langs">
+<summary aria-label="${esc(t.langLabel)}: ${here.name}">${GLOBE}<span>${here.label}</span>${CHEVRON}</summary>
+<ul>
+${choices}
+<li class="suggest"><a ${out(ISSUE_URL.language)}>${esc(t.suggestLanguage)}</a></li>
+</ul>
+</details>
 </header>`;
 }
 
@@ -99,7 +131,7 @@ function footer(lang: Lang) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   return `<footer class="foot">
-<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${SOURCE_URL}" rel="noopener">${esc(t.footer.source)}</a></div>
+<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a></div>
 <p>${esc(t.footer.independent)}</p>
 <p>${esc(t.footer.noTracking)}</p>
 <p>© 2026 Taxpresso</p>
@@ -136,10 +168,17 @@ export function render(lang: Lang, cssVersion = ''): string {
     .join('\n');
   const [swissTitle, swissText] = t.principles.swiss;
 
-  const menu = t.support.menu
+  const menu = t.support.tip.menu
     .map(
       ([drink, amount]) =>
         `<li><span>${esc(drink)}</span><span class="dots" aria-hidden="true"></span><span class="amount">${esc(amount)}</span></li>`,
+    )
+    .join('\n');
+
+  const help = t.contribute.items
+    .map(
+      ([title, text, kind]) =>
+        `<li><a class="help-card" ${out(ISSUE_URL[kind])}>${HELP_ICON[kind]}<h3>${esc(title)}</h3><p>${esc(text)}</p></a></li>`,
     )
     .join('\n');
 
@@ -201,22 +240,39 @@ ${steps}
 <p class="band-lead">${esc(t.principles.lead)}</p>
 <ul class="pgrid">
 ${cards}
-<li class="pc pc-swiss">${latte('swiss')}<div><h3>${esc(swissTitle)}</h3><p>${esc(swissText)}</p></div></li>
+<li class="pc pc-white pc-swiss">${SWISS}<div><h3>${esc(swissTitle)}</h3><p>${esc(swissText)}</p></div></li>
 </ul>
 </section>
 
-<section class="band support" aria-labelledby="support-title">
-<div class="support-text">
-<h2 id="support-title">${esc(t.support.title)}</h2>
-<p class="support-line">${esc(t.support.headline)}</p>
+<section id="free" class="band free" aria-labelledby="free-title">
+<div class="free-intro">
+<h2 id="free-title">${esc(t.support.title)}</h2>
 <p>${esc(t.support.text)}</p>
-<div class="support-actions">
-<a class="btn btn-primary" href="${DONATE_URL}" rel="noopener">${esc(t.support.donate)}</a>
-<a class="btn btn-quiet" href="${SOURCE_URL}" rel="noopener">${esc(t.support.source)}</a>
 </div>
+<div class="free-grid">
+<div class="star-card">
+<span class="star-mark">${STAR}</span>
+<h3>${esc(t.support.star.title)}</h3>
+<p>${esc(t.support.star.text)}</p>
+<a class="btn btn-primary" ${out(SOURCE_URL)}>${STAR}${esc(t.support.star.button)}</a>
 </div>
+<div class="tip-card">
+<h3>${esc(t.support.tip.title)}</h3>
 <ul class="menu">
 ${menu}
+</ul>
+<p class="tip-note">${esc(t.support.tip.note)}</p>
+<a class="btn btn-crema" ${out(DONATE_URL)}>${esc(t.support.tip.button)}</a>
+</div>
+</div>
+<p class="ppb">${rich(t.support.ppb)}</p>
+</section>
+
+<section id="help" class="band help" aria-labelledby="help-title">
+<h2 id="help-title">${esc(t.contribute.title)}</h2>
+<p class="band-lead">${esc(t.contribute.lead)}</p>
+<ul class="help-grid">
+${help}
 </ul>
 </section>
 
@@ -224,6 +280,13 @@ ${menu}
 <h2 id="faq-title">${esc(t.faq.title)}</h2>
 <div class="qa">
 ${faq}
+</div>
+</section>
+
+<section class="band fine" aria-labelledby="fine-title">
+<div class="fine-box">
+<h2 id="fine-title">${esc(t.finePrint.title)}</h2>
+<p>${esc(t.finePrint.text)}</p>
 </div>
 </section>
 </main>
@@ -237,16 +300,31 @@ export function renderStart(lang: Lang, cssVersion = ''): string {
   const s = t.start;
   const here = LANGS.find((l) => l.lang === lang)!;
 
-  const needs = s.needs.map((n) => `<li>${CHECK}<span>${rich(n)}</span></li>`).join('\n');
+  const platforms = s.platforms.map((p) => `<li>${esc(p)}</li>`).join('');
+  const needs = s.needs
+    .map(
+      ([title, text]) =>
+        `<li class="need"><span class="need-mark" aria-hidden="true">${CHECK}</span><h3>${esc(title)}</h3><p>${rich(text)}</p></li>`,
+    )
+    .join('\n');
+
+  const extra = (i: number) => {
+    if (i === 0)
+      return `<p class="dl"><a class="btn btn-primary" href="${DOWNLOAD_URL}" rel="noopener">${esc(s.download)}</a></p>`;
+    if (i === 1)
+      return `<div class="mock" aria-hidden="true"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body"><span class="mock-icon">${ICON_SVG}</span><span class="mock-name"><strong>Taxpresso</strong><span>${esc(s.mockExtension)}</span></span><span class="mock-btn">${esc(s.mockInstall)}</span></div></div>`;
+    if (i === 3)
+      return `<figure class="prompt"><figcaption>${esc(s.promptLabel)}</figcaption><p>${esc(s.prompt)}</p></figure>`;
+    return '';
+  };
   const steps = s.steps
     .map(
       ([title, text], i) =>
-        `<li><span class="num" aria-hidden="true">${i + 1}</span><div><h3>${esc(title)}</h3><p>${rich(text)}</p>${
-          i === 0
-            ? `<p class="dl"><a class="btn btn-primary" href="${DOWNLOAD_URL}" rel="noopener">${esc(s.download)}</a><span>${esc(s.downloadNote)}</span></p>`
-            : ''
-        }</div></li>`,
+        `<li><span class="num" aria-hidden="true">${i + 1}</span><div class="step-body"><h3>${esc(title)}</h3><p>${rich(text)}</p>${extra(i)}</div></li>`,
     )
+    .join('\n');
+  const notes = s.notes
+    .map(([title, text]) => `<li class="note"><h3>${esc(title)}</h3><p>${rich(text)}</p></li>`)
     .join('\n');
 
   return `${head(
@@ -260,33 +338,38 @@ export function renderStart(lang: Lang, cssVersion = ''): string {
 ${header(lang, true)}
 
 <main id="main" class="start">
+<section class="start-hero">
+<div class="start-hero-text">
 <h1>${esc(s.title)}</h1>
 <p class="lead">${esc(s.lead)}</p>
+<div class="dl-row">
+<a class="btn btn-crema btn-big" href="${DOWNLOAD_URL}" rel="noopener">${esc(s.download)}</a>
+<span class="dl-note">${esc(s.downloadNote)}</span>
+</div>
+<ul class="platforms" aria-label="Claude Desktop">${platforms}</ul>
+</div>
+<div class="start-hero-art tp-play" aria-hidden="true">${CUP_SVG}</div>
+</section>
 
-<section class="start-needs" aria-labelledby="needs-title">
+<section class="start-sec" aria-labelledby="needs-title">
 <h2 id="needs-title">${esc(s.needsTitle)}</h2>
-<ul class="checks">
+<ul class="needs">
 ${needs}
 </ul>
 </section>
 
-<section aria-labelledby="steps-title">
+<section class="start-sec" aria-labelledby="steps-title">
 <h2 id="steps-title">${esc(s.stepsTitle)}</h2>
-<ol class="start-steps">
+<ol class="timeline">
 ${steps}
 </ol>
 </section>
 
-<div class="start-notes">
-<section class="note note-dark" aria-labelledby="privacy-title">
-<h2 id="privacy-title">${esc(s.privacyTitle)}</h2>
-<p>${esc(s.privacyText)}</p>
+<section class="start-sec">
+<ul class="notes">
+${notes}
+</ul>
 </section>
-<section class="note" aria-labelledby="update-title">
-<h2 id="update-title">${esc(s.updateTitle)}</h2>
-<p>${esc(s.updateText)}</p>
-</section>
-</div>
 
 <p class="back"><a href="${here.path}">${esc(s.back)}</a></p>
 </main>

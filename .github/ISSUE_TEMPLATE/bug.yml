@@ -1,0 +1,35 @@
+name: Report a bug
+description: Something wrong, broken or confusing in Taxpresso.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. **Never include real tax data** here: no names, AHV numbers, salaries, account numbers, documents or screenshots of a real return. Describe the situation in words, or use made-up numbers.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, and what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: If it's about a tax rule or a number, say where it is written if you know (the page of the official guide, for example).
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Taxpresso version
+      placeholder: 0.0.5
+  - type: dropdown
+    id: os
+    attributes:
+      label: Your computer
+      options:
+        - Linux
+        - macOS
+        - Windows

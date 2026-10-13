@@ -1,0 +1,25 @@
+name: Suggest or add a language
+description: Ask for Taxpresso in your language, or offer to translate or review it.
+labels: [enhancement]
+body:
+  - type: input
+    id: language
+    attributes:
+      label: Which language?
+      placeholder: Italiano, Español, Português, ...
+    validations:
+      required: true
+  - type: dropdown
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - I'd like to use Taxpresso in this language
+        - I can review a translation (I'm a native speaker)
+        - I can translate
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?

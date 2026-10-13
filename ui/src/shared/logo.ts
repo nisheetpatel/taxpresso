@@ -1,11 +1,11 @@
 // The Taxpresso mark (SPEC.md section 11b): the wordmark's last o is an espresso seen from above.
-// The espresso pours, the crema swirls, and a check is drawn in it: your return is done. One source
-// for the dashboard, the MCP Apps card and the website; the animation lives in logo.css and plays
-// once when the element carries the `tp-play` class.
+// Motion, sugar cube: a cube of brown sugar drops in, the crema holds it for a moment and it sinks,
+// two ripples run out to the cup, and as they settle the check is drawn. One source for the
+// dashboard, the MCP Apps card and the website; the animation lives in logo.css and plays once when
+// the element carries the `tp-play` class. At rest the cup is the static mark: the espresso and its
+// crema check.
 
-/** The crema swirl, an arc spiral on a 96-unit grid centred on 0. */
-const SWIRL = 'M0 0A4 4 0 0 1 8 0A8 8 0 0 1 -8 0A12 12 0 0 1 16 0A16 16 0 0 1 -16 0';
-/** The check drawn in the crema. */
+/** The check, in crema. */
 const CHECK = 'M-12 1l8 8 17-18';
 
 /** The cup on its own, for icons and small places. */
@@ -14,8 +14,9 @@ export const CUP_SVG =
   '<g transform="translate(48 48)">' +
   '<circle class="tp-rim" r="40"/>' +
   '<circle class="tp-coffee" r="24"/>' +
-  // The invisible circle centres the swirl's box, so it turns around the middle of the cup.
-  `<g class="tp-swirl"><circle r="24" fill="none"/><path pathLength="100" d="${SWIRL}"/></g>` +
+  '<circle class="tp-ripple" r="21"/><circle class="tp-ripple tp-ripple-b" r="21"/>' +
+  // A cube of brown sugar, the old crema test: good crema holds it for a moment.
+  '<rect class="tp-cube" x="-6" y="-6" width="12" height="12" rx="2.5"/>' +
   `<path class="tp-check" pathLength="100" d="${CHECK}"/>` +
   '</g></svg>';
 
