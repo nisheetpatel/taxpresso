@@ -62,6 +62,7 @@ describe('MCP surface', () => {
       'propose_extraction',
       'reconcile_official_pdf',
       'replace_document',
+      'review_last_year',
       'set_document_owner',
       'set_fact',
       'set_holding',

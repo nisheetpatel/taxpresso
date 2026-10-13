@@ -4,3 +4,4 @@ export * from './pillar3a.js';
 export * from './lpp-buyin.js';
 export * from './pillar3a-catchup.js';
 export * from './tou.js';
+export * from './last-year-review.js';

@@ -20,6 +20,7 @@ import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
 import { registerDeclarationCheckTool } from './reconcile-tool.js';
 import { registerExportTool } from './export-tool.js';
+import { registerReviewTool } from './last-year-review.js';
 import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
@@ -435,6 +436,8 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
 
   // get_last_year: last year's figures, for comparison only (./prior-tool.ts).
   registerLastYearTool(server, ws);
+  // review_last_year: last year's return reviewed, read-only (./last-year-review.ts).
+  registerReviewTool(server, ws);
 
   server.registerTool(
     'list_optimizations',

@@ -1,0 +1,248 @@
+/* "Last year, reviewed" card (Review.tsx). Tokens and chips come from ../shared/tokens.css; no colors
+   here. One column, wrapping at phone width. */
+
+.rv-official {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.rv-card {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rv-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.rv-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rv-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+  min-width: 0;
+}
+
+.rv-block h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.rv-subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.rv-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.rv-total strong {
+  font-size: 24px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.rv-amount {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.rv-rows,
+.rv-questions,
+.rv-details ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rv-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 6px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.rv-row:last-child {
+  border-bottom: 0;
+}
+
+/* An amount that wraps under its label stays on the right. */
+.rv-row > span:last-child,
+.rv-total > .rv-amount {
+  margin-left: auto;
+}
+
+.rv-check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.rv-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  min-width: 0;
+}
+
+.rv-item:last-of-type {
+  border-bottom: 0;
+}
+
+.rv-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+
+.rv-label strong,
+.rv-strong {
+  font-weight: 600;
+}
+
+.rv-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rv-saving {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-button);
+  background: var(--accent-soft);
+}
+
+.rv-green {
+  font-size: 18px;
+  color: var(--savings);
+}
+
+.rv-question {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.rv-question > span:first-child {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.rv-question:last-child {
+  border-bottom: 0;
+}
+
+.rv-who {
+  font-weight: 600;
+}
+
+.rv-handoff {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.rv-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  color: var(--link);
+  font-weight: 600;
+}
+
+.rv-deadlines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--line);
+}
+
+.rv-deadline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 14px;
+}
+
+.rv-deadlines p {
+  margin: 0;
+}
+
+.rv-sources {
+  overflow-wrap: anywhere;
+}
+
+.rv-details summary {
+  cursor: pointer;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  color: var(--link);
+}
+
+.rv-details li {
+  padding: 3px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.rv-details strong {
+  display: block;
+  margin-top: 6px;
+}
+
+@media (max-width: 480px) {
+  .rv-card {
+    padding: 14px 16px;
+  }
+
+  .rv-total strong {
+    font-size: 22px;
+  }
+}
