@@ -1,6 +1,7 @@
 import * as z from 'zod/v4';
 import { UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
+import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
 import type { Workspace } from './workspace.js';
 
@@ -42,6 +43,12 @@ export const StatusSchema = z.object({
     .optional()
     .describe(
       'The état des titres and other movable wealth as computed: totals, withholding tax claimed back, what is missing.',
+    ),
+  lastYear: z
+    .string()
+    .optional()
+    .describe(
+      "Last year's declaration, read by Taxpresso: suggested answers and figures to compare.",
     ),
   nextStep: z.string(),
   vault: z.object({ path: z.string(), exists: z.boolean(), problem: z.string().optional() }),
@@ -86,6 +93,8 @@ export function buildStatus(
   const securitiesView = ws.securities('en');
   const securities = securitiesStatusText(securitiesView);
   const holdingsText = holdingsStatusText(holdings(ws));
+  const lastYear = ws.lastYear('en');
+  const priorText = priorStatusText(lastYear);
   const estimates = securitiesView?.rows.some((r) => r.estimate)
     ? [
         "Securities values at the broker's prices and rates, until the official ESTV price list (Kursliste) for the year is available.",
@@ -96,8 +105,19 @@ export function buildStatus(
   if (vault.problem) nextStep = vault.problem;
   else if (notSupported.length) {
     nextStep = `Tell the user plainly that Taxpresso can't prepare this yet: ${notSupported.join('; ')}. Suggest GeTax (the canton's free software) or a fiduciary. Don't work around it.`;
-  } else if (open > 0) nextStep = 'Ask the next question: call next_questions.';
-  else if (toRead > 0) {
+  } else if (
+    open > 0 &&
+    answered === 0 &&
+    !lastYear &&
+    !documents.some((d) => d.kind === 'prior_declaration')
+  ) {
+    nextStep =
+      "Before the first question, ask the user for last year's Geneva tax declaration (the PDF from GeTax, the online declaration or their tax software): Taxpresso reads it on this computer and suggests most answers for them to confirm. They drop it in the dashboard (open_dashboard) or in their Taxpresso folder, then call ingest_vault. If they don't have it, ask the next question: call next_questions.";
+  } else if (open > 0) {
+    nextStep = lastYear?.suggestions
+      ? "Ask the next question: call next_questions. When a question comes with a suggestion from last year's declaration, ask the user whether it is still right, then save their answer with answer_question."
+      : 'Ask the next question: call next_questions.';
+  } else if (toRead > 0) {
     nextStep = `${toRead} document${toRead === 1 ? '' : 's'} not read yet. Offer to read them: get_document_for_review sends that document's content to Claude, so ask the user first. Then propose what you read with propose_extraction. The user can also say what each one is in the dashboard.`;
   } else if (toConfirm > 0) {
     nextStep = `${toConfirm} value${toConfirm === 1 ? '' : 's'} read from documents need the user's OK. Ask them to check each one in the dashboard (Documents), or to confirm in the chat; then save with set_fact.`;
@@ -140,6 +160,7 @@ export function buildStatus(
     estimates,
     ...(securities ? { securities } : {}),
     ...(holdingsText ? { holdings: holdingsText } : {}),
+    ...(priorText ? { lastYear: priorText } : {}),
     nextStep,
     vault,
     dashboard: { running: opts.dashboardRunning },
@@ -172,6 +193,7 @@ export function statusText(s: Status): string {
   if (s.notSupported.length) lines.push(`Not supported yet: ${s.notSupported.join('; ')}`);
   if (s.securities) lines.push(s.securities);
   if (s.holdings) lines.push(s.holdings);
+  if (s.lastYear) lines.push(s.lastYear);
   lines.push(
     `Folder: ${s.vault.path}${s.vault.exists ? '' : ' (created with the first answer or document)'}`,
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,

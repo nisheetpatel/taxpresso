@@ -26,6 +26,12 @@ export const messages = {
     save: 'Save',
     cancel: 'Cancel',
     skippedNote: 'You skipped this one earlier.',
+    suggestedFromPrior:
+      'From your {year} declaration (page {page}). Check it is still right for {taxYear}, or change it.',
+    suggestedFromPriorNoYear:
+      'From last year’s declaration (page {page}). Check it is still right for {taxYear}, or change it.',
+    suggestedFromDoc: 'Read in one of your documents (page {page}). Check it, or change it.',
+    confirmNext: 'Confirm and continue',
     none: 'None of these',
     chooseCommune: 'Choose your commune',
     notSupportedPick: 'Taxpresso can’t prepare this part yet.',
@@ -159,6 +165,12 @@ export const messages = {
     save: 'Enregistrer',
     cancel: 'Annuler',
     skippedNote: 'Vous aviez passé cette question.',
+    suggestedFromPrior:
+      'D’après votre déclaration {year} (page {page}). Vérifiez que c’est toujours juste pour {taxYear}, ou modifiez-le.',
+    suggestedFromPriorNoYear:
+      'D’après votre déclaration de l’an dernier (page {page}). Vérifiez que c’est toujours juste pour {taxYear}, ou modifiez-le.',
+    suggestedFromDoc: 'Lu dans un de vos documents (page {page}). Vérifiez-le, ou modifiez-le.',
+    confirmNext: 'Confirmer et continuer',
     none: 'Aucun de ceux-là',
     chooseCommune: 'Choisissez votre commune',
     notSupportedPick: 'Taxpresso ne peut pas encore préparer cette partie.',

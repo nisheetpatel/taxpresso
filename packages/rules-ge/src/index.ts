@@ -71,6 +71,27 @@ export {
   type ResidualRate,
 } from './2026/withholding.js';
 export { OFFICIAL_RATES, officialChf, type Conversion } from './2026/exchange-rates.js';
+export {
+  KEYS_PRIOR_2026,
+  parsePriorInstance,
+  PRIOR_FORMS,
+  PRIOR_MAIN_LINES_2026,
+  priorInstance,
+  priorLines,
+  type PriorForm,
+  type PriorKey,
+  type PriorLine,
+  type PriorMainLine,
+  type PriorRef,
+  type PriorSection,
+} from './2026/keys-prior.js';
+export {
+  COMMUNE_CODES,
+  COMMUNE_CODES_SOURCE,
+  communeByCode,
+  communeByName,
+  foldName,
+} from './2026/commune-codes.js';
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
 // Source tax (2025, 2026), TOU, pension fund buy-ins and the 3a catch-up (SPEC.md section 8).
 export {

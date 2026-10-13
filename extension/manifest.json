@@ -53,6 +53,10 @@
       "description": "Your Geneva cantonal, communal and federal tax, computed on this computer, with how each figure is computed and what is still an estimate."
     },
     {
+      "name": "get_last_year",
+      "description": "Last year's figures, read from your previous declaration, to compare with this year."
+    },
+    {
       "name": "list_optimizations",
       "description": "Ways to lower your tax with their CHF value: before 31 December (pillar 3a, a pension fund buy-in, the 3a catch-up), and TOU if you are taxed at source."
     },

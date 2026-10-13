@@ -1,6 +1,7 @@
 // The /api/state shape (extension/src/api.ts, dashboardState). Kept in step by the API tests.
 import type { Language } from './i18n';
 import type { EstimateView } from './Estimate';
+import type { LastYearView } from './LastYear';
 import type { CopyPanelState } from './types-copy';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
@@ -31,6 +32,9 @@ export interface Question {
   max?: number;
   value?: Value;
   skipped?: boolean;
+  /** Read from a document (last year's declaration), not an answer yet: the user confirms it. */
+  suggested?: Value;
+  suggestedFrom?: { kind?: string; year?: number; page?: number };
 }
 
 export interface RequirementView {
@@ -58,7 +62,7 @@ export interface DocumentView {
   addedAt: string;
   kind?: string;
   kindLabel?: string;
-  /** How the kind is known: 'export' when read from the file's structure (a broker export); 'claude' while it is only Claude's reading, not confirmed by the user. */
+  /** How the kind is known: 'export' or 'pdf_text' when read from the file itself (a broker export, last year's declaration); 'claude' while it is only Claude's reading, not confirmed by the user. */
   kindSource?: string;
   person?: string;
 }
@@ -118,6 +122,8 @@ export interface State extends DocumentsState {
   estimate?: EstimateView;
   /** "Your securities and accounts": the état des titres as computed, or null when empty. */
   holdings?: HoldingsView | null;
+  /** Last year's declaration: main figures to compare, or null when there is none. */
+  lastYear?: LastYearView | null;
   notSupportedMessage: string;
   activity: Activity[];
 }

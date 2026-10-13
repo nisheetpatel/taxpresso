@@ -13,6 +13,7 @@ import {
 } from '@taxpresso/rules-ge';
 import { ENUM_LABELS, formValue } from './extraction.js';
 import { KIND_LABELS } from './kinds.js';
+import { isPriorOrProfile } from './prior.js';
 import type { Workspace } from './workspace.js';
 
 export interface CardValue {
@@ -73,13 +74,15 @@ export function documentCards(ws: Workspace, lang: Lang) {
   const facts = ws.countedFacts();
   const people = ws.engine.file.people;
   const couple = ws.snapshot().people.length > 1;
+  // Last year's declaration has its own card ("Last year"); its answers wait in the questions.
   return ws
     .activeDocuments()
+    .filter((doc) => doc.kind !== 'prior_declaration')
     .map((doc) => {
       const order: readonly string[] = documentFields(doc.kind);
       const rank = (key: string) => (order.includes(key) ? order.indexOf(key) : order.length);
       const values = facts
-        .filter((f) => f.source.docId === doc.id && f.key !== 'check.note')
+        .filter((f) => f.source.docId === doc.id && f.key !== 'check.note' && !isPriorOrProfile(f))
         .sort((a, b) => rank(a.key) - rank(b.key) || a.person.localeCompare(b.person))
         .map((f) => cardValue(ws, f, lang));
       // The assessment is checked, not typed into the declaration: no copy, no "Entered".
