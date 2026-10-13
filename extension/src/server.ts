@@ -4,15 +4,18 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { McpServer } from '@modelcontextprotocol/server';
+import { DOCUMENT_KINDS, LedgerError, type FactValue } from '@taxpresso/ledger';
 import type { RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
 import type { Dashboard } from './dashboard.js';
+import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './extraction.js';
 import { INSTRUCTIONS } from './instructions.js';
 import { KIND_LABELS } from './kinds.js';
 import { securitiesStatusText } from './securities.js';
+import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
-import { PILLAR3A_2026_FACTS } from '@taxpresso/rules-ge';
-import { PLAN_KEYS, type Workspace } from './workspace.js';
+import { formatDay, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ge';
+import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
 
 /** MCP Apps (SEP-1865): the inline card shown with open_dashboard where the host supports it. */
 export const DASHBOARD_VIEW_URI = 'ui://taxpresso/open-dashboard.html';
@@ -87,6 +90,28 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
     ...(en.min !== undefined ? { min: en.min } : {}),
     ...(en.max !== undefined ? { max: en.max } : {}),
   };
+}
+
+/** A value for Claude: money as printed on a form, dates as on Swiss documents, choices in words. */
+function shown(ws: Workspace, key: string, value: FactValue): string {
+  const def = ws.keys[key];
+  if (!def) return String(value);
+  if (def.type === 'boolean') return value ? 'yes' : 'no';
+  if (def.type === 'enum') return ENUM_LABELS[key]?.[String(value)]?.en ?? String(value);
+  return formValue(def, value) ?? String(value);
+}
+
+/** Errors the user or Claude can fix, as a tool error with the reason; anything else is a bug. */
+function toolError(err: unknown) {
+  if (
+    err instanceof WorkspaceError ||
+    err instanceof ExtractionError ||
+    err instanceof LedgerError ||
+    (err instanceof Error && /^No such document|replaced by/.test(err.message))
+  ) {
+    return { content: [{ type: 'text' as const, text: err.message }], isError: true };
+  }
+  throw err;
 }
 
 function questionText(q: QuestionOut): string {
@@ -246,6 +271,8 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
             filename: z.string(),
             kind: z.string().optional(),
             person: z.string().optional(),
+            read: z.boolean(),
+            toConfirm: z.number().int(),
           }),
         ),
         missing: z.array(z.string()),
@@ -260,17 +287,20 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         const n = doc.parse.warnings.length;
         return ` (${doc.issuer ?? 'not readable'}${n ? `, ${n} warning${n === 1 ? '' : 's'} in the dashboard` : ''})`;
       };
-      const documents = ws.documents.map((d) => ({
+      const pending = ws.toConfirm();
+      const documents = ws.activeDocuments().map((d) => ({
         id: d.id,
         filename: d.filename,
         ...(d.kind ? { kind: d.kind } : {}),
         ...(d.person ? { person: d.person } : {}),
+        read: d.parse.method !== 'none',
+        toConfirm: pending.filter((f) => f.source.docId === d.id).length,
       }));
       const missing = buildStatus(ws, { dashboardRunning: dashboard.running }).missing;
       const lines = documents.length
         ? documents.map(
             (d) =>
-              `- ${d.filename}: ${d.kind ? KIND_LABELS[d.kind].en : 'not identified yet (the user says what it is in the dashboard)'}${exportNote(d.id)}${d.person ? `, ${WHO[d.person] ?? d.person}` : ''}`,
+              `- ${d.id} ${d.filename}: ${d.kind ? KIND_LABELS[d.kind].en : 'not identified yet'}${exportNote(d.id)}${d.person ? `, ${WHO[d.person] ?? d.person}` : ''}; ${d.read ? (d.toConfirm ? `${d.toConfirm} value${d.toConfirm === 1 ? ' needs' : 's need'} the user's OK` : 'read') : 'not read yet'}`,
           )
         : ['No documents yet.'];
       const securities = securitiesStatusText(ws.securities('en'));
@@ -306,7 +336,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         : undefined;
       const text = added.length
         ? [
-            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' The user says what each new document is in the dashboard.' : ''}`,
+            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}`,
             ...(securities ? [securities] : []),
           ].join('\n')
         : `No new files in ${ws.vaultInfo().path}.`;
@@ -359,36 +389,251 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   server.registerTool(
     'set_fact',
     {
-      title: 'Save a rough figure',
+      title: 'Save what the user said',
       description:
-        'Saves a figure the user gives in the chat for the "before 31 December" estimate: gross or net salary for the year, whether they have a pension fund at work, or what they already paid into 3a this year. Money in CHF.',
+        'Saves what the user tells you in the chat: a rough figure for the "before 31 December" estimate (plan.*); a value from a document they confirmed or corrected (instance = document id; confirm: true confirms all its values); or a note settling a "Check this" item (check.note).',
       inputSchema: z.object({
-        key: z.enum(PLAN_KEYS),
+        key: z
+          .enum([...PLAN_KEYS, ...DOCUMENT_VALUE_KEYS, 'check.note'])
+          .optional()
+          .describe('What the value is. Leave out with confirm: true.'),
         person: z
           .enum(['p1', 'p2'])
           .optional()
           .describe('p1 = the user, p2 = their spouse or partner. Default p1.'),
+        instance: z
+          .string()
+          .max(80)
+          .optional()
+          .describe(
+            'For a value from a document: the document id. For check.note: the id of the "Check this" item.',
+          ),
         value: z
-          .union([z.number().min(0), z.boolean()])
-          .describe('CHF amount, or true/false for has_pension_fund.'),
+          .union([z.number().min(0), z.boolean(), z.string().max(500)])
+          .optional()
+          .describe(
+            'plan.*: CHF amount or true/false. Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
+          ),
+        confirm: z
+          .boolean()
+          .optional()
+          .describe(
+            'true with instance = a document id: the user said every value read from that document is right.',
+          ),
       }),
-      outputSchema: z.object({ saved: z.boolean() }),
-      annotations: { title: 'Save a rough figure', ...RW },
+      outputSchema: z.object({ saved: z.boolean(), confirmed: z.number().int().optional() }),
+      annotations: { title: 'Save what the user said', ...RW },
     },
-    async ({ key, person, value }) => {
+    async ({ key, person, instance, value, confirm }) => {
       try {
-        await ws.setPlan(person ?? 'p1', key, value, 'chat');
+        if (confirm) {
+          if (!instance) throw new WorkspaceError('Give the document id as instance.');
+          const confirmed = await ws.confirmDocument(instance, 'chat');
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Confirmed ${confirmed} value${confirmed === 1 ? '' : 's'} from that document, as the user said.`,
+              },
+            ],
+            structuredContent: { saved: true, confirmed },
+          };
+        }
+        if (!key || value === undefined) {
+          throw new WorkspaceError('Give key and value, or confirm: true with a document id.');
+        }
+        if ((PLAN_KEYS as readonly string[]).includes(key)) {
+          if (typeof value === 'string') throw new WorkspaceError('Give a number or true/false.');
+          await ws.setPlan(person ?? 'p1', key as (typeof PLAN_KEYS)[number], value, 'chat');
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Saved as an estimate. Call list_optimizations for the updated figures.',
+              },
+            ],
+            structuredContent: { saved: true },
+          };
+        }
+        if (!instance) {
+          throw new WorkspaceError(
+            key === 'check.note'
+              ? 'Give the id of the "Check this" item as instance.'
+              : 'Give the document id as instance.',
+          );
+        }
+        if (key === 'check.note') {
+          if (typeof value !== 'string') throw new WorkspaceError('Give the note as text.');
+          await ws.resolveCheck(instance, value, 'chat');
+          return {
+            content: [{ type: 'text', text: 'Saved the note: this item is settled.' }],
+            structuredContent: { saved: true },
+          };
+        }
+        const fact = await ws.setDocumentValue(instance, key, person, value, 'chat');
         return {
           content: [
             {
               type: 'text',
-              text: 'Saved as an estimate. Call list_optimizations for the updated figures.',
+              text: `Saved as confirmed by the user: ${ws.keys[key]?.label.en} = ${shown(ws, key, fact.value)}.`,
             },
           ],
           structuredContent: { saved: true },
         };
       } catch (err) {
-        return { content: [{ type: 'text', text: (err as Error).message }], isError: true };
+        return toolError(err);
+      }
+    },
+  );
+
+  server.registerTool(
+    'get_document_for_review',
+    {
+      title: 'Read a document',
+      description:
+        "The content of one of the user's documents for you to read: text page by page, or the image of a photo or scanned page. Extracted on this computer. Ask the user before you read a document; then propose what you read with propose_extraction.",
+      inputSchema: z.object({
+        id: z.string().max(80).describe('The document id from list_documents.'),
+        page: z
+          .number()
+          .int()
+          .min(1)
+          .optional()
+          .describe('First page to return, for long documents. Default 1.'),
+      }),
+      outputSchema: z.object({
+        id: z.string(),
+        filename: z.string(),
+        format: z.string(),
+        pages: z.number().int(),
+        returned: z.array(z.number().int()),
+        nextPage: z.number().int().optional(),
+        problem: z.string().optional(),
+      }),
+      annotations: { title: 'Read a document', ...RO },
+    },
+    async ({ id, page }) => {
+      await ws.ready();
+      try {
+        const { content, summary } = await reviewDocument(ws, id, page ?? 1);
+        return { content, structuredContent: { ...summary } };
+      } catch (err) {
+        return toolError(err);
+      }
+    },
+  );
+
+  server.registerTool(
+    'propose_extraction',
+    {
+      title: 'Propose values read in a document',
+      description:
+        'Saves the values you read in one document (get_document_for_review), each with its page and box, and what the document is. They stay "Needs your OK" until the user confirms them. Money exactly as printed. Never guess a value.',
+      inputSchema: z.object({
+        id: z.string().max(80).describe('The document id.'),
+        document: z
+          .object({
+            kind: z.enum(DOCUMENT_KINDS).optional(),
+            person: z
+              .enum(['p1', 'p2', 'household'])
+              .optional()
+              .describe('Whose it is: p1 the user, p2 their spouse or partner, household both.'),
+            taxYear: z.number().int().optional().describe('The year it is for, as printed.'),
+            periodFrom: z
+              .string()
+              .max(10)
+              .optional()
+              .describe('First day it covers, as printed: 2026-01-01 or 01.01.2026.'),
+            periodTo: z.string().max(10).optional().describe('Last day it covers.'),
+            issuer: z
+              .string()
+              .max(120)
+              .optional()
+              .describe('Who issued it: employer, bank, insurer, tax office.'),
+          })
+          .optional()
+          .describe('What the document is, as you read it.'),
+        values: z
+          .array(
+            z.object({
+              key: z.enum(DOCUMENT_VALUE_KEYS),
+              value: z
+                .union([z.string().max(200), z.boolean(), z.number()])
+                .describe(
+                  'Money as text exactly as printed, e.g. "85\'000.00"; dates as printed; true/false for a ticked box; a choice by its value.',
+                ),
+              page: z.number().int().min(1).describe('The page you read it on.'),
+              box: z
+                .string()
+                .max(16)
+                .optional()
+                .describe(
+                  'The box (chiffre) or letter on the form, e.g. "8" on a salary certificate.',
+                ),
+              person: z
+                .enum(['p1', 'p2'])
+                .optional()
+                .describe('Whose value it is, when it differs from the document.'),
+            }),
+          )
+          .max(60)
+          .optional(),
+      }),
+      outputSchema: z.object({
+        saved: z.number().int(),
+        unchanged: z.number().int(),
+        kept: z.array(z.object({ key: z.string(), person: z.string(), value: z.unknown() })),
+        toConfirm: z.number().int(),
+        checks: z.array(z.string()),
+      }),
+      annotations: { title: 'Propose values read in a document', ...RW },
+    },
+    async ({ id, document, values }) => {
+      try {
+        const result = await ws.proposeExtraction(id, document ?? {}, values ?? []);
+        const doc = result.document;
+        const toConfirm = ws.toConfirm().filter((f) => f.source.docId === doc.id).length;
+        const checks = ws
+          .checks()
+          .filter((c) => !c.resolved && c.documents.includes(doc.id))
+          .map((c) => `${c.title.en} (${c.id}): ${c.detail.en} ${c.todo.en}`);
+        const details = [
+          doc.kind ? KIND_LABELS[doc.kind].en : undefined,
+          doc.person ? (WHO[doc.person] ?? doc.person) : undefined,
+          doc.taxYear ? String(doc.taxYear) : undefined,
+          doc.periodFrom && doc.periodTo
+            ? `${formatDay(doc.periodFrom, 'en')} to ${formatDay(doc.periodTo, 'en')}`
+            : undefined,
+          doc.issuer,
+        ].filter(Boolean);
+        const lines = [
+          `Saved ${result.saved} value${result.saved === 1 ? '' : 's'} from “${doc.filename}” as Needs your OK${details.length ? ` (${details.join(', ')})` : ''}.${result.unchanged ? ` ${result.unchanged} already there.` : ''}`,
+        ];
+        if (result.kept.length) {
+          lines.push(
+            `Kept what the user already confirmed, which differs from what you read: ${result.kept
+              .map((k) => `${k.key} = ${shown(ws, k.key, k.value)}`)
+              .join('; ')}. Ask the user which is right; they can change it in the dashboard.`,
+          );
+        }
+        lines.push(
+          toConfirm
+            ? `${toConfirm} value${toConfirm === 1 ? '' : 's'} from this document need the user's OK: show them what you read, with the pages, and ask them to confirm in the dashboard (Documents), or confirm here with set_fact once they say it is right.`
+            : 'Nothing from this document is waiting for the user’s OK.',
+        );
+        if (checks.length) lines.push(`Check this, with the user: ${checks.join(' ')}`);
+        return {
+          content: [{ type: 'text', text: lines.join('\n') }],
+          structuredContent: {
+            saved: result.saved,
+            unchanged: result.unchanged,
+            kept: result.kept,
+            toConfirm,
+            checks,
+          },
+        };
+      } catch (err) {
+        return toolError(err);
       }
     },
   );

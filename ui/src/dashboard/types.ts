@@ -1,6 +1,7 @@
 // The /api/state shape (extension/src/api.ts, dashboardState). Kept in step by the API tests.
 import type { Language } from './i18n';
 import type { SecuritiesView } from './Securities';
+import type { DocumentsState } from './types-docs';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
@@ -46,7 +47,7 @@ export interface DocumentView {
   addedAt: string;
   kind?: string;
   kindLabel?: string;
-  /** How the kind is known: 'export' when read from the file's structure (a broker export). */
+  /** How the kind is known: 'export' when read from the file's structure (a broker export); 'claude' while it is only Claude's reading, not confirmed by the user. */
   kindSource?: string;
   person?: string;
 }
@@ -58,7 +59,8 @@ export interface Activity {
   detail?: string;
 }
 
-export interface State {
+/** Values read from documents, checks and the assessment: ./types-docs.ts. */
+export interface State extends DocumentsState {
   version: string;
   taxYear: number;
   lang: Language;

@@ -1,8 +1,10 @@
 // Shape of a canonical key definition. The keys themselves live with the rules, per tax year
 // (packages/rules-ge/src/<year>/keys.ts, SPEC.md section 4); the ledger only checks values against them.
+import { isIsoDate } from './money.js';
 import type { FactValue } from './types.js';
 
-export type KeyType = 'money' | 'integer' | 'boolean' | 'string' | 'enum' | 'enum_list';
+/** `date` values are text written YYYY-MM-DD. */
+export type KeyType = 'money' | 'integer' | 'boolean' | 'string' | 'enum' | 'enum_list' | 'date';
 
 export interface KeyDef {
   type: KeyType;
@@ -20,6 +22,10 @@ export interface KeyDef {
   label: { en: string; fr: string };
   /** The term used on the official French form or guide, shown next to the gloss. */
   official?: string;
+  /** For values read from a document: the box (chiffre) or letter on it, e.g. '8' or 'E'. */
+  box?: string;
+  /** Where the label, the box number or the rule comes from: manifest id plus page or article. */
+  source?: string;
 }
 
 export type KeyRegistry = Readonly<Record<string, KeyDef>>;
@@ -41,6 +47,9 @@ export function invalidValue(def: KeyDef, value: FactValue): string | undefined 
       return undefined;
     case 'string':
       if (typeof value !== 'string' || value.length > 500) return 'expected a short text';
+      return undefined;
+    case 'date':
+      if (typeof value !== 'string' || !isIsoDate(value)) return 'expected a date (YYYY-MM-DD)';
       return undefined;
     case 'enum':
       if (typeof value !== 'string' || !def.values?.includes(value)) {

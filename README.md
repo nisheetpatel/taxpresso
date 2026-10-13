@@ -10,8 +10,8 @@ Taxes should be painless, simple and free. Taxpresso is free and open source, an
 
 Early preview for tax year 2026 (returns filed in early 2027).
 
-- Works today: the questions that matter for your return, in the chat or in a local dashboard; your documents in one folder, for you and your partner; your securities read from a broker export (Interactive Brokers, DEGIRO); and what a pillar 3a payment before 31 December would save you.
-- Coming next: Claude reading your documents with you, each value confirmed by you; checks across your documents (wrong year, income counted twice); your tax assessment checked against your return; barcode reading (salary certificate, bank e-tax statement); the full Geneva and federal tax calculation; and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
+- Works today: the questions that matter for your return, in the chat or in a local dashboard; your documents in one folder, for you and your partner; Claude reading your documents with you (PDFs and photos, read on your computer), each value confirmed by you; checks across your documents (another year, a salary certificate that doesn't cover the year, benefits counted twice, duplicates); one card per document with copy buttons and "Entered" ticks; your tax assessment checked against your return, with the deadline to object; your securities read from a broker export (Interactive Brokers, DEGIRO); and what a pillar 3a payment before 31 December would save you.
+- Coming next: barcode reading (salary certificate, bank e-tax statement), the full Geneva and federal tax calculation, and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
 - Geneva first. The goal is all 26 cantons.
 
 ## Install

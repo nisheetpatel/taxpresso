@@ -3715,6 +3715,22 @@
       "notes": "Printed as Instructions 2026 concernant la déclaration des personnes physiques, form 605.040.11.1f. Contains the 2026 federal tariff schedules."
     },
     {
+      "id": "ch-na-law-lifd",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Loi fédérale sur l'impôt fédéral direct (LIFD), RS 642.11",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf",
+      "format": "pdf",
+      "publisher": "Chancellerie fédérale (Fedlex)",
+      "published": "2026-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Federal direct tax law: notification of the assessment (art. 116, art. 131) and objection (réclamation, art. 132 and 133), and every federal rule the engine cites.",
+      "notes": "Consolidated text, état le 1er janvier 2026 (Fedlex filestore PDF/A, 116 pages). Art. 132 and 133 are on p. 71 of the PDF. The fedlex.admin.ch page needs a browser; this filestore link downloads the PDF directly. Check for a newer consolidation before each release."
+    },
+    {
       "id": "ch-na-ifd-chiffres-reperes-3a",
       "canton": "CH",
       "doc_type": "other",

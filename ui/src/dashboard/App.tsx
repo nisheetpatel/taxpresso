@@ -4,6 +4,9 @@ import { wordmark } from '../shared/logo';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { api, ApiError } from './api';
+import { Assessment } from './Assessment';
+import { Checks } from './Checks';
+import { DocumentCards } from './DocumentCards';
 import { isMessageKey, t, type Language } from './i18n';
 import { Securities } from './Securities';
 import type { Question, RequirementView, State, Value } from './types';
@@ -161,11 +164,14 @@ export function App(): JSX.Element {
                 </div>
               )}
             </section>
+            <Assessment state={state} lang={L} />
             <Documents state={state} lang={L} busy={busy} act={act} />
             <Securities view={state.securities} year={state.taxYear} lang={L} />
+            <DocumentCards state={state} lang={L} act={act} />
           </div>
           <aside class="side-col">
             <Missing state={state} lang={L} act={act} />
+            <Checks state={state} lang={L} act={act} />
             {state.notSupported.length ? (
               <section class="card side-card" aria-labelledby="ns-title">
                 <h2 id="ns-title">{t(L, 'notSupportedTitle')}</h2>
@@ -739,8 +745,13 @@ function Documents({
                 {d.kindSource === 'export' ? (
                   <span class="chip chip-verified">{t(lang, 'statusRecognised')}</span>
                 ) : (
-                  <span class={`chip ${d.kind ? 'chip-stated' : 'chip-needs-ok'}`}>
-                    {t(lang, d.kind ? 'statusConfirmed' : 'statusNeedsOk')}
+                  <span
+                    class={`chip ${d.kind && d.kindSource !== 'claude' ? 'chip-stated' : 'chip-needs-ok'}`}
+                  >
+                    {t(
+                      lang,
+                      d.kind && d.kindSource !== 'claude' ? 'statusConfirmed' : 'statusNeedsOk',
+                    )}
                   </span>
                 )}
               </div>

@@ -45,12 +45,14 @@ describe('MCP surface', () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
       'answer_question',
+      'get_document_for_review',
       'get_status',
       'ingest_vault',
       'list_documents',
       'list_optimizations',
       'next_questions',
       'open_dashboard',
+      'propose_extraction',
       'set_fact',
     ]);
     for (const tool of tools) {

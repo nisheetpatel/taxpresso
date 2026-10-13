@@ -4,6 +4,8 @@ import { DOCUMENT_KINDS, LedgerError, VaultError } from '@taxpresso/ledger';
 import { NBSP, QuestionnaireError, type Lang } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
 import type { ApiRequest, ApiResponse } from './dashboard.js';
+import { documentCards, documentChecks, assessmentCards } from './document-views.js';
+import { ExtractionError } from './extraction.js';
 import { KIND_LABELS } from './kinds.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
@@ -34,6 +36,15 @@ const Kind = z.object({
   kind: z.enum(DOCUMENT_KINDS),
   person: z.enum(['p1', 'p2', 'household']).optional(),
 });
+const FactEdit = z.object({
+  id: z.string().max(80),
+  value: z.union([z.string().max(60), z.boolean()]),
+});
+const Entered = z.object({ id: z.string().max(80), entered: z.boolean() });
+const Replace = z.object({ id: z.string().max(80), by: z.string().max(80) });
+const Resolve = z.object({ id: z.string().max(120), note: z.string().max(500) });
+/** "Something else" last in the list of kinds. */
+const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
 
 export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
   const snap = ws.snapshot();
@@ -64,7 +75,7 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
         answer: ws.engine.describe(s, lang),
         ...(who(s.person) ? { who: who(s.person) } : {}),
       })),
-    documents: ws.documents.map((d) => ({
+    documents: ws.activeDocuments().map((d) => ({
       id: d.id,
       filename: d.filename,
       bytes: d.bytes,
@@ -73,7 +84,16 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       ...(d.kindSource ? { kindSource: d.kindSource } : {}),
       ...(d.person ? { person: d.person } : {}),
     })),
-    kinds: DOCUMENT_KINDS.map((k) => ({ value: k, label: KIND_LABELS[k][lang] })),
+    kinds: KIND_ORDER.map((k) => ({ value: k, label: KIND_LABELS[k][lang] })),
+    // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
+    // 10.5 second view, 10.8): ./document-views.ts.
+    cards: documentCards(ws, lang),
+    replaced: ws.documents
+      .filter((d) => d.replacedBy)
+      .map((d) => ({ id: d.id, filename: d.filename, by: d.replacedBy! })),
+    checks: documentChecks(ws, lang),
+    assessments: assessmentCards(ws, lang),
+    toConfirm: ws.toConfirm().length,
     requirements: ws.requirements().map((r) => ({
       id: r.id,
       label: r.label[lang],
@@ -177,6 +197,9 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
           const name =
             decodeURIComponent(Array.isArray(raw) ? (raw[0] ?? '') : (raw ?? '')) || 'document';
           const { document } = await ws.addDocument(req.body, name, 'dashboard');
+          // Uploaded to replace another document (a "Check this" item or a card).
+          const replace = req.query.get('replace');
+          if (replace && replace !== document.id) await ws.replaceDocument(replace, document.id);
           // Uploaded from a "still missing" row: the user already said what it is.
           const kind = Kind.shape.kind.safeParse(req.query.get('kind'));
           const person = Kind.shape.person.safeParse(req.query.get('person') ?? undefined);
@@ -194,12 +217,39 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
           await ws.setDocumentKind(id, kind, person);
           return state();
         }
+        case '/documents/confirm':
+          await ws.confirmDocument(parse(Id, req.body).id, 'dashboard');
+          return state();
+        case '/documents/replace': {
+          const { id, by } = parse(Replace, req.body);
+          await ws.replaceDocument(id, by);
+          return state();
+        }
+        case '/facts/confirm':
+          await ws.confirmFact(parse(Id, req.body).id, 'dashboard');
+          return state();
+        case '/facts/edit': {
+          const { id, value } = parse(FactEdit, req.body);
+          await ws.editFact(id, value, 'dashboard');
+          return state();
+        }
+        case '/facts/entered': {
+          const { id, entered } = parse(Entered, req.body);
+          await ws.setEntered(id, entered);
+          return state();
+        }
+        case '/checks/resolve': {
+          const { id, note } = parse(Resolve, req.body);
+          await ws.resolveCheck(id, note, 'dashboard');
+          return state();
+        }
         default:
           return { status: 404, body: { error: 'Not found.' } };
       }
     } catch (err) {
       if (
         err instanceof WorkspaceError ||
+        err instanceof ExtractionError ||
         err instanceof QuestionnaireError ||
         err instanceof VaultError ||
         err instanceof LedgerError ||

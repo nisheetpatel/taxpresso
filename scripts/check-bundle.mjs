@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // C2 static checks on the staged extension (extension/dist), run after `pnpm build`:
 //  1. every npm package bundled into server/index.mjs is in extension/allowed-dependencies.json;
-//  2. every Node built-in it imports is allowlisted, and none of the network ones ever is;
+//  2. every Node built-in it imports, or loads at run time (process.getBuiltinModule, require), is
+//     allowlisted, and none of the network ones ever is;
 //  3. the shipped UI loads nothing from outside (no remote src, href, url() or @import, no Google Fonts);
 //  4. nothing unexpected ships (no node_modules, no source maps).
 // The runtime proof is test/offline/run.mjs; this catches problems before anything runs.
@@ -67,6 +68,28 @@ for (const [b, files] of builtins) {
     errors.push(
       `built-in ${b} is not in extension/allowed-dependencies.json (imported by ${files.join(', ')})`,
     );
+}
+
+// Built-ins loaded at run time without an import (process.getBuiltinModule, require): same rules.
+// PDF.js, inside unpdf, reaches fs, url, stream and module this way.
+const bundle = await readFile(path.join(dist, 'server', 'index.mjs'), 'utf8');
+for (const m of bundle.matchAll(
+  /(?:getBuiltinModule|(?<![\w.$])require)\(\s*[`"']([\w:/]+)[`"']/g,
+)) {
+  const bare = m[1].replace(/^node:/, '');
+  if (!builtinModules.includes(bare)) continue;
+  const name = `node:${bare}`;
+  if (NEVER.includes(name)) {
+    errors.push(
+      `${name} is a network or process built-in (C2), loaded at run time in server/index.mjs`,
+    );
+  } else if (!(name in allow.builtins)) {
+    errors.push(
+      `built-in ${name} is loaded at run time in server/index.mjs but not in extension/allowed-dependencies.json`,
+    );
+  } else if (!builtins.has(name)) {
+    builtins.set(name, ['(run time)']);
+  }
 }
 
 async function walk(dir) {

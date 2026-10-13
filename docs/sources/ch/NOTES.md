@@ -48,7 +48,8 @@ Checked 2026-10-13. Amounts and rates are left out on purpose: read them from th
 - Fedlex pages show only a JavaScript notice to these tools, and fedlex-data PDFs are blocked for automated fetch (https://www.fedlex.admin.ch)
 
 ## Gaps
-- LIFD (RS 642.11), LHID (RS 642.14), OIS (RS 642.118.2) and the DFF professional-expense ordinance: consolidated texts not verified (https://www.fedlex.admin.ch)
+- LIFD (RS 642.11): added 2026-10-13 as ch-na-law-lifd, the consolidated PDF (état le 1er janvier 2026) from the Fedlex filestore, which downloads without a browser (https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf)
+- LHID (RS 642.14), OIS (RS 642.118.2) and the DFF professional-expense ordinance: consolidated texts not verified; the same Fedlex filestore pattern should work for them (https://www.fedlex.admin.ch)
 - Pillar 3a 2025 cap: no official 2025 confirmation yet (see BSV entry above)
 - 2025 individual declaration form and instructions: only in a 44.5 MB ZIP, not opened (https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct)
 - 2026 declaration form 2 (02-2026-fr.pdf): listed by ESTV but the fetch returned a server error, so excluded

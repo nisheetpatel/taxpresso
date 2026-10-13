@@ -2251,7 +2251,7 @@
     "url": "https://www.bsv.admin.ch/dam/bsv/fr/dokumente/bv/anleitungen/masszahlen-2025-2026.pdf.download.pdf/masszahlen-2025-2026.pdf",
     "status": "failed",
     "error": "HTTP 502",
-    "tried_at": "2026-10-13T11:53:20.914Z"
+    "tried_at": "2026-10-13T17:31:37.337Z"
   },
   "ch-na-remboursement-impot-anticipe": {
     "url": "https://www.estv.admin.ch/fr/remboursement-impot-anticipe",
@@ -2267,7 +2267,7 @@
     "url": "https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf",
     "status": "failed",
     "error": "HTTP 502",
-    "tried_at": "2026-10-13T11:53:20.911Z"
+    "tried_at": "2026-10-13T17:31:37.343Z"
   },
   "ch-2026-is-bases-de-calcul": {
     "url": "https://www.estv.admin.ch/dam/fr/sd-web/nuQbhdzXDPm0/qst-berechnungsgrundlagen-2026-fr.pdf",
@@ -2437,6 +2437,16 @@
     "sha256": "52e047f4a5d1b062ae170fcb4c50c66925b1e91a81cef6f662afc1aeb57d72ad",
     "content_type": "text/html;charset=utf-8",
     "retrieved_at": "2026-10-13T11:50:54.972Z",
+    "status": "ok"
+  },
+  "ch-na-law-lifd": {
+    "url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf",
+    "final_url": "https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf",
+    "file": "ch/files/ch-na-law-lifd.pdf",
+    "bytes": 1209388,
+    "sha256": "230aae6fd0615e67158ff2d5446ed57cd9f1445cd953f81fe2df1addf129323c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T17:31:37.505Z",
     "status": "ok"
   }
 }

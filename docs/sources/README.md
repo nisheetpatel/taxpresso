@@ -59,7 +59,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 - Barcode compression: the eCH-0196 barcode annex describes ZLIB-compressed XML, while eCH-0270 says "ZIP". The decoder must handle both until a real bank statement settles it (spike S2).
 - Salary certificate 2D barcode: no official specification was found on the ESTV or CSI pages reviewed. Don't assume it follows eCH-0270; determine it from a real certificate (spike S2).
 - eCH-0278 status: the cover says approved 2026-02-05, but the body mentions a later decision and calls it a proposal. Confirm before building on it. Its XSD and Excel annexes weren't found.
-- Federal law texts (LIFD, LHID, source-tax ordinance, professional-expense ordinance) are missing: fedlex only renders in a browser. Add them from fedlex.admin.ch by hand.
+- Federal law texts: the LIFD is in `ch` (ch-na-law-lifd, Fedlex filestore PDF). The LHID, the source-tax ordinance and the professional-expense ordinance are still missing: the fedlex.admin.ch pages only render in a browser, but their filestore PDFs download directly.
 - Pillar 3a 2025 maximum: the federal key-figures table extracted the same value for 2025 and 2026. Read it from the PDF before hard-coding anything.
 - Federal 2027 cold-progression circular is already published: never reuse 2026 amounts for 2027.
 - Geneva: the published approved-software list stops at tax year 2024 (Dr. Tax). Ask the AFC how approval works today.

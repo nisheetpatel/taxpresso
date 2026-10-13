@@ -3,7 +3,8 @@
   "packages": {
     "@modelcontextprotocol/server": "MCP server SDK v2, stdio transport. Depends only on zod and @modelcontextprotocol/core; HTTP transports are not imported, so not bundled.",
     "@modelcontextprotocol/core": "MCP protocol types and JSON-RPC handling shared by the SDK.",
-    "zod": "Schemas for tool inputs and outputs."
+    "zod": "Schemas for tool inputs and outputs.",
+    "unpdf": "Reads the text and images of PDF documents for get_document_for_review: PDF.js (Apache-2.0, notice in THIRD_PARTY_NOTICES) in unpdf's single-file build for servers (MIT). No worker, no canvas, no native module, no Node built-in imported statically. It is only ever given bytes, never a URL, and no font, character map or WebAssembly location; its fetch and XMLHttpRequest code paths for URLs are replaced by refusing stubs at build time (extension/scripts/build.mjs)."
   },
   "builtins": {
     "node:http": "The dashboard server on 127.0.0.1 (createServer only; ESLint bans http.request and http.get).",
@@ -13,6 +14,9 @@
     "node:path": "Paths.",
     "node:os": "Home folder for the default vault path.",
     "node:url": "Locates the bundled UI next to the server file.",
-    "node:process": "stdio for the MCP transport (used by the SDK)."
+    "node:process": "stdio for the MCP transport (used by the SDK).",
+    "node:zlib": "Compresses the PNG image of a scanned page sent to Claude (deflate only).",
+    "node:module": "createRequire for CommonJS dependencies (the bundle banner); PDF.js also asks for it at run time for an optional canvas package that isn't shipped and is never used.",
+    "node:stream": "PDF.js asks for it at run time to stream a PDF from a local file path; Taxpresso passes bytes, so that path never runs."
   }
 }

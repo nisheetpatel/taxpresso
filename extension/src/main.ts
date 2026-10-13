@@ -11,6 +11,9 @@ import { Dashboard } from './dashboard.js';
 import { createTaxpressoServer } from './server.js';
 import { Workspace } from './workspace.js';
 
+// stdout is the MCP channel. Anything a library prints there by habit goes to stderr instead.
+for (const level of ['log', 'info', 'debug'] as const) console[level] = console.error.bind(console);
+
 const config = readConfig();
 const engine = new QuestionnaireEngine(geQuestionnaire2026(), KEYS_2026, COMMUNES_2026);
 const workspace = new Workspace(config, engine, KEYS_2026);

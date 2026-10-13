@@ -43,7 +43,9 @@ export interface Fact {
 
 /**
  * Kinds of supporting documents. SPEC.md section 4 lists the first eleven; the others name
- * attachments the official guide asks for (ge-2025-guide-declaration-pp p. 10).
+ * attachments the official guide asks for (ge-2025-guide-declaration-pp p. 10), then the tax
+ * office's assessment (bordereau and avis de taxation, ge-2025-guide-declaration-pp p. 4) that the
+ * user checks against what they declared (SPEC.md section 10.8).
  */
 export const DOCUMENT_KINDS = [
   'salary_certificate',
@@ -65,6 +67,7 @@ export const DOCUMENT_KINDS = [
   // A broker's activity or position export (CSV, XML) for the securities list (SPEC.md 5.7).
   'broker_export',
   'other',
+  'tax_assessment',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
@@ -85,6 +88,14 @@ export interface VaultDocument {
   taxYear?: number;
   issuer?: string;
   pages?: number;
+  /** The period the document covers, YYYY-MM-DD (e.g. a salary certificate's box E). */
+  periodFrom?: string;
+  periodTo?: string;
+  /**
+   * The id of the document that replaces this one (a corrected certificate, the right year).
+   * A replaced document stays in the folder but no longer counts: its values, checks and cards drop.
+   */
+  replacedBy?: string;
   parse: { method: string; ok: boolean; warnings: string[] };
 }
 

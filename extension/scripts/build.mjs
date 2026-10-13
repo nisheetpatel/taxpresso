@@ -42,7 +42,16 @@ const result = await build({
   metafile: true,
   legalComments: 'none',
   logLevel: 'warning',
-  define: { __TAXPRESSO_VERSION__: JSON.stringify(pkg.version) },
+  define: {
+    __TAXPRESSO_VERSION__: JSON.stringify(pkg.version),
+    // C2, defense in depth. PDF.js (inside unpdf) can load a PDF, fonts or WebAssembly from a URL
+    // with fetch or XMLHttpRequest. Taxpresso only ever gives it bytes and no URL, so these paths
+    // never run; here they are cut at build time too: every bare fetch or XMLHttpRequest in the
+    // bundle becomes a stub that refuses (see the banner). Our own code can't use them either
+    // (ESLint), and the offline test proves no request leaves the process.
+    fetch: '__taxpressoNoFetch',
+    XMLHttpRequest: '__taxpressoNoXhr',
+  },
   // Questionnaire data (data/ge/<year>/*.yaml) becomes plain JSON in the bundle: no YAML parser ships.
   plugins: [
     {
@@ -57,7 +66,11 @@ const result = await build({
   ],
   // Some bundled dependencies are CommonJS and call require() for Node built-ins.
   banner: {
-    js: "import { createRequire as __taxpressoCreateRequire } from 'node:module'; const require = __taxpressoCreateRequire(import.meta.url);",
+    js: [
+      "import { createRequire as __taxpressoCreateRequire } from 'node:module'; const require = __taxpressoCreateRequire(import.meta.url);",
+      "const __taxpressoNoFetch = () => Promise.reject(new Error('Taxpresso makes no network requests (C2).'));",
+      "class __taxpressoNoXhr { constructor() { throw new Error('Taxpresso makes no network requests (C2).'); } }",
+    ].join('\n'),
   },
 });
 await mkdir(path.join(extDir, 'build-meta'), { recursive: true });
@@ -94,6 +107,10 @@ for (const name of [
   if (!packageDirs.has(name))
     packageDirs.set(name, path.join(repoRoot, 'ui', 'node_modules', name));
 }
+// Software bundled inside a package's own build, whose license file isn't in that package.
+const EMBEDDED = {
+  unpdf: [{ name: 'PDF.js (in unpdf)', license: 'Apache-2.0', file: 'licenses/pdfjs-LICENSE.txt' }],
+};
 const notices = [];
 for (const [name, dir] of packageDirs) {
   const meta = JSON.parse(await readFile(path.join(dir, 'package.json'), 'utf8'));
@@ -108,6 +125,10 @@ for (const [name, dir] of packageDirs) {
   }
   if (!text) throw new Error(`No license file found for ${name} in ${dir}`);
   notices.push(`${name} ${meta.version} (${meta.license})\n\n${text.trim()}\n`);
+  for (const embedded of EMBEDDED[name] ?? []) {
+    const body = await readFile(path.join(extDir, embedded.file), 'utf8');
+    notices.push(`${embedded.name} (${embedded.license})\n\n${body.trim()}\n`);
+  }
 }
 await writeFile(
   path.join(dist, 'THIRD_PARTY_NOTICES.txt'),

@@ -5,16 +5,25 @@ import {
   DOCUMENT_KINDS,
   type DocumentKind,
   type Fact,
+  type FactValue,
   type KeyRegistry,
   type Ledger,
   type Owner,
+  parseDate,
   type Requirement,
   Vault,
   type VaultDocument,
 } from '@taxpresso/ledger';
 import { pillar3aPlan, type HouseholdInput, type Pillar3aResult } from '@taxpresso/optimizer';
 import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpresso/questionnaire';
-import type { CommuneSlug } from '@taxpresso/rules-ge';
+import {
+  assessmentViews,
+  consistencyChecks,
+  documentFields,
+  type AssessmentView,
+  type CommuneSlug,
+  type ConsistencyCheck,
+} from '@taxpresso/rules-ge';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import { displayPath, type Config } from './config.js';
 import {
@@ -26,13 +35,33 @@ import {
   securitiesView,
   type SecuritiesView,
 } from './securities.js';
+import {
+  coerceValue,
+  ExtractionError,
+  formValue,
+  normalizeBox,
+  type ProposedDetails,
+  type ProposedValue,
+} from './extraction.js';
 
 export type Via = 'chat' | 'dashboard';
 
 export interface ActivityEntry {
   at: string;
   by: 'claude' | 'you';
-  what: 'status' | 'dashboard' | 'questions' | 'answer' | 'skip' | 'document' | 'scan' | 'kind';
+  what:
+    | 'status'
+    | 'dashboard'
+    | 'questions'
+    | 'answer'
+    | 'skip'
+    | 'document'
+    | 'scan'
+    | 'kind'
+    | 'extract'
+    | 'confirm'
+    | 'check'
+    | 'replace';
   /** Language-neutral: a question slot id, a document kind, a file name or a count. */
   detail?: string;
 }
@@ -44,6 +73,24 @@ interface Prefs {
 }
 
 export class WorkspaceError extends Error {}
+
+/** Ticks the user set on the document cards ("Entered"): local, in the vault, never in the ledger. */
+interface Entered {
+  version: 1;
+  /** `${docId}|${key}|${person}` -> the value as it was when ticked (a changed value unticks). */
+  entered: Record<string, string>;
+}
+
+export interface ExtractionResult {
+  saved: number;
+  unchanged: number;
+  /** Values the user already confirmed differently: kept, never overwritten by a proposal. */
+  kept: { key: string; person: Owner; value: FactValue }[];
+  document: VaultDocument;
+}
+
+export const enteredSlot = (docId: string, key: string, person: Owner) =>
+  `${docId}|${key}|${person}`;
 
 /** Planning inputs the user can give in the dashboard or the chat (never filed). */
 export const PLAN_KEYS = [
@@ -62,6 +109,7 @@ export class Workspace {
   #ledger: Ledger | undefined;
   #documents: VaultDocument[] = [];
   #prefs: Prefs = { version: 1, skipped: [], waived: [] };
+  #entered: Entered = { version: 1, entered: {} };
   #loading: Promise<void> | undefined;
   #lock: Promise<unknown> = Promise.resolve();
   readonly #activity: ActivityEntry[] = [];
@@ -85,6 +133,7 @@ export class Workspace {
         ...(await this.vault.readState('questionnaire.json', this.#prefs)),
       };
       await this.#readSecurities();
+      this.#entered = await this.vault.readState('entered.json', this.#entered);
     })().catch((err: unknown) => {
       this.#loading = undefined;
       throw err;
@@ -128,7 +177,63 @@ export class Workspace {
   }
 
   requirements(): Requirement[] {
-    return this.engine.requirements(this.snapshot(), this.#documents, this.#prefs.waived);
+    return this.engine.requirements(this.snapshot(), this.activeDocuments(), this.#prefs.waived);
+  }
+
+  /** Documents that count: every one not replaced by another. */
+  activeDocuments(): VaultDocument[] {
+    return this.#documents.filter((d) => !d.replacedBy);
+  }
+
+  /** The ledger's current view without values from documents that were replaced or are gone. */
+  countedFacts(): Fact[] {
+    const active = new Set(this.activeDocuments().map((d) => d.id));
+    return this.ledger
+      .view()
+      .filter((f) => f.source.docId === undefined || active.has(f.source.docId));
+  }
+
+  /** "Check this" items (SPEC.md section 5.8): derived on every read, never stored. */
+  checks(): ConsistencyCheck[] {
+    return consistencyChecks({
+      taxYear: this.engine.taxYear,
+      documents: this.activeDocuments(),
+      facts: this.countedFacts(),
+    });
+  }
+
+  /** The tax office's assessments, compared with what was declared (SPEC.md section 10.8). */
+  assessments(): AssessmentView[] {
+    // What was declared for this year: values from documents of another year are left out.
+    const otherYear = new Set(
+      this.activeDocuments()
+        .filter((d) => d.taxYear !== undefined && d.taxYear !== this.engine.taxYear)
+        .map((d) => d.id),
+    );
+    const facts = this.countedFacts().filter(
+      (f) => f.source.docId === undefined || !otherYear.has(f.source.docId),
+    );
+    return assessmentViews(this.activeDocuments(), facts);
+  }
+
+  /** Documents Claude hasn't read yet and that can give values or still need a kind. */
+  toRead(): VaultDocument[] {
+    return this.activeDocuments().filter(
+      (d) => d.parse.method === 'none' && (!d.kind || documentFields(d.kind).length > 0),
+    );
+  }
+
+  /** Values read from documents that still need the user's OK. */
+  toConfirm(): Fact[] {
+    return this.countedFacts().filter((f) => f.status === 'extracted');
+  }
+
+  /** Whether the user ticked this value as entered on the official form (and it hasn't changed). */
+  isEntered(fact: Fact): boolean {
+    const def = this.keys[fact.key];
+    if (!def || !fact.source.docId) return false;
+    const typed = formValue(def, fact.value) ?? JSON.stringify(fact.value);
+    return this.#entered.entered[enteredSlot(fact.source.docId, fact.key, fact.person)] === typed;
   }
 
   render(slot: Slot, lang: Lang): RenderedQuestion {
@@ -288,6 +393,305 @@ export class Workspace {
     });
   }
 
+  /**
+   * Stores what Claude read in one document (SPEC.md section 5.5): its details, and each value as
+   * "extracted" (Needs your OK) with the page and box it came from. All or nothing: one value that
+   * doesn't fit refuses the whole proposal. A value the user already confirmed is never overwritten.
+   */
+  async proposeExtraction(
+    docId: string,
+    details: ProposedDetails,
+    values: readonly ProposedValue[],
+  ): Promise<ExtractionResult> {
+    return this.#write(async () => {
+      this.#usable();
+      const doc = this.#document(docId);
+      const people = this.snapshot().people;
+      const userSaid = doc.kindSource === 'user';
+      if (details.kind && userSaid && doc.kind && details.kind !== doc.kind) {
+        throw new ExtractionError(
+          `The user said this document is a ${doc.kind}. Ask them before reading it as a ${details.kind}; they can change it in the dashboard.`,
+        );
+      }
+      if (details.person && details.person !== 'household' && !people.includes(details.person)) {
+        throw new ExtractionError(`There is no ${details.person} in this household.`);
+      }
+      if (details.person && userSaid && doc.person && details.person !== doc.person) {
+        throw new ExtractionError(
+          `The user said this document is for ${doc.person}, not ${details.person}. Ask them first.`,
+        );
+      }
+      if (
+        details.taxYear !== undefined &&
+        (!Number.isInteger(details.taxYear) || details.taxYear < 2000 || details.taxYear > 2100)
+      ) {
+        throw new ExtractionError('document.taxYear: expected a year such as 2026.');
+      }
+      const period = (raw: string | undefined, what: string) => {
+        if (raw === undefined) return undefined;
+        const parsed = parseDate(raw);
+        if (!parsed.ok) throw new ExtractionError(`document.${what}: ${parsed.reason}.`);
+        return parsed.value;
+      };
+      const periodFrom = period(details.periodFrom, 'periodFrom');
+      const periodTo = period(details.periodTo, 'periodTo');
+      const from = periodFrom ?? doc.periodFrom;
+      const to = periodTo ?? doc.periodTo;
+      if (from && to && from > to) {
+        throw new ExtractionError('document.periodFrom is after document.periodTo.');
+      }
+      const kind = userSaid && doc.kind ? doc.kind : (details.kind ?? doc.kind);
+      if (values.length > 0 && !kind) {
+        throw new ExtractionError('Say what kind of document this is (document.kind) first.');
+      }
+      const allowed: readonly string[] = documentFields(kind);
+      const owner = userSaid && doc.person ? doc.person : (details.person ?? doc.person);
+
+      // Check everything before writing anything.
+      const seen = new Set<string>();
+      const ready: { key: string; person: Owner; value: FactValue; page: number; box?: string }[] =
+        [];
+      for (const v of values) {
+        if (!allowed.includes(v.key)) {
+          throw new ExtractionError(
+            `${v.key} is not a value of this kind of document (${kind}). Its values: ${allowed.join(', ') || 'none yet'}.`,
+          );
+        }
+        const def = this.keys[v.key]!;
+        let person: Owner = 'household';
+        if (def.perPerson) {
+          const who =
+            v.person ??
+            (owner && owner !== 'household' ? owner : undefined) ??
+            (people.length === 1 ? 'p1' : undefined);
+          if (!who) {
+            throw new ExtractionError(
+              `${v.key}: say whose it is (person p1 or p2, or document.person).`,
+            );
+          }
+          if (!people.includes(who)) {
+            throw new ExtractionError(`There is no ${who} in this household.`);
+          }
+          person = who;
+        }
+        if (!Number.isInteger(v.page) || v.page < 1) {
+          throw new ExtractionError(`${v.key}: give the page it is on (1 for the first page).`);
+        }
+        if (v.box !== undefined && def.box && normalizeBox(v.box) !== def.box) {
+          throw new ExtractionError(
+            `${v.key} is box ${def.box} on the form, not ${v.box}. Check which box you read.`,
+          );
+        }
+        const slot = `${v.key}|${person}`;
+        if (seen.has(slot)) throw new ExtractionError(`${v.key} is given twice for ${person}.`);
+        seen.add(slot);
+        const box = def.box ?? v.box?.trim();
+        ready.push({
+          key: v.key,
+          person,
+          value: coerceValue(v.key, def, v.value),
+          page: v.page,
+          ...(box ? { box } : {}),
+        });
+      }
+
+      // Details: the user's own choices always win.
+      if (details.kind && !(userSaid && doc.kind)) {
+        doc.kind = details.kind;
+        doc.kindSource = 'claude';
+      }
+      if (details.person && !(userSaid && doc.person)) doc.person = details.person;
+      if (details.taxYear !== undefined) doc.taxYear = details.taxYear;
+      if (periodFrom) doc.periodFrom = periodFrom;
+      if (periodTo) doc.periodTo = periodTo;
+      if (details.issuer?.trim()) doc.issuer = details.issuer.trim().slice(0, 120);
+      doc.parse = { method: 'claude', ok: true, warnings: [] };
+
+      const result: ExtractionResult = { saved: 0, unchanged: 0, kept: [], document: doc };
+      for (const r of ready) {
+        const current = this.ledger.get(r.key, r.person, doc.id);
+        const same =
+          current !== undefined && JSON.stringify(current.value) === JSON.stringify(r.value);
+        if (current && (current.status === 'stated' || current.status === 'verified')) {
+          if (same) result.unchanged++;
+          else result.kept.push({ key: r.key, person: r.person, value: current.value });
+          continue;
+        }
+        if (same && current?.source.page === r.page) {
+          result.unchanged++;
+          continue;
+        }
+        this.ledger.append({
+          key: r.key,
+          person: r.person,
+          instance: doc.id,
+          value: r.value,
+          status: 'extracted',
+          source: {
+            method: 'claude',
+            docId: doc.id,
+            page: r.page,
+            ...(r.box ? { field: r.box } : {}),
+          },
+        });
+        result.saved++;
+      }
+      await this.vault.saveLedger(this.ledger);
+      await this.vault.saveDocuments(this.#documents);
+      this.record('claude', 'extract', doc.filename);
+      return result;
+    });
+  }
+
+  /**
+   * The user confirms a value read from a document: it becomes "Confirmed by you". A second tap,
+   * or a tap on a value that was confirmed or corrected meanwhile, changes nothing.
+   */
+  async confirmFact(factId: string, via: Via): Promise<Fact> {
+    return this.#write(async () => {
+      this.#usable();
+      const fact = this.#currentFact(factId);
+      if (fact.status !== 'extracted') return fact;
+      const confirmed = this.#state(fact, fact.value, via);
+      await this.vault.saveLedger(this.ledger);
+      this.record(via === 'chat' ? 'claude' : 'you', 'confirm', this.#filename(fact));
+      return confirmed;
+    });
+  }
+
+  /** The user corrects a value read from a document (money as text, as on the document). */
+  async editFact(factId: string, raw: unknown, via: Via): Promise<Fact> {
+    return this.#write(async () => {
+      this.#usable();
+      const fact = this.#currentFact(factId);
+      const edited = this.#state(fact, this.#coerce(fact.key, raw), via);
+      await this.vault.saveLedger(this.ledger);
+      this.record(via === 'chat' ? 'claude' : 'you', 'confirm', this.#filename(fact));
+      return edited;
+    });
+  }
+
+  /** A value from a document that the user states in the chat: a confirmation or a correction. */
+  async setDocumentValue(
+    docId: string,
+    key: string,
+    person: 'p1' | 'p2' | undefined,
+    raw: unknown,
+    via: Via,
+  ): Promise<Fact> {
+    return this.#write(async () => {
+      this.#usable();
+      const doc = this.#document(docId);
+      if (!(documentFields(doc.kind) as readonly string[]).includes(key)) {
+        throw new WorkspaceError(
+          `${key} is not a value of this document (${doc.kind ?? 'kind not known yet'}).`,
+        );
+      }
+      const def = this.keys[key]!;
+      const people = this.snapshot().people;
+      let owner: Owner = 'household';
+      if (def.perPerson) {
+        const who =
+          person ??
+          (doc.person && doc.person !== 'household' ? doc.person : undefined) ??
+          (people.length === 1 ? 'p1' : undefined);
+        if (!who || !people.includes(who)) {
+          throw new WorkspaceError(`${key}: say whose it is (p1 or p2).`);
+        }
+        owner = who;
+      }
+      const value = this.#coerce(key, raw);
+      const current = this.ledger.get(key, owner, doc.id);
+      const fact = current
+        ? this.#state(current, value, via)
+        : this.ledger.append({
+            key,
+            person: owner,
+            instance: doc.id,
+            value,
+            status: 'stated',
+            source: { method: 'user', via, docId: doc.id },
+          });
+      await this.vault.saveLedger(this.ledger);
+      this.record(via === 'chat' ? 'claude' : 'you', 'confirm', doc.filename);
+      return fact;
+    });
+  }
+
+  /** The user confirms every value read from one document, and what the document is. */
+  async confirmDocument(docId: string, via: Via): Promise<number> {
+    return this.#write(async () => {
+      this.#usable();
+      const doc = this.#document(docId);
+      const pending = this.ledger
+        .view()
+        .filter((f) => f.source.docId === doc.id && f.status === 'extracted');
+      for (const fact of pending) this.#state(fact, fact.value, via);
+      if (doc.kind) doc.kindSource = 'user';
+      await this.vault.saveLedger(this.ledger);
+      await this.vault.saveDocuments(this.#documents);
+      this.record(via === 'chat' ? 'claude' : 'you', 'confirm', doc.filename);
+      return pending.length;
+    });
+  }
+
+  /** Settles a "Check this" item with the user's note; an empty note opens it again. */
+  async resolveCheck(checkId: string, note: string, via: Via): Promise<Fact> {
+    return this.#write(async () => {
+      this.#usable();
+      if (!this.checks().some((c) => c.id === checkId)) {
+        throw new WorkspaceError('There is nothing to check with this id now.');
+      }
+      const fact = this.ledger.append({
+        key: 'check.note',
+        person: 'household',
+        instance: checkId,
+        value: note.trim().slice(0, 500),
+        status: 'stated',
+        source: { method: 'user', via },
+      });
+      await this.vault.saveLedger(this.ledger);
+      this.record(via === 'chat' ? 'claude' : 'you', 'check');
+      return fact;
+    });
+  }
+
+  /**
+   * Another document takes the place of this one: a corrected version, the right year, or the
+   * same document counted once. The old file stays in the folder; it just no longer counts.
+   */
+  async replaceDocument(oldId: string, byId: string): Promise<VaultDocument> {
+    return this.#write(async () => {
+      const old = this.#document(oldId);
+      const by = this.#document(byId);
+      if (old.id === by.id) throw new WorkspaceError('A document can’t replace itself.');
+      old.replacedBy = by.id;
+      if (!by.kind && old.kind) {
+        by.kind = old.kind;
+        by.kindSource = 'user';
+        if (old.person) by.person = old.person;
+      }
+      await this.vault.saveDocuments(this.#documents);
+      this.record('you', 'replace', old.filename);
+      return by;
+    });
+  }
+
+  /** The user ticks (or unticks) a value as entered on the official form. Local only. */
+  async setEntered(factId: string, entered: boolean): Promise<void> {
+    return this.#write(async () => {
+      const fact = this.#currentFact(factId);
+      const def = this.keys[fact.key]!;
+      const slot = enteredSlot(fact.source.docId!, fact.key, fact.person);
+      if (entered) {
+        this.#entered.entered[slot] = formValue(def, fact.value) ?? JSON.stringify(fact.value);
+      } else {
+        delete this.#entered.entered[slot];
+      }
+      await this.vault.writeState('entered.json', this.#entered);
+    });
+  }
+
   vaultInfo() {
     const problem = this.vault.problem();
     return {
@@ -337,6 +741,59 @@ export class Workspace {
     }
     await this.vault.saveDocuments(this.#documents);
     if (appended.length) await this.vault.saveLedger(this.ledger);
+  }
+
+  #document(id: string): VaultDocument {
+    const doc = this.#documents.find((d) => d.id === id);
+    if (!doc) throw new WorkspaceError('No such document. Call list_documents for the ids.');
+    if (doc.replacedBy) {
+      throw new WorkspaceError(`This document was replaced by ${doc.replacedBy}: use that one.`);
+    }
+    return doc;
+  }
+
+  /**
+   * The current value, read from a document that still counts, in the slot of fact `id`. The page
+   * may hold an older id of the same value (it was confirmed or corrected meanwhile): that's fine.
+   */
+  #currentFact(id: string): Fact {
+    const any = this.ledger.toJSON().facts.find((f) => f.id === id);
+    const current = any && this.ledger.get(any.key, any.person, any.instance);
+    const counted = current && this.countedFacts().some((f) => f.id === current.id);
+    if (!current || !counted || !current.source.docId || !this.keys[current.key]?.multiple) {
+      throw new WorkspaceError('This value is no longer there. Reload the dashboard.');
+    }
+    return current;
+  }
+
+  #coerce(key: string, raw: unknown): FactValue {
+    try {
+      return coerceValue(key, this.keys[key]!, raw);
+    } catch (err) {
+      throw new WorkspaceError((err as Error).message);
+    }
+  }
+
+  /** Appends the user's value for a fact read from a document, keeping where it came from. */
+  #state(fact: Fact, value: FactValue, via: Via): Fact {
+    return this.ledger.append({
+      key: fact.key,
+      person: fact.person,
+      ...(fact.instance !== undefined ? { instance: fact.instance } : {}),
+      value,
+      status: 'stated',
+      source: {
+        method: 'user',
+        via,
+        ...(fact.source.docId ? { docId: fact.source.docId } : {}),
+        ...(fact.source.page ? { page: fact.source.page } : {}),
+        ...(fact.source.field ? { field: fact.source.field } : {}),
+      },
+    });
+  }
+
+  #filename(fact: Fact): string {
+    return this.#documents.find((d) => d.id === fact.source.docId)?.filename ?? '';
   }
 
   #usable(): void {

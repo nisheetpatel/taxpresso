@@ -51,12 +51,19 @@ export const api = {
   ) => post('/plan', lang, { person, field, value }),
   setKind: (id: string, kind: string, person: string | undefined, lang: Language) =>
     post('/documents/kind', lang, { id, kind, ...(person ? { person } : {}) }),
-  upload: async (file: File, lang: Language, preset?: { kind: string; person?: string }) => {
+  upload: async (
+    file: File,
+    lang: Language,
+    preset?: { kind: string; person?: string },
+    /** The document this file replaces, if any. */
+    replace?: string,
+  ) => {
     const query = new URLSearchParams({ lang });
     if (preset) {
       query.set('kind', preset.kind);
       if (preset.person) query.set('person', preset.person);
     }
+    if (replace) query.set('replace', replace);
     return remember(
       await call<State>(`/api/documents?${query.toString()}`, {
         method: 'POST',
@@ -68,4 +75,15 @@ export const api = {
       }),
     );
   },
+  // Values read from documents (SPEC.md 5.5), checks (5.8) and the "Entered" ticks (10.5).
+  confirmFact: (id: string, lang: Language) => post('/facts/confirm', lang, { id }),
+  editFact: (id: string, value: string | boolean, lang: Language) =>
+    post('/facts/edit', lang, { id, value }),
+  setEntered: (id: string, entered: boolean, lang: Language) =>
+    post('/facts/entered', lang, { id, entered }),
+  confirmDocument: (id: string, lang: Language) => post('/documents/confirm', lang, { id }),
+  replaceDocument: (id: string, by: string, lang: Language) =>
+    post('/documents/replace', lang, { id, by }),
+  resolveCheck: (id: string, note: string, lang: Language) =>
+    post('/checks/resolve', lang, { id, note }),
 };

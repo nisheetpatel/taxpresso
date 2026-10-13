@@ -1,4 +1,4 @@
-// How each kind of document is called, in the guide's words (ge-2025-guide-declaration-pp p. 8, p. 10).
+// How each kind of document is called, in the guide’s words (ge-2025-guide-declaration-pp p. 8, p. 10, p. 53).
 import type { DocumentKind } from '@taxpresso/ledger';
 
 export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string }> = {
@@ -23,4 +23,6 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string }> = {
   },
   broker_export: { en: 'Broker export (securities)', fr: 'Export du courtier (titres)' },
   other: { en: 'Something else', fr: 'Autre chose' },
+  // ge-2025-guide-declaration-pp p. 53: the bordereaux ICC and IFD and the avis de taxation.
+  tax_assessment: { en: 'Tax assessment', fr: 'Avis de taxation et bordereau' },
 };

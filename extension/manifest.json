@@ -4,7 +4,7 @@
   "display_name": "Taxpresso",
   "version": "0.0.0",
   "description": "Your taxes, in one espresso. Prepare your Geneva tax return with Claude; your documents stay on this computer.",
-  "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, tells you what is still missing and estimates what a pillar 3a payment before 31 December would save you. The full tax calculation comes in the next versions.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
+  "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, reads them with Claude when you ask (you confirm every value), checks them against each other, tells you what is still missing, estimates what a pillar 3a payment before 31 December would save you, and later checks your assessment against what you declared. The full tax calculation comes in the next versions.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
   "author": {
     "name": "Taxpresso contributors"
   },
@@ -49,7 +49,15 @@
     },
     {
       "name": "set_fact",
-      "description": "Saves a rough figure you give, like your salary, for the estimates."
+      "description": "Saves what you tell Claude: a rough figure for the estimates, a value from a document you confirmed or corrected, or a note on something to check."
+    },
+    {
+      "name": "get_document_for_review",
+      "description": "Shows Claude one of your documents, when you ask: its text, extracted on this computer, or the image of a photo or scan."
+    },
+    {
+      "name": "propose_extraction",
+      "description": "Saves the values Claude read in a document, with their page and box, for you to confirm."
     },
     {
       "name": "open_dashboard",

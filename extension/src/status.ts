@@ -18,8 +18,16 @@ export const StatusSchema = z.object({
     questionsOpen: z.number().int(),
     documents: z.number().int(),
     documentsToIdentify: z.number().int(),
+    documentsToRead: z.number().int().describe('Documents Claude has not read yet.'),
+    valuesToConfirm: z
+      .number()
+      .int()
+      .describe("Values read from documents that still need the user's OK."),
   }),
   missing: z.array(z.string()).describe('Documents still needed, with whose they are.'),
+  checks: z
+    .array(z.string())
+    .describe('"Check this" items across documents, with their id and what to do.'),
   notSupported: z
     .array(z.string())
     .describe('Parts of the situation Taxpresso cannot prepare yet.'),
@@ -58,7 +66,15 @@ export function buildStatus(
       return `${r.label.en}${count}${who && snap.people.length > 1 ? `, ${who}` : ''}`;
     });
   const notSupported = ws.engine.notSupported(snap).map((n) => n.what.en);
-  const toIdentify = ws.documents.filter((d) => !d.kind).length;
+  const documents = ws.activeDocuments();
+  const toIdentify = documents.filter((d) => !d.kind).length;
+  const toRead = ws.toRead().length;
+  const toConfirm = ws.toConfirm().length;
+  const checks = ws
+    .checks()
+    .filter((c) => !c.resolved)
+    .map((c) => `${c.title.en} [${c.id}]: ${c.detail.en} ${c.todo.en}`);
+  const assessment = ws.assessments()[0];
   const vault = ws.vaultInfo();
   const securitiesView = ws.securities('en');
   const securities = securitiesStatusText(securitiesView);
@@ -73,8 +89,17 @@ export function buildStatus(
   else if (notSupported.length) {
     nextStep = `Tell the user plainly that Taxpresso can't prepare this yet: ${notSupported.join('; ')}. Suggest GeTax (the canton's free software) or a fiduciary. Don't work around it.`;
   } else if (open > 0) nextStep = 'Ask the next question: call next_questions.';
-  else if (toIdentify > 0) {
+  else if (toRead > 0) {
+    nextStep = `${toRead} document${toRead === 1 ? '' : 's'} not read yet. Offer to read them: get_document_for_review sends that document's content to Claude, so ask the user first. Then propose what you read with propose_extraction. The user can also say what each one is in the dashboard.`;
+  } else if (toConfirm > 0) {
+    nextStep = `${toConfirm} value${toConfirm === 1 ? '' : 's'} read from documents need the user's OK. Ask them to check each one in the dashboard (Documents), or to confirm in the chat; then save with set_fact.`;
+  } else if (checks.length) {
+    nextStep =
+      'Go through the "Check this" items with the user. Each is settled by replacing the document in the dashboard, or with a short note from the user (set_fact, key check.note, instance = the item id).';
+  } else if (toIdentify > 0) {
     nextStep = 'Ask the user to say what each new document is, in the dashboard (open_dashboard).';
+  } else if (assessment && assessment.deadlines.length) {
+    nextStep = `The assessment is in: go through the differences with the user in the dashboard ("Your assessment"). The deadline to object is in the card, with its legal source; the date printed on the assessment wins. Taxpresso never sends the objection.`;
   } else if (missing.length) {
     nextStep =
       'Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.';
@@ -96,10 +121,13 @@ export function buildStatus(
     progress: {
       questionsAnswered: answered,
       questionsOpen: open,
-      documents: ws.documents.length,
+      documents: documents.length,
       documentsToIdentify: toIdentify,
+      documentsToRead: toRead,
+      valuesToConfirm: toConfirm,
     },
     missing,
+    checks,
     notSupported,
     estimates,
     ...(securities ? { securities } : {}),
@@ -125,8 +153,12 @@ export function statusText(s: Status): string {
     `Taxpresso ${s.version}, tax year ${s.taxYear}, Geneva`,
     `Household: ${s.household.started ? s.household.summary.join(', ') || 'started' : 'not started'}`,
     `Questions: ${s.progress.questionsAnswered} answered, ${s.progress.questionsOpen} to go`,
-    `Documents: ${s.progress.documents}${s.progress.documentsToIdentify ? ` (${s.progress.documentsToIdentify} to identify)` : ''}`,
+    `Documents: ${s.progress.documents}${s.progress.documentsToIdentify ? ` (${s.progress.documentsToIdentify} to identify)` : ''}${s.progress.documentsToRead ? `, ${s.progress.documentsToRead} not read yet` : ''}`,
+    ...(s.progress.valuesToConfirm
+      ? [`Values that need the user's OK: ${s.progress.valuesToConfirm}`]
+      : []),
     `Still missing: ${s.missing.length ? s.missing.join('; ') : 'nothing'}`,
+    ...(s.checks.length ? [`Check this: ${s.checks.join(' | ')}`] : []),
   ];
   if (s.notSupported.length) lines.push(`Not supported yet: ${s.notSupported.join('; ')}`);
   if (s.securities) lines.push(s.securities);

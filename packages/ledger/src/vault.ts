@@ -14,6 +14,7 @@ const OWN_FILES = new Set([
   'documents.json',
   'decisions.json',
   'questionnaire.json',
+  'entered.json',
   'README.txt',
 ]);
 
