@@ -10,8 +10,16 @@ Taxes should be painless, simple and free. Taxpresso is free and open source, an
 
 Early preview for tax year 2026 (returns filed in early 2027).
 
-- Works today: the questions that matter for your return, in the chat or in a local dashboard; your documents in one folder, for you and your partner; Claude reading your documents with you (PDFs and photos, read on your computer), each value confirmed by you; checks across your documents (another year, a salary certificate that doesn't cover the year, benefits counted twice, duplicates); one card per document with copy buttons and "Entered" ticks; your tax assessment checked against your return, with the deadline to object; your securities read from a broker export (Interactive Brokers, DEGIRO); and what a pillar 3a payment before 31 December would save you.
-- Coming next: barcode reading (salary certificate, bank e-tax statement), the full Geneva and federal tax calculation, and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
+- Works today, in the chat or in a local dashboard:
+  - the questions that matter for your return, for you and your partner;
+  - last year's Geneva declaration, read on your computer: it suggests answers for you to confirm and keeps last year's figures;
+  - your documents in one folder, read with Claude (PDFs and photos, read on your computer), each value confirmed by you, with checks across documents;
+  - your securities list (état des titres): bank accounts, broker exports (Interactive Brokers, DEGIRO), crypto and bank tax statements, with the Swiss withholding tax you get back and the foreign tax credit;
+  - before 31 December: a pillar 3a payment, a pension fund buy-in and the 3a catch-up, with what each would save;
+  - for people taxed at source: source tax next to the ordinary tax (TOU), with the 31 March deadline;
+  - every value in the official form's order, ready to copy into your declaration;
+  - your tax assessment checked against your return, with the deadline to object.
+- Coming next: the full Geneva and federal tax calculation (income and wealth), barcode reading (salary certificate, bank e-tax statement), a review of what you could have saved last year, and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
 - Geneva first. The goal is all 26 cantons.
 
 ## Install
