@@ -564,6 +564,45 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('final_check says what to fix before filling in the form, offline and read-only (SPEC.md 10.0)', async () => {
+    const ledgerPath = path.join(vault, '2026', 'ledger.json');
+    const before = readFileSync(ledgerPath, 'utf8');
+    const res = await client.callTool({ name: 'final_check', arguments: {} });
+    assert.ok(!res.isError, res.content?.[0]?.text);
+    const out = res.structuredContent;
+    assert.deepEqual([out.taxYear, out.verdict], [2026, 'not_ready']);
+    assert.match(res.content[0].text, /NOT READY/);
+    // This vault has no commune yet, a document to identify, values to confirm, and the PDF above
+    // differs from the values to type: first what stops the calculation, last the PDF.
+    const kinds = out.fix.map((i) => i.kind);
+    assert.equal(kinds[0], 'cannot_compute', kinds.join(', '));
+    assert.ok(kinds.includes('documents_unread'), kinds.join(', '));
+    assert.equal(kinds.at(-1), 'official_pdf', kinds.join(', '));
+    assert.equal(out.fix.at(-1).status, 'fix');
+    // Each rule cites an official page: the user's browser opens it, never the extension.
+    const urls = [...out.fix, ...out.know].flatMap((i) => i.sources.map((s) => s.url ?? ''));
+    for (const url of urls.filter(Boolean)) {
+      assert.match(url, /^https:\/\/([a-z0-9-]+\.)*(ge\.ch|admin\.ch|silgeneve\.ch|getax\.ch)\//);
+    }
+
+    // The dashboard shows the same check, in its language.
+    const { origin, host, cookie } = dashboardSession;
+    const state = JSON.parse(
+      (await get(`${origin}/api/state`, { headers: { Host: host, Cookie: cookie } })).body,
+    );
+    assert.deepEqual(
+      state.finalCheck.fix.map((i) => i.id),
+      out.fix.map((i) => i.id),
+    );
+    assert.equal(state.finalCheck.verdict, 'not_ready');
+
+    // Read-only: nothing written, nothing that identifies the taxpayer shown.
+    assert.equal(readFileSync(ledgerPath, 'utf8'), before);
+    for (const text of [JSON.stringify(res), JSON.stringify(state.finalCheck)]) {
+      assert.doesNotMatch(text, /DUPONT|756\.0000\.0000\.0[01]|everything matches and transmit/);
+    }
+  });
+
   test('export_bundle writes one ZIP of the year folder into the Taxpresso folder, offline', async () => {
     const res = await client.callTool({ name: 'export_bundle', arguments: {} });
     assert.ok(!res.isError, res.content?.[0]?.text);

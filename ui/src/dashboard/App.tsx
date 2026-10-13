@@ -10,6 +10,7 @@ import { CopyPanel } from './CopyPanel';
 import { DocumentCards } from './DocumentCards';
 import { Estimate } from './Estimate';
 import { ExportCard } from './Export';
+import { FinalCheck } from './FinalCheck';
 import { isMessageKey, t, type Language } from './i18n';
 import { Holdings } from './Holdings';
 import { tp } from './i18n-planning';
@@ -182,6 +183,7 @@ export function App(): JSX.Element {
             <LastYear view={state.lastYear} year={state.taxYear} lang={L} />
             <Review view={state.review} taxYear={state.taxYear} lang={L} />
             <DocumentCards state={state} lang={L} act={act} />
+            <FinalCheck state={state} lang={L} />
             <CopyPanel state={state} lang={L} act={act} />
             <Reconcile state={state} lang={L} act={act} />
           </div>

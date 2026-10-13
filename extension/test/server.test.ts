@@ -48,6 +48,7 @@ describe('MCP surface', () => {
       'compute_tax',
       'decide_optimization',
       'export_bundle',
+      'final_check',
       'get_document_for_review',
       'get_form_values',
       'get_holdings',

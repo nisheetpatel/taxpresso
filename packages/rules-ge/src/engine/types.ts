@@ -332,6 +332,35 @@ export interface EstimateNote {
   what: Text;
 }
 
+/**
+ * A cap, a threshold or a minimum a rule applied to an amount the user gave, or the switch between
+ * the flat deduction and the actual costs. Every one applied is listed, whatever the distance; the
+ * final check (./final-check.ts) keeps those at or near their limit (SPEC.md 10.0).
+ */
+export interface LimitApplied {
+  /** The rubric as printed for this person (31.40 for A, 41.40 for B). */
+  code: string;
+  person: ItemPerson;
+  /** The tax it is applied in; 'both' when the same rule and amount serve the two. */
+  tax: 'icc' | 'ifd' | 'both';
+  /**
+   * cap: at most `limit` is deducted. threshold: only the part above `limit` counts (medical
+   * costs). minimum: nothing counts under `limit` (federal donations). choice: the flat deduction
+   * (`limit`) or the actual costs (`given`), whichever is higher.
+   */
+  kind: 'cap' | 'threshold' | 'minimum' | 'choice';
+  /** What was given before the rule, in centimes: paid, the costs, the actual costs. */
+  given: number;
+  /** The limit as applied, in centimes. */
+  limit: number;
+  /** What the rubric gets, in centimes (zero or more). */
+  counted: number;
+  /** The rule that sets the limit: manifest id plus page or article. */
+  source: string;
+  /** The limit itself is an estimate (a constant not published yet for the year). */
+  estimate?: boolean;
+}
+
 export interface TaxResult {
   taxYear: TaxYear;
   commune: CommuneSlug;
@@ -355,6 +384,8 @@ export interface TaxResult {
   unsupported: Text[];
   /** Rules applied whose detail the official documents don't spell out. */
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum and flat-or-actual choice applied, in the order computed. */
+  limits: LimitApplied[];
 }
 
 export type { EstimateReason, Text };

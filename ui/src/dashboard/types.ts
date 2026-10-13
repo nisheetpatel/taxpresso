@@ -4,6 +4,7 @@ import type { EstimateView } from './Estimate';
 import type { LastYearView } from './LastYear';
 import type { ReviewView } from './Review';
 import type { CopyPanelState } from './types-copy';
+import type { FinalCheckState } from './types-final-check';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
 import type { PlanningState } from './types-planning';
@@ -129,6 +130,8 @@ export interface State extends DocumentsState {
   lastYear?: LastYearView | null;
   /** Last year's return, reviewed (extension/src/last-year-review.ts). */
   review?: ReviewView;
+  /** "Final check" before filling in the official form (extension/src/final-check.ts). */
+  finalCheck?: FinalCheckState;
   notSupportedMessage: string;
   activity: Activity[];
 }
