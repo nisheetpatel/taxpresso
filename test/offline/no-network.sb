@@ -1,0 +1,7 @@
+; macOS sandbox profile for the offline test: everything allowed except outbound network,
+; which is limited to loopback and local sockets. Used by `pnpm test:offline:sandbox`.
+(version 1)
+(allow default)
+(deny network-outbound)
+(allow network-outbound (remote ip "localhost:*"))
+(allow network-outbound (remote unix-socket))

@@ -1,0 +1,40 @@
+{
+  "name": "taxpresso",
+  "private": true,
+  "description": "AI tax filer for Geneva individuals, shipped as a Claude Desktop extension. See SPEC.md.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "packageManager": "pnpm@12.10.1",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "pnpm --filter @taxpresso/ui build && pnpm --filter @taxpresso/extension build",
+    "build:mcpb": "pnpm build && pnpm --filter @taxpresso/extension pack:mcpb",
+    "build:site": "pnpm --filter @taxpresso/site build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:offline": "node test/offline/run.mjs",
+    "test:offline:sandbox": "TAXPRESSO_EXPECT_NO_NETWORK=1 sandbox-exec -f test/offline/no-network.sb node test/offline/run.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "sources:fetch": "node scripts/fetch-sources.mjs",
+    "sources:merge": "node scripts/merge-manifests.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@types/node": "catalog:",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "catalog:",
+    "yaml": "^2.9.1"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@taxpresso/rules-ge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deterministic Geneva ICC and federal IFD engine, every constant cited (SPEC.md section 7).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@taxpresso/ledger": "workspace:*"
+  }
+}

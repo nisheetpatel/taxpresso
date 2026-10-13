@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic test data for the Dupont demo household (SPEC.md section 13). Not a real account:
+     the account id, securities, ISINs (TXPRS) and amounts are made up. Shape: an IBKR Activity
+     Flex Query in XML, base currency CHF, dates as yyyyMMdd. -->
+<FlexQueryResponse queryName="Taxpresso synthetic year" type="AF">
+  <FlexStatements count="1">
+    <FlexStatement accountId="U0000001" fromDate="20260101" toDate="20261231" period="LastYear" whenGenerated="20270104;093000">
+      <AccountInformation accountId="U0000001" acctAlias="" currency="CHF" name="Jean Dupont (synthetic)" accountType="Individual" />
+      <CashReport>
+        <CashReportCurrency accountId="U0000001" currency="BASE_SUMMARY" startingCash="0" endingCash="4120.55" />
+      </CashReport>
+      <OpenPositions>
+        <OpenPosition accountId="U0000001" currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="ESPR" description="ESPRESSO INDUSTRIES INC" conid="100001" securityID="USTXPRS00017" securityIDType="ISIN" isin="USTXPRS00017" listingExchange="NYSE" issuerCountryCode="US" multiplier="1" reportDate="20261231" position="10" markPrice="125.5" positionValue="1255" side="Long" levelOfDetail="SUMMARY" />
+        <OpenPosition accountId="U0000001" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="CREMA" description="CREMA LAC HOLDING SA" conid="100002" securityID="CHTXPRS00026" securityIDType="ISIN" isin="CHTXPRS00026" listingExchange="EBS" issuerCountryCode="CH" multiplier="1" reportDate="20261231" position="20" markPrice="45.25" positionValue="905" side="Long" levelOfDetail="SUMMARY" />
+        <OpenPosition accountId="U0000001" currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="BWLD" description="BARISTA WORLD UCITS ETF" conid="100003" securityID="IETXPRS00038" securityIDType="ISIN" isin="IETXPRS00038" listingExchange="LSEETF" issuerCountryCode="IE" multiplier="1" reportDate="20261231" position="3.5" markPrice="100.1" positionValue="350.35" side="Long" levelOfDetail="SUMMARY" />
+        <OpenPosition accountId="U0000001" currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="BWLD" description="BARISTA WORLD UCITS ETF" conid="100003" isin="IETXPRS00038" issuerCountryCode="IE" multiplier="1" reportDate="20261231" position="2" markPrice="100.1" positionValue="200.2" side="Long" levelOfDetail="LOT" />
+        <OpenPosition accountId="U0000001" currency="USD" fxRateToBase="0.8" assetCategory="STK" symbol="BWLD" description="BARISTA WORLD UCITS ETF" conid="100003" isin="IETXPRS00038" issuerCountryCode="IE" multiplier="1" reportDate="20261231" position="1.5" markPrice="100.1" positionValue="150.15" side="Long" levelOfDetail="LOT" />
+        <OpenPosition accountId="U0000001" currency="USD" fxRateToBase="0.8" assetCategory="OPT" symbol="ESPR  270115C00130000" description="ESPR 15JAN27 130 C" conid="100004" isin="" multiplier="100" reportDate="20261231" position="1" markPrice="2.5" positionValue="250" side="Long" levelOfDetail="SUMMARY" />
+      </OpenPositions>
+      <CashTransactions>
+        <CashTransaction accountId="U0000001" currency="CHF" fxRateToBase="1" assetCategory="" symbol="" description="CASH RECEIPTS / ELECTRONIC FUND TRANSFERS" conid="" isin="" dateTime="20260105;101500" settleDate="20260105" amount="5000" type="Deposits/Withdrawals" levelOfDetail="DETAIL" reportDate="20260105" transactionID="9000001" />
+        <CashTransaction accountId="U0000001" currency="USD" fxRateToBase="0.88125" assetCategory="STK" symbol="ESPR" description="ESPR(USTXPRS00017) CASH DIVIDEND USD 0.50 PER SHARE (Ordinary Dividend)" conid="100001" securityID="USTXPRS00017" securityIDType="ISIN" isin="USTXPRS00017" issuerCountryCode="US" dateTime="20260325;202000" settleDate="20260325" amount="5" type="Dividends" levelOfDetail="DETAIL" reportDate="20260325" transactionID="9000002" />
+        <CashTransaction accountId="U0000001" currency="USD" fxRateToBase="0.88125" assetCategory="STK" symbol="ESPR" description="ESPR(USTXPRS00017) CASH DIVIDEND USD 0.50 PER SHARE - US TAX" conid="100001" securityID="USTXPRS00017" securityIDType="ISIN" isin="USTXPRS00017" issuerCountryCode="US" dateTime="20260325;202000" settleDate="20260325" amount="-0.75" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="20260325" transactionID="9000003" />
+        <CashTransaction accountId="U0000001" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="CREMA" description="CREMA(CHTXPRS00026) CASH DIVIDEND CHF 1.50 PER SHARE (Ordinary Dividend)" conid="100002" isin="CHTXPRS00026" issuerCountryCode="CH" dateTime="20260512;201000" settleDate="20260512" amount="30" type="Dividends" levelOfDetail="DETAIL" reportDate="20260512" transactionID="9000004" />
+        <CashTransaction accountId="U0000001" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="CREMA" description="CREMA(CHTXPRS00026) CASH DIVIDEND CHF 1.50 PER SHARE - CH TAX" conid="100002" isin="CHTXPRS00026" issuerCountryCode="CH" dateTime="20260512;201000" settleDate="20260512" amount="-10.5" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="20260512" transactionID="9000005" />
+        <CashTransaction accountId="U0000001" currency="USD" fxRateToBase="0.9" assetCategory="STK" symbol="BWLD" description="BWLD(IETXPRS00038) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)" conid="100003" isin="IETXPRS00038" issuerCountryCode="IE" dateTime="20260615;202000" settleDate="20260615" amount="1.23" type="Payment In Lieu Of Dividends" levelOfDetail="DETAIL" reportDate="20260615" transactionID="9000006" />
+        <CashTransaction accountId="U0000001" currency="CHF" fxRateToBase="1" assetCategory="" symbol="" description="CHF CREDIT INT FOR JUL-2026" conid="" isin="" dateTime="20260803;202000" settleDate="20260803" amount="2.1" type="Broker Interest Received" levelOfDetail="DETAIL" reportDate="20260803" transactionID="9000007" />
+        <CashTransaction accountId="U0000001" currency="USD" fxRateToBase="0.8812" assetCategory="STK" symbol="ESPR" description="ESPR(USTXPRS00017) CASH DIVIDEND USD 0.50 PER SHARE (Ordinary Dividend)" conid="100001" isin="USTXPRS00017" issuerCountryCode="US" dateTime="20260924;202000" settleDate="20260924" amount="5" type="Dividends" levelOfDetail="DETAIL" reportDate="20260924" transactionID="9000008" />
+        <CashTransaction accountId="U0000001" currency="USD" fxRateToBase="0.8812" assetCategory="STK" symbol="ESPR" description="ESPR(USTXPRS00017) CASH DIVIDEND USD 0.50 PER SHARE - US TAX" conid="100001" isin="USTXPRS00017" issuerCountryCode="US" dateTime="20260924;202000" settleDate="20260924" amount="-0.75" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="20260924" transactionID="9000009" />
+        <CashTransaction accountId="U0000001" currency="USD" fxRateToBase="0.85" assetCategory="" symbol="" description="SNAPSHOT DATA FEE" conid="" isin="" dateTime="20261031;202000" settleDate="20261031" amount="-10" type="Other Fees" levelOfDetail="DETAIL" reportDate="20261031" transactionID="9000010" />
+      </CashTransactions>
+      <CorporateActions>
+        <CorporateAction accountId="U0000001" currency="USD" assetCategory="STK" symbol="BWLD" description="BWLD(IETXPRS00038) SPLIT 2 FOR 1" isin="IETXPRS00038" reportDate="20260301" quantity="1.75" type="FS" />
+      </CorporateActions>
+      <ConversionRates>
+        <ConversionRate reportDate="20261231" fromCurrency="USD" toCurrency="CHF" rate="0.8" />
+        <ConversionRate reportDate="20261231" fromCurrency="EUR" toCurrency="CHF" rate="0.94" />
+      </ConversionRates>
+    </FlexStatement>
+  </FlexStatements>
+</FlexQueryResponse>

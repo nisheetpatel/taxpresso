@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check, build, offline test
+    runs-on: ubuntu-24.04
+    steps:
+      # The official documents in docs/sources are not in the repository; CI does not need them.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build:mcpb
+      - run: pnpm build:site
+      - name: Dependency allowlist and shipped files (C2)
+        run: pnpm check:bundle
+
+      # SPEC.md section 13 item 8: the whole flow passes with networking disabled. The container has
+      # only a loopback interface, and the network guard inside the server records any attempt.
+      # It runs against the unzipped .mcpb, i.e. exactly what users install, on two Node versions.
+      - name: Offline test (docker --network none)
+        run: |
+          mkdir -p "$RUNNER_TEMP/mcpb"
+          unzip -q build/taxpresso-*.mcpb -d "$RUNNER_TEMP/mcpb"
+          for node in 22 24; do
+            echo "::group::Node $node"
+            docker run --rm --network none \
+              -e TAXPRESSO_EXPECT_NO_NETWORK=1 \
+              -e TAXPRESSO_EXTENSION_DIR=/mcpb \
+              -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/mcpb:/mcpb:ro" -w /repo \
+              "node:${node}-bookworm-slim" node test/offline/run.mjs
+            echo "::endgroup::"
+          done
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: taxpresso-mcpb
+          path: build/*.mcpb
+          if-no-files-found: error
+
+  offline-desktop-platforms:
+    name: Offline test (${{ matrix.os }})
+    # Claude Desktop runs on macOS and Windows. macOS adds an OS sandbox that denies outbound
+    # network (test/offline/no-network.sb); Windows relies on the guard alone.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - if: runner.os == 'macOS'
+        run: pnpm test:offline:sandbox
+      - if: runner.os != 'macOS'
+        run: pnpm test:offline

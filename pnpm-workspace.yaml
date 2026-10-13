@@ -1,0 +1,17 @@
+packages:
+  - extension
+  - ui
+  - site
+  - packages/*
+
+# Supply chain: never resolve a version published in the last 7 days (minutes).
+minimumReleaseAge: 10080
+
+catalog:
+  '@types/node': ^24.10.0
+  typescript: ~6.0.3
+  vitest: ^5.0.3
+  zod: ^4.2.0
+
+allowBuilds:
+  esbuild: false

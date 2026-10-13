@@ -1,0 +1,104 @@
+/* The Taxpresso mark, see logo.ts. The rim takes the text color, so the wordmark works on light and
+   dark grounds. The animation plays once (about 1.5 s); with reduced motion the finished mark shows. */
+.tp-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.02em;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.tp-word .tp-cup {
+  width: 0.86em;
+  height: 0.86em;
+  margin-top: 0.19em;
+  flex: none;
+}
+.tp-cup {
+  overflow: visible;
+}
+.tp-rim {
+  fill: none;
+  stroke: var(--tp-rim, currentColor);
+  stroke-width: 14;
+}
+.tp-coffee {
+  fill: var(--tp-coffee, #4a2c1d);
+}
+/* Used by the latte-art cups on the website. */
+.tp-crema {
+  fill: var(--tp-crema, #9a5a28);
+}
+.tp-swirl {
+  opacity: 0;
+}
+.tp-swirl path {
+  fill: none;
+  stroke: var(--tp-swirl, #d7a86e);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.tp-check {
+  fill: none;
+  stroke: var(--tp-check, #d7a86e);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tp-coffee,
+.tp-swirl {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tp-play .tp-coffee {
+    animation: tp-pour 0.45s 0.15s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+  }
+  .tp-play .tp-swirl {
+    animation: tp-swirl 0.9s 0.4s ease-out both;
+  }
+  .tp-play .tp-swirl path {
+    stroke-dasharray: 100 110;
+    animation: tp-draw 0.65s 0.4s ease-out both;
+  }
+  .tp-play .tp-check {
+    stroke-dasharray: 100 110;
+    animation: tp-draw 0.42s 1.04s ease-out both;
+  }
+}
+
+@keyframes tp-pour {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes tp-swirl {
+  0% {
+    opacity: 1;
+    transform: rotate(-140deg);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(25deg);
+  }
+}
+@keyframes tp-draw {
+  0% {
+    stroke-dashoffset: 101;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}

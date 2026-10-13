@@ -1,0 +1,17 @@
+{
+  "name": "@taxpresso/filing-ge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Geneva field map, fill-plan generator and official PDF reconciliation (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

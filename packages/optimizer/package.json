@@ -1,0 +1,22 @@
+{
+  "name": "@taxpresso/optimizer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "What-if runs on the rules engine, CHF delta per option (SPEC.md section 8).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/node": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@taxpresso/rules-ge": "workspace:*"
+  }
+}

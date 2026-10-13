@@ -1,0 +1,24 @@
+node_modules/
+dist/
+build/
+build-meta/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+
+# Local test vaults and anything that could hold personal data
+.vault/
+test/**/out/
+
+# Claude Code local settings
+.claude/settings.local.json
+.claude/worktrees/
+
+# Private working notes (outreach, research): never committed.
+private/
+
+# Official documents: downloaded locally by scripts/fetch-sources.mjs, never committed
+# (they belong to their publishers; lock.json pins their checksums).
+docs/sources/*/files/

@@ -1,0 +1,39 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "design-mockups",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4310",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "docs/design"
+      ],
+      "port": 4310
+    },
+    {
+      "name": "ui-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4311", "--bind", "127.0.0.1", "--directory", "ui/dist"],
+      "port": 4311
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4312",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "site/dist"
+      ],
+      "port": 4312
+    }
+  ]
+}

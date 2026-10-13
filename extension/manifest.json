@@ -1,0 +1,91 @@
+{
+  "manifest_version": "0.3",
+  "name": "taxpresso",
+  "display_name": "Taxpresso",
+  "version": "0.0.0",
+  "description": "Your taxes, in one espresso. Prepare your Geneva tax return with Claude; your documents stay on this computer.",
+  "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, tells you what is still missing and estimates what a pillar 3a payment before 31 December would save you. The full tax calculation comes in the next versions.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
+  "author": {
+    "name": "Taxpresso contributors"
+  },
+  "license": "AGPL-3.0-or-later",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.mjs"],
+      "env": {
+        "TAXPRESSO_VAULT_PATH": "${user_config.vault_path}",
+        "TAXPRESSO_UI_LANGUAGE": "${user_config.ui_language}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "get_status",
+      "description": "Where your Geneva tax return stands: household, questions answered, documents, what is still missing and the next step."
+    },
+    {
+      "name": "next_questions",
+      "description": "The next questions about your situation."
+    },
+    {
+      "name": "answer_question",
+      "description": "Saves your answer to a question."
+    },
+    {
+      "name": "list_documents",
+      "description": "Your documents and what each one is."
+    },
+    {
+      "name": "ingest_vault",
+      "description": "Adds files you put in your Taxpresso folder yourself."
+    },
+    {
+      "name": "list_optimizations",
+      "description": "Ways to lower your tax with their CHF value. For now: pillar 3a before 31 December."
+    },
+    {
+      "name": "set_fact",
+      "description": "Saves a rough figure you give, like your salary, for the estimates."
+    },
+    {
+      "name": "open_dashboard",
+      "description": "Opens your Taxpresso dashboard, which runs on this computer only."
+    }
+  ],
+  "tools_generated": false,
+  "prompts": [
+    {
+      "name": "start_geneva_tax_return",
+      "description": "Begin or pick up your Geneva tax return with Taxpresso.",
+      "text": "I want to work on my Geneva tax return with Taxpresso. Check where I am and tell me the next step."
+    }
+  ],
+  "prompts_generated": false,
+  "keywords": ["tax", "impôts", "geneva", "genève", "switzerland", "declaration"],
+  "compatibility": {
+    "platforms": ["darwin", "win32"],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  },
+  "user_config": {
+    "vault_path": {
+      "type": "directory",
+      "title": "Taxpresso folder",
+      "description": "Where your tax documents and records are kept. Taxpresso creates it if needed. It is a normal folder you can open and back up; don't choose a folder inside a code project.",
+      "required": false,
+      "default": "${HOME}/Documents/Taxpresso"
+    },
+    "ui_language": {
+      "type": "string",
+      "title": "Dashboard language",
+      "description": "en for English, fr for French. Claude answers in the language you write in.",
+      "required": false,
+      "default": "en"
+    }
+  }
+}

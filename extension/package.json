@@ -1,0 +1,31 @@
+{
+  "name": "@taxpresso/extension",
+  "version": "0.0.4",
+  "private": true,
+  "description": "The Taxpresso Claude Desktop extension: local MCP server, localhost dashboard, .mcpb packaging.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "pack:mcpb": "node scripts/pack.mjs",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.3.0",
+    "@taxpresso/intake": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/optimizer": "workspace:*",
+    "@taxpresso/questionnaire": "workspace:*",
+    "@taxpresso/rules-ge": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
+    "@modelcontextprotocol/client": "^2.3.0",
+    "@types/node": "catalog:",
+    "esbuild": "^0.28.2",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "yaml": "^2.9.1"
+  }
+}

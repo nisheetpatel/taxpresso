@@ -1,0 +1,19 @@
+{
+  "name": "@taxpresso/intake",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PDF text, barcode decoders (eCH-0270, eCH-0196, salary certificate), document classifier and broker exports (SPEC.md section 5).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

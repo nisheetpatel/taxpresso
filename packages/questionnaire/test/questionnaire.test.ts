@@ -1,0 +1,232 @@
+import { Ledger, type VaultDocument } from '@taxpresso/ledger';
+import { COMMUNES_2026, KEYS_2026 } from '@taxpresso/rules-ge';
+import { describe, expect, it } from 'vitest';
+import {
+  geQuestionnaire2026,
+  NBSP,
+  QuestionnaireEngine,
+  QuestionnaireError,
+} from '../src/index.js';
+
+const engine = () => new QuestionnaireEngine(geQuestionnaire2026(), KEYS_2026, COMMUNES_2026);
+const USER = { method: 'user' } as const;
+
+/** Answers questions in the order the engine asks them, until one has no answer in `answers`. */
+function walk(e: QuestionnaireEngine, ledger: Ledger, answers: Record<string, unknown>): string[] {
+  const asked: string[] = [];
+  for (;;) {
+    const slot = e.next(e.snapshot(ledger));
+    if (!slot || !(slot.id in answers)) return asked;
+    asked.push(slot.id);
+    e.answer(ledger, slot.id, answers[slot.id], USER);
+  }
+}
+
+const doc = (kind: VaultDocument['kind'], person?: VaultDocument['person']): VaultDocument => ({
+  id: `d_${Math.random()}`,
+  sha256: 'x',
+  filename: 'x.pdf',
+  path: 'documents/x.pdf',
+  bytes: 1,
+  addedAt: '2026-10-13T00:00:00.000Z',
+  ...(kind ? { kind } : {}),
+  ...(person ? { person } : {}),
+  parse: { method: 'none', ok: false, warnings: [] },
+});
+
+const SINGLE_EMPLOYEE = {
+  civil_status: 'single',
+  children: 0,
+  commune: 'Meyrin',
+  moved: 'no',
+  'income_sources:p1': ['salary'],
+  'employers:p1': 1,
+  'taxed_at_source:p1': 'no',
+  'pillar3a:p1': 'yes',
+  'lpp_buyin:p1': false,
+  'commute:p1': 'public_transport',
+  banks: 2,
+  crypto: 'non',
+  payments: [],
+  special: [],
+};
+
+describe('Geneva questionnaire 2026', () => {
+  it('matches the 2026 keys and communes exactly', () => {
+    expect(engine().check()).toEqual([]);
+  });
+
+  it('uses non-breaking spaces in French', () => {
+    const q = geQuestionnaire2026().questions[0]!;
+    expect('fr' in q.text && q.text.fr).toMatch(new RegExp(`2026${NBSP}\\?$`));
+  });
+
+  it('asks a single employee 14 questions, then lists what is missing', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, ledger, SINGLE_EMPLOYEE);
+    expect(asked).toEqual(Object.keys(SINGLE_EMPLOYEE));
+    expect(asked.length).toBeLessThanOrEqual(15);
+    const snap = e.snapshot(ledger);
+    expect(e.next(snap)).toBeUndefined();
+    expect(ledger.get('profile.commune')?.value).toBe('meyrin');
+
+    const reqs = e.requirements(snap, []);
+    expect(reqs.map((r) => [r.id, r.status, r.expects])).toEqual([
+      ['salary_certificate:p1', 'missing', { kinds: ['salary_certificate'], count: 1 }],
+      ['pillar3a:p1', 'missing', { kinds: ['pillar3a_attestation'], count: 1 }],
+      ['health_premiums:p1', 'missing', { kinds: ['health_premiums'], count: 1 }],
+      [
+        'banks',
+        'missing',
+        { kinds: ['ech0196_statement', 'bank_attestation', 'broker_export'], count: 2 },
+      ],
+      ['prior_declaration', 'missing', { kinds: ['prior_declaration'], count: 1 }],
+    ]);
+    expect(e.chips(snap, 'en')).toEqual([
+      'Single',
+      'No children',
+      'Meyrin',
+      '1 employer',
+      'Pays into 3a',
+      '2 banks',
+    ]);
+    expect(e.notSupported(snap)).toEqual([]);
+  });
+
+  it('documents satisfy requirements; optional ones can be waived', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, SINGLE_EMPLOYEE);
+    const snap = e.snapshot(ledger);
+    const docs = [
+      doc('salary_certificate'),
+      doc('ech0196_statement'),
+      doc('broker_export'),
+      doc(undefined),
+    ];
+    const byId = Object.fromEntries(
+      e.requirements(snap, docs, ['prior_declaration']).map((r) => [r.id, r]),
+    );
+    expect(byId['salary_certificate:p1']?.status).toBe('satisfied');
+    expect(byId['banks']).toMatchObject({ status: 'satisfied', have: 2 });
+    expect(byId['pillar3a:p1']?.status).toBe('missing');
+    expect(byId['prior_declaration']?.status).toBe('waived');
+  });
+
+  it('asks per-person questions for both people in a couple', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      civil_status: 'married',
+      children: 1,
+      children_custody: 'with_household',
+      childcare: 'nanny',
+      commune: 'Ville de Genève',
+      moved: 'from_abroad',
+      'income_sources:p1': ['salary'],
+    });
+    const snap = e.snapshot(ledger);
+    expect(snap.people).toEqual(['p1', 'p2']);
+    const next = e.next(snap)!;
+    expect(next.id).toBe('income_sources:p2');
+    expect(e.render(next, snap, 'fr')).toMatchObject({
+      who: 'Votre conjoint ou partenaire',
+      text: `Quels revenus votre conjoint ou partenaire a-t-il eus en 2026${NBSP}?`,
+    });
+    e.answer(ledger, 'income_sources:p2', ['salary', 'pension'], USER);
+    e.answer(ledger, 'employers:p1', 2, USER);
+    const snap2 = e.snapshot(ledger);
+    expect(snap2.slots.map((s) => s.id)).toContain('employers:p2');
+    const reqs = e.requirements(snap2, [doc('salary_certificate')]);
+    // In a couple, a document counts only once you say whose it is.
+    expect(reqs.find((r) => r.id === 'salary_certificate:p1')).toMatchObject({
+      have: 0,
+      expects: { count: 2 },
+    });
+    expect(reqs.map((r) => r.id)).toContain('pension:p2');
+    expect(reqs.map((r) => r.id)).toContain('childcare');
+    expect(e.chips(snap2, 'fr')).toContain(`Conjoint${NBSP}: Rente`);
+  });
+
+  it('forgets answers to questions that no longer apply', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      civil_status: 'single',
+      children: 2,
+      children_custody: 'shared',
+      childcare: 'creche_or_daycare',
+    });
+    expect(e.requirements(e.snapshot(ledger), []).map((r) => r.id)).toContain('childcare');
+    e.answer(ledger, 'children', 0, USER);
+    const snap = e.snapshot(ledger);
+    expect(snap.slots.map((s) => s.id)).not.toContain('childcare');
+    expect(e.requirements(snap, []).map((r) => r.id)).not.toContain('childcare');
+    expect(ledger.history('profile.children_count').map((f) => f.value)).toEqual([2, 0]);
+  });
+
+  it('flags situations Taxpresso does not support yet', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      civil_status: 'single',
+      children: 0,
+      commune: 'onex',
+      moved: 'from_other_canton',
+      'income_sources:p1': ['self_employment'],
+    });
+    const what = e.notSupported(e.snapshot(ledger)).map((n) => n.what.en);
+    expect(what).toEqual(['Moving from another canton', 'Self-employment (annexe B)']);
+    expect(e.notSupportedMessage('en')).toMatch(/GeTax/);
+  });
+
+  it('understands answers in words, and refuses wrong ones clearly', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    e.answer(ledger, 'civil_status', 'Marié(e)', USER);
+    expect(ledger.get('profile.civil_status')?.value).toBe('married');
+    expect(() => e.answer(ledger, 'commune', 'Lausanne', USER)).toThrow(/not a Geneva commune/);
+    e.answer(ledger, 'commune', 'Chene-Bougeries', USER);
+    expect(ledger.get('profile.commune')?.value).toBe('chene-bougeries');
+    expect(() => e.answer(ledger, 'children', 13, USER)).toThrow(QuestionnaireError);
+    expect(() => e.answer(ledger, 'children', '2.5', USER)).toThrow(/whole number/);
+    expect(() => e.answer(ledger, 'childcare', 'none', USER)).toThrow(/doesn't apply/);
+  });
+
+  it('asks skipped questions last', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    expect(e.next(e.snapshot(ledger), ['civil_status'])?.id).toBe('children');
+    e.answer(ledger, 'children', 0, USER);
+    expect(e.next(e.snapshot(ledger), ['civil_status'])?.id).toBe('commune');
+  });
+
+  it('explains every question and every document in both languages', () => {
+    const file = geQuestionnaire2026();
+    for (const item of [...file.questions, ...file.requirements]) {
+      expect(item.explain?.en, item.id).toBeTruthy();
+      expect(item.explain?.fr, item.id).toBeTruthy();
+    }
+  });
+
+  it('lets one document cover both partners', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    e.answer(ledger, 'civil_status', 'married', USER);
+    const snap = e.snapshot(ledger);
+    const health = (docs: VaultDocument[]) =>
+      e
+        .requirements(snap, docs)
+        .filter((r) => r.id.startsWith('health_premiums'))
+        .map((r) => [r.id, r.status]);
+    expect(health([doc('health_premiums', 'p1')])).toEqual([
+      ['health_premiums:p1', 'satisfied'],
+      ['health_premiums:p2', 'missing'],
+    ]);
+    expect(health([doc('health_premiums', 'household')])).toEqual([
+      ['health_premiums:p1', 'satisfied'],
+      ['health_premiums:p2', 'satisfied'],
+    ]);
+  });
+});

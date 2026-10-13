@@ -1,0 +1,16 @@
+pnpm-lock.yaml
+**/dist/
+build/
+extension/build-meta/
+coverage/
+
+# Human-written documents and the official sources: not reformatted.
+*.md
+docs/
+
+# Provided with the repo; kept byte-identical so their history stays readable.
+scripts/fetch-sources.mjs
+scripts/merge-manifests.mjs
+
+# Claude Code worktrees of this repo (each is its own checkout).
+.claude/

@@ -1,0 +1,26 @@
+{
+  "name": "@taxpresso/ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dashboard served on 127.0.0.1 by the extension; views reused as MCP Apps resources (SPEC.md section 3).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "build": "vite build && node scripts/build-views.mjs",
+    "dev": "vite",
+    "typecheck": "tsc -p .",
+    "preview:card": "node scripts/build-preview.mjs"
+  },
+  "devDependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@modelcontextprotocol/core": "^2.3.1",
+    "@modelcontextprotocol/ext-apps": "^2.0.3",
+    "esbuild": "^0.28.2",
+    "preact": "^10.29.8",
+    "typescript": "catalog:",
+    "vite": "^8.3.0",
+    "zod": "catalog:"
+  }
+}

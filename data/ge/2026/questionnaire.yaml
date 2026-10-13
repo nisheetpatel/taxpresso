@@ -1,0 +1,635 @@
+# Questionnaire for tax year 2026 (SPEC.md section 6). Data, not code: packages/questionnaire reads
+# it, and every key and value must exist in packages/rules-ge/src/2026/keys.ts (a test checks).
+# Every question changes what we ask for or compute; otherwise it doesn't belong here.
+#
+# Wording and documents follow the Geneva guide for 2025, the latest published:
+# ge-2025-guide-declaration-pp p. 8 (documents to gather) and p. 10 (attachments).
+# Re-check everything against the 2026 guide when it is published (January 2027).
+#
+# French: write plain spaces before ? ! : ; and the loader makes them non-breaking.
+# Texts per person (p1, p2) where the grammar differs; {n} is replaced by the number.
+
+taxYear: 2026
+
+people:
+  p1: { en: 'You', fr: 'Vous' }
+  p2: { en: 'Your spouse or partner', fr: 'Votre conjoint ou partenaire' }
+  p2Chip: { en: 'Partner', fr: 'Conjoint' }
+
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. GeTax, the canton’s free software, or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. GeTax, le logiciel gratuit du canton, ou une fiduciaire le peuvent.'
+
+questions:
+  - id: civil_status
+    key: profile.civil_status
+    type: choice
+    explain:
+      en: 'Your situation on 31 December decides whether you file alone or as a couple, on one declaration together.'
+      fr: 'Votre situation au 31 décembre décide si vous déclarez seul ou en couple, sur une seule déclaration commune.'
+    text:
+      en: 'What was your civil status on 31 December 2026?'
+      fr: 'Quel était votre état civil au 31 décembre 2026 ?'
+    help:
+      en: 'On the official form: état civil.'
+      fr: 'Sur le formulaire officiel : état civil.'
+    options:
+      - { value: single, label: { en: 'Single', fr: 'Célibataire' } }
+      - { value: married, label: { en: 'Married', fr: 'Marié(e)' } }
+      - value: registered_partnership
+        label: { en: 'Registered partnership', fr: 'Partenariat enregistré' }
+      - { value: separated, label: { en: 'Separated', fr: 'Séparé(e)' } }
+      - { value: divorced, label: { en: 'Divorced', fr: 'Divorcé(e)' } }
+      - { value: widowed, label: { en: 'Widowed', fr: 'Veuf ou veuve' } }
+
+  - id: children
+    key: profile.children_count
+    type: number
+    min: 0
+    max: 12
+    explain:
+      en: 'Count the children who live with you or whom you support financially. Unsure about an adult child? Ask Claude.'
+      fr: 'Comptez les enfants qui vivent avec vous ou que vous entretenez. Un doute pour un enfant majeur ? Demandez à Claude.'
+    text:
+      en: 'How many children did you support in 2026?'
+      fr: 'Combien d’enfants aviez-vous à charge en 2026 ?'
+    help:
+      en: 'On the official form: enfants à charge.'
+      fr: 'Sur le formulaire officiel : enfants à charge.'
+    chip:
+      zero: { en: 'No children', fr: 'Pas d’enfants' }
+      one: { en: '1 child', fr: '1 enfant' }
+      other: { en: '{n} children', fr: '{n} enfants' }
+
+  - id: children_custody
+    key: profile.children_custody
+    type: choice
+    when: { key: profile.children_count, gt: 0 }
+    explain:
+      en: 'Who the children mainly live with. Shared custody means they live with each parent about half the time.'
+      fr: 'Chez qui les enfants vivent surtout. En garde partagée, ils vivent environ la moitié du temps chez chaque parent.'
+    text:
+      en: 'Where did the children live in 2026?'
+      fr: 'Où vivaient les enfants en 2026 ?'
+    options:
+      - value: with_household
+        label: { en: 'With me, or with us', fr: 'Avec moi, ou avec nous' }
+      - value: shared
+        label: { en: 'Shared custody', fr: 'En garde partagée' }
+        chip: { en: 'Shared custody', fr: 'Garde partagée' }
+      - value: elsewhere
+        label: { en: 'Mostly with the other parent', fr: 'Surtout chez l’autre parent' }
+
+  - id: childcare
+    key: profile.childcare
+    type: choice
+    when: { key: profile.children_count, gt: 0 }
+    explain:
+      en: 'What you paid so someone looks after your children while you work: crèche, day care, after-school care or a nanny.'
+      fr: 'Ce que vous avez payé pour faire garder vos enfants pendant que vous travaillez : crèche, garderie, parascolaire ou nourrice.'
+    text:
+      en: 'Did you pay for childcare in 2026?'
+      fr: 'Avez-vous payé des frais de garde en 2026 ?'
+    help:
+      en: 'Crèche, day care, after-school care or a nanny. On the official form: frais de garde.'
+      fr: 'Crèche, garderie, parascolaire ou nourrice. Sur le formulaire officiel : frais de garde.'
+    options:
+      - value: creche_or_daycare
+        label: { en: 'Yes, a crèche or day care', fr: 'Oui, une crèche ou une garderie' }
+        chip: { en: 'Crèche', fr: 'Crèche' }
+      - value: nanny
+        label: { en: 'Yes, a nanny', fr: 'Oui, une nourrice' }
+        chip: { en: 'Nanny', fr: 'Nourrice' }
+      - value: none
+        label: { en: 'No childcare costs', fr: 'Pas de frais de garde' }
+
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'The municipality where you lived on 31 December. Each commune adds its own share of tax (centimes additionnels).'
+      fr: 'La commune où vous habitiez au 31 décembre. Chaque commune ajoute sa propre part d’impôt (centimes additionnels).'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+    help:
+      en: 'On the official form: commune de domicile.'
+      fr: 'Sur le formulaire officiel : commune de domicile.'
+
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'A move within Geneva changes little. Arriving from abroad means you were taxed here for part of the year only.'
+      fr: 'Un déménagement dans le canton change peu de choses. Arriver de l’étranger signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non' } }
+      - value: within_geneva
+        label: { en: 'Yes, within the canton of Geneva', fr: 'Oui, dans le canton de Genève' }
+        chip: { en: 'Moved in Geneva', fr: 'Déménagé à Genève' }
+      - value: from_abroad
+        label: { en: 'Yes, I arrived from abroad', fr: 'Oui, je suis arrivé(e) de l’étranger' }
+        chip: { en: 'Arrived in 2026', fr: 'Arrivé(e) en 2026' }
+      - value: from_other_canton
+        label: { en: 'Yes, from another canton', fr: 'Oui, depuis un autre canton' }
+        notSupported:
+          { en: 'Moving from another canton', fr: 'Un déménagement depuis un autre canton' }
+      - value: leaving_switzerland
+        label:
+          { en: 'I left, or I’m leaving, Switzerland', fr: 'J’ai quitté ou je quitte la Suisse' }
+        notSupported: { en: 'Leaving Switzerland', fr: 'Un départ de Suisse' }
+
+  - id: income_sources
+    key: profile.income_sources
+    type: multi
+    perPerson: true
+    explain:
+      en: 'Benefits: money paid by unemployment, sickness or accident insurance. Pension: a regular payment from AVS, AI or a pension fund.'
+      fr: 'Indemnités : l’argent versé par l’assurance chômage, maladie ou accident. Rente : un versement régulier de l’AVS, de l’AI ou d’une caisse de pension.'
+    text:
+      p1:
+        en: 'What income did you have in 2026?'
+        fr: 'Quels revenus avez-vous eus en 2026 ?'
+      p2:
+        en: 'What income did your spouse or partner have in 2026?'
+        fr: 'Quels revenus votre conjoint ou partenaire a-t-il eus en 2026 ?'
+    help:
+      en: 'Choose all that apply. Interest and dividends come later, with your bank documents.'
+      fr: 'Choisissez tout ce qui s’applique. Les intérêts et dividendes viennent plus tard, avec vos documents bancaires.'
+    none: { en: 'None of these', fr: 'Aucun de ceux-là' }
+    options:
+      - { value: salary, label: { en: 'A salary', fr: 'Un salaire' } }
+      - value: replacement_income
+        label:
+          en: 'Unemployment, sickness or accident benefits'
+          fr: 'Des indemnités (chômage, maladie, accident)'
+        chip: { en: 'Benefits', fr: 'Indemnités' }
+      - value: pension
+        label:
+          {
+            en: 'A pension (AVS, AI or pension fund)',
+            fr: 'Une rente (AVS, AI ou caisse de pension)',
+          }
+        chip: { en: 'Pension', fr: 'Rente' }
+      - value: alimony
+        label: { en: 'Alimony or child support received', fr: 'Une pension alimentaire reçue' }
+        chip: { en: 'Receives alimony', fr: 'Reçoit une pension' }
+      - value: self_employment
+        label: { en: 'Income from self-employment', fr: 'Un revenu d’activité indépendante' }
+        notSupported: { en: 'Self-employment (annexe B)', fr: 'L’activité indépendante (annexe B)' }
+
+  - id: employers
+    key: profile.employers
+    type: number
+    perPerson: true
+    min: 1
+    max: 9
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'Count every employer you worked for during the year, even briefly. Each one gives you a salary certificate.'
+      fr: 'Comptez tous les employeurs de l’année, même pour peu de temps. Chacun vous remet un certificat de salaire.'
+    text:
+      p1:
+        en: 'How many employers paid you a salary in 2026?'
+        fr: 'Combien d’employeurs vous ont versé un salaire en 2026 ?'
+      p2:
+        en: 'How many employers paid your spouse or partner a salary in 2026?'
+        fr: 'Combien d’employeurs ont versé un salaire à votre conjoint ou partenaire en 2026 ?'
+    help:
+      en: 'Each one gives you a salary certificate (certificat de salaire).'
+      fr: 'Chacun vous remet un certificat de salaire.'
+    chip:
+      one: { en: '1 employer', fr: '1 employeur' }
+      other: { en: '{n} employers', fr: '{n} employeurs' }
+
+  - id: taxed_at_source
+    key: profile.taxed_at_source
+    type: yesno
+    perPerson: true
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'Your employer took tax off your salary before paying you. Common with a B or L permit. Your salary certificate shows it.'
+      fr: 'Votre employeur a retenu l’impôt sur votre salaire avant de vous le verser. Fréquent avec un permis B ou L. Votre certificat de salaire l’indique.'
+    text:
+      p1:
+        en: 'Was your salary taxed at source in 2026?'
+        fr: 'Votre salaire était-il imposé à la source en 2026 ?'
+      p2:
+        en: 'Was your spouse or partner’s salary taxed at source in 2026?'
+        fr: 'Le salaire de votre conjoint ou partenaire était-il imposé à la source en 2026 ?'
+    help:
+      en: 'If so, it shows on the salary certificate. On the official form: impôt à la source.'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire.'
+    chip: { en: 'Taxed at source', fr: 'Imposé à la source' }
+
+  - id: tou
+    key: profile.tou
+    type: choice
+    perPerson: true
+    when: { key: profile.taxed_at_source, is: true }
+    explain:
+      en: 'TOU (taxation ordinaire ultérieure): instead of the tax taken from your salary being final, you file a normal declaration and can claim deductions. Once you ask for it, you can’t go back.'
+      fr: 'TOU (taxation ordinaire ultérieure) : au lieu que l’impôt retenu sur votre salaire soit définitif, vous remplissez une déclaration normale et pouvez faire valoir des déductions. Une fois demandée, on ne peut plus revenir en arrière.'
+    text:
+      p1:
+        en: 'Are you taxed ordinarily instead (TOU), or thinking about it?'
+        fr: 'Êtes-vous en taxation ordinaire ultérieure (TOU), ou y songez-vous ?'
+      p2:
+        en: 'Is your spouse or partner taxed ordinarily instead (TOU), or thinking about it?'
+        fr: 'Votre conjoint ou partenaire est-il en taxation ordinaire ultérieure (TOU), ou y songe-t-il ?'
+    help:
+      en: 'Taxpresso will show you both cases, with their amounts, before you decide.'
+      fr: 'Taxpresso vous montrera les deux cas, avec leurs montants, avant que vous décidiez.'
+    options:
+      - value: already
+        label: { en: 'Yes, already', fr: 'Oui, déjà' }
+        chip: { en: 'TOU', fr: 'TOU' }
+      - value: considering
+        label: { en: 'I’m thinking about it', fr: 'J’y songe' }
+        chip: { en: 'Considering TOU', fr: 'Envisage la TOU' }
+      - { value: 'no', label: { en: 'No', fr: 'Non' } }
+
+  - id: pillar3a
+    key: profile.pillar3a
+    type: yesno
+    perPerson: true
+    when:
+      { key: profile.income_sources, includesAny: [salary, replacement_income, self_employment] }
+    explain:
+      en: 'Pillar 3a (3e pilier A) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.'
+      fr: 'Le 3e pilier A est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.'
+    text:
+      p1:
+        en: 'Did you pay into a pillar 3a account in 2026?'
+        fr: 'Avez-vous versé des cotisations au 3e pilier A en 2026 ?'
+      p2:
+        en: 'Did your spouse or partner pay into a pillar 3a account in 2026?'
+        fr: 'Votre conjoint ou partenaire a-t-il versé des cotisations au 3e pilier A en 2026 ?'
+    help:
+      en: 'Your bank or insurer sends an attestation. On the official form: 3e pilier A.'
+      fr: 'Votre banque ou votre assurance vous envoie une attestation.'
+    chip: { en: 'Pays into 3a', fr: 'Cotise au 3e pilier A' }
+
+  - id: lpp_buyin
+    key: profile.lpp_buyin
+    type: yesno
+    perPerson: true
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'Your pension fund at work (2nd pillar, LPP) takes contributions from your salary every month. A buy-in (rachat) is an extra payment you chose to make on top. Most people never make one.'
+      fr: 'Votre caisse de pension (2e pilier, LPP) prélève des cotisations sur votre salaire chaque mois. Un rachat est un versement supplémentaire que vous avez choisi de faire en plus. La plupart des gens n’en font jamais.'
+    text:
+      p1:
+        en: 'Did you buy into your pension fund (2nd pillar) in 2026?'
+        fr: 'Avez-vous fait un rachat dans votre caisse de pension (2e pilier) en 2026 ?'
+      p2:
+        en: 'Did your spouse or partner buy into their pension fund (2nd pillar) in 2026?'
+        fr: 'Votre conjoint ou partenaire a-t-il fait un rachat dans sa caisse de pension (2e pilier) en 2026 ?'
+    help:
+      en: 'A voluntary payment on top of the usual contributions. On the official form: rachat 2e pilier.'
+      fr: 'Un versement volontaire en plus des cotisations habituelles.'
+    chip: { en: 'Pension fund buy-in', fr: 'Rachat 2e pilier' }
+
+  - id: commute
+    key: profile.commute
+    type: choice
+    perPerson: true
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'Getting to work can be deducted as travel costs (frais de déplacement). Your usual way of getting there is enough for now.'
+      fr: 'Le trajet pour le travail peut être déduit comme frais de déplacement. Votre moyen habituel suffit pour l’instant.'
+    text:
+      p1:
+        en: 'How did you mostly get to work in 2026?'
+        fr: 'Comment vous rendiez-vous surtout au travail en 2026 ?'
+      p2:
+        en: 'How did your spouse or partner mostly get to work in 2026?'
+        fr: 'Comment votre conjoint ou partenaire se rendait-il surtout au travail en 2026 ?'
+    help:
+      en: 'On the official form: frais de déplacement.'
+      fr: 'Sur le formulaire officiel : frais de déplacement.'
+    options:
+      - { value: public_transport, label: { en: 'Public transport', fr: 'Transports publics' } }
+      - { value: car_or_motorbike, label: { en: 'Car or motorbike', fr: 'Voiture ou moto' } }
+      - { value: bike_or_walk, label: { en: 'Bike or on foot', fr: 'Vélo ou à pied' } }
+      - value: mostly_home
+        label: { en: 'Mostly from home', fr: 'Surtout en télétravail' }
+        chip: { en: 'Works from home', fr: 'Télétravail' }
+
+  - id: banks
+    key: profile.banks
+    type: number
+    min: 0
+    max: 20
+    explain:
+      en: 'Every bank where you had an account, savings or investments on 31 December, including your children’s accounts.'
+      fr: 'Toutes les banques où vous aviez un compte, de l’épargne ou des placements au 31 décembre, y compris les comptes de vos enfants.'
+    text:
+      en: 'With how many banks did you have accounts or securities on 31 December 2026?'
+      fr: 'Dans combien de banques aviez-vous des comptes ou des titres au 31 décembre 2026 ?'
+    help:
+      en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers (Interactive Brokers, DEGIRO). If a bank offers an e-tax statement (e-relevé fiscal), ask for it: it has everything in one document.'
+      fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers (Interactive Brokers, DEGIRO). Si une banque propose un e-relevé fiscal, demandez-le : il contient tout en un seul document.'
+    chip:
+      one: { en: '1 bank', fr: '1 banque' }
+      other: { en: '{n} banks', fr: '{n} banques' }
+
+  - id: crypto
+    key: profile.crypto
+    type: yesno
+    explain:
+      en: 'Coins or tokens you owned on 31 December count as part of your wealth (fortune), like money in a bank.'
+      fr: 'Les cryptos que vous déteniez au 31 décembre font partie de votre fortune, comme l’argent à la banque.'
+    text:
+      en: 'Did you hold cryptocurrencies on 31 December 2026?'
+      fr: 'Déteniez-vous des crypto-monnaies au 31 décembre 2026 ?'
+    chip: { en: 'Crypto', fr: 'Crypto' }
+
+  - id: payments
+    key: profile.payments
+    type: multi
+    explain:
+      en: 'Each of these can lower your tax if you keep the proof.'
+      fr: 'Chacun de ces frais peut diminuer votre impôt si vous en gardez la preuve.'
+    text:
+      en: 'Which of these did you pay in 2026?'
+      fr: 'Lesquels de ces frais avez-vous payés en 2026 ?'
+    help:
+      en: 'Choose all that apply.'
+      fr: 'Choisissez tout ce qui s’applique.'
+    none: { en: 'None of these', fr: 'Aucun' }
+    options:
+      - value: medical_costs
+        label:
+          {
+            en: 'Medical or dental costs that insurance didn’t cover',
+            fr: 'Des frais médicaux ou dentaires non remboursés',
+          }
+        chip: { en: 'Medical costs', fr: 'Frais médicaux' }
+      - value: donations
+        label:
+          {
+            en: 'Donations to charities or political parties in Switzerland',
+            fr: 'Des dons à des associations ou des partis politiques en Suisse',
+          }
+        chip: { en: 'Donations', fr: 'Dons' }
+      - value: loan_interest
+        label:
+          {
+            en: 'Interest on a loan, such as a consumer or car loan',
+            fr: 'Des intérêts d’emprunt, par exemple un crédit ou un prêt auto',
+          }
+        chip: { en: 'Loan interest', fr: 'Intérêts d’emprunt' }
+      - value: alimony_paid
+        label: { en: 'Alimony or child support', fr: 'Une pension alimentaire' }
+        chip: { en: 'Pays alimony', fr: 'Verse une pension' }
+
+  - id: special
+    key: profile.special
+    type: multi
+    explain:
+      en: 'These situations need checks that Taxpresso can’t do yet. Better to know now than in March.'
+      fr: 'Ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars.'
+    text:
+      en: 'Do any of these apply to you in 2026?'
+      fr: 'Une de ces situations vous concerne-t-elle en 2026 ?'
+    none: { en: 'None of these', fr: 'Aucune' }
+    options:
+      - value: real_estate
+        label:
+          {
+            en: 'I own real estate, in Switzerland or abroad',
+            fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
+          }
+        notSupported: { en: 'Real estate (annexe D)', fr: 'Les immeubles (annexe D)' }
+      - value: inheritance_or_gift
+        label:
+          {
+            en: 'I received an inheritance or a large gift',
+            fr: 'J’ai reçu un héritage ou une donation importante',
+          }
+        notSupported: { en: 'An inheritance or a gift', fr: 'Un héritage ou une donation' }
+      - value: foreign_income
+        label:
+          {
+            en: 'I had income from abroad (salary, pension, rent)',
+            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+          }
+        notSupported: { en: 'Income from abroad', fr: 'Des revenus de l’étranger' }
+      - value: pension_capital
+        label:
+          {
+            en: 'I withdrew pension capital (2nd or 3rd pillar)',
+            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
+          }
+        notSupported:
+          { en: 'A pension capital withdrawal', fr: 'Un retrait de capital de prévoyance' }
+
+# What the "still missing" list asks for. Labels use the guide's words (p. 8 and p. 10).
+requirements:
+  - id: salary_certificate
+    perPerson: true
+    when: { key: profile.income_sources, includes: salary }
+    expects: { kinds: [salary_certificate], countKey: profile.employers }
+    label: { en: 'Salary certificate', fr: 'Certificat de salaire' }
+    explain:
+      en: 'The yearly summary of your salary and deductions that each employer gives you, usually in January or February.'
+      fr: 'Le récapitulatif annuel de votre salaire et des retenues que chaque employeur vous remet, en général en janvier ou février.'
+    reason: { en: 'One from each employer.', fr: 'Un par employeur.' }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: replacement_income
+    perPerson: true
+    when: { key: profile.income_sources, includes: replacement_income }
+    expects: { kinds: [replacement_income_certificate] }
+    label: { en: 'Benefits attestation', fr: 'Attestation d’indemnités' }
+    explain:
+      en: 'A yearly attestation from the unemployment fund or the insurer that paid you benefits.'
+      fr: 'Une attestation annuelle de la caisse de chômage ou de l’assurance qui vous a versé des indemnités.'
+    reason:
+      {
+        en: 'From the unemployment fund or the insurer.',
+        fr: 'De la caisse de chômage ou de l’assurance.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: pension
+    perPerson: true
+    when: { key: profile.income_sources, includes: pension }
+    expects: { kinds: [pension_certificate] }
+    label: { en: 'Pension certificate', fr: 'Certificat de rente' }
+    explain:
+      en: 'A yearly statement from AVS, AI or your pension fund showing the pension paid to you.'
+      fr: 'Un relevé annuel de l’AVS, de l’AI ou de votre caisse de pension indiquant la rente versée.'
+    reason:
+      { en: 'From AVS/AI or the pension fund.', fr: 'De l’AVS/AI ou de la caisse de pension.' }
+    source: 'ge-2025-guide-declaration-pp p. 8'
+
+  - id: pillar3a
+    perPerson: true
+    when: { key: profile.pillar3a, is: true }
+    expects: { kinds: [pillar3a_attestation] }
+    label: { en: 'Pillar 3a attestation', fr: 'Attestation 3e pilier A' }
+    explain:
+      en: 'A yearly attestation from your bank or insurer showing what you paid into your 3a account. It usually arrives in January.'
+      fr: 'Une attestation annuelle de votre banque ou assurance indiquant ce que vous avez versé sur votre 3e pilier A. Elle arrive en général en janvier.'
+    reason: { en: 'From your bank or insurer.', fr: 'De votre banque ou de votre assurance.' }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: lpp_buyin
+    perPerson: true
+    when: { key: profile.lpp_buyin, is: true }
+    expects: { kinds: [lpp_buyin] }
+    label: { en: 'Pension fund buy-in attestation', fr: 'Attestation de rachat 2e pilier' }
+    explain:
+      en: 'Only needed if you made an extra, voluntary payment into your pension fund. The fund confirms it on form 21EDP. No buy-in? Change your answer and this goes away.'
+      fr: 'Seulement si vous avez fait un versement volontaire supplémentaire dans votre caisse de pension. La caisse le confirme sur le formulaire 21EDP. Pas de rachat ? Modifiez votre réponse et cette ligne disparaît.'
+    reason:
+      {
+        en: 'Form 21EDP from your pension fund.',
+        fr: 'Formulaire 21EDP de votre caisse de pension.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: health_premiums
+    perPerson: true
+    expects: { kinds: [health_premiums] }
+    label: { en: 'Health insurance premiums', fr: 'Primes d’assurance-maladie' }
+    explain:
+      en: 'Your health insurer’s yearly statement of premiums paid, basic and supplementary. One family statement can cover several people.'
+      fr: 'Le relevé annuel des primes payées, de base et complémentaires, envoyé par votre assureur. Un relevé familial peut couvrir plusieurs personnes.'
+    reason:
+      {
+        en: 'Your insurer’s annual attestation, basic and supplementary.',
+        fr: 'L’attestation annuelle de votre assureur, de base et complémentaire.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8'
+
+  # Securities held abroad belong in the état des titres too (p. 38). A broker's export gives the
+  # positions and income Taxpresso reads into it (SPEC.md 5.7); the attachments the guide asks
+  # for stay the statements (relevés fiscaux, p. 10 and p. 43).
+  - id: banks
+    when: { key: profile.banks, gt: 0 }
+    expects:
+      { kinds: [ech0196_statement, bank_attestation, broker_export], countKey: profile.banks }
+    label: { en: 'Bank statements on 31 December', fr: 'Relevés bancaires au 31 décembre' }
+    explain:
+      en: 'The statement each bank gives for your taxes, with balances on 31 December. Ask for the e-tax statement (e-relevé fiscal) if your bank offers it. For a broker such as Interactive Brokers or DEGIRO, add its export too (Flex Query XML, or the CSV of the portfolio and of the account statement): Taxpresso reads your securities from it.'
+      fr: 'Le relevé fiscal de chaque banque, avec les soldes au 31 décembre. Demandez le e-relevé fiscal si votre banque le propose. Pour un courtier comme Interactive Brokers ou DEGIRO, ajoutez aussi son export (Flex Query XML, ou le CSV du portefeuille et du relevé de compte) : Taxpresso y lit vos titres.'
+    reason:
+      {
+        en: 'One per bank, ideally the e-tax statement (e-relevé fiscal).',
+        fr: 'Un par banque, idéalement le e-relevé fiscal.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10, p. 38, p. 43'
+
+  - id: crypto
+    when: { key: profile.crypto, is: true }
+    expects: { kinds: [crypto_statement] }
+    label: { en: 'Crypto holdings on 31 December', fr: 'Crypto-monnaies au 31 décembre' }
+    explain:
+      en: 'A statement from each exchange or wallet showing what you held on 31 December.'
+      fr: 'Un relevé de chaque plateforme ou portefeuille indiquant ce que vous déteniez au 31 décembre.'
+    reason:
+      {
+        en: 'A statement from each exchange or wallet.',
+        fr: 'Un relevé de chaque plateforme ou portefeuille.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 38'
+
+  - id: childcare
+    when: { key: profile.childcare, in: [creche_or_daycare, nanny] }
+    expects: { kinds: [childcare_invoice] }
+    label: { en: 'Childcare invoices', fr: 'Justificatifs des frais de garde' }
+    explain:
+      en: 'Invoices or the yearly attestation from the crèche, day care or nanny.'
+      fr: 'Les factures ou l’attestation annuelle de la crèche, de la garderie ou de la nourrice.'
+    reason: { en: 'Invoices or the annual attestation.', fr: 'Factures ou attestation annuelle.' }
+    source: 'ge-2025-guide-declaration-pp p. 8'
+
+  - id: medical
+    when: { key: profile.payments, includes: medical_costs }
+    expects: { kinds: [medical_invoice] }
+    label: { en: 'Medical costs you paid', fr: 'Frais médicaux à votre charge' }
+    explain:
+      en: 'Your insurer’s statement of costs it didn’t reimburse (décompte LAMal), plus invoices you never sent to the insurer.'
+      fr: 'Le décompte LAMal des frais non remboursés par votre assureur, plus les factures que vous ne lui avez pas envoyées.'
+    reason:
+      {
+        en: 'Your insurer’s statement of costs it didn’t cover (décompte LAMal).',
+        fr: 'Le décompte LAMal des frais restés à votre charge.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: donations
+    when: { key: profile.payments, includes: donations }
+    expects: { kinds: [donation_receipt] }
+    label: { en: 'Donation receipts', fr: 'Justificatifs des dons' }
+    explain:
+      en: 'Receipts from the charities or political parties you gave to.'
+      fr: 'Les reçus des associations ou des partis politiques à qui vous avez donné.'
+    reason:
+      {
+        en: 'Receipts from the charities or parties.',
+        fr: 'Les reçus des associations ou des partis.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: loan_interest
+    when: { key: profile.payments, includes: loan_interest }
+    expects: { kinds: [debt_interest] }
+    label: { en: 'Loan statement', fr: 'Relevé d’emprunt' }
+    explain:
+      en: 'The lender’s statement of interest paid in the year and what you still owed on 31 December.'
+      fr: 'Le relevé du prêteur indiquant les intérêts payés dans l’année et le solde dû au 31 décembre.'
+    reason:
+      {
+        en: 'The lender’s statement of interest and balance on 31 December.',
+        fr: 'Le relevé des intérêts et du solde au 31 décembre.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: alimony
+    when:
+      any:
+        - { key: profile.payments, includes: alimony_paid }
+        - { key: profile.income_sources, includes: alimony, anyPerson: true }
+    expects: { kinds: [alimony_proof] }
+    label: { en: 'Alimony payments', fr: 'Justificatif de pension alimentaire' }
+    explain:
+      en: 'Proof of the amounts paid or received, such as bank transfers or a statement.'
+      fr: 'La preuve des montants versés ou reçus, par exemple des virements bancaires ou un relevé.'
+    reason:
+      { en: 'Proof of the amounts paid or received.', fr: 'Preuve des montants versés ou reçus.' }
+    source: 'ge-2025-guide-declaration-pp p. 8'
+
+  - id: separation_judgment
+    optional: true
+    when:
+      any:
+        - { key: profile.civil_status, in: [separated, divorced] }
+        - { key: profile.payments, includes: alimony_paid }
+    expects: { kinds: [separation_judgment] }
+    label: { en: 'Separation or divorce judgment', fr: 'Jugement de séparation ou de divorce' }
+    explain:
+      en: 'The court decision or agreement that sets the alimony. Only if it’s new in 2026 or changed.'
+      fr: 'La décision du tribunal ou la convention qui fixe la pension. Seulement si elle est nouvelle en 2026 ou a changé.'
+    reason:
+      {
+        en: 'Only if it’s new in 2026 or changed.',
+        fr: 'Seulement s’il est nouveau en 2026 ou a changé.',
+      }
+    source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  - id: prior_declaration
+    optional: true
+    expects: { kinds: [prior_declaration] }
+    label: { en: 'Last year’s declaration', fr: 'Déclaration de l’an dernier' }
+    explain:
+      en: 'Last year’s declaration or tax assessment, if you have it. It helps fill in your situation faster.'
+      fr: 'La déclaration ou l’avis de taxation de l’an dernier, si vous l’avez. Cela aide à remplir votre situation plus vite.'
+    reason:
+      { en: 'If you have it: it speeds things up.', fr: 'Si vous l’avez : cela va plus vite.' }

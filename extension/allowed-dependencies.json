@@ -1,0 +1,18 @@
+{
+  "$comment": "C2 dependency allowlist (SPEC.md sections 2 and 15). Every npm package and Node built-in that ends up in server/index.mjs must be listed here with the reason it is needed. scripts/check-bundle.mjs fails the build otherwise. Adding an entry is a reviewed decision: no HTTP clients, ever.",
+  "packages": {
+    "@modelcontextprotocol/server": "MCP server SDK v2, stdio transport. Depends only on zod and @modelcontextprotocol/core; HTTP transports are not imported, so not bundled.",
+    "@modelcontextprotocol/core": "MCP protocol types and JSON-RPC handling shared by the SDK.",
+    "zod": "Schemas for tool inputs and outputs."
+  },
+  "builtins": {
+    "node:http": "The dashboard server on 127.0.0.1 (createServer only; ESLint bans http.request and http.get).",
+    "node:crypto": "Per-session dashboard token and constant-time comparison.",
+    "node:fs": "Reads the vault folder.",
+    "node:fs/promises": "Reads the vault folder and the bundled UI files.",
+    "node:path": "Paths.",
+    "node:os": "Home folder for the default vault path.",
+    "node:url": "Locates the bundled UI next to the server file.",
+    "node:process": "stdio for the MCP transport (used by the SDK)."
+  }
+}

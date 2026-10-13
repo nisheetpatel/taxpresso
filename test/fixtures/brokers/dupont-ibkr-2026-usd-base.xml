@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic test data for the Dupont demo household (SPEC.md section 13). Not real accounts:
+     ids, securities, ISINs (TXPRS) and amounts are made up. Shape: an IBKR Activity Flex Query
+     in XML with two accounts, base currency USD, dates as yyyy-MM-dd, lots without summary rows
+     in the second account, no Account Information section. -->
+<FlexQueryResponse queryName="Taxpresso synthetic, two accounts" type="AF">
+  <FlexStatements count="2">
+    <FlexStatement accountId="U0000002" fromDate="2026-01-01" toDate="2026-12-31" period="LastYear" whenGenerated="2027-01-04;10:00:00">
+      <OpenPositions>
+        <OpenPosition accountId="U0000002" currency="EUR" fxRateToBase="1.16" assetCategory="STK" symbol="MOKA" description="MOKA POT SE" conid="200001" isin="DETXPRS00054" issuerCountryCode="DE" multiplier="1" reportDate="2026-12-31" position="40" markPrice="25" positionValue="1000" side="Long" levelOfDetail="SUMMARY" />
+        <OpenPosition accountId="U0000002" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="ESPR" description="ESPRESSO INDUSTRIES INC" conid="100001" isin="USTXPRS00017" issuerCountryCode="US" multiplier="1" reportDate="2026-12-31" position="5" markPrice="125.5" positionValue="627.5" side="Long" levelOfDetail="SUMMARY" />
+      </OpenPositions>
+      <CashTransactions>
+        <CashTransaction accountId="U0000002" currency="EUR" fxRateToBase="1.1" assetCategory="STK" symbol="MOKA" description="MOKA(DETXPRS00054) CASH DIVIDEND EUR 0.75 PER SHARE (Ordinary Dividend)" conid="200001" isin="DETXPRS00054" issuerCountryCode="DE" dateTime="2026-05-20;20:20:00" settleDate="2026-05-20" amount="30" type="Dividends" levelOfDetail="DETAIL" reportDate="2026-05-20" />
+        <CashTransaction accountId="U0000002" currency="EUR" fxRateToBase="1.1" assetCategory="STK" symbol="MOKA" description="MOKA(DETXPRS00054) CASH DIVIDEND EUR 0.75 PER SHARE - DE TAX" conid="200001" isin="DETXPRS00054" issuerCountryCode="DE" dateTime="2026-05-20;20:20:00" settleDate="2026-05-20" amount="-7.91" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="2026-05-20" />
+        <CashTransaction accountId="U0000002" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="ESPR" description="ESPR(USTXPRS00017) CASH DIVIDEND USD 0.50 PER SHARE (Ordinary Dividend)" conid="100001" isin="USTXPRS00017" issuerCountryCode="US" dateTime="2026-09-24;20:20:00" settleDate="2026-09-24" amount="2.5" type="Dividends" levelOfDetail="DETAIL" reportDate="2026-09-24" />
+        <CashTransaction accountId="U0000002" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="ESPR" description="ESPR(USTXPRS00017) CASH DIVIDEND USD 0.50 PER SHARE - US TAX" conid="100001" isin="USTXPRS00017" issuerCountryCode="US" dateTime="2026-09-24;20:20:00" settleDate="2026-09-24" amount="-0.375" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="2026-09-24" />
+      </CashTransactions>
+      <ConversionRates>
+        <ConversionRate reportDate="2026-05-20" fromCurrency="CHF" toCurrency="USD" rate="1.1" />
+        <ConversionRate reportDate="2026-09-24" fromCurrency="CHF" toCurrency="USD" rate="1.136" />
+        <ConversionRate reportDate="2026-12-31" fromCurrency="CHF" toCurrency="USD" rate="1.25" />
+        <ConversionRate reportDate="2026-12-31" fromCurrency="EUR" toCurrency="USD" rate="1.16" />
+      </ConversionRates>
+    </FlexStatement>
+    <FlexStatement accountId="U0000003" fromDate="2026-01-01" toDate="2026-12-31" period="LastYear" whenGenerated="2027-01-04;10:00:00">
+      <OpenPositions>
+        <OpenPosition accountId="U0000003" currency="CHF" fxRateToBase="1.25" assetCategory="BOND" symbol="DUPCAF 1.5 06/30/30" description="DUPONT CAFE SA 1.5% 30.06.2030" conid="300001" isin="CHTXPRS00042" issuerCountryCode="CH" multiplier="0.01" reportDate="2026-12-31" position="3000" markPrice="101.2" positionValue="3036" side="Long" levelOfDetail="LOT" />
+        <OpenPosition accountId="U0000003" currency="CHF" fxRateToBase="1.25" assetCategory="BOND" symbol="DUPCAF 1.5 06/30/30" description="DUPONT CAFE SA 1.5% 30.06.2030" conid="300001" isin="CHTXPRS00042" issuerCountryCode="CH" multiplier="0.01" reportDate="2026-12-31" position="2000" markPrice="101.2" positionValue="2024" side="Long" levelOfDetail="LOT" />
+      </OpenPositions>
+      <CashTransactions>
+        <CashTransaction accountId="U0000003" currency="CHF" fxRateToBase="1.25" assetCategory="BOND" symbol="DUPCAF 1.5 06/30/30" description="DUPCAF 1.5 06/30/30 (CHTXPRS00042) BOND COUPON PAYMENT" conid="300001" isin="CHTXPRS00042" issuerCountryCode="CH" dateTime="2026-06-30;20:20:00" settleDate="2026-06-30" amount="75" type="Bond Interest Received" levelOfDetail="DETAIL" reportDate="2026-06-30" />
+        <CashTransaction accountId="U0000003" currency="CHF" fxRateToBase="1.25" assetCategory="BOND" symbol="DUPCAF 1.5 06/30/30" description="DUPCAF 1.5 06/30/30 (CHTXPRS00042) - CH TAX" conid="300001" isin="CHTXPRS00042" issuerCountryCode="CH" dateTime="2026-06-30;20:20:00" settleDate="2026-06-30" amount="-26.25" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="2026-06-30" />
+        <CashTransaction accountId="U0000003" currency="CHF" fxRateToBase="1.25" assetCategory="BOND" symbol="DUPCAF 1.5 06/30/30" description="DUPCAF 1.5 06/30/30 (CHTXPRS00042) ACCRUED INTEREST" conid="300001" isin="CHTXPRS00042" issuerCountryCode="CH" dateTime="2026-02-02;20:20:00" settleDate="2026-02-02" amount="-6.15" type="Bond Interest Paid" levelOfDetail="DETAIL" reportDate="2026-02-02" />
+      </CashTransactions>
+      <ConversionRates>
+        <ConversionRate reportDate="2026-12-31" fromCurrency="CHF" toCurrency="USD" rate="1.25" />
+      </ConversionRates>
+    </FlexStatement>
+  </FlexStatements>
+</FlexQueryResponse>

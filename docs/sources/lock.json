@@ -1,0 +1,2442 @@
+{
+  "ge-2025-communal-centimes-pdf": {
+    "url": "https://www.ge.ch/document/7698/telecharger",
+    "final_url": "https://www.ge.ch/document/7698/telecharger",
+    "file": "ge/files/ge-2025-communal-centimes-pdf.pdf",
+    "bytes": 30090,
+    "sha256": "38f8050aaff9366abe0652f56a8af6005c2e7486c5cd46271dc2e1206ef919a3",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:25.936Z",
+    "status": "ok"
+  },
+  "ge-na-efiling-homologation": {
+    "url": "https://www.getax.ch/support/homologation",
+    "final_url": "https://www.getax.ch/support/homologation",
+    "file": "ge/files/ge-na-efiling-homologation.html",
+    "bytes": 23223,
+    "sha256": "b4d9c9b0e53f2706b535060dcb6c48150285d1bee7e46367bd606eb8ca09a8ea",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:26.191Z",
+    "status": "ok"
+  },
+  "ge-na-efiling-rdioi-d3-17-03": {
+    "url": "https://www.getax.ch/support/sites/default/files/D_3_17.03_-_Rglt_relatif_aux_declarations_impot.pdf.pdf",
+    "final_url": "https://www.getax.ch/support/sites/default/files/D_3_17.03_-_Rglt_relatif_aux_declarations_impot.pdf.pdf",
+    "file": "ge/files/ge-na-efiling-rdioi-d3-17-03.pdf",
+    "bytes": 459053,
+    "sha256": "3281cc36f7dc009151adff6b9c3bda2f4e87476f46489aaa8b096e4794b77986",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:26.298Z",
+    "status": "ok"
+  },
+  "ge-na-efiling-espace-fiscal": {
+    "url": "https://www.ge.ch/espace-fiscal-e-demarches/gerer-mes-declarations-impot",
+    "final_url": "https://www.ge.ch/espace-fiscal-e-demarches/gerer-mes-declarations-impot",
+    "file": "ge/files/ge-na-efiling-espace-fiscal.html",
+    "bytes": 124233,
+    "sha256": "5a83860d3fd7949eb1061a72830eb8f541fc82e9581a8d7dde58a07cc9964a88",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:26.304Z",
+    "status": "ok"
+  },
+  "ge-na-efiling-rpfisc-29a": {
+    "url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_17p07.htm",
+    "final_url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_17p07.htm",
+    "file": "ge/files/ge-na-efiling-rpfisc-29a.html",
+    "bytes": 24391,
+    "sha256": "6f4cf4624c5781780dd5d107972df6f833b9edb219fc67c6d753c5fa72b56616",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-13T11:50:26.442Z",
+    "status": "ok"
+  },
+  "ge-2025-declaration-en-ligne": {
+    "url": "https://www.ge.ch/getax/declaration-ligne-particuliers",
+    "final_url": "https://www.ge.ch/getax/declaration-ligne-particuliers",
+    "file": "ge/files/ge-2025-declaration-en-ligne.html",
+    "bytes": 115523,
+    "sha256": "df6767f64baa1b3c176a8dd1ceffbb043bdf3a1d9252c6df5852cecd9fcd44ad",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:26.469Z",
+    "status": "ok"
+  },
+  "ge-na-efiling-retour-internet": {
+    "url": "https://www.ge.ch/getax/retour-declarations-internet",
+    "final_url": "https://www.ge.ch/getax/retour-declarations-internet",
+    "file": "ge/files/ge-na-efiling-retour-internet.html",
+    "bytes": 116190,
+    "sha256": "276f192c2ba649c67db623242dc629078b9aef62f7d26c23fcfea15972346c0b",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:26.705Z",
+    "status": "ok"
+  },
+  "ge-2025-deductions-guide-chapter": {
+    "url": "https://www.ge.ch/document/41995/annexe/file/573038",
+    "final_url": "https://www.ge.ch/document/41995/annexe/file/573038",
+    "file": "ge/files/ge-2025-deductions-guide-chapter.pdf",
+    "bytes": 4018840,
+    "sha256": "269d1066a85eb6d8adfd015a8e7304335e9f183a198fef3c56b0504a8ed8ebda",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:26.706Z",
+    "status": "ok"
+  },
+  "ge-na-law-lipp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_08.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_08.htm",
+    "file": "ge/files/ge-na-law-lipp.html",
+    "bytes": 277913,
+    "sha256": "e81cabb8f249c3fc56f03b6b6fe5b5ec7690b855b406f077feeed8a3455808a0",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-13T11:50:26.783Z",
+    "status": "ok"
+  },
+  "ge-na-law-lpfisc": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_17.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_17.htm",
+    "file": "ge/files/ge-na-law-lpfisc.html",
+    "bytes": 173369,
+    "sha256": "41f925fbf1f3e9a77919800067033fc029b08a246b8c88540de2c73606343e1d",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-13T11:50:26.812Z",
+    "status": "ok"
+  },
+  "ge-2025-getax-software": {
+    "url": "https://www.ge.ch/getax/telecharger-installer-getax-particuliers",
+    "final_url": "https://www.ge.ch/getax/telecharger-installer-getax-particuliers",
+    "file": "ge/files/ge-2025-getax-software.html",
+    "bytes": 124850,
+    "sha256": "76d4106a8efe95e089258b82f1ed4beb4fa10f540f64be799d6905f09c10b5ee",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:26.871Z",
+    "status": "ok"
+  },
+  "ge-na-other-demander-delai": {
+    "url": "https://www.ge.ch/remplir-ma-declaration-impot-tant-que-particulier/demander-delai-ma-declaration-impot",
+    "final_url": "https://www.ge.ch/remplir-ma-declaration-impot-tant-que-particulier/demander-delai-ma-declaration-impot",
+    "file": "ge/files/ge-na-other-demander-delai.html",
+    "bytes": 118640,
+    "sha256": "ec749ca2598737473c4dba41bc7b99a3c85947c3127191946486bddcbcfc345e",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:27.183Z",
+    "status": "ok"
+  },
+  "ge-2025-dris-tou-page": {
+    "url": "https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure",
+    "final_url": "https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure",
+    "file": "ge/files/ge-2025-dris-tou-page.html",
+    "bytes": 122700,
+    "sha256": "33ea4b0acc225735cbd45dd2a556ddcf6c5e3a5c5b96f077285e684743eb3e9b",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:27.229Z",
+    "status": "ok"
+  },
+  "ge-2025-icc-tariff-pdf": {
+    "url": "https://www.ge.ch/document/42267/telecharger",
+    "final_url": "https://www.ge.ch/document/42267/telecharger",
+    "file": "ge/files/ge-2025-icc-tariff-pdf.pdf",
+    "bytes": 118728,
+    "sha256": "972fcd97026f56a12135e95e4af3150cc0e7a75fc848f36ed7951562944c0235",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:27.290Z",
+    "status": "ok"
+  },
+  "ge-2026-communal-centimes-arca": {
+    "url": "https://silgeneve.ch/legis/data/rsg_D3_05p30.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_D3_05p30.htm",
+    "file": "ge/files/ge-2026-communal-centimes-arca.html",
+    "bytes": 24404,
+    "sha256": "cabbbdcd459016bfc544b9b04f4972b8a17a97a38fcdb1c609ca65bfcee094e6",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-13T11:50:27.305Z",
+    "status": "ok"
+  },
+  "ge-2025-guide-fiscal-page": {
+    "url": "https://www.ge.ch/document/guide-fiscal-2025-particuliers",
+    "final_url": "https://www.ge.ch/document/guide-fiscal-2025-particuliers",
+    "file": "ge/files/ge-2025-guide-fiscal-page.html",
+    "bytes": 95254,
+    "sha256": "35213a9fa17115f06be5aa87038e8f8c5ffacea4b00e0a736ed0ffee06571592",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:27.349Z",
+    "status": "ok"
+  },
+  "ge-2026-source-tariff-pdf": {
+    "url": "https://www.ge.ch/document/41802/telecharger",
+    "final_url": "https://www.ge.ch/document/41802/telecharger",
+    "file": "ge/files/ge-2026-source-tariff-pdf.pdf",
+    "bytes": 696015,
+    "sha256": "6bec412ae1eeb670a5724282207efd71ad80752cf3ca3abfe20bd410fd9e02d3",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:27.470Z",
+    "status": "ok"
+  },
+  "ge-2025-taux-donnees-fiscales": {
+    "url": "https://www.ge.ch/taux-donnees-fiscales",
+    "final_url": "https://www.ge.ch/taux-donnees-fiscales",
+    "file": "ge/files/ge-2025-taux-donnees-fiscales.html",
+    "bytes": 125109,
+    "sha256": "5461fbe2eabff7830f164d111b909bd1ba551255e5c70dfdd09c9dce5c6243f2",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:27.499Z",
+    "status": "ok"
+  },
+  "ge-na-guide-remplir-declaration": {
+    "url": "https://www.ge.ch/remplir-ma-declaration-impot-tant-que-particulier/comment-remplir-ma-declaration-impot",
+    "final_url": "https://www.ge.ch/remplir-ma-declaration-impot-tant-que-particulier/comment-remplir-ma-declaration-impot",
+    "file": "ge/files/ge-na-guide-remplir-declaration.html",
+    "bytes": 121828,
+    "sha256": "deda025bc0becc287838fee90f701e3766b890f9b8a4865238436ab85ba876e0",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:27.711Z",
+    "status": "ok"
+  },
+  "ge-2025-guide-declaration-pp": {
+    "url": "https://www.ge.ch/document/41995/annexe/file/573038",
+    "final_url": "https://www.ge.ch/document/41995/annexe/file/573038",
+    "file": "ge/files/ge-2025-guide-declaration-pp.pdf",
+    "bytes": 4018840,
+    "sha256": "269d1066a85eb6d8adfd015a8e7304335e9f183a198fef3c56b0504a8ed8ebda",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:27.721Z",
+    "status": "ok"
+  },
+  "vd-na-communal-rates": {
+    "url": "https://www.vd.ch/etat-droit-finances/statistique/statistiques-par-domaine/18-finances-publiques-et-administration/finances-communales",
+    "final_url": "https://www.vd.ch/etat-droit-finances/statistique/statistiques-par-domaine/18-finances-publiques-et-administration/finances-communales",
+    "file": "vd/files/vd-na-communal-rates.html",
+    "bytes": 37360,
+    "sha256": "6ad8503d7c83d6918d733e9f3b8a4a1d37aa830ab6199e828bd30b7f77d15d9c",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:27.860Z",
+    "status": "ok"
+  },
+  "ge-na-other-e-releve-fiscal": {
+    "url": "https://www.ge.ch/node/13593",
+    "final_url": "https://www.ge.ch/actualite/declarez-vos-titres-e-releve-fiscal-22-01-2019",
+    "file": "ge/files/ge-na-other-e-releve-fiscal.html",
+    "bytes": 96675,
+    "sha256": "40ffd8d9424a65d6f96c2e5f1d594048fdff9d32d6e27958561c8c53ee8a201d",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:27.871Z",
+    "status": "ok"
+  },
+  "vd-2025-vaudtax-general": {
+    "url": "https://www.vd.ch/etat-droit-finances/impots/impots-pour-les-individus/remplir-ma-declaration-dimpot",
+    "final_url": "https://www.vd.ch/etat-droit-finances/impots/impots-pour-les-individus/remplir-ma-declaration-dimpot",
+    "file": "vd/files/vd-2025-vaudtax-general.html",
+    "bytes": 84379,
+    "sha256": "975e326a15283bfc0e784a57096b2fc4e340bb2f5a0e525c53377203d7583b0c",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:27.991Z",
+    "status": "ok"
+  },
+  "ge-2025-source-declaration-form": {
+    "url": "https://www.ge.ch/document/37885/annexe/file/371410",
+    "final_url": "https://www.ge.ch/document/37885/annexe/file/371410",
+    "file": "ge/files/ge-2025-source-declaration-form.pdf",
+    "bytes": 253753,
+    "sha256": "c86abf0999a3c2ed365900abf181c5a65bbc541366bdd36196615796bf3f152b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:28.018Z",
+    "status": "ok"
+  },
+  "vd-2025-vaudtax-prestation": {
+    "url": "https://www.vd.ch/prestation/remplir-ma-declaration-dimpot-2025-avec-la-prestation-vaudtax-pour-les-individus-personnes-physiques",
+    "final_url": "https://www.vd.ch/prestation/remplir-ma-declaration-dimpot-2025-avec-la-prestation-vaudtax-pour-les-individus-personnes-physiques",
+    "file": "vd/files/vd-2025-vaudtax-prestation.html",
+    "bytes": 31297,
+    "sha256": "6cba405fcc1b99eea7a9d3e5b222e087afc91e228b42d34e27357a347a057ec3",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:28.035Z",
+    "status": "ok"
+  },
+  "vd-2025-deductions": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Tableau_des_d%C3%A9ductions_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Tableau_des_d%C3%A9ductions_2025.pdf",
+    "file": "vd/files/vd-2025-deductions.pdf",
+    "bytes": 221395,
+    "sha256": "2434e4dd8782cc7e8f69b1d96390d6b96405d7ad5cf4e3db79a4a8aa84fe7f9b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:28.059Z",
+    "status": "ok"
+  },
+  "vd-2025-annexes-04-05": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0240_21024_22025_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0240_21024_22025_2025.pdf",
+    "file": "vd/files/vd-2025-annexes-04-05.pdf",
+    "bytes": 4646611,
+    "sha256": "41107c1a2728f6fe3e908e37a31437cc0f6673358c4d17a747a543ef4698dc36",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:29.533Z",
+    "status": "ok"
+  },
+  "vd-2025-annexe-01": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0220_21014_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0220_21014_2025.pdf",
+    "file": "vd/files/vd-2025-annexe-01.pdf",
+    "bytes": 5272265,
+    "sha256": "3c6b1b99501e6688cc2e97808fe836e214cd9e0b97832e2d76b0e2f016d190d9",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:29.620Z",
+    "status": "ok"
+  },
+  "vd-2025-form-21010": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0210_21010_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0210_21010_2025.pdf",
+    "file": "vd/files/vd-2025-form-21010.pdf",
+    "bytes": 3872062,
+    "sha256": "336ca46c291252a835e80bbeb73285bc8d5892088aa7f0e21c8762c56f07ddd3",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:30.640Z",
+    "status": "ok"
+  },
+  "vd-2025-delais-directive": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Directive_D%C3%A9lai_d%C3%A9p%C3%B4t_DI_PP_Demandes_unitaires.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Directive_D%C3%A9lai_d%C3%A9p%C3%B4t_DI_PP_Demandes_unitaires.pdf",
+    "file": "vd/files/vd-2025-delais-directive.pdf",
+    "bytes": 167543,
+    "sha256": "8ddad987d37cbf4716c6fbe5aabc8672d619000c61117aaf19f8e542eecf721a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:30.723Z",
+    "status": "ok"
+  },
+  "vd-2025-guide": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf",
+    "file": "vd/files/vd-2025-guide.pdf",
+    "bytes": 4121012,
+    "sha256": "afffb2c233fe77aaaaff026566ed4b37de0f778ebb6f61259f167f0033373f64",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:30.738Z",
+    "status": "ok"
+  },
+  "vd-2026-source-tax": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21034-10_Employeurs_2026.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21034-10_Employeurs_2026.pdf",
+    "file": "vd/files/vd-2026-source-tax.pdf",
+    "bytes": 1080262,
+    "sha256": "6338848f3b4298bdece30093594aa7f73b8f757e30727a6f38904d48b56c4367",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:31.039Z",
+    "status": "ok"
+  },
+  "vd-na-tou-request": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21049_TOU_Formulaire_WEB.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21049_TOU_Formulaire_WEB.pdf",
+    "file": "vd/files/vd-na-tou-request.pdf",
+    "bytes": 2422871,
+    "sha256": "4d679d49b7954ea893216f6c89279d325fdd003d8395932785b3c94f2c78f2b1",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:31.301Z",
+    "status": "ok"
+  },
+  "vd-2025-tariff-fortune": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/bar%C3%A8me_fortune_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/bar%C3%A8me_fortune_2025.pdf",
+    "file": "vd/files/vd-2025-tariff-fortune.pdf",
+    "bytes": 230268,
+    "sha256": "d33ca0b50e07d182c8be198d9fdb38e7939e3d7c6fc2ec0b3434ded5ab695bdb",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:31.372Z",
+    "status": "ok"
+  },
+  "vd-2025-coefficient-cantonal": {
+    "url": "https://www.vd.ch/etat-droit-finances/impots/formulaires-directives-et-baremes/coefficient-cantonal",
+    "final_url": "https://www.vd.ch/etat-droit-finances/impots/formulaires-directives-et-baremes",
+    "file": "vd/files/vd-2025-coefficient-cantonal.html",
+    "bytes": 107987,
+    "sha256": "3d5bbd948605637a47060b332c1956feaf7f5784ba0a5000093e5672f0d8a502",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:31.472Z",
+    "status": "ok"
+  },
+  "vd-2025-tariff-revenu": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/bar%C3%A8me_revenu_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/bar%C3%A8me_revenu_2025.pdf",
+    "file": "vd/files/vd-2025-tariff-revenu.pdf",
+    "bytes": 258041,
+    "sha256": "ff776f2970ee1bad992a26db5c07aa328a79cb40744f18c2788709d32f98d635",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:31.477Z",
+    "status": "ok"
+  },
+  "vd-na-software-notice": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Notice_relative_etablissement_declaration_impot_PC.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Notice_relative_etablissement_declaration_impot_PC.pdf",
+    "file": "vd/files/vd-na-software-notice.pdf",
+    "bytes": 23541,
+    "sha256": "e8609fef546373f2bb07b8fccc9549d818430eda335b9ced470c483695bdb0f6",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:31.518Z",
+    "status": "ok"
+  },
+  "vd-na-arretes-imposition": {
+    "url": "https://publication.vd.ch/publications/dgaic/aide-memoire/finances-communales/arretes-dimposition",
+    "final_url": "https://publication.vd.ch/publications/dgaic/aide-memoire/finances-communales/arretes-dimposition",
+    "file": "vd/files/vd-na-arretes-imposition.html",
+    "bytes": 58651,
+    "sha256": "df2d457a6bbe0d9bd1ed11e71988176f2286beaa7c568c46f41768ea372717e9",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:31.880Z",
+    "status": "ok"
+  },
+  "vd-2025-frontaliers": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Directives_concernant_l_imposition_des_travailleurs_frontaliers.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Directives_concernant_l_imposition_des_travailleurs_frontaliers.pdf",
+    "file": "vd/files/vd-2025-frontaliers.pdf",
+    "bytes": 148819,
+    "sha256": "6e75c8dc5be9bc87947ead1c96d4de0f558de7a4a9150a861add6ecdbdb13215",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:31.993Z",
+    "status": "ok"
+  },
+  "vd-2025-annexes-02-03": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0330_21018_21019_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0330_21018_21019_2025.pdf",
+    "file": "vd/files/vd-2025-annexes-02-03.pdf",
+    "bytes": 13945240,
+    "sha256": "afdab70948c305a9a9b055e250f5ae7d2ea2ed0906cd7f1a32846b3751a27f58",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:32.163Z",
+    "status": "ok"
+  },
+  "vd-2026-tariff-fortune": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Bar%C3%A8mes_Fortune_2026.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Bar%C3%A8mes_Fortune_2026.pdf",
+    "file": "vd/files/vd-2026-tariff-fortune.pdf",
+    "bytes": 230059,
+    "sha256": "1e778611fdd47f2a2fe2241a69cea5cc788622c94232302e037724f172bc3fa4",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:32.263Z",
+    "status": "ok"
+  },
+  "vd-2026-tariff-revenu": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Bar%C3%A8mes_Revenu_2026.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Bar%C3%A8mes_Revenu_2026.pdf",
+    "file": "vd/files/vd-2026-tariff-revenu.pdf",
+    "bytes": 257586,
+    "sha256": "34cb7f9f38ff8d8ea8e13b966986720a7a55b72947ad31224ce625209fcf3171",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:32.378Z",
+    "status": "ok"
+  },
+  "vd-2025-source-tax": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21034-10_Employeurs_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21034-10_Employeurs_2025.pdf",
+    "file": "vd/files/vd-2025-source-tax.pdf",
+    "bytes": 1392045,
+    "sha256": "2937626a9363a83c866568b960ed9799f5f65e4598930379364d91ceadc55f40",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:32.421Z",
+    "status": "ok"
+  },
+  "vs-2026-deductions-forfaitaires": {
+    "url": "https://www.vs.ch/documents/d/scc/deductions-forfaitaires-2026",
+    "final_url": "https://www.vs.ch/documents/d/scc/deductions-forfaitaires-2026",
+    "file": "vs/files/vs-2026-deductions-forfaitaires.pdf",
+    "bytes": 162907,
+    "sha256": "b9d9515fceba6e2bfaeda9b94a45620302633b32bbec5b57ba070c299599926b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:32.610Z",
+    "status": "ok"
+  },
+  "vs-na-communal-rates-page": {
+    "url": "https://www.vs.ch/fr/web/scc/baremes-canton-communes",
+    "final_url": "https://www.vs.ch/fr/web/scc/baremes-canton-communes",
+    "file": "vs/files/vs-na-communal-rates-page.html",
+    "bytes": 104614,
+    "sha256": "1e1848b665659f5dedc5810828cddbb12ece539094f65f8864cd6f676ab3367b",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:32.692Z",
+    "status": "ok"
+  },
+  "vs-2025-efiling-vstax": {
+    "url": "https://www.vs.ch/fr/web/ext-cant-gouv-scc-vstax",
+    "final_url": "https://www.vs.ch/fr/web/ext-cant-gouv-scc-vstax",
+    "file": "vs/files/vs-2025-efiling-vstax.html",
+    "bytes": 90901,
+    "sha256": "cc5aaabb58e71d421c1947d5a5fda031bee2ac9c36b032cd41ffdc8a2a7f09cd",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:32.737Z",
+    "status": "ok"
+  },
+  "vd-2025-annexe-07": {
+    "url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0320_21028_21028_2025.pdf",
+    "final_url": "https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/0320_21028_21028_2025.pdf",
+    "file": "vd/files/vd-2025-annexe-07.pdf",
+    "bytes": 5033302,
+    "sha256": "0af0f5209d0f575d79d98533c9cbeab0c052aabe9fb798e0513cddc2e280b6a0",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:32.801Z",
+    "status": "ok"
+  },
+  "vs-na-efiling-faq": {
+    "url": "https://www.vs.ch/fr/web/ext-cant-gouv-scc-vstax/faq",
+    "final_url": "https://www.vs.ch/fr/web/ext-cant-gouv-scc-vstax/faq",
+    "file": "vs/files/vs-na-efiling-faq.html",
+    "bytes": 278444,
+    "sha256": "efb1b4553ab26e8343b198f6fa8debe85b0a478466b4989fd8098f679a1dc9e3",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:32.866Z",
+    "status": "ok"
+  },
+  "vs-2025-form-personnes-physiques": {
+    "url": "https://www.vs.ch/documents/d/scc/declaration_2025_fr",
+    "final_url": "https://www.vs.ch/documents/d/scc/declaration_2025_fr",
+    "file": "vs/files/vs-2025-form-personnes-physiques.pdf",
+    "bytes": 589937,
+    "sha256": "ec3159b2545bf79b8a26d7b6068e4af7f68d07bd845fd834019f07bbdd3c86ff",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:32.899Z",
+    "status": "ok"
+  },
+  "vs-2026-source-tax-baremes-page": {
+    "url": "https://www.vs.ch/web/scc/baremes-source",
+    "final_url": "https://www.vs.ch/web/scc/baremes-source",
+    "file": "vs/files/vs-2026-source-tax-baremes-page.html",
+    "bytes": 130932,
+    "sha256": "e2dd4bd4bf1c2f90e128d63461765e097f151a6331126a790035b5ce6187a2d6",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:32.944Z",
+    "status": "ok"
+  },
+  "vs-na-law-loi-fiscale": {
+    "url": "https://lex.vs.ch/api/fr/versions/354/pdf_file",
+    "final_url": "https://lex.vs.ch/api/fr/versions/354/pdf_file",
+    "file": "vs/files/vs-na-law-loi-fiscale.pdf",
+    "bytes": 610472,
+    "sha256": "72241b10eaaf82e47508cb533979376553874fb68b3dfc199d2a2f50ef5aed09",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:33.089Z",
+    "status": "ok"
+  },
+  "vs-2026-tariff-canton-communes-page": {
+    "url": "https://www.vs.ch/fr/web/scc/baremes-canton-communes",
+    "final_url": "https://www.vs.ch/fr/web/scc/baremes-canton-communes",
+    "file": "vs/files/vs-2026-tariff-canton-communes-page.html",
+    "bytes": 104612,
+    "sha256": "aad7e6e93ba55185984a132af8423f6eb6c4df0ce6b703b0dd3a3c9fe04f7dcc",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:33.154Z",
+    "status": "ok"
+  },
+  "vs-2025-tariff-canton-communes-page": {
+    "url": "https://www.vs.ch/fr/web/scc/baremes-canton-communes",
+    "final_url": "https://www.vs.ch/fr/web/scc/baremes-canton-communes",
+    "file": "vs/files/vs-2025-tariff-canton-communes-page.html",
+    "bytes": 104614,
+    "sha256": "fc3dc5f73df0b692e95114dfa8a41c366a90885b82fc917a4f986426a0c1a896",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:33.243Z",
+    "status": "ok"
+  },
+  "vs-na-tou-request": {
+    "url": "https://www.vs.ch/web/scc/tou-2024",
+    "final_url": "https://www.vs.ch/web/scc/tou-2025",
+    "file": "vs/files/vs-na-tou-request.html",
+    "bytes": 93605,
+    "sha256": "ac77d6752e3e94949965e1900162e0a3724a9a65defdb24f655752918999cdd5",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:33.269Z",
+    "status": "ok"
+  },
+  "vs-na-law-lf-amendment-2024": {
+    "url": "https://lex.vs.ch/frontend/materials/1124?locale=fr",
+    "status": "failed",
+    "error": "HTTP 404",
+    "tried_at": "2026-10-13T11:53:20.899Z"
+  },
+  "vs-2025-guide-simplifie": {
+    "url": "https://www.vs.ch/documents/d/scc/guide_simplifie_2025_f",
+    "final_url": "https://www.vs.ch/documents/d/scc/guide_simplifie_2025_f",
+    "file": "vs/files/vs-2025-guide-simplifie.pdf",
+    "bytes": 320609,
+    "sha256": "72fbae5b0ff255e927dcac394ee6488c5d7a39b85767629007079ecd02f804a7",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:33.330Z",
+    "status": "ok"
+  },
+  "vs-2025-guide-declaration": {
+    "url": "https://www.vs.ch/documents/d/scc/guide-2025_f_final",
+    "final_url": "https://www.vs.ch/documents/d/scc/guide-2025_f_final",
+    "file": "vs/files/vs-2025-guide-declaration.pdf",
+    "bytes": 2773144,
+    "sha256": "3179e5aa6fea5434f96f8a55da98094fb7ada7a526cbfbbaa7873cc28b65f3cb",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:33.423Z",
+    "status": "ok"
+  },
+  "fr-na-coefficients-statistiques": {
+    "url": "https://www.fr.ch/diaf/scom/statistiques-financieres-des-collectivites-perequation",
+    "final_url": "https://www.fr.ch/diaf/scom/statistiques-financieres-des-collectivites-perequation",
+    "file": "fr/files/fr-na-coefficients-statistiques.html",
+    "bytes": 88694,
+    "sha256": "281029a065614d7434ebd586efa352fc6b44e5241a601fe17d867f968b0ab9b0",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:33.441Z",
+    "status": "ok"
+  },
+  "fr-2025-fritax-telechargement": {
+    "url": "https://www.fr.ch/impots/personnes-physiques/fritax/telecharger-fritax",
+    "final_url": "https://www.fr.ch/impots/personnes-physiques/fritax/telecharger-fritax",
+    "file": "fr/files/fr-2025-fritax-telechargement.html",
+    "bytes": 92861,
+    "sha256": "534003b5d76076c0b495d4e66ae5c0c480e2523993a19c83fb30a9daa6572a07",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:33.463Z",
+    "status": "ok"
+  },
+  "fr-2025-tou-demande-non-resident": {
+    "url": "https://www.fr.ch/document/542591",
+    "final_url": "https://www.fr.ch/sites/default/files/2025-11/demande-de-taxation-ordinaire-ulterieure-pour-non-resident-suisse-2025.pdf?v=1762504865",
+    "file": "fr/files/fr-2025-tou-demande-non-resident.pdf",
+    "bytes": 1032901,
+    "sha256": "c86570bb50d5ec9d387719271edd89a7192b421c063f68f7eb8e44ede7963e0c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:33.921Z",
+    "status": "ok"
+  },
+  "fr-2025-fritax-accueil": {
+    "url": "https://www.fr.ch/impots/personnes-physiques/fritax",
+    "final_url": "https://www.fr.ch/impots/personnes-physiques/fritax",
+    "file": "fr/files/fr-2025-fritax-accueil.html",
+    "bytes": 88712,
+    "sha256": "d502fca15440a1af5a3ff291f97c8b10b72116957693fdb8fc5d5b5cf04c22de",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:34.125Z",
+    "status": "ok"
+  },
+  "fr-2025-guide-instructions-generales": {
+    "url": "https://www.fr.ch/document/57721",
+    "final_url": "https://www.fr.ch/sites/default/files/2026-05/instructions-generales-concernant-la-declaration-d-impot_0.pdf?v=1778497822",
+    "file": "fr/files/fr-2025-guide-instructions-generales.pdf",
+    "bytes": 324278,
+    "sha256": "d81993ef3a5b53ac0fe430d4c6545b303638c46f2e9c693fbb28128aeda8ae91",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:34.157Z",
+    "status": "ok"
+  },
+  "fr-na-licd": {
+    "url": "https://bdlf.fr.ch/api/fr/versions/4221/pdf_file",
+    "final_url": "https://bdlf.fr.ch/api/fr/versions/4221/pdf_file",
+    "file": "fr/files/fr-na-licd.pdf",
+    "bytes": 1009717,
+    "sha256": "be148615e07b416854797090e68d1b5cb5cd49da451fb2f0657e18d6d34eadb1",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:34.390Z",
+    "status": "ok"
+  },
+  "fr-2026-bareme-impot-source-a": {
+    "url": "https://www.fr.ch/document/574966",
+    "final_url": "https://www.fr.ch/sites/default/files/2025-10/bareme-a-2026.pdf?v=1761715609",
+    "file": "fr/files/fr-2026-bareme-impot-source-a.pdf",
+    "bytes": 49804,
+    "sha256": "43bd44d5a486bc6051f656cdf537dfd8a9a8493d7d9a4f40e3a4c40fc627e967",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:34.629Z",
+    "status": "ok"
+  },
+  "fr-2026-bareme-impot-source-page": {
+    "url": "https://www.fr.ch/impots/impot-a-la-source/baremes-et-calculs-de-limpot-a-la-source",
+    "final_url": "https://www.fr.ch/impots/impot-a-la-source/baremes-et-calculs-de-limpot-a-la-source",
+    "file": "fr/files/fr-2026-bareme-impot-source-page.html",
+    "bytes": 103182,
+    "sha256": "ab11defc1f8ed8f69cc0214c96cbaebe773bd1f84f3089bbdab9ac23129035d8",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:34.666Z",
+    "status": "ok"
+  },
+  "fr-2026-bases-calcul-cantonales": {
+    "url": "https://www.fr.ch/document/574991",
+    "final_url": "https://www.fr.ch/sites/default/files/2025-10/Bases%20de%20calcul%20pour%20les%20bar%C3%A8mes%20cantonaux%20de%20l%27imp%C3%B4t%20%C3%A0%20la%20source%202026.pdf?v=1761716299",
+    "file": "fr/files/fr-2026-bases-calcul-cantonales.pdf",
+    "bytes": 145963,
+    "sha256": "791403050b663241909f1dc26d07c88d3d4501f254783465531812dc37e3c4a6",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:34.864Z",
+    "status": "ok"
+  },
+  "fr-na-delais-depot": {
+    "url": "https://www.fr.ch/impots/personnes-physiques/obtenir-un-delai-pour-le-depot-de-sa-declaration",
+    "final_url": "https://www.fr.ch/impots/personnes-physiques/obtenir-un-delai-pour-le-depot-de-sa-declaration",
+    "file": "fr/files/fr-na-delais-depot.html",
+    "bytes": 87951,
+    "sha256": "7dcc6d6d27a03f46afaa7f45eb79a383dbfafb897d1812f5e476f4ba08041097",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:34.940Z",
+    "status": "ok"
+  },
+  "fr-na-ordonnance-impot-source-631-32": {
+    "url": "https://bdlf.fr.ch/api/fr/versions/7002/pdf_file",
+    "final_url": "https://bdlf.fr.ch/api/fr/versions/7002/pdf_file",
+    "file": "fr/files/fr-na-ordonnance-impot-source-631-32.pdf",
+    "bytes": 555863,
+    "sha256": "56e16f1614ac9d6d293fb6b486f247e33799548641a98c0af0cae398d65e821a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:35.033Z",
+    "status": "ok"
+  },
+  "fr-2024-pis-guide": {
+    "url": "https://www.fr.ch/document/431746",
+    "final_url": "https://www.fr.ch/sites/default/files/2023-12/2023.12.14%20-%20f%20Infos_pour_PIS_2024_0.pdf?v=1702633955",
+    "file": "fr/files/fr-2024-pis-guide.pdf",
+    "bytes": 295186,
+    "sha256": "865aa3e7960597503ce0129d3c05b3ac0151078ecae732ea2f9d91e65e755f33",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:35.152Z",
+    "status": "ok"
+  },
+  "fr-2025-bareme-fortune": {
+    "url": "https://www.fr.ch/document/434631",
+    "final_url": "https://www.fr.ch/sites/default/files/2026-01/bareme-fortune-des-2021_0.pdf?v=1768830911",
+    "file": "fr/files/fr-2025-bareme-fortune.pdf",
+    "bytes": 121125,
+    "sha256": "ddf309e9a8c174a7d26c4675dd341d14ea63dd5d6f0b91ee4d7d5d5c8003b79a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:35.260Z",
+    "status": "ok"
+  },
+  "fr-na-coefficients-communaux-taux": {
+    "url": "https://www.fr.ch/finances-collectivites",
+    "final_url": "https://www.fr.ch/diaf/scom/statistiques-financieres-des-collectivites-perequation",
+    "file": "fr/files/fr-na-coefficients-communaux-taux.html",
+    "bytes": 88694,
+    "sha256": "281029a065614d7434ebd586efa352fc6b44e5241a601fe17d867f968b0ab9b0",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:35.316Z",
+    "status": "ok"
+  },
+  "fr-2025-bareme-revenu": {
+    "url": "https://www.fr.ch/document/491766",
+    "final_url": "https://www.fr.ch/sites/default/files/2026-01/bareme-revenu-des-2023_0.pdf?v=1768830681",
+    "file": "fr/files/fr-2025-bareme-revenu.pdf",
+    "bytes": 3598079,
+    "sha256": "4db237dd33e2bfd977ca726108c71e1dc9814efe1a794fe82444ec4bb85841f5",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:35.826Z",
+    "status": "ok"
+  },
+  "fr-na-coefficients-trouver": {
+    "url": "https://www.fr.ch/impots/personnes-physiques/coefficients-communaux-et-paroisses",
+    "final_url": "https://www.fr.ch/impots/personnes-physiques/coefficients-communaux-et-paroisses",
+    "file": "fr/files/fr-na-coefficients-trouver.html",
+    "bytes": 100806,
+    "sha256": "7e947a1743c6062e0c9c584e8022fdcc79f924fe78c5ed9f789e649636a0344d",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:35.859Z",
+    "status": "ok"
+  },
+  "fr-na-licd-projet-2027": {
+    "url": "https://www.fr.ch/document/588431",
+    "final_url": "https://www.fr.ch/sites/default/files/2026-03/projet-de-loi-licd-2027.pdf?v=1773222010",
+    "file": "fr/files/fr-na-licd-projet-2027.pdf",
+    "bytes": 144338,
+    "sha256": "95c24617a20b37ae1281b70342e7c8e0be89ddae4917ca6472514cfe9575ae84",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:36.134Z",
+    "status": "ok"
+  },
+  "fr-2025-fritax-faq": {
+    "url": "https://www.fr.ch/impots/personnes-physiques/fritax/fritax-faq",
+    "final_url": "https://www.fr.ch/impots/personnes-physiques/fritax/fritax-faq",
+    "file": "fr/files/fr-2025-fritax-faq.html",
+    "bytes": 98344,
+    "sha256": "0b9ca5fd58ad0dd6d654585cb449fc4c2356eb14f4ffc8a8009723714a4e715a",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:36.376Z",
+    "status": "ok"
+  },
+  "fr-na-fixation-impots-communaux": {
+    "url": "https://www.fr.ch/document/549436",
+    "final_url": "https://www.fr.ch/sites/default/files/2026-06/fixation-et-perception-des-impots-communaux.pdf?v=1780490506",
+    "file": "fr/files/fr-na-fixation-impots-communaux.pdf",
+    "bytes": 472579,
+    "sha256": "2a1bdc3a6b13c92613ebd473c0bea47504a016a7d555ea807452933e6c5cf4e2",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:36.479Z",
+    "status": "ok"
+  },
+  "fr-2025-fritax-actualite": {
+    "url": "https://www.fr.ch/dfin/scc/actualites/frchfritax-ladresse-pour-faire-sa-declaration-dimpot-en-ligne",
+    "final_url": "https://www.fr.ch/dfin/scc/actualites/frchfritax-ladresse-pour-faire-sa-declaration-dimpot-en-ligne",
+    "file": "fr/files/fr-2025-fritax-actualite.html",
+    "bytes": 84620,
+    "sha256": "c7a84aff080f41f1a9e586fa2d24ece4a69eaa287ae9035885d7c9b5c1030d63",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:36.485Z",
+    "status": "ok"
+  },
+  "fr-na-themes-particuliers": {
+    "url": "https://www.fr.ch/impots/personnes-physiques/impot-des-personnes-physiques-themes-particuliers",
+    "final_url": "https://www.fr.ch/impots/personnes-physiques/impot-des-personnes-physiques-themes-particuliers",
+    "file": "fr/files/fr-na-themes-particuliers.html",
+    "bytes": 90851,
+    "sha256": "86af8e3d817af99cac3f532695b51ec640aa141e3f33b9d9f8520f6210c92e99",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:36.502Z",
+    "status": "ok"
+  },
+  "fr-2024-instructions-employeurs-source": {
+    "url": "https://www.fr.ch/document/517411",
+    "final_url": "https://www.fr.ch/sites/default/files/2024-01/instructions--impot-a-la-source--des-01012024.pdf?v=1704795602",
+    "file": "fr/files/fr-2024-instructions-employeurs-source.pdf",
+    "bytes": 588334,
+    "sha256": "eec59762aafb7e13e6ca5cb6edcc116e5b9b2a2aae8ac2e4c5db143b45930104",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:36.771Z",
+    "status": "ok"
+  },
+  "ne-2025-coefficients-decree-fo50": {
+    "url": "https://www.ne.ch/legislation-jurisprudence/pubfo/ld/Documents/2025/5__D__D_Coefficients_Impots.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/migration/legislation-jurisprudence/pubfo/ld/Documents/2025/5__D__D_Coefficients_Impots.pdf",
+    "file": "ne/files/ne-2025-coefficients-decree-fo50.pdf",
+    "bytes": 121788,
+    "sha256": "7499454f84b736d75466c2df21ab65a6db6b899509efc4c74f12170eb85cf3c6",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:36.889Z",
+    "status": "ok"
+  },
+  "ne-na-coefficients-decree-rsn-631-00": {
+    "url": "https://rsn.ne.ch/DATA/program/books/rsne/pdf/631.00.pdf",
+    "final_url": "https://rsn.ne.ch/DATA/program/books/rsne/pdf/631.00.pdf",
+    "file": "ne/files/ne-na-coefficients-decree-rsn-631-00.pdf",
+    "bytes": 140155,
+    "sha256": "6bb83f2ade901d5a668efd7086694c3371f79ef3a00e8cefe18976e4cad55920",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:36.956Z",
+    "status": "ok"
+  },
+  "ne-na-efiling-clictax-page": {
+    "url": "https://www.ne.ch/themes/impots/clic-tax",
+    "final_url": "https://www.ne.ch/themes/impots/clic-tax",
+    "file": "ne/files/ne-na-efiling-clictax-page.html",
+    "bytes": 542758,
+    "sha256": "68e4db22e5f949c6bab1e52830571e9a433ef8f953ca2f2cdd179fc21b6f94ff",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:36.998Z",
+    "status": "ok"
+  },
+  "ne-na-efiling-guide-gu-clictax": {
+    "url": "https://www.ne.ch/sites/default/files/2025-09/SCCO_Guide_transmissionDI_GU_CT.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/2025-09/SCCO_Guide_transmissionDI_GU_CT.pdf",
+    "file": "ne/files/ne-na-efiling-guide-gu-clictax.pdf",
+    "bytes": 583373,
+    "sha256": "c2acbeca4a42b839f89581e2b6db06fd4a8d65cb6471170ca45a5b86915fd274",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.096Z",
+    "status": "ok"
+  },
+  "fr-na-personnes-physiques": {
+    "url": "https://www.fr.ch/impots/personnes-physiques",
+    "final_url": "https://www.fr.ch/impots/personnes-physiques",
+    "file": "fr/files/fr-na-personnes-physiques.html",
+    "bytes": 83103,
+    "sha256": "e6274b22666f3bb5ecbf0b4bbb153ea756377fa678397aa9dcab11637cd9d844",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:37.096Z",
+    "status": "ok"
+  },
+  "fr-na-impot-source": {
+    "url": "https://www.fr.ch/impots/impot-a-la-source",
+    "final_url": "https://www.fr.ch/impots/impot-a-la-source",
+    "file": "fr/files/fr-na-impot-source.html",
+    "bytes": 77998,
+    "sha256": "ede758e77561aff69969107421522e7dc039a6e99ee0eeffba03f2e7ad2bd802",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:37.186Z",
+    "status": "ok"
+  },
+  "ne-na-law-lcdir": {
+    "url": "https://rsn.ne.ch/DATA/program/books/rsne/pdf/6310.pdf",
+    "final_url": "https://rsn.ne.ch/DATA/program/books/rsne/pdf/6310.pdf",
+    "file": "ne/files/ne-na-law-lcdir.pdf",
+    "bytes": 1076345,
+    "sha256": "14d0bc1570ed25de38ea53b3931c13f2aaf92d8c5be5759687728f29b0c87a69",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.257Z",
+    "status": "ok"
+  },
+  "ne-na-source-tou-form": {
+    "url": "https://www.ne.ch/sites/default/files/2025-09/SCCO_DemandeTOU_IS.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/2025-09/SCCO_DemandeTOU_IS.pdf",
+    "file": "ne/files/ne-na-source-tou-form.pdf",
+    "bytes": 1320848,
+    "sha256": "9d4853b39c483043af0b4828f2606fe3834c880a3e1610771af097706e32aaae",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.442Z",
+    "status": "ok"
+  },
+  "ne-2025-tariff-fortune-pp": {
+    "url": "https://www.ne.ch/sites/default/files/2025-07/SCCO_bareme_fortune_PP_des2021.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/2025-07/SCCO_bareme_fortune_PP_des2021.pdf",
+    "file": "ne/files/ne-2025-tariff-fortune-pp.pdf",
+    "bytes": 342921,
+    "sha256": "2ebeef97681f7a7429e5224f089aa6fdeef996bf7712f80195a57793c6bd6237",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.509Z",
+    "status": "ok"
+  },
+  "ne-2025-tariff-revenu-pp": {
+    "url": "https://www.ne.ch/sites/default/files/2025-07/SCCO_bareme_revenu_PP_2024.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/2025-07/SCCO_bareme_revenu_PP_2024.pdf",
+    "file": "ne/files/ne-2025-tariff-revenu-pp.pdf",
+    "bytes": 931186,
+    "sha256": "9d036eca164386abcab97de96d577988220c288ad7082ec7ab91eebb9c46e4e0",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.637Z",
+    "status": "ok"
+  },
+  "ne-na-tariff-coefficients-baremes-page": {
+    "url": "https://www.ne.ch/themes/impots/coefficients-et-baremes",
+    "final_url": "https://www.ne.ch/themes/impots/coefficients-et-baremes",
+    "file": "ne/files/ne-na-tariff-coefficients-baremes-page.html",
+    "bytes": 570022,
+    "sha256": "360bb240974f57d3a2e42b7301dea59b7e763471e7724ea28d2684723b49f0e9",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:37.659Z",
+    "status": "ok"
+  },
+  "ne-2026-deductions-is-overview": {
+    "url": "https://www.ne.ch/sites/default/files/2026-01/SCCO_Deductions_incluses_IS_2026.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/2026-01/SCCO_Deductions_incluses_IS_2026.pdf",
+    "file": "ne/files/ne-2026-deductions-is-overview.pdf",
+    "bytes": 351381,
+    "sha256": "f5db5346e8bb9bf5e2b73edcce57bbcc69f6953c7775056bb9539c7ee4d8490e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.716Z",
+    "status": "ok"
+  },
+  "ne-2026-guide-depart-deces-pp": {
+    "url": "https://www.ne.ch/sites/default/files/2025-10/SCCO_I759_InstructionsGeneralesIntermediaires_PP.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/2025-10/SCCO_I759_InstructionsGeneralesIntermediaires_PP.pdf",
+    "file": "ne/files/ne-2026-guide-depart-deces-pp.pdf",
+    "bytes": 287082,
+    "sha256": "1a10f0d1675530ead4a612abf45f38fd848c96213d714c8e692410d7a988dfa1",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.761Z",
+    "status": "ok"
+  },
+  "ne-2025-guide-instructions-generales-pp": {
+    "url": "https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf",
+    "final_url": "https://www.ne.ch/sites/default/files/2025-10/SCCO_I754_InstructionsGenerales_PP.pdf",
+    "file": "ne/files/ne-2025-guide-instructions-generales-pp.pdf",
+    "bytes": 2717944,
+    "sha256": "64b8a5c7a010026e1ded42103aeddc3e0192d999a7f4c9789305104fa2f25e1b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:37.788Z",
+    "status": "ok"
+  },
+  "ne-na-other-documents-liens-utiles": {
+    "url": "https://www.ne.ch/themes/impots/documents-et-liens-utiles",
+    "final_url": "https://www.ne.ch/themes/impots/documents-et-liens-utiles",
+    "file": "ne/files/ne-na-other-documents-liens-utiles.html",
+    "bytes": 600533,
+    "sha256": "5d057f8c1d2dc65f5d9d9f048bdfda633bbad15ef87b4d62affc7a71f3ac4db8",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:38.305Z",
+    "status": "ok"
+  },
+  "ne-na-other-personal-tax-page": {
+    "url": "https://www.ne.ch/themes/impots/impot-des-personnes-physiques",
+    "final_url": "https://www.ne.ch/themes/impots/impot-des-personnes-physiques",
+    "file": "ne/files/ne-na-other-personal-tax-page.html",
+    "bytes": 509816,
+    "sha256": "706749a5aa92652134112f07f9d7473d1f92c06b16ff1aad1dabb99f986f3f38",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:39.350Z",
+    "status": "ok"
+  },
+  "ne-na-source-is-overview-page": {
+    "url": "https://www.ne.ch/themes/impots/impot-la-source-et-frontaliers",
+    "final_url": "https://www.ne.ch/themes/impots/impot-la-source-et-frontaliers",
+    "file": "ne/files/ne-na-source-is-overview-page.html",
+    "bytes": 488014,
+    "sha256": "2b9681d8cec6749316e7b4aef4ac9979d0da7407006cef14fc5771b71e6640d2",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:39.393Z",
+    "status": "ok"
+  },
+  "ju-2025-communal-rates": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/b4857e03e3089589e6b260324a123de49d2188c8f7f67b920139aab558cd60f1.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/b4857e03e3089589e6b260324a123de49d2188c8f7f67b920139aab558cd60f1.pdf",
+    "file": "ju/files/ju-2025-communal-rates.pdf",
+    "bytes": 207643,
+    "sha256": "b29a0ab180227b363e7400cc43c0c7be940b2396758b1ceb252d32a694cf82ef",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:39.541Z",
+    "status": "ok"
+  },
+  "ju-2025-efiling-juratax-logiciel": {
+    "url": "https://guichet.jura.ch/fr/Juratax/Juratax-Logiciel.html",
+    "final_url": "https://guichet.jura.ch/fr/Juratax/Juratax-Logiciel.html",
+    "file": "ju/files/ju-2025-efiling-juratax-logiciel.html",
+    "bytes": 39104,
+    "sha256": "f2e9d456d5149797b0bf50d9c49db3c740fc35bd955d5a66dbd4d2449051bc41",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:39.857Z",
+    "status": "ok"
+  },
+  "ju-2025-efiling-juratax-online": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/JuraTax/JuraTax.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/JuraTax/JuraTax.html",
+    "file": "ju/files/ju-2025-efiling-juratax-online.html",
+    "bytes": 71433,
+    "sha256": "51809fdf26c5752b49922f4a5871e6e279ad07f7be45bea6c388a25b615687a9",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:41.231Z",
+    "status": "ok"
+  },
+  "ne-na-source-tou-page": {
+    "url": "https://www.ne.ch/themes/impots/impot-la-source-et-frontaliers/taxation-ordinaire-ulterieure-tou",
+    "final_url": "https://www.ne.ch/themes/impots/impot-la-source-et-frontaliers/taxation-ordinaire-ulterieure-tou",
+    "file": "ne/files/ne-na-source-tou-page.html",
+    "bytes": 510463,
+    "sha256": "32f9e1633e0e6eee3f8b99ca543106d652d19635f174e81ba2440c9028544def",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:42.500Z",
+    "status": "ok"
+  },
+  "ju-2025-form-di": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/b8eb5154874812aefd2c62a333ad8c9dbeed0dbd5409e61cf224720ff5fc22ef.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/b8eb5154874812aefd2c62a333ad8c9dbeed0dbd5409e61cf224720ff5fc22ef.pdf",
+    "file": "ju/files/ju-2025-form-di.pdf",
+    "bytes": 307949,
+    "sha256": "bcab5ee6322af7d2168b658c4fbcee93ab4dfd18424c8bbb57a94091881d4fc9",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:42.669Z",
+    "status": "ok"
+  },
+  "ju-na-fiduciary-guichet": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Guichet-virtuel-pour-les-fiduciaires/Guichet-virtuel-pour-les-fiduciaires.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Guichet-virtuel-pour-les-fiduciaires/Guichet-virtuel-pour-les-fiduciaires.html",
+    "file": "ju/files/ju-na-fiduciary-guichet.html",
+    "bytes": 72941,
+    "sha256": "f311dc40a0b72ddc3cc6ec42e11eff225b039dcc9d2d955558deae3beec4bcc4",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:42.912Z",
+    "status": "ok"
+  },
+  "ju-2025-guide-general": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/81cc78891c5f1637d43c7c3fa46061ce931b57ab3a48c0e43a09d8c662c2395d.pdf",
+    "file": "ju/files/ju-2025-guide-general.pdf",
+    "bytes": 1549163,
+    "sha256": "c01cf7b6b30b38e7ff9124159b8b022b68cae4941fd4cc4f6a0c757275a91aa8",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:43.261Z",
+    "status": "ok"
+  },
+  "ne-na-other-scco-page": {
+    "url": "https://www.ne.ch/autorites/dffi/scco",
+    "final_url": "https://www.ne.ch/autorites/dffi/scco",
+    "file": "ne/files/ne-na-other-scco-page.html",
+    "bytes": 496590,
+    "sha256": "685d336cf217a666dca3dc4a8c3948b5cc57d62eddc89b90a418e581d77f97aa",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T11:50:43.602Z",
+    "status": "ok"
+  },
+  "ju-na-law-li-641-11": {
+    "url": "https://rsju.jura.ch/extranet/groups/public/documents/rsju_page/6loi_641.11.hcsp",
+    "final_url": "https://rsju.jura.ch/fr/viewdocument.html?idn=20113&id=37000",
+    "file": "ju/files/ju-na-law-li-641-11.html",
+    "bytes": 95923,
+    "sha256": "b22521f8aefe8ebe3fefd0b6ea33a671eb7a3005e05a5f45f6ebc634e817ee38",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:44.356Z",
+    "status": "ok"
+  },
+  "ju-2025-service-contributions-page": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Service-des-contributions-CTR.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Service-des-contributions-CTR.html",
+    "file": "ju/files/ju-2025-service-contributions-page.html",
+    "bytes": 92592,
+    "sha256": "e50e7acb45c3aed3f22346774627a9a0ea8e2f86e331fb7862daf16ed20ef536",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:44.605Z",
+    "status": "ok"
+  },
+  "ju-2026-source-tax-bareme-a0-h1-h8": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/cf585fb4d187e35f4ff03e76e14404a3ea845b04295d721e93992098ab648f80.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/cf585fb4d187e35f4ff03e76e14404a3ea845b04295d721e93992098ab648f80.pdf",
+    "file": "ju/files/ju-2026-source-tax-bareme-a0-h1-h8.pdf",
+    "bytes": 647072,
+    "sha256": "7750d029e8431cbc3a00bb0b5739201e2f7bd5f55df2aba839ace5fdd29cdb3d",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:44.711Z",
+    "status": "ok"
+  },
+  "ju-2025-formulaires-annexes": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/Annee-fiscale-2025.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/Annee-fiscale-2025.html",
+    "file": "ju/files/ju-2025-formulaires-annexes.html",
+    "bytes": 75807,
+    "sha256": "75f4d257c3b94705d58c382a51d372dcd0bab63be02ead8c6290f32497ad3bc2",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:44.729Z",
+    "status": "ok"
+  },
+  "ju-2025-source-tax-tou-form": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/f2704f0a9ef813d691e3e0e3ab185ab082bd77e84336c4202db3ab741ea4dff9.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/f2704f0a9ef813d691e3e0e3ab185ab082bd77e84336c4202db3ab741ea4dff9.pdf",
+    "file": "ju/files/ju-2025-source-tax-tou-form.pdf",
+    "bytes": 415240,
+    "sha256": "3281718dd3804e9f20aa5f985cf4064302656a299fe7159a2484840b5af8aba1",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:44.781Z",
+    "status": "ok"
+  },
+  "ju-2025-tariff": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/e6fe53576403ce15f90889bc56bb5a2b3d3dad0293e7e8efed628b2fa8c93d1f.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/e6fe53576403ce15f90889bc56bb5a2b3d3dad0293e7e8efed628b2fa8c93d1f.pdf",
+    "file": "ju/files/ju-2025-tariff.pdf",
+    "bytes": 281342,
+    "sha256": "84e90212376b8859f0b5e1413ac389f7326198a8247d5cfb83f10d0da7b4dbe9",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:44.854Z",
+    "status": "ok"
+  },
+  "ju-2026-communal-rates": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/df8873b29ac94b19ca37ba3cd2342e441d1d36d69901ca072f0552c0edab3822.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/df8873b29ac94b19ca37ba3cd2342e441d1d36d69901ca072f0552c0edab3822.pdf",
+    "file": "ju/files/ju-2026-communal-rates.pdf",
+    "bytes": 276979,
+    "sha256": "852214a934d41950f23be72c50d37f9cfb45f477d50d10d92acd97f9315ac757",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:44.892Z",
+    "status": "ok"
+  },
+  "ju-na-source-tax-overview": {
+    "url": "https://www.jura.ch/DFI/CTR/Impots-speciaux/Impot-a-la-source.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Impots-speciaux/Impot-a-la-source/Impot-a-la-source.html",
+    "file": "ju/files/ju-na-source-tax-overview.html",
+    "bytes": 79155,
+    "sha256": "90a0fd115d3695ac914487611f2f01bed03d7f039fe1ccb651d05f132b6c31e5",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:45.029Z",
+    "status": "ok"
+  },
+  "ju-2026-deductions-arrete": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Personnes-physiques.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Personnes-physiques.html",
+    "file": "ju/files/ju-2026-deductions-arrete.html",
+    "bytes": 90213,
+    "sha256": "fa21fc5af7fc3fbf43d521192d6722d7b6ff27e64cb60fc6fefa51b41d03a645",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:45.069Z",
+    "status": "ok"
+  },
+  "ju-2025-form-prolongation": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/8302cd67c048a1eed78ecf8681035f7bfd23736f0d53d493315adc5349e37be9.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/8302cd67c048a1eed78ecf8681035f7bfd23736f0d53d493315adc5349e37be9.pdf",
+    "file": "ju/files/ju-2025-form-prolongation.pdf",
+    "bytes": 148465,
+    "sha256": "e4cfdcb6f5ba9e3dd6d002b04239dbfb78d90829890508490a73f51e4763ee1b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.103Z",
+    "status": "ok"
+  },
+  "ju-2025-deductions-arrete": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Personnes-physiques.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Personnes-physiques.html",
+    "file": "ju/files/ju-2025-deductions-arrete.html",
+    "bytes": 90213,
+    "sha256": "475fada854902e9b67f1966f9022b443e54a9130c84145b4534b15c5e216af61",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:45.171Z",
+    "status": "ok"
+  },
+  "ju-2025-guide-independants": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/Annee-fiscale-2025.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Formulaires/Formulaires-personnes-physiques/Annee-fiscale-2025/Annee-fiscale-2025.html",
+    "file": "ju/files/ju-2025-guide-independants.html",
+    "bytes": 75807,
+    "sha256": "089478118a6bfe93a26b8b4cfcc206e2087c4c00064f56b578ee2441d0bf8e14",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:45.207Z",
+    "status": "ok"
+  },
+  "ju-2026-tariff": {
+    "url": "https://www.jura.ch/Htdocs/Files/v/d9d8907ed4713bdad1db05fe7f5500e9ef8413ca7de3fae335e3ecad1a72d247.pdf",
+    "final_url": "https://www.jura.ch/Htdocs/Files/v/d9d8907ed4713bdad1db05fe7f5500e9ef8413ca7de3fae335e3ecad1a72d247.pdf",
+    "file": "ju/files/ju-2026-tariff.pdf",
+    "bytes": 211773,
+    "sha256": "75b6abaf70bb32783a3211e67e84a5bee38e7ae5afd1b8ce93143b6386ecd872",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.245Z",
+    "status": "ok"
+  },
+  "ju-na-personnes-physiques": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Personnes-physiques.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Personnes-physiques.html",
+    "file": "ju/files/ju-na-personnes-physiques.html",
+    "bytes": 90213,
+    "sha256": "f828a9d9e0b83173c80a6000355ff915bfa08640b2b0741b24385a0a26aa28d9",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:45.325Z",
+    "status": "ok"
+  },
+  "be-2026-steueranlagen-gemeinden-de": {
+    "url": "https://www.fin.be.ch/content/dam/fin/dokumente/de/finanzverwaltung/finanzausgleich/publikationen/fv-stat-steueranlage_2026_1.pdf",
+    "final_url": "https://www.fin.be.ch/content/dam/fin/dokumente/de/finanzverwaltung/finanzausgleich/publikationen/fv-stat-steueranlage_2026_1.pdf",
+    "file": "be/files/be-2026-steueranlagen-gemeinden-de.pdf",
+    "bytes": 983241,
+    "sha256": "ada779d1970ba2f16626af7aa81adff432dc6f84e4111f6396e5bbe74612146d",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.421Z",
+    "status": "ok"
+  },
+  "ju-2026-calendrier-fiscal": {
+    "url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Calendrier-fiscal/Calendrier-fiscal.html",
+    "final_url": "https://www.jura.ch/fr/Autorites/Administration/DFI/CTR/Personnes-physiques/Calendrier-fiscal/Calendrier-fiscal.html",
+    "file": "ju/files/ju-2026-calendrier-fiscal.html",
+    "bytes": 72086,
+    "sha256": "1b4b773c68610ece7b953b45a092f1fef39d140ed55eee46cbdb6aa211c72f9e",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:45.424Z",
+    "status": "ok"
+  },
+  "be-2025-steuererklaerung-formulare-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/loesung-formulare_de.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/loesung-formulare_de.pdf",
+    "file": "be/files/be-2025-steuererklaerung-formulare-de.pdf",
+    "bytes": 226803,
+    "sha256": "204f7b4d5ba15b2cd8fa99d2e41d4b6beb196187ec55b2cc6850ef84a039854f",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.552Z",
+    "status": "ok"
+  },
+  "be-2025-steueranlagen-gemeinden-de": {
+    "url": "https://www.fin.be.ch/content/dam/fin/dokumente/de/finanzverwaltung/finanzausgleich/publikationen/fv-stat-steueranlage_2025.pdf",
+    "final_url": "https://www.fin.be.ch/content/dam/fin/dokumente/de/finanzverwaltung/finanzausgleich/publikationen/fv-stat-steueranlage_2025.pdf",
+    "file": "be/files/be-2025-steueranlagen-gemeinden-de.pdf",
+    "bytes": 1157539,
+    "sha256": "c1a08bec600a3b8bd2516a2d2756ce340130b92344c6fa0e2f06692307159cfb",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.604Z",
+    "status": "ok"
+  },
+  "be-2025-info-np-jan2026-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/info_10minuten/info-np_januar2026_de.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/info_10minuten/info-np_januar2026_de.pdf",
+    "file": "be/files/be-2025-info-np-jan2026-de.pdf",
+    "bytes": 377553,
+    "sha256": "94f7107744200c134766447645cbdec33862b9e03093a06866b65202f8411ab2",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.633Z",
+    "status": "ok"
+  },
+  "be-na-dr-tax-leitfaden-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/leitfaden_online_dr-tax_de.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/leitfaden_online_dr-tax_de.pdf",
+    "file": "be/files/be-na-dr-tax-leitfaden-de.pdf",
+    "bytes": 1591963,
+    "sha256": "ffef6914c53c8fc8282e045f55f3d610ee128072b726568dbf576691b4614eec",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.735Z",
+    "status": "ok"
+  },
+  "be-2025-wegleitung-np-de": {
+    "url": "https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf",
+    "final_url": "https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf",
+    "file": "be/files/be-2025-wegleitung-np-de.pdf",
+    "bytes": 840017,
+    "sha256": "a0554d876108647954a132f34566a4badb9b05e11329062927ae14747ec8e87e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.904Z",
+    "status": "ok"
+  },
+  "be-2025-wegleitung-np-fr": {
+    "url": "https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/fr/wegleitungen/2025/wl_natuerliche-personen_2025_fr.pdf",
+    "final_url": "https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/fr/wegleitungen/2025/wl_natuerliche-personen_2025_fr.pdf",
+    "file": "be/files/be-2025-wegleitung-np-fr.pdf",
+    "bytes": 1214556,
+    "sha256": "8c1e09a43e73bc1196ad066cc32a1598b2dbd41fc20c43a9f130202da9f3f176",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.906Z",
+    "status": "ok"
+  },
+  "be-2025-nov-info-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/info_10minuten/info-nov_de.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/info_10minuten/info-nov_de.pdf",
+    "file": "be/files/be-2025-nov-info-de.pdf",
+    "bytes": 86735,
+    "sha256": "cda59e3b98035692cc398792f3b3626d990bae8b104c037e9089b0caf0bb7d8e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:45.943Z",
+    "status": "ok"
+  },
+  "be-2025-nov-antrag-ansaessig-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/formulare/quellensteuer/aktuelles_steuerjahr/form_qst_antrag-nov-ansaessig_de.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/formulare/quellensteuer/aktuelles_steuerjahr/form_qst_antrag-nov-ansaessig_de.pdf",
+    "file": "be/files/be-2025-nov-antrag-ansaessig-de.pdf",
+    "bytes": 140496,
+    "sha256": "f839d7ff0c97fc43e2cd6d631d9db1ec239a010a1f6963b7b80152ce1d1020e9",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:46.028Z",
+    "status": "ok"
+  },
+  "be-na-dr-tax-faq-treuhaender-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/argumentarium_dr-tax_treuhaender_de.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/argumentarium_dr-tax_treuhaender_de.pdf",
+    "file": "be/files/be-na-dr-tax-faq-treuhaender-de.pdf",
+    "bytes": 135142,
+    "sha256": "6be58283a2172c0ec7213a61415e4708d50691820bb9927d853a79fab3ecfdfc",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:46.129Z",
+    "status": "ok"
+  },
+  "be-2025-wegleitung-aenderungen-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025-2024-aenderungen_de.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025-2024-aenderungen_de.pdf",
+    "file": "be/files/be-2025-wegleitung-aenderungen-de.pdf",
+    "bytes": 238266,
+    "sha256": "7b739cbe3e97abe1b7443aa083b307dc8904fc074c12ed17a0cbcc2d1f1c5576",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:46.267Z",
+    "status": "ok"
+  },
+  "be-2025-stg-de": {
+    "url": "https://www.belex.sites.be.ch/api/de/versions/3018/pdf_file",
+    "final_url": "https://www.belex.sites.be.ch/api/de/versions/3018/pdf_file",
+    "file": "be/files/be-2025-stg-de.pdf",
+    "bytes": 5499255,
+    "sha256": "f99e69767092ace016441c661f3cd86afc12fa7ffbe8c29432aa7eb172c7229a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:46.446Z",
+    "status": "ok"
+  },
+  "be-2026-quellensteuer-tabellen-de": {
+    "url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/qst_quellensteuertabelle_2026_de_fr.pdf",
+    "final_url": "https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/qst_quellensteuertabelle_2026_de_fr.pdf",
+    "file": "be/files/be-2026-quellensteuer-tabellen-de.pdf",
+    "bytes": 3986900,
+    "sha256": "fc0b1f6c99577ca34496ed5cf2f050559e55428fb5bbd141fe2d31f99b5c1fb2",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:46.703Z",
+    "status": "ok"
+  },
+  "ti-2025-deductions-table": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Tabella_deduzioni_PF_2025.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Tabella_deduzioni_PF_2025.pdf",
+    "file": "ti/files/ti-2025-deductions-table.pdf",
+    "bytes": 27706,
+    "sha256": "ccf7ea685b5f8d340618c85b01771d7d81aed8b12a9efee9fbb3a6a4d601ba68",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:46.795Z",
+    "status": "ok"
+  },
+  "ti-2025-efiling-etax-pf": {
+    "url": "https://www4.ti.ch/dfe/dc/dichiarazione/dichiarazione-elettronica",
+    "final_url": "https://www4.ti.ch/dfe/dc/dichiarazione/dichiarazione-elettronica",
+    "file": "ti/files/ti-2025-efiling-etax-pf.html",
+    "bytes": 59841,
+    "sha256": "1373e3b88a1980876e1634caa7edf7b9f8b448887c9553f1b7635d2a7ad4d484",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:46.852Z",
+    "status": "ok"
+  },
+  "ti-2026-communal-rates": {
+    "url": "https://www4.ti.ch/dfe/dc/sportello/moltiplicatori-comunali",
+    "final_url": "https://www4.ti.ch/dfe/dc/sportello/moltiplicatori-comunali",
+    "file": "ti/files/ti-2026-communal-rates.html",
+    "bytes": 402935,
+    "sha256": "21efd5de0f85e7045ef7a286b306de9b171c60f5a6e61566893fef2d9886908d",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:47.107Z",
+    "status": "ok"
+  },
+  "ti-2025-communal-rates": {
+    "url": "https://www4.ti.ch/dfe/dc/sportello/moltiplicatori-comunali",
+    "final_url": "https://www4.ti.ch/dfe/dc/sportello/moltiplicatori-comunali",
+    "file": "ti/files/ti-2025-communal-rates.html",
+    "bytes": 402934,
+    "sha256": "bd50d6ac67fb378adf73ebb663e729f203cc186799380520656e0b6f14aa3b1c",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:47.215Z",
+    "status": "ok"
+  },
+  "ti-na-efiling-rpeaf": {
+    "url": "https://m3.ti.ch/CAN/RLeggi/public/index.php/raccolta-leggi/pdfatto/atto/10605",
+    "final_url": "https://m3.ti.ch/CAN/RLeggi/public/index.php/raccolta-leggi/pdfatto/atto/10605",
+    "file": "ti/files/ti-na-efiling-rpeaf.pdf",
+    "bytes": 62944,
+    "sha256": "aee42e7da05d5ee114565b21b83a05243dd67de0cffc79e5c48b2a1eb0747ada",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:47.248Z",
+    "status": "ok"
+  },
+  "ti-2025-form-modulo-2": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod2_A4.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod2_A4.pdf",
+    "file": "ti/files/ti-2025-form-modulo-2.pdf",
+    "bytes": 103481,
+    "sha256": "3b4888acf7ac37f3e19642f952db658fc58227880a76c0754285e71064a59017",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:47.302Z",
+    "status": "ok"
+  },
+  "ti-2025-form-modulo-4": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod4_A4.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod4_A4.pdf",
+    "file": "ti/files/ti-2025-form-modulo-4.pdf",
+    "bytes": 113630,
+    "sha256": "6d7e5bac5497b3b13fb3588286c2f13ee3b0e686ab0b7d798b20599e1e60cb11",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:47.354Z",
+    "status": "ok"
+  },
+  "ti-2025-form-modulo-6": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod6_A4.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod6_A4.pdf",
+    "file": "ti/files/ti-2025-form-modulo-6.pdf",
+    "bytes": 106656,
+    "sha256": "3e600b9ff15b24dd038c49c5c7611cb1529e3197cd4745cfd765425e2a4bbff0",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:47.386Z",
+    "status": "ok"
+  },
+  "ti-2025-form-modulo-7": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod7_A4.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod7_A4.pdf",
+    "file": "ti/files/ti-2025-form-modulo-7.pdf",
+    "bytes": 119254,
+    "sha256": "4335aa9695c262a5983fc721a6e6949927c6858f3de75f258c101675da0bfeb5",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:47.425Z",
+    "status": "ok"
+  },
+  "ti-2025-guide-istruzioni-pf": {
+    "url": "https://www4.ti.ch/dfe/dc/dichiarazione/istruzioni-pf/istr-pf-attuale",
+    "final_url": "https://www4.ti.ch/dfe/dc/dichiarazione/istruzioni-pf/istr-pf-attuale",
+    "file": "ti/files/ti-2025-guide-istruzioni-pf.html",
+    "bytes": 22367,
+    "sha256": "004c1447da5b4d6e5e4027ae0eed9a3af5f5d19cc171b6615e1ac5503d5865f3",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:47.517Z",
+    "status": "ok"
+  },
+  "ti-na-law-lt-640-100": {
+    "url": "https://m3.ti.ch/CAN/RLeggi/public/index.php/index/nuovafinestra/atto/580/volume/numLegge",
+    "final_url": "https://m3.ti.ch/CAN/RLeggi/public/index.php/index/nuovafinestra/atto/580/volume/numLegge",
+    "file": "ti/files/ti-na-law-lt-640-100.html",
+    "bytes": 1348451,
+    "sha256": "b34b806dfc34008082847e4a2982dbb9b56410364b7e0d09880692419358d3a9",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:47.763Z",
+    "status": "ok"
+  },
+  "ti-2025-form-moduli-pf-page": {
+    "url": "https://www4.ti.ch/dfe/dc/dichiarazione/moduli/moduli-pf-attuale",
+    "final_url": "https://www4.ti.ch/dfe/dc/dichiarazione/moduli/moduli-pf-attuale",
+    "file": "ti/files/ti-2025-form-moduli-pf-page.html",
+    "bytes": 28312,
+    "sha256": "69cb4156fe405443ee217fa0a3c57341d3e5e13be3b46a53fb0e6d78df0d3476",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:48.538Z",
+    "status": "ok"
+  },
+  "ti-2025-press-release-declaration": {
+    "url": "https://www4.ti.ch/tich/area-media/comunicati/dettaglio-comunicato?NEWS_ID=257983&cHash=155880c40e5f8328a3c7c401c6afa133",
+    "final_url": "https://www4.ti.ch/tich/area-media/comunicati/dettaglio-comunicato?NEWS_ID=257983&cHash=155880c40e5f8328a3c7c401c6afa133",
+    "file": "ti/files/ti-2025-press-release-declaration.html",
+    "bytes": 24750,
+    "sha256": "1970206007d2e71c6acb720bca00862baeafe3f02596144bd60d35246de6a84f",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:48.732Z",
+    "status": "ok"
+  },
+  "ti-2026-source-tax-tabella-h": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IF/Aliquote_2026/Ticino_tabella_H_2026.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IF/Aliquote_2026/Ticino_tabella_H_2026.pdf",
+    "file": "ti/files/ti-2026-source-tax-tabella-h.pdf",
+    "bytes": 184782,
+    "sha256": "33f91b801467034559ee9c21af68d554d974cd47b0fc7ec978c986768a3e1d62",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:48.770Z",
+    "status": "ok"
+  },
+  "ti-2026-source-tax-tables-index": {
+    "url": "https://www4.ti.ch/dfe/dc/dichiarazione/imposte-alla-fonte-1/tabelle-di-calcolo-dellimposta-alla-fonte",
+    "final_url": "https://www4.ti.ch/dfe/dc/dichiarazione/imposte-alla-fonte-1/tabelle-di-calcolo-dellimposta-alla-fonte",
+    "file": "ti/files/ti-2026-source-tax-tables-index.html",
+    "bytes": 87876,
+    "sha256": "f6c825ceac5462fd659a6398d8216c9b74ca9ea5a46a73dd0d9287b5e84e6644",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:49.020Z",
+    "status": "ok"
+  },
+  "ti-2025-source-tax-directive": {
+    "url": "https://m4.ti.ch/fileadmin/DFE/DC/DOC-IF/Direttive/Direttiva_UIF__vers._1.0_del_01.01.2025_.pdf",
+    "final_url": "https://m4.ti.ch/fileadmin/DFE/DC/DOC-IF/Direttive/Direttiva_UIF__vers._1.0_del_01.01.2025_.pdf",
+    "file": "ti/files/ti-2025-source-tax-directive.pdf",
+    "bytes": 803165,
+    "sha256": "e02d247b44f1251059ed409a3178575db5d8e64a22eaaddcf21f8d1b4ba500ba",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:49.280Z",
+    "status": "ok"
+  },
+  "ti-2025-source-tax-tabella-h": {
+    "url": "https://m4.ti.ch/fileadmin/DFE/DC/DOC-IF/Aliquote_2025/Ticino_tabella_H_2025.pdf",
+    "final_url": "https://m4.ti.ch/fileadmin/DFE/DC/DOC-IF/Aliquote_2025/Ticino_tabella_H_2025.pdf",
+    "file": "ti/files/ti-2025-source-tax-tabella-h.pdf",
+    "bytes": 185054,
+    "sha256": "073faed61185e91f37b5cf5b80b9c47a31c55c249e3fb0b0f2902c17ec91cbc1",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:49.328Z",
+    "status": "ok"
+  },
+  "ti-2025-press-release-novita": {
+    "url": "https://www4.ti.ch/tich/area-media/comunicati/dettaglio-comunicato?NEWS_ID=247871",
+    "final_url": "https://www4.ti.ch/tich/area-media/comunicati/dettaglio-comunicato?NEWS_ID=247871",
+    "file": "ti/files/ti-2025-press-release-novita.html",
+    "bytes": 28157,
+    "sha256": "2fbe68498abc2beacbeb56731216140df311a01d6e5693e26cf5407ae2246a7d",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:49.719Z",
+    "status": "ok"
+  },
+  "ti-2025-efiling-proroga": {
+    "url": "https://www4.ti.ch/index.php?id=135721",
+    "final_url": "https://www4.ti.ch/index.php?id=135721",
+    "file": "ti/files/ti-2025-efiling-proroga.html",
+    "bytes": 21372,
+    "sha256": "121ba96ec60540bf6f7572db828c9dc7d91731bb2d46715492122c1ac7ce3f7f",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:50.701Z",
+    "status": "ok"
+  },
+  "ti-2025-form-modulo-10": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod10_A4.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod10_A4.pdf",
+    "file": "ti/files/ti-2025-form-modulo-10.pdf",
+    "bytes": 100329,
+    "sha256": "0e798612d61116e3f3f5e42a56b5d447c7362dd34cda4c944c33557e79af5fc1",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:50.779Z",
+    "status": "ok"
+  },
+  "ti-2025-flyer-informativo": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Flyer_2025.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Flyer_2025.pdf",
+    "file": "ti/files/ti-2025-flyer-informativo.pdf",
+    "bytes": 141695,
+    "sha256": "4870bb2e23557c070e8f6970ed665b1d737357710a1377b0ca86421021cadc88",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:50.839Z",
+    "status": "ok"
+  },
+  "ti-2025-guide-assoggettamento-inferiore": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_ass_inferiore_anno.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_ass_inferiore_anno.pdf",
+    "file": "ti/files/ti-2025-guide-assoggettamento-inferiore.pdf",
+    "bytes": 35288,
+    "sha256": "dfc5e2b490349c8a88c52be77e79f70dd9fad6a37849974f1ac3ef3c7934e321",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:50.858Z",
+    "status": "ok"
+  },
+  "ti-na-calculators-pf": {
+    "url": "https://www4.ti.ch/dfe/dc/sportello/calcolatori-dimposta/",
+    "final_url": "https://www4.ti.ch/dfe/dc/sportello/calcolatori-dimposta/",
+    "file": "ti/files/ti-na-calculators-pf.html",
+    "bytes": 22374,
+    "sha256": "35cfe7702793c5e7288d03c9be42f59c40e2308ff6f4b01d6a9ae9c9162c8b78",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:50.952Z",
+    "status": "ok"
+  },
+  "bs-2026-communal-ansaetze-abzuege": {
+    "url": "https://media.bs.ch/original_file/533ad44a44ceaf9be3374016c8f8bfecd7ab184a/18000-mb-np-ansaetze-devisenkurse-abzuege-freibetraege-v2026.pdf",
+    "final_url": "https://media.bs.ch/original_file/533ad44a44ceaf9be3374016c8f8bfecd7ab184a/18000-mb-np-ansaetze-devisenkurse-abzuege-freibetraege-v2026.pdf",
+    "file": "bs/files/bs-2026-communal-ansaetze-abzuege.pdf",
+    "bytes": 135860,
+    "sha256": "26b4e47e0f63d8421aa7bab92be2cac79d9fd4e0c676c853ea4b731b617fbaa7",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.042Z",
+    "status": "ok"
+  },
+  "bs-2025-communal-ansaetze-abzuege": {
+    "url": "https://media.bs.ch/original_file/138a8e2fb06d920cb89292256f1f3bee8aa06acb/18000-mb-np-ansaetze-devisenkurse-abzuege-freibetraege-v2025.pdf",
+    "final_url": "https://media.bs.ch/original_file/138a8e2fb06d920cb89292256f1f3bee8aa06acb/18000-mb-np-ansaetze-devisenkurse-abzuege-freibetraege-v2025.pdf",
+    "file": "bs/files/bs-2025-communal-ansaetze-abzuege.pdf",
+    "bytes": 93407,
+    "sha256": "ec03c38ea936630d83f83fe6ff00204225068732158bcc76c5d008c5acbc38d2",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.097Z",
+    "status": "ok"
+  },
+  "bs-2025-efiling-einreichen-page": {
+    "url": "https://www.bs.ch/themen/arbeit-und-steuern/steuererklaerung/steuererklaerung-als-natuerliche-person-einreichen",
+    "final_url": "https://www.bs.ch/themen/arbeit-und-steuern/steuererklaerung/steuererklaerung-als-natuerliche-person-einreichen",
+    "file": "bs/files/bs-2025-efiling-einreichen-page.html",
+    "bytes": 213770,
+    "sha256": "d34f89f1fdd7b1ea0cabdd5d481397bd4542c8a5b582c25449be8bd0d1d759e4",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:51.166Z",
+    "status": "ok"
+  },
+  "bs-2025-efiling-einreichungscode": {
+    "url": "https://media.bs.ch/original_file/6f42a4d02a6b52dbd9d2cdb989149cfa8b7fcd2a/15003-fw-np-ste-25-01-steuererklaerungsschreiben-baltax-ansi.pdf",
+    "final_url": "https://media.bs.ch/original_file/6f42a4d02a6b52dbd9d2cdb989149cfa8b7fcd2a/15003-fw-np-ste-25-01-steuererklaerungsschreiben-baltax-ansi.pdf",
+    "file": "bs/files/bs-2025-efiling-einreichungscode.pdf",
+    "bytes": 159562,
+    "sha256": "d74998ec7cd1e0b1f3c1913474a870ce6aaf49f90e043616dd1a043263e716d5",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.179Z",
+    "status": "ok"
+  },
+  "bs-2025-efiling-steuerportal": {
+    "url": "https://www.bs.ch/themen/arbeit-und-steuern/steuererklaerung/steuererklaerung-natuerliche-person/steuerportal-und-baltax-online",
+    "final_url": "https://www.bs.ch/themen/arbeit-und-steuern/steuererklaerung/steuererklaerung-natuerliche-person/steuerportal-und-baltax-online",
+    "file": "bs/files/bs-2025-efiling-steuerportal.html",
+    "bytes": 153411,
+    "sha256": "e72132943bfef2e31bc26b3141ee64d7131516ee68a16276717083a3d134e06a",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:51.206Z",
+    "status": "ok"
+  },
+  "bs-2025-form-b-berufskosten": {
+    "url": "https://media.bs.ch/original_file/630cae1c108bb2f52c9d0b4e45506b4f22e695d5/15020-fw-np-ste-25-02-berufskosten-ansichtsexemplar.pdf",
+    "final_url": "https://media.bs.ch/original_file/630cae1c108bb2f52c9d0b4e45506b4f22e695d5/15020-fw-np-ste-25-02-berufskosten-ansichtsexemplar.pdf",
+    "file": "bs/files/bs-2025-form-b-berufskosten.pdf",
+    "bytes": 89569,
+    "sha256": "58679fb0748b2f90f1ea31ebcd5cd9c7efffbd5ee8393c7f9860a5aea0003df2",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.221Z",
+    "status": "ok"
+  },
+  "bs-2025-form-hauptformular": {
+    "url": "https://media.bs.ch/original_file/65fcfdaa82df1b23cb365a951416678aef461436/15000-fw-np-ste-25-02-hauptformular-ansichtsexemplar-0.pdf",
+    "final_url": "https://media.bs.ch/original_file/65fcfdaa82df1b23cb365a951416678aef461436/15000-fw-np-ste-25-02-hauptformular-ansichtsexemplar-0.pdf",
+    "file": "bs/files/bs-2025-form-hauptformular.pdf",
+    "bytes": 111459,
+    "sha256": "57ac1683a067093b8b284c3b8a0576f64de40a4113928a67c87049a37c910a7e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.234Z",
+    "status": "ok"
+  },
+  "bs-2025-form-w-wertschriftenverzeichnis": {
+    "url": "https://media.bs.ch/original_file/07ff9ff885bd49287097c681c0bafe39b232923f/15005-fw-np-ste-25-01-wertschriftenverzeichnis-ansichtsexemp.pdf",
+    "final_url": "https://media.bs.ch/original_file/07ff9ff885bd49287097c681c0bafe39b232923f/15005-fw-np-ste-25-01-wertschriftenverzeichnis-ansichtsexemp.pdf",
+    "file": "bs/files/bs-2025-form-w-wertschriftenverzeichnis.pdf",
+    "bytes": 124317,
+    "sha256": "78e07ec5a41dce61df783fd62d31fb96a5858116944bd37a82c7d3515c37ab8e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.357Z",
+    "status": "ok"
+  },
+  "bs-2025-guide-wegleitung": {
+    "url": "https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf",
+    "final_url": "https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf",
+    "file": "bs/files/bs-2025-guide-wegleitung.pdf",
+    "bytes": 2337000,
+    "sha256": "72dbfe0b91c0c1b6ee02dcc34b166386e3edea83d640e2924bbda8aa0c0729b7",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.491Z",
+    "status": "ok"
+  },
+  "bs-na-law-stg": {
+    "url": "https://www.gesetzessammlung.bs.ch/api/de/versions/6745/pdf_file_with_annexes",
+    "final_url": "https://www.gesetzessammlung.bs.ch/api/de/versions/6745/pdf_file_with_annexes",
+    "file": "bs/files/bs-na-law-stg.pdf",
+    "bytes": 732351,
+    "sha256": "c4c0d8c9e2ccd0efbfbc6d0ceae9700fe70511e3f156292c6a895ca575581b2e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.704Z",
+    "status": "ok"
+  },
+  "bs-2025-other-krypto-merkblatt": {
+    "url": "https://media.bs.ch/original_file/8c06838fade72c9930ac1c73967eca9ad0e70707/18023-mb-np-kryptowaehrungen-cd-bf.pdf",
+    "final_url": "https://media.bs.ch/original_file/8c06838fade72c9930ac1c73967eca9ad0e70707/18023-mb-np-kryptowaehrungen-cd-bf.pdf",
+    "file": "bs/files/bs-2025-other-krypto-merkblatt.pdf",
+    "bytes": 82546,
+    "sha256": "e5c48ecb56af43f730a126599218bcf76ec83bda97ad6b388125d687faffe07c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.719Z",
+    "status": "ok"
+  },
+  "bs-2026-source-tax-wegleitung": {
+    "url": "https://media.bs.ch/original_file/445bc8b2afa6166c46741bdfda12f44792e12703/19000-mb-qst-a-26-wegleitung-und-tariftabellen.pdf",
+    "final_url": "https://media.bs.ch/original_file/445bc8b2afa6166c46741bdfda12f44792e12703/19000-mb-qst-a-26-wegleitung-und-tariftabellen.pdf",
+    "file": "bs/files/bs-2026-source-tax-wegleitung.pdf",
+    "bytes": 2145686,
+    "sha256": "967de6d58b5b7a41b7adaaf4773cf1883d279c3485adf0e9bf4d83134e417c5d",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.846Z",
+    "status": "ok"
+  },
+  "bs-2025-source-tax-wegleitung": {
+    "url": "https://media.bs.ch/original_file/40246fa5532f29efb46e23a14ac580c4c6add64e/19000-mb-qst-a-25-wegleitung-und-tariftabellen-0.pdf",
+    "final_url": "https://media.bs.ch/original_file/40246fa5532f29efb46e23a14ac580c4c6add64e/19000-mb-qst-a-25-wegleitung-und-tariftabellen-0.pdf",
+    "file": "bs/files/bs-2025-source-tax-wegleitung.pdf",
+    "bytes": 2040534,
+    "sha256": "b1ee771ea2c47be37fabd15eb088f480bfb810f42ffacaebb956acc5b5baa620",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.958Z",
+    "status": "ok"
+  },
+  "bs-2026-tariff-einkommenssteuer-uebersicht": {
+    "url": "https://media.bs.ch/original_file/d8cf2817b481307cd7943afa4f80b99a8878297a/einkommenssteuertarife-2019-2026.pdf",
+    "final_url": "https://media.bs.ch/original_file/d8cf2817b481307cd7943afa4f80b99a8878297a/einkommenssteuertarife-2019-2026.pdf",
+    "file": "bs/files/bs-2026-tariff-einkommenssteuer-uebersicht.pdf",
+    "bytes": 67675,
+    "sha256": "331b22ceecf96a67ef21dea951d6f52d5f4d65366ffeb3d57b1f1f6ad225c634",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:51.974Z",
+    "status": "ok"
+  },
+  "bs-2025-tariff-einkommens-vermoegenssteuer": {
+    "url": "https://media.bs.ch/original_file/47a483fc991f91d59b9a86e4fbbbc0a9de77bd79/17000-steuertarife-2025.pdf",
+    "final_url": "https://media.bs.ch/original_file/47a483fc991f91d59b9a86e4fbbbc0a9de77bd79/17000-steuertarife-2025.pdf",
+    "file": "bs/files/bs-2025-tariff-einkommens-vermoegenssteuer.pdf",
+    "bytes": 877664,
+    "sha256": "5568b496cb61e05fc86c2edb9d1f2f9d3f67efd38fed615a0c79362febfdf851",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.041Z",
+    "status": "ok"
+  },
+  "bs-2026-communal-bettingen-steuersaetze": {
+    "url": "https://www.bs.ch/bettingen/gemeinde/steuern-und-finanzen",
+    "final_url": "https://www.bs.ch/bettingen/gemeinde/steuern-und-finanzen",
+    "file": "bs/files/bs-2026-communal-bettingen-steuersaetze.html",
+    "bytes": 96465,
+    "sha256": "77d331457d9ca86bc9e8934e7429efd592cf10d7dd401eaa90bcf85d5ce5eda7",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.061Z",
+    "status": "ok"
+  },
+  "bs-2025-deductions-spendenliste": {
+    "url": "https://media.bs.ch/original_file/9562c945e5b6156eb0db6fac8cdbd6111cc0b235/18003-mb-np-spendenliste-internet-2025.pdf",
+    "final_url": "https://media.bs.ch/original_file/9562c945e5b6156eb0db6fac8cdbd6111cc0b235/18003-mb-np-spendenliste-internet-2025.pdf",
+    "file": "bs/files/bs-2025-deductions-spendenliste.pdf",
+    "bytes": 328719,
+    "sha256": "7cdd6670777188eff1f086ed27ebdfab128aaa4e0317ae0cae755ebe36b508e3",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.090Z",
+    "status": "ok"
+  },
+  "bs-na-deductions-liegenschaftskosten": {
+    "url": "https://media.bs.ch/original_file/3bdd669de8e86f02e3557c5d4926af2417940d28/18002-mb-np-liegenschaftskosten-v2026-bf-0.pdf",
+    "final_url": "https://media.bs.ch/original_file/3bdd669de8e86f02e3557c5d4926af2417940d28/18002-mb-np-liegenschaftskosten-v2026-bf-0.pdf",
+    "file": "bs/files/bs-na-deductions-liegenschaftskosten.pdf",
+    "bytes": 199006,
+    "sha256": "30c1427204ca3c412e6d12efa0fc1fe615b22c9e30e32d6bc72d4f80f4f6afe9",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.112Z",
+    "status": "ok"
+  },
+  "ti-na-software-house-source-tax": {
+    "url": "https://www4.ti.ch/dfe/dc/dichiarazione/imposte-alla-fonte-1/software-house",
+    "final_url": "https://www4.ti.ch/dfe/dc/dichiarazione/imposte-alla-fonte-1/software-house",
+    "file": "ti/files/ti-na-software-house-source-tax.html",
+    "bytes": 38921,
+    "sha256": "76bf7a7f7f2efabc893dad62f2440e14b43f60b8f3aa58b312dd72728a5a9c6a",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.172Z",
+    "status": "ok"
+  },
+  "ti-na-source-tax-rectification": {
+    "url": "https://www4.ti.ch/index.php?id=127378",
+    "final_url": "https://www4.ti.ch/index.php?id=127378",
+    "file": "ti/files/ti-na-source-tax-rectification.html",
+    "bytes": 46442,
+    "sha256": "60c3a207965cbca637a2529a6033b45c56791f55060c15a626556918d488b451",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.187Z",
+    "status": "ok"
+  },
+  "bs-2025-form-au-alimente-unterstuetzung": {
+    "url": "https://media.bs.ch/original_file/75bda6a1c7cf7c27d9dff2af6fa2d4d9a747811b/15025-fw-np-ste-25-02-alimente-unterstuetzungen-ansichtsexem.pdf",
+    "final_url": "https://media.bs.ch/original_file/75bda6a1c7cf7c27d9dff2af6fa2d4d9a747811b/15025-fw-np-ste-25-02-alimente-unterstuetzungen-ansichtsexem.pdf",
+    "file": "bs/files/bs-2025-form-au-alimente-unterstuetzung.pdf",
+    "bytes": 92319,
+    "sha256": "262d466304b7f4f0c811badd88d26a499e5ab953b46996db262179e4f504964d",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.242Z",
+    "status": "ok"
+  },
+  "bs-2025-efiling-baltax-tipps": {
+    "url": "https://media.bs.ch/original_file/bfbf34b4727f4f55d7664f5bd2977ae7073a90db/hinweise-und-tipps-zu-baltax-2025.pdf",
+    "final_url": "https://media.bs.ch/original_file/bfbf34b4727f4f55d7664f5bd2977ae7073a90db/hinweise-und-tipps-zu-baltax-2025.pdf",
+    "file": "bs/files/bs-2025-efiling-baltax-tipps.pdf",
+    "bytes": 1829164,
+    "sha256": "1f16052e1f6c749431999590980845c6ffc95056863f0695a5532d04448da647",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.243Z",
+    "status": "ok"
+  },
+  "bs-2025-form-d-da1-r-us164": {
+    "url": "https://media.bs.ch/original_file/056175efd152d9ef946c9127a1a5314869093d5d/15006-fw-np-ste-25-02-da-1-r-us164-ansichtsexemplar.pdf",
+    "final_url": "https://media.bs.ch/original_file/056175efd152d9ef946c9127a1a5314869093d5d/15006-fw-np-ste-25-02-da-1-r-us164-ansichtsexemplar.pdf",
+    "file": "bs/files/bs-2025-form-d-da1-r-us164.pdf",
+    "bytes": 82839,
+    "sha256": "1c13d8b55a0526ccbca3cd1c17d607344731e9ff601c9719205220c6e0651ee2",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.260Z",
+    "status": "ok"
+  },
+  "bs-2025-form-kzf-krankheit-zuwendung-betreuung": {
+    "url": "https://media.bs.ch/original_file/b40d5308954ad20f3d8b2e099f1eabbabe2046f8/15030-fw-np-ste-25-02-krankheitskosten-zuwendungen-kinderbet.pdf",
+    "final_url": "https://media.bs.ch/original_file/b40d5308954ad20f3d8b2e099f1eabbabe2046f8/15030-fw-np-ste-25-02-krankheitskosten-zuwendungen-kinderbet.pdf",
+    "file": "bs/files/bs-2025-form-kzf-krankheit-zuwendung-betreuung.pdf",
+    "bytes": 98203,
+    "sha256": "75b5eeb42d9958341d99d8e6dea89a6982fdba10e5a8367ab0d63b9c0d1ed81e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.270Z",
+    "status": "ok"
+  },
+  "bs-2025-form-einlagemappe-baltax": {
+    "url": "https://media.bs.ch/original_file/9fb72405911ebf9381999258d1d507db44afe6e7/15001-fw-np-ste-25-01-einlagemappe-baltax-ansichtsexemplar.pdf",
+    "final_url": "https://media.bs.ch/original_file/9fb72405911ebf9381999258d1d507db44afe6e7/15001-fw-np-ste-25-01-einlagemappe-baltax-ansichtsexemplar.pdf",
+    "file": "bs/files/bs-2025-form-einlagemappe-baltax.pdf",
+    "bytes": 123626,
+    "sha256": "b46f53f4430ec6e67919118d33483beb2bdf9b1d5a050f159d56e13990fe60e6",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.271Z",
+    "status": "ok"
+  },
+  "bs-2025-form-s-schuldenverzeichnis": {
+    "url": "https://media.bs.ch/original_file/20188e7f0fe396b6200d6fb5e299804e81eac86a/15015-fw-np-ste-25-02-schuldenverzeichnis-ansichtsexemplar.pdf",
+    "final_url": "https://media.bs.ch/original_file/20188e7f0fe396b6200d6fb5e299804e81eac86a/15015-fw-np-ste-25-02-schuldenverzeichnis-ansichtsexemplar.pdf",
+    "file": "bs/files/bs-2025-form-s-schuldenverzeichnis.pdf",
+    "bytes": 72396,
+    "sha256": "1a7692ac645506fbf1cde518e30673ede87ff479b3abdcb5b028505b75ea696e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.286Z",
+    "status": "ok"
+  },
+  "bs-2025-form-l-liegenschaftenverzeichnis": {
+    "url": "https://media.bs.ch/original_file/42fecba0b8955fdf783e79c947ede1be59c505a1/15010-fw-np-ste-25-02-liegenschaftenverzeichnis-ansichtsexem.pdf",
+    "final_url": "https://media.bs.ch/original_file/42fecba0b8955fdf783e79c947ede1be59c505a1/15010-fw-np-ste-25-02-liegenschaftenverzeichnis-ansichtsexem.pdf",
+    "file": "bs/files/bs-2025-form-l-liegenschaftenverzeichnis.pdf",
+    "bytes": 103383,
+    "sha256": "ad35360db03a409e2663ec826e9b4dca4299240814e8f33d94a6e0c2a926f693",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.289Z",
+    "status": "ok"
+  },
+  "bs-na-source-tax-info": {
+    "url": "https://www.bs.ch/themen/arbeit-und-steuern/quellensteuer/informationen-zur-quellensteuer",
+    "final_url": "https://www.bs.ch/themen/arbeit-und-steuern/quellensteuer/informationen-zur-quellensteuer",
+    "file": "bs/files/bs-na-source-tax-info.html",
+    "bytes": 131409,
+    "sha256": "0ca85705a10cb0fbb5441fc44529b0bbd2430b6575739e7f8e9e4b43eb59a7e2",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.291Z",
+    "status": "ok"
+  },
+  "bl-na-e-tax-bl": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/steuererklaerung-natuerliche-personen-und-e-tax-bl/e-tax-bl-1",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.351Z"
+  },
+  "bl-2025-berufsauslagen": {
+    "url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendig-erwerbende-2025/berufsauslagen-2025_int_459_2025jn_240816.pdf",
+    "final_url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendig-erwerbende-2025/berufsauslagen-2025_int_459_2025jn_240816.pdf",
+    "file": "bl/files/bl-2025-berufsauslagen.pdf",
+    "bytes": 48923,
+    "sha256": "fb117273ba5bdb9f7b2a95fa32e3f248c9b6cf0f203e113b517931f93646ecef",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.399Z",
+    "status": "ok"
+  },
+  "bl-na-e-tax-bl-faq": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/faq/e-tax-bl",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.401Z"
+  },
+  "bl-2025-wertschriften-guthaben": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.449Z"
+  },
+  "bl-2025-gemeindesteuerfuesse": {
+    "url": "https://statistik.bl.ch/web_portal/18_4",
+    "final_url": "https://statistik.bl.ch/web_portal/18_4",
+    "file": "bl/files/bl-2025-gemeindesteuerfuesse.html",
+    "bytes": 148703,
+    "sha256": "9846e1bce6e9cd8ad879186b735715e047071a4c2894d3975c2c1f204b811349",
+    "content_type": "text/html; charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.451Z",
+    "status": "ok"
+  },
+  "bl-2025-steuererklaerung-form": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.454Z"
+  },
+  "bl-2025-informationen-neuerungen": {
+    "url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendig-erwerbende-2025/informationen-und-neuerungen-2025_int_456_2025_240924.pdf",
+    "final_url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendig-erwerbende-2025/informationen-und-neuerungen-2025_int_456_2025_240924.pdf",
+    "file": "bl/files/bl-2025-informationen-neuerungen.pdf",
+    "bytes": 86307,
+    "sha256": "d348b4d3a12af81b191588f2d4ce5a61f02836e2d7d3f1dffa44edb90021eeec",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.488Z",
+    "status": "ok"
+  },
+  "bl-2025-wegleitung": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.504Z"
+  },
+  "bl-na-steuergesetz-331": {
+    "url": "https://bl.clex.ch/frontend/versions/3502/download_pdf_file?locale=de",
+    "status": "failed",
+    "error": "HTTP 404",
+    "tried_at": "2026-10-13T11:50:52.513Z"
+  },
+  "bl-2025-informationen-steuererklaerung-web": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/aktuelles-aus-der-steuerverwaltung/informationen-zur-steuererklaerung-2025-neu",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.528Z"
+  },
+  "bl-na-fristen-termine": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/steuererklaerung-natuerliche-personen-und-e-tax-bl/fristen-und-termine",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.563Z"
+  },
+  "bl-na-fristverlaengerung": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/steuererklaerung-natuerliche-personen-und-e-tax-bl/fristen-und-termine/fristverlaengerung-fuer-privatpersonen",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.581Z"
+  },
+  "bl-na-quellensteuer-entscheidungsraster": {
+    "url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/quellensteuer/quellensteuer-dokumente-faq-und-weitere/entscheidungsraster_tarif_bl.pdf",
+    "final_url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/quellensteuer/quellensteuer-dokumente-faq-und-weitere/entscheidungsraster_tarif_bl.pdf",
+    "file": "bl/files/bl-na-quellensteuer-entscheidungsraster.pdf",
+    "bytes": 74493,
+    "sha256": "acf617f5e948ea28965cb41a2f9f488fdafc78bb4019884e9994a46a8e0d514d",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.610Z",
+    "status": "ok"
+  },
+  "bl-na-quellensteuer-faq": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/faq/quellensteuer-1",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.645Z"
+  },
+  "bl-2025-krankheitskosten": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.672Z"
+  },
+  "bl-2026-steuererklaerung-form": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.690Z"
+  },
+  "bl-2025-liegenschaften": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.715Z"
+  },
+  "bl-na-dekret-331-1": {
+    "url": "https://bl.clex.ch/frontend/versions/488/download_pdf_file",
+    "status": "failed",
+    "error": "HTTP 404",
+    "tried_at": "2026-10-13T11:50:52.745Z"
+  },
+  "bl-2026-wegleitung": {
+    "url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf",
+    "final_url": "https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf",
+    "file": "bl/files/bl-2026-wegleitung.pdf",
+    "bytes": 279900,
+    "sha256": "bd8a198db1deec49eb7b5d2dd15bd0d6708c228f59ddf972bd9e84f0f0fe01bf",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.765Z",
+    "status": "ok"
+  },
+  "bl-na-nov-antrag": {
+    "url": "https://baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/quellensteuer/formulare-merkblatter/formulare/downloads-1/antrag-auf-nachtraegliche-ordentliche-veranlagung-nov.pdf",
+    "status": "failed",
+    "error": "HTTP 404",
+    "tried_at": "2026-10-13T11:50:52.773Z"
+  },
+  "bl-na-steuerarten": {
+    "url": "https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/steuerzahlungen/allgemeine-informationen",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.786Z"
+  },
+  "zh-na-communal-rates-aktuell": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/steuerstatistiken/aktuelle-gemeinde-steuerfuesse.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/steuerstatistiken/aktuelle-gemeinde-steuerfuesse.html",
+    "file": "zh/files/zh-na-communal-rates-aktuell.html",
+    "bytes": 62278,
+    "sha256": "e3f2911318bfd9677476b6d360d45477883f019b31642ed4e55eeff71813f106",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.820Z",
+    "status": "ok"
+  },
+  "zh-2025-efiling-medienmitteilung-zhprivatetax": {
+    "url": "https://www.zh.ch/de/news-uebersicht/medienmitteilungen/2026/01/digitale-steuererklaerung-kanton-zuerich-setzt-auf-den-online-kanal-zhprivatetax.html",
+    "final_url": "https://www.zh.ch/de/news-uebersicht/medienmitteilungen/2026/01/digitale-steuererklaerung-kanton-zuerich-setzt-auf-den-online-kanal-zhprivatetax.html",
+    "file": "zh/files/zh-2025-efiling-medienmitteilung-zhprivatetax.html",
+    "bytes": 52570,
+    "sha256": "a0d64bbaf0f17b00f983534cb2f245c94e417ca444ea5149a5eb3aacaadbafe1",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.823Z",
+    "status": "ok"
+  },
+  "bl-na-steuerbuch": {
+    "url": "https://kanton.baselland.ch/finanz-und-kirchendirektion/steuerverwaltung-steuerbuch",
+    "status": "failed",
+    "error": "HTTP 403",
+    "tried_at": "2026-10-13T11:50:52.826Z"
+  },
+  "zh-na-efiling-zstb-132-1": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-132-1.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-132-1.html",
+    "file": "zh/files/zh-na-efiling-zstb-132-1.html",
+    "bytes": 110207,
+    "sha256": "6aee115d50323af4512047778ec22d9983f6cc9e7e68b8a4c992bb88f606062e",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.830Z",
+    "status": "ok"
+  },
+  "zh-2025-form-berufsauslagen": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare/360%20Berufsauslagen%20ZH%202025%20HA%20DEF.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare/360%20Berufsauslagen%20ZH%202025%20HA%20DEF.pdf",
+    "file": "zh/files/zh-2025-form-berufsauslagen.pdf",
+    "bytes": 71793,
+    "sha256": "1abe480fd287d8e7a3a801a7ea91d9211c27b43e32d4428874bd15ec08d70b23",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.863Z",
+    "status": "ok"
+  },
+  "zh-na-efiling-steuererklaerung-privatpersonen": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/steuern-natuerliche-personen/steuererklaerung-natuerliche-personen.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/steuern-natuerliche-personen/steuererklaerung-natuerliche-personen.html",
+    "file": "zh/files/zh-na-efiling-steuererklaerung-privatpersonen.html",
+    "bytes": 3106212,
+    "sha256": "0028a80431a4c7b1faf03c02810ad90fbed3aa9c7065d7f65adb3bae5e5ef942",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.875Z",
+    "status": "ok"
+  },
+  "zh-na-efiling-verordnung-631-121": {
+    "url": "https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/zhlex-ls/erlass-631_121-2011_10_18-2013_01_01-129.html",
+    "final_url": "https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/zhlex-ls/erlass-631_121-2011_10_18-2013_01_01-129.html",
+    "file": "zh/files/zh-na-efiling-verordnung-631-121.html",
+    "bytes": 60720,
+    "sha256": "fafc1277c02cef65c1d61c7a1295e5f7dceb618cc179b0253fd8c55e6e3bf152",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.883Z",
+    "status": "ok"
+  },
+  "zh-2025-form-wertschriften-verzeichnis": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare/340%20WV%20ZH%202025%20HA%20DEF.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare/340%20WV%20ZH%202025%20HA%20DEF.pdf",
+    "file": "zh/files/zh-2025-form-wertschriften-verzeichnis.pdf",
+    "bytes": 167121,
+    "sha256": "37754899b711927c52c8e8d556e859d2a841c8c0b29505dd003113d720229004",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.899Z",
+    "status": "ok"
+  },
+  "zh-2025-form-steuererklaerung": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare-uj/300%20STE%20ZH%202025%20UJ%20DEF.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare-uj/300%20STE%20ZH%202025%20UJ%20DEF.pdf",
+    "file": "zh/files/zh-2025-form-steuererklaerung.pdf",
+    "bytes": 100161,
+    "sha256": "6a34104599d6e781449f3230e651f550a599ec7b7df46ea0e3d2638e45ed9a05",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.912Z",
+    "status": "ok"
+  },
+  "zh-na-law-steuergesetz-631-1": {
+    "url": "https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/zhlex-ls/erlass-631_1-1997_06_08-1999_01_01-132.html",
+    "final_url": "https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/zhlex-ls/erlass-631_1-1997_06_08-1999_01_01-132.html",
+    "file": "zh/files/zh-na-law-steuergesetz-631-1.html",
+    "bytes": 79664,
+    "sha256": "f6c83f878fe3da5358a61f56f7ecc0108303b6743dd204bf7e8bab43c7f643db",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.918Z",
+    "status": "ok"
+  },
+  "zh-2026-source-tax-tarife-index": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/quellensteuer-tarife.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/quellensteuer-tarife.html",
+    "file": "zh/files/zh-2026-source-tax-tarife-index.html",
+    "bytes": 128214,
+    "sha256": "75bc4b86d69914218621400e19dd7afa4b5a6c849417ae448c5c43fe77b3f7d2",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.930Z",
+    "status": "ok"
+  },
+  "zh-na-source-tax-nov-antrag": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/nachtraegliche-ordentliche-veranlagung-oder-quellensteuerkorrekt.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/nachtraegliche-ordentliche-veranlagung-oder-quellensteuerkorrekt.html",
+    "file": "zh/files/zh-na-source-tax-nov-antrag.html",
+    "bytes": 55831,
+    "sha256": "e63c395b36c52def285457d44be345e1d39a64914c3e5d23ef26e3188dfffe53",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.949Z",
+    "status": "ok"
+  },
+  "zh-2026-source-tax-tarif-a-ohne-kirchensteuer": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/quellensteuer/quellensteuertarif/2026/p208840_QuellensteuerTarif_A_ohne_KS_ENT1.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/quellensteuer/quellensteuertarif/2026/p208840_QuellensteuerTarif_A_ohne_KS_ENT1.pdf",
+    "file": "zh/files/zh-2026-source-tax-tarif-a-ohne-kirchensteuer.pdf",
+    "bytes": 208604,
+    "sha256": "a99acb77a8a9aff809532392c07c8b805e858b6fbeb6ae0478e1aa8d00ee6cdd",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.949Z",
+    "status": "ok"
+  },
+  "zh-na-source-tax-quellensteuerkorrektur": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/quellensteuerkorrektur-beantragen.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/quellensteuerkorrektur-beantragen.html",
+    "file": "zh/files/zh-na-source-tax-quellensteuerkorrektur.html",
+    "bytes": 52647,
+    "sha256": "b8458e62bfdcbb4d55a31c54002b1a92348ebfc04d04c9307aa0b2a5e0619700",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:52.962Z",
+    "status": "ok"
+  },
+  "zh-2026-tariff-weisung-sozialabzuege": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-34-1/ZStB-Nr-34-1%203.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-34-1/ZStB-Nr-34-1%203.pdf",
+    "file": "zh/files/zh-2026-tariff-weisung-sozialabzuege.pdf",
+    "bytes": 191927,
+    "sha256": "942af3c04e42b4d818bdea0f7ae30ab6935d2e9b4af81d0c64073d8b3f8e3e9f",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:52.995Z",
+    "status": "ok"
+  },
+  "zh-2025-tariff-weisung-sozialabzuege": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-34-1/zstb-nr-34-1_gueltig-bis-31_12_2025.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-34-1/zstb-nr-34-1_gueltig-bis-31_12_2025.pdf",
+    "file": "zh/files/zh-2025-tariff-weisung-sozialabzuege.pdf",
+    "bytes": 117189,
+    "sha256": "b7212ce95a9fcba9276c920f6851c3eb83d93293d39a3a042d96579351aeca2b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.007Z",
+    "status": "ok"
+  },
+  "zh-2025-form-ausserkantonal": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare-uj/303%20STE%20L%20ZH%202025%20UJ%20DEF.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-formulare-uj/303%20STE%20L%20ZH%202025%20UJ%20DEF.pdf",
+    "file": "zh/files/zh-2025-form-ausserkantonal.pdf",
+    "bytes": 100486,
+    "sha256": "605ed512374da953a2f063f3a99ce2a54f204178e203b0afa4023edb1891c57e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.030Z",
+    "status": "ok"
+  },
+  "zh-2026-deductions-berufsauslagen-zstb-26-1": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-26-1.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-26-1.html",
+    "file": "zh/files/zh-2026-deductions-berufsauslagen-zstb-26-1.html",
+    "bytes": 52077,
+    "sha256": "774c22b38d8421d41863da3642a84be539b4e82f4485b6a81baf00273a4e095b",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:53.031Z",
+    "status": "ok"
+  },
+  "zh-2025-guide-da-formulare": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/vst-formulare/438%20Wegleitung%20DA1_DA-3%202025%20bf%20DEF.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/vst-formulare/438%20Wegleitung%20DA1_DA-3%202025%20bf%20DEF.pdf",
+    "file": "zh/files/zh-2025-guide-da-formulare.pdf",
+    "bytes": 103017,
+    "sha256": "b7c8eb89947c1d075f4219ffc41a456f7108c03587b09d8ffc3f8abfc447d0f4",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.091Z",
+    "status": "ok"
+  },
+  "zh-2025-guide-natuerliche-personen": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf",
+    "file": "zh/files/zh-2025-guide-natuerliche-personen.pdf",
+    "bytes": 1497565,
+    "sha256": "cb2cf2e63520d9f3afe91e33e131222b35499b53b740f842817b35039eb7c812",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.095Z",
+    "status": "ok"
+  },
+  "zh-na-guide-en-paper-filing": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/jahrunabhaengig/how_to_fill_in_your_tax_return.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/jahrunabhaengig/how_to_fill_in_your_tax_return.pdf",
+    "file": "zh/files/zh-na-guide-en-paper-filing.pdf",
+    "bytes": 269314,
+    "sha256": "4750b15772037c42c5bcb400f42c00a9bbe22037b0db7f2df11d307d2574454d",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.154Z",
+    "status": "ok"
+  },
+  "zh-2026-changes-steuerbuch-overview": {
+    "url": "https://www.zh.ch/de/news-uebersicht/mitteilungen/2026/steuern-finanzen/ueberblick-ueber-aenderungen-im-zuercher-steuerbuch-.html",
+    "final_url": "https://www.zh.ch/de/news-uebersicht/mitteilungen/2026/steuern-finanzen/ueberblick-ueber-aenderungen-im-zuercher-steuerbuch-.html",
+    "file": "zh/files/zh-2026-changes-steuerbuch-overview.html",
+    "bytes": 56215,
+    "sha256": "cd0bb40be770884490127fcfe437f2b5d878b896032d485c3f743319d3939619",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:53.202Z",
+    "status": "ok"
+  },
+  "zh-na-other-crypto-zstb-16-5": {
+    "url": "https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-16-5.html",
+    "final_url": "https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-16-5.html",
+    "file": "zh/files/zh-na-other-crypto-zstb-16-5.html",
+    "bytes": 57028,
+    "sha256": "9c719be7a1a058d5612cd54b9c3afa6cfc266da7bfef1f2d3b4dc13c0a786279",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:53.254Z",
+    "status": "ok"
+  },
+  "zh-2026-guide-unterjaehrig": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2026/est-wegleitungen-uj/305%20Wegleitung%20ZH%202026%20UJ%20bf.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2026/est-wegleitungen-uj/305%20Wegleitung%20ZH%202026%20UJ%20bf.pdf",
+    "file": "zh/files/zh-2026-guide-unterjaehrig.pdf",
+    "bytes": 1472247,
+    "sha256": "30711442ba806237d90f0de1bde3319e240c7624de5ff9d9f919a4eab3fb582d",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.264Z",
+    "status": "ok"
+  },
+  "zh-2025-guide-unterjaehrig": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen-uj/305%20Wegleitung%20ZH%202025%20UJ%20bf%20DEF.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen-uj/305%20Wegleitung%20ZH%202025%20UJ%20bf%20DEF.pdf",
+    "file": "zh/files/zh-2025-guide-unterjaehrig.pdf",
+    "bytes": 1140655,
+    "sha256": "c4b88cdb299a48af6ba5047d7f0ae18cb59fca5d7e5df8f634d39598ea45f47c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.272Z",
+    "status": "ok"
+  },
+  "ch-2026-ifd-progression-deductions": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/vFK3ntWLQ4s4/2-215-D-2025-f.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/vFK3ntWLQ4s4/2-215-D-2025-f.pdf",
+    "file": "ch/files/ch-2026-ifd-progression-deductions.pdf",
+    "bytes": 217311,
+    "sha256": "a0fa69bd8b3bb7a3d1a6a5f3d311c34dddabc415623b0e59100c863065b52681",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.459Z",
+    "status": "ok"
+  },
+  "ch-2025-ifd-frais-professionnels-progression": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/zkUbFt0fCQiy/dbst-rs-2-210-d-2024-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/zkUbFt0fCQiy/dbst-rs-2-210-d-2024-fr.pdf",
+    "file": "ch/files/ch-2025-ifd-frais-professionnels-progression.pdf",
+    "bytes": 265193,
+    "sha256": "c89d4696a8abb5d6beb9aa25027682baf6d2394ab692d1510ae158123b2e300c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.488Z",
+    "status": "ok"
+  },
+  "ch-2026-ifd-instructions-personnes-physiques": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf",
+    "file": "ch/files/ch-2026-ifd-instructions-personnes-physiques.pdf",
+    "bytes": 518431,
+    "sha256": "50f7235e03ea49260c29833b2ac36b57392aa0dd8a696b746f72b1ae94c4cc23",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.488Z",
+    "status": "ok"
+  },
+  "ch-na-ifd-chiffres-reperes-3a": {
+    "url": "https://www.bsv.admin.ch/dam/bsv/fr/dokumente/bv/anleitungen/masszahlen-2025-2026.pdf.download.pdf/masszahlen-2025-2026.pdf",
+    "status": "failed",
+    "error": "HTTP 502",
+    "tried_at": "2026-10-13T11:53:20.914Z"
+  },
+  "ch-na-remboursement-impot-anticipe": {
+    "url": "https://www.estv.admin.ch/fr/remboursement-impot-anticipe",
+    "final_url": "https://www.estv.admin.ch/fr/remboursement-impot-anticipe",
+    "file": "ch/files/ch-na-remboursement-impot-anticipe.html",
+    "bytes": 386434,
+    "sha256": "05866cd4ffe1705eb9185a00f394a1a490aa4d709604bd7ec3534f613fe487b8",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:53.606Z",
+    "status": "ok"
+  },
+  "ch-na-is-faq-circulaire-45": {
+    "url": "https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf",
+    "status": "failed",
+    "error": "HTTP 502",
+    "tried_at": "2026-10-13T11:53:20.911Z"
+  },
+  "ch-2026-is-bases-de-calcul": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/nuQbhdzXDPm0/qst-berechnungsgrundlagen-2026-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/nuQbhdzXDPm0/qst-berechnungsgrundlagen-2026-fr.pdf",
+    "file": "ch/files/ch-2026-is-bases-de-calcul.pdf",
+    "bytes": 157924,
+    "sha256": "2976a091d184a465df1f3c9dec65a6222d7705f95dbe57c54dc0ef3bac62ac0c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.674Z",
+    "status": "ok"
+  },
+  "ch-2026-is-baremes-impot-source": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/mljRXo4VcR0p/2-216-D-2025-f.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/mljRXo4VcR0p/2-216-D-2025-f.pdf",
+    "file": "ch/files/ch-2026-is-baremes-impot-source.pdf",
+    "bytes": 1258951,
+    "sha256": "fc27a15468857e81738e47e151c24fe4293984c065e67a0833db9006d068df1c",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.716Z",
+    "status": "ok"
+  },
+  "ch-2025-ifd-tarif-personnes-physiques": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/ZbaRlMm2u6u2/dbst-tarife-58c-2025-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/ZbaRlMm2u6u2/dbst-tarife-58c-2025-fr.pdf",
+    "file": "ch/files/ch-2025-ifd-tarif-personnes-physiques.pdf",
+    "bytes": 142181,
+    "sha256": "bbba56628ec32afa3fd2af4da6b980b01a92ca69b863370bfd3738f819ba64a8",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.783Z",
+    "status": "ok"
+  },
+  "ch-2026-ifd-tarif-personnes-physiques": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/gnde9CmEsalK/dbst-tairfe-58c-2026-dfi.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/gnde9CmEsalK/dbst-tairfe-58c-2026-dfi.pdf",
+    "file": "ch/files/ch-2026-ifd-tarif-personnes-physiques.pdf",
+    "bytes": 142066,
+    "sha256": "a8a0ff6914523b9e5defa533759ee69daee892d3ab8669e21881de4728cfceaa",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.824Z",
+    "status": "ok"
+  },
+  "ch-2027-ifd-progression-deductions": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/sqbIsYvx0tZg/2-220-D-2026-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/sqbIsYvx0tZg/2-220-D-2026-fr.pdf",
+    "file": "ch/files/ch-2027-ifd-progression-deductions.pdf",
+    "bytes": 257144,
+    "sha256": "a096b84edaddd9e9a7fd92740243f65aca81367dfb5d26d9cc196a20387f7657",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.824Z",
+    "status": "ok"
+  },
+  "ch-na-simulateur-fiscal": {
+    "url": "https://www.estv.admin.ch/fr/simulateur-fiscal-calculer-vos-impots",
+    "final_url": "https://www.estv.admin.ch/fr/simulateur-fiscal-calculer-vos-impots",
+    "file": "ch/files/ch-na-simulateur-fiscal.html",
+    "bytes": 345653,
+    "sha256": "a02e6ebb66da48b3dff5462ea6e93675e8b05dacbbe1d88dadd0b0fecde71c1a",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:53.948Z",
+    "status": "ok"
+  },
+  "ch-na-formulaires-impot-federal-direct": {
+    "url": "https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct",
+    "final_url": "https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct",
+    "file": "ch/files/ch-na-formulaires-impot-federal-direct.html",
+    "bytes": 467614,
+    "sha256": "6e65d958e0d8efd14cd1177cf18df23491ecdc50ab0fa537473d20f8445c7775",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:53.954Z",
+    "status": "ok"
+  },
+  "ch-na-cryptoactifs-document-de-travail": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/HgzNhzz7q7YD/dbst-arbeitspapier-kryptowaehrungen-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/HgzNhzz7q7YD/dbst-arbeitspapier-kryptowaehrungen-fr.pdf",
+    "file": "ch/files/ch-na-cryptoactifs-document-de-travail.pdf",
+    "bytes": 368722,
+    "sha256": "64e8461d1815e3b61bb159fa4b4ffe51e2d740bc85a4815231025d35c50cc801",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:53.992Z",
+    "status": "ok"
+  },
+  "std-eCH-0119-e-tax-filing-v4-0-0": {
+    "url": "https://ech.ch/sites/default/files/dosvers/hauptdokument/STAN_d_DEF_2021-03-08_eCH-0119_V4.0.0_E-Tax%20Filing_1.pdf",
+    "final_url": "https://ech.ch/sites/default/files/dosvers/hauptdokument/STAN_d_DEF_2021-03-08_eCH-0119_V4.0.0_E-Tax%20Filing_1.pdf",
+    "file": "standards/files/std-eCH-0119-e-tax-filing-v4-0-0.pdf",
+    "bytes": 1097587,
+    "sha256": "489cf92e7c7fc882a614754d5f617061d7b2500503446864d75b9f1f40989abe",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:54.160Z",
+    "status": "ok"
+  },
+  "std-eCH-0278-e-tax-np": {
+    "url": "https://ech.ch/sites/default/files/imce/eCH-Dossier/eCH-Dossier_PDF_Publikationen/Hauptdokument/STAN_d_DEF_2026-02-05_eCH-f0278_V1.0.0_E-Tax_NP.pdf",
+    "final_url": "https://ech.ch/sites/default/files/imce/eCH-Dossier/eCH-Dossier_PDF_Publikationen/Hauptdokument/STAN_d_DEF_2026-02-05_eCH-f0278_V1.0.0_E-Tax_NP.pdf",
+    "file": "standards/files/std-eCH-0278-e-tax-np.pdf",
+    "bytes": 682845,
+    "sha256": "9b175f0f62319010913f9e86002fa4f8406a30f62ee540436cd043f933f62f3a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:54.222Z",
+    "status": "ok"
+  },
+  "std-lohnausweis-wegleitung-2026-de": {
+    "url": "https://www.estv.admin.ch/dam/de/sd-web/afP1GDFr8gE3/dbst-form-lohna-wegleitung-2026-de.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/de/sd-web/afP1GDFr8gE3/dbst-form-lohna-wegleitung-2026-de.pdf",
+    "file": "standards/files/std-lohnausweis-wegleitung-2026-de.pdf",
+    "bytes": 896269,
+    "sha256": "d92b36c0e0f63fd32a0c8e761438d3cc61cb209a854fa9dd0c131450a5a10e8b",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:54.416Z",
+    "status": "ok"
+  },
+  "std-lohnausweis-wegleitung-2026-fr": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/afP1GDFr8gE3/dbst-form-lohna-wegleitung-2026-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/afP1GDFr8gE3/dbst-form-lohna-wegleitung-2026-fr.pdf",
+    "file": "standards/files/std-lohnausweis-wegleitung-2026-fr.pdf",
+    "bytes": 901071,
+    "sha256": "d926cfebf29ed3410b6e9f89b5db4f063ebe0686b228d22c73cd9fd644a51902",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:54.560Z",
+    "status": "ok"
+  },
+  "std-lohnausweis-estv-landing-page": {
+    "url": "https://www.estv.admin.ch/fr/certificat-de-salaire-et-attestation-de-rentes",
+    "final_url": "https://www.estv.admin.ch/fr/certificat-de-salaire-et-attestation-de-rentes",
+    "file": "standards/files/std-lohnausweis-estv-landing-page.html",
+    "bytes": 391733,
+    "sha256": "2e4707dd17051d237cf355b401c703b5ecd7fe7f72f996f98ab45ab45263cb62",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:54.615Z",
+    "status": "ok"
+  },
+  "std-eCH-0270-codes-barres-generation": {
+    "url": "https://ech.ch/sites/default/files/imce/eCH-Dossier/eCH-Dossier_PDF_Publikationen/Hauptdokument/STAN_f_DEF_2024-11-04_eCH-0270_V1.0.0_Generation%20codes-barres.pdf",
+    "final_url": "https://ech.ch/sites/default/files/imce/eCH-Dossier/eCH-Dossier_PDF_Publikationen/Hauptdokument/STAN_f_DEF_2024-11-04_eCH-0270_V1.0.0_Generation%20codes-barres.pdf",
+    "file": "standards/files/std-eCH-0270-codes-barres-generation.pdf",
+    "bytes": 893570,
+    "sha256": "7f9ba2486729865c264738c498437078466ba9b929c346318c612d2af1d34fb8",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:54.737Z",
+    "status": "ok"
+  },
+  "std-eCH-0196-barcode-annex-v2-2-0": {
+    "url": "https://ech.ch/sites/default/files/dosvers/beilagen/BEIL2_f_DEF_2022-06-07_eCH-0196_V2.0.0_Codes-barres%20G%C3%A9n%C3%A9ration-%20Instruction%20technique.pdf",
+    "final_url": "https://ech.ch/sites/default/files/dosvers/beilagen/BEIL2_f_DEF_2022-06-07_eCH-0196_V2.0.0_Codes-barres%20G%C3%A9n%C3%A9ration-%20Instruction%20technique.pdf",
+    "file": "standards/files/std-eCH-0196-barcode-annex-v2-2-0.pdf",
+    "bytes": 733686,
+    "sha256": "736f0d605a2c907bafd9f1f1f607026ad9b037917493a36e270c37801b5fc8de",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T11:50:54.797Z",
+    "status": "ok"
+  },
+  "std-lohnausweis-ssk-certificat-electronique-page": {
+    "url": "https://www.ssk-csi.ch/fr/themen/certificat-de-salaire/certificat-de-salaire",
+    "final_url": "https://www.ssk-csi.ch/fr/themen/certificat-de-salaire/certificat-de-salaire",
+    "file": "standards/files/std-lohnausweis-ssk-certificat-electronique-page.html",
+    "bytes": 83537,
+    "sha256": "8cf6e2fd2b50e8b79e355114c236324a909d7d5393feaed5735907f0d69ea03a",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:54.866Z",
+    "status": "ok"
+  },
+  "std-lohnausweis-ssk-generalites-page": {
+    "url": "https://www.ssk-csi.ch/fr/themen/certificat-de-salaire/generalites",
+    "final_url": "https://www.ssk-csi.ch/fr/themen/certificat-de-salaire/generalites",
+    "file": "standards/files/std-lohnausweis-ssk-generalites-page.html",
+    "bytes": 78827,
+    "sha256": "52e047f4a5d1b062ae170fcb4c50c66925b1e91a81cef6f662afc1aeb57d72ad",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-10-13T11:50:54.972Z",
+    "status": "ok"
+  }
+}

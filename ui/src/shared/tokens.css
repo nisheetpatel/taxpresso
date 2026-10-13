@@ -1,0 +1,68 @@
+/* Design tokens and status chips, SPEC.md section 11b (the coffee theme). Shared by the dashboard
+   and the MCP Apps views. */
+:root {
+  /* The coffee theme. */
+  --ground: #f6f0e8;
+  --surface: #ffffff;
+  --ink: #1e1612;
+  --muted: #6b5e55;
+  --line: #e4d8ca;
+  --line-soft: #efe6db;
+  /* Primary actions (roast) and their soft background (latte). */
+  --accent: #5a3825;
+  --accent-soft: #f1e4d3;
+  --link: #9a5a28;
+  --savings: #2e6a4e;
+  --crema: #d7a86e;
+
+  --radius-card: 14px;
+  --radius-button: 10px;
+  --touch: 44px;
+
+  --font-ui: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.tnum {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status is always text plus color, never color alone. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.chip-verified {
+  color: #2e6a4e;
+  background: #e4f0e6;
+}
+.chip-needs-ok {
+  color: #2d4f8c;
+  background: #e7ecf7;
+}
+.chip-estimate {
+  color: #7a4a00;
+  background: #fcebcb;
+}
+.chip-missing {
+  color: #6b5e55;
+  background: #ffffff;
+  border: 1px dashed #b8a999;
+  padding: 5px 9px;
+}
+.chip-computed {
+  color: #4e443d;
+  background: #efe8df;
+}
+.chip-fix {
+  color: #a3271b;
+  background: #fbe5e1;
+}
