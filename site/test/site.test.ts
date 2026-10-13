@@ -2,11 +2,33 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BASE_URL, copy, LANGS, SOURCE_URL } from '../src/content.ts';
+import { COMMUNE_CENTIMES_2026, COMMUNES_2026 } from '../../packages/rules-ge/src/2026/communes.ts';
+import { BASE_URL, copy, type Lang, LANGS, SOURCE_URL, startPath } from '../src/content.ts';
+import { GENEVA_IDS, geneva, genevaPath } from '../src/geneva.ts';
+import {
+  type Citation,
+  cite,
+  COMMUNES,
+  DEADLINE_IDS,
+  DEADLINES,
+  DEDUCTION_IDS,
+  DEDUCTIONS,
+  type Line,
+  PILLAR3A,
+  TAX_YEAR,
+} from '../src/geneva-data.ts';
 import { GUIDE_IDS, GUIDE_SOURCES, guidePath, guides, guidesPath } from '../src/guides.ts';
 import { builtPages, PAGES, robots, sitemap } from '../src/pages.ts';
 import { privacy, privacyPath } from '../src/privacy.ts';
-import { render, renderGuide, renderGuides, renderPrivacy, renderStart } from '../src/render.ts';
+import {
+  render,
+  renderGeneva,
+  renderGenevaPage,
+  renderGuide,
+  renderGuides,
+  renderPrivacy,
+  renderStart,
+} from '../src/render.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DASHES = new RegExp('[\\u2013\\u2014]');
@@ -202,6 +224,110 @@ describe('privacy policy', () => {
       for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
       for (const page of [render(lang), renderStart(lang), renderGuides(lang), html])
         expect(page).toContain(`<a href="${privacyPath(p)}">${privacy[lang].link}</a>`);
+    }
+  });
+});
+
+describe('Geneva reference pages', () => {
+  const lines: { what: string; line: Line }[] = [
+    ...DEDUCTION_IDS.flatMap((id) => DEDUCTIONS[id].map((line) => ({ what: id, line }))),
+    ...DEADLINE_IDS.map((id) => ({ what: id, line: DEADLINES[id] })),
+    { what: 'catch-up', line: PILLAR3A.catchUp },
+  ];
+  const pagesOf = (lang: Lang) => [
+    renderGeneva(lang),
+    ...GENEVA_IDS.map((id) => renderGenevaPage(lang, id)),
+  ];
+  const main = (html: string) => /<main[\s\S]*<\/main>/.exec(html)![0];
+
+  it('have the same structure in every language as in French, with no en or em dashes', () => {
+    for (const { lang } of LANGS) {
+      expect(shape(geneva[lang]), lang).toEqual(shape(geneva.fr));
+      for (const s of strings(geneva[lang])) expect(s, `${lang}: ${s}`).not.toMatch(DASHES);
+    }
+  });
+
+  it('type no number in the copy: every figure is a {placeholder} filled from the rules engine', () => {
+    // Digits that are part of a name, not a figure: pillar 3a, the 2nd pillar.
+    const NAMES =
+      /\b3a\b|3e pilier A|2e pilier|2nd pillar|2\. Säule|2° pilastro|2\.º pilar|piliers 2 et 3a|\{\w+\}/g;
+    for (const { lang } of LANGS)
+      for (const s of strings(geneva[lang]))
+        expect(s.replace(NAMES, ''), `${lang}: ${s}`).not.toMatch(/\d/);
+  });
+
+  it('show every commune with the centimes the rules engine holds, and its source', () => {
+    for (const { lang } of LANGS) {
+      const html = renderGenevaPage(lang, 'communes');
+      const rows = [
+        ...html.matchAll(/<tr><th scope="row">([^<]+)<\/th><td[^>]*>(.*?)<\/td><\/tr>/g),
+      ];
+      expect(rows.map((r) => r[1])).toEqual(COMMUNES_2026.map((c) => c.name));
+      for (const [i, c] of COMMUNES_2026.entries()) {
+        const shown = rows[i]![2]!.replace(/<[^>]+>/g, '').replace(',', '.');
+        expect(Math.round(Number(shown) * 100), `${lang} ${c.name}`).toBe(
+          COMMUNE_CENTIMES_2026.value[c.slug],
+        );
+      }
+      expect(html).toContain('href="https://silgeneve.ch/legis/data/rsg_D3_05p30.htm"');
+    }
+  });
+
+  it('cite only documents from the sources library, linked at their page', async () => {
+    const manifest = JSON.parse(
+      await readFile(path.join(here, '..', '..', 'docs', 'sources', 'manifest.json'), 'utf8'),
+    ) as { entries: { id: string; url: string; format: string }[] };
+    const official = new Set(manifest.entries.map((e) => e.url));
+    for (const { lang } of LANGS) {
+      for (const html of pagesOf(lang)) {
+        for (const [, href] of main(html).matchAll(/href="(https:[^"]+)"/g)) {
+          expect(href, href).not.toMatch(/[?]/);
+          expect(official, href).toContain(href!.replace(/#page=\d+$/, ''));
+        }
+      }
+    }
+    for (const { line } of lines)
+      for (const c of line.sources) {
+        const entry = manifest.entries.find((e) => e.id === c.id)!;
+        const page = /\bp\. (\d+)/.exec(c.at)?.[1];
+        expect(c.href).toBe(
+          entry.format === 'pdf' && page ? `${entry.url}#page=${page}` : entry.url,
+        );
+      }
+    expect(() => cite('ge-2099-not-a-document p. 1')).toThrow(/not in docs\/sources/);
+  });
+
+  it('give each figure the tax year of the document it comes from', () => {
+    const yearOf = (sources: Citation[]) => sources[0]!.taxYear;
+    for (const { what, line } of lines.filter(({ line }) =>
+      Object.values(line.figures).some((f) => 'chf' in f || 'pct' in f),
+    ))
+      if (yearOf(line.sources) !== null) expect(line.year, what).toBe(yearOf(line.sources));
+    for (const row of PILLAR3A.rows) expect(row.year).toBe(yearOf(row.sources));
+    expect(COMMUNES.year).toBe(yearOf(COMMUNES.sources));
+  });
+
+  it('say the tax year, ask you to check the official source and offer Taxpresso, on every page', () => {
+    for (const { lang, path: p } of LANGS) {
+      for (const html of pagesOf(lang)) {
+        expect(html).toContain(
+          `<p class="ref-year">${geneva[lang].year.replace('{year}', String(TAX_YEAR))}</p>`,
+        );
+        expect(html).toContain(geneva[lang].check);
+        expect(html).toContain(`<a class="btn btn-crema" href="${startPath(p)}">`);
+        expect(html, lang).not.toMatch(/\{\w+\}/);
+        expect(html).not.toMatch(RUNNABLE_SCRIPT);
+        for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
+      }
+    }
+  });
+
+  it('are linked from every footer and from the guides', () => {
+    for (const { lang, path: p } of LANGS) {
+      const link = `<a href="${genevaPath(p)}">${geneva[lang].link}</a>`;
+      for (const html of [render(lang), renderStart(lang), renderPrivacy(lang), ...pagesOf(lang)])
+        expect(html).toContain(link);
+      expect(renderGuides(lang)).toContain(`href="${genevaPath(p)}"`);
     }
   });
 });

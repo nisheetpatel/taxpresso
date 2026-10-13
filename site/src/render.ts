@@ -25,6 +25,21 @@ import {
   guidesPath,
   type Section,
 } from './guides.ts';
+import { GENEVA_IDS, type GenevaId, geneva, genevaPagePath, genevaPath } from './geneva.ts';
+import {
+  type Citation,
+  COMMUNES,
+  DEADLINE_IDS,
+  DEADLINES,
+  DEDUCTION_IDS,
+  DEDUCTIONS,
+  DEDUCTIONS_GUIDE,
+  type Figure,
+  FILING_PAGE,
+  type Line,
+  PILLAR3A,
+  TAX_YEAR,
+} from './geneva-data.ts';
 import { privacy, PRIVACY_UPDATED, privacyPath } from './privacy.ts';
 import { absoluteUrl, alternates, jsonLd, ORGANIZATION, plain } from './seo.ts';
 
@@ -225,7 +240,7 @@ function footer(lang: Lang) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   return `<footer class="foot">
-<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="${privacyPath(here.path)}">${esc(privacy[lang].link)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
+<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a href="${genevaPath(here.path)}">${esc(geneva[lang].link)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="${privacyPath(here.path)}">${esc(privacy[lang].link)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
 <p>${esc(t.footer.independent)}</p>
 <p>${esc(t.footer.noTracking)}</p>
 <p>© 2026 Taxpresso</p>
@@ -529,6 +544,7 @@ ${header(lang, guidesPath)}
 <ul class="guide-list">
 ${cards}
 </ul>
+<p class="start-guides">${rich(geneva[lang].fromGuides.replace('{href}', genevaPath(here.path)))}</p>
 <p class="guide-basis">${esc(g.basis)} ${esc(g.disclaimer)}</p>
 <p class="back"><a href="${here.path}">${esc(copy[lang].start.back)}</a></p>
 </main>
@@ -636,6 +652,297 @@ ${header(lang, privacyPath)}
 ${sectionsHtml(t.sections)}
 </article>
 <p class="back"><a href="${here.path}">${esc(copy[lang].start.back)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Geneva reference pages: every figure comes from geneva-data.ts, with its citation.
+
+/** A decimal string from an integer and its number of decimal places (725800, 2 -> "7258.00"). */
+const decimal = (n: number, places: number) => {
+  const s = String(n).padStart(places + 1, '0');
+  return `${s.slice(0, -places)}.${s.slice(-places)}` as `${number}`;
+};
+
+/** A figure written for the page's language: "CHF 7’258", "7 258 CHF", "20%", "45.49". */
+function figure(lang: Lang, f: Figure): string {
+  const loc = LOCALE[lang];
+  if ('chf' in f) {
+    const cents = f.chf % 100 !== 0;
+    return new Intl.NumberFormat(loc, {
+      style: 'currency',
+      currency: 'CHF',
+      minimumFractionDigits: cents ? 2 : 0,
+      maximumFractionDigits: cents ? 2 : 0,
+    }).format(decimal(f.chf, 2));
+  }
+  if ('pct' in f)
+    return new Intl.NumberFormat(loc, { style: 'percent', maximumFractionDigits: 2 }).format(
+      decimal(f.pct, 4),
+    );
+  if ('centimes' in f)
+    return new Intl.NumberFormat(loc, { maximumFractionDigits: 2 }).format(decimal(f.centimes, 2));
+  if ('date' in f) return longDate(lang, f.date);
+  return String(f.n);
+}
+
+/** Copy with its {placeholders} filled by figures, each in a span; the rest escaped. */
+function fill(lang: Lang, template: string, figures: Record<string, Figure>): string {
+  return esc(template).replace(/\{(\w+)\}/g, (_, key: string) => {
+    const f = figures[key];
+    if (!f) throw new Error(`No figure for {${key}} in "${template}"`);
+    return `<span class="fig${'date' in f ? ' fig-date' : ''}">${esc(figure(lang, f))}</span>`;
+  });
+}
+
+/** Plain text (titles, descriptions) with {year} and {count} filled. */
+function words(template: string): string {
+  const vars: Record<string, number> = { year: TAX_YEAR, count: COMMUNES.rows.length };
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => {
+    const v = vars[key];
+    if (v === undefined) throw new Error(`No value for {${key}} in "${template}"`);
+    return String(v);
+  });
+}
+
+/**
+ * Each official document linked once (it opens in a new tab, at the first page cited), followed by
+ * the places cited in it: "title, art. 39 al. 1, art. 41 al. 1".
+ */
+function citeLinks(sources: Citation[]): { html: string; documents: number } {
+  const byDocument = new Map<string, Citation[]>();
+  for (const c of sources) byDocument.set(c.id, [...(byDocument.get(c.id) ?? []), c]);
+  const html = [...byDocument.values()]
+    .map((cs) => {
+      const places = cs.map((c) => c.at).filter(Boolean);
+      return `<a ${out(cs[0]!.href)}>${esc(cs[0]!.title)}</a>${places.length ? `, ${esc(places.join(', '))}` : ''}`;
+    })
+    .join('; ');
+  return { html, documents: byDocument.size };
+}
+
+/** "Source: title, p. 7", under the statement it backs. */
+function cites(lang: Lang, sources: Citation[], prefix = ''): string {
+  const g = geneva[lang];
+  const colon = lang === 'fr' ? ' :' : ':';
+  const { html, documents } = citeLinks(sources);
+  return `<p class="cite">${prefix}<span class="cite-label">${esc(documents > 1 ? g.sources : g.source)}${colon}</span> ${html}</p>`;
+}
+
+/** The sources of several lines, each place once. */
+function allSources(lines: Line[]): Citation[] {
+  const seen = new Set<string>();
+  return lines
+    .flatMap((l) => l.sources)
+    .filter((c) => {
+      const key = `${c.id} ${c.at}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+const yearPill = (lang: Lang) =>
+  `<p class="ref-year">${esc(geneva[lang].year.replace('{year}', String(TAX_YEAR)))}</p>`;
+
+function cta(lang: Lang): string {
+  const g = geneva[lang];
+  const here = LANGS.find((l) => l.lang === lang)!;
+  return `<aside class="ref-cta" aria-labelledby="cta-title">
+<div>
+<h2 id="cta-title">${esc(g.cta.title)}</h2>
+<p>${esc(g.cta.text)}</p>
+</div>
+<a class="btn btn-crema" href="${startPath(here.path)}">${esc(copy[lang].getStarted)}</a>
+</aside>`;
+}
+
+function communesHtml(lang: Lang): string {
+  const t = geneva[lang].pages.communes;
+  const rows = COMMUNES.rows
+    .map(
+      (r) =>
+        `<tr><th scope="row">${esc(r.name)}</th><td class="ref-num">${fill(lang, '{c}', { c: { centimes: r.centimes } })}</td></tr>`,
+    )
+    .join('\n');
+  return `${cites(lang, COMMUNES.basis)}
+<table class="ref-table">
+<caption class="sr-only">${esc(words(t.title))}</caption>
+<thead><tr><th scope="col">${esc(t.colCommune)}</th><th scope="col" class="ref-num">${esc(t.colRate)}</th></tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+${cites(lang, COMMUNES.sources)}`;
+}
+
+function pillar3aHtml(lang: Lang): string {
+  const t = geneva[lang].pages['pillar-3a'];
+  const rows = PILLAR3A.rows
+    .map(
+      (r) =>
+        `<tr><th scope="row">${r.year}</th><td>${fill(lang, '{c}', { c: r.withFund })}</td><td>${fill(lang, t.without, { share: r.share, cap: r.withoutFund })}</td></tr>`,
+    )
+    .join('\n');
+  const rowSources = PILLAR3A.rows
+    .map((r) => cites(lang, r.sources, `<span class="cite-year">${r.year}</span> `))
+    .join('\n');
+  const c = PILLAR3A.catchUp;
+  return `<table class="ref-table">
+<caption class="sr-only">${esc(words(t.title))}</caption>
+<thead><tr><th scope="col">${esc(t.colYear)}</th><th scope="col">${esc(t.colWith)}</th><th scope="col">${esc(t.colWithout)}</th></tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+${rowSources}
+<section>
+<p>${esc(t.paidInYear)}</p>
+${cites(lang, PILLAR3A.paidInYear)}
+<p>${esc(t.cantonal)}</p>
+${cites(lang, PILLAR3A.cantonal)}
+</section>
+<section>
+<h2>${esc(t.catchUpTitle)}</h2>
+<p>${fill(lang, t.catchUp, { ...c.figures, year: { n: c.year } })}</p>
+${cites(lang, c.sources)}
+</section>`;
+}
+
+function deadlinesHtml(lang: Lang): string {
+  const t = geneva[lang].pages.deadlines;
+  const cards = DEADLINE_IDS.map((id) => {
+    const line = DEADLINES[id];
+    const item = t.items[id];
+    const when = 'days' in line.figures ? t.days : '{date}';
+    return `<li class="ref-card">
+<h2>${esc(item.title)}</h2>
+<p class="ref-when">${fill(lang, when, line.figures)}</p>
+<p>${fill(lang, item.text, { ...line.figures, year: { n: line.year } })}</p>
+${cites(lang, line.sources)}
+</li>`;
+  }).join('\n');
+  return `<ol class="ref-cards">
+${cards}
+</ol>
+<section>
+<p class="cite-inline">${esc(t.filing)} ${citeLinks(FILING_PAGE).html}</p>
+</section>`;
+}
+
+function deductionsHtml(lang: Lang): string {
+  const g = geneva[lang];
+  const t = g.pages.deductions;
+  const cards = DEDUCTION_IDS.map((id) => {
+    const item = t.items[id];
+    const lines = DEDUCTIONS[id]
+      .map(
+        (line) =>
+          `<li><span class="ref-tax">${esc(g.tax[line.tax])}, ${line.year}</span> ${fill(lang, item.text, line.figures)}</li>`,
+      )
+      .join('\n');
+    return `<li class="ref-card">
+<h2>${esc(item.name)}</h2>
+<ul class="ref-lines">
+${lines}
+</ul>
+${cites(lang, allSources(DEDUCTIONS[id]))}
+</li>`;
+  }).join('\n');
+  const older = DEDUCTION_IDS.some((id) => DEDUCTIONS[id].some((l) => l.year < TAX_YEAR))
+    ? `<p>${esc(g.older)}</p>\n`
+    : '';
+  return `<ul class="ref-cards">
+${cards}
+</ul>
+<section>
+${older}<p class="cite-inline">${esc(t.guide)} ${citeLinks(DEDUCTIONS_GUIDE).html}</p>
+</section>`;
+}
+
+const TOPIC: Record<GenevaId, (lang: Lang) => string> = {
+  communes: communesHtml,
+  'pillar-3a': pillar3aHtml,
+  deadlines: deadlinesHtml,
+  deductions: deductionsHtml,
+};
+
+/** The Geneva reference index: one card per topic. */
+export function renderGeneva(lang: Lang, cssVersion = ''): string {
+  const g = geneva[lang];
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const cards = GENEVA_IDS.map(
+    (id) =>
+      `<li><a class="guide-card" href="${genevaPagePath(here.path, id)}"><h2>${esc(words(g.pages[id].title))}</h2><p>${esc(words(g.pages[id].summary))}</p><span class="guide-go" aria-hidden="true">${esc(g.open)}</span></a></li>`,
+  ).join('\n');
+
+  return `${head(
+    lang,
+    { title: words(g.htmlTitle), description: words(g.metaDescription), at: genevaPath },
+    cssVersion,
+  )}
+<body>
+${header(lang, genevaPath)}
+
+<main id="main" class="guides">
+<section class="guides-hero">
+<h1>${esc(g.title)}</h1>
+<p class="lead">${esc(g.lead)}</p>
+${yearPill(lang)}
+</section>
+<ul class="guide-list ref-list">
+${cards}
+</ul>
+<p class="ref-check">${esc(g.check)}</p>
+<p class="guide-basis">${esc(g.basis)} ${esc(g.disclaimer)}</p>
+${cta(lang)}
+<p class="back"><a href="${here.path}">${esc(copy[lang].start.back)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
+/** One Geneva reference page: its figures, each with its source, then the call to install. */
+export function renderGenevaPage(lang: Lang, id: GenevaId, cssVersion = ''): string {
+  const g = geneva[lang];
+  const t = g.pages[id];
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const at = (p: string) => genevaPagePath(p, id);
+  const more = GENEVA_IDS.filter((other) => other !== id)
+    .map(
+      (other) =>
+        `<li><a href="${genevaPagePath(here.path, other)}">${esc(words(g.pages[other].title))}</a></li>`,
+    )
+    .join('\n');
+
+  return `${head(
+    lang,
+    { title: `${words(t.title)} · Taxpresso`, description: words(t.summary), at },
+    cssVersion,
+  )}
+<body>
+${header(lang, at)}
+
+<main id="main" class="guides">
+<article class="guide ref">
+<p class="crumb"><a href="${genevaPath(here.path)}">${esc(g.title)}</a></p>
+<h1>${esc(words(t.title))}</h1>
+${yearPill(lang)}
+<p class="lead">${esc(words(t.intro))}</p>
+${TOPIC[id](lang)}
+<p class="ref-check">${esc(g.check)}</p>
+<p class="guide-basis">${esc(g.basis)} ${esc(g.disclaimer)}</p>
+</article>
+${cta(lang)}
+<nav class="guide-more" aria-labelledby="more-title">
+<h2 id="more-title">${esc(g.more)}</h2>
+<ul>
+${more}
+</ul>
+</nav>
+<p class="back"><a href="${genevaPath(here.path)}">${esc(g.all)}</a></p>
 </main>
 
 ${footer(lang)}`;

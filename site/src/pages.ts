@@ -2,8 +2,17 @@
 // them, and the tests check the links between them.
 import { LANGS, type Lang, startPath } from './content.ts';
 import { GUIDE_IDS, guidePath, guidesPath } from './guides.ts';
+import { GENEVA_IDS, genevaPagePath, genevaPath } from './geneva.ts';
 import { privacyPath } from './privacy.ts';
-import { render, renderGuide, renderGuides, renderPrivacy, renderStart } from './render.ts';
+import {
+  render,
+  renderGeneva,
+  renderGenevaPage,
+  renderGuide,
+  renderGuides,
+  renderPrivacy,
+  renderStart,
+} from './render.ts';
 import { absoluteUrl, alternates } from './seo.ts';
 
 export interface Page {
@@ -21,6 +30,11 @@ export const PAGES: readonly Page[] = [
     render: (lang, css) => renderGuide(lang, id, css),
   })),
   { at: privacyPath, render: renderPrivacy },
+  { at: genevaPath, render: renderGeneva },
+  ...GENEVA_IDS.map((id): Page => ({
+    at: (p) => genevaPagePath(p, id),
+    render: (lang, css) => renderGenevaPage(lang, id, css),
+  })),
 ];
 
 /** Every page in every language, with its path. */
