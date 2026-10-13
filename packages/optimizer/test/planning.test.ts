@@ -70,6 +70,24 @@ describe('the tax seam (taxWith)', () => {
     ).toBeUndefined();
   });
 
+  it('follows the answer on child support for a parent sharing custody', () => {
+    const parent = (known?: HouseholdInput['known']): HouseholdInput => ({
+      ...single(),
+      children: 1,
+      custody: 'shared',
+      ...(known ? { known } : {}),
+    });
+    const federal = (h: HouseholdInput) => ordinaryTaxEstimator(h)!.taxWith([]).federalCentimes;
+    // Not answered: the parental scale, as before. The other parent earns more: the single scale,
+    // so more federal tax. Child support paid: the child counts for the other parent.
+    const assumed = federal(parent());
+    expect(federal(parent({ childSupport: 'none', ifdParentalScale: true }))).toBe(assumed);
+    expect(federal(parent({ childSupport: 'none', ifdParentalScale: false }))).toBeGreaterThan(
+      assumed,
+    );
+    expect(federal(parent({ childSupport: 'pays' }))).toBe(federal(single()));
+  });
+
   it('gives the 3a plan its saving from the engine', () => {
     const plan = pillar3aPlan(single());
     expect(plan.saving?.totalCentimes).toBe(tax(0) - tax(7_258));

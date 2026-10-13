@@ -86,7 +86,8 @@ export const Question = z
   .object({
     id: z.string().regex(/^[a-z0-9_]+$/),
     key: z.string(),
-    type: z.enum(['choice', 'yesno', 'number', 'multi', 'commune']),
+    /** money: an amount in CHF, stored as centimes (SPEC.md section 4). */
+    type: z.enum(['choice', 'yesno', 'number', 'money', 'multi', 'commune']),
     perPerson: z.boolean().default(false),
     when: Condition.optional(),
     text: z.union([Text, PerPersonText]),

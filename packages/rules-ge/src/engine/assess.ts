@@ -54,6 +54,8 @@ export interface AssessInput {
   ifdScale: 'single' | 'married' | 'parental';
   /** Children for the 263 reduction on the married or parental federal scale. */
   ifdChildReductions: number;
+  /** The documents that say which scale applies, when the household's situation needs them. */
+  ifdScaleSources?: readonly string[];
   /** Family charges for the wealth deduction: 1 per child, 0.5 for a half charge. */
   wealthCharges: number;
   /** A single person living with their minor children (higher wealth deduction). */
@@ -635,6 +637,7 @@ export function assess(input: AssessInput): Assessment {
   );
   const stTrace = new Trace().from(scaleIncomeLine);
   const steps = stTrace.p(input.ifdScale === 'single' ? F.singleScale : F.marriedScale);
+  stTrace.src(...(input.ifdScaleSources ?? []));
   stTrace.p(F.rounding);
   const raw = federalScaleTax(steps, scaleIncome);
   const scaleTax = Math.floor(raw / rounding.taxStep) * rounding.taxStep;
@@ -652,7 +655,7 @@ export function assess(input: AssessInput): Assessment {
       `Le ${scaleName.fr} à ${chf(scaleIncome)}${NB}: ${chf(raw)}, ramené aux 5 centimes inférieurs${NB}: ${chf(scaleTax)}.`,
     ),
   );
-  const crTrace = new Trace().from(scaleTaxLine);
+  const crTrace = new Trace().from(scaleTaxLine).src(...(input.ifdScaleSources ?? []));
   const reductionPerChild = crTrace.p(F.childTaxReduction);
   const perChild = input.ifdScale === 'single' ? 0 : reductionPerChild;
   const childReduction = -Math.min(scaleTax, perChild * input.ifdChildReductions);

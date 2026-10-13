@@ -219,6 +219,123 @@ describe('engine input from the ledger', () => {
   });
 });
 
+describe('the way to work, lunches and child support', () => {
+  /** A synthetic Ribeiro household answering the questions (all stated in the chat). */
+  function ribeiro(answers: [string, 'p1' | 'p2' | 'household', number | string | boolean][]) {
+    const l = new Ledger(2026, KEYS_2026);
+    const user = { method: 'user' as const, via: 'chat' as const };
+    const put = (key: string, person: 'p1' | 'p2' | 'household', value: unknown) =>
+      l.append({ key, person, value: value as number, status: 'stated', source: user });
+    put('profile.commune', 'household', 'lancy');
+    l.append({
+      key: 'salary.gross',
+      person: 'p1',
+      instance: 'd_cert',
+      value: 9_500_000,
+      status: 'stated',
+      source: { method: 'claude', docId: 'd_cert', page: 1 },
+    });
+    for (const [key, person, value] of answers) put(key, person, value);
+    return l.view();
+  }
+  const read = (answers: Parameters<typeof ribeiro>[0]) =>
+    engineInputFromFacts(2026, ribeiro(answers), []);
+
+  it('reads public transport, its cost and the lunches, Geneva meals only on a long trip', () => {
+    const { input } = read([
+      ['profile.civil_status', 'household', 'single'],
+      ['profile.commute', 'p1', 'public_transport_long'],
+      ['commute.transit_cost', 'p1', 120_000],
+      ['meals.days', 'p1', 210],
+    ]);
+    expect(input!.people[0]).toMatchObject({
+      commuteMode: { by: 'public_transport' },
+      commuteCost: { value: 120_000, status: 'stated' },
+      mealDays: 210,
+      mealsIccAllowed: true,
+    });
+    const short = read([
+      ['profile.civil_status', 'household', 'single'],
+      ['profile.commute', 'p1', 'public_transport'],
+      ['meals.days', 'p1', 100],
+    ]).input!.people[0]!;
+    expect(short.mealsIccAllowed).toBe(false);
+    expect(short.commuteCost).toBeUndefined();
+  });
+
+  it('reads a car by the price of public transport, or by the kilometres when there is none', () => {
+    const priced = read([
+      ['profile.civil_status', 'household', 'single'],
+      ['profile.commute', 'p1', 'car'],
+      ['commute.transit_usable', 'p1', 'yes_long'],
+      ['commute.transit_equivalent', 'p1', 90_000],
+      ['meals.days', 'p1', 0],
+    ]).input!.people[0]!;
+    expect(priced).toMatchObject({
+      commuteMode: { by: 'car', transitUsable: true },
+      commuteCost: { value: 90_000 },
+      mealsIccAllowed: true,
+    });
+    const driven = read([
+      ['profile.civil_status', 'household', 'single'],
+      ['profile.commute', 'p1', 'motorbike'],
+      ['commute.transit_usable', 'p1', 'no'],
+      ['commute.distance_km', 'p1', 12],
+      ['commute.drive_days', 'p1', 180],
+      // Left from an earlier answer: no longer counts.
+      ['commute.transit_equivalent', 'p1', 90_000],
+    ]).input!.people[0]!;
+    expect(driven.commuteMode).toMatchObject({
+      by: 'motorbike',
+      transitUsable: false,
+      kmOneWay: 12,
+      days: 180,
+    });
+    expect(driven.commuteCost).toBeUndefined();
+    const r = computeReturn(
+      read([
+        ['profile.civil_status', 'household', 'single'],
+        ['profile.commute', 'p1', 'motorbike'],
+        ['commute.transit_usable', 'p1', 'no'],
+        ['commute.distance_km', 'p1', 12],
+        ['commute.drive_days', 'p1', 180],
+      ]).input!,
+    );
+    // 12 x 2 x 180 x 0.40 = 1'728 (ch-2026-ifd-progression-deductions p. 1).
+    expect(r.ifd!.items.find((i) => i.code === '31.71')).toMatchObject({ amount: -172_800 });
+  });
+
+  it('reads child support into who gets the children, and leaves couples alone', () => {
+    const base: Parameters<typeof ribeiro>[0] = [
+      ['profile.civil_status', 'household', 'divorced'],
+      ['profile.children_count', 'household', 2],
+      ['profile.children_custody', 'household', 'shared'],
+    ];
+    const support = (value: string) =>
+      read([...base, ['profile.child_support', 'household', value]]).input!;
+    expect(support('i_receive')).toMatchObject({ childSupport: 'receives' });
+    expect(support('i_pay')).toMatchObject({ childSupport: 'pays' });
+    expect(support('none_i_earn_more')).toMatchObject({
+      childSupport: 'none',
+      ifdParentalScale: true,
+    });
+    expect(support('none_other_earns_more')).toMatchObject({ ifdParentalScale: false });
+    expect(support('none_unsure').ifdParentalScale).toBeUndefined();
+    expect(computeReturn(support('none_unsure')).ifd).toBeNull();
+    expect(computeReturn(support('none_i_earn_more')).ifd!.scale).toBe('parental');
+    expect(computeReturn(support('i_pay')).ifd!.scale).toBe('single');
+    const { notes } = read([...base, ['profile.child_support', 'household', 'i_pay']]);
+    expect(notes.map((n) => n.en).join(' ')).toMatch(/can’t take their amounts yet/);
+    const married = read([
+      ['profile.civil_status', 'household', 'married'],
+      ['profile.children_count', 'household', 1],
+      ['profile.children_custody', 'household', 'shared'],
+      ['profile.child_support', 'household', 'i_pay'],
+    ]).input!;
+    expect(married.childSupport).toBeUndefined();
+  });
+});
+
 describe('last year’s figures', () => {
   it('are never read into this year’s engine input', () => {
     const { facts, documents } = dupont();

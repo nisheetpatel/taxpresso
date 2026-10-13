@@ -69,6 +69,10 @@ export interface IfdAmounts {
   rounding: Cited<{ incomeStep: number; taxStep: number }>;
   professionalFlat: Cited<{ rateBp: number; min: number; max: number }>;
   commuteMax: Cited<number>;
+  /** 31.71: bike, e-bike or moped with a yellow plate, a flat amount a year. */
+  commuteBike: Cited<number>;
+  /** 31.71: car or motorbike (white plate) without usable public transport, centimes per km. */
+  commuteKm: Cited<{ car: number; motorbike: number }>;
   meals: Cited<MealAmounts>;
   twoEarner: Cited<{ shareBp: number; min: number; max: number }>;
   pillar3a: Cited<Pillar3aAmounts>;
@@ -108,6 +112,16 @@ export const IFD_2025: IfdAmounts = {
   commuteMax: {
     value: 330_000,
     source: `${CIRCULAR} p. 1 (point 1.1); ch-na-law-lifd art. 26 al. 1 let. a (p. 21)`,
+  },
+  /** 31.71: bike, e-bike or moped with a yellow plate, 700 a year. */
+  commuteBike: {
+    value: 70_000,
+    source: `${GUIDE} p. 20 (31.71); ch-2026-ifd-progression-deductions p. 1 (2025 column)`,
+  },
+  /** 31.71: no usable public transport: motorbike 0.40, car 0.70 per km. */
+  commuteKm: {
+    value: { car: 70, motorbike: 40 },
+    source: `${GUIDE} p. 20 (31.71); ch-2026-ifd-progression-deductions p. 1 (2025 column)`,
   },
   /** 31.60: 15 a day, at most 3,200; half (7.50, 1,600) with a canteen or meal vouchers. */
   meals: {

@@ -457,6 +457,12 @@ function initialDraft(q: Question): Value | undefined {
   if (value === undefined)
     return q.type === 'multi' ? [] : q.type === 'number' ? (q.min ?? 0) : undefined;
   if (q.type === 'yesno') return value ? 'yes' : 'no';
+  // Money arrives in centimes and is typed in francs: "1250.50", or "1250" for whole francs.
+  if (q.type === 'money' && typeof value === 'number') {
+    const francs = String(Math.trunc(value / 100));
+    const cents = value % 100;
+    return cents ? `${francs}.${String(cents).padStart(2, '0')}` : francs;
+  }
   return value;
 }
 
@@ -505,6 +511,25 @@ function QuestionCard(p: CardProps) {
         <button type="button" class="ghost square" aria-label="+1" onClick={() => set(n + 1)}>
           +
         </button>
+      </div>
+    );
+  } else if (q.type === 'money') {
+    control = (
+      <div class="money">
+        <span class="money-unit" aria-hidden="true">
+          CHF
+        </span>
+        <input
+          class="tnum"
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder={t(lang, 'amountPlaceholder')}
+          value={typeof draft === 'string' ? draft : ''}
+          aria-labelledby="q-title"
+          onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+        />
       </div>
     );
   } else if (q.type === 'commune') {

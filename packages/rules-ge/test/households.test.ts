@@ -502,15 +502,19 @@ both(
 // Communal 2025 (Lancy PP 49 %, CA 47): 294.833 -> 294.85 x 47 % = 138.5795 -> 138.60; rest 306.85
 // x 47 % = 144.2195 -> 144.20. 2026 (PP 51 %): 306.867 -> 306.85 -> 144.20; rest 294.85 -> 138.60.
 // ICC 787.00 + 282.80 + 25 = 1'094.80.
-// IFD, told the other parent has the parental scale (single scale): 31.20 1'854 -> 2'000; 52.00
-// min(6'500, 1'800 + 700) = 2'500; 61.20 half 3'400. Taxable 48'900: 229.20 + 54 x 2.64 = 371.76
-// -> 371.75.
+// IFD, no child support and the other parent earns more, so the other parent has the parental
+// scale (ch-na-circulaire-30-epoux-famille p. 24 and 32, ch. 13.4.2 and 14.4.2): single scale.
+// 31.20 1'854 -> 2'000; 52.00 min(6'500, 1'800 + 350): each parent has half the amount per child,
+// as half the child deduction (circular 30 p. 32, ch. 14.4.1): 2'150; 61.20 half 3'400. Taxable
+// 70'000 - 4'600 - 3'600 - 5'000 - 2'000 - 2'150 - 3'400 = 49'250, at 49'200: 229.20 + 57 x 2.64
+// = 379.68 -> 379.65.
 both(
   'H6 shared custody, Lancy',
   (taxYear) => ({
     taxYear,
     commune: 'lancy',
     civilStatus: 'divorced',
+    childSupport: 'none',
     ifdParentalScale: false,
     people: [
       { id: 'p1', employments: [job(70_000, 4_600, 3_600)], pillar3a: { value: chf(5_000) } },
@@ -535,7 +539,7 @@ both(
         ['31.12', 'p1', -3_600],
         ['31.40', 'p1', -5_000],
         ['31.20', 'p1', -2_000],
-        ['52.00', 'household', -2_500],
+        ['52.00', 'household', -2_150],
         ['61.20', 'household', -3_400],
       ],
       taxable: 41_658,
@@ -548,9 +552,9 @@ both(
       communal: { privileged: 138.6, rest: [144.2] },
       personal: 25,
       iccTotal: 1_094.8,
-      ifdTaxable: 48_900,
-      ifdScaleTax: 371.75,
-      ifdTax: 371.75,
+      ifdTaxable: 49_250,
+      ifdScaleTax: 379.65,
+      ifdTax: 379.65,
     };
     return { 2025: e, 2026: { ...e, communal: { privileged: 144.2, rest: [138.6] } } };
   })(),
@@ -569,6 +573,199 @@ describe('H6 without knowing who has the federal parental scale', () => {
     expect(r.ifd).toBeNull();
     expect(r.total).toBeNull();
     expect(r.unsupported[0]!.en).toMatch(/Federal tax not computed/);
+  });
+});
+
+// The same parent in Lancy, with the other answers to the child support question (contribution
+// d'entretien): ch-na-circulaire-30-epoux-famille p. 24 (ch. 13.4.2), p. 32 and 33 (ch. 14.4, 14.5);
+// ge-2025-guide-declaration-pp p. 45 (splitting) and p. 46 (family charges).
+const sharedParent = (taxYear: 2025 | 2026): EngineInput => ({
+  taxYear,
+  commune: 'lancy',
+  civilStatus: 'divorced',
+  people: [{ id: 'p1', employments: [job(70_000, 4_600, 3_600)], pillar3a: { value: chf(5_000) } }],
+  children: [{ custody: 'shared', age: 'child' }],
+  household: { healthPremiums: { value: chf(6_500) } },
+});
+const H6_EMPLOYMENT: [string, string, number][] = [
+  ['11.10', 'p1', 70_000],
+  ['31.10', 'p1', -4_600],
+  ['31.12', 'p1', -3_600],
+  ['31.40', 'p1', -5_000],
+];
+
+// H6R. Child support received, 12'000 (13.10, income in both taxes): the parent who receives it
+// mainly supports the child, so the child is a full charge (guide p. 45 and 46; circular 30 ch.
+// 14.5.2 and 14.5.3).
+// ICC: 31.50 1'812; 52.21 6'500 (limit 17'122 + 3'965); 61.25 full charge 13'660. Taxable 82'000 -
+// 4'600 - 3'600 - 5'000 - 1'812 - 6'500 - 13'660 = 46'828; full splitting: rate 23'414; scale
+// 278.85 + (23'414 - 22'469) x 8.20 % = 77.49 -> 77.50: 356.35; base x 2 = 712.70. Centimes
+// 338.5325 -> 338.55; reduction 12 % x 1'051.25 = 126.15; home care 7.127 -> 7.15; cantonal
+// 932.25. Communal 2025 (Lancy PP 49 %, CA 47): 349.223 -> 349.20 x 47 % = 164.124 -> 164.10; rest
+// 363.50 x 47 % = 170.845 -> 170.85. 2026 (PP 51 %): 363.477 -> 363.50 -> 170.85; rest 349.20 ->
+// 164.10. ICC 932.25 + 334.95 + 25 = 1'292.20.
+// IFD: 31.20 2'000; 52.00 min(6'500, 1'800 + 700) = 2'500; 61.20 the whole 6'800. Taxable 82'000 -
+// 4'600 - 3'600 - 5'000 - 2'000 - 2'500 - 6'800 = 57'500, parental (married) scale at 57'500: 237 +
+// 41 x 2 = 319.00, less 263 for the child: 56.00.
+both(
+  'H6R shared custody, child support received, Lancy',
+  (taxYear) => ({
+    ...sharedParent(taxYear),
+    childSupport: 'receives',
+    people: [
+      {
+        id: 'p1',
+        employments: [job(70_000, 4_600, 3_600)],
+        pillar3a: { value: chf(5_000) },
+        alimonyReceived: { value: chf(12_000) },
+      },
+    ],
+  }),
+  (() => {
+    const e: Expected = {
+      icc: [
+        ...H6_EMPLOYMENT,
+        ['13.10', 'p1', 12_000],
+        ['31.50', 'p1', -1_812],
+        ['52.21', 'household', -6_500],
+        ['61.25', 'household', -13_660],
+      ],
+      ifd: [
+        ...H6_EMPLOYMENT,
+        ['13.10', 'p1', 12_000],
+        ['31.20', 'p1', -2_000],
+        ['52.00', 'household', -2_500],
+        ['61.20', 'household', -6_800],
+      ],
+      taxable: 46_828,
+      rate: 23_414,
+      base: 712.7,
+      cc: 338.55,
+      reduction: 126.15,
+      homeCare: 7.15,
+      cantonal: 932.25,
+      communal: { privileged: 164.1, rest: [170.85] },
+      personal: 25,
+      iccTotal: 1_292.2,
+      ifdTaxable: 57_500,
+      ifdScaleTax: 319,
+      ifdTax: 56,
+    };
+    return { 2025: e, 2026: { ...e, communal: { privileged: 170.85, rest: [164.1] } } };
+  })(),
+);
+
+// H6P. Child support paid, 12'000 (53.10, deducted in both taxes): the child counts for the other
+// parent, so no family charge, no splitting, no child deduction, single scale (guide p. 46; circular
+// 30 ch. 14.5).
+// ICC: 31.50 1'812; 52.21 6'500 (limit 17'122, one adult); 53.10 12'000. Taxable 70'000 - 4'600 -
+// 3'600 - 5'000 - 1'812 - 6'500 - 12'000 = 36'488, no splitting: 1'504.55 + (36'488 - 34'827) x
+// 11.30 % = 187.693 -> 187.70: 1'692.25. Centimes 803.81875 -> 803.80; reduction 12 % x 2'496.05 =
+// 299.526 -> 299.55; home care 16.9225 -> 16.90; cantonal 2'213.40. Communal 2025 (PP 49 %):
+// 829.2025 -> 829.20 x 47 % = 389.724 -> 389.70; rest 863.05 x 47 % = 405.6335 -> 405.65. 2026
+// (PP 51 %): 863.0475 -> 863.05 -> 405.65; rest 829.20 -> 389.70. ICC 2'213.40 + 795.35 + 25 =
+// 3'033.75.
+// IFD: 31.20 2'000; 52.00 min(6'500, 1'800) = 1'800; 53.10 12'000. Taxable 70'000 - 4'600 -
+// 3'600 - 5'000 - 2'000 - 1'800 - 12'000 = 41'000, single scale: 138.60 + 78 x 0.88 = 207.24 ->
+// 207.20.
+both(
+  'H6P shared custody, child support paid, Lancy',
+  (taxYear) => ({
+    ...sharedParent(taxYear),
+    childSupport: 'pays',
+    household: { healthPremiums: { value: chf(6_500) }, alimonyPaid: { value: chf(12_000) } },
+  }),
+  (() => {
+    const e: Expected = {
+      icc: [
+        ...H6_EMPLOYMENT,
+        ['31.50', 'p1', -1_812],
+        ['52.21', 'household', -6_500],
+        ['53.10', 'household', -12_000],
+      ],
+      ifd: [
+        ...H6_EMPLOYMENT,
+        ['31.20', 'p1', -2_000],
+        ['52.00', 'household', -1_800],
+        ['53.10', 'household', -12_000],
+      ],
+      taxable: 36_488,
+      rate: 36_488,
+      base: 1_692.25,
+      cc: 803.8,
+      reduction: 299.55,
+      homeCare: 16.9,
+      cantonal: 2_213.4,
+      communal: { privileged: 389.7, rest: [405.65] },
+      personal: 25,
+      iccTotal: 3_033.75,
+      ifdTaxable: 41_000,
+      ifdScaleTax: 207.2,
+      ifdTax: 207.2,
+    };
+    return { 2025: e, 2026: { ...e, communal: { privileged: 405.65, rest: [389.7] } } };
+  })(),
+);
+
+// H6E. No child support, and this parent earns more: the parental scale is theirs (circular 30
+// ch. 13.4.2 and 14.4.2), with the whole reduction per child (ch. 13.4.1); the deductions stay
+// half (ch. 14.4.1). ICC as H6. IFD taxable 49'250 as H6, parental (married) scale at 49'200:
+// (49'200 - 29'700) / 100 x 1.00 = 195.00, less 263 for the child, at most the tax: 0.
+both(
+  'H6E shared custody, no child support, earns more, Lancy',
+  (taxYear) => ({ ...sharedParent(taxYear), childSupport: 'none', ifdParentalScale: true }),
+  (() => {
+    const e: Expected = {
+      icc: [
+        ...H6_EMPLOYMENT,
+        ['31.50', 'p1', -1_812],
+        ['52.21', 'household', -6_500],
+        ['61.25', 'household', -6_830],
+      ],
+      ifd: [
+        ...H6_EMPLOYMENT,
+        ['31.20', 'p1', -2_000],
+        ['52.00', 'household', -2_150],
+        ['61.20', 'household', -3_400],
+      ],
+      taxable: 41_658,
+      rate: 23_145,
+      base: 601.7,
+      cc: 285.8,
+      reduction: 106.5,
+      homeCare: 6.0,
+      cantonal: 787.0,
+      communal: { privileged: 138.6, rest: [144.2] },
+      personal: 25,
+      iccTotal: 1_094.8,
+      ifdTaxable: 49_250,
+      ifdScaleTax: 195,
+      ifdTax: 0,
+    };
+    return { 2025: e, 2026: { ...e, communal: { privileged: 144.2, rest: [138.6] } } };
+  })(),
+);
+
+describe('shared custody: what the federal scale and the child lines cite', () => {
+  it('cites circular 30 on the scale, the reduction and the child lines', () => {
+    const r = computeReturn({
+      ...sharedParent(2026),
+      childSupport: 'none',
+      ifdParentalScale: true,
+    });
+    const cites = (sources: string[]) =>
+      sources.some((s) => s.startsWith('ch-na-circulaire-30-epoux-famille'));
+    expect(cites(r.ifd!.scaleTax.sources)).toBe(true);
+    expect(cites(r.ifd!.childReduction.sources)).toBe(true);
+    for (const code of ['52.00', '61.20']) {
+      expect(cites(r.ifd!.items.find((i) => i.code === code)!.sources), code).toBe(true);
+    }
+    expect(r.ifd!.scale).toBe('parental');
+  });
+  it('fails closed when nobody knows who earns more', () => {
+    const r = computeReturn({ ...sharedParent(2026), childSupport: 'none' });
+    expect(r.ifd).toBeNull();
+    expect(r.unsupported[0]!.en).toMatch(/earns more/);
   });
 });
 
@@ -759,3 +956,247 @@ both(
     return { 2025: e, 2026: e };
   })(),
 );
+
+// Travel to work and lunches away from home: ch-2026-ifd-instructions-personnes-physiques p. 6 and
+// ch-2026-ifd-progression-deductions p. 1 and 2 (federal 2026: travel at most 3'300; bike or moped
+// 700; car 0.75, motorbike 0.40 a km, 0.70 for a car in 2025; meals 15 a day up to 3'200, half
+// 7.50 up to 1'600 with box G); ge-2025-guide-declaration-pp p. 11 and 19 to 22 (Geneva: travel at
+// most 534 whatever the means; meals only over 2 hours a day by public transport; actual costs
+// instead of the flat deduction when higher).
+
+// H10. Ribeiro, single, Meyrin: public transport of over 2 hours a day there and back, the pass
+// 1'200; lunch away from home on 210 work days, no canteen (box G not ticked).
+// ICC: 11.10 80'000; 31.10 -5'200; 31.12 -4'800; 31.40 -7'258. Flat 3 % x 70'000 = 2'100 -> 1'812;
+// actual: travel min(1'200, 534) = 534 + meals 210 x 15 = 3'150 (under 3'200) = 3'684, more than
+// the flat: 31.70 -534 and 31.60 -3'150, no 31.50. 52.21 -5'000. Taxable 80'000 - 5'200 - 4'800 -
+// 7'258 - 534 - 3'150 - 5'000 = 54'058: 3'140.40 + 5'749 x 13.20 % = 758.868 -> 758.85: 3'899.25.
+// Centimes 1'852.14375 -> 1'852.15; reduction 12 % x 5'751.40 = 690.168 -> 690.15; home care
+// 38.9925 -> 39.00; cantonal 5'100.25. Communal 2025 (Meyrin PP 30 %, CA 42): 1'169.775 ->
+// 1'169.80 (half up) x 42 % = 491.316 -> 491.30; rest 2'729.45 x 42 % = 1'146.369 -> 1'146.35.
+// 2026 (PP 29 %): 1'130.7825 -> 1'130.80 -> 474.936 -> 474.95; rest 2'768.45 -> 1'162.749 ->
+// 1'162.75. ICC 2025: 5'100.25 + 1'637.65 + 25 = 6'762.90; 2026: 6'762.95.
+// IFD (2025 and 2026 alike): 31.20 3 % x 70'000 = 2'100; 31.71 min(1'200, 3'300) = 1'200; 31.60
+// 3'150; 52.00 min(5'000, 1'800) = 1'800. Taxable 80'000 - 5'200 - 4'800 - 7'258 - 2'100 - 1'200 -
+// 3'150 - 1'800 = 54'492, at 54'400: 229.20 + 109 x 2.64 = 516.96 -> 516.95.
+both(
+  'H10 Ribeiro, long trip by public transport and lunches away, Meyrin',
+  (taxYear) => ({
+    taxYear,
+    commune: 'meyrin',
+    civilStatus: 'single',
+    people: [
+      {
+        id: 'p1',
+        employments: [job(80_000, 5_200, 4_800)],
+        pillar3a: { value: chf(7_258) },
+        commuteMode: { by: 'public_transport' },
+        commuteCost: { value: chf(1_200) },
+        mealDays: 210,
+        mealsIccAllowed: true,
+      },
+    ],
+    household: { healthPremiums: { value: chf(5_000) } },
+  }),
+  (() => {
+    const base = {
+      icc: [
+        ['11.10', 'p1', 80_000],
+        ['31.10', 'p1', -5_200],
+        ['31.12', 'p1', -4_800],
+        ['31.40', 'p1', -7_258],
+        ['31.70', 'p1', -534],
+        ['31.60', 'p1', -3_150],
+        ['52.21', 'household', -5_000],
+      ] as [string, string, number][],
+      ifd: [
+        ['11.10', 'p1', 80_000],
+        ['31.10', 'p1', -5_200],
+        ['31.12', 'p1', -4_800],
+        ['31.40', 'p1', -7_258],
+        ['31.20', 'p1', -2_100],
+        ['31.71', 'p1', -1_200],
+        ['31.60', 'p1', -3_150],
+        ['52.00', 'household', -1_800],
+      ] as [string, string, number][],
+      taxable: 54_058,
+      rate: 54_058,
+      base: 3_899.25,
+      cc: 1_852.15,
+      reduction: 690.15,
+      homeCare: 39.0,
+      cantonal: 5_100.25,
+      personal: 25,
+      ifdTaxable: 54_492,
+      ifdScaleTax: 516.95,
+      ifdTax: 516.95,
+    };
+    return {
+      2025: { ...base, communal: { privileged: 491.3, rest: [1_146.35] }, iccTotal: 6_762.9 },
+      2026: { ...base, communal: { privileged: 474.95, rest: [1_162.75] }, iccTotal: 6_762.95 },
+    };
+  })(),
+);
+
+// H11. Ribeiro, married, Lancy, no children. A drives 9 km each way on 200 days, with no public
+// transport A can use, and lunches away on 200 days with a canteen (box G); B rides a bike and eats
+// at home. Health premiums 11'001.
+// ICC: A 11.10 95'000, 31.10 -6'200, 31.12 -6'000, 31.40 -7'258; flat 3 % x 82'800 = 2'484 ->
+// 1'812, more than the actual costs (travel capped at 534; no meals, the trip isn't one by public
+// transport of over 2 hours): 31.50 -1'812. B 21.10 52'000, 41.10 -3'400, 41.12 -2'600, 41.50 3 % x
+// 46'000 = 1'380 (more than the bike's 534). Earned A 73'730, B 44'620: 41.95 -1'051. 52.21
+// -11'001. Taxable 147'000 - 21'270 - 8'431 - 11'001 = 106'298; full splitting, rate 53'149:
+// 3'140.40 + 4'840 x 13.20 % = 638.88 -> 638.90: 3'779.30; base x 2 = 7'558.60. Centimes
+// 3'590.335 -> 3'590.35; reduction 12 % x 11'148.95 = 1'337.874 -> 1'337.85; home care 75.586 ->
+// 75.60; cantonal 9'886.70. Communal 2025 (Lancy PP 49 %, CA 47): 3'703.714 -> 3'703.70 x 47 % =
+// 1'740.739 -> 1'740.75; rest 3'854.90 x 47 % = 1'811.803 -> 1'811.80. 2026 (PP 51 %): 3'854.886
+// -> 3'854.90 -> 1'811.80; rest 3'703.70 -> 1'740.75. ICC 9'886.70 + 3'552.55 + 25 = 13'464.25.
+// IFD 2026: A 31.20 2'484; 31.71 9 x 2 x 200 x 0.75 = 2'700 (under 3'300); 31.60 200 x 7.50 =
+// 1'500 (under 1'600). B 41.20 1'380 -> 2'000; 41.71 the bike's 700. Earned A 68'858, B 43'300:
+// 50 % = 21'650 -> 41.90 -14'100. 52.00 3'700; 59.20 2'800. Taxable 147'000 - 26'142 - 22'800 -
+// 3'700 - 2'800 = 91'558, at 91'500 (married): 929 + 124 x 4 = 1'425.00.
+// IFD 2025: the car at 0.70: 31.71 2'520, so taxable 91'738, at 91'700: 929 + 126 x 4 = 1'433.00.
+both(
+  'H11 Ribeiro, by car without public transport and by bike, Lancy',
+  (taxYear) => ({
+    taxYear,
+    commune: 'lancy',
+    civilStatus: 'married',
+    people: [
+      {
+        id: 'p1',
+        employments: [{ ...job(95_000, 6_200, 6_000), canteen: true }],
+        pillar3a: { value: chf(7_258) },
+        commuteMode: { by: 'car', transitUsable: false, kmOneWay: 9, days: 200 },
+        mealDays: 200,
+        mealsIccAllowed: false,
+      },
+      {
+        id: 'p2',
+        employments: [job(52_000, 3_400, 2_600)],
+        commuteMode: { by: 'bike' },
+        mealDays: 0,
+      },
+    ],
+    household: { healthPremiums: { value: chf(11_001) } },
+  }),
+  (() => {
+    const icc: [string, string, number][] = [
+      ['11.10', 'p1', 95_000],
+      ['31.10', 'p1', -6_200],
+      ['31.12', 'p1', -6_000],
+      ['31.40', 'p1', -7_258],
+      ['31.50', 'p1', -1_812],
+      ['21.10', 'p2', 52_000],
+      ['41.10', 'p2', -3_400],
+      ['41.12', 'p2', -2_600],
+      ['41.50', 'p2', -1_380],
+      ['41.95', 'p2', -1_051],
+      ['52.21', 'household', -11_001],
+    ];
+    const ifd = (car: number): [string, string, number][] => [
+      ['11.10', 'p1', 95_000],
+      ['31.10', 'p1', -6_200],
+      ['31.12', 'p1', -6_000],
+      ['31.40', 'p1', -7_258],
+      ['31.20', 'p1', -2_484],
+      ['31.71', 'p1', -car],
+      ['31.60', 'p1', -1_500],
+      ['21.10', 'p2', 52_000],
+      ['41.10', 'p2', -3_400],
+      ['41.12', 'p2', -2_600],
+      ['41.20', 'p2', -2_000],
+      ['41.71', 'p2', -700],
+      ['41.90', 'p2', -14_100],
+      ['52.00', 'household', -3_700],
+      ['59.20', 'household', -2_800],
+    ];
+    const base = {
+      icc,
+      taxable: 106_298,
+      rate: 53_149,
+      base: 7_558.6,
+      cc: 3_590.35,
+      reduction: 1_337.85,
+      homeCare: 75.6,
+      cantonal: 9_886.7,
+      personal: 25,
+      iccTotal: 13_464.25,
+    };
+    return {
+      2025: {
+        ...base,
+        communal: { privileged: 1_740.75, rest: [1_811.8] },
+        ifd: ifd(2_520),
+        ifdTaxable: 91_738,
+        ifdScaleTax: 1_433,
+        ifdTax: 1_433,
+      },
+      2026: {
+        ...base,
+        communal: { privileged: 1_811.8, rest: [1_740.75] },
+        ifd: ifd(2_700),
+        ifdTaxable: 91_558,
+        ifdScaleTax: 1_425,
+        ifdTax: 1_425,
+      },
+    };
+  })(),
+);
+
+describe('travel and meals: what is said and cited', () => {
+  it('explains each line with its numbers, and flags the Geneva pricing of a car', () => {
+    const r = computeReturn({
+      taxYear: 2026,
+      commune: 'meyrin',
+      civilStatus: 'single',
+      people: [
+        {
+          id: 'p1',
+          employments: [job(40_000, 2_600, 1_000)],
+          commuteMode: { by: 'car', transitUsable: false, kmOneWay: 30, days: 220 },
+          mealDays: 220,
+          mealsIccAllowed: true,
+        },
+      ],
+    });
+    // 30 x 2 x 220 x 0.75 = 9'900, at most 3'300.
+    const ifd71 = r.ifd!.items.find((i) => i.code === '31.71')!;
+    expect(ifd71.amount).toBe(chf(-3_300));
+    expect(ifd71.how.en).toMatch(
+      /30 km x 2 x 220 days x CHF 0\.75 a km = CHF 9’900\.00, at most CHF 3’300\.00/,
+    );
+    expect(ifd71.sources.join(' ')).toMatch(/ch-2026-ifd-progression-deductions p\. 1/);
+    // ICC: 534 + meals 3'200 (220 x 15 = 3'300, at most 3'200) beat the flat 3 % x 36'400 = 1'092.
+    expect(r.icc!.items.find((i) => i.code === '31.70')!.amount).toBe(chf(-534));
+    expect(r.icc!.items.find((i) => i.code === '31.60')!.amount).toBe(chf(-3_200));
+    expect(r.unverifiedRules.map((n) => n.en).join(' ')).toMatch(/prices them as the federal tax/);
+  });
+
+  it('says why nothing is counted from home, and that Geneva meals need a long trip', () => {
+    const home = computeReturn({
+      taxYear: 2026,
+      commune: 'meyrin',
+      civilStatus: 'single',
+      people: [{ id: 'p1', employments: [job(60_000, 3_900, 3_000)], commuteMode: { by: 'home' } }],
+    });
+    expect(home.notCounted.map((n) => n.en).join(' ')).toMatch(/from home almost every day/);
+    expect(home.ifd!.items.some((i) => ['31.60', '31.71'].includes(i.code))).toBe(false);
+    const short = computeReturn({
+      taxYear: 2026,
+      commune: 'meyrin',
+      civilStatus: 'single',
+      people: [
+        {
+          id: 'p1',
+          employments: [job(60_000, 3_900, 3_000)],
+          commuteMode: { by: 'public_transport' },
+          commuteCost: { value: chf(500) },
+          mealDays: 100,
+        },
+      ],
+    });
+    expect(short.notCounted.map((n) => n.en).join(' ')).toMatch(/over 2 hours a day/);
+    expect(short.ifd!.items.find((i) => i.code === '31.60')!.amount).toBe(chf(-1_500));
+    expect(short.icc!.items.some((i) => i.code === '31.60')).toBe(false);
+  });
+});

@@ -3,6 +3,7 @@ import { Ledger, type FactStatus, type KeyDef, type VaultDocument } from '@taxpr
 import { DOCUMENT_KEYS_2026, KEYS_2026 } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
+  ENGINE_RUBRICS_2026,
   FORM_2026,
   itemsFromLedger,
   LEDGER_ROUTES_2026,
@@ -71,6 +72,34 @@ describe('the routes from ledger values to rubrics', () => {
     expect(to('pillar3a.paid')).toEqual([{ A: '31.40', B: '41.40' }]);
     expect(to('health.premiums')).toEqual(['52.21']);
     expect(to('childcare.costs')).toEqual(['59.10', '59.12']);
+  });
+
+  it('send the engine’s travel and meal lines to the columns the form prints for them', () => {
+    expectCited(ENGINE_RUBRICS_2026.source, 'engine rubrics');
+    for (const column of ['icc', 'ifd'] as const) {
+      for (const code of ENGINE_RUBRICS_2026[column]) {
+        const person =
+          code[0] === '2' || code[0] === '4' ? 'B' : code.startsWith('3') ? 'A' : 'household';
+        const rubric = FORM_2026.rubrics.find((r) => r.key === code && r.person === person);
+        expect(rubric, `${code} (${person})`).toBeDefined();
+        expect(rubric!.columns, code).toContain(column);
+      }
+    }
+    // Meals in both columns; Geneva travel in the ICC column, federal travel in the IFD column.
+    expect(ENGINE_RUBRICS_2026.icc).toEqual(expect.arrayContaining(['31.60', '31.70', '41.70']));
+    expect(ENGINE_RUBRICS_2026.ifd).toEqual(expect.arrayContaining(['31.60', '31.71', '41.71']));
+    // The answers behind them are accounted for, as keys that exist.
+    for (const key of [
+      'profile.commute',
+      'commute.transit_cost',
+      'meals.days',
+      'profile.child_support',
+    ]) {
+      expect(NOT_ON_THE_FORM_2026[key as keyof typeof NOT_ON_THE_FORM_2026], key).toMatch(
+        /engine|decides/,
+      );
+      expect((KEYS_2026 as Record<string, KeyDef>)[key], key).toBeDefined();
+    }
   });
 
   it('account for every value a document gives: routed, or not on the form for a reason', () => {

@@ -41,7 +41,7 @@ export interface HouseholdInput {
    * What the ledger already knows besides the salaries and the plans' own deductions (health
    * premiums, childcare, donations, the état des titres...), so the plans run on the real tax.
    */
-  known?: Pick<EngineInput, 'household' | 'wealthItems'>;
+  known?: Pick<EngineInput, 'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale'>;
 }
 
 export type Assumption =
@@ -116,8 +116,14 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
     children: Array.from({ length: kids }, () => ({
       custody: h.custody === 'shared' ? ('shared' as const) : ('full' as const),
     })),
-    // With shared custody the plans take the parental federal scale, as before the engine.
-    ...(h.custody === 'shared' && !h.couple ? { ifdParentalScale: true } : {}),
+    // With shared custody the plans follow the answer about child support (who has the children
+    // and the parental federal scale); not answered yet, they take the parental scale.
+    ...(h.custody === 'shared' && !h.couple
+      ? {
+          ...(h.known?.childSupport ? { childSupport: h.known.childSupport } : {}),
+          ifdParentalScale: h.known?.ifdParentalScale ?? true,
+        }
+      : {}),
     ...(h.known?.household ? { household: h.known.household } : {}),
     ...(h.known?.wealthItems ? { wealthItems: h.known.wealthItems } : {}),
   };

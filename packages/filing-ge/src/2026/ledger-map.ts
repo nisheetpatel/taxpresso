@@ -131,6 +131,22 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
   },
 ];
 
+/**
+ * Rubrics the tax engine works out (SPEC.md section 7), by the column of the form they fill: the
+ * copy panel takes the engine's value for them. Travel and meals come from the answers about the
+ * way to work (31.60 meals, ICC and IFD columns; 31.70 travel ICC; 31.71 travel IFD; B's 41.xx),
+ * as the specimen prints them (A1 p. 5, A2 p. 6) and the guide explains them (p. 19 to 21). The
+ * cantonal 31.60 and 31.70 are there only when the actual costs beat the flat deduction (p. 22).
+ */
+export const ENGINE_RUBRICS_2026 = {
+  icc: ['31.50', '41.50', '31.60', '41.60', '31.70', '41.70', '31.95', '41.95', '61.25', '61.30'],
+  ifd: ['31.20', '41.20', '31.60', '41.60', '31.71', '41.71', '31.90', '41.90', '59.20', '61.20'],
+  source: `${SPEC} p. 3, 5 and 6; ${GUIDE} p. 15, 16, 19 to 22 and 31`,
+} as const;
+
+const FROM_ENGINE = (rubrics: string) =>
+  `An answer, not a value to type: the tax engine turns it into ${rubrics} (${SPEC} p. 5 and 6; ${GUIDE} p. 19 to 22).`;
+
 const ETAT = (page: string, pdfPage: number) =>
   `A line of the securities list (état des titres, ${page}, ${SPEC} p. ${pdfPage}): the dashboard's securities card lists it, and its totals go to F1 and 14.00.`;
 
@@ -171,6 +187,15 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'assessment.donations': 'The tax office’s assessment is checked, never typed.',
   'assessment.debt_interest': 'The tax office’s assessment is checked, never typed.',
   'check.note': 'A note settling a check, not a value of the declaration.',
+  // The way to work and lunches away from home: answers the engine prices (ENGINE_RUBRICS_2026).
+  'profile.commute': FROM_ENGINE('travel costs, 31.70 and 31.71 (B: 41.70, 41.71)'),
+  'commute.transit_cost': FROM_ENGINE('travel costs, 31.70 and 31.71 (B: 41.70, 41.71)'),
+  'commute.transit_usable': FROM_ENGINE('travel costs and meals, 31.60, 31.70 and 31.71'),
+  'commute.transit_equivalent': FROM_ENGINE('travel costs, 31.70 and 31.71 (B: 41.70, 41.71)'),
+  'commute.distance_km': FROM_ENGINE('travel costs, 31.70 and 31.71 (B: 41.70, 41.71)'),
+  'commute.drive_days': FROM_ENGINE('travel costs, 31.70 and 31.71 (B: 41.70, 41.71)'),
+  'meals.days': FROM_ENGINE('meals, 31.60 (B: 41.60)'),
+  'profile.child_support': `An answer, not a value to type: it decides the family charges 61.25 and 61.20 and the scales (${SPEC} p. 3 and 25; ${GUIDE} p. 15, 45 and 46; ch-na-circulaire-30-epoux-famille p. 24, 32 and 33).`,
   // Accounts, crypto and bank tax statements are lines of the securities list (état des titres),
   // summed by packages/rules-ge (etatDesTitres) into F1 and 14.00, not routed one value at a time.
   'bank.account_number': ETAT('F2', 22),

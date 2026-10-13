@@ -149,6 +149,36 @@ describe('the copy panel in the dashboard', () => {
     expect(s.copyPanel.entered).toBe(0);
   });
 
+  it('places the travel and meal lines the engine works out from the answers', async () => {
+    const { api, state } = await setUp();
+    for (const [id, value] of [
+      ['income_sources:p1', ['salary']],
+      ['commute:p1', 'public_transport_long'],
+      ['commute_transit_cost:p1', "1'200"],
+      ['meal_days:p1', 210],
+    ] as const) {
+      const res = await api(req('POST', '/answer', { id, value }));
+      expect(res.status, JSON.stringify(res.body)).toBe(200);
+    }
+    const rows = rowsOf(await state());
+    const row = (ref: string) => rows.find((r) => r.ref === ref);
+    // Federal: the pass 1,200 (under 3,300); meals 210 x 7.50, half as box G is ticked (under 1,600).
+    expect(row('31.71')).toMatchObject({ copy: '1200', columns: [{ id: 'ifd' }] });
+    // Geneva: travel at most 534 and the same meals (a trip of over 2 hours): 2,109 beats the flat
+    // 1,812, so actual costs replace 31.50. The Geneva meals rest on the 2025 amounts (an estimate
+    // until the 2026 guide), so 31.60 has one line per column.
+    expect(row('31.70')).toMatchObject({ copy: '534', columns: [{ id: 'icc' }] });
+    expect(
+      rows
+        .filter((r) => r.ref === '31.60')
+        .map((r) => [r.columns.map((c) => c.id), r.copy, r.status]),
+    ).toEqual([
+      [['icc'], '1575', 'estimate'],
+      [['ifd'], '1575', 'computed'],
+    ]);
+    expect(row('31.50')).toBeUndefined();
+  });
+
   it('shows English glosses next to the official French labels', async () => {
     const { api } = await setUp();
     const s = (await api(req('GET', '/state', {}, 'en'))).body as DashboardState;

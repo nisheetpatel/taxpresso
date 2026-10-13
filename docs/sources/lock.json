@@ -5692,5 +5692,15 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-13T22:13:35.299Z",
     "status": "ok"
+  },
+  "ch-na-circulaire-30-epoux-famille": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/2YuHXYYJMbn9/dbst-ks-2010-1-030-d-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/2YuHXYYJMbn9/dbst-ks-2010-1-030-d-fr.pdf",
+    "file": "ch/files/ch-na-circulaire-30-epoux-famille.pdf",
+    "bytes": 665495,
+    "sha256": "e1433250fb998428dd2bfb96681ed7354bc37c733240a2e42b957762f814dde1",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T23:04:00.443Z",
+    "status": "ok"
   }
 }

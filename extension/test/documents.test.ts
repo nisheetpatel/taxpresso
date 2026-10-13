@@ -278,6 +278,8 @@ describe('status, checks and the assessment', () => {
       ['pillar3a:p1', false],
       ['lpp_buyin:p1', false],
       ['commute:p1', 'public_transport'],
+      ['commute_transit_cost:p1', 790],
+      ['meal_days:p1', 0],
       ['banks', 0],
       ['crypto', false],
       ['payments', []],

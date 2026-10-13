@@ -167,11 +167,13 @@ function questionText(q: QuestionOut): string {
       ? 'Answer: yes or no.'
       : q.type === 'number'
         ? `Answer: a whole number from ${q.min} to ${q.max}.`
-        : q.type === 'commune'
-          ? 'Answer: the name of the Geneva commune.'
-          : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
-              ?.map((o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`)
-              .join('; ')}`;
+        : q.type === 'money'
+          ? 'Answer: an amount in CHF as the user said it, e.g. 790 or "1\'250.50".'
+          : q.type === 'commune'
+            ? 'Answer: the name of the Geneva commune.'
+            : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
+                ?.map((o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`)
+                .join('; ')}`;
   const who = q.person === 'p2' ? ` (about ${WHO.p2})` : '';
   return [
     `[${q.id}]${who} ${q.text.fr}`,

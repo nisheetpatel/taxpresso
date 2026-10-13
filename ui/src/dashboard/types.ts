@@ -8,7 +8,7 @@ import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
 import type { PlanningState } from './types-planning';
 
-export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
+export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
 
 export interface OfficialLink {
