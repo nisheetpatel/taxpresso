@@ -13,10 +13,12 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "bwip-js": "4.11.4",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {
-    "unpdf": "1.8.1"
+    "unpdf": "1.8.1",
+    "zxing-wasm": "3.1.4"
   }
 }

@@ -527,6 +527,11 @@ h2 {
   font-size: 16px;
 }
 
+/* A long folder path breaks anywhere rather than pushing the page sideways on a phone. */
+.drop-path {
+  overflow-wrap: anywhere;
+}
+
 .drop-buttons {
   display: flex;
   flex-wrap: wrap;

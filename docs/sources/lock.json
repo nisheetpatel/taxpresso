@@ -5642,5 +5642,55 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-13T21:35:20.385Z",
     "status": "ok"
+  },
+  "std-eCH-0196-v2-2-0-xsd": {
+    "url": "https://www.ech.ch/sites/default/files/imce/eCH-Dossier/0181-0210/eCH-0196/2.2.0/Beilagen/eCH-0196-2-2.xsd",
+    "final_url": "https://www.ech.ch/sites/default/files/imce/eCH-Dossier/0181-0210/eCH-0196/2.2.0/Beilagen/eCH-0196-2-2.xsd",
+    "file": "standards/files/std-eCH-0196-v2-2-0-xsd.xsd",
+    "bytes": 133495,
+    "sha256": "1d4f9b89db3c46467725ea770e5b8aaea6f739182c2bf03a9b24a0c6073a6688",
+    "content_type": "",
+    "retrieved_at": "2026-10-13T22:13:32.959Z",
+    "status": "ok"
+  },
+  "std-eCH-0196-v2-2-0-fr": {
+    "url": "https://www.ech.ch/sites/default/files/dosvers/hauptdokument/STAN_f_DEF_2022-06-07_eCH-0196_V2.2.0_Relev%C3%A9%20fiscal%20%C3%A9lectroniques_.pdf",
+    "final_url": "https://www.ech.ch/sites/default/files/dosvers/hauptdokument/STAN_f_DEF_2022-06-07_eCH-0196_V2.2.0_Relev%C3%A9%20fiscal%20%C3%A9lectroniques_.pdf",
+    "file": "standards/files/std-eCH-0196-v2-2-0-fr.pdf",
+    "bytes": 1619115,
+    "sha256": "d92b00bd27855e5fdc2286d66fc24dca0d4dcc5f3a259a5647dc8c9fbb13e1d2",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T22:13:34.019Z",
+    "status": "ok"
+  },
+  "std-swissdec-elm6-barcode-annexe5": {
+    "url": "https://swissdec.ch/document/share/491/6d03c73e-4054-42c6-b368-8099c06c3720",
+    "final_url": "https://www.swissdec.ch/document/share/491/6d03c73e-4054-42c6-b368-8099c06c3720",
+    "file": "standards/files/std-swissdec-elm6-barcode-annexe5.zip",
+    "bytes": 4666897,
+    "sha256": "37c92978d65ccae658d9be0c05c617b0aba032fa77d61d2d4460b75d3dd585a2",
+    "content_type": "application/x-zip-compressed",
+    "retrieved_at": "2026-10-13T22:13:35.164Z",
+    "status": "ok"
+  },
+  "std-swissdec-elm5-lohnausweis-richtlinien-fr": {
+    "url": "https://swissdec.ch/document/share/97/6ca08e4a-716b-46b1-90a2-5b2ae801b209",
+    "final_url": "https://www.swissdec.ch/document/share/97/6ca08e4a-716b-46b1-90a2-5b2ae801b209",
+    "file": "standards/files/std-swissdec-elm5-lohnausweis-richtlinien-fr.zip",
+    "bytes": 2675191,
+    "sha256": "05fab0c690acfa1ebb7f91dec9712a15d2bd291ebd51ccfd946871e7a94f7724",
+    "content_type": "application/x-zip-compressed",
+    "retrieved_at": "2026-10-13T22:13:35.210Z",
+    "status": "ok"
+  },
+  "std-eCH-0196-v2-2-0-wegleitung-de": {
+    "url": "https://www.ech.ch/sites/default/files/dosvers/beilagen/BEIL1_d_DEF_2022-06-07_eCH-0196_V2.2.0_Technische%20Wegleitung.pdf",
+    "final_url": "https://www.ech.ch/sites/default/files/dosvers/beilagen/BEIL1_d_DEF_2022-06-07_eCH-0196_V2.2.0_Technische%20Wegleitung.pdf",
+    "file": "standards/files/std-eCH-0196-v2-2-0-wegleitung-de.pdf",
+    "bytes": 1356711,
+    "sha256": "63439204478a96bcb873b304ef93a550ace9b102e982770e54434fa0ee9c4d47",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T22:13:35.299Z",
+    "status": "ok"
   }
 }

@@ -49,12 +49,25 @@ Facts below come from automated fetch summaries of the official PDFs and pages. 
 - Result: no official specification of the salary certificate 2D barcode was found. Do not assume it matches eCH-0270 or eCH-0196 until a source is confirmed
 - Swissdec ELM overview (certification of payroll software, first edition April 2021) lists salary certificate as a domain but gives no barcode spec; not in manifest (https://swissdec.ch/document/share/249/916ebde0-1279-4eb3-a7ff-3975727998ee)
 
+## Salary certificate 2D barcode (Swissdec TxAB), checked 2026-10-14
+
+- Specified by Swissdec, not by the ESTV or the CSI pages: "Directives certificat de salaire" ELM 5.0, a ZIP archive with the overview PDF, the schema SalaryDeclarationTxAB.xsd and test data (https://swissdec.ch/document/share/97/6ca08e4a-716b-46b1-90a2-5b2ae801b209), and its ELM 6.0 edition "Annexe 5 Directives certificat de salaire" (https://swissdec.ch/document/share/491/6d03c73e-4054-42c6-b368-8099c06c3720); both listed on https://www.swissdec.ch/elm
+- Content: the XML (namespace http://www.swissdec.ch/schema/sd/20200220/SalaryDeclarationTxAB, or urn:ch:swissdec:elm:v6:20260306:SalaryDeclarationTxAB for ELM 6.0) in an Info-ZIP archive with one entry named "txab", then 14 control bytes at the start of each PDF417 symbol (identification, compression "z", size, page control, version, symbol number and count); the data can be split over several symbols (TaxAccountingOverview_f.pdf in the ELM 5.0 archive, and Richtlinien_Barcode_fr.pdf in the ELM 6.0 one)
+- The schema documents the box of each element (c1 to c15, E, F, G); Taxpresso maps them in extension/src/barcode.ts (TXAB_KEYS) and docs/spikes/S2.md
+- The control bytes do not follow eCH-0270, and the barcode is not PDF417 Structured Append
+
+## eCH-0196 V2.2.0 schema and guides, checked 2026-10-14
+
+- Schema eCH-0196-2-2.xsd, main document (French) and technical guide (German) are on the eCH page of the standard (https://www.ech.ch/de/ech/ech-0196/2.2.0); the schema imports eCH-0007, eCH-0008, eCH-0010 and eCH-0097 from www.ech.ch/xmlns, which are not in the library
+- Technical guide section 3: the barcode segments are generated as images at 1 x 1 pixel per element, and the XML is extracted from the last page backwards, rendering a page when it has no barcode images (https://www.ech.ch/sites/default/files/dosvers/beilagen/BEIL1_d_DEF_2022-06-07_eCH-0196_V2.2.0_Technische%20Wegleitung.pdf)
+- The compression conflict (ZLIB in the annex, "ZIP" in eCH-0270) is not settled by these documents
+
 ## Gaps
 
-- eCH-0196 V2.x main document and eCH-0196-2-2.xsd: not found; the only V2.x item verified is the barcode annex
+- eCH-0196 V2.x main document and eCH-0196-2-2.xsd: found 2026-10-14, see the section below
 - eCH-0278 XSD (eCH-0278-1-0.xsd) and Excel data model: names known, download URLs not found
 - eCH-0119 XSD (eCH-0119-4-0-0.xsd) and sample forms ZIP: URLs not found
 - eCH-0248 and eCH-0275 main documents and schemas (eCH-0248-1-0.xsd, eCH-0275-1-0.xsd): not found
-- Salary certificate 2D barcode specification: not found on ESTV or CSI pages checked; CSI migration PDF (https://www.ssk-csi.ch/fileadmin/dokumente/lohnausweis/eLohnausweis_Migration_fr.pdf) not fetched
+- Salary certificate 2D barcode specification: found 2026-10-14 at Swissdec, see the section below; CSI migration PDF (https://www.ssk-csi.ch/fileadmin/dokumente/lohnausweis/eLohnausweis_Migration_fr.pdf) not fetched
 - German edition of the eCH-0196 barcode annex and eCH-0270 XSD (none published with eCH-0270): not checked
-- Swissdec ELM salary data standard document: not located
+- Swissdec ELM salary data standard document: the salary certificate parts are in the library (std-swissdec-elm5-lohnausweis-richtlinien-fr, std-swissdec-elm6-barcode-annexe5); the full ELM guidelines are not

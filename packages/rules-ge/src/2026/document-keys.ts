@@ -197,6 +197,43 @@ export const DOCUMENT_KEYS_2026 = {
     'Observations',
     'p. 19 (Cm 64)',
   ),
+  // Boxes the salary certificate barcode carries too (Swissdec SalaryDeclarationTxAB.xsd:
+  // Charges/Education is c13.3, OtherFringeBenefits c14, StandardRemark and Remark c15).
+  'salary.education': box(
+    '13.3',
+    'Further training paid by your employer',
+    'Formation continue payée par l’employeur',
+    'Contributions de l’employeur pour la formation continue ou le perfectionnement professionnel',
+    'p. 18 (Cm 61)',
+  ),
+  'salary.relocation_costs': box(
+    '15',
+    'Moving costs paid by your employer (remark in box 15)',
+    'Frais de déménagement payés par l’employeur (remarque au chiffre 15)',
+    'Frais de déménagement',
+    'p. 19 (Cm 71)',
+  ),
+  'salary.other_fringe_note': {
+    type: 'string',
+    perPerson: true,
+    multiple: true,
+    label: {
+      en: 'Other benefits, described without an amount (box 14)',
+      fr: 'Autres prestations salariales accessoires, sans montant (chiffre 14)',
+    },
+    official: 'Autres prestations salariales accessoires',
+    source: `${WAGE_GUIDE} p. 18 (Cm 62)`,
+    box: '14',
+  },
+  'salary.remarks': {
+    type: 'string',
+    perPerson: true,
+    multiple: true,
+    label: { en: 'Remarks (box 15)', fr: 'Observations (chiffre 15)' },
+    official: 'Observations',
+    source: `${WAGE_GUIDE} p. 19 (Cm 63)`,
+    box: '15',
+  },
 
   // Other attestations.
   'pillar3a.paid': money(
@@ -451,9 +488,13 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
     'salary.allowance_representation',
     'salary.allowance_car',
     'salary.allowance_other',
+    'salary.education',
+    'salary.other_fringe_note',
     'salary.free_transport',
     'salary.canteen',
     'salary.indemnities_included',
+    'salary.relocation_costs',
+    'salary.remarks',
   ],
   pillar3a_attestation: ['pillar3a.paid'],
   lpp_buyin: ['lpp.buyin'],

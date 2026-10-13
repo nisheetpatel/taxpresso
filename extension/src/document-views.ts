@@ -33,8 +33,22 @@ export interface CardValue {
   copy?: string;
   status: Fact['status'];
   via?: 'chat' | 'dashboard';
+  /** "barcode" for a value read from the document's barcode ("Verified, barcode"). */
+  method?: 'barcode';
+  /** Which account or loan a value is about, on a document that has several. */
+  item?: string;
   entered: boolean;
 }
+
+/** On an e-tax statement's card: its totals, then each account's and loan's amounts. */
+const STATEMENT_ITEM_KEYS = [
+  'accounts.value_chf',
+  'accounts.income_a_chf',
+  'accounts.income_b_chf',
+  'accounts.withholding_swiss_chf',
+  'liabilities.balance_chf',
+  'liabilities.interest_chf',
+];
 
 const YES_NO = { en: ['Yes', 'No'], fr: ['Oui', 'Non'] } as const;
 
@@ -65,8 +79,26 @@ function cardValue(ws: Workspace, fact: Fact, lang: Lang): CardValue {
     ...(copy !== undefined ? { copy } : {}),
     status: fact.status,
     ...(fact.source.via ? { via: fact.source.via } : {}),
+    ...(fact.source.method === 'barcode' && fact.status === 'verified'
+      ? { method: 'barcode' as const }
+      : {}),
+    ...(item(ws, fact) ? { item: item(ws, fact)! } : {}),
     entered: ws.isEntered(fact),
   };
+}
+
+/** "Compte privé · 00000001" for an account's value; nothing for values about the document. */
+function item(ws: Workspace, fact: Fact): string | undefined {
+  if (!fact.instance || fact.instance === fact.source.docId) return undefined;
+  const group = fact.key.split('.')[0];
+  if (group !== 'accounts' && group !== 'liabilities') return undefined;
+  const text = (key: string) => {
+    const v = ws.ledger.get(key, fact.person, fact.instance)?.value;
+    return typeof v === 'string' && v ? v : undefined;
+  };
+  const name = text(`${group}.name`);
+  const number = group === 'accounts' ? text('accounts.number') : undefined;
+  return [name, number].filter(Boolean).join(' · ') || fact.instance;
 }
 
 /** One card per document that counts, with the values read from it in the form's order. */
@@ -81,9 +113,20 @@ export function documentCards(ws: Workspace, lang: Lang) {
     .map((doc) => {
       const order: readonly string[] = documentFields(doc.kind);
       const rank = (key: string) => (order.includes(key) ? order.indexOf(key) : order.length);
+      // An e-tax statement also gives every security and the accounts' details: its card keeps
+      // to what is typed into the form (its totals, and each account's and loan's amounts); the
+      // securities are in the securities list.
+      const statement = doc.kind === 'ech0196_statement';
       const values = facts
         .filter((f) => f.source.docId === doc.id && f.key !== 'check.note' && !isPriorOrProfile(f))
-        .sort((a, b) => rank(a.key) - rank(b.key) || a.person.localeCompare(b.person))
+        .filter((f) => !statement || order.includes(f.key) || STATEMENT_ITEM_KEYS.includes(f.key))
+        .sort(
+          (a, b) =>
+            rank(a.key) - rank(b.key) ||
+            (a.instance ?? '').localeCompare(b.instance ?? '') ||
+            STATEMENT_ITEM_KEYS.indexOf(a.key) - STATEMENT_ITEM_KEYS.indexOf(b.key) ||
+            a.person.localeCompare(b.person),
+        )
         .map((f) => cardValue(ws, f, lang));
       // The assessment is checked, not typed into the declaration: no copy, no "Entered".
       const enterable = doc.kind !== 'tax_assessment';

@@ -17,6 +17,10 @@ export interface CardValue {
   copy?: string;
   status: FactStatus;
   via?: 'chat' | 'dashboard';
+  /** Read from the document's barcode: "Verified, barcode" (SPEC.md 11b). */
+  method?: 'barcode';
+  /** Which account or loan the value is about, on a document with several. */
+  item?: string;
   entered: boolean;
 }
 

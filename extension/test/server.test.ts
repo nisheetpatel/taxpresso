@@ -55,11 +55,16 @@ describe('MCP surface', () => {
       'ingest_vault',
       'list_documents',
       'list_optimizations',
+      'mark_entered',
       'next_questions',
       'open_dashboard',
       'propose_extraction',
+      'replace_document',
+      'set_document_owner',
       'set_fact',
       'set_holding',
+      'skip_question',
+      'waive_requirement',
     ]);
     for (const tool of tools) {
       expect(tool.name.length).toBeLessThan(64);

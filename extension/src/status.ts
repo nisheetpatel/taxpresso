@@ -3,6 +3,7 @@ import { UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
+import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import type { Workspace } from './workspace.js';
 
 export const StatusSchema = z.object({
@@ -21,12 +22,29 @@ export const StatusSchema = z.object({
     documents: z.number().int(),
     documentsToIdentify: z.number().int(),
     documentsToRead: z.number().int().describe('Documents Claude has not read yet.'),
+    documentsFromBarcode: z
+      .number()
+      .int()
+      .describe('Documents read from their barcode: verified values, nothing for Claude to read.'),
+    documentsWaitingForWhose: z
+      .number()
+      .int()
+      .describe(
+        'Certificates read from their barcode whose owner the user still has to say (dashboard).',
+      ),
     valuesToConfirm: z
       .number()
       .int()
       .describe("Values read from documents that still need the user's OK."),
   }),
   missing: z.array(z.string()).describe('Documents still needed, with whose they are.'),
+  optional: z
+    .array(
+      z.object({ id: z.string(), label: z.string(), reason: z.string(), skipped: z.boolean() }),
+    )
+    .describe(
+      'Optional documents not here yet: the user can skip one, or take that back, with waive_requirement.',
+    ),
   checks: z
     .array(z.string())
     .describe('"Check this" items across documents, with their id and what to do.'),
@@ -79,11 +97,22 @@ export function buildStatus(
         'count' in r.expects && r.expects.count > 1 ? ` (${r.have} of ${r.expects.count})` : '';
       return `${r.label.en}${count}${who && snap.people.length > 1 ? `, ${who}` : ''}`;
     });
+  // The dashboard's "still missing" rows with a "Skip" (or "Undo") button, by the same id.
+  const optional = requirements
+    .filter((r) => r.optional && r.status !== 'satisfied')
+    .map((r) => ({
+      id: r.id,
+      label: `${r.label.en}${WHO[r.person] && snap.people.length > 1 ? `, ${WHO[r.person]}` : ''}`,
+      reason: r.reason.en,
+      skipped: r.status === 'waived',
+    }));
   const notSupported = ws.engine.notSupported(snap).map((n) => n.what.en);
   const documents = ws.activeDocuments();
   const toIdentify = documents.filter((d) => !d.kind).length;
   const toRead = ws.toRead().length;
   const toConfirm = ws.toConfirm().length;
+  const fromBarcode = documents.filter(isBarcodeDocument).length;
+  const whose = documents.filter((d) => d.parse.method === BARCODE_PENDING).length;
   const checks = ws
     .checks()
     .filter((c) => !c.resolved)
@@ -117,6 +146,8 @@ export function buildStatus(
     nextStep = lastYear?.suggestions
       ? "Ask the next question: call next_questions. When a question comes with a suggestion from last year's declaration, ask the user whether it is still right, then save their answer with answer_question."
       : 'Ask the next question: call next_questions.';
+  } else if (whose > 0) {
+    nextStep = `${whose} certificate${whose === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${whose === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Documents), or tell you and you save it with set_document_owner; then the values fill in.`;
   } else if (toRead > 0) {
     nextStep = `${toRead} document${toRead === 1 ? '' : 's'} not read yet. Offer to read them: get_document_for_review sends that document's content to Claude, so ask the user first. Then propose what you read with propose_extraction. The user can also say what each one is in the dashboard.`;
   } else if (toConfirm > 0) {
@@ -152,9 +183,12 @@ export function buildStatus(
       documents: documents.length,
       documentsToIdentify: toIdentify,
       documentsToRead: toRead,
+      documentsFromBarcode: fromBarcode,
+      documentsWaitingForWhose: whose,
       valuesToConfirm: toConfirm,
     },
     missing,
+    optional,
     checks,
     notSupported,
     estimates,
@@ -183,11 +217,16 @@ export function statusText(s: Status): string {
     `Taxpresso ${s.version}, tax year ${s.taxYear}, Geneva`,
     `Household: ${s.household.started ? s.household.summary.join(', ') || 'started' : 'not started'}`,
     `Questions: ${s.progress.questionsAnswered} answered, ${s.progress.questionsOpen} to go`,
-    `Documents: ${s.progress.documents}${s.progress.documentsToIdentify ? ` (${s.progress.documentsToIdentify} to identify)` : ''}${s.progress.documentsToRead ? `, ${s.progress.documentsToRead} not read yet` : ''}`,
+    `Documents: ${s.progress.documents}${s.progress.documentsToIdentify ? ` (${s.progress.documentsToIdentify} to identify)` : ''}${s.progress.documentsFromBarcode ? `, ${s.progress.documentsFromBarcode} read from the barcode` : ''}${s.progress.documentsWaitingForWhose ? ` (${s.progress.documentsWaitingForWhose} waiting for the user to say whose it is)` : ''}${s.progress.documentsToRead ? `, ${s.progress.documentsToRead} not read yet` : ''}`,
     ...(s.progress.valuesToConfirm
       ? [`Values that need the user's OK: ${s.progress.valuesToConfirm}`]
       : []),
     `Still missing: ${s.missing.length ? s.missing.join('; ') : 'nothing'}`,
+    ...(s.optional.length
+      ? [
+          `Optional (waive_requirement): ${s.optional.map((o) => `${o.label} [${o.id}]: ${o.skipped ? 'skipped by the user' : o.reason}`).join(' | ')}`,
+        ]
+      : []),
     ...(s.checks.length ? [`Check this: ${s.checks.join(' | ')}`] : []),
   ];
   if (s.notSupported.length) lines.push(`Not supported yet: ${s.notSupported.join('; ')}`);

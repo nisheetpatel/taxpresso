@@ -408,3 +408,55 @@ describe('what is missing or needs a look', () => {
     expect(e.other.some((o) => o.id === 'cash')).toBe(false);
   });
 });
+
+describe('a bank e-tax statement read from its barcode', () => {
+  // The barcode gives the statement's totals and also its positions: the totals are its one line
+  // (F4), so its securities must not come back as F3 lines, and its loans are debts.
+  function withStatementDetail(): EtatDesTitres {
+    const ledger = new Ledger(2025, KEYS_2026);
+    const barcode = { method: 'barcode' as const, docId: 'd_stmt' };
+    const put = (key: string, instance: string, value: Value) =>
+      ledger.append({
+        key,
+        person: 'household',
+        instance,
+        value,
+        status: 'verified',
+        source: barcode,
+      });
+    put('tax_statement.taxable_value', 'd_stmt', 50_000_00);
+    put('tax_statement.income_subject_ia', 'd_stmt', 1000_00);
+    put('tax_statement.income_not_subject_ia', 'd_stmt', 400_00);
+    put('tax_statement.withholding_swiss', 'd_stmt', 350_00);
+    put('securities.name', 'd_stmt.CHTXPRS00055', 'Ristretto Fonds');
+    put('securities.isin', 'd_stmt.CHTXPRS00055', 'CHTXPRS00055');
+    put('securities.quantity', 'd_stmt.CHTXPRS00055', '10');
+    put('securities.value_chf', 'd_stmt.CHTXPRS00055', 20_000_00);
+    put('liabilities.name', 'd_stmt.L1', 'Prêt hypothécaire exemple');
+    put('liabilities.balance_chf', 'd_stmt.L1', 300_000_00);
+    put('liabilities.interest_chf', 'd_stmt.L1', 4_500_00);
+    return etatDesTitres({
+      taxYear: 2025,
+      people: ['p1', 'p2'],
+      facts: ledger.view(),
+      documents: [doc('d_stmt', 'ech0196_statement', 'p1', 'Banque Privée Exemple')],
+    });
+  }
+
+  it('counts the statement once, as its total, and its loans as debts', () => {
+    const e = withStatementDetail();
+    expect(e.lines.map((l) => [l.section, l.id])).toEqual([['statements', 'd_stmt']]);
+    expect(e.totals).toMatchObject({ taxableValue: 50_000_00, subjectIa: 1000_00 });
+    expect(e.other).toEqual([
+      expect.objectContaining({
+        rubric: 'debts',
+        id: 'd_stmt.L1',
+        docId: 'd_stmt',
+        value: 300_000_00,
+        flow: 4_500_00,
+        owner: 'p1',
+        complete: true,
+      }),
+    ]);
+  });
+});

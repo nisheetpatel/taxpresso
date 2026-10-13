@@ -695,7 +695,7 @@ function Documents({
         <div class="drop-text">
           <strong>{t(lang, 'dropTitle')}</strong>
           <span class="muted">{t(lang, 'dropText')}</span>
-          <span class="tnum small-text muted">{state.vault.path}</span>
+          <span class="drop-path tnum small-text muted">{state.vault.path}</span>
           {busy && busy !== 'busy' ? (
             <span class="small-text" role="status">
               {busy}
@@ -777,7 +777,11 @@ function Documents({
                     <option value="household">{t(lang, 'both')}</option>
                   </select>
                 ) : null}
-                {d.kindSource === 'export' || d.kindSource === 'pdf_text' ? (
+                {d.barcode === 'pending' ? (
+                  <span class="chip chip-needs-ok">{t(lang, 'barcodeWhose')}</span>
+                ) : d.barcode === 'read' ? (
+                  <span class="chip chip-verified">{t(lang, 'statusFromBarcode')}</span>
+                ) : d.kindSource === 'export' || d.kindSource === 'pdf_text' ? (
                   <span class="chip chip-verified">{t(lang, 'statusRecognised')}</span>
                 ) : (
                   <span

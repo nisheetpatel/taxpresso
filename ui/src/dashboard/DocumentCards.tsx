@@ -16,7 +16,12 @@ export function StatusChip({ v, lang }: { v: CardValue; lang: Language }) {
     v.status === 'extracted'
       ? ['chip-needs-ok', 'statusNeedsOk' as const]
       : v.status === 'verified'
-        ? ['chip-verified', 'statusVerified' as const]
+        ? [
+            'chip-verified',
+            v.method === 'barcode'
+              ? ('statusVerifiedBarcode' as const)
+              : ('statusVerified' as const),
+          ]
         : v.status === 'estimate'
           ? ['chip-estimate', 'statusEstimate' as const]
           : [
@@ -91,6 +96,7 @@ function ValueRow({
   return (
     <li class={`dc-row${v.status === 'extracted' ? ' dc-row-pending' : ''}`}>
       <div class="dc-label">
+        {v.item ? <span class="muted small-text">{v.item}</span> : null}
         <span class="dc-gloss">{v.label}</span>
         {showOfficial(v.label, v.official) ? (
           <span class="dc-official" lang="fr">

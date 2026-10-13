@@ -54,7 +54,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 | sg | 35 | 20 | 31 | 7 |
 | zg | 35 | 17 | 22 | 16 |
 | ch | 22 | 17 | 18 | 5 |
-| standards | 9 | 6 | 6 | 0 |
+| standards | 14 | 9 | 8 | 0 |
 
 "html" entries are official pages, either because the document only exists as a page or because the PDF behind it couldn't be fetched by the collecting tool. The fetch script saves a snapshot of each page; the first person to run it should open these and add the direct PDF links they lead to.
 
@@ -65,8 +65,8 @@ The script checks that each file really is what the manifest says (a PDF starts 
 - St. Gallen: Steuerbuch chapters dated 2021 quote older caps than the 2025 guide; use them for conditions only. See `sg/NOTES.md`.
 - Zug: tariff headers give different index dates; a sample form says 60 days while the guide says 30 April. See `zg/NOTES.md`.
 - Basel-Landschaft: six baselland.ch HTML pages refuse scripted downloads (Cloudflare challenge); open them in a browser. See `bl/NOTES.md`.
-- Barcode compression: the eCH-0196 barcode annex describes ZLIB-compressed XML, while eCH-0270 says "ZIP". The decoder must handle both until a real bank statement settles it (spike S2).
-- Salary certificate 2D barcode: no official specification was found on the ESTV or CSI pages reviewed. Don't assume it follows eCH-0270; determine it from a real certificate (spike S2).
+- Barcode compression: the eCH-0196 barcode annex describes ZLIB-compressed XML, while eCH-0270 says "ZIP". The decoder handles both (and GZIP and raw deflate) and reports which one a statement used; still open until a real bank statement settles it (docs/spikes/S2.md).
+- Salary certificate 2D barcode: not on the ESTV or CSI pages, but specified by Swissdec (std-swissdec-elm5-lohnausweis-richtlinien-fr, TaxAccountingOverview_f.pdf p. 35-37, and std-swissdec-elm6-barcode-annexe5): PDF417, 14 control bytes, an Info-ZIP archive with one entry "txab", the TxAB XML. It does not follow eCH-0270. The schema requires a Company element; Taxpresso accepts a certificate without it (it carries no box) and notes it (docs/spikes/S2.md).
 - eCH-0278 status: the cover says approved 2026-02-05, but the body mentions a later decision and calls it a proposal. Confirm before building on it. Its XSD and Excel annexes weren't found.
 - Federal law texts: the LIFD is in `ch` (ch-na-law-lifd, Fedlex filestore PDF). The LHID, the source-tax ordinance and the professional-expense ordinance are still missing: the fedlex.admin.ch pages only render in a browser, but their filestore PDFs download directly.
 - Pillar 3a 2025 maximum: the federal key-figures table extracted the same value for 2025 and 2026. Read it from the PDF before hard-coding anything.

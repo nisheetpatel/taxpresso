@@ -89,6 +89,26 @@
       "description": "Saves what you tell Claude about your securities and accounts: the official value of a security, whose a line is, or an account or asset without a document."
     },
     {
+      "name": "mark_entered",
+      "description": "Ticks the values you say you typed into your declaration as entered, like the Entered boxes in the dashboard. Values that aren't final yet are left unticked."
+    },
+    {
+      "name": "skip_question",
+      "description": "Puts a question aside when you don't know the answer yet. It comes back later."
+    },
+    {
+      "name": "waive_requirement",
+      "description": "Records that you don't have, or don't need, an optional document, or asks for it again."
+    },
+    {
+      "name": "replace_document",
+      "description": "Records that one of your documents replaces another, such as a corrected salary certificate. The old file stays in your folder."
+    },
+    {
+      "name": "set_document_owner",
+      "description": "Records whose a document is, when you say so: yours, your partner's or both."
+    },
+    {
       "name": "open_dashboard",
       "description": "Opens your Taxpresso dashboard, which runs on this computer only."
     }
@@ -104,7 +124,7 @@
   "prompts_generated": false,
   "keywords": ["tax", "impôts", "geneva", "genève", "switzerland", "declaration"],
   "compatibility": {
-    "platforms": ["darwin", "win32"],
+    "platforms": ["darwin", "linux", "win32"],
     "runtimes": {
       "node": ">=20.0.0"
     }
