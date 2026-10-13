@@ -197,7 +197,7 @@ const fr = {
       ],
       [
         `Et les autres cantons${NB}?`,
-        `Genève d’abord. Zurich, Berne, Vaud, Bâle, Fribourg, le Tessin et Lucerne sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
+        `Genève d’abord. Zurich, Berne, Vaud, Bâle, Fribourg, le Tessin, Lucerne, Argovie, Saint-Gall et Zoug sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
       ],
       [
         `Taxpresso transmet-il ma déclaration${NB}?`,
@@ -302,7 +302,7 @@ const fr = {
 
   footer: {
     independent:
-      'Taxpresso est indépendant et n’est lié ni à l’Administration fiscale cantonale de Genève, ni à Anthropic. Claude est une marque d’Anthropic.',
+      'Taxpresso est un projet logiciel indépendant, gratuit et open source. Il n’est ni affilié à une fiduciaire, un cabinet comptable ou une société de services fiscaux, en Suisse ou ailleurs, ni sponsorisé par l’une d’elles, et il n’est lié ni à l’Administration fiscale cantonale de Genève, ni à Anthropic. Claude est une marque d’Anthropic.',
     noTracking: 'Ce site n’utilise ni cookies, ni traceurs, ni polices externes.',
     source: 'Code source',
   },
@@ -455,7 +455,7 @@ const en: Copy = {
       ],
       [
         'What about other cantons?',
-        `Geneva comes first. Zurich, Bern, Vaud, Basel, Fribourg, Ticino and Lucerne are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
+        `Geneva comes first. Zurich, Bern, Vaud, Basel, Fribourg, Ticino, Lucerne, Aargau, St. Gallen and Zug are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
       ],
       [
         'Does Taxpresso file my return?',
@@ -560,7 +560,7 @@ const en: Copy = {
 
   footer: {
     independent:
-      'Taxpresso is independent and not affiliated with the Geneva cantonal tax administration or with Anthropic. Claude is a trademark of Anthropic.',
+      'Taxpresso is an independent, free and open-source software project. It is not affiliated with, sponsored by or associated with any accounting firm, fiduciary or tax-services company, in Switzerland or elsewhere, nor with the Geneva cantonal tax administration or Anthropic. Claude is a trademark of Anthropic.',
     noTracking: 'This site uses no cookies, no trackers and no external fonts.',
     source: 'Source code',
   },
@@ -727,7 +727,7 @@ const de: Copy = {
       ],
       [
         'Und die anderen Kantone?',
-        `Genf kommt zuerst. Zürich, Bern, Waadt, Basel, Freiburg, Tessin und Luzern sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
+        `Genf kommt zuerst. Zürich, Bern, Waadt, Basel, Freiburg, Tessin, Luzern, Aargau, St. Gallen und Zug sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
       ],
       [
         'Übermittelt Taxpresso meine Erklärung?',
@@ -832,7 +832,7 @@ const de: Copy = {
 
   footer: {
     independent:
-      'Taxpresso ist unabhängig und weder mit der kantonalen Steuerverwaltung Genf noch mit Anthropic verbunden. Claude ist eine Marke von Anthropic.',
+      'Taxpresso ist ein unabhängiges, kostenloses Open-Source-Softwareprojekt. Es ist mit keinem Treuhand- oder Buchhaltungsbüro und keiner Steuerberatungsfirma verbunden und wird von keiner gesponsert, weder in der Schweiz noch anderswo. Es ist auch weder mit der kantonalen Steuerverwaltung Genf noch mit Anthropic verbunden. Claude ist eine Marke von Anthropic.',
     noTracking:
       'Diese Website verwendet keine Cookies, keine Tracker und keine externen Schriften.',
     source: 'Quellcode',
@@ -992,7 +992,7 @@ const it: Copy = {
       ],
       [
         'E gli altri cantoni?',
-        `Prima Ginevra. Poi sono previsti Zurigo, Berna, Vaud, Basilea, Friburgo, Ticino e Lucerna. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
+        `Prima Ginevra. Poi sono previsti Zurigo, Berna, Vaud, Basilea, Friburgo, Ticino, Lucerna, Argovia, San Gallo e Zugo. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
       ],
       [
         'Taxpresso trasmette la mia dichiarazione?',
@@ -1097,7 +1097,7 @@ const it: Copy = {
 
   footer: {
     independent:
-      'Taxpresso è indipendente e non è legato né all’Amministrazione fiscale cantonale di Ginevra, né ad Anthropic. Claude è un marchio di Anthropic.',
+      'Taxpresso è un progetto software indipendente, gratuito e open source. Non è affiliato né sponsorizzato da alcuna fiduciaria, studio contabile o società di servizi fiscali, in Svizzera o altrove, e non è legato né all’Amministrazione fiscale cantonale di Ginevra, né ad Anthropic. Claude è un marchio di Anthropic.',
     noTracking: 'Questo sito non usa cookie, tracker o font esterni.',
     source: 'Codice sorgente',
   },
@@ -1252,7 +1252,7 @@ const es: Copy = {
       ],
       [
         '¿Y los demás cantones?',
-        `Primero Ginebra. Después están previstos Zúrich, Berna, Vaud, Basilea, Friburgo, Tesino y Lucerna. [Vota por tu cantón](${ISSUE_URL.canton}).`,
+        `Primero Ginebra. Después están previstos Zúrich, Berna, Vaud, Basilea, Friburgo, Tesino, Lucerna, Argovia, San Galo y Zug. [Vota por tu cantón](${ISSUE_URL.canton}).`,
       ],
       [
         '¿Taxpresso presenta mi declaración?',
@@ -1357,7 +1357,7 @@ const es: Copy = {
 
   footer: {
     independent:
-      'Taxpresso es independiente y no está vinculado ni a la Administración fiscal cantonal de Ginebra ni a Anthropic. Claude es una marca de Anthropic.',
+      'Taxpresso es un proyecto de software independiente, gratuito y de código abierto. No está afiliado a ninguna gestoría, firma contable ni empresa de servicios fiscales, ni patrocinado por ellas, en Suiza ni en ningún otro lugar, y no está vinculado ni a la Administración fiscal cantonal de Ginebra ni a Anthropic. Claude es una marca de Anthropic.',
     noTracking: 'Este sitio no usa cookies, ni rastreadores, ni fuentes externas.',
     source: 'Código fuente',
   },
@@ -1520,7 +1520,7 @@ const pt: Copy = {
       ],
       [
         'E os outros cantões?',
-        `Primeiro Genebra. A seguir estão previstos Zurique, Berna, Vaud, Basileia, Friburgo, Ticino e Lucerna. [Vota no teu cantão](${ISSUE_URL.canton}).`,
+        `Primeiro Genebra. A seguir estão previstos Zurique, Berna, Vaud, Basileia, Friburgo, Ticino, Lucerna, Argóvia, São Galo e Zug. [Vota no teu cantão](${ISSUE_URL.canton}).`,
       ],
       [
         'O Taxpresso envia a minha declaração?',
@@ -1625,7 +1625,7 @@ const pt: Copy = {
 
   footer: {
     independent:
-      'O Taxpresso é independente e não está ligado nem à Administração Fiscal Cantonal de Genebra, nem à Anthropic. Claude é uma marca da Anthropic.',
+      'O Taxpresso é um projeto de software independente, gratuito e de código aberto. Não está afiliado a nenhuma fiduciária, gabinete de contabilidade ou empresa de serviços fiscais, nem é patrocinado por nenhuma, na Suíça ou noutro lado, e não está ligado nem à Administração Fiscal Cantonal de Genebra, nem à Anthropic. Claude é uma marca da Anthropic.',
     noTracking: 'Este site não usa cookies, nem rastreadores, nem tipos de letra externos.',
     source: 'Código-fonte',
   },
