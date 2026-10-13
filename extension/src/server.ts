@@ -13,6 +13,7 @@ import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './
 import { INSTRUCTIONS } from './instructions.js';
 import { KIND_LABELS } from './kinds.js';
 import { registerHoldingTools } from './holdings-tools.js';
+import { registerParityTools } from './parity-tools.js';
 import { decide, DecisionInput, planningReady, planningText, planningView } from './planning.js';
 import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
@@ -236,7 +237,10 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       const snap = ws.snapshot();
       const first = ws.next();
       const open = snap.slots.filter((s) => s.value === undefined);
-      const ordered = first ? [first, ...open.filter((s) => s.id !== first.id)] : [];
+      // Questions the user skipped come back last, as in the dashboard (skip_question).
+      const rest = open.filter((s) => s.id !== first?.id);
+      const later = (s: Slot) => ws.skipped.includes(s.id);
+      const ordered = first ? [first, ...rest.filter((s) => !later(s)), ...rest.filter(later)] : [];
       const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
       const text = questions.length
@@ -860,6 +864,10 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       };
     },
   );
+
+  // What the dashboard's buttons do, from the chat: mark_entered, skip_question,
+  // waive_requirement, replace_document (./parity-tools.ts).
+  registerParityTools(server, ws);
 
   server.registerResource(
     'dashboard-card',
