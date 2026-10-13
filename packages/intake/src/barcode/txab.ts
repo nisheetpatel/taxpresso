@@ -198,14 +198,23 @@ export type TxabReading =
     };
 
 const AMOUNT = /^-?\d+\.\d{2}$/;
+/** Whole francs, as the schema's own reduced amounts are written (ReducedSalaryAmountType). */
+const WHOLE_FRANCS = /^-?\d{1,9}$/;
+const FRANCS = 'Amounts in whole francs';
+const NO_CONTACT_NAME = 'Contact without HR-RC-Name';
 
-/** "12345.60" -> 1234560 centimes; undefined unless exactly two decimals (SalaryAmountType). */
+/**
+ * "12345.60" -> 1234560 centimes (SalaryAmountType: two decimals). Some payroll software writes
+ * the box amounts in whole francs, like the schema's reduced amounts ("12345" -> 1234500); that is
+ * accepted too, and the reader notes it. Anything else (one decimal, separators) is undefined.
+ */
 export function salaryAmount(value: string | undefined): number | undefined {
   const v = value?.trim();
-  if (!v || !AMOUNT.test(v)) return undefined;
+  if (!v) return undefined;
+  const whole = WHOLE_FRANCS.test(v);
+  if (!whole && !AMOUNT.test(v)) return undefined;
   const negative = v.startsWith('-');
-  const digits = v.replace(/[-.]/g, '');
-  const n = Number(digits);
+  const n = Number(v.replace(/[-.]/g, '')) * (whole ? 100 : 1);
   if (!Number.isSafeInteger(n)) return undefined;
   return negative ? -n : n;
 }
@@ -280,7 +289,10 @@ export function validateTxab(root: NsElement): TxabReading {
   const values: TxabValue[] = [];
   const amount = (el: NsElement, path: string, box: string) => {
     const centimes = salaryAmount(el.text);
-    if (centimes === undefined) p.add(el, `${path}: not an amount with two decimals`);
+    if (centimes !== undefined && WHOLE_FRANCS.test(el.text.trim()) && !notes.includes(FRANCS)) {
+      notes.push(FRANCS);
+    }
+    if (centimes === undefined) p.add(el, `${path}: not an amount (two decimals or whole francs)`);
     else if (centimes < 0) p.add(el, `${path}: negative amount`);
     else values.push({ path, box, centimes });
   };
@@ -501,7 +513,7 @@ export function validateTxab(root: NsElement): TxabReading {
             ),
         },
         { name: 'Remark', min: 0, check: text('S/Remark', '15') },
-        { name: 'Contact', min: 0, check: (el) => checkContact(el, ns, p) },
+        { name: 'Contact', min: 0, check: (el) => checkContact(el, ns, p, notes) },
       ],
       p,
     );
@@ -649,12 +661,15 @@ function checkChargesRule(el: NsElement, ns: string, p: Problems): void {
   } else if (one.local !== 'Guidance') p.add(one, `ChargesRule: unexpected ${one.local}`);
 }
 
-function checkContact(el: NsElement, ns: string, p: Problems): void {
+function checkContact(el: NsElement, ns: string, p: Problems, notes: string[]): void {
+  // The schema requires HR-RC-Name; some payroll software leaves it out. It carries no box:
+  // accepted, and noted for diagnostics (like a missing Company).
+  if (!child(el, 'HR-RC-Name') && !notes.includes(NO_CONTACT_NAME)) notes.push(NO_CONTACT_NAME);
   sequence(
     el,
     ns,
     [
-      { name: 'HR-RC-Name' },
+      { name: 'HR-RC-Name', min: 0 },
       {
         name: 'Address',
         check: (a) =>

@@ -149,8 +149,8 @@ describe('salary certificate schema (SalaryDeclarationTxAB.xsd)', () => {
 
   it('refuses what the schema refuses: not verified, so the other readers take over', () => {
     const cases: [string, string][] = [
-      [txabXml({ gross: '85000' }), 'two decimals'],
-      [txabXml({ gross: "85'000.00" }), 'two decimals'],
+      [txabXml({ gross: '85000.5' }), 'not an amount'],
+      [txabXml({ gross: "85'000.00" }), 'not an amount'],
       [txabXml().replace(/<GrossIncome>.*<\/GrossIncome>/, ''), 'Missing GrossIncome'],
       [txabXml({ extra: '<Bonus>1.00</Bonus>' }), 'Unexpected element Bonus'],
       [txabXml().replace(FAKE_AHV, '756.0000.0000'), 'SV-AS-Nr'],
@@ -183,6 +183,29 @@ describe('salary certificate schema (SalaryDeclarationTxAB.xsd)', () => {
     expect(salaryAmount(' 0.05 ')).toBe(5);
     expect(salaryAmount('1.5')).toBeUndefined();
     expect(salaryAmount('1e3')).toBeUndefined();
+    // Whole francs, as some payroll software writes them (and the schema's reduced amounts are).
+    expect(salaryAmount('85000')).toBe(8_500_000);
+    expect(salaryAmount('-120')).toBe(-12_000);
+    expect(salaryAmount("85'000")).toBeUndefined();
+    expect(salaryAmount('1234567890')).toBeUndefined();
+  });
+
+  it('reads a certificate in whole francs, with a contact without its name, and notes both', () => {
+    const xml = txabXml({ company: false })
+      .replace(/>(-?\d+)\.(\d{2})</g, (_, f: string) => `>${f}<`)
+      .replace(/<HR-RC-Name>[^<]*<\/HR-RC-Name>/, '');
+    const r = readTxab(txabZip(xml));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const gross = r.certificate.values.find((v) => v.path === 'S/GrossIncome');
+    expect(gross?.centimes).toBe(8_500_000);
+    expect(r.certificate.notes).toEqual(
+      expect.arrayContaining([
+        'No Company element',
+        'Amounts in whole francs',
+        'Contact without HR-RC-Name',
+      ]),
+    );
   });
 });
 
