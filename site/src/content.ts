@@ -1,8 +1,10 @@
 // Website copy: the home page and the Get started page. French first (Geneva), then English,
 // German, Italian, Spanish and Portuguese; a native speaker reviews each before launch (SPEC.md
 // section 1). Second person, plain words, no en or em dashes, official French terms next to their
-// gloss. No tax amounts or rules here: those live in the product, each with its source. Links use
-// [text](https://...) and are rendered by render.ts.
+// gloss. French says vous; German, Italian, Spanish and Portuguese use the informal you (du, tu,
+// tú, tu), with Swiss spelling in German (ss, never ß). No tax amounts or rules here: those live
+// in the product, each with its source. Links use [text](https://...) and are rendered by
+// render.ts.
 
 const NB = String.fromCharCode(0xa0); // French spacing before : ? ! ; and inside « »
 
@@ -537,24 +539,24 @@ const en: Copy = {
 };
 
 const de: Copy = {
-  htmlTitle: 'Taxpresso: Steuern, in einem Espresso erledigt',
+  htmlTitle: 'Taxpresso: deine Steuern, erledigt bei einem Espresso',
   metaDescription:
-    'Taxpresso erstellt Ihre Genfer Steuererklärung mit Claude, direkt auf Ihrem Computer. Kostenlos und Open Source.',
+    'Taxpresso erstellt deine Genfer Steuererklärung mit Claude, auf deinem eigenen Computer. Kostenlos und Open Source.',
   skip: 'Zum Inhalt',
   navLabel: 'Abschnitte',
   langLabel: 'Sprache',
   suggestLanguage: 'Sprache vorschlagen',
   nav: { how: 'So funktioniert’s', principles: 'Grundsätze', faq: 'Fragen', start: 'Loslegen' },
 
-  tagline: 'Steuern, in einem Espresso erledigt.',
-  lead: 'Taxpresso erstellt Ihre Genfer Steuererklärung mit Claude, direkt auf Ihrem Computer. Rund 15 Fragen, Ihre Dokumente in beliebiger Reihenfolge, und jeder Abzug mit seinem Wert in Franken.',
+  tagline: 'Deine Steuern, erledigt bei einem Espresso.',
+  lead: 'Beantworte ein paar Fragen. Taxpresso macht den Rest.',
   available: 'Verfügbar für die Steuererklärung 2026.',
   getStarted: 'Loslegen',
   seeHow: 'So funktioniert’s',
   badges: { swiss: 'Swiss made', open: 'Kostenlos und Open Source' },
 
   ticket: {
-    caption: 'Beispielbeleg für eine mit Taxpresso erstellte Steuererklärung',
+    caption: 'Beispielbeleg für eine Steuererklärung mit Taxpresso',
     sub: 'Steuererklärung 2026, Genf',
     lines: [
       ['Lohnausweis', 'geprüft', 'ok'],
@@ -563,48 +565,48 @@ const de: Copy = {
       ['Kinderbetreuung', 'zu bestätigen', 'confirm'],
       ['Abzüge', 'alle, in CHF', 'plain'],
       ['Online-Erklärung', 'ausgefüllt', 'plain'],
-      ['Übermittlung', 'durch Sie', 'plain'],
+      ['Übermittlung', 'von dir', 'plain'],
     ],
     totalLabel: 'Gesamtzeit',
     totalValue: '1 Espresso',
-    footer: 'Nichts verlässt Ihren Computer.',
+    footer: 'Nichts verlässt deinen Computer.',
   },
 
   how: {
     title: 'So funktioniert’s',
     steps: [
       [
-        'Ein paar Fragen beantworten',
-        'In Claude Desktop stellt Ihnen Claude ein paar einfache Fragen, eine nach der anderen, in Ihrer Sprache. Fügen Sie Ihre Dokumente hinzu, sobald Sie sie haben: Lohnausweise, Bankauszüge, Bescheinigungen.',
+        'Beantworte ein paar Fragen',
+        'In Claude Desktop stellt dir Claude ein paar einfache Fragen, eine nach der anderen, in deiner Sprache. Leg deine Dokumente dazu, sobald du sie hast: Lohnausweise, Bankauszüge, Bescheinigungen.',
       ],
       [
-        'Sehen, was Sie sparen',
-        'Taxpresso berechnet Ihre Erklärung mit und ohne jeden Abzug und zeigt Ihnen, was jeder in Franken bringt. Sie entscheiden.',
+        'Schau, was du sparst',
+        'Taxpresso rechnet deine Erklärung mit und ohne jeden Abzug durch. So siehst du, wie viele Franken dir jeder Abzug bringt. Du entscheidest.',
       ],
       [
-        'Prüfen und übermitteln',
-        'Claude füllt die offizielle Online-Erklärung (e-démarches) für Sie aus, in Claude in Chrome oder im integrierten Browser. Taxpresso vergleicht das offizielle PDF mit Ihren Zahlen. Auf «Transmettre» drücken Sie selbst.',
+        'Prüfe und übermittle',
+        'Claude füllt die offizielle Online-Erklärung (e-démarches) für dich aus, in Claude in Chrome oder im integrierten Browser. Taxpresso vergleicht das offizielle PDF mit deinen Zahlen. Auf «Transmettre» drückst du selbst.',
       ],
     ],
   },
 
   principles: {
     title: 'Unsere Grundsätze',
-    lead: 'Nichts verlässt Ihren Computer, ausser was Sie mit der KI teilen, die Sie nutzen.',
+    lead: 'Nichts verlässt deinen Computer, ausser was du mit deiner KI teilst.',
     items: [
       [
-        'Niemand hat Zugriff auf Ihre Daten',
-        'Weder wir noch sonst jemand. Kein Server, kein Konto, nichts geht ins Internet. Ihre Dokumente bleiben in einem Ordner auf Ihrem Computer.',
+        'Niemand hat Zugriff auf deine Daten',
+        'Weder wir noch sonst jemand. Kein Server, kein Konto, nichts geht ins Internet. Deine Dokumente bleiben in einem Ordner auf deinem Computer.',
         'heart',
       ],
       [
-        'Ausser der KI, die Sie nutzen',
-        'Heute ist das Claude, mit Ihrem eigenen Konto: Claude sieht, was Sie im Gespräch teilen. ChatGPT ist noch nicht verfügbar.',
+        'Ausser der KI, die du nutzt',
+        'Heute ist das Claude, mit deinem eigenen Konto: Claude sieht, was du im Chat teilst. ChatGPT ist noch nicht verfügbar.',
         'tulip',
       ],
       [
-        'Ihre Einstellungen, nicht unsere',
-        'In den Datenschutzeinstellungen von Claude entscheiden Sie, ob Ihre Chats zur Verbesserung beitragen dürfen, und Sie löschen sie, wann Sie wollen.',
+        'Deine Einstellungen, nicht unsere',
+        'In den Datenschutzeinstellungen von Claude entscheidest du, ob deine Chats helfen dürfen, Claude zu verbessern. Und du löschst sie, wann du willst.',
         'dot',
       ],
       [
@@ -613,13 +615,13 @@ const de: Copy = {
         'rosetta',
       ],
       [
-        'Sie übermitteln selbst',
-        'Claude füllt die Online-Erklärung für Sie aus. Sie melden sich an, prüfen und drücken auf «Transmettre». Claude tippt nie Ihre Passwörter ein.',
+        'Du übermittelst selbst',
+        'Claude füllt die Online-Erklärung für dich aus. Du meldest dich an, prüfst alles und drückst auf «Transmettre». Claude tippt nie deine Passwörter ein.',
         'check',
       ],
       [
         'Kostenlos und Open Source',
-        'Taxpresso gehört seiner Community, unter der GNU AGPL. Alle können prüfen, was es tut, und helfen, es zu verbessern.',
+        'Taxpresso gehört seiner Community, unter der GNU AGPL. Alle können prüfen, was es tut, und helfen, es besser zu machen.',
         'swirl',
       ],
     ],
@@ -631,10 +633,10 @@ const de: Copy = {
 
   support: {
     title: 'Kostenlos, für immer',
-    text: 'Taxpresso ist kostenlos und Open Source, und das bleibt so. Wenn es Ihnen einen Nachmittag gespart hat, kostet das schönste Dankeschön nichts: ein Stern auf GitHub, damit andere es auch finden.',
+    text: 'Taxpresso ist kostenlos und Open Source, und das bleibt so. Hat es dir einen Nachmittag gespart? Das schönste Dankeschön kostet nichts: ein Stern auf GitHub, damit auch andere es finden.',
     star: {
       title: 'Ein Stern auf GitHub',
-      text: 'Kostenlos, in einer Sekunde, und es hilft anderen in der Schweiz, Taxpresso zu finden.',
+      text: 'Kostenlos, dauert eine Sekunde und hilft anderen in der Schweiz, Taxpresso zu finden.',
       button: 'Stern auf GitHub geben',
     },
     tip: {
@@ -649,19 +651,19 @@ const de: Copy = {
         ['Café gourmand', 'CHF 20'],
         ['Pumpkin Spice Latte', 'CHF 35'],
         ['Eine Runde für den Tisch', 'CHF 50'],
-        ['Nach Ihrem Geschmack', 'Betrag nach Wahl'],
+        ['Nach deinem Geschmack', 'Betrag nach Wahl'],
       ],
     },
-    ppb: `Precious Plastic Bugoma ist ein Verein ohne Gewinnzweck mit Sitz in Vernier, Genf ([eingetragen unter CHE-185.673.320](${PPB_REGISTER})), der rund um den Bugoma-Wald in Uganda Plastikabfall recycelt. Taxpresso wird von Mitgliedern seines Teams entwickelt.`,
+    ppb: `Precious Plastic Bugoma ist ein Verein ohne Gewinnzweck mit Sitz in Vernier, Genf ([eingetragen unter CHE-185.673.320](${PPB_REGISTER})). Er recycelt Plastikabfall rund um den Bugoma-Wald in Uganda. Taxpresso wird von Mitgliedern seines Teams entwickelt.`,
   },
 
   contribute: {
-    title: 'Machen Sie es besser',
+    title: 'Mach es mit uns besser',
     lead: 'Taxpresso entsteht offen, auf GitHub (ein kostenloses Konto genügt).',
     items: [
       [
         'Fehler melden',
-        'Stimmt etwas nicht oder ist unklar? Sagen Sie uns, was Sie erwartet haben. Nie echte Steuerdaten angeben.',
+        'Stimmt etwas nicht oder ist unklar? Sag uns, was du erwartet hast. Bitte gib nie echte Steuerdaten an.',
         'bug',
       ],
       [
@@ -669,10 +671,10 @@ const de: Copy = {
         'Eine Funktion, ein Kanton, ein klareres Wort: Wir lesen alles.',
         'idea',
       ],
-      ['Sprache hinzufügen', 'Helfen Sie, Taxpresso in Ihre Sprache zu übersetzen.', 'language'],
+      ['Sprache hinzufügen', 'Hilf mit, Taxpresso in deine Sprache zu übersetzen.', 'language'],
       [
         'Code beitragen',
-        'Lesen Sie die Anleitung für Beiträge, wählen Sie eine Aufgabe und schicken Sie Ihre Änderungen.',
+        'Lies die Anleitung für Beiträge, such dir eine Aufgabe aus und schick deine Änderungen.',
         'code',
       ],
     ],
@@ -683,15 +685,15 @@ const de: Copy = {
     items: [
       [
         'Brauche ich Claude?',
-        'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und nutzt Ihr eigenes Claude-Konto. ChatGPT ist noch nicht verfügbar.',
+        'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar.',
       ],
       [
         'Übermittelt Taxpresso meine Erklärung?',
-        'Fast. Claude füllt die offizielle Online-Erklärung für Sie aus, in Claude in Chrome oder im integrierten Browser. Sie melden sich an, prüfen das offizielle PDF und drücken selbst auf «Transmettre».',
+        'Fast. Claude füllt die offizielle Online-Erklärung für dich aus, in Claude in Chrome oder im integrierten Browser. Du meldest dich an, prüfst das offizielle PDF und drückst selbst auf «Transmettre».',
       ],
       [
         'Ist das ein offizieller Dienst?',
-        'Nein. Taxpresso ist unabhängig und weder mit der kantonalen Steuerverwaltung Genf (AFC) noch mit Anthropic verbunden.',
+        'Nein. Taxpresso ist unabhängig. Es gehört weder zur kantonalen Steuerverwaltung Genf (AFC) noch zu Anthropic.',
       ],
       [
         'Warum ist es kostenlos?',
@@ -699,36 +701,36 @@ const de: Copy = {
       ],
       [
         'Und wenn ein Dokument fehlt?',
-        'Sie können mit einer Schätzung weiterarbeiten. Taxpresso markiert sie überall, und Ihre Erklärung ist erst bereit, wenn jede Schätzung durch ein Dokument ersetzt oder von Ihnen bestätigt ist.',
+        'Dann kannst du mit einer Schätzung weitermachen. Taxpresso markiert sie überall. Deine Erklärung ist erst bereit, wenn jede Schätzung durch ein Dokument ersetzt oder von dir bestätigt ist.',
       ],
       [
         'In welchen Sprachen?',
-        'Claude antwortet in der Sprache, in der Sie schreiben. Die App gibt es auf Französisch und Englisch, Deutsch, Italienisch, Spanisch und Portugiesisch folgen. Offizielle Begriffe bleiben auf Französisch, wie im Formular.',
+        'Claude antwortet in der Sprache, in der du schreibst. Die App gibt es auf Französisch und Englisch. Deutsch, Italienisch, Spanisch und Portugiesisch kommen noch. Offizielle Begriffe bleiben auf Französisch, wie im Formular.',
       ],
     ],
   },
 
   finePrint: {
     title: 'Das Kleingedruckte, in klaren Worten',
-    text: 'Taxpresso ist ein kostenloses Werkzeug, bereitgestellt wie es ist, ohne jede Gewähr. Wir sind keine Steuerberater: Wir haben es gebaut, damit wir uns um unsere eigenen Steuern keine Sorgen mehr machen müssen. Taxpresso hilft Ihnen, Ihre Erklärung vorzubereiten, aber Sie entscheiden, was hineinkommt, und für die Erklärung, die Sie übermitteln, sind Sie verantwortlich. Im Zweifel fragen Sie die kantonale Steuerverwaltung (AFC) oder ein Treuhandbüro.',
+    text: 'Taxpresso ist ein kostenloses Werkzeug. Du bekommst es so, wie es ist, ohne jede Gewähr. Wir sind keine Steuerberater: Wir haben Taxpresso genau dafür gebaut, damit wir uns um unsere eigenen Steuern keine Sorgen mehr machen müssen. Taxpresso hilft dir, deine Erklärung vorzubereiten. Was hineinkommt, entscheidest aber du, und für die Erklärung, die du übermittelst, bist du verantwortlich. Im Zweifel frag die kantonale Steuerverwaltung (AFC) oder ein Treuhandbüro.',
   },
 
   start: {
     htmlTitle: 'Loslegen mit Taxpresso',
     metaDescription:
-      'Installieren Sie Taxpresso in Claude Desktop und erstellen Sie Ihre Genfer Steuererklärung, Schritt für Schritt.',
+      'Installiere Taxpresso in Claude Desktop und erstelle deine Genfer Steuererklärung, Schritt für Schritt.',
     title: 'Loslegen',
-    lead: 'Taxpresso ist eine Erweiterung für Claude Desktop. Sie ist in einer Minute installiert, und alles bleibt auf Ihrem Computer.',
+    lead: 'Taxpresso ist eine Erweiterung für Claude Desktop. Sie ist in einer Minute installiert, und alles bleibt auf deinem Computer.',
     download: 'Taxpresso herunterladen',
     downloadNote: 'Kostenlos. Eine Datei, für Claude Desktop.',
     platforms: ['Linux (Beta)', 'macOS', 'Windows'],
-    needsTitle: 'Was Sie brauchen',
+    needsTitle: 'Was du brauchst',
     needs: [
       [
         'Claude Desktop',
-        'Auf Linux, macOS oder Windows, angemeldet mit Ihrem Claude-Konto. [Claude Desktop herunterladen](https://claude.com/download)',
+        'Auf Linux, macOS oder Windows, angemeldet mit deinem Claude-Konto. [Claude Desktop herunterladen](https://claude.com/download)',
       ],
-      ['Ihre Dokumente', 'Als PDF oder Foto, sobald Sie sie haben. Sie können auch ohne beginnen.'],
+      ['Deine Dokumente', 'Als PDF oder Foto, sobald du sie hast. Du kannst auch ohne anfangen.'],
       [
         'Einen Browser für Claude',
         'Zum Ausfüllen der offiziellen Erklärung: Claude in Chrome oder der integrierte Browser von Claude.',
@@ -737,50 +739,50 @@ const de: Copy = {
     stepsTitle: 'In sechs Schritten',
     steps: [
       [
-        'Taxpresso herunterladen',
-        'Eine kostenlose Datei, taxpresso-version.mcpb, von der Seite mit den Versionen des Projekts.',
+        'Lade Taxpresso herunter',
+        'Eine einzige kostenlose Datei, taxpresso-version.mcpb, von der Versionsseite des Projekts.',
       ],
       [
-        'Installieren',
-        'Öffnen Sie Claude Desktop und doppelklicken Sie auf die Datei. Claude Desktop zeigt Taxpresso und seine Werkzeuge: Klicken Sie auf Installieren. Passiert nichts, öffnen Sie Einstellungen, dann Erweiterungen, und ziehen Sie die Datei auf diese Seite.',
+        'Installiere es',
+        'Öffne Claude Desktop und doppelklicke auf die Datei. Claude Desktop zeigt dir Taxpresso und seine Werkzeuge: Klick auf Installieren. Passiert nichts? Öffne Einstellungen, dann Erweiterungen, und zieh die Datei auf diese Seite.',
       ],
       [
-        'Ordner behalten',
-        'Claude Desktop schlägt einen Ordner für Ihre Steuerdokumente vor, Dokumente/Taxpresso. Behalten Sie ihn: Ihre Antworten und Dokumente bleiben dort, auf Ihrem Computer. Achten Sie darauf, dass Taxpresso eingeschaltet ist.',
+        'Behalte deinen Ordner',
+        'Claude Desktop schlägt dir einen Ordner für deine Steuerdokumente vor: Dokumente/Taxpresso. Behalte ihn. Deine Antworten und Dokumente bleiben dort, auf deinem Computer. Prüf kurz, ob Taxpresso eingeschaltet ist.',
       ],
       [
-        'Hallo sagen',
-        'Öffnen Sie einen neuen Chat und schreiben Sie den Satz unten. Beim ersten Mal fragt Claude, ob es Taxpresso verwenden darf: Erlauben Sie es.',
+        'Sag Hallo',
+        'Öffne einen neuen Chat und schreib den Satz unten. Beim ersten Mal fragt Claude, ob es Taxpresso nutzen darf: Erlaube es.',
       ],
       [
-        'Antworten und Dokumente hinzufügen',
-        'Claude stellt ein paar einfache Fragen, eine nach der anderen. Um per Klick zu antworten oder Dokumente abzulegen, bitten Sie Claude, Ihr Dashboard zu öffnen.',
+        'Antworte und füg deine Dokumente hinzu',
+        'Claude stellt dir ein paar einfache Fragen, eine nach der anderen. Willst du per Klick antworten oder Dokumente ablegen? Bitte Claude, dein Dashboard zu öffnen.',
       ],
       [
-        'Einreichen',
-        'Wenn alles bereit ist, füllt Claude die offizielle Online-Erklärung in Claude in Chrome oder im integrierten Browser aus. Sie melden sich an, prüfen und drücken selbst auf «Transmettre».',
+        'Reich deine Erklärung ein',
+        'Wenn alles bereit ist, füllt Claude die offizielle Online-Erklärung in Claude in Chrome oder im integrierten Browser aus. Du meldest dich an, prüfst alles und drückst selbst auf «Transmettre».',
       ],
     ],
     prompt: 'Hilf mir mit meinen Genfer Steuern.',
-    promptLabel: 'In Claude schreiben',
+    promptLabel: 'Schreib das in Claude',
     mockInstall: 'Installieren',
-    mockExtension: 'Ihre Genfer Steuererklärung, auf Ihrem Computer.',
+    mockExtension: 'Deine Genfer Steuererklärung, auf deinem Computer.',
     notes: [
       [
-        'Ihre Einstellungen',
-        'Nichts verlässt Ihren Computer, ausser was Sie mit Claude teilen. In den Einstellungen von Claude, unter Datenschutz, entscheiden Sie, ob Ihre Chats zur Verbesserung beitragen dürfen. Löschen Sie sie, wenn Ihre Erklärung fertig ist.',
+        'Deine Einstellungen',
+        'Nichts verlässt deinen Computer, ausser was du mit Claude teilst. In den Einstellungen von Claude, unter Datenschutz, entscheidest du, ob deine Chats helfen dürfen, Claude zu verbessern. Lösch sie, wenn deine Erklärung fertig ist.',
       ],
       [
         'Vor dem 31. Dezember',
-        'Fragen Sie Claude, wie viel Sie mit einer Einzahlung in die Säule 3a dieses Jahr sparen würden. Ein ungefährer Lohn genügt.',
+        'Frag Claude, wie viel du dieses Jahr mit einer Einzahlung in die Säule 3a sparen würdest. Ein ungefährer Lohn genügt.',
       ],
       [
         'Aktualisieren',
-        'Für eine neue Version entfernen Sie Taxpresso unter Einstellungen, Erweiterungen und installieren dann die neue Datei. Ihr Ordner bleibt, wie er ist.',
+        'Für eine neue Version entfernst du Taxpresso unter Einstellungen, Erweiterungen und installierst dann die neue Datei. Dein Ordner bleibt, wie er ist.',
       ],
       [
         'Etwas klappt nicht?',
-        `Funktioniert etwas nicht wie erwartet? [Sagen Sie es uns](${ISSUE_URL.bug}), aber nie mit echten Steuerdaten.`,
+        `Funktioniert etwas nicht wie erwartet? [Sag es uns](${ISSUE_URL.bug}), aber bitte nie mit echten Steuerdaten.`,
       ],
     ],
     back: 'Zurück zur Startseite',
@@ -796,20 +798,20 @@ const de: Copy = {
 };
 
 const it: Copy = {
-  htmlTitle: 'Taxpresso: le imposte, il tempo di un espresso',
+  htmlTitle: 'Taxpresso: le tue tasse, il tempo di un espresso',
   metaDescription:
-    'Taxpresso prepara la sua dichiarazione d’imposta ginevrina con Claude, sul suo computer. Gratuito e open source.',
-  skip: 'Passare al contenuto',
+    'Taxpresso prepara la tua dichiarazione d’imposta ginevrina con Claude, sul tuo computer. Gratuito e open source.',
+  skip: 'Vai al contenuto',
   navLabel: 'Sezioni',
   langLabel: 'Lingua',
-  suggestLanguage: 'Proporre una lingua',
-  nav: { how: 'Come funziona', principles: 'Principi', faq: 'Domande', start: 'Per iniziare' },
+  suggestLanguage: 'Proponi una lingua',
+  nav: { how: 'Come funziona', principles: 'Principi', faq: 'Domande', start: 'Inizia' },
 
-  tagline: 'Le imposte, il tempo di un espresso.',
-  lead: 'Taxpresso prepara la sua dichiarazione d’imposta ginevrina con Claude, sul suo computer. Una quindicina di domande, i suoi documenti in qualsiasi ordine, e per ogni deduzione il suo valore in franchi.',
+  tagline: 'Le tue tasse, il tempo di un espresso.',
+  lead: 'Rispondi a qualche domanda. Al resto ci pensa Taxpresso.',
   available: 'Disponibile per le dichiarazioni 2026.',
-  getStarted: 'Iniziare',
-  seeHow: 'Vedere come funziona',
+  getStarted: 'Inizia',
+  seeHow: 'Scopri come funziona',
   badges: { swiss: 'Swiss made', open: 'Gratuito e open source' },
 
   ticket: {
@@ -822,84 +824,84 @@ const it: Copy = {
       ['Custodia dei figli', 'da confermare', 'confirm'],
       ['Deduzioni', 'tutte, in CHF', 'plain'],
       ['Dichiarazione online', 'compilata', 'plain'],
-      ['Trasmissione', 'da parte sua', 'plain'],
+      ['Trasmissione', 'tocca a te', 'plain'],
     ],
     totalLabel: 'Tempo totale',
     totalValue: '1 espresso',
-    footer: 'Nulla esce dal suo computer.',
+    footer: 'Niente esce dal tuo computer.',
   },
 
   how: {
     title: 'Come funziona',
     steps: [
       [
-        'Risponda a qualche domanda',
-        'In Claude Desktop, Claude le fa alcune domande semplici, una alla volta, nella sua lingua. Aggiunga i suoi documenti quando li ha: certificati di salario, estratti bancari, attestazioni.',
+        'Rispondi a qualche domanda',
+        'In Claude Desktop, Claude ti fa qualche domanda semplice, una alla volta, nella tua lingua. Aggiungi i tuoi documenti quando li hai: certificati di salario, estratti conto, attestazioni.',
       ],
       [
-        'Veda quanto risparmia',
-        'Taxpresso calcola la sua dichiarazione con e senza ogni deduzione, e le mostra quanto le fa risparmiare ciascuna in franchi. Sceglie lei.',
+        'Guarda quanto risparmi',
+        'Taxpresso calcola la tua dichiarazione con e senza ogni deduzione, e ti mostra quanti franchi ti fa risparmiare ciascuna. Scegli tu.',
       ],
       [
-        'Verifichi e trasmetta',
-        'Claude compila per lei la dichiarazione online ufficiale (e-démarches), in Claude in Chrome o nel browser integrato. Taxpresso confronta il PDF ufficiale con le sue cifre. Il pulsante Transmettre lo preme lei.',
+        'Controlla e trasmetti',
+        'Claude compila per te la dichiarazione online ufficiale (e-démarches), in Claude in Chrome o nel suo browser integrato. Taxpresso confronta il PDF ufficiale con i tuoi numeri. Il pulsante Transmettre lo premi tu.',
       ],
     ],
   },
 
   principles: {
     title: 'I nostri principi',
-    lead: 'Nulla esce dal suo computer, tranne ciò che condivide con l’IA che usa.',
+    lead: 'Niente esce dal tuo computer, tranne quello che condividi con l’IA che usi.',
     items: [
       [
-        'Nessuno ha accesso ai suoi dati',
-        'Né noi, né nessun altro. Nessun server, nessun account, niente viene inviato su internet. I suoi documenti restano in una cartella sul suo computer.',
+        'Nessuno ha accesso ai tuoi dati',
+        'Né noi, né nessun altro. Nessun server, nessun account, niente viene inviato su internet. I tuoi documenti restano in una cartella sul tuo computer.',
         'heart',
       ],
       [
-        'Tranne l’IA che usa',
-        'Oggi è Claude, con il suo account personale: vede ciò che lei condivide nella conversazione. ChatGPT non è ancora disponibile.',
+        'Tranne l’IA che usi',
+        'Oggi è Claude, con il tuo account: vede quello che condividi nella conversazione. ChatGPT non è ancora disponibile.',
         'tulip',
       ],
       [
-        'Le sue impostazioni, non le nostre',
-        'Nelle impostazioni sulla privacy di Claude decide lei se le sue conversazioni possono servire a migliorarlo, e le cancella quando vuole.',
+        'Le tue impostazioni, non le nostre',
+        'Nelle impostazioni sulla privacy di Claude decidi tu se le tue conversazioni possono aiutare a migliorarlo. E le cancelli quando vuoi.',
         'dot',
       ],
       [
         'Solo regole ufficiali',
-        'Ogni importo segue la guida fiscale ginevrina e quella federale, e ne cita la pagina. Claude spiega, ma non calcola.',
+        'Ogni importo segue le guide fiscali di Ginevra e della Confederazione, e ne cita la pagina. Claude spiega, ma non fa i calcoli.',
         'rosetta',
       ],
       [
-        'È lei a trasmettere',
-        'Claude compila per lei la dichiarazione online. Lei accede, la rilegge e preme Transmettre. Claude non digita mai le sue password.',
+        'Sei tu a trasmettere',
+        'Claude compila per te la dichiarazione online. Tu accedi, la ricontrolli e premi Transmettre. Claude non digita mai le tue password.',
         'check',
       ],
       [
         'Gratuito e open source',
-        'Taxpresso appartiene alla propria comunità, con licenza GNU AGPL. Chiunque può verificare cosa fa e aiutare a migliorarlo.',
+        'Taxpresso appartiene alla sua comunità, con licenza GNU AGPL. Chiunque può verificare cosa fa e aiutare a migliorarlo.',
         'swirl',
       ],
     ],
     swiss: [
       'Swiss made',
-      'Ideato a Ginevra, per chi paga le imposte in Svizzera. Indipendente dall’amministrazione fiscale e da Anthropic.',
+      'Creato a Ginevra, per chi paga le tasse in Svizzera. Indipendente dall’amministrazione fiscale e da Anthropic.',
     ],
   },
 
   support: {
-    title: 'Gratuito, per sempre',
-    text: 'Taxpresso è gratuito e open source, e lo resterà. Se le ha fatto risparmiare un pomeriggio, il ringraziamento più bello non costa nulla: una stella su GitHub, perché anche altri lo trovino.',
+    title: 'Gratis, per sempre',
+    text: 'Taxpresso è gratuito e open source, e lo resterà. Ti ha fatto risparmiare un pomeriggio? Il grazie più bello non costa niente: una stella su GitHub, così anche altri lo trovano.',
     star: {
       title: 'Una stella su GitHub',
-      text: 'Gratis, in un secondo, e aiuta altre persone in Svizzera a trovare Taxpresso.',
-      button: 'Mettere una stella',
+      text: 'Gratis, ci vuole un secondo, e aiuta altre persone in Svizzera a trovare Taxpresso.',
+      button: 'Metti una stella',
     },
     tip: {
       title: 'Il menu delle mance',
-      note: 'Ogni mancia va a Precious Plastic Bugoma. Taxpresso non trattiene nulla.',
-      button: 'Lasciare una mancia',
+      note: 'Ogni mancia va a Precious Plastic Bugoma. Taxpresso non tiene niente per sé.',
+      button: 'Lascia una mancia',
       menu: [
         ['Un bicchiere d’acqua', 'gratis'],
         ['Espresso', 'CHF 2.50'],
@@ -908,30 +910,30 @@ const it: Copy = {
         ['Café gourmand', 'CHF 20'],
         ['Pumpkin spice latte', 'CHF 35'],
         ['Un giro per tutta la tavolata', 'CHF 50'],
-        ['A piacere', 'l’importo che vuole'],
+        ['A piacere', 'l’importo che vuoi'],
       ],
     },
-    ppb: `Precious Plastic Bugoma è un’associazione senza scopo di lucro con sede a Vernier, Ginevra ([iscritta con il numero CHE-185.673.320](${PPB_REGISTER})), che ricicla i rifiuti di plastica intorno alla foresta di Bugoma, in Uganda. Taxpresso è realizzato da membri del suo team.`,
+    ppb: `Precious Plastic Bugoma è un’associazione senza scopo di lucro con sede a Vernier, Ginevra ([iscritta con il numero CHE-185.673.320](${PPB_REGISTER})). Ricicla i rifiuti di plastica intorno alla foresta di Bugoma, in Uganda. Taxpresso è realizzato da membri del suo team.`,
   },
 
   contribute: {
-    title: 'Ci aiuti a migliorarlo',
-    lead: 'Taxpresso si costruisce alla luce del sole, su GitHub (basta un account gratuito).',
+    title: 'Aiutaci a migliorarlo',
+    lead: 'Taxpresso si sviluppa alla luce del sole, su GitHub (basta un account gratuito).',
     items: [
       [
-        'Segnalare un bug',
-        'Qualcosa non va o non è chiaro? Ci dica cosa si aspettava. Non inserisca mai dati fiscali reali.',
+        'Segnala un bug',
+        'Qualcosa non va o non è chiaro? Dicci cosa ti aspettavi. Non inserire mai dati fiscali reali.',
         'bug',
       ],
       [
-        'Proporre un’idea',
+        'Proponi un’idea',
         'Una funzione, un cantone, una parola più chiara: leggiamo tutto.',
         'idea',
       ],
-      ['Aggiungere una lingua', 'Ci aiuti a tradurre Taxpresso nella sua lingua.', 'language'],
+      ['Aggiungi una lingua', 'Aiutaci a tradurre Taxpresso nella tua lingua.', 'language'],
       [
-        'Scrivere codice',
-        'Legga la guida per contribuire, scelga un ticket e proponga le sue modifiche.',
+        'Scrivi codice',
+        'Leggi la guida per contribuire, scegli un ticket e proponi le tue modifiche.',
         'code',
       ],
     ],
@@ -941,53 +943,53 @@ const it: Copy = {
     title: 'Domande',
     items: [
       [
-        'Serve Claude?',
-        'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il suo account Claude personale. ChatGPT non è ancora disponibile.',
+        'Mi serve Claude?',
+        'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile.',
       ],
       [
         'Taxpresso trasmette la mia dichiarazione?',
-        'Quasi. Claude compila per lei la dichiarazione online ufficiale, in Claude in Chrome o nel browser integrato. Lei accede, rilegge il PDF ufficiale e preme personalmente Transmettre.',
+        'Quasi. Claude compila per te la dichiarazione online ufficiale, in Claude in Chrome o nel suo browser integrato. Tu accedi, ricontrolli il PDF ufficiale, e il pulsante Transmettre lo premi tu.',
       ],
       [
         'È un servizio ufficiale?',
-        'No. Taxpresso è indipendente: non è legato né all’Amministrazione fiscale cantonale di Ginevra (AFC), né ad Anthropic.',
+        'No. Taxpresso è indipendente: non ha legami né con l’Amministrazione fiscale cantonale di Ginevra (AFC), né con Anthropic.',
       ],
       [
         'Perché è gratuito?',
-        'Perché la dichiarazione d’imposta dovrebbe essere semplice e gratuita. Taxpresso è open source (licenza GNU AGPL): chiunque può verificare cosa fa, e aiutare a migliorarlo, a tradurlo o ad aggiungere un cantone. Nessuno può farne una versione chiusa.',
+        'Perché fare la dichiarazione dovrebbe essere semplice e gratis. Taxpresso è open source (licenza GNU AGPL): chiunque può verificare cosa fa, e aiutare a migliorarlo, tradurlo o aggiungere un cantone. Nessuno può farne una versione chiusa.',
       ],
       [
         'E se manca un documento?',
-        'Può andare avanti con una stima. Taxpresso la segnala ovunque, e la sua dichiarazione è pronta solo quando ogni stima è stata sostituita da un documento o confermata da lei.',
+        'Puoi andare avanti con una stima. Taxpresso la segnala ovunque, e la tua dichiarazione è pronta solo quando ogni stima è sostituita da un documento o confermata da te.',
       ],
       [
         'In quali lingue?',
-        'Claude le risponde nella lingua in cui scrive. L’app è in francese e in inglese, poi arriveranno il tedesco, l’italiano, lo spagnolo e il portoghese. I termini ufficiali restano in francese, come sul modulo.',
+        'Claude ti risponde nella lingua in cui scrivi. L’app è in francese e in inglese, poi arriveranno tedesco, italiano, spagnolo e portoghese. I termini ufficiali restano in francese, come sul modulo.',
       ],
     ],
   },
 
   finePrint: {
-    title: 'Le clausole in piccolo, in parole semplici',
-    text: 'Taxpresso è uno strumento gratuito, fornito così com’è, senza alcuna garanzia. Non siamo consulenti fiscali: l’abbiamo creato proprio per non doverci più preoccupare delle nostre imposte. Taxpresso la aiuta a preparare la sua dichiarazione, ma è lei a decidere cosa contiene, e la dichiarazione che trasmette è sotto la sua responsabilità. In caso di dubbio, si rivolga all’Amministrazione fiscale cantonale (AFC) o a una fiduciaria.',
+    title: 'Le scritte in piccolo, in parole semplici',
+    text: 'Taxpresso è uno strumento gratuito, fornito così com’è, senza alcuna garanzia. Non siamo consulenti fiscali: l’abbiamo creato proprio per non doverci più preoccupare delle nostre tasse. Taxpresso ti aiuta a preparare la tua dichiarazione, ma sei tu a decidere cosa contiene, e la dichiarazione che trasmetti è sotto la tua responsabilità. Se hai dubbi, chiedi all’Amministrazione fiscale cantonale (AFC) o a una fiduciaria.',
   },
 
   start: {
-    htmlTitle: 'Iniziare con Taxpresso',
+    htmlTitle: 'Inizia con Taxpresso',
     metaDescription:
-      'Installi Taxpresso in Claude Desktop e prepari la sua dichiarazione d’imposta ginevrina, passo dopo passo.',
-    title: 'Per iniziare',
-    lead: 'Taxpresso è un’estensione per Claude Desktop. Si installa in un minuto, e tutto resta sul suo computer.',
-    download: 'Scaricare Taxpresso',
-    downloadNote: 'Gratuito. Un solo file, per Claude Desktop.',
+      'Installa Taxpresso in Claude Desktop e prepara la tua dichiarazione d’imposta ginevrina, passo dopo passo.',
+    title: 'Inizia',
+    lead: 'Taxpresso è un’estensione per Claude Desktop. Si installa in un minuto, e tutto resta sul tuo computer.',
+    download: 'Scarica Taxpresso',
+    downloadNote: 'Gratis. Un solo file, per Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
-    needsTitle: 'Cosa le serve',
+    needsTitle: 'Cosa ti serve',
     needs: [
       [
         'Claude Desktop',
-        'Su Linux, macOS o Windows, connesso al suo account Claude. [Scaricare Claude Desktop](https://claude.com/download)',
+        'Su Linux, macOS o Windows, collegato al tuo account Claude. [Scarica Claude Desktop](https://claude.com/download)',
       ],
-      ['I suoi documenti', 'In PDF o in foto, appena li ha. Può anche iniziare senza.'],
+      ['I tuoi documenti', 'In PDF o in foto, appena li hai. Puoi anche iniziare senza.'],
       [
         'Un browser per Claude',
         'Per compilare la dichiarazione ufficiale: Claude in Chrome, o il browser integrato di Claude.',
@@ -996,78 +998,78 @@ const it: Copy = {
     stepsTitle: 'In sei passi',
     steps: [
       [
-        'Scarichi Taxpresso',
+        'Scarica Taxpresso',
         'Un solo file gratuito, taxpresso-version.mcpb, dalla pagina delle versioni del progetto.',
       ],
       [
-        'Lo installi',
-        'Apra Claude Desktop, poi faccia doppio clic sul file. Claude Desktop le mostra Taxpresso e i suoi strumenti: clicchi su Installa. Se non succede nulla, apra Impostazioni, poi Estensioni, e trascini il file su quella pagina.',
+        'Installalo',
+        'Apri Claude Desktop, poi fai doppio clic sul file. Claude Desktop ti mostra Taxpresso e i suoi strumenti: clicca su Installa. Se non succede niente, apri Impostazioni, poi Estensioni, e trascina il file su quella pagina.',
       ],
       [
-        'Tenga la sua cartella',
-        'Claude Desktop propone una cartella per i suoi documenti fiscali, Documenti/Taxpresso. La tenga: le sue risposte e i suoi documenti restano lì, sul suo computer. Verifichi che Taxpresso sia attivato.',
+        'Tieni la tua cartella',
+        'Claude Desktop ti propone una cartella per i tuoi documenti fiscali, Documenti/Taxpresso. Tienila: le tue risposte e i tuoi documenti restano lì, sul tuo computer. Controlla che Taxpresso sia attivo.',
       ],
       [
-        'Saluti Claude',
-        'Apra una nuova conversazione e scriva la frase qui sotto. La prima volta, Claude le chiede il permesso di usare Taxpresso: lo consenta.',
+        'Saluta Claude',
+        'Apri una nuova conversazione e scrivi la frase qui sotto. La prima volta, Claude ti chiede il permesso di usare Taxpresso: accetta.',
       ],
       [
-        'Risponda e aggiunga i suoi documenti',
-        'Claude le fa alcune domande semplici, una alla volta. Per rispondere con un clic o caricare i suoi documenti, chieda a Claude di aprire la sua dashboard.',
+        'Rispondi e aggiungi i tuoi documenti',
+        'Claude ti fa qualche domanda semplice, una alla volta. Per rispondere con un clic o aggiungere i tuoi documenti, chiedi a Claude di aprire la tua dashboard.',
       ],
       [
-        'Trasmetta',
-        'Quando tutto è pronto, Claude compila la dichiarazione online ufficiale in Claude in Chrome o nel browser integrato. Lei accede, verifica e preme personalmente Transmettre.',
+        'Trasmetti',
+        'Quando è tutto pronto, Claude compila la dichiarazione online ufficiale in Claude in Chrome o nel suo browser integrato. Tu accedi, controlli, e il pulsante Transmettre lo premi tu.',
       ],
     ],
-    prompt: 'Aiutami con le mie imposte a Ginevra.',
-    promptLabel: 'Da scrivere in Claude',
+    prompt: 'Aiutami con le mie tasse a Ginevra.',
+    promptLabel: 'Scrivi questo in Claude',
     mockInstall: 'Installa',
-    mockExtension: 'La sua dichiarazione d’imposta ginevrina, sul suo computer.',
+    mockExtension: 'La tua dichiarazione d’imposta ginevrina, sul tuo computer.',
     notes: [
       [
-        'Le sue impostazioni',
-        'Nulla esce dal suo computer, tranne ciò che condivide con Claude. Nelle impostazioni di Claude, alla voce Privacy, decide lei se le sue conversazioni possono servire a migliorare Claude. Le cancelli una volta finita la dichiarazione.',
+        'Le tue impostazioni',
+        'Niente esce dal tuo computer, tranne quello che condividi con Claude. Nelle impostazioni di Claude, alla voce Privacy, decidi tu se le tue conversazioni possono aiutare a migliorare Claude. Cancellale quando hai finito la dichiarazione.',
       ],
       [
         'Prima del 31 dicembre',
-        'Chieda a Claude quanto le farebbe risparmiare quest’anno un versamento nel pilastro 3a (3e pilier A). Basta un salario approssimativo.',
+        'Chiedi a Claude quanto ti farebbe risparmiare quest’anno un versamento nel pilastro 3a (3e pilier A). Basta un salario approssimativo.',
       ],
       [
-        'Aggiornare',
-        'Per installare una nuova versione, rimuova Taxpresso in Impostazioni, Estensioni, poi installi il nuovo file. La sua cartella resta com’è.',
+        'Aggiornamenti',
+        'Per installare una nuova versione, rimuovi Taxpresso in Impostazioni, Estensioni, poi installa il nuovo file. La tua cartella resta com’è.',
       ],
       [
         'Un problema?',
-        `Qualcosa non funziona come previsto? [Ce lo dica](${ISSUE_URL.bug}), senza mai inserire dati fiscali reali.`,
+        `Qualcosa non funziona come dovrebbe? [Diccelo](${ISSUE_URL.bug}), ma senza mai inserire dati fiscali reali.`,
       ],
     ],
-    back: 'Tornare alla pagina iniziale',
+    back: 'Torna alla pagina iniziale',
   },
 
   footer: {
     independent:
       'Taxpresso è indipendente e non è legato né all’Amministrazione fiscale cantonale di Ginevra, né ad Anthropic. Claude è un marchio di Anthropic.',
-    noTracking: 'Questo sito non usa né cookie, né tracker, né font esterni.',
+    noTracking: 'Questo sito non usa cookie, tracker o font esterni.',
     source: 'Codice sorgente',
   },
 };
 
 const es: Copy = {
-  htmlTitle: 'Taxpresso: sus impuestos, en lo que dura un espresso',
+  htmlTitle: 'Taxpresso: tus impuestos, mientras te tomas un espresso',
   metaDescription:
-    'Taxpresso prepara su declaración de impuestos de Ginebra con Claude, en su propio ordenador. Gratis y de código abierto.',
+    'Taxpresso prepara tu declaración de impuestos de Ginebra con Claude, en tu propio ordenador. Gratis y de código abierto.',
   skip: 'Ir al contenido',
   navLabel: 'Secciones',
   langLabel: 'Idioma',
-  suggestLanguage: 'Proponer un idioma',
-  nav: { how: 'Cómo funciona', principles: 'Principios', faq: 'Preguntas', start: 'Empezar' },
+  suggestLanguage: 'Propón un idioma',
+  nav: { how: 'Cómo funciona', principles: 'Principios', faq: 'Preguntas', start: 'Empieza' },
 
-  tagline: 'Sus impuestos, en lo que dura un espresso.',
-  lead: 'Taxpresso prepara su declaración de impuestos de Ginebra con Claude, en su propio ordenador. Unas quince preguntas, sus documentos en cualquier orden, y cada deducción con su valor en francos.',
+  tagline: 'Tus impuestos, mientras te tomas un espresso.',
+  lead: 'Responde unas preguntas. Taxpresso se encarga del resto.',
   available: 'Disponible para las declaraciones de 2026.',
-  getStarted: 'Empezar',
-  seeHow: 'Ver cómo funciona',
+  getStarted: 'Empieza',
+  seeHow: 'Mira cómo funciona',
   badges: { swiss: 'Swiss made', open: 'Gratis y de código abierto' },
 
   ticket: {
@@ -1080,63 +1082,63 @@ const es: Copy = {
       ['Gastos de guardería', 'por confirmar', 'confirm'],
       ['Deducciones', 'todas, en CHF', 'plain'],
       ['Declaración en línea', 'rellenada', 'plain'],
-      ['Envío', 'por usted', 'plain'],
+      ['Envío', 'lo haces tú', 'plain'],
     ],
     totalLabel: 'Tiempo total',
     totalValue: '1 espresso',
-    footer: 'Nada sale de su ordenador.',
+    footer: 'Nada sale de tu ordenador.',
   },
 
   how: {
     title: 'Cómo funciona',
     steps: [
       [
-        'Responda a unas preguntas',
-        'En Claude Desktop, Claude le hace unas preguntas sencillas, una a una, en su idioma. Añada sus documentos cuando los tenga: certificados de salario, extractos bancarios, justificantes.',
+        'Responde unas preguntas',
+        'En Claude Desktop, Claude te hace unas preguntas sencillas, una a una, en tu idioma. Añade tus documentos cuando los tengas: certificados de salario, extractos bancarios, justificantes.',
       ],
       [
-        'Vea cuánto ahorra',
-        'Taxpresso calcula su declaración con y sin cada deducción, y le muestra cuánto le ahorra cada una en francos. Usted decide.',
+        'Mira cuánto ahorras',
+        'Taxpresso calcula tu declaración con y sin cada deducción, y te muestra cuánto te ahorra cada una en francos. Tú decides.',
       ],
       [
-        'Revise y presente',
-        'Claude rellena por usted la declaración oficial en línea (e-démarches), en Claude in Chrome o en el navegador integrado. Taxpresso compara el PDF oficial con sus cifras. Quien pulsa Transmettre es usted.',
+        'Revisa y envía',
+        'Claude rellena por ti la declaración oficial en línea (e-démarches), en Claude in Chrome o en su navegador integrado. Taxpresso compara el PDF oficial con tus cifras. El botón Transmettre lo pulsas tú.',
       ],
     ],
   },
 
   principles: {
     title: 'Nuestros principios',
-    lead: 'Nada sale de su ordenador, salvo lo que comparte con la IA que utiliza.',
+    lead: 'Nada sale de tu ordenador, salvo lo que compartes con la IA que usas.',
     items: [
       [
-        'Nadie tiene acceso a sus datos',
-        'Ni nosotros ni nadie. Sin servidor, sin cuenta, nada se envía por internet. Sus documentos se quedan en una carpeta de su ordenador.',
+        'Nadie tiene acceso a tus datos',
+        'Ni nosotros ni nadie. Sin servidor, sin cuenta, nada se envía por internet. Tus documentos se quedan en una carpeta de tu ordenador.',
         'heart',
       ],
       [
-        'Salvo la IA que utiliza',
-        'Hoy es Claude, con su propia cuenta: ve lo que usted comparte en la conversación. ChatGPT aún no está disponible.',
+        'Salvo la IA que usas',
+        'Hoy es Claude, con tu propia cuenta: ve lo que compartes en la conversación. ChatGPT aún no está disponible.',
         'tulip',
       ],
       [
-        'Su configuración, no la nuestra',
-        'En la configuración de privacidad de Claude, usted decide si sus conversaciones pueden servir para mejorarlo, y las borra cuando quiera.',
+        'Tu configuración, no la nuestra',
+        'En la configuración de privacidad de Claude, tú decides si tus conversaciones pueden servir para mejorarlo. Y las borras cuando quieras.',
         'dot',
       ],
       [
         'Solo reglas oficiales',
-        'Cada importe sigue las guías fiscales de Ginebra y de la Confederación, y cita su página. Claude explica, pero no calcula.',
+        'Cada importe sigue las guías fiscales de Ginebra y de la Confederación, y cita su página. Claude explica, pero no hace las cuentas.',
         'rosetta',
       ],
       [
-        'Quien envía es usted',
-        'Claude rellena la declaración en línea por usted. Usted inicia sesión, la revisa y pulsa Transmettre. Claude nunca escribe sus contraseñas.',
+        'El envío es cosa tuya',
+        'Claude rellena la declaración en línea por ti. Tú inicias sesión, la revisas y pulsas Transmettre. Claude nunca escribe tus contraseñas.',
         'check',
       ],
       [
         'Gratis y de código abierto',
-        'Taxpresso pertenece a su comunidad, con licencia GNU AGPL. Cualquiera puede comprobar lo que hace y ayudar a mejorarlo.',
+        'Taxpresso es de su comunidad, con licencia GNU AGPL. Cualquiera puede comprobar lo que hace y ayudar a mejorarlo.',
         'swirl',
       ],
     ],
@@ -1148,16 +1150,16 @@ const es: Copy = {
 
   support: {
     title: 'Gratis, para siempre',
-    text: 'Taxpresso es gratis y de código abierto, y lo seguirá siendo. Si le ha ahorrado una tarde, el mejor agradecimiento no cuesta nada: una estrella en GitHub, para que otros también lo encuentren.',
+    text: 'Taxpresso es gratis y de código abierto, y lo seguirá siendo. ¿Te ha ahorrado una tarde? El mejor agradecimiento no cuesta nada: una estrella en GitHub, para que otros también lo encuentren.',
     star: {
       title: 'Una estrella en GitHub',
-      text: 'Gratis, en un segundo, y ayuda a otras personas en Suiza a encontrar Taxpresso.',
-      button: 'Dar una estrella',
+      text: 'Gratis, te lleva un segundo y ayuda a otras personas en Suiza a encontrar Taxpresso.',
+      button: 'Dale una estrella',
     },
     tip: {
       title: 'La carta de propinas',
       note: 'Cada propina va a Precious Plastic Bugoma. Taxpresso no se queda con nada.',
-      button: 'Dejar una propina',
+      button: 'Deja una propina',
       menu: [
         ['Un vaso de agua', 'gratis'],
         ['Espresso', 'CHF 2.50'],
@@ -1166,30 +1168,26 @@ const es: Copy = {
         ['Café gourmand', 'CHF 20'],
         ['Pumpkin spice latte', 'CHF 35'],
         ['Una ronda para toda la mesa', 'CHF 50'],
-        ['A su gusto', 'el importe que quiera'],
+        ['A tu gusto', 'el importe que quieras'],
       ],
     },
-    ppb: `Precious Plastic Bugoma es una asociación sin ánimo de lucro con sede en Vernier, Ginebra ([inscrita con el número CHE-185.673.320](${PPB_REGISTER})), que recicla residuos plásticos en torno al bosque de Bugoma, en Uganda. Taxpresso lo desarrollan miembros de su equipo.`,
+    ppb: `Precious Plastic Bugoma es una asociación sin ánimo de lucro con sede en Vernier, Ginebra ([inscrita con el número CHE-185.673.320](${PPB_REGISTER})). Recicla residuos plásticos alrededor del bosque de Bugoma, en Uganda. Taxpresso lo desarrollan miembros de su equipo.`,
   },
 
   contribute: {
-    title: 'Mejórelo con nosotros',
+    title: 'Mejóralo con nosotros',
     lead: 'Taxpresso se construye en abierto, en GitHub (basta con una cuenta gratuita).',
     items: [
       [
-        'Informar de un error',
-        '¿Algo falla o no está claro? Cuéntenos qué esperaba. No incluya nunca datos fiscales reales.',
+        'Informa de un error',
+        '¿Algo falla o no está claro? Cuéntanos qué esperabas. No incluyas nunca datos fiscales reales.',
         'bug',
       ],
+      ['Propón una idea', 'Una función, un cantón, una palabra más clara: lo leemos todo.', 'idea'],
+      ['Añade un idioma', 'Ayuda a traducir Taxpresso a tu idioma.', 'language'],
       [
-        'Proponer una idea',
-        'Una función, un cantón, una palabra más clara: lo leemos todo.',
-        'idea',
-      ],
-      ['Añadir un idioma', 'Ayude a traducir Taxpresso a su idioma.', 'language'],
-      [
-        'Escribir código',
-        'Lea la guía de contribución, elija una incidencia y envíe sus cambios.',
+        'Escribe código',
+        'Lee la guía de contribución, elige una incidencia y envía tus cambios.',
         'code',
       ],
     ],
@@ -1200,52 +1198,52 @@ const es: Copy = {
     items: [
       [
         '¿Necesito Claude?',
-        'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con su propia cuenta de Claude. ChatGPT aún no está disponible.',
+        'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible.',
       ],
       [
         '¿Taxpresso presenta mi declaración?',
-        'Casi. Claude rellena por usted la declaración oficial en línea, en Claude in Chrome o en el navegador integrado. Usted inicia sesión, revisa el PDF oficial y el botón Transmettre lo pulsa usted.',
+        'Casi. Claude rellena por ti la declaración oficial en línea, en Claude in Chrome o en su navegador integrado. Tú inicias sesión, revisas el PDF oficial y el botón Transmettre lo pulsas tú.',
       ],
       [
         '¿Es un servicio oficial?',
-        'No. Taxpresso es independiente: no está vinculado ni a la Administración fiscal cantonal de Ginebra (AFC) ni a Anthropic.',
+        'No. Taxpresso es independiente: no tiene relación con la Administración fiscal cantonal de Ginebra (AFC) ni con Anthropic.',
       ],
       [
         '¿Por qué es gratis?',
-        'Porque declarar impuestos debería ser sencillo y gratis. Taxpresso es de código abierto (licencia GNU AGPL): cualquiera puede comprobar lo que hace, y ayudar a mejorarlo, traducirlo o añadir un cantón. Nadie puede convertirlo en una versión cerrada.',
+        'Porque hacer la declaración debería ser sencillo y gratis. Taxpresso es de código abierto (licencia GNU AGPL): cualquiera puede comprobar lo que hace, y ayudar a mejorarlo, traducirlo o añadir un cantón. Nadie puede convertirlo en una versión cerrada.',
       ],
       [
         '¿Y si falta un documento?',
-        'Puede seguir adelante con una estimación. Taxpresso la señala en todas partes, y su declaración solo está lista cuando cada estimación se ha sustituido por un documento o usted la ha confirmado.',
+        'Puedes seguir con una estimación. Taxpresso la señala en todas partes, y tu declaración solo está lista cuando cada estimación se ha cambiado por un documento o la has confirmado tú.',
       ],
       [
         '¿En qué idiomas?',
-        'Claude le responde en el idioma en el que usted escribe. La aplicación está en francés e inglés, y después llegarán el alemán, el italiano, el español y el portugués. Los términos oficiales se quedan en francés, como en el formulario.',
+        'Claude te responde en el idioma en el que escribes. La aplicación está en francés e inglés, y después llegarán el alemán, el italiano, el español y el portugués. Los términos oficiales se quedan en francés, como en el formulario.',
       ],
     ],
   },
 
   finePrint: {
     title: 'La letra pequeña, en palabras claras',
-    text: 'Taxpresso es una herramienta gratuita, ofrecida tal cual, sin ninguna garantía. No somos asesores fiscales: lo creamos precisamente para dejar de preocuparnos por nuestros propios impuestos. Taxpresso le ayuda a preparar su declaración, pero usted decide lo que incluye, y la declaración que envía es responsabilidad suya. Si tiene dudas, pregunte a la Administración fiscal cantonal (AFC) o a una gestoría.',
+    text: 'Taxpresso es una herramienta gratuita, ofrecida tal cual, sin ninguna garantía. No somos asesores fiscales: lo creamos precisamente para dejar de preocuparnos por nuestros propios impuestos. Taxpresso te ayuda a preparar tu declaración, pero tú decides lo que incluye, y la declaración que envías es responsabilidad tuya. Si tienes dudas, pregunta a la Administración fiscal cantonal (AFC) o a una gestoría.',
   },
 
   start: {
-    htmlTitle: 'Empezar con Taxpresso',
+    htmlTitle: 'Empieza con Taxpresso',
     metaDescription:
-      'Instale Taxpresso en Claude Desktop y prepare su declaración de impuestos de Ginebra, paso a paso.',
-    title: 'Empezar',
-    lead: 'Taxpresso es una extensión para Claude Desktop. Se instala en un minuto, y todo se queda en su ordenador.',
-    download: 'Descargar Taxpresso',
+      'Instala Taxpresso en Claude Desktop y prepara tu declaración de impuestos de Ginebra, paso a paso.',
+    title: 'Empieza',
+    lead: 'Taxpresso es una extensión para Claude Desktop. Se instala en un minuto, y todo se queda en tu ordenador.',
+    download: 'Descarga Taxpresso',
     downloadNote: 'Gratis. Un solo archivo, para Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
-    needsTitle: 'Qué necesita',
+    needsTitle: 'Qué necesitas',
     needs: [
       [
         'Claude Desktop',
-        'En Linux, macOS o Windows, con la sesión iniciada en su cuenta de Claude. [Descargar Claude Desktop](https://claude.com/download)',
+        'En Linux, macOS o Windows, con la sesión iniciada en tu cuenta de Claude. [Descarga Claude Desktop](https://claude.com/download)',
       ],
-      ['Sus documentos', 'En PDF o en foto, cuando los tenga. Puede empezar sin ellos.'],
+      ['Tus documentos', 'En PDF o en foto, cuando los tengas. Puedes empezar sin ellos.'],
       [
         'Un navegador para Claude',
         'Para rellenar la declaración oficial: Claude in Chrome, o el navegador integrado de Claude.',
@@ -1254,50 +1252,50 @@ const es: Copy = {
     stepsTitle: 'En seis pasos',
     steps: [
       [
-        'Descargue Taxpresso',
+        'Descarga Taxpresso',
         'Un solo archivo gratuito, taxpresso-version.mcpb, en la página de versiones del proyecto.',
       ],
       [
-        'Instálelo',
-        'Abra Claude Desktop y haga doble clic en el archivo. Claude Desktop le muestra Taxpresso y sus herramientas: haga clic en Instalar. Si no pasa nada, abra Configuración, luego Extensiones, y arrastre el archivo a esa página.',
+        'Instálalo',
+        'Abre Claude Desktop y haz doble clic en el archivo. Claude Desktop te muestra Taxpresso y sus herramientas: haz clic en Instalar. Si no pasa nada, abre Configuración, luego Extensiones, y arrastra el archivo a esa página.',
       ],
       [
-        'Conserve su carpeta',
-        'Claude Desktop le propone una carpeta para sus documentos fiscales, Documentos/Taxpresso. Consérvela: sus respuestas y sus documentos se quedan ahí, en su ordenador. Compruebe que Taxpresso está activado.',
+        'Conserva tu carpeta',
+        'Claude Desktop te propone una carpeta para tus documentos fiscales, Documentos/Taxpresso. Quédate con ella: tus respuestas y tus documentos se guardan ahí, en tu ordenador. Comprueba que Taxpresso está activado.',
       ],
       [
-        'Salude a Claude',
-        'Abra una conversación nueva y escriba la frase de abajo. La primera vez, Claude le pide permiso para usar Taxpresso: concédaselo.',
+        'Saluda a Claude',
+        'Abre una conversación nueva y escribe la frase de abajo. La primera vez, Claude te pide permiso para usar Taxpresso: dáselo.',
       ],
       [
-        'Responda y añada sus documentos',
-        'Claude le hace unas preguntas sencillas, una a una. Para responder con clics o subir sus documentos, pídale a Claude que abra su panel.',
+        'Responde y añade tus documentos',
+        'Claude te hace unas preguntas sencillas, una a una. Para responder con clics o añadir tus documentos, pídele a Claude que abra tu panel.',
       ],
       [
-        'Presente su declaración',
-        'Cuando todo esté listo, Claude rellena la declaración oficial en línea en Claude in Chrome o en el navegador integrado. Usted inicia sesión, la revisa y el botón Transmettre lo pulsa usted.',
+        'Presenta tu declaración',
+        'Cuando todo esté listo, Claude rellena la declaración oficial en línea en Claude in Chrome o en su navegador integrado. Inicias sesión, la revisas y el botón Transmettre lo pulsas tú.',
       ],
     ],
     prompt: 'Ayúdame con mis impuestos de Ginebra.',
-    promptLabel: 'Escriba esto en Claude',
+    promptLabel: 'Escribe esto en Claude',
     mockInstall: 'Instalar',
-    mockExtension: 'Su declaración de Ginebra, en su ordenador.',
+    mockExtension: 'Tu declaración de Ginebra, en tu ordenador.',
     notes: [
       [
-        'Su configuración',
-        'Nada sale de su ordenador, salvo lo que comparte con Claude. En la configuración de Claude, en el apartado Privacidad, usted decide si sus conversaciones pueden servir para mejorar Claude. Bórrelas cuando haya terminado su declaración.',
+        'Tu configuración',
+        'Nada sale de tu ordenador, salvo lo que compartes con Claude. En la configuración de Claude, en el apartado Privacidad, tú decides si tus conversaciones pueden servir para mejorar Claude. Bórralas cuando termines tu declaración.',
       ],
       [
         'Antes del 31 de diciembre',
-        'Pregunte a Claude cuánto le ahorraría este año una aportación al pilar 3a (3e pilier A). Basta con un salario aproximado.',
+        'Pregúntale a Claude cuánto te ahorraría este año una aportación al pilar 3a (3e pilier A). Basta con un salario aproximado.',
       ],
       [
         'Actualizar',
-        'Para instalar una nueva versión, desinstale Taxpresso en Configuración, Extensiones, y luego instale el nuevo archivo. Su carpeta se queda como está.',
+        'Para instalar una nueva versión, desinstala Taxpresso en Configuración, Extensiones, y luego instala el nuevo archivo. Tu carpeta se queda como está.',
       ],
       [
         '¿Algún problema?',
-        `¿Algo no funciona como debería? [Cuéntenoslo](${ISSUE_URL.bug}), sin incluir nunca datos fiscales reales.`,
+        `¿Algo no funciona como debería? [Cuéntanoslo](${ISSUE_URL.bug}), pero nunca incluyas datos fiscales reales.`,
       ],
     ],
     back: 'Volver a la página de inicio',
@@ -1312,20 +1310,20 @@ const es: Copy = {
 };
 
 const pt: Copy = {
-  htmlTitle: 'Taxpresso: os seus impostos, no tempo de um expresso',
+  htmlTitle: 'Taxpresso: os teus impostos, no tempo de um expresso',
   metaDescription:
-    'O Taxpresso prepara a sua declaração de impostos de Genebra com o Claude, no seu próprio computador. Gratuito e de código aberto.',
+    'O Taxpresso prepara a tua declaração de impostos de Genebra com o Claude, no teu próprio computador. Gratuito e de código aberto.',
   skip: 'Saltar para o conteúdo',
   navLabel: 'Secções',
   langLabel: 'Idioma',
-  suggestLanguage: 'Sugerir um idioma',
-  nav: { how: 'Como funciona', principles: 'Princípios', faq: 'Perguntas', start: 'Começar' },
+  suggestLanguage: 'Sugere um idioma',
+  nav: { how: 'Como funciona', principles: 'Princípios', faq: 'Perguntas', start: 'Começa' },
 
-  tagline: 'Os seus impostos, no tempo de um expresso.',
-  lead: 'O Taxpresso prepara a sua declaração de impostos de Genebra com o Claude, no seu próprio computador. Umas quinze perguntas, os seus documentos por qualquer ordem, e cada dedução com o seu valor em francos.',
+  tagline: 'Os teus impostos, no tempo de um expresso.',
+  lead: 'Responde a algumas perguntas. O Taxpresso trata do resto.',
   available: 'Disponível para as declarações de 2026.',
-  getStarted: 'Começar',
-  seeHow: 'Ver como funciona',
+  getStarted: 'Começa',
+  seeHow: 'Vê como funciona',
   badges: { swiss: 'Swiss made', open: 'Gratuito e de código aberto' },
 
   ticket: {
@@ -1338,48 +1336,48 @@ const pt: Copy = {
       ['Guarda de crianças', 'a confirmar', 'confirm'],
       ['Deduções', 'todas, em CHF', 'plain'],
       ['Declaração online', 'preenchida', 'plain'],
-      ['Envio', 'feito por si', 'plain'],
+      ['Envio', 'feito por ti', 'plain'],
     ],
     totalLabel: 'Tempo total',
     totalValue: '1 expresso',
-    footer: 'Nada sai do seu computador.',
+    footer: 'Nada sai do teu computador.',
   },
 
   how: {
     title: 'Como funciona',
     steps: [
       [
-        'Responda a algumas perguntas',
-        'No Claude Desktop, o Claude faz-lhe algumas perguntas simples, uma de cada vez, na sua língua. Junte os seus documentos quando os tiver: certificados de salário, extratos bancários, comprovativos.',
+        'Responde a algumas perguntas',
+        'No Claude Desktop, o Claude faz-te algumas perguntas simples, uma de cada vez, na tua língua. Junta os teus documentos quando os tiveres: certificados de salário, extratos bancários, comprovativos.',
       ],
       [
-        'Veja quanto poupa',
-        'O Taxpresso calcula a sua declaração com e sem cada dedução, e mostra-lhe quanto cada uma lhe poupa em francos. A escolha é sua.',
+        'Vê quanto poupas',
+        'O Taxpresso calcula a tua declaração com e sem cada dedução, e mostra-te quanto te poupa cada uma em francos. Tu escolhes.',
       ],
       [
-        'Verifique e envie',
-        'O Claude preenche por si a declaração online oficial (e-démarches), no Claude in Chrome ou no navegador integrado. O Taxpresso compara o PDF oficial com os seus números. O clique em Transmettre é sempre seu.',
+        'Verifica e envia',
+        'O Claude preenche por ti a declaração online oficial (e-démarches), no Claude in Chrome ou no navegador integrado. O Taxpresso compara o PDF oficial com os teus números. Quem clica em Transmettre és tu.',
       ],
     ],
   },
 
   principles: {
     title: 'Os nossos princípios',
-    lead: 'Nada sai do seu computador, exceto o que partilha com a IA que utiliza.',
+    lead: 'Nada sai do teu computador, exceto o que partilhas com a IA que usas.',
     items: [
       [
-        'Ninguém tem acesso aos seus dados',
-        'Nem nós, nem ninguém. Sem servidor, sem conta, nada é enviado pela internet. Os seus documentos ficam numa pasta no seu computador.',
+        'Ninguém tem acesso aos teus dados',
+        'Nem nós, nem ninguém. Sem servidor, sem conta, nada é enviado pela internet. Os teus documentos ficam numa pasta no teu computador.',
         'heart',
       ],
       [
-        'Exceto a IA que utiliza',
-        'Hoje é o Claude, com a sua própria conta: ele vê o que partilha na conversa. O ChatGPT ainda não está disponível.',
+        'Exceto a IA que usas',
+        'Hoje é o Claude, com a tua própria conta: ele vê o que partilhas na conversa. O ChatGPT ainda não está disponível.',
         'tulip',
       ],
       [
-        'As suas configurações, não as nossas',
-        'Nas configurações de privacidade do Claude, decide se as suas conversas podem ajudar a melhorá-lo, e apaga-as quando quiser.',
+        'As tuas configurações, não as nossas',
+        'Nas configurações de privacidade do Claude, decides se as tuas conversas podem ajudar a melhorá-lo. E podes apagá-las quando quiseres.',
         'dot',
       ],
       [
@@ -1388,13 +1386,13 @@ const pt: Copy = {
         'rosetta',
       ],
       [
-        'O envio fica consigo',
-        'O Claude preenche a declaração online por si. A si cabe iniciar sessão, revê-la e clicar em Transmettre. O Claude nunca escreve as suas palavras-passe.',
+        'Quem envia és tu',
+        'O Claude preenche a declaração online por ti. Tu inicias sessão, revês tudo e clicas em Transmettre. O Claude nunca escreve as tuas palavras-passe.',
         'check',
       ],
       [
         'Gratuito e de código aberto',
-        'O Taxpresso pertence à sua comunidade, sob licença GNU AGPL. Qualquer pessoa pode verificar o que ele faz e ajudar a melhorá-lo.',
+        'O Taxpresso pertence à sua comunidade, com licença GNU AGPL. Qualquer pessoa pode verificar o que ele faz e ajudar a melhorá-lo.',
         'swirl',
       ],
     ],
@@ -1405,17 +1403,17 @@ const pt: Copy = {
   },
 
   support: {
-    title: 'Gratuito, para sempre',
-    text: 'O Taxpresso é gratuito e de código aberto, e vai continuar a sê-lo. Se lhe poupou uma tarde, o melhor agradecimento não custa nada: uma estrela no GitHub, para que outros também o encontrem.',
+    title: 'Grátis, para sempre',
+    text: 'O Taxpresso é gratuito e de código aberto, e vai continuar assim. Poupou-te uma tarde? O melhor agradecimento não custa nada: uma estrela no GitHub, para que outros também o encontrem.',
     star: {
       title: 'Uma estrela no GitHub',
-      text: 'Grátis, num segundo, e ajuda outras pessoas na Suíça a encontrar o Taxpresso.',
-      button: 'Dar uma estrela',
+      text: 'Grátis, demora um segundo e ajuda outras pessoas na Suíça a encontrar o Taxpresso.',
+      button: 'Dá uma estrela',
     },
     tip: {
       title: 'A ementa das gorjetas',
       note: 'Cada gorjeta vai para a Precious Plastic Bugoma. O Taxpresso não fica com nada.',
-      button: 'Deixar uma gorjeta',
+      button: 'Deixa uma gorjeta',
       menu: [
         ['Um copo de água', 'grátis'],
         ['Expresso', 'CHF 2.50'],
@@ -1424,30 +1422,30 @@ const pt: Copy = {
         ['Café gourmand', 'CHF 20'],
         ['Pumpkin spice latte', 'CHF 35'],
         ['Uma rodada para a mesa', 'CHF 50'],
-        ['A seu gosto', 'o valor que quiser'],
+        ['A teu gosto', 'o valor que quiseres'],
       ],
     },
-    ppb: `A Precious Plastic Bugoma é uma associação sem fins lucrativos sediada em Vernier, Genebra ([registada com o número CHE-185.673.320](${PPB_REGISTER})), que recicla resíduos de plástico em redor da floresta de Bugoma, no Uganda. O Taxpresso é desenvolvido por membros da sua equipa.`,
+    ppb: `A Precious Plastic Bugoma é uma associação sem fins lucrativos sediada em Vernier, Genebra ([registada com o número CHE-185.673.320](${PPB_REGISTER})). Recicla resíduos de plástico à volta da floresta de Bugoma, no Uganda. O Taxpresso é feito por membros da sua equipa.`,
   },
 
   contribute: {
-    title: 'Ajude-nos a melhorá-lo',
+    title: 'Ajuda-nos a melhorá-lo',
     lead: 'O Taxpresso é construído às claras, no GitHub (basta uma conta gratuita).',
     items: [
       [
-        'Comunicar um erro',
-        'Algo está mal ou pouco claro? Diga-nos o que esperava. Nunca inclua dados fiscais reais.',
+        'Comunica um erro',
+        'Algo está mal ou pouco claro? Diz-nos o que esperavas. Nunca incluas dados fiscais reais.',
         'bug',
       ],
       [
-        'Sugerir uma ideia',
+        'Sugere uma ideia',
         'Uma funcionalidade, um cantão, uma palavra mais clara: lemos tudo.',
         'idea',
       ],
-      ['Adicionar uma língua', 'Ajude a traduzir o Taxpresso para a sua língua.', 'language'],
+      ['Acrescenta uma língua', 'Ajuda a traduzir o Taxpresso para a tua língua.', 'language'],
       [
-        'Escrever código',
-        'Leia o guia de contribuição, escolha uma tarefa e envie as suas alterações.',
+        'Escreve código',
+        'Lê o guia de contribuição, escolhe uma tarefa e envia as tuas alterações.',
         'code',
       ],
     ],
@@ -1458,52 +1456,52 @@ const pt: Copy = {
     items: [
       [
         'Preciso do Claude?',
-        'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a sua própria conta Claude. O ChatGPT ainda não está disponível.',
+        'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível.',
       ],
       [
         'O Taxpresso envia a minha declaração?',
-        'Quase. O Claude preenche por si a declaração online oficial, no Claude in Chrome ou no navegador integrado. A si cabe iniciar sessão, rever o PDF oficial e clicar em Transmettre.',
+        'Quase. O Claude preenche por ti a declaração online oficial, no Claude in Chrome ou no navegador integrado. Tu inicias sessão, revês o PDF oficial e quem clica em Transmettre és tu.',
       ],
       [
         'É um serviço oficial?',
-        'Não. O Taxpresso é independente: não está ligado nem à Administração Fiscal Cantonal de Genebra (AFC), nem à Anthropic.',
+        'Não. O Taxpresso é independente: não tem ligação à Administração Fiscal Cantonal de Genebra (AFC) nem à Anthropic.',
       ],
       [
         'Porque é gratuito?',
-        'Porque declarar impostos devia ser simples e gratuito. O Taxpresso é de código aberto (licença GNU AGPL): qualquer pessoa pode verificar o que ele faz, e ajudar a melhorá-lo, a traduzi-lo ou a adicionar um cantão. Ninguém pode transformá-lo numa versão fechada.',
+        'Porque declarar impostos devia ser simples e gratuito. O Taxpresso é de código aberto (licença GNU AGPL): qualquer pessoa pode verificar o que ele faz, e ajudar a melhorá-lo, a traduzi-lo ou a acrescentar um cantão. Ninguém o pode transformar numa versão fechada.',
       ],
       [
         'E se faltar um documento?',
-        'Pode avançar com uma estimativa. O Taxpresso assinala-a em todo o lado, e a sua declaração só fica pronta quando cada estimativa for substituída por um documento ou confirmada por si.',
+        'Podes avançar com uma estimativa. O Taxpresso assinala-a em todo o lado, e a tua declaração só fica pronta quando cada estimativa for substituída por um documento ou confirmada por ti.',
       ],
       [
         'Em que línguas?',
-        'O Claude responde-lhe na língua em que escreve. A aplicação está em francês e inglês, e depois virão o alemão, o italiano, o espanhol e o português. Os termos oficiais ficam em francês, como no formulário.',
+        'O Claude responde-te na língua em que escreves. A aplicação está em francês e inglês, e depois virão o alemão, o italiano, o espanhol e o português. Os termos oficiais ficam em francês, como no formulário.',
       ],
     ],
   },
 
   finePrint: {
     title: 'A letra miudinha, em palavras simples',
-    text: 'O Taxpresso é uma ferramenta gratuita, fornecida tal como está, sem qualquer garantia. Não somos consultores fiscais: criámo-lo precisamente para deixarmos de nos preocupar com os nossos próprios impostos. O Taxpresso ajuda-o a preparar a sua declaração, mas a decisão sobre o que ela contém é sua, e a declaração que envia é da sua responsabilidade. Em caso de dúvida, pergunte à Administração Fiscal Cantonal (AFC) ou a um contabilista.',
+    text: 'O Taxpresso é uma ferramenta gratuita, fornecida tal como está, sem qualquer garantia. Não somos consultores fiscais: criámo-lo precisamente para deixarmos de nos preocupar com os nossos próprios impostos. O Taxpresso ajuda-te a preparar a tua declaração, mas és tu quem decide o que ela contém, e a declaração que envias é da tua responsabilidade. Em caso de dúvida, pergunta à Administração Fiscal Cantonal (AFC) ou a um contabilista.',
   },
 
   start: {
-    htmlTitle: 'Começar com o Taxpresso',
+    htmlTitle: 'Começa com o Taxpresso',
     metaDescription:
-      'Instale o Taxpresso no Claude Desktop e prepare a sua declaração de impostos de Genebra, passo a passo.',
-    title: 'Começar',
-    lead: 'O Taxpresso é uma extensão para o Claude Desktop. Instala-se num minuto, e tudo fica no seu computador.',
-    download: 'Descarregar o Taxpresso',
-    downloadNote: 'Gratuito. Um só ficheiro, para o Claude Desktop.',
+      'Instala o Taxpresso no Claude Desktop e prepara a tua declaração de impostos de Genebra, passo a passo.',
+    title: 'Começa',
+    lead: 'O Taxpresso é uma extensão para o Claude Desktop. Instala-se num minuto, e tudo fica no teu computador.',
+    download: 'Descarrega o Taxpresso',
+    downloadNote: 'Grátis. Um só ficheiro, para o Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
-    needsTitle: 'Do que precisa',
+    needsTitle: 'Do que precisas',
     needs: [
       [
         'Claude Desktop',
-        'Em Linux, macOS ou Windows, com sessão iniciada na sua conta Claude. [Descarregar o Claude Desktop](https://claude.com/download)',
+        'Em Linux, macOS ou Windows, com sessão iniciada na tua conta Claude. [Descarrega o Claude Desktop](https://claude.com/download)',
       ],
-      ['Os seus documentos', 'Em PDF ou fotografia, quando os tiver. Pode começar sem eles.'],
+      ['Os teus documentos', 'Em PDF ou fotografia, quando os tiveres. Podes começar sem eles.'],
       [
         'Um navegador para o Claude',
         'Para preencher a declaração oficial: o Claude in Chrome, ou o navegador integrado do Claude.',
@@ -1512,50 +1510,50 @@ const pt: Copy = {
     stepsTitle: 'Em seis passos',
     steps: [
       [
-        'Descarregue o Taxpresso',
+        'Descarrega o Taxpresso',
         'Um só ficheiro gratuito, taxpresso-version.mcpb, na página de versões do projeto.',
       ],
       [
-        'Instale-o',
-        'Abra o Claude Desktop e faça duplo clique no ficheiro. O Claude Desktop mostra-lhe o Taxpresso e as suas ferramentas: clique em Instalar. Se nada acontecer, abra Configurações, depois Extensões, e arraste o ficheiro para essa página.',
+        'Instala-o',
+        'Abre o Claude Desktop e faz duplo clique no ficheiro. O Claude Desktop mostra-te o Taxpresso e as suas ferramentas: clica em Instalar. Se nada acontecer, abre Configurações, depois Extensões, e arrasta o ficheiro para essa página.',
       ],
       [
-        'Mantenha a sua pasta',
-        'O Claude Desktop propõe uma pasta para os seus documentos fiscais, Documentos/Taxpresso. Mantenha-a: as suas respostas e documentos ficam lá, no seu computador. Confirme que o Taxpresso está ativado.',
+        'Mantém a tua pasta',
+        'O Claude Desktop propõe uma pasta para os teus documentos fiscais, Documentos/Taxpresso. Mantém-na: as tuas respostas e documentos ficam lá, no teu computador. Confirma que o Taxpresso está ativado.',
       ],
       [
-        'Diga olá',
-        'Abra uma nova conversa e escreva a frase abaixo. Da primeira vez, o Claude pede-lhe autorização para usar o Taxpresso: autorize.',
+        'Diz olá',
+        'Abre uma nova conversa e escreve a frase abaixo. Da primeira vez, o Claude pede-te autorização para usar o Taxpresso: autoriza.',
       ],
       [
-        'Responda e junte os seus documentos',
-        'O Claude faz-lhe algumas perguntas simples, uma de cada vez. Para responder com cliques ou carregar os seus documentos, peça ao Claude que abra o seu painel.',
+        'Responde e junta os teus documentos',
+        'O Claude faz-te algumas perguntas simples, uma de cada vez. Para responderes com cliques ou juntares os teus documentos, pede ao Claude que abra o teu painel.',
       ],
       [
-        'Envie',
-        'Quando tudo estiver pronto, o Claude preenche a declaração online oficial no Claude in Chrome ou no navegador integrado. A si cabe iniciar sessão, verificar e clicar em Transmettre.',
+        'Envia',
+        'Quando estiver tudo pronto, o Claude preenche a declaração online oficial no Claude in Chrome ou no navegador integrado. Inicias sessão, verificas tudo e quem clica em Transmettre és tu.',
       ],
     ],
     prompt: 'Ajuda-me com os meus impostos de Genebra.',
-    promptLabel: 'Escreva isto no Claude',
+    promptLabel: 'Escreve isto no Claude',
     mockInstall: 'Instalar',
-    mockExtension: 'A sua declaração de Genebra, no seu computador.',
+    mockExtension: 'A tua declaração de Genebra, no teu computador.',
     notes: [
       [
-        'As suas configurações',
-        'Nada sai do seu computador, exceto o que partilha com o Claude. Nas configurações do Claude, em Privacidade, decide se as suas conversas podem ajudar a melhorar o Claude. Apague-as quando terminar a declaração.',
+        'As tuas configurações',
+        'Nada sai do teu computador, exceto o que partilhas com o Claude. Nas configurações do Claude, em Privacidade, decides se as tuas conversas podem ajudar a melhorar o Claude. Apaga-as quando terminares a declaração.',
       ],
       [
         'Antes de 31 de dezembro',
-        'Pergunte ao Claude quanto lhe pouparia este ano uma contribuição para o pilar 3a (3e pilier A). Basta um salário aproximado.',
+        'Pergunta ao Claude quanto te pouparia este ano uma contribuição para o pilar 3a (3e pilier A). Basta um salário aproximado.',
       ],
       [
         'Atualizar',
-        'Para instalar uma nova versão, remova o Taxpresso em Configurações, Extensões, e depois instale o novo ficheiro. A sua pasta fica como está.',
+        'Para instalar uma nova versão, remove o Taxpresso em Configurações, Extensões, e depois instala o novo ficheiro. A tua pasta fica como está.',
       ],
       [
         'Algum problema?',
-        `Algo não funciona como devia? [Diga-nos](${ISSUE_URL.bug}), sem nunca incluir dados fiscais reais.`,
+        `Algo não funciona como devia? [Diz-nos](${ISSUE_URL.bug}), mas nunca incluas dados fiscais reais.`,
       ],
     ],
     back: 'Voltar à página inicial',
