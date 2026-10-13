@@ -61,6 +61,23 @@ function dupont() {
   put('replacement.amount', 'p2', 500_000, 'stated', 'd_apg');
   put('replacement.paid_to_employer', 'p2', true, 'stated', 'd_apg');
   // Securities from a broker export (estimate until the official price list).
+  const security = (key: string, value: string) =>
+    l.append({
+      key,
+      person: 'household',
+      instance: 'CH0012345678',
+      value,
+      status: 'stated',
+      source: { method: 'export', docId: 'd_broker' },
+    });
+  security('securities.name', 'Exemple Café SA');
+  security('securities.isin', 'CH0012345678');
+  security('securities.country', 'CH');
+  security('securities.quantity', '100');
+  security('securities.income_kind', 'dividend');
+  // A private loan: its interest and balance reach the engine through the état des titres.
+  put('debt.balance', 'household', 1_000_000, 'stated', 'd_loan');
+  put('debt.interest', 'household', 30_000, 'stated', 'd_loan');
   l.append({
     key: 'securities.value_chf',
     person: 'household',
@@ -95,6 +112,7 @@ function dupont() {
     doc('d_gift', 'donation_receipt', 'household'),
     doc('d_apg', 'replacement_income_certificate', 'p2'),
     doc('d_broker', 'broker_export', 'p1'),
+    doc('d_loan', 'debt_interest', 'household'),
   ];
   return { facts: l.view(), documents };
 }
@@ -125,12 +143,17 @@ describe('engine input from the ledger', () => {
       childcare: { value: 1_500_000, status: 'estimate' },
       donations: { value: 100_000 },
     });
-    expect(input!.movable).toHaveLength(1);
-    expect(input!.movable![0]).toMatchObject({
-      owner: 'p1',
-      value: { value: 4_000_000, status: 'estimate' },
-      withholdingSwiss: { value: 28_000 },
-    });
+    // Securities and debts come through the état des titres, by rubric, part and person; the
+    // debt facts are not read a second time.
+    const w = (code: string, part: string) =>
+      input!.wealthItems!.find((i) => i.code === code && i.part === part);
+    expect(w('14.00', 'income')).toMatchObject({ person: 'p1', centimes: 80_000, estimate: true });
+    expect(w('14.00', 'wealth')).toMatchObject({ person: 'p1', centimes: 4_000_000 });
+    expect(w('F1.IA', 'credit')).toMatchObject({ centimes: 28_000 });
+    expect(w('55.10', 'wealth_deduction')).toMatchObject({ centimes: 1_000_000 });
+    expect(w('55.10', 'deduction')).toMatchObject({ centimes: 30_000 });
+    expect(input!.household).not.toHaveProperty('debts');
+    expect(input!.household).not.toHaveProperty('debtInterest');
     expect(notes.map((n) => n.en).join(' ')).toMatch(/another tax year/);
   });
 
@@ -141,9 +164,15 @@ describe('engine input from the ledger', () => {
     expect(r.needsOk).toBeGreaterThan(0); // Marie's certificate
     const ids = r.estimates.map((e) => e.id);
     expect(ids).toContain('ge-2026-unpublished');
-    expect(ids).toContain('input:59.10:household'); // childcare given as an estimate
-    expect(ids).toContain('input:14.10:p1'); // broker valuations
+    // One note names the figures given as estimates: childcare, the broker's valuations.
+    const given = r.estimates.find((e) => e.id === 'input-estimate')!.what.en;
+    expect(given).toMatch(/59\.10 Frais de garde des enfants \(ICC\)/);
+    expect(given).toMatch(/14\.00 Revenu brut mobilier \(A\)/);
     expect(r.icc!.credits.withholdingTax?.amount).toBe(28_000);
+    // The interest once, capped by the income from wealth + 50,000; the debt off the wealth.
+    expect(r.icc!.items.filter((i) => i.code === '55.10').map((i) => i.amount)).toEqual([-30_000]);
+    expect(r.icc!.wealth.items.find((i) => i.code === '55.10')?.amount).toBe(-1_000_000);
+    expect(r.complete).toBe(true);
   });
 
   it('says what is missing before anything can be computed', () => {
@@ -187,5 +216,22 @@ describe('engine input from the ledger', () => {
       status: 'estimate',
     });
     expect(notes[0]!.en).toMatch(/rough salary/);
+  });
+});
+
+describe('last year’s figures', () => {
+  it('are never read into this year’s engine input', () => {
+    const { facts, documents } = dupont();
+    const prior = new Ledger(2026, KEYS_2026);
+    prior.append({
+      key: 'prior.person.icc',
+      person: 'p1',
+      instance: 'A1-31.40',
+      value: 700_000,
+      status: 'extracted',
+      source: { method: 'claude', docId: 'd_prior', page: 3 },
+    });
+    const withPrior = engineInputFromFacts(2026, [...facts, ...prior.view()], documents).input;
+    expect(withPrior).toEqual(engineInputFromFacts(2026, facts, documents).input);
   });
 });

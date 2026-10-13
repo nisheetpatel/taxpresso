@@ -33,6 +33,7 @@ import type {
   PersonInput,
   TaxResult,
   Text,
+  WealthItemInput,
 } from './types.js';
 
 export class EngineInputError extends Error {}
@@ -40,6 +41,9 @@ export class EngineInputError extends Error {}
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = '\u00a0';
 const GUIDE = 'ge-2025-guide-declaration-pp';
+/** The same codes, in the wealth column (ge-2025-declaration-specimen p. 4, PG4). */
+const WEALTH_LABEL = t('Gross movable wealth (fortune brute mobilière)', 'Fortune brute mobilière');
+const DEBTS_LABEL = t('Private debts (dettes chirographaires)', 'Dettes chirographaires');
 
 class Notes {
   readonly assumptions: Text[] = [];
@@ -52,11 +56,25 @@ class Notes {
 }
 
 /** An item for this rubric and person; its label and rubric source come from the catalogue. */
-function item(code: RubricCode, person: ItemPerson, tr: Trace, amount: number, how: Text): Item {
+function item(
+  code: RubricCode,
+  person: ItemPerson,
+  tr: Trace,
+  amount: number,
+  how: Text,
+  label?: Text,
+): Item {
   const r = RUBRICS[code];
   tr.src(r.source);
-  return { code: codeFor(code, person), person, ...tr.line(amount, r.label, how) };
+  return { code: codeFor(code, person), person, ...tr.line(amount, label ?? r.label, how) };
 }
+
+/** A value of the état des titres as the engine reads it: its status and whether it is complete. */
+const wealthAmount = (w: WealthItemInput): Amount => ({
+  value: w.centimes,
+  status: w.estimate ? 'estimate' : 'stated',
+  complete: w.complete,
+});
 
 /** Sum of amounts read into a trace, to the franc (the form takes whole francs, guide p. 9). */
 function total(tr: Trace, amounts: readonly (Amount | undefined)[]): number {
@@ -208,7 +226,10 @@ function personItems(
   const hasFund = p.hasPensionFund ?? pensionFund > 0;
   const tTrace = new Trace();
   const paid = total(tTrace, [p.pillar3a]);
-  if (paid > 0) {
+  const catchUp = total(tTrace, [p.pillar3aCatchUp]);
+  // A self-employed person without salary declares it on the annexe B (32.40, specimen p. 10).
+  const code3a: RubricCode = gross + replacement === 0 && self > 0 ? '32.40' : '31.40';
+  if (paid > 0 || catchUp > 0) {
     const lim = tTrace.p(F.pillar3a);
     tTrace.src('ge-na-law-lipp art. 31 let. c');
     let cap = lim.withFund;
@@ -217,6 +238,7 @@ function personItems(
       `la limite avec caisse de pension, ${chf(cap)}`,
     );
     if (!hasFund) {
+      tTrace.with(gTrace, sTrace);
       const earned = Math.max(0, gross - social + self);
       cap = pillar3aCapWithoutFund(earned, lim);
       capHow = t(
@@ -234,15 +256,16 @@ function personItems(
       }
     }
     const v = Math.min(paid, cap);
+    if (catchUp) tTrace.src('ch-2026-ifd-instructions-personnes-physiques p. 8');
     both(
       item(
-        '31.40',
+        code3a,
         p.id,
         tTrace,
-        -v,
+        -(v + catchUp),
         t(
-          `Paid ${chf(paid)}; at most ${capHow.en}: ${chf(v)}.`,
-          `Versé ${chf(paid)}${NB}; au plus ${capHow.fr}${NB}: ${chf(v)}.`,
+          `Paid ${chf(paid)}; at most ${capHow.en}: ${chf(v)}.${catchUp ? ` Plus a catch-up payment for earlier years (rachat 3a) of ${chf(catchUp)}.` : ''}`,
+          `Versé ${chf(paid)}${NB}; au plus ${capHow.fr}${NB}: ${chf(v)}.${catchUp ? ` Plus un rachat 3a pour des années précédentes de ${chf(catchUp)}.` : ''}`,
         ),
       ),
     );
@@ -534,7 +557,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (inc > 0) {
       wealthIncome += inc;
       const it = item(
-        '14.10',
+        '14.00',
         owner,
         o.income,
         inc,
@@ -550,7 +573,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (val > 0) {
       wealthItems.push(
         item(
-          '14.10',
+          '14.00',
           owner,
           o.value,
           val,
@@ -558,6 +581,7 @@ export function computeReturn(input: EngineInput): TaxResult {
             `Taxable value on 31 December of the securities and accounts: ${chf(val)}.`,
             `Valeur imposable au 31 décembre des titres et comptes${NB}: ${chf(val)}.`,
           ),
+          WEALTH_LABEL,
         ),
       );
     }
@@ -580,7 +604,7 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (debts > 0) {
     wealthItems.push(
       item(
-        '55.00',
+        '55.10',
         'household',
         dTrace,
         -debts,
@@ -588,8 +612,47 @@ export function computeReturn(input: EngineInput): TaxResult {
           `Private debts on 31 December: ${chf(debts)}.`,
           `Dettes privées au 31 décembre${NB}: ${chf(debts)}.`,
         ),
+        DEBTS_LABEL,
       ),
     );
+  }
+
+  // The état des titres and the other movable wealth, as the securities rules compute them.
+  const lifeExtra: Amount[] = [];
+  const interestExtra: Amount[] = [];
+  const credit = { ia: [] as WealthItemInput[], ies: [] as WealthItemInput[] };
+  for (const w of input.wealthItems ?? []) {
+    const tr = new Trace().src(w.source);
+    const v = roundFranc(tr.a(wealthAmount(w)));
+    const line = (amount: number, how: Text): Item => ({
+      code: w.code,
+      person: w.person,
+      ...tr.line(amount, w.label, how),
+    });
+    const as = t('From the securities list (état des titres)', 'Selon l’état des titres');
+    if (w.part === 'income' && v) {
+      wealthIncome += v;
+      const it = line(v, t(`${as.en}: ${chf(v)}.`, `${as.fr}${NB}: ${chf(v)}.`));
+      if (w.taxes.includes('icc')) icc.push(it);
+      if (w.taxes.includes('ifd')) ifd.push(it);
+    } else if (w.part === 'wealth' && v) {
+      wealthItems.push(line(v, t(`${as.en}: ${chf(v)}.`, `${as.fr}${NB}: ${chf(v)}.`)));
+    } else if (w.part === 'wealth_deduction' && v) {
+      wealthItems.push(line(-v, t(`${as.en}: ${chf(v)}.`, `${as.fr}${NB}: ${chf(v)}.`)));
+    } else if (w.part === 'deduction') {
+      // 56.30 and 52.11 count within the insurance limits (52.15, 52.00); 55.10 within the
+      // interest limit; the costs (56.20) in full.
+      if (w.code === '56.30' || w.code === '52.11') lifeExtra.push(wealthAmount(w));
+      else if (w.code === '55.10') interestExtra.push(wealthAmount(w));
+      else if (v) {
+        const it = line(-v, t(`${as.en}: ${chf(v)}.`, `${as.fr}${NB}: ${chf(v)}.`));
+        if (w.taxes.includes('icc')) icc.push(it);
+        if (w.taxes.includes('ifd')) ifd.push(it);
+      }
+    } else if (w.part === 'credit') {
+      if (w.code === 'F1.IA') credit.ia.push(w);
+      else credit.ies.push(w);
+    }
   }
 
   // Health insurance subsidy: income for the ICC (guide p. 27); exempt for the IFD (LIFD art. 24
@@ -617,7 +680,8 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (couple && a && b && a.earns && b.earns) {
     const lowIcc = a.earnedIcc <= b.earnedIcc ? a : b;
     if (lowIcc.earnedIcc > 0) {
-      const tr = new Trace();
+      // Rests on the lower earner's income and deductions, and their estimates.
+      const tr = new Trace().from(...icc.filter((i) => i.person === lowIcc.id));
       const v = Math.min(tr.p(I.twoEarner), lowIcc.earnedIcc);
       icc.push(
         item(
@@ -634,7 +698,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     }
     const lowIfd = a.earnedIfd <= b.earnedIfd ? a : b;
     if (lowIfd.earnedIfd > 0) {
-      const tr = new Trace();
+      const tr = new Trace().from(...ifd.filter((i) => i.person === lowIfd.id));
       const te = tr.p(F.twoEarner);
       const e = lowIfd.earnedIfd;
       const v = twoEarnerFederal(e, te);
@@ -683,7 +747,7 @@ export function computeReturn(input: EngineInput): TaxResult {
 
   // Life insurance and savings interest, ICC 52.15.
   const lifeTrace = new Trace();
-  const life = total(lifeTrace, [hh.lifeInsurancePremiums, hh.savingsInterest]);
+  const life = total(lifeTrace, [hh.lifeInsurancePremiums, hh.savingsInterest, ...lifeExtra]);
   const charges = full + shared / 2;
   const contributing = figures.filter((f) => f.contributes).length;
   if (life > 0) {
@@ -754,7 +818,7 @@ export function computeReturn(input: EngineInput): TaxResult {
       ),
     );
   const diTrace = new Trace();
-  const interest = total(diTrace, [hh.debtInterest]);
+  const interest = total(diTrace, [hh.debtInterest, ...interestExtra]);
   if (interest > 0) {
     const ci = new Trace().with(diTrace);
     const extra = ci.p(I.debtInterestExtra);
@@ -762,7 +826,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     const vi = Math.min(interest, capI);
     icc.push(
       item(
-        '55.00',
+        '55.10',
         'household',
         ci,
         -vi,
@@ -777,7 +841,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     const vf = Math.min(interest, wealthIncome + ef);
     ifd.push(
       item(
-        '55.00',
+        '55.10',
         'household',
         cf,
         -vf,
@@ -925,7 +989,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (vi > 0)
       icc.push(
         item(
-          '73.10',
+          '73.00',
           'household',
           ti,
           -vi,
@@ -942,7 +1006,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (vf > 0)
       ifd.push(
         item(
-          '73.20',
+          '73.00',
           'household',
           tf,
           -vf,
@@ -1090,16 +1154,35 @@ export function computeReturn(input: EngineInput): TaxResult {
   }
   const ifdChildReductions = ifdScale === 'single' ? 0 : full + shared;
 
-  // Withholding tax credit (imputation, guide p. 38): shown, not part of the tax.
+  // Imputations (guide p. 38 and 39): shown next to the tax, never part of it. The état des titres
+  // gives them when it is there; otherwise the withholding tax of the movable inputs.
   const whTrace = new Trace().src(`${GUIDE} p. 38`);
-  const withheld = (input.movable ?? []).reduce((s, m) => s + whTrace.a(m.withholdingSwiss), 0);
-  const withholdingTax: Line | undefined = withheld
-    ? whTrace.line(
-        withheld,
-        t('Swiss withholding tax to be credited (impôt anticipé)', 'Impôt anticipé à imputer'),
+  const withheld = credit.ia.length
+    ? credit.ia.reduce((s, w) => s + whTrace.src(w.source).a(wealthAmount(w)), 0)
+    : (input.movable ?? []).reduce((s, m) => s + whTrace.a(m.withholdingSwiss), 0);
+  const withholdingTax: Line | undefined =
+    withheld || credit.ia.length
+      ? whTrace.line(
+          withheld,
+          t('Swiss withholding tax claimed back (impôt anticipé)', 'Impôt anticipé à imputer'),
+          t(
+            `35 % withheld on Swiss income, credited against the cantonal and communal tax: ${chf(withheld)}.`,
+            `35${NB}% retenus sur les revenus suisses, imputés sur l’impôt cantonal et communal${NB}: ${chf(withheld)}.`,
+          ),
+        )
+      : undefined;
+  const iesTrace = new Trace().src(`${GUIDE} p. 39`);
+  const foreign = credit.ies.reduce((s, w) => s + iesTrace.src(w.source).a(wealthAmount(w)), 0);
+  const foreignTax: Line | undefined = credit.ies.length
+    ? iesTrace.line(
+        foreign,
         t(
-          `35 % withheld on Swiss income, credited against the cantonal and communal tax: ${chf(withheld)}.`,
-          `35${NB}% retenus sur les revenus suisses, imputés sur l’impôt cantonal et communal${NB}: ${chf(withheld)}.`,
+          'Foreign tax credit (imputation d’impôts étrangers, DA-1)',
+          'Imputation d’impôts étrangers (DA-1)',
+        ),
+        t(
+          `Foreign tax withheld that is credited (form DA-1): ${chf(foreign)}.`,
+          `Impôts étrangers retenus imputés (formule DA-1)${NB}: ${chf(foreign)}.`,
         ),
       )
     : undefined;
@@ -1125,7 +1208,10 @@ export function computeReturn(input: EngineInput): TaxResult {
     iccItems: icc,
     wealthItems,
     ifdItems: ifd,
-    ...(withholdingTax ? { withholdingTax } : {}),
+    credits: {
+      ...(withholdingTax ? { withholdingTax } : {}),
+      ...(foreignTax ? { foreignTax } : {}),
+    },
   });
 
   if (Object.keys(incomeByCommune).some((c) => c !== input.commune))
@@ -1136,6 +1222,22 @@ export function computeReturn(input: EngineInput): TaxResult {
 
   const icc_ = result.shieldMayApply ? null : result.icc;
   const ifd_ = ifdUnsupported ? null : result.ifd;
+  const partial = (input.wealthItems ?? []).filter((w) => !w.complete);
+  const incomplete = partial.map((w) =>
+    t(
+      `${w.label.en}: some amounts are not known yet, so this is a floor.`,
+      `${w.label.fr}${NB}: certains montants ne sont pas encore connus, c’est un minimum.`,
+    ),
+  );
+  if (input.people.some((pp) => pp.employments?.some((e) => e.gross.complete === false))) {
+    incomplete.push(
+      t(
+        'A salary is known only in part, so the taxes are floors.',
+        `Un salaire n’est connu qu’en partie${NB}: les impôts sont des minimums.`,
+      ),
+    );
+  }
+  const lines = allLines({ icc: icc_, ifd: ifd_ });
   return {
     taxYear: input.taxYear,
     commune: input.commune,
@@ -1143,6 +1245,8 @@ export function computeReturn(input: EngineInput): TaxResult {
     ifd: ifd_,
     total: icc_ && ifd_ ? icc_.taxes.total.amount + ifd_.tax.amount : null,
     estimates: estimateNotes(icc_, ifd_),
+    complete: !lines.some((l) => l.incomplete) && !incomplete.length,
+    incomplete,
     needsOk: [...(icc_?.items ?? []), ...(ifd_?.items ?? []), ...(icc_?.wealth.items ?? [])].filter(
       (i) => i.needsOk,
     ).length,
@@ -1164,6 +1268,7 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
       i.subtotal9220,
       i.subtotal9240,
       i.netIncome,
+      i.totalIncome,
       i.taxableIncome,
       i.rateIncome,
     );
@@ -1202,6 +1307,7 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
       f.subtotal9220,
       f.subtotal9240,
       f.netIncome,
+      f.totalIncome,
       f.taxableIncome,
       f.scaleIncome,
       f.scaleTax,
@@ -1212,25 +1318,55 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
   return out;
 }
 
+/** Rubrics the engine works out itself: they show the estimate of what they rest on, not their own. */
+const DERIVED = new Set([
+  '31.20',
+  '41.20',
+  '31.50',
+  '41.50',
+  '31.90',
+  '41.90',
+  '31.95',
+  '41.95',
+  '59.20',
+  '61.20',
+  '61.25',
+  '61.30',
+]);
+
+const WHOSE: Record<string, Text> = {
+  p1: { en: 'A', fr: 'A' },
+  p2: { en: 'B', fr: 'B' },
+};
+
 function estimateNotes(icc: TaxResult['icc'], ifd: TaxResult['ifd']): EstimateNote[] {
   const notes = new Map<string, EstimateNote>();
+  // One note for the figures the user gave as estimates, naming each rubric once.
+  const given = new Map<string, Text>();
   for (const line of allLines({ icc, ifd })) {
     for (const e of line.estimates ?? []) {
       if (e === 'input-estimate') {
-        if ('code' in line && rubric(line.code)) {
-          const id = `input:${line.code}:${line.person}`;
-          notes.set(id, {
-            id,
-            what: t(
-              `${line.label.en}: uses a figure you gave as an estimate.`,
-              `${line.label.fr}${NB}: utilise un montant donné comme estimation.`,
-            ),
+        if ('code' in line && rubric(line.code) && !DERIVED.has(line.code)) {
+          const who = WHOSE[line.person];
+          given.set(`${line.code}|${line.person}`, {
+            en: `${line.code} ${line.label.fr}${who ? ` (${who.en})` : ''}`,
+            fr: `${line.code} ${line.label.fr}${who ? ` (${who.fr})` : ''}`,
           });
         }
       } else if (e in ESTIMATE_TEXT) {
         notes.set(e, { id: e, what: ESTIMATE_TEXT[e as keyof typeof ESTIMATE_TEXT] });
       }
     }
+  }
+  if (given.size) {
+    const list = [...given.values()];
+    notes.set('input-estimate', {
+      id: 'input-estimate',
+      what: t(
+        `Figures you gave as estimates: ${list.map((x) => x.en).join(', ')}.`,
+        `Montants donnés comme estimations${NB}: ${list.map((x) => x.fr).join(', ')}.`,
+      ),
+    });
   }
   return [...notes.values()];
 }

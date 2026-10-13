@@ -9,8 +9,8 @@
 //   household: { civilStatus, children, splitting ("none" | "full" | "partial"),
 //                childrenShared?, ifdScale? ("single" | "married" | "parental") },
 //   icc: { items: [{ code, person, amount }],   amounts as admitted, deductions negative
-//          grossIncome (91.00), totalIncome or netIncome (revenu net, before the social deductions
-//          61.xx), taxableIncome, rateIncome,
+//          grossIncome (91.00), netIncome (before the social deductions 61.xx), totalIncome
+//          (95.00 revenu net total, after them), taxableIncome (99.00), rateIncome,
 //          wealth: { items, grossWealth, socialDeduction, taxableWealth },
 //          taxes: { incomeBase, incomeCantonalCentimes, incomeReduction12 (sign ignored),
 //                   incomeHomeCare, wealthBase, wealthCantonalCentimes, wealthHomeCare,
@@ -18,7 +18,7 @@
 //                   communalIncome: { privileged: { base, tax }, domicile: { base, tax } },
 //                   communalWealth: { privileged: { base, tax }, domicile: { base, tax } },
 //                   personalTax, total } },
-//   ifd: { items, grossIncome, totalIncome or netIncome, taxableIncome, tax },
+//   ifd: { items, grossIncome, netIncome, totalIncome (95.00), taxableIncome (99.00), tax },
 //   input?: the engine input (EngineInput) from the raw figures: then the items the engine derives
 //           are checked against icc.items and ifd.items too (stage 2).
 //
@@ -135,7 +135,8 @@ function differences(c: GoldenCase): string[] {
 
   const icc = r.icc;
   cmp('icc.grossIncome', c.icc?.grossIncome, icc.grossIncome.amount);
-  cmp('icc.netIncome', c.icc?.totalIncome ?? c.icc?.netIncome, icc.netIncome.amount);
+  cmp('icc.netIncome', c.icc?.netIncome, icc.netIncome.amount);
+  cmp('icc.totalIncome', c.icc?.totalIncome, icc.totalIncome.amount);
   cmp('icc.taxableIncome', c.icc?.taxableIncome, icc.taxableIncome.amount);
   cmp('icc.rateIncome', c.icc?.rateIncome, icc.rateIncome.amount);
   cmp('icc.wealth.grossWealth', c.icc?.wealth?.grossWealth, icc.wealth.grossWealth.amount);
@@ -186,7 +187,8 @@ function differences(c: GoldenCase): string[] {
 
   const ifd = r.ifd;
   cmp('ifd.grossIncome', c.ifd?.grossIncome, ifd.grossIncome.amount);
-  cmp('ifd.netIncome', c.ifd?.totalIncome ?? c.ifd?.netIncome, ifd.netIncome.amount);
+  cmp('ifd.netIncome', c.ifd?.netIncome, ifd.netIncome.amount);
+  cmp('ifd.totalIncome', c.ifd?.totalIncome, ifd.totalIncome.amount);
   cmp('ifd.taxableIncome', c.ifd?.taxableIncome, ifd.taxableIncome.amount);
   cmp('ifd.tax', c.ifd?.tax, ifd.tax.amount);
   if (r.shieldMayApply)

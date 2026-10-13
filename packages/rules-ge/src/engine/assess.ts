@@ -63,7 +63,8 @@ export interface AssessInput {
   iccItems: readonly (Item | ItemAmount)[];
   wealthItems: readonly (Item | ItemAmount)[];
   ifdItems: readonly (Item | ItemAmount)[];
-  withholdingTax?: Line;
+  /** Imputations of the état des titres, shown next to the tax, never part of it. */
+  credits?: { withholdingTax?: Line; foreignTax?: Line };
   /** Social aid recipients and others the law exempts from the taxe personnelle (LCP art. 377). */
   personalTaxExempt?: boolean;
 }
@@ -96,12 +97,18 @@ interface IncomeTotals {
   subtotal9220: Line;
   subtotal9240: Line;
   netIncome: Line;
+  totalIncome: Line;
   taxableIncome: Line;
 }
 
-/** The subtotals of the recapitulation, from the items (ge-2025-guide-declaration-pp p. 13 to 16). */
+/**
+ * The subtotals of the recapitulation page PG3, from the items, in the form's order: 91.00, the
+ * deductions 31.00 to 57.00, 92.20, 71.00, 92.40, 73.00, 74.00, the social deductions 61.20 to
+ * 61.30, 95.00 revenu net total, 99.00 revenu imposable (ge-2025-declaration-specimen p. 3;
+ * ge-2025-guide-declaration-pp p. 13 to 16).
+ */
 export function incomeTotals(items: readonly Item[], tax: 'ICC' | 'IFD'): IncomeTotals {
-  const guide = 'ge-2025-guide-declaration-pp p. 13';
+  const guide = 'ge-2025-declaration-specimen p. 3';
   const income = items.filter((i) => isIncomeCode(i.code));
   const before = items.filter(
     (i) => !AFTER_9220.has(i.code) && !AFTER_9240.has(i.code) && !SOCIAL.has(i.code),
@@ -113,7 +120,8 @@ export function incomeTotals(items: readonly Item[], tax: 'ICC' | 'IFD'): Income
   const s9220 = sum(before);
   const s9240 = s9220 + sum(medical);
   const net = s9240 + sum(gifts);
-  const taxable = Math.max(0, floorFranc(net + sum(social)));
+  const totalNet = net + sum(social);
+  const taxable = Math.max(0, floorFranc(totalNet));
   const grossIncome = new Trace()
     .src(guide)
     .from(...income)
@@ -158,18 +166,29 @@ export function incomeTotals(items: readonly Item[], tax: 'ICC' | 'IFD'): Income
         `Sous-total 92.40 moins les dons et versements aux partis${NB}: ${chf(net)}.`,
       ),
     );
-  const taxableIncome = new Trace()
+  const totalIncome = new Trace()
     .src(guide, 'ge-2025-guide-declaration-pp p. 15 and 16')
     .from(netIncome, ...social)
     .line(
-      taxable,
-      t(`Taxable income, ${tax} (revenu imposable)`, `Revenu imposable ${tax}`),
+      totalNet,
+      t(`Total net income, ${tax} (revenu net total, 95.00)`, `Revenu net total ${tax} (95.00)`),
       t(
-        `Net income less the social deductions${social.length ? '' : ' (none)'}, never below zero: ${chf(taxable)}.`,
-        `Revenu net moins les déductions sociales${social.length ? '' : ' (aucune)'}, jamais négatif${NB}: ${chf(taxable)}.`,
+        `Net income less the social deductions${social.length ? '' : ' (none)'}: ${chf(totalNet)}.`,
+        `Revenu net moins les déductions sociales${social.length ? '' : ' (aucune)'}${NB}: ${chf(totalNet)}.`,
       ),
     );
-  return { grossIncome, subtotal9220, subtotal9240, netIncome, taxableIncome };
+  const taxableIncome = new Trace()
+    .src(guide)
+    .from(totalIncome)
+    .line(
+      taxable,
+      t(`Taxable income, ${tax} (revenu imposable, 99.00)`, `Revenu imposable ${tax} (99.00)`),
+      t(
+        `The total net income in whole francs, never below zero (all of it taxable here: a full year in Geneva): ${chf(taxable)}.`,
+        `Le revenu net total en francs entiers, jamais négatif (entièrement imposable ici${NB}: une année entière à Genève)${NB}: ${chf(taxable)}.`,
+      ),
+    );
+  return { grossIncome, subtotal9220, subtotal9240, netIncome, totalIncome, taxableIncome };
 }
 
 function communalSplit(
@@ -696,7 +715,7 @@ export function assess(input: AssessInput): Assessment {
         personalTax,
         total: totalLine,
       },
-      credits: input.withholdingTax ? { withholdingTax: input.withholdingTax } : {},
+      credits: { ...input.credits },
     },
     ifd: {
       items: ifdItems,

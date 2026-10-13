@@ -6,6 +6,7 @@
 import type { Fact, FactStatus, Owner, VaultDocument } from '@taxpresso/ledger';
 import type { CommuneSlug } from '../2026/communes.js';
 import { COMMUNES_2026 } from '../2026/communes.js';
+import { etatDesTitres } from '../2026/etat-des-titres.js';
 import { isTaxYear } from './params.js';
 import type {
   Amount,
@@ -14,7 +15,7 @@ import type {
   EngineInput,
   EnginePerson,
   InputStatus,
-  MovableAsset,
+  WealthItemInput,
   PersonInput,
   Text,
 } from './types.js';
@@ -73,7 +74,6 @@ export function engineInputFromFacts(
   const otherYear = new Set(
     documents.filter((d) => d.taxYear !== undefined && d.taxYear !== taxYear).map((d) => d.id),
   );
-  const docById = new Map(documents.map((d) => [d.id, d]));
   const counted = facts.filter((f) => {
     if (f.source.docId && otherYear.has(f.source.docId)) {
       note(
@@ -210,28 +210,16 @@ export function engineInputFromFacts(
   put('medical.costs', 'medicalCosts');
   put('childcare.costs', 'childcare');
   put('donation.amount', 'donations');
-  put('debt.interest', 'debtInterest');
-  put('debt.balance', 'debts');
 
-  // Securities list (état des titres): one line per security; whose it is comes from its document.
-  const movable: MovableAsset[] = [];
-  const securities = new Set(
-    counted.filter((f) => f.key.startsWith('securities.')).map((f) => f.instance),
-  );
-  for (const sec of securities) {
-    const line = (key: string) => counted.find((f) => f.key === key && f.instance === sec);
-    const value = line('securities.value_chf');
-    const income = line('securities.income_gross_chf');
-    const withheld = line('securities.withholding_swiss_chf');
-    const doc = [value, income, withheld].find((f) => f?.source.docId)?.source.docId;
-    const owner = doc ? docById.get(doc)?.person : undefined;
-    const asset: MovableAsset = { owner: owner ?? 'household' };
-    const a = (f: Fact | undefined) => (f ? amountOf([f]) : undefined);
-    if (a(value)) asset.value = a(value)!;
-    if (a(income)) asset.income = a(income)!;
-    if (a(withheld)) asset.withholdingSwiss = a(withheld)!;
-    if (asset.value || asset.income) movable.push(asset);
-  }
+  // Accounts, securities, other movable wealth, life insurance and private debts: the état des
+  // titres as the securities rules compute it (../2026/etat-des-titres.ts), by rubric and person.
+  // It is the only source of these amounts, so none of their facts is read here.
+  const wealthItems: WealthItemInput[] = etatDesTitres({
+    taxYear,
+    people: ids,
+    facts,
+    documents,
+  }).items;
 
   return {
     input: {
@@ -241,7 +229,7 @@ export function engineInputFromFacts(
       people,
       children,
       household: hh,
-      movable,
+      wealthItems,
     },
     missing,
     notes,

@@ -22,6 +22,8 @@ export interface Amount {
   status?: InputStatus;
   /** Ledger fact ids behind the value. */
   facts?: readonly string[];
+  /** False when part of the amount is unknown: it is then a floor, and so is what rests on it. */
+  complete?: boolean;
 }
 
 /** One salary certificate (certificat de salaire). */
@@ -63,6 +65,11 @@ export interface PersonInput {
   alimonyReceived?: Amount;
   /** 31.40: paid into pillar 3a in the year. */
   pillar3a?: Amount;
+  /**
+   * 31.40: 3a catch-up payment (rachat 3a, from tax year 2026), on top of the yearly limit; its
+   * own limits are checked by the planner (ch-2026-ifd-instructions-personnes-physiques p. 8).
+   */
+  pillar3aCatchUp?: Amount;
   /** 31.30: pension fund buy-ins paid directly (attestations), besides box 10.2. */
   pensionBuyIn?: Amount;
   /** Member of a pension fund (2nd pillar). Default: when a certificate shows box 10.1. */
@@ -99,6 +106,24 @@ export interface MovableAsset {
   income?: Amount;
   /** Swiss withholding tax (impôt anticipé) retained, for the credit. */
   withholdingSwiss?: Amount;
+}
+
+/**
+ * The securities list (état des titres) and the other movable wealth, as the securities rules
+ * compute them (./../2026/etat-des-titres.ts, WealthItem): one amount per rubric, part and person.
+ */
+export interface WealthItemInput {
+  code: string;
+  part: 'income' | 'deduction' | 'wealth' | 'wealth_deduction' | 'credit';
+  person: 'p1' | 'p2' | 'household';
+  centimes: number;
+  taxes: readonly ('icc' | 'ifd')[];
+  /** Includes estimates or values waiting for the user's OK. */
+  estimate: boolean;
+  /** False when some contributing amount is unknown: the amount is then a floor. */
+  complete: boolean;
+  label: Text;
+  source: string;
 }
 
 export interface EngineInput {
@@ -147,8 +172,13 @@ export interface EngineInput {
     /** 16.40: cash, precious metals and other assets. */
     otherAssets?: Amount;
   };
-  /** Bank accounts and securities, per owner. */
+  /** Bank accounts and securities, per owner (when the état des titres is not given). */
   movable?: readonly MovableAsset[];
+  /**
+   * The état des titres and other movable wealth by rubric (14.00, 16.40, 16.70, 52.11, 55.10,
+   * 56.20, 56.30, credits F1.IA and F1.IES). When given, it is the only source of these amounts.
+   */
+  wealthItems?: readonly WealthItemInput[];
 }
 
 /** A computed figure with its explanation. */
@@ -163,6 +193,8 @@ export interface Line {
   estimates?: string[];
   /** Depends on a value that still needs the user's OK. */
   needsOk?: boolean;
+  /** Rests on an amount known only in part: a floor, not a final figure. */
+  incomplete?: boolean;
   facts?: string[];
 }
 
@@ -224,7 +256,9 @@ export interface IccResult {
   subtotal9240: Line;
   /** Revenu net: after every deduction except the social deductions (61.xx). */
   netIncome: Line;
-  /** Revenu imposable. */
+  /** 95.00 revenu net total: after the social deductions. */
+  totalIncome: Line;
+  /** 99.00 revenu imposable. */
   taxableIncome: Line;
   splitting: IccSplitting;
   /** Revenu déterminant le taux. */
@@ -237,8 +271,11 @@ export interface IccResult {
     taxableWealth: Line;
   };
   taxes: IccTaxes;
-  /** Credits shown on the bordereau, not part of the tax: the Swiss withholding tax (imputations). */
-  credits: { withholdingTax?: Line };
+  /**
+   * Credits shown on the bordereau, not part of the tax: the Swiss withholding tax claimed back
+   * (impôt anticipé) and the foreign tax credit (DA-1), the imputations of the état des titres.
+   */
+  credits: { withholdingTax?: Line; foreignTax?: Line };
 }
 
 export interface IfdResult {
@@ -247,6 +284,7 @@ export interface IfdResult {
   subtotal9220: Line;
   subtotal9240: Line;
   netIncome: Line;
+  totalIncome: Line;
   taxableIncome: Line;
   /** The income the scale is read at: fractions under CHF 100 dropped. */
   scaleIncome: Line;
@@ -273,6 +311,10 @@ export interface TaxResult {
   estimates: EstimateNote[];
   /** Items that rely on values still awaiting the user's OK. */
   needsOk: number;
+  /** False when some amount is known only in part: the taxes are then floors, not final. */
+  complete: boolean;
+  /** What is known only in part. */
+  incomplete: Text[];
   /** What the engine was told to assume about the household. */
   assumptions: Text[];
   /** What is not in the calculation (for example costs with no amount given). */

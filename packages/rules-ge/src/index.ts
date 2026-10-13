@@ -161,3 +161,4 @@ export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
 export { bracketTax, federalScaleTax, chf } from './engine/calc.js';
 export type * from './engine/types.js';
 export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
+export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';

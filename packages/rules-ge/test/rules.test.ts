@@ -227,8 +227,8 @@ describe('household rules', () => {
       household: { debtInterest: { value: chf(60_000) }, debts: { value: chf(100_000) } },
       movable: [{ owner: 'p1', value: { value: chf(300_000) }, income: { value: chf(2_000) } }],
     });
-    expect(find(r.icc!.items, '55.00')).toBe(-chf(52_000));
-    expect(find(r.ifd!.items, '55.00')).toBe(-chf(52_000));
+    expect(find(r.icc!.items, '55.10')).toBe(-chf(52_000));
+    expect(find(r.ifd!.items, '55.10')).toBe(-chf(52_000));
     // Wealth: 300,000 - 100,000 debts = 200,000 net, less 87,632.
     expect(r.icc!.wealth.taxableWealth.amount).toBe(chf(112_368));
   });
@@ -327,7 +327,9 @@ describe('estimates and values awaiting the user’s OK', () => {
     expect(r.icc!.taxes.total.needsOk).toBe(true);
     expect(r.icc!.taxes.total.estimates).toEqual(['input-estimate']);
     expect(r.needsOk).toBeGreaterThan(0);
-    expect(r.estimates.map((e) => e.id)).toContain('input:31.40:p1');
+    expect(r.estimates.find((e) => e.id === 'input-estimate')!.what.en).toBe(
+      'Figures you gave as estimates: 31.40 Cotisations au 3ème pilier A (A).',
+    );
   });
 
   it('explains every line in English and French, with its sources', () => {
@@ -339,5 +341,55 @@ describe('estimates and values awaiting the user’s OK', () => {
       expect(line.sources.length).toBeGreaterThan(0);
       expect(`${line.how.en} ${line.how.fr}`).not.toMatch(/[–—]/); // no en or em dashes
     }
+  });
+});
+
+describe('the état des titres in the engine', () => {
+  const w = (
+    code: string,
+    part: 'income' | 'deduction' | 'wealth' | 'wealth_deduction' | 'credit',
+    centimes: number,
+    extra: { complete?: boolean; taxes?: ('icc' | 'ifd')[] } = {},
+  ) => ({
+    code,
+    part,
+    person: 'p1' as const,
+    centimes,
+    taxes: extra.taxes ?? ['icc', 'ifd'],
+    estimate: false,
+    complete: extra.complete ?? true,
+    label: { en: code, fr: code },
+    source: 'ge-2025-declaration-specimen p. 21',
+  });
+  const run = (items: ReturnType<typeof w>[]) => computeReturn({ ...single(), wealthItems: items });
+
+  it('takes income, wealth, fees and credits by rubric', () => {
+    const r = run([
+      w('14.00', 'income', chf(2_000)),
+      w('14.00', 'wealth', chf(300_000), { taxes: ['icc'] }),
+      w('56.20', 'deduction', chf(150)),
+      w('F1.IA', 'credit', chf(350), { taxes: ['icc'] }),
+    ]);
+    expect(find(r.icc!.items, '14.00')).toBe(chf(2_000));
+    expect(find(r.ifd!.items, '14.00')).toBe(chf(2_000));
+    expect(find(r.icc!.items, '56.20')).toBe(-chf(150));
+    expect(r.icc!.wealth.grossWealth.amount).toBe(chf(300_000));
+    expect(r.icc!.credits.withholdingTax?.amount).toBe(chf(350));
+    expect(r.icc!.taxes.total.amount).toBeGreaterThan(0);
+  });
+
+  it('puts savings interest and life insurance premiums within the insurance limits (52.15, 52.00)', () => {
+    const r = run([w('56.30', 'deduction', chf(500)), w('52.11', 'deduction', chf(3_000))]);
+    expect(find(r.icc!.items, '52.15')).toBe(-chf(2_345)); // single, with a pension fund: 2,345
+    expect(find(r.ifd!.items, '52.00')).toBe(-chf(1_800));
+    expect(find(r.icc!.items, '56.30')).toBeUndefined();
+  });
+
+  it('flags every tax built on an amount known only in part', () => {
+    const r = run([w('14.00', 'income', chf(2_000), { complete: false })]);
+    expect(r.complete).toBe(false);
+    expect(r.incomplete[0]!.en).toMatch(/floor/);
+    expect(r.icc!.taxes.total.incomplete).toBe(true);
+    expect(r.ifd!.tax.incomplete).toBe(true);
   });
 });

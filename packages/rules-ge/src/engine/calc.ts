@@ -77,6 +77,8 @@ export class Trace {
   readonly estimates = new Set<string>();
   readonly facts = new Set<string>();
   needsOk = false;
+  /** Rests on an amount known only in part (a floor): the figure may be higher or lower. */
+  incomplete = false;
 
   p<T>(param: Param<T>): T {
     this.sources.add(param.source);
@@ -89,6 +91,7 @@ export class Trace {
     for (const f of amount.facts ?? []) this.facts.add(f);
     if (amount.status === 'estimate') this.estimates.add('input-estimate');
     if (amount.status === 'extracted') this.needsOk = true;
+    if (amount.complete === false) this.incomplete = true;
     return amount.value;
   }
 
@@ -107,6 +110,7 @@ export class Trace {
       for (const e of line.estimates ?? []) this.estimates.add(e);
       for (const f of line.facts ?? []) this.facts.add(f);
       if (line.needsOk) this.needsOk = true;
+      if (line.incomplete) this.incomplete = true;
     }
     return this;
   }
@@ -117,6 +121,7 @@ export class Trace {
       for (const e of tr.estimates) this.estimates.add(e);
       for (const f of tr.facts) this.facts.add(f);
       if (tr.needsOk) this.needsOk = true;
+      if (tr.incomplete) this.incomplete = true;
     }
     return this;
   }
@@ -129,6 +134,7 @@ export class Trace {
       sources: [...this.sources],
       ...(this.estimates.size ? { estimates: [...this.estimates] } : {}),
       ...(this.needsOk ? { needsOk: true } : {}),
+      ...(this.incomplete ? { incomplete: true } : {}),
       ...(this.facts.size ? { facts: [...this.facts] } : {}),
     };
   }
