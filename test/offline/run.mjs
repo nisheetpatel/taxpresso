@@ -10,6 +10,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { inflateRawSync } from 'node:zlib';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -542,6 +543,46 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         /DUPONT|756\.0000\.0000\.0[01]|000\.00\.0000-0|0000-0000-0000|everything matches and transmit/,
       );
     }
+  });
+
+  test('export_folder writes one ZIP of the year folder into the Taxpresso folder, offline', async () => {
+    const res = await client.callTool({ name: 'export_folder', arguments: {} });
+    assert.ok(!res.isError, res.content?.[0]?.text);
+    const { file, entries, path: shown } = res.structuredContent;
+    assert.match(file, /^Taxpresso-2026-export-\d{4}-\d{2}-\d{2}\.zip$/);
+    assert.ok(shown.endsWith(file));
+    assert.match(res.content[0].text, /It stays on this computer/);
+    const zip = readFileSync(path.join(vault, file));
+    // The central directory, read here independently of the extension's writer.
+    const end = zip.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    const count = zip.readUInt16LE(end + 10);
+    let at = zip.readUInt32LE(end + 16);
+    const names = new Map();
+    for (let i = 0; i < count; i++) {
+      assert.equal(zip.readUInt32LE(at), 0x02014b50);
+      const length = zip.readUInt16LE(at + 28);
+      const name = zip.subarray(at + 46, at + 46 + length).toString('utf8');
+      names.set(name, {
+        method: zip.readUInt16LE(at + 10),
+        size: zip.readUInt32LE(at + 20),
+        offset: zip.readUInt32LE(at + 42),
+      });
+      at += 46 + length + zip.readUInt16LE(at + 30) + zip.readUInt16LE(at + 32);
+    }
+    assert.equal(names.size, entries);
+    assert.ok([...names.keys()].every((n) => n.startsWith('2026/')));
+    for (const n of ['2026/ledger.json', '2026/documents.json', '2026/declaration-2026.pdf']) {
+      assert.ok(names.has(n), n);
+    }
+    const ledger = names.get('2026/ledger.json');
+    const start = ledger.offset + 30 + zip.readUInt16LE(ledger.offset + 26);
+    const body = zip.subarray(start, start + ledger.size);
+    assert.equal(
+      (ledger.method === 8 ? inflateRawSync(body) : body).toString('utf8'),
+      readFileSync(path.join(vault, '2026', 'ledger.json'), 'utf8'),
+    );
+    // Next to the year folder, not in it.
+    assert.ok(!readdirSync(path.join(vault, '2026')).some((n) => n.endsWith('.zip')));
   });
 
   test('the server exits when Claude Desktop closes it', async () => {

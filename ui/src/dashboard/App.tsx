@@ -8,6 +8,7 @@ import { Assessment } from './Assessment';
 import { Checks } from './Checks';
 import { CopyPanel } from './CopyPanel';
 import { DocumentCards } from './DocumentCards';
+import { ExportCard } from './Export';
 import { isMessageKey, t, type Language } from './i18n';
 import { Holdings } from './Holdings';
 import { tp } from './i18n-planning';
@@ -194,6 +195,7 @@ export function App(): JSX.Element {
                 <p class="muted small-text">{state.notSupportedMessage}</p>
               </section>
             ) : null}
+            <ExportCard state={state} lang={L} busy={busy} act={act} />
             <ActivityCard state={state} lang={L} />
           </aside>
         </div>

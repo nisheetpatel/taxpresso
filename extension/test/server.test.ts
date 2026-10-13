@@ -47,6 +47,7 @@ describe('MCP surface', () => {
       'answer_question',
       'check_declaration_pdf',
       'decide_optimization',
+      'export_folder',
       'get_document_for_review',
       'get_form_values',
       'get_holdings',

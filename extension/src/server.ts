@@ -18,6 +18,7 @@ import { decide, DecisionInput, planningReady, planningText, planningView } from
 import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
 import { registerDeclarationCheckTool } from './reconcile-tool.js';
+import { registerExportTool } from './export-tool.js';
 import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
@@ -874,6 +875,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
 
   // check_declaration_pdf: this year's declaration PDF against the values to type (./reconcile.ts).
   registerDeclarationCheckTool(server, ws);
+
+  // export_folder: one ZIP of the tax-year folder, on this computer (./export.ts).
+  registerExportTool(server, ws);
 
   server.registerResource(
     'dashboard-card',

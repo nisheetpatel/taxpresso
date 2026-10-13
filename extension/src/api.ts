@@ -19,6 +19,7 @@ import {
   planningView,
 } from './planning.js';
 import type { Slot } from '@taxpresso/questionnaire';
+import { exportFolder, exportView } from './export.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
@@ -146,6 +147,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     copyPanel: copyPanelView(ws, lang),
     // "Check before you transmit": this year's declaration PDF against them (SPEC.md 10.4).
     declarationCheck: declarationCheckView(ws, lang),
+    // "A copy of your folder": the ZIP made last, if any (./export.ts).
+    folderExport: exportView(ws),
     toConfirm: ws.toConfirm().length,
     requirements: ws.requirements().map((r) => ({
       id: r.id,
@@ -336,6 +339,9 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
           }
           return state();
         }
+        case '/export':
+          await exportFolder(ws);
+          return state();
         case '/checks/resolve': {
           const { id, note } = parse(Resolve, req.body);
           await ws.resolveCheck(id, note, 'dashboard');

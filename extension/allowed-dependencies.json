@@ -11,12 +11,12 @@
     "node:http": "The dashboard server on 127.0.0.1 (createServer only; ESLint bans http.request and http.get).",
     "node:crypto": "Per-session dashboard token and constant-time comparison; SHA-256 check of the barcode reader's .wasm before it is loaded.",
     "node:fs": "Reads the vault folder.",
-    "node:fs/promises": "Reads the vault folder and the bundled UI files.",
+    "node:fs/promises": "Reads the vault folder and the bundled UI files; writes the ZIP copy of the tax folder into the Taxpresso folder (export_folder), never over an existing file.",
     "node:path": "Paths.",
     "node:os": "Home folder for the default vault path.",
     "node:url": "Locates the bundled UI next to the server file.",
     "node:process": "stdio for the MCP transport (used by the SDK).",
-    "node:zlib": "Compresses the PNG image of a scanned page sent to Claude, and decompresses barcode payloads (ZIP entries, ZLIB, GZIP: salary certificates and e-tax statements), with a cap on the output size.",
+    "node:zlib": "Compresses the PNG image of a scanned page sent to Claude, and decompresses barcode payloads (ZIP entries, ZLIB, GZIP: salary certificates and e-tax statements), with a cap on the output size. Deflates the entries of the ZIP copy of the tax folder that export_folder writes on this computer (extension/src/zip.ts).",
     "node:module": "createRequire for CommonJS dependencies (the bundle banner); in development it also locates the barcode reader's .wasm in node_modules (the shipped server is given its path instead). PDF.js also asks for it at run time for an optional canvas package that isn't shipped and is never used.",
     "node:stream": "PDF.js asks for it at run time to stream a PDF from a local file path; Taxpresso passes bytes, so that path never runs."
   }
