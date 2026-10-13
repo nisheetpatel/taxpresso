@@ -3,6 +3,22 @@
   "note": "Merged from the per-canton manifest.json files. Edit those, then run scripts/merge-manifests.mjs.",
   "entries": [
     {
+      "id": "ge-2026-part-privilegiee-communique",
+      "canton": "GE",
+      "doc_type": "communal_rates",
+      "title": "Communiqué hebdomadaire du Conseil d'Etat du 15 octobre 2025: Fixation de la part privilégiée de chaque commune pour 2026",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/40923/telecharger",
+      "format": "pdf",
+      "publisher": "Chancellerie d'Etat, République et canton de Genève",
+      "published": "2025-10-15",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "The privileged share (part privilégiée) of each of the 45 communes for tax year 2026, needed to split the communal tax between the commune of residence and the commune of work.",
+      "notes": "21-page weekly communiqué; the table is on p. 11 (Fixation de la part privilégiée de chaque commune pour 2026). The AFC table ge-2025-communal-centimes-pdf stops at 2025. The Conseil d'Etat fixes the share for the next year each October (the 2027 shares are in the communiqué of 7 October 2026)."
+    },
+    {
       "id": "ge-2025-communal-centimes-pdf",
       "canton": "GE",
       "doc_type": "communal_rates",
@@ -161,6 +177,22 @@
       "priority": "core",
       "why_needed": "Official guide for completing the 2025 individual return (cantonal, communal and federal).",
       "notes": "Cover label GUIDE; file guide-pp-2025_1.pdf, about 60 pages. Web page: https://www.ge.ch/document/guide-fiscal-2025-particuliers"
+    },
+    {
+      "id": "ge-na-law-lcp",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi générale sur les contributions publiques (LCP), rsGE D 3 05",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_05.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2026-01-01",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "Communal tax: centimes additionnels on the cantonal base tax and the split between the commune of residence (part privilégiée) and the communes of work (art. 293 to 299, art. 295A); the taxe personnelle (art. 374 to 377).",
+      "notes": "rsGE D 3 05, adopted 9 November 1887, consolidated text with modifications up to 1 January 2026. Art. 295A al. 2: the privileged share (20% to 80%) of each cantonal tax on income and wealth goes to the commune of residence, the rest to the communes concerned in proportion to the income and wealth attributable to each. Art. 375: taxe personnelle of 25 francs; art. 377: exemptions."
     },
     {
       "id": "ge-na-law-lipp",

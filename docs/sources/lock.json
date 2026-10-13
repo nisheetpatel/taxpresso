@@ -2448,5 +2448,25 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-13T17:31:37.505Z",
     "status": "ok"
+  },
+  "ge-na-law-lcp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_05.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_05.htm",
+    "file": "ge/files/ge-na-law-lcp.html",
+    "bytes": 542276,
+    "sha256": "39fe25957d161c4bf56a4a24913ddcb0cf82c3c0e6ae06417e49af4509289eea",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-13T21:35:20.311Z",
+    "status": "ok"
+  },
+  "ge-2026-part-privilegiee-communique": {
+    "url": "https://www.ge.ch/document/40923/telecharger",
+    "final_url": "https://www.ge.ch/document/40923/telecharger",
+    "file": "ge/files/ge-2026-part-privilegiee-communique.pdf",
+    "bytes": 196792,
+    "sha256": "31e04a454c33e63ccb16f4004efb55d92093d69f6bfa1335a0d3ae0c063117ec",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:35:20.385Z",
+    "status": "ok"
   }
 }

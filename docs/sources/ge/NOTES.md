@@ -50,3 +50,12 @@
 - Not found: TOU irrevocability, 2025 late-filing rules, e-relevé fiscal page. Not searched: AFC crypto sheet and a separate professional-expenses sheet (guide chapter "Activité dépendante" covers the latter). (https://www.ge.ch/document/guide-fiscal-2025-particuliers)
 - Not opened, seen in search only: silgeneve copy of D 3 17.03; 2025 source-tax deductions (https://www.ge.ch/document/deductions-icc-impot-source-2025); 2025 source-tax barèmes (https://www.ge.ch/document/baremes-2025-perception-impot-source).
 - Federal documents (ESTV or AFC Kursliste) are outside the ge.ch and silgeneve.ch scope.
+
+## Added and found while building the tax engine (2026-10-14)
+- Added ge-na-law-lcp (LCP, rsGE D 3 05): the communal centimes are levied on the cantonal base tax (art. 293); the privileged share of each base tax goes to the commune of residence and the rest to the communes concerned in proportion to the income and wealth attributable to each (art. 295A); the taxe personnelle and its exemptions (art. 374 to 377). (https://silgeneve.ch/legis/data/rsg_d3_05.htm)
+- Added ge-2026-part-privilegiee-communique: the 2026 privileged share of every commune, fixed by the Conseil d'Etat on 15 October 2025, p. 11. The AFC table ge-2025-communal-centimes-pdf stops at 2025; the 2027 shares were fixed on 7 October 2026. (https://www.ge.ch/document/40923/telecharger)
+- Rounding not stated in the documents: the tariff (ge-2025-icc-tariff-pdf) gives every amount to 5 centimes, but not how the cantonal centimes, the 12 % reduction, the home care centime and the communal shares are rounded. The engine rounds each line to the nearest 5 centimes, halves up, and flags the rule; check it against a real bordereau.
+- Rubric codes 14.10 and 24.10 (accounts and securities), 55.00 (debts and their interest) and 56.20 (costs of securities) are not in the guide's text, only on the small pictures of the recapitulation pages (ge-2025-guide-declaration-pp p. 13). Check them on the 2026 form.
+- The guide's code ranges for the two-earner deduction ("31.10 à 31.63", p. 21) follow the form's order; the engine reads them as every employment deduction before 31.90, which is what LIFD art. 33 al. 2 says for the IFD.
+- Life insurance limit 52.15 (p. 28): "augmentée de moitié" gives a half franc for the per-charge amount; the engine rounds it down and flags it.
+- The tax shield (LIPP art. 60, guide p. 51) is not computed: when it may apply the engine computes no ICC at all.
