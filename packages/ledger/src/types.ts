@@ -68,6 +68,8 @@ export const DOCUMENT_KINDS = [
   'broker_export',
   'other',
   'tax_assessment',
+  // A life insurance (pillar 3b) attestation: surrender value and premiums (ge-2025-guide-declaration-pp p. 8, p. 28).
+  'life_insurance_attestation',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
@@ -116,6 +118,8 @@ export interface Requirement {
   optional?: boolean;
   /** Official source for the requirement, e.g. "ge-2025-guide-declaration-pp p. 10". */
   source?: string;
+  /** An official page that explains the document, for the user (from the questionnaire). */
+  learnMore?: { url: string; label: { en: string; fr: string } };
 }
 
 export interface Decision {

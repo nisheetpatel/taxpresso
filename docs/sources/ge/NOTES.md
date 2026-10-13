@@ -9,6 +9,12 @@
 - The online return pre-fills only from last year's declaration, and only if that one was sent electronically. (https://www.ge.ch/getax/declaration-ligne-particuliers)
 - Supporting documents can be attached as PDF; GeTax rejects a file already imported, even if renamed. (https://www.ge.ch/getax/retour-declarations-internet)
 
+## Declaration form (tax year 2025)
+- The official form is published as a specimen of the handwritten declaration (manifest id ge-2025-declaration-specimen), 26 pages: PG1 to PG4, annexes A1, A2, B1 to B4, C1 to C4, D1 to D4, E1, E2, F1 to F4, G1, G2. The guide's short link to it (www.ge.ch/c/imp-spde25, guide p. 9) answered 404 on 2026-10-13. (https://www.ge.ch/document/42265/telecharger ; https://www.ge.ch/document/declaration-impot-2025-documents-envoyes)
+- Amounts are rounded to the franc, without centimes, except the imputations of annexe F (specimen p. 21; guide p. 9 for handwritten forms). Whether the online declaration accepts centimes is not stated on the pages read. (https://www.ge.ch/document/42265/telecharger)
+- Annexe A names the salary certificate box of each rubric: 11.10 takes box 1, boxes 2 to 7 have rubrics of their own, box 8 (their total) is not typed. (https://www.ge.ch/document/42265/telecharger, p. 5)
+- The online declaration offers the same features, checks and printouts as GeTax; its screens are not documented publicly. (https://www.ge.ch/getax/declaration-ligne-particuliers)
+
 ## Third-party software
 - Approved ("homologué") software may print barcoded forms or transmit online; non-approved software makes the return valid only on the signed official form. (https://www.getax.ch/support/sites/default/files/D_3_17.03_-_Rglt_relatif_aux_declarations_impot.pdf.pdf)
 - Approved list: DrTax (years 2006 to 2024), WindFisc (to 2021), Pebe Impots (2006 to 2009). No 2025 entry is shown. Queries: hotline@getax.ch. (https://www.getax.ch/support/homologation)
@@ -24,7 +30,13 @@
 ## Source tax
 - DRIS/TOU form due by 31 March of the year after withholding; for 2025 withholding that is 31 March 2026 (inferred). Filed online via e-démarches, or on paper if it came by post. (https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure)
 - DRIS is optional unless TOU is mandatory; if not filed, the withheld tax stands unless the AFC starts a correction. (https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure)
-- TOU irrevocability and withdrawal: not found on the verified pages. (https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure)
+- TOU on request: written request by 31 March of the following year; once filed it can't be withdrawn (RISP art. 8 al. 1). Added 2026-10-13 with the planning tools. (https://silgeneve.ch/legis/data/rsg_d3_20p01.htm)
+- The 2026 directives say the same, "même si la taxation est finalement défavorable", and that TOU then applies every following year until source taxation ends; late or informal requests are refused (ch. 8.2.3, p. 52). (https://www.ge.ch/document/42009/annexe/file/580297)
+- Compulsory TOU for residents (LISP art. 4 al. 1; RISP art. 7; directives 2026 ch. 8.2.1 p. 51): gross salary taxed at source over a threshold, other income not taxed at source over a threshold, taxable wealth, a TOU the year before. The thresholds and the 2026 wealth deductions are in those documents. (https://silgeneve.ch/legis/data/rsg_d3_20.htm)
+- CONFLICT, open: the AFC page "Quand demander ou annoncer une TOU" also lists "votre conjoint (couple marié) est sans activité" as a compulsory case for residents; the 2026 directives (p. 51) and LISP art. 4 don't. Taxpresso shows it as "to check with the AFC", never as compulsory. Ask the AFC which is right. (https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure/quand-demander-annoncer-taxation-ordinaire-ulterieure)
+- Geneva computes source tax with the annual model: the rate comes from the year's income, the year's tax is that income times the rate (directives 2026 ch. 2 and 4, p. 9 and p. 14). With tariff C the tax withheld can be corrected afterwards on both spouses' real incomes (ch. 8.1.3, p. 49). (https://www.ge.ch/document/42009/annexe/file/580297)
+- The tariffs are published as PDF and as ASCII files in the ESTV record format (tar25GE.zip, tar26GE.zip), only without church tax (code letter N). The ASCII and PDF tables of 2025 and 2026 were compared row by row on 2026-10-13 (A0, B0 to B5, C0 to C5, H1 to H5; 1,441 rows each): no difference. A1 to A5 and D are separate annexes, G and the cross-border tariffs are not used. (https://www.ge.ch/publication?organisation=51&type=183&titre=perception)
+- The 2026 directives' web page summary still says "valables dès le 1er janvier 2025"; the PDF itself is the 2026 edition (dated 9 February 2026). (https://www.ge.ch/document/directives-concernant-imposition-source-2026)
 - The 2025 source-tax employee form goes to the employer, not the tax office; changes must be reported within 14 days; no deadline is stated. (https://www.ge.ch/document/37885/annexe/file/371410)
 - 2026 withholding tables A, B, C and H are published (dated December 2025, page updated February 2026). (https://www.ge.ch/document/41802/telecharger)
 
@@ -47,9 +59,16 @@
 ## Gaps
 - No 2025 paper return PDF found; the return comes from GeTax or the online form. (https://www.ge.ch/remplir-ma-declaration-impot-tant-que-particulier/comment-remplir-ma-declaration-impot)
 - GeTax 2025 installers (.exe, .dmg, .tar.gz) are linked but not opened; no 2025 approved third-party software is listed. (https://www.ge.ch/getax/telecharger-installer-getax-particuliers ; https://www.getax.ch/support/homologation)
-- Not found: TOU irrevocability, 2025 late-filing rules, e-relevé fiscal page. Not searched: AFC crypto sheet and a separate professional-expenses sheet (guide chapter "Activité dépendante" covers the latter). (https://www.ge.ch/document/guide-fiscal-2025-particuliers)
-- Not opened, seen in search only: silgeneve copy of D 3 17.03; 2025 source-tax deductions (https://www.ge.ch/document/deductions-icc-impot-source-2025); 2025 source-tax barèmes (https://www.ge.ch/document/baremes-2025-perception-impot-source).
+- Not found: 2025 late-filing rules, e-relevé fiscal page. (TOU irrevocability: found since, see Source tax.) Not searched: AFC crypto sheet and a separate professional-expenses sheet (guide chapter "Activité dépendante" covers the latter). (https://www.ge.ch/document/guide-fiscal-2025-particuliers)
+- Not opened, seen in search only: silgeneve copy of D 3 17.03; 2025 source-tax deductions (https://www.ge.ch/document/deductions-icc-impot-source-2025). The 2025 source-tax barèmes are now in the library (ge-2025-source-tariff-pdf, ge-2025-source-tariff-ascii).
 - Federal documents (ESTV or AFC Kursliste) are outside the ge.ch and silgeneve.ch scope.
+
+## Securities list (état des titres): conflicts and open points (added 2026-10-13 by the securities agent)
+- Ask the human: where crypto goes. The guide says to multiply the ESTV tax rate by the units held and report the result "dans l'état des titres, sous Compte bancaire ou postal" (ge-2025-guide-declaration-pp p. 40), while the heading of the 2025 form's securities sheet lists "crypto-monnaies" among the titres suisses et étrangers (ge-2025-declaration-specimen p. 23, sheet F3). The totals are the same either way; Taxpresso follows the guide (with the accounts, F2) until the AFC says otherwise.
+- Wording conflict, the law wins: the guide says the IA is not levied on interest "inférieurs à 200" francs (ge-2025-guide-declaration-pp p. 40); the law says interest that "n'excède pas 200 francs" for a calendar year (ch-na-law-lia art. 5 al. 1 let. c, p. 4). Taxpresso never decides it: it takes the IA the bank shows, and only flags Swiss interest above the threshold with no IA as something to check.
+- The guide's short link to the declaration specimen (www.ge.ch/c/imp-spde25, p. 9) answers 404; the specimen is on https://www.ge.ch/document/declaration-impot-2025-documents-envoyes (ge-2025-declaration-specimen). The rubric codes the état des titres feeds (14.00, 16.40, 16.70, 52.11, 55.10, 56.20, 56.30) come from it; the guide itself never names 14.00.
+- Not published yet, so Taxpresso fails closed for tax year 2026: the official exchange rates at 31 December 2026 and the 2026 averages (ge-2025-taux-donnees-fiscales gives 2025 and earlier), and the list of non-recoverable foreign taxes for income of 2026 (the DFF annex in force on 1 February 2026 covers income of 2025, ch-2025-oiis-dff-annexe p. 2). Add both in January and February 2027.
+- The ICTax price list (liste des cours) and its search need a browser (ch-na-listes-des-cours-ictax). The extension never fetches it: the user looks up official values and Taxpresso records them as stated, with where they came from.
 
 ## Added and found while building the tax engine (2026-10-14)
 - Added ge-na-law-lcp (LCP, rsGE D 3 05): the communal centimes are levied on the cantonal base tax (art. 293); the privileged share of each base tax goes to the commune of residence and the rest to the communes concerned in proportion to the income and wealth attributable to each (art. 295A); the taxe personnelle and its exemptions (art. 374 to 377). (https://silgeneve.ch/legis/data/rsg_d3_05.htm)

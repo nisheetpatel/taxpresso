@@ -54,7 +54,10 @@ Checked 2026-10-13. Amounts and rates are left out on purpose: read them from th
 - 2025 individual declaration form and instructions: only in a 44.5 MB ZIP, not opened (https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct)
 - 2026 declaration form 2 (02-2026-fr.pdf): listed by ESTV but the fetch returned a server error, so excluded
 - Base source-tax circular 45 itself: not found, only its FAQ (https://www.estv.admin.ch/fr/impot-a-la-source)
-- Pension buy-in and lump-sum three-year rule circular: not found on the ESTV circulars page (https://www.estv.admin.ch/fr/lettres-circulaires-impot-federal-direct)
+- Pension buy-in and lump-sum three-year rule circular: not found on the ESTV circulars page (https://www.estv.admin.ch/fr/lettres-circulaires-impot-federal-direct). The rule itself is in the law: LPP art. 79b al. 3, added 2026-10-13 as ch-na-law-lpp (Fedlex filestore PDF, état le 1er janvier 2025, the latest consolidation Fedlex lists).
+- Pillar 3a catch-up (rachat 3a): OPP 3 art. 7a and 7b, in force 1 January 2025, with a transitional provision (gaps before 2025 can't be made up); added 2026-10-13 as ch-na-law-opp3. Fedlex already lists a version applicable from 1 June 2027. (https://www.fedlex.admin.ch/eli/cc/1985/1778_1778_1778/fr)
+- Source-tax tariff files: the ESTV record layout (tarjjkt.txt, monthly incomes, church-tax letter Y or N) is ch-na-is-recordformat-salaires, valid from 2025. (https://www.estv.admin.ch/fr/baremes-impot-a-la-source-importation-systemes-de-comptabilite-salariale)
+- OIS (RS 642.118.2): still not in the library; Geneva's RISP art. 7 states the compulsory TOU threshold itself, so nothing depends on it yet.
 - Federal electronic procedures law status, and the AGOV login page: not found
 - TOU and NOV source-tax terms: not defined on any page opened, so not described
 - Listed but not opened: 2026 source-tax pension tariffs and 2026 professional expense annexes 9/14 and 10 (https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct)

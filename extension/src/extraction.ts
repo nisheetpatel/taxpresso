@@ -123,6 +123,11 @@ export const ENUM_LABELS: Record<string, Record<string, { en: string; fr: string
     occupational: { en: 'Pension fund (2nd pillar)', fr: 'Prévoyance professionnelle (2e pilier)' },
     other: { en: 'Other pension', fr: 'Autre rente' },
   },
+  'securities.income_kind': {
+    dividend: { en: 'Dividends', fr: 'Dividendes' },
+    interest: { en: 'Interest', fr: 'Intérêts' },
+    mixed: { en: 'Dividends and other income', fr: 'Dividendes et autres rendements' },
+  },
   'assessment.tax': {
     icc: { en: 'Cantonal and communal tax (ICC)', fr: 'Impôt cantonal et communal (ICC)' },
     ifd: { en: 'Federal direct tax (IFD)', fr: 'Impôt fédéral direct (IFD)' },

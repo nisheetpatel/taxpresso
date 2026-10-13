@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.3.0",
+    "@taxpresso/filing-ge": "workspace:*",
     "@taxpresso/intake": "workspace:*",
     "@taxpresso/ledger": "workspace:*",
     "@taxpresso/optimizer": "workspace:*",

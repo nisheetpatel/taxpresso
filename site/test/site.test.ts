@@ -2,8 +2,9 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { copy, LANGS } from '../src/content.ts';
-import { render, renderStart } from '../src/render.ts';
+import { copy, LANGS, SOURCE_URL, startPath } from '../src/content.ts';
+import { GUIDE_IDS, GUIDE_SOURCES, guidePath, guides, guidesPath } from '../src/guides.ts';
+import { render, renderGuide, renderGuides, renderStart } from '../src/render.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DASHES = new RegExp('[\\u2013\\u2014]');
@@ -81,6 +82,94 @@ describe('landing page', () => {
     for (const file of ['styles.css', 'hero.css']) {
       const css = await readFile(path.join(here, '..', 'src', file), 'utf8');
       for (const re of REMOTE_LOAD) expect(css, file).not.toMatch(re);
+    }
+  });
+});
+
+describe('guides', () => {
+  /** Every page the build writes, with its path, so links between pages can be checked. */
+  const pages = LANGS.flatMap(({ lang, path: p }) => [
+    { path: p, html: render(lang) },
+    { path: startPath(p), html: renderStart(lang) },
+    { path: guidesPath(p), html: renderGuides(lang) },
+    ...GUIDE_IDS.map((id) => ({ path: guidePath(p, id), html: renderGuide(lang, id) })),
+  ]);
+
+  it('have the same structure in every language as in French', () => {
+    for (const { lang } of LANGS) expect(shape(guides[lang]), lang).toEqual(shape(guides.fr));
+  });
+
+  it('copy has no en or em dashes (CLAUDE.md copy rule)', () => {
+    for (const { lang } of LANGS) {
+      for (const s of strings(guides[lang])) expect(s, `${lang}: ${s}`).not.toMatch(DASHES);
+    }
+  });
+
+  it('label every official source in every language', () => {
+    for (const { lang } of LANGS) {
+      for (const id of GUIDE_IDS) {
+        expect(guides[lang].guides[id].sources, `${lang} ${id}`).toHaveLength(
+          GUIDE_SOURCES[id].length,
+        );
+      }
+    }
+  });
+
+  it('link only to official pages from the sources library, with no parameters', async () => {
+    // Each URL was opened and checked when it went into docs/sources/<canton>/manifest.json.
+    const manifest = JSON.parse(
+      await readFile(path.join(here, '..', '..', 'docs', 'sources', 'manifest.json'), 'utf8'),
+    ) as { entries: { url: string }[] };
+    const official = new Set(manifest.entries.map((e) => e.url));
+    const outbound = [
+      ...Object.values(GUIDE_SOURCES).flat(),
+      ...strings(guides).flatMap((s) =>
+        [...s.matchAll(/\]\((https:[^)\s]+)\)/g)].map((m) => m[1]!),
+      ),
+    ];
+    expect(outbound.length).toBeGreaterThan(GUIDE_IDS.length);
+    for (const url of outbound) {
+      if (url === SOURCE_URL) continue; // the project's own code, in the privacy guide
+      expect(url, url).not.toMatch(/[?]/);
+      expect(official, url).toContain(url.replace(/#page=\d+$/, ''));
+    }
+  });
+
+  it('render every guide in every language, with links to the others, and load nothing from elsewhere', () => {
+    for (const { lang, path: p } of LANGS) {
+      for (const html of [renderGuides(lang), ...GUIDE_IDS.map((id) => renderGuide(lang, id))]) {
+        expect(html).toContain(`<html lang="${lang}">`);
+        expect(html).not.toMatch(/<script/i);
+        for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
+      }
+      for (const id of GUIDE_IDS) {
+        const html = renderGuide(lang, id);
+        for (const other of LANGS)
+          expect(html).toContain(`hreflang="${other.lang}" href="${guidePath(other.path, id)}"`);
+        // Official pages open in a new tab, so the guide stays open.
+        for (const url of GUIDE_SOURCES[id])
+          expect(html).toContain(`href="${url}" target="_blank" rel="noopener"`);
+        expect(html).toContain(`href="${guidesPath(p)}"`);
+      }
+    }
+  });
+
+  it('every link on the site leads to a page the build writes', () => {
+    const built = new Set(pages.map((page) => page.path));
+    const assets = /^\/(styles\.css|favicon\.svg|fonts\/)/;
+    for (const page of pages) {
+      for (const [, href] of page.html.matchAll(/href="(\/[^"]*)"/g)) {
+        if (assets.test(href!)) continue;
+        expect(built, `${page.path} links to ${href}`).toContain(href!.replace(/#.*$/, ''));
+      }
+    }
+  });
+
+  it('are linked sparingly: the footer and one line under the questions, and the Get started page', () => {
+    for (const { lang, path: p } of LANGS) {
+      const link = `href="${guidesPath(p)}"`;
+      expect(render(lang).split(link).length - 1, lang).toBe(2);
+      expect(renderStart(lang).split(link).length - 1, lang).toBe(2);
     }
   });
 });

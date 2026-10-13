@@ -132,6 +132,7 @@ function wanted(line: SecurityLine): Wanted[] {
   add('securities.value_original', line.value?.amount, 'estimate');
   add('securities.value_chf', line.valueChf, 'estimate', line.valueNote);
   add('securities.income_gross_chf', line.incomeChf, 'extracted', line.incomeNote);
+  add('securities.income_kind', line.incomeKind, 'extracted');
   add(
     'securities.withholding_swiss_chf',
     line.withholdingSwissChf,

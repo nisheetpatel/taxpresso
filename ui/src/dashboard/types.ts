@@ -1,11 +1,18 @@
 // The /api/state shape (extension/src/api.ts, dashboardState). Kept in step by the API tests.
 import type { Language } from './i18n';
 import type { EstimateView } from './Estimate';
-import type { SecuritiesView } from './Securities';
+import type { CopyPanelState } from './types-copy';
+import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
+import type { PlanningState } from './types-planning';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
+
+export interface OfficialLink {
+  url: string;
+  label: string;
+}
 
 export interface Question {
   id: string;
@@ -16,6 +23,8 @@ export interface Question {
   text: string;
   help?: string;
   explain?: string;
+  /** An official page on the topic, shown as "Official page" in the explanation. */
+  learnMore?: OfficialLink;
   options?: { value: string; label: string; notSupported: boolean }[];
   none?: string;
   min?: number;
@@ -29,6 +38,7 @@ export interface RequirementView {
   label: string;
   reason: string;
   explain?: string;
+  learnMore?: OfficialLink;
   /** Same for every person's copy of one requirement (e.g. health premiums for you and your partner). */
   group: string;
   status: 'missing' | 'satisfied' | 'estimated' | 'waived';
@@ -97,11 +107,17 @@ export interface State extends DocumentsState {
       sources: string[];
     };
   };
+  /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. */
+  planning: PlanningState;
   notSupported: string[];
+  /** The values to type into the official declaration, in the form's order (SPEC.md 10.5). */
+  copyPanel: CopyPanelState;
   /** The securities list from broker exports, or null when there is none. */
   securities?: SecuritiesView | null;
   /** The tax from the rules engine ("Your estimate"). */
   estimate?: EstimateView;
+  /** "Your securities and accounts": the état des titres as computed, or null when empty. */
+  holdings?: HoldingsView | null;
   notSupportedMessage: string;
   activity: Activity[];
 }

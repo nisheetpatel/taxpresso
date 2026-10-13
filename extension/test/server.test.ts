@@ -46,7 +46,10 @@ describe('MCP surface', () => {
     expect(tools.map((t) => t.name).sort()).toEqual([
       'answer_question',
       'compute_tax',
+      'decide_optimization',
       'get_document_for_review',
+      'get_form_values',
+      'get_holdings',
       'get_status',
       'ingest_vault',
       'list_documents',
@@ -55,6 +58,7 @@ describe('MCP surface', () => {
       'open_dashboard',
       'propose_extraction',
       'set_fact',
+      'set_holding',
     ]);
     for (const tool of tools) {
       expect(tool.name.length).toBeLessThan(64);
@@ -77,6 +81,13 @@ describe('MCP surface', () => {
   it('asks the questions and saves answers given in the chat', async () => {
     const q = await call('next_questions');
     expect(text(q)).toMatch(/\[civil_status\] Quel était votre état civil/);
+    // An official page Claude can give the user, from the sources library.
+    expect(text(q)).toMatch(
+      /Official page \(Geneva tax guide 2025, p\. 53: [^)]+\): https:\/\/www\.ge\.ch\//,
+    );
+    expect(
+      structured<{ questions: { learnMore?: { url: string } }[] }>(q).questions[0]?.learnMore?.url,
+    ).toMatch(/^https:\/\/www\.ge\.ch\/.+#page=53$/);
     const saved = await call('answer_question', { id: 'civil_status', value: 'single' });
     expect(text(saved)).toMatch(/Saved: Single\./);
     expect(text(saved)).toMatch(/Next question:\n\[children\]/);

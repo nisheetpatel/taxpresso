@@ -1,5 +1,5 @@
-// Builds the static website into site/dist: the home page and the Get started page for every
-// language in LANGS (French at /, then /en/, /de/, /it/, /es/, /pt/); styles.css with the logo's
+// Builds the static website into site/dist: the home page, the Get started page and the guides
+// for every language in LANGS (French at /, then /en/, /de/, /it/, /es/, /pt/); styles.css with the logo's
 // rules and only the Latin Geist subsets; the fonts and their license; the favicon from the logo.
 // Usage: node site/build.ts   (Node 22.18+ runs TypeScript directly)
 
@@ -10,7 +10,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ICON_SVG } from '../ui/src/shared/logo.ts';
 import { LANGS, startPath } from './src/content.ts';
-import { render, renderStart } from './src/render.ts';
+import { GUIDE_IDS, guidePath, guidesPath } from './src/guides.ts';
+import { render, renderGuide, renderGuides, renderStart } from './src/render.ts';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(root, 'dist');
@@ -55,5 +56,17 @@ for (const { lang, path: urlPath } of LANGS) {
   await mkdir(path.join(dir, 'start'), { recursive: true });
   await writeFile(path.join(dir, 'index.html'), render(lang, cssVersion));
   await writeFile(path.join(dir, 'start', 'index.html'), renderStart(lang, cssVersion));
+  await mkdir(path.join(dist, guidesPath(urlPath)), { recursive: true });
+  await writeFile(
+    path.join(dist, guidesPath(urlPath), 'index.html'),
+    renderGuides(lang, cssVersion),
+  );
+  for (const id of GUIDE_IDS) {
+    const guideDir = path.join(dist, guidePath(urlPath, id));
+    await mkdir(guideDir, { recursive: true });
+    await writeFile(path.join(guideDir, 'index.html'), renderGuide(lang, id, cssVersion));
+  }
 }
-console.log(`site/dist: ${LANGS.flatMap((l) => [l.path, startPath(l.path)]).join(' ')}`);
+console.log(
+  `site/dist: ${LANGS.flatMap((l) => [l.path, startPath(l.path), guidesPath(l.path)]).join(' ')}, ${GUIDE_IDS.length} guides per language`,
+);

@@ -1,5 +1,6 @@
 import * as z from 'zod/v4';
 import { UI_LANGUAGES } from './config.js';
+import { holdings, holdingsStatusText } from './holdings.js';
 import { securitiesStatusText } from './securities.js';
 import type { Workspace } from './workspace.js';
 
@@ -36,6 +37,12 @@ export const StatusSchema = z.object({
     .string()
     .optional()
     .describe('The securities list (état des titres) read from broker exports, in one line.'),
+  holdings: z
+    .string()
+    .optional()
+    .describe(
+      'The état des titres and other movable wealth as computed: totals, withholding tax claimed back, what is missing.',
+    ),
   nextStep: z.string(),
   vault: z.object({ path: z.string(), exists: z.boolean(), problem: z.string().optional() }),
   dashboard: z.object({ running: z.boolean() }),
@@ -78,6 +85,7 @@ export function buildStatus(
   const vault = ws.vaultInfo();
   const securitiesView = ws.securities('en');
   const securities = securitiesStatusText(securitiesView);
+  const holdingsText = holdingsStatusText(holdings(ws));
   const estimates = securitiesView?.rows.some((r) => r.estimate)
     ? [
         "Securities values at the broker's prices and rates, until the official ESTV price list (Kursliste) for the year is available.",
@@ -131,6 +139,7 @@ export function buildStatus(
     notSupported,
     estimates,
     ...(securities ? { securities } : {}),
+    ...(holdingsText ? { holdings: holdingsText } : {}),
     nextStep,
     vault,
     dashboard: { running: opts.dashboardRunning },
@@ -162,10 +171,11 @@ export function statusText(s: Status): string {
   ];
   if (s.notSupported.length) lines.push(`Not supported yet: ${s.notSupported.join('; ')}`);
   if (s.securities) lines.push(s.securities);
+  if (s.holdings) lines.push(s.holdings);
   lines.push(
     `Folder: ${s.vault.path}${s.vault.exists ? '' : ' (created with the first answer or document)'}`,
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,
-    'The tax so far: compute_tax. Savings to look at now: list_optimizations (pillar 3a before 31 December).',
+    'The tax so far: compute_tax. Savings to look at now: list_optimizations (before 31 December: pillar 3a, pension fund buy-in, 3a catch-up; TOU for people taxed at source).',
     `Next step: ${s.nextStep}`,
   );
   if (s.runtime) {

@@ -914,6 +914,29 @@ h2 {
   color: #d9c8b4;
 }
 
+/* The official page on the topic: caramel on espresso, like links in dark mode (SPEC.md 11b). */
+.explain-link {
+  align-self: flex-start;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e2b98a;
+  text-decoration: none;
+}
+
+.explain-link-text {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.explain-link:hover {
+  color: #f3ebe1;
+}
+
+.explain-link .explain-note {
+  display: block;
+  font-weight: 400;
+}
+
 .req strong {
   display: flex;
   align-items: center;

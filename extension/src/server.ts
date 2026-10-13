@@ -7,11 +7,14 @@ import { McpServer } from '@modelcontextprotocol/server';
 import { DOCUMENT_KINDS, LedgerError, type FactValue } from '@taxpresso/ledger';
 import type { RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
+import { formValues } from './copy-panel.js';
 import type { Dashboard } from './dashboard.js';
 import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './extraction.js';
 import { computeTaxOutput } from './estimate.js';
 import { INSTRUCTIONS } from './instructions.js';
 import { KIND_LABELS } from './kinds.js';
+import { registerHoldingTools } from './holdings-tools.js';
+import { decide, DecisionInput, planningReady, planningText, planningView } from './planning.js';
 import { securitiesStatusText } from './securities.js';
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
@@ -58,6 +61,8 @@ const QuestionOut = z.object({
   text: z.object({ en: z.string(), fr: z.string() }),
   help: z.object({ en: z.string(), fr: z.string() }).optional(),
   explain: z.object({ en: z.string(), fr: z.string() }).optional(),
+  /** An official page on the topic, to give the user; label in English. */
+  learnMore: z.object({ url: z.string(), label: z.string() }).optional(),
   options: z
     .array(
       z.object({ value: z.string(), en: z.string(), fr: z.string(), notSupported: z.boolean() }),
@@ -78,6 +83,7 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
     text: { en: en.text, fr: fr.text },
     ...(en.help && fr.help ? { help: { en: en.help, fr: fr.help } } : {}),
     ...(en.explain && fr.explain ? { explain: { en: en.explain, fr: fr.explain } } : {}),
+    ...(en.learnMore ? { learnMore: en.learnMore } : {}),
     ...(en.options && en.type !== 'commune'
       ? {
           options: en.options.map((o, i) => ({
@@ -132,6 +138,7 @@ function questionText(q: QuestionOut): string {
     `EN: ${q.text.en}`,
     ...(q.help ? [`Help: ${q.help.en}`] : []),
     ...(q.explain ? [`If the user asks what this means: ${q.explain.en}`] : []),
+    ...(q.learnMore ? [`Official page (${q.learnMore.label}): ${q.learnMore.url}`] : []),
     how,
   ].join('\n');
 }
@@ -350,13 +357,20 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'List tax savings',
       description:
-        'Ways to lower the tax, with their CHF value from the rules engine. For now: paying into pillar 3a before 31 December (room left, estimated saving, assumptions, facts with sources).',
-      outputSchema: z.object({ pillar3a: z.record(z.string(), z.unknown()) }),
+        'Ways to lower the tax, with their CHF value from the rules engine: before 31 December, pillar 3a, a pension fund buy-in and the 3a catch-up; for people taxed at source, TOU (tax withheld against ordinary tax, when compulsory, the deadline). Estimates, assumptions, facts with sources.',
+      outputSchema: z.object({
+        pillar3a: z.record(z.string(), z.unknown()),
+        lppBuyIn: z.record(z.string(), z.unknown()),
+        pillar3aCatchUp: z.record(z.string(), z.unknown()),
+        tou: z.record(z.string(), z.unknown()),
+      }),
       annotations: { title: 'List tax savings', ...RO },
     },
     async () => {
       await ws.ready();
+      await planningReady(ws);
       const plan = ws.plan();
+      const planning = planningView(ws);
       const lines = [`Before 31 December ${ws.config.taxYear}: pillar 3a (3e pilier A)`];
       for (const p of plan.people) {
         const cap = p.capIsMaximum
@@ -379,10 +393,16 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       lines.push(
         `Facts with sources: only payments made in ${ws.config.taxYear} count (${PILLAR3A_2026_FACTS.paidInYearOnly}); payouts are taxed (${PILLAR3A_2026_FACTS.payoutsTaxable}); missed years since 2025 can be made up from 2026, under conditions (${PILLAR3A_2026_FACTS.catchUpFrom2026}).`,
         "Don't recommend specific 3a providers or investments.",
+        ...planningText(planning, ws.config.taxYear),
       );
       return {
         content: [{ type: 'text', text: lines.join('\n') }],
-        structuredContent: { pillar3a: { ...plan } },
+        structuredContent: {
+          pillar3a: { ...plan },
+          lppBuyIn: { ...planning.lpp },
+          pillar3aCatchUp: { ...planning.catchUp },
+          tou: { ...planning.tou, needsTou: planning.needsTou },
+        },
       };
     },
   );
@@ -414,11 +434,53 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   );
 
   server.registerTool(
+    'decide_optimization',
+    {
+      title: 'Record the user’s TOU decision',
+      description:
+        "Records the user's own TOU choice (taxation ordinaire ultérieure): ask for it, or not this year. Only once they saw the comparison (list_optimizations), the deadline and that a request can't be withdrawn, and said what they choose. Records only: the user sends the DRIS/TOU form.",
+      inputSchema: z.object({
+        id: z.literal('tou').describe('The optimization: tou.'),
+        choice: z
+          .enum(['request', 'decline'])
+          .describe('request: the user will ask for TOU. decline: not this year.'),
+        confirmed: z
+          .boolean()
+          .describe(
+            "true only if the user said they understand a TOU request can't be withdrawn, even if the result is worse.",
+          ),
+      }),
+      outputSchema: z.object({
+        recorded: z.boolean(),
+        choice: z.string(),
+        deltaCentimes: z.number().int(),
+      }),
+      annotations: { title: 'Record the user’s TOU decision', ...RW },
+    },
+    async (args) => {
+      try {
+        const d = await decide(ws, DecisionInput.parse(args), 'chat');
+        const delta = Math.round(Math.abs(d.deltaCentimes) / 100).toLocaleString('en-US');
+        const text =
+          d.choice === 'request'
+            ? `Recorded: the user will ask for TOU (about CHF ${delta} ${d.deltaCentimes >= 0 ? 'back' : 'more'}, estimated). Remind them to send the DRIS/TOU form from their e-démarches space before the deadline: Taxpresso doesn't send it.`
+            : 'Recorded: no TOU this year. The tax withheld at source stays final.';
+        return {
+          content: [{ type: 'text', text }],
+          structuredContent: { recorded: true, choice: d.choice, deltaCentimes: d.deltaCentimes },
+        };
+      } catch (err) {
+        return toolError(err);
+      }
+    },
+  );
+
+  server.registerTool(
     'set_fact',
     {
       title: 'Save what the user said',
       description:
-        'Saves what the user tells you in the chat: a rough figure for the "before 31 December" estimate (plan.*); a value from a document they confirmed or corrected (instance = document id; confirm: true confirms all its values); or a note settling a "Check this" item (check.note).',
+        'Saves what the user tells you in the chat: a planning figure for "before 31 December" or TOU (plan.*); a value from a document they confirmed or corrected (instance = document id; confirm: true confirms all its values); or a note settling a "Check this" item (check.note).',
       inputSchema: z.object({
         key: z
           .enum([...PLAN_KEYS, ...DOCUMENT_VALUE_KEYS, 'check.note'])
@@ -439,7 +501,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           .union([z.number().min(0), z.boolean(), z.string().max(500)])
           .optional()
           .describe(
-            'plan.*: CHF amount or true/false. Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
+            'plan.*: CHF amount, true/false, or the tariff code on the payslip for plan.source_tax_tariff (e.g. "A0"). Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
           ),
         confirm: z
           .boolean()
@@ -470,13 +532,15 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           throw new WorkspaceError('Give key and value, or confirm: true with a document id.');
         }
         if ((PLAN_KEYS as readonly string[]).includes(key)) {
-          if (typeof value === 'string') throw new WorkspaceError('Give a number or true/false.');
+          if (typeof value === 'string' && key !== 'plan.source_tax_tariff') {
+            throw new WorkspaceError('Give a number or true/false.');
+          }
           await ws.setPlan(person ?? 'p1', key as (typeof PLAN_KEYS)[number], value, 'chat');
           return {
             content: [
               {
                 type: 'text',
-                text: 'Saved as an estimate. Call list_optimizations for the updated figures.',
+                text: `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
               },
             ],
             structuredContent: { saved: true },
@@ -659,6 +723,63 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
             checks,
           },
         };
+      } catch (err) {
+        return toolError(err);
+      }
+    },
+  );
+
+  // The securities list (état des titres) and other wealth: get_holdings, set_holding.
+  registerHoldingTools(server, ws);
+
+  server.registerTool(
+    'get_form_values',
+    {
+      title: 'Get the values to type into the declaration',
+      description:
+        'The values the user types by hand into the official Geneva declaration, in the form\'s order, as in the dashboard\'s copy panel: rubric code, French label, value as typed, status. No section: the sections with progress. A section (e.g. "A1"): its values.',
+      inputSchema: z.object({
+        section: z
+          .string()
+          .max(4)
+          .optional()
+          .describe('A page of the form, e.g. "PG1", "A1", "C3". Default: the list of sections.'),
+      }),
+      outputSchema: z.object({
+        provisional: z.boolean(),
+        entered: z.number().int(),
+        total: z.number().int(),
+        pending: z.number().int(),
+        sections: z.array(
+          z.object({
+            page: z.string(),
+            title: z.string(),
+            entered: z.number().int(),
+            total: z.number().int(),
+            pending: z.number().int(),
+          }),
+        ),
+        rows: z
+          .array(
+            z.object({
+              ref: z.string(),
+              label: z.string(),
+              copy: z.string().optional(),
+              status: z.string(),
+              final: z.boolean(),
+              role: z.string(),
+              entered: z.boolean(),
+            }),
+          )
+          .optional(),
+      }),
+      annotations: { title: 'Get the values to type into the declaration', ...RO },
+    },
+    async ({ section }) => {
+      await ws.ready();
+      try {
+        const { text, structured } = formValues(ws, section);
+        return { content: [{ type: 'text', text }], structuredContent: structured };
       } catch (err) {
         return toolError(err);
       }

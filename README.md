@@ -52,7 +52,7 @@ Taxpresso costs nothing. If you’d like to say thanks or support a good cause, 
 
 ## Not tax advice
 
-Taxpresso is independent. It isn’t affiliated with the Geneva cantonal tax administration (AFC) or with Anthropic, and it isn’t tax advice: you remain responsible for your return. Claude is a trademark of Anthropic.
+Taxpresso is an independent, free and open-source software project. It is not affiliated with, sponsored by or associated with any accounting firm, fiduciary or tax-services company, in Switzerland or elsewhere, nor with the Geneva cantonal tax administration (AFC) or Anthropic. It isn’t tax advice: you remain responsible for your return. Claude is a trademark of Anthropic.
 
 ## License
 

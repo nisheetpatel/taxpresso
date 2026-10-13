@@ -197,7 +197,7 @@ If nothing is found, use text heuristics (issuer names, titles like "Certificat 
 
 5.6 Dedup by sha256. Re-dropping a file is a no-op. A new version of the same certificate supersedes the older facts and tells the user.
 
-5.7 Broker exports. Activity or position exports from foreign and online brokers (CSV or XML, for example Interactive Brokers Flex Query XML or DEGIRO CSV) are parsed locally into the securities list (état des titres): each position at 31 December, gross income, Swiss withholding tax and foreign withholding tax, one instance per security (ISIN). Values in CHF use the broker's own valuation and rates as `estimate` until the official ESTV price list (Kursliste) for the year is bundled; then the official value replaces it. Synthetic fixtures only.
+5.7 Broker exports. Activity or position exports from foreign and online brokers (CSV or XML, for example Interactive Brokers Flex Query XML or DEGIRO CSV) are parsed locally into the securities list (état des titres): each position at 31 December, gross income, Swiss withholding tax and foreign withholding tax, one instance per security (ISIN). Values in CHF use the broker's own valuation and rates as `estimate` until the official ESTV price list (Kursliste) for the year is bundled; then the official value replaces it. Until then the user can enter each security's official value, which they look up in the ESTV price list themselves (the extension never fetches it); it replaces the estimate as `stated`, with where it came from. The securities list itself (`rules-ge`, `etat-des-titres.ts`) is a pure function of the ledger: accounts, securities and bank tax statements in the official form's order (F2, F3, F4), whose each line is (civilité), the Swiss withholding tax claimed back, the foreign tax credit (DA-1), the other movable wealth and private debts, and the amounts the engine takes by rubric code and person. Synthetic fixtures only.
 
 5.8 Consistency checks across documents. Deterministic rules over the ledger and document metadata, never a model: a document for another tax year; a salary certificate whose period doesn't cover the year without a reason given (moved, started or left a job); a replacement-income attestation (unemployment, APG, maternity) whose amount is already inside a salary certificate; two documents of the same kind, issuer and period; a 3a attestation for another year. Each failed check is a "Check this" item next to the "still missing" list, with what to do; the user resolves it (replace the document, or confirm with a note). Checks are derived, never stored.
 
@@ -237,7 +237,7 @@ Build order: implement tax year 2025 first (guide fiscal 2025 and GeTax 2025 exi
 
 ## 7b. Official sources library
 
-`docs/sources/` holds the official documents for Geneva, Vaud, Valais, Fribourg, Neuchâtel, Jura, Bern, Ticino, Basel-Stadt, Basel-Landschaft and Zurich, plus federal tax (`ch`) and the eCH standards (`standards`). Per canton: `manifest.json` (verified URLs with type, tax year, priority), `NOTES.md` (filing channels, third-party rules, deadlines, source tax, gaps, each fact with its URL) and `files/` (downloads). Read `docs/sources/README.md` first: it lists known conflicts between documents.
+`docs/sources/` holds the official documents for Geneva, Vaud, Valais, Fribourg, Neuchâtel, Jura, Bern, Ticino, Basel-Stadt, Basel-Landschaft, Zurich, Lucerne, Aargau, St. Gallen and Zug, plus federal tax (`ch`) and the eCH standards (`standards`). Per canton: `manifest.json` (verified URLs with type, tax year, priority), `NOTES.md` (filing channels, third-party rules, deadlines, source tax, gaps, each fact with its URL) and `files/` (downloads). Read `docs/sources/README.md` first: it lists known conflicts between documents.
 
 How they are used: they are the authority, not a script to follow line by line.
 - Whenever anyone (Claude Code while building, or Claude at runtime) is in doubt about a rule, a value, a deadline or a label, they consult the relevant document before deciding, and cite its id.
@@ -319,6 +319,7 @@ Schedule risk: if the 2025 declaration is already filed and read-only, the recor
 10.4 Reconciliation (the runtime safety net). After filling, the user downloads the declaration PDF from the online declaration into the vault (or Claude saves it). `reconcile_official_pdf` parses it and diffs every mapped field plus the official totals against the ledger and the engine. Any difference is red and must be fixed before the user transmits. Only then does screen 3 show "Ready to transmit".
 
 10.5 Copy panel fallback (always available, also the v0 if browser filling is unreliable). Screen 3 can show, section by section in the official form's order, each official French label with its value and a copy button. The user fills manually in 10 to 20 minutes. Reconciliation still applies. A second view groups the same values by document ("where each document went"): one card per document, each value with its official label, a copy button and an "Entered" tick, with a counter ("2 of 5 entered"). Ticks are local state and send nothing.
+The panel places values on the official form's own structure, read from the specimen of the declaration (`packages/filing-ge/src/<year>/form-map.ts`: pages, sections, rubric codes and labels as printed, each cited), and writes them as the form asks: whole francs without separators, imputations (annexe F) with centimes (ge-2025-guide-declaration-pp p. 9). The engine returns its values keyed by rubric code and person; until it covers a rubric, values come from the confirmed document values and answers. Claude reads the same panel with `get_form_values`.
 
 10.6 After transmission: the user saves the electronic receipt (quittance) into the vault. Mark the tax year filed. Export bundle = ledger + decisions + official PDF + receipt + originals, zipped.
 
@@ -343,11 +344,14 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 | `get_document_for_review` | Text or page images of one vault document for Claude to read | yes |
 | `propose_extraction` | Claude proposes values with page refs; stored as `extracted` | no |
 | `set_fact` | User-stated value or estimate (from chat): planning figures, a document value the user confirmed or corrected, a note settling a check (5.8) | no |
+| `get_holdings` | The securities list (état des titres) and other wealth, what is missing (5.7) | yes |
+| `set_holding` | What the user says about it: a security's official value, whose a line is, an account or asset without a document (5.7) | no |
 | `compute_tax` | Run the engine; summary + explanation tree | yes |
 | `search_official_docs` | Search the bundled official-document passages; returns short passages with manifest id, page and URL | yes |
 | `final_check` | Pre-filing check (10.0): caps, thresholds, confirmed estimates, unusual items, each with its governing passage | yes |
 | `list_optimizations` | Groups A/B/C with CHF deltas | yes |
 | `decide_optimization` | Accept/decline | no |
+| `get_form_values` | The copy panel (10.5) for manual entry: sections with progress, or one section's values in form order | yes |
 | `get_fill_plan` | Steps for a section | yes |
 | `report_section_state` / `report_fill_progress` | What Claude saw / set in the form | no |
 | `reconcile_official_pdf` | Diff the official PDF vs ledger/engine | no |

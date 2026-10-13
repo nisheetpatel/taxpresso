@@ -5,7 +5,11 @@
 import type { KeyRegistry } from '@taxpresso/ledger';
 import { COMMUNES_2026 } from './communes.js';
 import { KEYS_SECURITIES_2026 } from './keys-securities.js';
+import { KEYS_WEALTH_2026 } from './keys-wealth.js';
 import { DOCUMENT_KEYS_2026 } from './document-keys.js';
+import { sourceTaxTariffs } from '../source-tax/index.js';
+import { LPP_BUYIN_FACTS } from './pension.js';
+import { TOU_FACTS } from './tou.js';
 
 export const KEYS_2026 = {
   'profile.civil_status': {
@@ -153,8 +157,79 @@ export const KEYS_2026 = {
     perPerson: true,
     label: { en: 'Already paid into 3a this year', fr: 'Déjà versé au 3e pilier A cette année' },
   },
+  // Planning inputs for the pension fund buy-in, the 3a catch-up and TOU (SPEC.md section 8, groups
+  // B and C): ./pension.ts, ./tou.ts. Never filed.
+  'plan.lpp_buyin_capacity': {
+    type: 'money',
+    min: 0,
+    max: 10_000_000_00,
+    perPerson: true,
+    label: {
+      en: 'Buy-in your pension fund allows (pension certificate)',
+      fr: 'Rachat possible selon votre certificat de prévoyance',
+    },
+    official: 'rachat 2e pilier (LPP)',
+    source: LPP_BUYIN_FACTS.capacityFromFund,
+  },
+  'plan.lpp_buyin_amount': {
+    type: 'money',
+    min: 0,
+    max: 10_000_000_00,
+    perPerson: true,
+    label: {
+      en: 'Pension fund buy-in you plan this year',
+      fr: 'Rachat 2e pilier envisagé cette année',
+    },
+    official: 'rachats de la prévoyance professionnelle',
+    source: LPP_BUYIN_FACTS.paidInYear,
+  },
+  'plan.pillar3a_paid_2025': {
+    type: 'money',
+    min: 0,
+    max: 10_000_000,
+    perPerson: true,
+    label: { en: 'Paid into 3a in 2025', fr: 'Versé au 3e pilier A en 2025' },
+    official: 'cotisations 3e pilier A',
+  },
+  'plan.source_tax_withheld': {
+    type: 'money',
+    min: 0,
+    max: 10_000_000_00,
+    perPerson: true,
+    label: {
+      en: 'Tax withheld at source for the year',
+      fr: 'Impôt retenu à la source pour l’année',
+    },
+    official: 'retenue de l’impôt à la source (certificat de salaire, chiffre 12)',
+  },
+  'plan.source_tax_tariff': {
+    type: 'enum',
+    values: sourceTaxTariffs(2026),
+    perPerson: true,
+    label: { en: 'Source-tax tariff on the payslip', fr: 'Barème de l’impôt à la source' },
+    official: 'barème de l’impôt à la source',
+    source: 'ge-na-law-risp art. 1 al. 1; ge-2026-source-tariff-ascii',
+  },
+  'plan.tou_other_income': {
+    type: 'boolean',
+    perPerson: false,
+    label: {
+      en: 'Other income not taxed at source, over the limit',
+      fr: 'Autres revenus non imposés à la source, au-dessus de la limite',
+    },
+    source: TOU_FACTS.compulsoryCases,
+  },
+  'plan.tou_taxable_wealth': {
+    type: 'boolean',
+    perPerson: false,
+    label: { en: 'Taxable wealth on 31 December', fr: 'Fortune imposable au 31 décembre' },
+    official: 'fortune imposable',
+    source: TOU_FACTS.compulsoryCases,
+  },
   // The securities list (état des titres), one instance per security: keys-securities.ts.
   ...KEYS_SECURITIES_2026,
+  // Accounts, crypto, loans, life insurance, valuables and debts the user describes: keys-wealth.ts.
+  ...KEYS_WEALTH_2026,
   // Values read from documents, one per document (./document-keys.ts).
   ...DOCUMENT_KEYS_2026,
 } as const satisfies KeyRegistry;

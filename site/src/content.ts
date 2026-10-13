@@ -1,4 +1,5 @@
-// Website copy: the home page and the Get started page. French first (Geneva), then English,
+// Website copy: the home page and the Get started page (the guides are in guides.ts). French
+// first (Geneva), then English,
 // German, Italian, Spanish and Portuguese; a native speaker reviews each before launch (SPEC.md
 // section 1). Second person, plain words, no en or em dashes, official French terms next to their
 // gloss. French says vous; German, Italian, Spanish and Portuguese use the informal you (du, tu,
@@ -40,7 +41,13 @@ const fr = {
   navLabel: 'Sections',
   langLabel: 'Langue',
   suggestLanguage: 'Proposer une langue',
-  nav: { how: 'Comment ça marche', principles: 'Principes', faq: 'Questions', start: 'Commencer' },
+  nav: {
+    how: 'Comment ça marche',
+    principles: 'Principes',
+    faq: 'Questions',
+    guides: 'Guides',
+    start: 'Commencer',
+  },
 
   tagline: 'Vos impôts, le temps d’un espresso.',
   lead: 'Répondez à quelques questions. Taxpresso s’occupe du reste.',
@@ -190,6 +197,7 @@ const fr = {
 
   faq: {
     title: 'Questions',
+    more: `Une autre question${NB}? [Lisez nos guides](/fr/guides/), avec les liens vers les pages officielles.`,
     items: [
       [
         `Faut-il Claude${NB}?`,
@@ -197,7 +205,7 @@ const fr = {
       ],
       [
         `Et les autres cantons${NB}?`,
-        `Genève d’abord. Zurich, Berne, Vaud, Bâle, Fribourg, le Tessin et Lucerne sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
+        `Genève d’abord. Zurich, Berne, Vaud, Bâle, Fribourg, le Tessin, Lucerne, Argovie, Saint-Gall et Zoug sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
       ],
       [
         `Taxpresso transmet-il ma déclaration${NB}?`,
@@ -237,6 +245,7 @@ const fr = {
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
     platforms: ['Linux (bêta)', 'macOS', 'Windows'],
     needsTitle: 'Ce qu’il vous faut',
+    guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/fr/guides/) expliquent l’essentiel, avec les liens officiels.`,
     needs: [
       [
         'Claude Desktop',
@@ -302,7 +311,7 @@ const fr = {
 
   footer: {
     independent:
-      'Taxpresso est indépendant et n’est lié ni à l’Administration fiscale cantonale de Genève, ni à Anthropic. Claude est une marque d’Anthropic.',
+      'Taxpresso est un projet logiciel indépendant, gratuit et open source. Il n’est ni affilié à une fiduciaire, un cabinet comptable ou une société de services fiscaux, en Suisse ou ailleurs, ni sponsorisé par l’une d’elles, et il n’est lié ni à l’Administration fiscale cantonale de Genève, ni à Anthropic. Claude est une marque d’Anthropic.',
     noTracking: 'Ce site n’utilise ni cookies, ni traceurs, ni polices externes.',
     source: 'Code source',
   },
@@ -318,7 +327,13 @@ const en: Copy = {
   navLabel: 'Sections',
   langLabel: 'Language',
   suggestLanguage: 'Suggest a language',
-  nav: { how: 'How it works', principles: 'Principles', faq: 'Questions', start: 'Get started' },
+  nav: {
+    how: 'How it works',
+    principles: 'Principles',
+    faq: 'Questions',
+    guides: 'Guides',
+    start: 'Get started',
+  },
 
   tagline: 'Your taxes, done over an espresso.',
   lead: 'Answer a few questions. Taxpresso does the rest.',
@@ -448,6 +463,7 @@ const en: Copy = {
 
   faq: {
     title: 'Questions',
+    more: 'Another question? [Read our guides](/en/guides/), with links to the official pages.',
     items: [
       [
         'Do I need Claude?',
@@ -455,7 +471,7 @@ const en: Copy = {
       ],
       [
         'What about other cantons?',
-        `Geneva comes first. Zurich, Bern, Vaud, Basel, Fribourg, Ticino and Lucerne are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
+        `Geneva comes first. Zurich, Bern, Vaud, Basel, Fribourg, Ticino, Lucerne, Aargau, St. Gallen and Zug are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
       ],
       [
         'Does Taxpresso file my return?',
@@ -495,6 +511,8 @@ const en: Copy = {
     downloadNote: 'Free. One file, for Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'What you need',
+    guides:
+      'Which documents to gather, pillar 3a, TOU, your assessment: [our guides](/en/guides/) explain the basics, with the official links.',
     needs: [
       [
         'Claude Desktop',
@@ -560,7 +578,7 @@ const en: Copy = {
 
   footer: {
     independent:
-      'Taxpresso is independent and not affiliated with the Geneva cantonal tax administration or with Anthropic. Claude is a trademark of Anthropic.',
+      'Taxpresso is an independent, free and open-source software project. It is not affiliated with, sponsored by or associated with any accounting firm, fiduciary or tax-services company, in Switzerland or elsewhere, nor with the Geneva cantonal tax administration or Anthropic. Claude is a trademark of Anthropic.',
     noTracking: 'This site uses no cookies, no trackers and no external fonts.',
     source: 'Source code',
   },
@@ -574,7 +592,13 @@ const de: Copy = {
   navLabel: 'Abschnitte',
   langLabel: 'Sprache',
   suggestLanguage: 'Sprache vorschlagen',
-  nav: { how: 'So funktioniert’s', principles: 'Grundsätze', faq: 'Fragen', start: 'Loslegen' },
+  nav: {
+    how: 'So funktioniert’s',
+    principles: 'Grundsätze',
+    faq: 'Fragen',
+    guides: 'Ratgeber',
+    start: 'Loslegen',
+  },
 
   tagline: 'Deine Steuern, erledigt bei einem Espresso.',
   lead: 'Beantworte ein paar Fragen. Taxpresso macht den Rest.',
@@ -720,6 +744,7 @@ const de: Copy = {
 
   faq: {
     title: 'Fragen',
+    more: 'Noch eine Frage? [Lies unsere Ratgeber](/de/guides/), mit Links zu den offiziellen Seiten.',
     items: [
       [
         'Brauche ich Claude?',
@@ -727,7 +752,7 @@ const de: Copy = {
       ],
       [
         'Und die anderen Kantone?',
-        `Genf kommt zuerst. Zürich, Bern, Waadt, Basel, Freiburg, Tessin und Luzern sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
+        `Genf kommt zuerst. Zürich, Bern, Waadt, Basel, Freiburg, Tessin, Luzern, Aargau, St. Gallen und Zug sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
       ],
       [
         'Übermittelt Taxpresso meine Erklärung?',
@@ -767,6 +792,8 @@ const de: Copy = {
     downloadNote: 'Kostenlos. Eine Datei, für Claude Desktop.',
     platforms: ['Linux (Beta)', 'macOS', 'Windows'],
     needsTitle: 'Was du brauchst',
+    guides:
+      'Welche Dokumente du sammelst, Säule 3a, TOU, deine Veranlagung: [Unsere Ratgeber](/de/guides/) erklären das Wichtigste, mit den offiziellen Links.',
     needs: [
       [
         'Claude Desktop',
@@ -832,7 +859,7 @@ const de: Copy = {
 
   footer: {
     independent:
-      'Taxpresso ist unabhängig und weder mit der kantonalen Steuerverwaltung Genf noch mit Anthropic verbunden. Claude ist eine Marke von Anthropic.',
+      'Taxpresso ist ein unabhängiges, kostenloses Open-Source-Softwareprojekt. Es ist mit keinem Treuhand- oder Buchhaltungsbüro und keiner Steuerberatungsfirma verbunden und wird von keiner gesponsert, weder in der Schweiz noch anderswo. Es ist auch weder mit der kantonalen Steuerverwaltung Genf noch mit Anthropic verbunden. Claude ist eine Marke von Anthropic.',
     noTracking:
       'Diese Website verwendet keine Cookies, keine Tracker und keine externen Schriften.',
     source: 'Quellcode',
@@ -847,7 +874,13 @@ const it: Copy = {
   navLabel: 'Sezioni',
   langLabel: 'Lingua',
   suggestLanguage: 'Proponi una lingua',
-  nav: { how: 'Come funziona', principles: 'Principi', faq: 'Domande', start: 'Inizia' },
+  nav: {
+    how: 'Come funziona',
+    principles: 'Principi',
+    faq: 'Domande',
+    guides: 'Guide',
+    start: 'Inizia',
+  },
 
   tagline: 'Le tue tasse, il tempo di un espresso.',
   lead: 'Rispondi a qualche domanda. Al resto ci pensa Taxpresso.',
@@ -985,6 +1018,7 @@ const it: Copy = {
 
   faq: {
     title: 'Domande',
+    more: 'Un’altra domanda? [Leggi le nostre guide](/it/guides/), con i link alle pagine ufficiali.',
     items: [
       [
         'Mi serve Claude?',
@@ -992,7 +1026,7 @@ const it: Copy = {
       ],
       [
         'E gli altri cantoni?',
-        `Prima Ginevra. Poi sono previsti Zurigo, Berna, Vaud, Basilea, Friburgo, Ticino e Lucerna. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
+        `Prima Ginevra. Poi sono previsti Zurigo, Berna, Vaud, Basilea, Friburgo, Ticino, Lucerna, Argovia, San Gallo e Zugo. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
       ],
       [
         'Taxpresso trasmette la mia dichiarazione?',
@@ -1032,6 +1066,8 @@ const it: Copy = {
     downloadNote: 'Gratis. Un solo file, per Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Cosa ti serve',
+    guides:
+      'Quali documenti raccogliere, il pilastro 3a, la TOU, la tua tassazione: [le nostre guide](/it/guides/) spiegano l’essenziale, con i link ufficiali.',
     needs: [
       [
         'Claude Desktop',
@@ -1097,7 +1133,7 @@ const it: Copy = {
 
   footer: {
     independent:
-      'Taxpresso è indipendente e non è legato né all’Amministrazione fiscale cantonale di Ginevra, né ad Anthropic. Claude è un marchio di Anthropic.',
+      'Taxpresso è un progetto software indipendente, gratuito e open source. Non è affiliato né sponsorizzato da alcuna fiduciaria, studio contabile o società di servizi fiscali, in Svizzera o altrove, e non è legato né all’Amministrazione fiscale cantonale di Ginevra, né ad Anthropic. Claude è un marchio di Anthropic.',
     noTracking: 'Questo sito non usa cookie, tracker o font esterni.',
     source: 'Codice sorgente',
   },
@@ -1111,7 +1147,13 @@ const es: Copy = {
   navLabel: 'Secciones',
   langLabel: 'Idioma',
   suggestLanguage: 'Propón un idioma',
-  nav: { how: 'Cómo funciona', principles: 'Principios', faq: 'Preguntas', start: 'Empieza' },
+  nav: {
+    how: 'Cómo funciona',
+    principles: 'Principios',
+    faq: 'Preguntas',
+    guides: 'Guías',
+    start: 'Empieza',
+  },
 
   tagline: 'Tus impuestos, mientras te tomas un espresso.',
   lead: 'Responde unas preguntas. Taxpresso se encarga del resto.',
@@ -1245,6 +1287,7 @@ const es: Copy = {
 
   faq: {
     title: 'Preguntas',
+    more: '¿Otra pregunta? [Lee nuestras guías](/es/guides/), con enlaces a las páginas oficiales.',
     items: [
       [
         '¿Necesito Claude?',
@@ -1252,7 +1295,7 @@ const es: Copy = {
       ],
       [
         '¿Y los demás cantones?',
-        `Primero Ginebra. Después están previstos Zúrich, Berna, Vaud, Basilea, Friburgo, Tesino y Lucerna. [Vota por tu cantón](${ISSUE_URL.canton}).`,
+        `Primero Ginebra. Después están previstos Zúrich, Berna, Vaud, Basilea, Friburgo, Tesino, Lucerna, Argovia, San Galo y Zug. [Vota por tu cantón](${ISSUE_URL.canton}).`,
       ],
       [
         '¿Taxpresso presenta mi declaración?',
@@ -1292,6 +1335,8 @@ const es: Copy = {
     downloadNote: 'Gratis. Un solo archivo, para Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Qué necesitas',
+    guides:
+      'Qué documentos reunir, el pilar 3a, la TOU, tu liquidación: [nuestras guías](/es/guides/) explican lo esencial, con los enlaces oficiales.',
     needs: [
       [
         'Claude Desktop',
@@ -1357,7 +1402,7 @@ const es: Copy = {
 
   footer: {
     independent:
-      'Taxpresso es independiente y no está vinculado ni a la Administración fiscal cantonal de Ginebra ni a Anthropic. Claude es una marca de Anthropic.',
+      'Taxpresso es un proyecto de software independiente, gratuito y de código abierto. No está afiliado a ninguna gestoría, firma contable ni empresa de servicios fiscales, ni patrocinado por ellas, en Suiza ni en ningún otro lugar, y no está vinculado ni a la Administración fiscal cantonal de Ginebra ni a Anthropic. Claude es una marca de Anthropic.',
     noTracking: 'Este sitio no usa cookies, ni rastreadores, ni fuentes externas.',
     source: 'Código fuente',
   },
@@ -1371,7 +1416,13 @@ const pt: Copy = {
   navLabel: 'Secções',
   langLabel: 'Idioma',
   suggestLanguage: 'Sugere um idioma',
-  nav: { how: 'Como funciona', principles: 'Princípios', faq: 'Perguntas', start: 'Começa' },
+  nav: {
+    how: 'Como funciona',
+    principles: 'Princípios',
+    faq: 'Perguntas',
+    guides: 'Guias',
+    start: 'Começa',
+  },
 
   tagline: 'Os teus impostos, no tempo de um expresso.',
   lead: 'Responde a algumas perguntas. O Taxpresso trata do resto.',
@@ -1513,6 +1564,7 @@ const pt: Copy = {
 
   faq: {
     title: 'Perguntas',
+    more: 'Outra pergunta? [Lê os nossos guias](/pt/guides/), com ligações para as páginas oficiais.',
     items: [
       [
         'Preciso do Claude?',
@@ -1520,7 +1572,7 @@ const pt: Copy = {
       ],
       [
         'E os outros cantões?',
-        `Primeiro Genebra. A seguir estão previstos Zurique, Berna, Vaud, Basileia, Friburgo, Ticino e Lucerna. [Vota no teu cantão](${ISSUE_URL.canton}).`,
+        `Primeiro Genebra. A seguir estão previstos Zurique, Berna, Vaud, Basileia, Friburgo, Ticino, Lucerna, Argóvia, São Galo e Zug. [Vota no teu cantão](${ISSUE_URL.canton}).`,
       ],
       [
         'O Taxpresso envia a minha declaração?',
@@ -1560,6 +1612,8 @@ const pt: Copy = {
     downloadNote: 'Grátis. Um só ficheiro, para o Claude Desktop.',
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Do que precisas',
+    guides:
+      'Que documentos juntar, o pilar 3a, a TOU, a tua liquidação: [os nossos guias](/pt/guides/) explicam o essencial, com as ligações oficiais.',
     needs: [
       [
         'Claude Desktop',
@@ -1625,7 +1679,7 @@ const pt: Copy = {
 
   footer: {
     independent:
-      'O Taxpresso é independente e não está ligado nem à Administração Fiscal Cantonal de Genebra, nem à Anthropic. Claude é uma marca da Anthropic.',
+      'O Taxpresso é um projeto de software independente, gratuito e de código aberto. Não está afiliado a nenhuma fiduciária, gabinete de contabilidade ou empresa de serviços fiscais, nem é patrocinado por nenhuma, na Suíça ou noutro lado, e não está ligado nem à Administração Fiscal Cantonal de Genebra, nem à Anthropic. Claude é uma marca da Anthropic.',
     noTracking: 'Este site não usa cookies, nem rastreadores, nem tipos de letra externos.',
     source: 'Código-fonte',
   },
@@ -1633,10 +1687,11 @@ const pt: Copy = {
 
 export const copy: Record<Lang, Copy> = { fr, en, de, it, es, pt };
 
-/** Where each language lives on the site. French is the default: Geneva. */
+/** Where each language lives on the site, in menu order. English is the default: taxpresso.ch
+ * redirects to /en/ (vercel.json). */
 export const LANGS: { lang: Lang; path: string; label: string; name: string }[] = [
-  { lang: 'fr', path: '/', label: 'FR', name: 'Français' },
   { lang: 'en', path: '/en/', label: 'EN', name: 'English' },
+  { lang: 'fr', path: '/fr/', label: 'FR', name: 'Français' },
   { lang: 'de', path: '/de/', label: 'DE', name: 'Deutsch' },
   { lang: 'it', path: '/it/', label: 'IT', name: 'Italiano' },
   { lang: 'es', path: '/es/', label: 'ES', name: 'Español' },

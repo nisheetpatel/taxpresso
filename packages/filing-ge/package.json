@@ -11,7 +11,12 @@
   "scripts": {
     "typecheck": "tsc -p ."
   },
+  "dependencies": {
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ge": "workspace:*"
+  },
   "devDependencies": {
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   }
 }

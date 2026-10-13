@@ -54,7 +54,11 @@
     },
     {
       "name": "list_optimizations",
-      "description": "Ways to lower your tax with their CHF value. For now: pillar 3a before 31 December."
+      "description": "Ways to lower your tax with their CHF value: before 31 December (pillar 3a, a pension fund buy-in, the 3a catch-up), and TOU if you are taxed at source."
+    },
+    {
+      "name": "decide_optimization",
+      "description": "Records your own choice about TOU (taxation ordinaire ultérieure), once you have seen the comparison. It never sends anything."
     },
     {
       "name": "set_fact",
@@ -67,6 +71,18 @@
     {
       "name": "propose_extraction",
       "description": "Saves the values Claude read in a document, with their page and box, for you to confirm."
+    },
+    {
+      "name": "get_form_values",
+      "description": "The values to type into your declaration by hand, section by section in the official form's order, as in the dashboard's copy panel."
+    },
+    {
+      "name": "get_holdings",
+      "description": "Your securities list (état des titres) and other wealth: each line, whose it is, its value and income, the withholding tax you get back, and what is missing."
+    },
+    {
+      "name": "set_holding",
+      "description": "Saves what you tell Claude about your securities and accounts: the official value of a security, whose a line is, or an account or asset without a document."
     },
     {
       "name": "open_dashboard",

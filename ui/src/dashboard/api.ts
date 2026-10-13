@@ -1,6 +1,7 @@
 // Talks to the extension on 127.0.0.1 only (same origin; the page's CSP allows nothing else).
 import type { Language } from './i18n';
 import type { Question, State, Value } from './types';
+import type { PlanningField } from './types-planning';
 
 export class ApiError extends Error {}
 
@@ -49,6 +50,15 @@ export const api = {
     value: number | boolean,
     lang: Language,
   ) => post('/plan', lang, { person, field, value }),
+  // Pension fund buy-in, 3a catch-up and TOU (extension/src/planning.ts).
+  planning: (
+    person: string,
+    field: PlanningField,
+    value: number | boolean | string,
+    lang: Language,
+  ) => post('/planning', lang, { person, field, value }),
+  decide: (choice: 'request' | 'decline', confirmed: boolean, lang: Language) =>
+    post('/decide', lang, { id: 'tou', choice, confirmed }),
   setKind: (id: string, kind: string, person: string | undefined, lang: Language) =>
     post('/documents/kind', lang, { id, kind, ...(person ? { person } : {}) }),
   upload: async (
@@ -81,9 +91,17 @@ export const api = {
     post('/facts/edit', lang, { id, value }),
   setEntered: (id: string, entered: boolean, lang: Language) =>
     post('/facts/entered', lang, { id, entered }),
+  /** A copy panel row ticked as entered (SPEC.md 10.5); kept on this computer. */
+  setFormEntered: (id: string, entered: boolean, lang: Language) =>
+    post('/form/entered', lang, { id, entered }),
   confirmDocument: (id: string, lang: Language) => post('/documents/confirm', lang, { id }),
   replaceDocument: (id: string, by: string, lang: Language) =>
     post('/documents/replace', lang, { id, by }),
   resolveCheck: (id: string, note: string, lang: Language) =>
     post('/checks/resolve', lang, { id, note }),
+  // "Your securities and accounts": a security's official value, and whose a line is.
+  holdingOfficial: (id: string, value: string, from: string, lang: Language) =>
+    post('/holdings/official', lang, { id, value, from }),
+  holdingOwner: (id: string, origin: string, owner: string, lang: Language) =>
+    post('/holdings/owner', lang, { id, origin, owner }),
 };
