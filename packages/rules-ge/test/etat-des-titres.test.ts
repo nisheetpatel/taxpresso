@@ -380,6 +380,21 @@ describe('what is missing or needs a look', () => {
     });
   });
 
+  it('holds the IA back when nothing says what tax was withheld on Swiss income', () => {
+    const e = build({
+      facts: [
+        ['securities.name', 'CHTXPRS00099', 'Lungo Holding SA'],
+        ['securities.country', 'CHTXPRS00099', 'CH'],
+        ['securities.quantity', 'CHTXPRS00099', '5'],
+        ['securities.value_chf', 'CHTXPRS00099', 500_00, 'estimate'],
+        ['securities.income_gross_chf', 'CHTXPRS00099', 40_00],
+      ],
+    });
+    expect(e.issues.find((i) => i.lineId === 'CHTXPRS00099')?.code).toBe('ia_missing');
+    expect(line(e, 'CHTXPRS00099').complete).toBe(false);
+    expect(e.ia.complete).toBe(false);
+  });
+
   it('drops a security sold before the year end with no income, and items set back to zero', () => {
     const e = build({
       facts: [

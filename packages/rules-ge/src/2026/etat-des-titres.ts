@@ -537,7 +537,21 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
     } else {
       raw.notSubject = income;
       const country = str(g('securities.country'));
-      if (country === 'CH' && income > 0) {
+      if (swiss === undefined && foreign === undefined && income > 0) {
+        // Nothing says what tax was withheld on it (Swiss or foreign): the column is unknown.
+        raw.complete = false;
+        if ((country ?? 'CH') === 'CH') raw.iaUnknown = true;
+        issue(
+          'ia_missing',
+          'missing',
+          {
+            en: `${name}: Taxpresso doesn't know what tax was withheld on this income, Swiss (impôt anticipé) or foreign. Check your broker's statement.`,
+            fr: `${name} : Taxpresso ne sait pas quel impôt a été retenu sur ce rendement, suisse (impôt anticipé) ou étranger. Vérifiez le relevé de votre courtier.`,
+          },
+          id,
+          `${GUIDE} p. 39, 41`,
+        );
+      } else if (country === 'CH' && income > 0) {
         issue(
           'swiss_income_without_ia',
           'check',
