@@ -205,7 +205,7 @@
     "verified_on": "2026-10-13",
     "priority": "core",
     "why_needed": "Income tax tariffs including 2026; the only 2026 tariff found.",
-    "notes": "Dated 18.12.2025 in the document. Income tariffs only; no 2026 wealth tax tariff found."
+    "notes": "Dated 18.12.2025 in the document. Income tariffs only. The 2026 wealth tariff tables are in bs-2026-guide-wegleitung-b (pp. 48 to 49); the rates are also in StG § 50 (bs-na-law-stg)."
   },
   {
     "id": "bs-2025-communal-ansaetze-abzuege",
@@ -317,7 +317,7 @@
     "verified_on": "2026-10-13",
     "priority": "core",
     "why_needed": "2025 source-tax tariffs and NOV rules for the 2025 tax year.",
-    "notes": "Same 31 March NOV deadline. Reports a mandatory NOV above a taxable-income threshold of CHF 120,000; confirm the wording in the guide."
+    "notes": "Same 31 March NOV deadline. Mandatory ordinary assessment once gross earnings (Bruttoeinkünfte) in a calendar year exceed the threshold on p. 11, kept for the following years; corrected 2026-10-13 (the earlier note said taxable income)."
   },
   {
     "id": "bs-na-source-tax-info",
@@ -414,5 +414,53 @@
     "priority": "core",
     "why_needed": "Tax treatment of crypto for 2025: wealth, gains, mining and staking income, crypto salary.",
     "notes": "Merkblatt 18023.a.01.26, dated 7 January 2026, applies to the 2025 tax year."
+  },
+  {
+    "id": "bs-2026-guide-wegleitung-b",
+    "canton": "BS",
+    "doc_type": "guide",
+    "title": "Wegleitung zur Steuererklärung 2026 für natürliche Personen (B, Beendigung der Steuerpflicht 2026)",
+    "tax_year": 2026,
+    "language": "de",
+    "url": "https://media.bs.ch/original_file/d2ea08f7875b1987c47f5323b96446582a81f30c/15500-fw-np-ste-26-01-b-wegleitung-bf.pdf",
+    "format": "pdf",
+    "publisher": "Steuerverwaltung des Kantons Basel-Stadt",
+    "published": null,
+    "verified_on": "2026-10-13",
+    "priority": "core",
+    "why_needed": "Only 2026 guide published so far; holds the 2026 cantonal income and wealth tariffs A and B as tables.",
+    "notes": "Print code 15500.a.01.26, 52 pages, PDF created 3 December 2025. Listed on bs.ch under Steuererklärung 2026 B (Wegzug und Todesfall): for tax liability ending in 2026, filed with BalTax 2025 (Beendigung 2026). Tariffs: income A pp. 44 to 45, income B pp. 46 to 47, wealth A p. 48, wealth B p. 49, federal p. 50. Riehen and Bettingen mechanics p. 9. The full-year 2026 Wegleitung is not published yet."
+  },
+  {
+    "id": "bs-2025-law-stg",
+    "canton": "BS",
+    "doc_type": "law",
+    "title": "Gesetz über die direkten Steuern (Steuergesetz, StG), SG 640.100, Stand 1. Januar 2025",
+    "tax_year": 2025,
+    "language": "de",
+    "url": "https://www.gesetzessammlung.bs.ch/api/de/versions/6558/pdf_file",
+    "format": "pdf",
+    "publisher": "Kanton Basel-Stadt, Gesetzessammlung",
+    "published": null,
+    "verified_on": "2026-10-13",
+    "priority": "useful",
+    "why_needed": "The StG version in force for tax year 2025 (income tariff § 36 with the § 37 indexation annex, wealth tariff § 50, deductions).",
+    "notes": "Version 6558, in force 1 January 2025 to 31 December 2025 per the gesetzessammlung.bs.ch API. 102 pages. Complements bs-na-law-stg (Stand 1 January 2026)."
+  },
+  {
+    "id": "bs-na-law-stv",
+    "canton": "BS",
+    "doc_type": "law",
+    "title": "Verordnung zum Gesetz über die direkten Steuern (Steuerverordnung, StV), SG 640.110",
+    "tax_year": null,
+    "language": "de",
+    "url": "https://www.gesetzessammlung.bs.ch/api/de/versions/6658/pdf_file",
+    "format": "pdf",
+    "publisher": "Kanton Basel-Stadt, Gesetzessammlung",
+    "published": null,
+    "verified_on": "2026-10-13",
+    "priority": "useful",
+    "why_needed": "Implementing rules for deductions: employee professional costs, commuting, meals, illness costs, property costs.",
+    "notes": "Version 6658, Stand 1 September 2025, current per the gesetzessammlung.bs.ch API on 2026-10-13 (version 6435 applied 1 May 2024 to 31 August 2025). 49 pages. Professional costs §§ 19 to 29 (Fahrkosten § 22, Verpflegung § 23), illness costs § 40; § 44 (childcare) is repealed. Some caps in the text are not the indexed yearly amounts: take those from the 18000 tables (bs-2025-communal-ansaetze-abzuege, bs-2026-communal-ansaetze-abzuege)."
   }
 ]
