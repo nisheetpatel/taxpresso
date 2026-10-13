@@ -1,5 +1,6 @@
 // The /api/state shape (extension/src/api.ts, dashboardState). Kept in step by the API tests.
 import type { Language } from './i18n';
+import type { EstimateView } from './Estimate';
 import type { LastYearView } from './LastYear';
 import type { CopyPanelState } from './types-copy';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
@@ -119,6 +120,8 @@ export interface State extends DocumentsState {
   copyPanel: CopyPanelState;
   /** The securities list from broker exports, or null when there is none. */
   securities?: SecuritiesView | null;
+  /** The tax from the rules engine ("Your estimate"). */
+  estimate?: EstimateView;
   /** "Your securities and accounts": the état des titres as computed, or null when empty. */
   holdings?: HoldingsView | null;
   /** Last year's declaration: main figures to compare, or null when there is none. */

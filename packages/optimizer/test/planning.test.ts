@@ -1,5 +1,5 @@
 // Pension fund buy-in, 3a catch-up and the shared tax seam. Synthetic households only.
-import { iccBaseIncomeTax2025, iccTotalIncomeTax2025, ifdTax2026 } from '@taxpresso/rules-ge';
+import { computeReturn } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
   type HouseholdInput,
@@ -21,11 +21,30 @@ const single = (paid = 0): HouseholdInput => ({
     { person: 'p1', hasPensionFund: true, paidCentimes: CHF(paid), netCentimes: CHF(85_000) },
   ],
 });
-// Cantonal: net minus the 1,812 flat. Federal: net minus the 2,550 flat (3 %) and 1,800 insurance.
-const icc = (income: number) => iccTotalIncomeTax2025(iccBaseIncomeTax2025(CHF(income)), 4200);
-const ifd = (income: number) => ifdTax2026(CHF(income), 'single');
-const tax = (deducted: number) =>
-  icc(85_000 - 1_812 - deducted) + ifd(85_000 - 2_550 - 1_800 - deducted);
+/**
+ * The same household straight through the rules engine: its income tax (cantonal and communal on
+ * income, and federal) with 3a on 31.40, a pension fund buy-in on 31.30 and a 3a catch-up.
+ */
+const tax = (pillar3a: number, buyIn = 0, catchUp = 0) => {
+  const r = computeReturn({
+    taxYear: 2026,
+    commune: 'meyrin',
+    civilStatus: 'single',
+    people: [
+      {
+        id: 'p1',
+        hasPensionFund: true,
+        employments: [{ gross: { value: CHF(85_000) } }],
+        ...(pillar3a ? { pillar3a: { value: CHF(pillar3a) } } : {}),
+        ...(buyIn ? { pensionBuyIn: { value: CHF(buyIn) } } : {}),
+        ...(catchUp ? { pillar3aCatchUp: { value: CHF(catchUp) } } : {}),
+      },
+    ],
+  });
+  return (
+    r.icc!.taxes.incomeCantonal.amount + r.icc!.taxes.communalIncomeTotal.amount + r.ifd!.tax.amount
+  );
+};
 
 describe('the tax seam (taxWith)', () => {
   it('is the engine run with the deductions, whatever their kind', () => {
@@ -36,7 +55,7 @@ describe('the tax seam (taxWith)', () => {
         { person: 'p1', kind: 'pillar3a', centimes: CHF(7_258) },
         { person: 'p1', kind: 'lpp_buyin', centimes: CHF(10_000) },
       ]).totalCentimes,
-    ).toBe(tax(17_258));
+    ).toBe(tax(7_258, 10_000));
     const s = savingOf(e.taxWith, [], [{ person: 'p1', kind: 'lpp_buyin', centimes: CHF(1_000) }]);
     expect(s.totalCentimes).toBe(s.cantonalCentimes + s.federalCentimes);
   });
@@ -51,7 +70,7 @@ describe('the tax seam (taxWith)', () => {
     ).toBeUndefined();
   });
 
-  it('leaves the 3a plan exactly as before', () => {
+  it('gives the 3a plan its saving from the engine', () => {
     const plan = pillar3aPlan(single());
     expect(plan.saving?.totalCentimes).toBe(tax(0) - tax(7_258));
   });
@@ -62,7 +81,7 @@ describe('pension fund buy-in (rachat LPP)', () => {
     const plan = lppBuyInPlan(single(2_000), [
       { person: 'p1', capacityCentimes: CHF(31_000), amountCentimes: CHF(5_000) },
     ]);
-    expect(plan.saving?.totalCentimes).toBe(tax(2_000) - tax(7_000));
+    expect(plan.saving?.totalCentimes).toBe(tax(2_000) - tax(2_000, 5_000));
     expect(plan.saving!.totalCentimes).toBeLessThan(CHF(5_000));
     expect(plan.capacityUnknown).toBe(false);
     expect(plan.facts.threeYearRule).toMatch(/ch-na-law-lpp p. 66 \(art. 79b al. 3\)/);
@@ -81,7 +100,7 @@ describe('pension fund buy-in (rachat LPP)', () => {
   it('computes without the capacity but says the certificate is missing', () => {
     const plan = lppBuyInPlan(single(), [{ person: 'p1', amountCentimes: CHF(5_000) }]);
     expect(plan.capacityUnknown).toBe(true);
-    expect(plan.saving?.totalCentimes).toBe(tax(0) - tax(5_000));
+    expect(plan.saving?.totalCentimes).toBe(tax(0) - tax(0, 5_000));
   });
 
   it('needs a salary and an amount', () => {
@@ -140,7 +159,7 @@ describe('3a catch-up (rachat 3a)', () => {
       catchUpCentimes: CHF(4_258),
     });
     // On top of the full 2026 payment (7,258), the catch-up of 4,258.
-    expect(p.saving?.totalCentimes).toBe(tax(7_258) - tax(11_516));
+    expect(p.saving?.totalCentimes).toBe(tax(7_258) - tax(7_258, 0, 4_258));
     expect(p.assumptions).toContain('pension_fund_2025_same');
     expect(p.sources[0]).toMatch(/ch-na-law-opp3 p. 7 \(art. 7a al. 2\)/);
   });

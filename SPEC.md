@@ -231,7 +231,7 @@ Fill values only from official sources in the sources library (section 7b): Gene
 
 Coverage v1: employment income and its deductions, pensions, investment income, wealth and wealth deductions, family/child deductions (note the 2024 Geneva family-charges reform as an example of annual change), insurance premiums, medical costs threshold, childcare, professional expenses (flat vs actual), 3a, LPP buy-ins, donations, debt interest, alimony, joint taxation/splitting, communal multipliers, IFD with its own deductions.
 
-Build order: implement tax year 2025 first (guide fiscal 2025 and GeTax 2025 exist today), then add 2026 when the 2026 guide is published (expected January 2027). Keep every year. Federal amounts differ every year (the 2027 cold-progression circular is already out): never carry a federal amount from one year to the next.
+Build order: implement tax year 2025 first (guide fiscal 2025 and GeTax 2025 exist today), then add 2026 when the 2026 guide is published (expected January 2027). Keep every year. Federal amounts differ every year (the 2027 cold-progression circular is already out): never carry a federal amount from one year to the next. Until then the engine computes 2026 with the official 2026 federal values and communal rates, and with Geneva's 2025 scales and amounts, each of those flagged as an estimate everywhere it shows (section 9); the 2026 guide replaces them and clears the flags.
 
 ---
 

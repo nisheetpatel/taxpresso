@@ -18,12 +18,16 @@ import { pillar3aPlan, type HouseholdInput, type Pillar3aResult } from '@taxpres
 import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import {
   assessmentViews,
+  computeReturn,
   consistencyChecks,
   documentFields,
+  engineInputFromFacts,
   normalizeTariff,
   type AssessmentView,
   type CommuneSlug,
   type ConsistencyCheck,
+  type TaxResult,
+  type Text,
 } from '@taxpresso/rules-ge';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import { displayPath, type Config } from './config.js';
@@ -239,6 +243,19 @@ export class Workspace {
     return assessmentViews(this.activeDocuments(), facts);
   }
 
+  /**
+   * The tax from the rules engine (SPEC.md section 7), from the values that count, on every read;
+   * never stored. Null result when an answer the engine needs is missing (`missing` says which).
+   */
+  taxEstimate(): { result: TaxResult | null; missing: Text[]; notes: Text[] } {
+    const { input, missing, notes } = engineInputFromFacts(
+      this.engine.taxYear,
+      this.countedFacts(),
+      this.activeDocuments(),
+    );
+    return { result: input ? computeReturn(input) : null, missing, notes };
+  }
+
   /** Documents Claude hasn't read yet and that can give values or still need a kind. */
   toRead(): VaultDocument[] {
     return this.activeDocuments().filter(
@@ -390,7 +407,25 @@ export class Workspace {
     };
     const custody = answer('profile.children_custody');
     const commune = answer('profile.commune');
+    // What the ledger knows besides salaries and the plans' own deductions, so the plans run on
+    // the real tax (premiums, childcare, donations, the état des titres).
+    const known = engineInputFromFacts(
+      this.engine.taxYear,
+      this.countedFacts(),
+      this.activeDocuments(),
+    ).input;
     return {
+      ...(this.engine.taxYear === 2025 || this.engine.taxYear === 2026
+        ? { taxYear: this.engine.taxYear }
+        : {}),
+      ...(known
+        ? {
+            known: {
+              ...(known.household ? { household: known.household } : {}),
+              ...(known.wealthItems ? { wealthItems: known.wealthItems } : {}),
+            },
+          }
+        : {}),
       couple: snap.people.length > 1,
       children: Number(answer('profile.children_count') ?? 0),
       ...(custody ? { custody: custody as HouseholdInput['custody'] & string } : {}),

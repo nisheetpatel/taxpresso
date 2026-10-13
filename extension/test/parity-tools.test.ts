@@ -118,8 +118,9 @@ describe('mark_entered', () => {
     const early = await call('mark_entered', { section: 'a1' });
     expect(early.isError).toBeFalsy();
     expect(structured<Ticked>(early)).toMatchObject({ changed: 0, progress: { entered: 0 } });
-    expect(structured<Ticked>(early).skipped).toHaveLength(4);
-    expect(text(early)).toMatch(/Skipped 4: A1 11\.10-1 Salaires bruts \(Needs your OK/);
+    // Four values to type, and the engine's two flat deductions, which the form works out.
+    expect(structured<Ticked>(early).skipped).toHaveLength(6);
+    expect(text(early)).toMatch(/Skipped 6: A1 11\.10-1 Salaires bruts \(Needs your OK/);
     expect(text(early)).toMatch(/A1: 0 of 4 entered/);
 
     await ws.confirmDocument(docId, 'chat');
@@ -128,7 +129,10 @@ describe('mark_entered', () => {
       entered: true,
       changed: 4,
       already: 0,
-      skipped: [],
+      skipped: [
+        { item: 'A1 31.20 Déduction forfaitaire pour frais professionnels IFD' },
+        { item: 'A1 31.50 Déduction forfaitaire pour frais professionnels ICC' },
+      ],
       progress: { scope: 'A1', entered: 4, total: 4 },
     });
     expect(text(ticked)).toMatch(/^Ticked 4 values as entered\./);

@@ -7,6 +7,7 @@ import { copyPanelView, setRowEntered } from './copy-panel.js';
 import type { ApiRequest, ApiResponse } from './dashboard.js';
 import { documentCards, documentChecks, assessmentCards } from './document-views.js';
 import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
+import { estimateView } from './estimate.js';
 import { ExtractionError } from './extraction.js';
 import { documentPerson, holdingsView, saveHolding } from './holdings.js';
 import { KIND_LABELS } from './kinds.js';
@@ -175,6 +176,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     planning: planningView(ws),
     notSupported: ws.engine.notSupported(snap).map((n) => n.what[lang]),
     securities: ws.securities(lang) ?? null,
+    // The tax from the rules engine (./estimate.ts).
+    estimate: estimateView(ws, lang),
     holdings: holdingsView(ws, lang) ?? null,
     // Last year's declaration: main figures to compare, never filed (SPEC.md 5.4).
     lastYear: ws.lastYear(lang) ?? null,

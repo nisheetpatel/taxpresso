@@ -164,7 +164,7 @@ export function buildStatus(
       'Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.';
   } else {
     nextStep =
-      'Everything is collected for now. The tax calculation comes in a later version of Taxpresso: say so, and offer the dashboard.';
+      'Everything is collected for now. Call compute_tax and give the user the tax it computes, with what is an estimate; then offer the dashboard.';
   }
 
   const status: Status = {
@@ -236,7 +236,7 @@ export function statusText(s: Status): string {
   lines.push(
     `Folder: ${s.vault.path}${s.vault.exists ? '' : ' (created with the first answer or document)'}`,
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,
-    'Savings to look at now: list_optimizations (before 31 December: pillar 3a, pension fund buy-in, 3a catch-up; TOU for people taxed at source).',
+    'The tax so far: compute_tax. Savings to look at now: list_optimizations (before 31 December: pillar 3a, pension fund buy-in, 3a catch-up; TOU for people taxed at source).',
     `Next step: ${s.nextStep}`,
   );
   if (s.runtime) {

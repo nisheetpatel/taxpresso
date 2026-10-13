@@ -61,3 +61,10 @@ Checked 2026-10-13. Amounts and rates are left out on purpose: read them from th
 - Federal electronic procedures law status, and the AGOV login page: not found
 - TOU and NOV source-tax terms: not defined on any page opened, so not described
 - Listed but not opened: 2026 source-tax pension tariffs and 2026 professional expense annexes 9/14 and 10 (https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct)
+
+## Conflicts and open points found while building the tax engine (2026-10-14)
+- Single scale 2026, step at CHF 76,200: the consolidated LIFD (ch-na-law-lifd art. 36 al. 1, p. 29) gives a tax 5 centimes higher than the ESTV circular (ch-2026-ifd-progression-deductions p. 4) and Form. 58c 2026, whose rows all follow the circular's figure. The engine follows Form. 58c (every row is pinned by a test). Ask the ESTV which is right.
+- Pillar 3a 2025: the engine takes the 2025 limits from the Geneva 2025 guide (ge-2025-guide-declaration-pp p. 11 and 18), not from the BSV table.
+- Health insurance subsidies and the IFD: LIFD art. 24 let. d exempts subsidies; the Geneva guide (p. 27) declares them as income at code 16.30 without saying how the IFD column treats them. The engine leaves them out of IFD income and deducts only the premiums left to pay (LIFD art. 33 al. 1 let. g), and flags the rule as not confirmed.
+- Married couple deduction (art. 35 al. 1 let. c): a social deduction in the LIFD, so after the medical costs (art. 33 al. 1 let. h) and donations (art. 33a) thresholds; the Geneva form takes it among the other deductions (59.20, ge-2025-guide-declaration-pp p. 13 and 31), before them. The engine follows the Geneva form and flags it.
+- Shared custody: which parent gets the parental scale and the 263 reduction is not settled by the documents in the library (the ESTV circular on family taxation is missing). The engine does not compute the IFD of a single parent with shared custody unless told.

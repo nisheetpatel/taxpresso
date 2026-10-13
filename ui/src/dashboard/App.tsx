@@ -8,6 +8,7 @@ import { Assessment } from './Assessment';
 import { Checks } from './Checks';
 import { CopyPanel } from './CopyPanel';
 import { DocumentCards } from './DocumentCards';
+import { Estimate } from './Estimate';
 import { isMessageKey, t, type Language } from './i18n';
 import { Holdings } from './Holdings';
 import { tp } from './i18n-planning';
@@ -171,6 +172,7 @@ export function App(): JSX.Element {
                 </div>
               )}
             </section>
+            <Estimate view={state.estimate} lang={L} />
             <Assessment state={state} lang={L} />
             <Documents state={state} lang={L} busy={busy} act={act} />
             <Holdings state={state} lang={L} act={act} />

@@ -1,21 +1,16 @@
 // The one question every plan asks: "how much income tax would this household pay with these
 // extra deductions?" (SPEC.md section 8: run the engine with and without). Every saving and the TOU
-// comparison go through `taxWith`, so pointing them at the full engine (computeReturn, items by
-// rubric code) means replacing `ordinaryTaxEstimator` alone: each deduction already says whose it
-// is and what it is (3a, 3a catch-up, pension fund buy-in), which is what a rubric code needs.
-//
-// Until then: Geneva's 2025 income scale (2026 is published in January 2027), the federal 2026
-// scale, and only the flat deductions. All money in integer centimes.
+// comparison go through `taxWith`, which runs the rules engine (computeReturn, @taxpresso/rules-ge)
+// with each deduction under its rubric code: 3a and the 3a catch-up on 31.40/41.40, a pension fund
+// buy-in on 31.30/41.30. The tax is the income tax: cantonal (base, centimes, 12 % reduction, home
+// care) plus communal plus federal; the wealth tax and the taxe personnelle don't change with a
+// deduction and are not part of what the source tax replaces. All money in integer centimes.
 import {
-  COMMUNE_CENTIMES_2026,
+  computeReturn,
   type CommuneSlug,
-  ICC_2025_PROFESSIONAL_FLAT,
-  iccBaseIncomeTax2025,
-  iccTotalIncomeTax2025,
-  type IccSplitting,
-  IFD_2026_DEDUCTIONS,
-  IFD_PROFESSIONAL_FLAT_RATE_BP,
-  ifdTax2026,
+  type EngineInput,
+  type PersonInput as EnginePerson,
+  type TaxResult,
 } from '@taxpresso/rules-ge';
 
 /**
@@ -40,6 +35,13 @@ export interface HouseholdInput {
   custody?: 'with_household' | 'shared' | 'elsewhere';
   commune?: CommuneSlug;
   people: PersonInput[];
+  /** The tax year the plans are for. Default 2026. */
+  taxYear?: 2025 | 2026;
+  /**
+   * What the ledger already knows besides the salaries and the plans' own deductions (health
+   * premiums, childcare, donations, the état des titres...), so the plans run on the real tax.
+   */
+  known?: Pick<EngineInput, 'household' | 'wealthItems'>;
 }
 
 export type Assumption =
@@ -74,18 +76,16 @@ export interface Estimator {
   sources: string[];
 }
 
+/** The documents the engine's income tax rests on (each line of it cites its own page). */
 export const ESTIMATE_SOURCES = [
   'ge-2025-icc-tariff-pdf p. 2, p. 4',
-  ICC_2025_PROFESSIONAL_FLAT.source,
-  COMMUNE_CENTIMES_2026.source,
-  IFD_2026_DEDUCTIONS.source,
-  'ch-2026-ifd-progression-deductions p. 4',
+  'ge-2025-guide-declaration-pp p. 11',
+  'ge-2026-communal-centimes-arca',
+  'ge-2026-part-privilegiee-communique p. 11',
+  'ch-2026-ifd-progression-deductions p. 2, p. 4',
 ];
 
-const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 export const pct = (centimes: number, bp: number) => Math.round((centimes * bp) / 10_000);
-/** Taxable income is counted in whole francs. */
-const roundFranc = (centimes: number) => Math.floor(centimes / 100) * 100;
 
 /** The salary a person's tax starts from: the net, or a share of the gross. */
 export function netOf(p: PersonInput): number | undefined {
@@ -94,79 +94,96 @@ export function netOf(p: PersonInput): number | undefined {
   return undefined;
 }
 
-/** Cantonal + communal + federal income tax on the salaries, minus `deducted`. */
-function taxes(h: HouseholdInput, nets: number[], deducted: number, communeCentimes: number) {
-  // Cantonal (ICC): net salaries minus the 3 % professional flat (640 to 1,812) minus deductions.
-  const flatIcc = ICC_2025_PROFESSIONAL_FLAT.value;
-  const iccIncome = Math.max(
-    0,
-    nets.reduce((sum, n) => sum + n - clamp(pct(n, flatIcc.rateBp), flatIcc.min, flatIcc.max), 0) -
-      deducted,
-  );
-  // Splitting: couples and parents living with their children; half for shared custody.
-  const splitting: IccSplitting = h.couple
-    ? 'full'
-    : h.children > 0 && h.custody !== 'elsewhere'
-      ? h.custody === 'shared'
-        ? 'partial'
-        : 'full'
-      : 'none';
-  const cantonal = iccTotalIncomeTax2025(
-    iccBaseIncomeTax2025(roundFranc(iccIncome), splitting),
-    communeCentimes,
-  );
+/** The engine's input for the household, before the plans' deductions. */
+function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInput {
+  const kids = h.custody === 'elsewhere' ? 0 : h.children;
+  return {
+    taxYear: h.taxYear ?? 2026,
+    commune: h.commune ?? 'geneve',
+    civilStatus: h.couple ? 'married' : 'single',
+    // The salary after social and pension fund contributions, as the plans know it: the engine's
+    // flat professional deductions then start from it, as they do from 11.00 less 31.10 and 31.12.
+    people: h.people.map((p, i): EnginePerson => {
+      const net = nets[i];
+      return {
+        id: p.person,
+        hasPensionFund: p.hasPensionFund,
+        ...(net !== undefined
+          ? { employments: [{ gross: { value: net, status: 'estimate' } }] }
+          : {}),
+      };
+    }),
+    children: Array.from({ length: kids }, () => ({
+      custody: h.custody === 'shared' ? ('shared' as const) : ('full' as const),
+    })),
+    // With shared custody the plans take the parental federal scale, as before the engine.
+    ...(h.custody === 'shared' && !h.couple ? { ifdParentalScale: true } : {}),
+    ...(h.known?.household ? { household: h.known.household } : {}),
+    ...(h.known?.wealthItems ? { wealthItems: h.known.wealthItems } : {}),
+  };
+}
 
-  // Federal (IFD): professional flat (3 %, 2,000 to 4,000), insurance flat, married and child
-  // deductions, minus deductions; the married scale also for single parents.
-  const d = IFD_2026_DEDUCTIONS.value;
-  const ifdIncome =
-    nets.reduce(
-      (sum, n) =>
-        sum +
-        n -
-        clamp(pct(n, IFD_PROFESSIONAL_FLAT_RATE_BP.value), d.professionalMin, d.professionalMax),
-      0,
-    ) -
-    (h.couple ? d.insuranceMarried : d.insuranceOther) -
-    h.children * d.insurancePerChild -
-    (h.couple ? d.married : 0) -
-    h.children * d.child -
-    deducted;
-  const familyScale = h.couple || (h.children > 0 && h.custody !== 'elsewhere');
-  const federal = ifdTax2026(
-    Math.max(0, ifdIncome),
-    familyScale ? 'married' : 'single',
-    familyScale ? h.children : 0,
-  );
-  return { cantonal, federal };
+/** The input with the plans' deductions added, each under its rubric. */
+function withDeductions(base: EngineInput, deductions: readonly Deduction[]): EngineInput {
+  const add = (
+    p: EnginePerson,
+    field: 'pillar3a' | 'pillar3aCatchUp' | 'pensionBuyIn',
+    v: number,
+  ) => {
+    const had = p[field]?.value ?? 0;
+    return { ...p, [field]: { value: had + v, status: 'estimate' } };
+  };
+  const field = {
+    pillar3a: 'pillar3a',
+    pillar3a_catchup: 'pillar3aCatchUp',
+    lpp_buyin: 'pensionBuyIn',
+  } as const;
+  return {
+    ...base,
+    people: base.people.map((p) =>
+      deductions
+        .filter((d) => d.person === p.id && d.centimes > 0)
+        .reduce((q, d) => add(q, field[d.kind], d.centimes), p),
+    ),
+  };
+}
+
+/** The income tax of a result: cantonal and communal on income, and federal. */
+function incomeTax(r: TaxResult): TaxEstimate | undefined {
+  if (!r.icc || !r.ifd) return undefined;
+  const cantonal = r.icc.taxes.incomeCantonal.amount + r.icc.taxes.communalIncomeTotal.amount;
+  const federal = r.ifd.tax.amount;
+  return {
+    cantonalCentimes: cantonal,
+    federalCentimes: federal,
+    totalCentimes: cantonal + federal,
+  };
 }
 
 /**
- * The household's income tax as a function of extra deductions, or undefined when no salary is
- * known (nothing to compute from: no figure is guessed).
+ * The household's income tax as a function of extra deductions, from the rules engine, or
+ * undefined when no salary is known or the engine computes no tax for the household (nothing is
+ * guessed).
  */
 export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   const nets = h.people.map(netOf);
   if (nets.every((n) => n === undefined)) return undefined;
-  const assumptions: Assumption[] = ['icc_2025_scale', 'flat_deductions_only', 'home_commune_rate'];
+  const base = engineInput(h, nets);
+  const first = incomeTax(computeReturn(base));
+  if (!first) return undefined;
+  const assumptions: Assumption[] = ['home_commune_rate'];
+  if ((h.taxYear ?? 2026) === 2026) assumptions.unshift('icc_2025_scale');
+  if (!Object.keys(h.known?.household ?? {}).length) assumptions.push('flat_deductions_only');
   if (h.people.some((p) => p.netCentimes === undefined && p.grossCentimes !== undefined))
     assumptions.push('net_from_gross');
   if (nets.some((n) => n === undefined)) assumptions.push('no_income_for_some');
   if (!h.commune) assumptions.push('commune_default');
-  const communeCentimes = COMMUNE_CENTIMES_2026.value[h.commune ?? 'geneve'];
-  const known = nets.map((n) => n ?? 0);
   return {
     assumptions,
     sources: ESTIMATE_SOURCES,
-    taxWith: (deductions) => {
-      const deducted = deductions.reduce((sum, d) => sum + Math.max(0, d.centimes), 0);
-      const { cantonal, federal } = taxes(h, known, deducted, communeCentimes);
-      return {
-        cantonalCentimes: cantonal,
-        federalCentimes: federal,
-        totalCentimes: cantonal + federal,
-      };
-    },
+    // A combination the engine can't compute (it never happens with deductions alone) keeps the
+    // tax without them: no saving is shown rather than a guess.
+    taxWith: (deductions) => incomeTax(computeReturn(withDeductions(base, deductions))) ?? first,
   };
 }
 
