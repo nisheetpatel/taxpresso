@@ -20,6 +20,7 @@ export type {
   PriorDeclaration,
   PriorFormPage,
   PriorItem,
+  PriorParts,
   PriorPerson,
   PriorTaxpayer,
   PriorWarning,

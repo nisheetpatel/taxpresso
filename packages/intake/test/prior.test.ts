@@ -146,6 +146,8 @@ describe('last year’s declaration, read from its PDF', () => {
       icc: 1_525_00,
       ifd: 0,
       table: [1_200_00, 300_00, 500_00, 2_000_00, 1_525_00, 0],
+      // What was typed per person, by the row's heading: compared with the copy panel's parts.
+      parts: { A: 1_200_00, B: 300_00, children: 500_00, total: 2_000_00 },
     });
     // Annex pages whose columns are not ICC and IFD keep their amounts as they are.
     expect(line(d, 'C4', '59.10')).toMatchObject({ amounts: [6_000_00] });

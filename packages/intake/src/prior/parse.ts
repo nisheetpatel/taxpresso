@@ -17,6 +17,7 @@ import type {
   PageInput,
   PriorDeclaration,
   PriorItem,
+  PriorParts,
   PriorPerson,
   PriorWarning,
 } from './types.js';
@@ -37,6 +38,13 @@ const MARK = /^(?:(?:oui|non|x|[☐-☒■□✓✔])\s*)+$/i;
 const QUOTED_CODE = /^\d{2}\.\d{2}$/;
 /** The rows of a small table under a code (71.00 medical costs: A, B, children, total). */
 const TABLE_ROW = /^(contribuable|enfants?|total|icc|ifd|conjoint)\b/;
+/** Which person a table row is for, from its heading ("Contribuable A", "Contr. B", "Enfant(s)"). */
+const PART_ROW: [RegExp, keyof PriorParts][] = [
+  [/^(contribuable|contr\.?)\s*a\b/, 'A'],
+  [/^(contribuable|contr\.?)\s*b\b/, 'B'],
+  [/^enfants?\b|^enfant\(s\)/, 'children'],
+  [/^total\s*$/, 'total'],
+];
 /** Commune codes (code lieu): Geneva communes, cantons, countries (guide p. 59). */
 const isPlaceCode = (n: number) =>
   (n >= 6601 && n <= 6645) || (n >= 9001 && n <= 9026) || (n >= 8100 && n <= 8999);
@@ -96,6 +104,8 @@ interface Segment {
   amounts: Amount[];
   /** Amounts on the lines under it (a small table): kept, and used for an empty column. */
   tail: Amount[];
+  /** The table's rows headed by a person or "Total": the first amount of each. */
+  parts: PriorParts;
 }
 
 interface Columns {
@@ -156,6 +166,7 @@ const emptySegment = (page: number, code = ''): Segment => ({
   places: [],
   amounts: [],
   tail: [],
+  parts: {},
 });
 
 /** Sorts one cell of a rubric line: suffix, tick box, annex, certificate box, commune, amount. */
@@ -440,7 +451,8 @@ export function parsePriorDeclaration(
         if (last.amounts.length) last = undefined;
         continue;
       }
-      const row = TABLE_ROW.test(fold(line.cells[0]?.text ?? '').trim());
+      const heading = fold(line.cells[0]?.text ?? '').trim();
+      const row = TABLE_ROW.test(heading);
       if (!row && !last.amounts.length && amountCandidates({ ...rest, amounts }).length <= 2) {
         last.amounts.push(...amounts);
         last.places.push(...rest.places);
@@ -448,6 +460,9 @@ export function parsePriorDeclaration(
         if (rest.box) last.box ??= rest.box;
       } else {
         last.tail.push(...amounts);
+        // "Contribuable A  1'200": what was typed for one person under a household rubric.
+        const part = PART_ROW.find(([re]) => re.test(heading))?.[1];
+        if (part && last.parts[part] === undefined) last.parts[part] = amounts[0]!.value;
       }
     }
     if (icc?.x !== undefined && ifd?.x !== undefined && ifd.x < icc.x) swapped = true;
@@ -552,6 +567,7 @@ export function parsePriorDeclaration(
       }
       if (seg.places.length) item.commune = seg.places[0]!.code;
       if (seg.tail.length) item.table = seg.tail.map((a) => a.value);
+      if (Object.keys(seg.parts).length) item.parts = { ...seg.parts };
       const slot = `${item.form}|${item.code}|${item.suffix ?? ''}|${item.person}`;
       item.occurrence = (seen.get(slot) ?? 0) + 1;
       seen.set(slot, item.occurrence);

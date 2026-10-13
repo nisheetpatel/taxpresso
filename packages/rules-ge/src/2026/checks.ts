@@ -297,6 +297,8 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
   documents.forEach((a, i) => {
     for (const b of documents.slice(i + 1)) {
       if (!a.kind || a.kind === 'other' || a.kind !== b.kind) continue;
+      // This year's declaration downloaded again after a fix: the latest one is checked, by design.
+      if (a.kind === 'official_declaration') continue;
       if (a.person !== b.person || !sameIssuer(a.issuer, b.issuer) || !samePeriod(a, b)) continue;
       if (differentSubject(a, b)) continue;
       checks.push({

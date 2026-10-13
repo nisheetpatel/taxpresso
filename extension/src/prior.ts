@@ -24,6 +24,7 @@ import {
   type PriorSection,
 } from '@taxpresso/rules-ge';
 import { profileSuggestions } from './prior-profile.js';
+import { markOfficialDeclaration } from './official.js';
 
 /** `parse.method` of a declaration Taxpresso read itself. */
 export const PRIOR_METHOD = 'prior_declaration';
@@ -44,8 +45,10 @@ export interface PriorRead {
 }
 
 /**
- * Reads new PDFs and marks the ones that are a previous year's declaration. `force`: also the
- * documents the user said are one. Returns the declarations read; writes nothing to the ledger.
+ * Reads new PDFs and marks the ones that are a previous year's declaration, and the one that is
+ * this year's own (official_declaration, checked before the user transmits it: ./reconcile.ts).
+ * `force`: also the documents the user said are last year's. Returns the declarations read;
+ * writes nothing to the ledger.
  */
 export async function recognisePriorDeclarations(
   vault: Vault,
@@ -78,6 +81,9 @@ export async function recognisePriorDeclarations(
           ok: false,
           warnings: [NOT_LAST_YEAR(decl.taxYear)],
         };
+      } else if (decl.taxYear === taxYear) {
+        markOfficialDeclaration(doc, decl);
+        found.push({ doc, decl });
       }
       continue;
     }

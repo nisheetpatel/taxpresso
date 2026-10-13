@@ -107,9 +107,10 @@ export function documentCards(ws: Workspace, lang: Lang) {
   const people = ws.engine.file.people;
   const couple = ws.snapshot().people.length > 1;
   // Last year's declaration has its own card ("Last year"); its answers wait in the questions.
+  // This year's declaration PDF is checked, never read for values ("Check before you transmit").
   return ws
     .activeDocuments()
-    .filter((doc) => doc.kind !== 'prior_declaration')
+    .filter((doc) => doc.kind !== 'prior_declaration' && doc.kind !== 'official_declaration')
     .map((doc) => {
       const order: readonly string[] = documentFields(doc.kind);
       const rank = (key: string) => (order.includes(key) ? order.indexOf(key) : order.length);

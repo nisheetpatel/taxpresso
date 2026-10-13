@@ -354,8 +354,8 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 | `get_form_values` | The copy panel (10.5) for manual entry: sections with progress, or one section's values in form order | yes |
 | `get_fill_plan` | Steps for a section | yes |
 | `report_section_state` / `report_fill_progress` | What Claude saw / set in the form | no |
-| `reconcile_official_pdf` | Diff the official PDF vs ledger/engine | no |
-| `export_bundle` | Zip the tax year folder | no |
+| `reconcile_official_pdf` | Diff the official PDF vs the values to type (copy panel: ledger and engine), rubric by rubric, in whole francs; stores nothing | yes |
+| `export_bundle` | Zip the tax year folder into the Taxpresso folder, on this computer; never overwrites | no |
 
 Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions.
 

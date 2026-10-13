@@ -18,6 +18,8 @@ import { registerParityTools } from './parity-tools.js';
 import { decide, DecisionInput, planningReady, planningText, planningView } from './planning.js';
 import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
+import { registerDeclarationCheckTool } from './reconcile-tool.js';
+import { registerExportTool } from './export-tool.js';
 import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
@@ -404,6 +406,8 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           return `${d.filename} (read as a broker export: ${d.issuer})`;
         if (d.kind === 'prior_declaration')
           return `${d.filename} (read as last year's declaration${d.taxYear ? `, ${d.taxYear}` : ''})`;
+        if (d.kind === 'official_declaration')
+          return `${d.filename} (this year's declaration: reconcile_official_pdf compares it with the values to type)`;
         if (isBarcodeDocument(d) && d.kind) {
           const what = [KIND_LABELS[d.kind].en, d.taxYear, d.issuer].filter(Boolean).join(', ');
           return `${d.filename} (${what}: ${barcodeNote(d, fromBarcode(counted, d.id).length)})`;
@@ -895,6 +899,12 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   // What the dashboard's buttons do, from the chat: mark_entered, skip_question,
   // waive_requirement, replace_document (./parity-tools.ts).
   registerParityTools(server, ws);
+
+  // reconcile_official_pdf: this year's declaration PDF against the values to type (./reconcile.ts).
+  registerDeclarationCheckTool(server, ws);
+
+  // export_bundle: one ZIP of the tax-year folder, on this computer (./export.ts).
+  registerExportTool(server, ws);
 
   server.registerResource(
     'dashboard-card',

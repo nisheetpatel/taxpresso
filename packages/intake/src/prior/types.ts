@@ -53,6 +53,19 @@ export interface PriorItem {
   occurrence: number;
   /** Amounts on the lines under it that have no code of their own (a small table), in centimes. */
   table?: number[];
+  /**
+   * The rows of that table headed "Contribuable A", "Contribuable B", "Enfant(s)" and "Total":
+   * what was typed per person under a household rubric (71.00 medical costs), in centimes.
+   */
+  parts?: PriorParts;
+}
+
+/** Amounts printed per person under a household rubric, and their total, in centimes. */
+export interface PriorParts {
+  A?: number;
+  B?: number;
+  children?: number;
+  total?: number;
 }
 
 export type CivilStatus =

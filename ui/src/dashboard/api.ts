@@ -99,6 +99,8 @@ export const api = {
     post('/documents/replace', lang, { id, by }),
   resolveCheck: (id: string, note: string, lang: Language) =>
     post('/checks/resolve', lang, { id, note }),
+  /** One ZIP of the tax-year folder, saved in the Taxpresso folder on this computer. */
+  exportFolder: (lang: Language) => post('/export', lang, {}),
   // "Your securities and accounts": a security's official value, and whose a line is.
   holdingOfficial: (id: string, value: string, from: string, lang: Language) =>
     post('/holdings/official', lang, { id, value, from }),

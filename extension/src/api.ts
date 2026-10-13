@@ -20,6 +20,8 @@ import {
   planningView,
 } from './planning.js';
 import type { Slot } from '@taxpresso/questionnaire';
+import { exportFolder, exportView } from './export.js';
+import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
 const Answer = z.object({
@@ -144,6 +146,10 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     assessments: assessmentCards(ws, lang),
     // The values to type into the official declaration, in the form's order (SPEC.md 10.5).
     copyPanel: copyPanelView(ws, lang),
+    // "Check before you transmit": this year's declaration PDF against them (SPEC.md 10.4).
+    declarationCheck: declarationCheckView(ws, lang),
+    // "A copy of your folder": the ZIP made last, if any (./export.ts).
+    folderExport: exportView(ws),
     toConfirm: ws.toConfirm().length,
     requirements: ws.requirements().map((r) => ({
       id: r.id,
@@ -223,6 +229,7 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
     try {
       await ws.ready();
       await planningReady(ws);
+      await declarationCheckReady(ws); // reads this year's declaration PDF once, never throws
       if (req.method === 'GET') {
         if (req.path === '/state') return state();
         if (req.path === '/question') {
@@ -335,6 +342,9 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
           }
           return state();
         }
+        case '/export':
+          await exportFolder(ws);
+          return state();
         case '/checks/resolve': {
           const { id, note } = parse(Resolve, req.body);
           await ws.resolveCheck(id, note, 'dashboard');
