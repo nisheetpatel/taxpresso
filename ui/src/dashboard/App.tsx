@@ -693,7 +693,7 @@ function Documents({
         <div class="drop-text">
           <strong>{t(lang, 'dropTitle')}</strong>
           <span class="muted">{t(lang, 'dropText')}</span>
-          <span class="tnum small-text muted">{state.vault.path}</span>
+          <span class="drop-path tnum small-text muted">{state.vault.path}</span>
           {busy && busy !== 'busy' ? (
             <span class="small-text" role="status">
               {busy}
