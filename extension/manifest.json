@@ -65,6 +65,10 @@
       "description": "Saves the values Claude read in a document, with their page and box, for you to confirm."
     },
     {
+      "name": "get_form_values",
+      "description": "The values to type into your declaration by hand, section by section in the official form's order, as in the dashboard's copy panel."
+    },
+    {
       "name": "open_dashboard",
       "description": "Opens your Taxpresso dashboard, which runs on this computer only."
     }

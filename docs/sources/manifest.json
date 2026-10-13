@@ -131,6 +131,22 @@
       "notes": "Pre-filled only if last year's return was sent electronically. Page last updated 2026-01-15."
     },
     {
+      "id": "ge-2025-declaration-specimen",
+      "canton": "GE",
+      "doc_type": "form",
+      "title": "Déclaration fiscale 2025 manuscrite (spécimen)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/42265/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-01-26",
+      "verified_on": "2026-10-13",
+      "priority": "core",
+      "why_needed": "The official 2025 declaration form itself: every page (PG1 to PG4, annexes A1 to G2), every rubric code and its printed French label. Source of the form map behind the copy panel (SPEC.md 10.5).",
+      "notes": "26 pages, marked SPECIMEN (not for filing). Page n of the PDF is one form page: 1 PG1, 2 PG2, 3 PG3, 4 PG4, 5 A1, 6 A2, 7 B1, 8 B2, 9 B3, 10 B4, 11 C1, 12 C2, 13 C3, 14 C4, 15 D1, 16 D2, 17 D3, 18 D4, 19 E1, 20 E2, 21 F1, 22 F2, 23 F3, 24 F4, 25 G1, 26 G2. The guide (ge-2025-guide-declaration-pp p. 9) links it as www.ge.ch/c/imp-spde25, a short link that no longer resolves. Landing page: ge-2025-documents-envoyes-page."
+    },
+    {
       "id": "ge-2025-getax-software",
       "canton": "GE",
       "doc_type": "form",
@@ -273,6 +289,22 @@
       "priority": "useful",
       "why_needed": "Legal basis for communal centimes in 2026.",
       "notes": "rsGE D 3 05.30, adopted 18 March 2026, in force 1 January 2026. The 2025 arrêté (ArCA-2025) is no longer at this URL and was not checked separately. The page shows a later Vernier entry dated 19.08.2026."
+    },
+    {
+      "id": "ge-2025-documents-envoyes-page",
+      "canton": "GE",
+      "doc_type": "form",
+      "title": "Déclaration d'impôt 2025: les documents envoyés",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/declaration-impot-2025-documents-envoyes",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-01-26",
+      "verified_on": "2026-10-13",
+      "priority": "useful",
+      "why_needed": "Landing page of the 2025 declaration specimen, the identifiers page and the main deductions flyer.",
+      "notes": "Says the specimen must never be used to file, and that 93% of taxpayers use software and only receive the identifiers page."
     },
     {
       "id": "ge-2025-guide-fiscal-page",

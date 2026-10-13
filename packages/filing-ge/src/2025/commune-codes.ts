@@ -1,0 +1,55 @@
+// The "Code lieu" of each Geneva commune, written in "Code commune" on the declaration (PG1) and
+// for the place of work on annexe A. ge-2025-guide-declaration-pp p. 59 ("Codes de taxation");
+// the guide asks for the political commune, which can differ from the postal address (p. 12).
+// The four sections of the City of Geneva (Cité, Eaux-Vives, Petit-Saconnex, Plainpalais) share 6621.
+import type { CommuneSlug } from '@taxpresso/rules-ge';
+
+export const COMMUNE_CODES_2025 = {
+  'aire-la-ville': '6601',
+  anieres: '6602',
+  avully: '6603',
+  avusy: '6604',
+  bardonnex: '6605',
+  bellevue: '6606',
+  bernex: '6607',
+  carouge: '6608',
+  cartigny: '6609',
+  celigny: '6610',
+  chancy: '6611',
+  'chene-bougeries': '6612',
+  'chene-bourg': '6613',
+  choulex: '6614',
+  'collex-bossy': '6615',
+  'collonge-bellerive': '6616',
+  cologny: '6617',
+  confignon: '6618',
+  corsier: '6619',
+  dardagny: '6620',
+  geneve: '6621',
+  genthod: '6622',
+  'grand-saconnex': '6623',
+  gy: '6624',
+  hermance: '6625',
+  jussy: '6626',
+  laconnex: '6627',
+  lancy: '6628',
+  meinier: '6629',
+  meyrin: '6630',
+  onex: '6631',
+  'perly-certoux': '6632',
+  'plan-les-ouates': '6633',
+  'pregny-chambesy': '6634',
+  presinge: '6635',
+  puplinge: '6636',
+  russin: '6637',
+  satigny: '6638',
+  soral: '6639',
+  thonex: '6640',
+  troinex: '6641',
+  vandoeuvres: '6642',
+  vernier: '6643',
+  versoix: '6644',
+  veyrier: '6645',
+} as const satisfies Record<CommuneSlug, string>;
+
+export const COMMUNE_CODES_2025_SOURCE = 'ge-2025-guide-declaration-pp p. 59';

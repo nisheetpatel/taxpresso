@@ -7,6 +7,7 @@ import { McpServer } from '@modelcontextprotocol/server';
 import { DOCUMENT_KINDS, LedgerError, type FactValue } from '@taxpresso/ledger';
 import type { RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
+import { formValues } from './copy-panel.js';
 import type { Dashboard } from './dashboard.js';
 import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './extraction.js';
 import { INSTRUCTIONS } from './instructions.js';
@@ -636,6 +637,60 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
             checks,
           },
         };
+      } catch (err) {
+        return toolError(err);
+      }
+    },
+  );
+
+  server.registerTool(
+    'get_form_values',
+    {
+      title: 'Get the values to type into the declaration',
+      description:
+        'The values the user types by hand into the official Geneva declaration, in the form\'s order, as in the dashboard\'s copy panel: rubric code, French label, value as typed, status. No section: the sections with progress. A section (e.g. "A1"): its values.',
+      inputSchema: z.object({
+        section: z
+          .string()
+          .max(4)
+          .optional()
+          .describe('A page of the form, e.g. "PG1", "A1", "C3". Default: the list of sections.'),
+      }),
+      outputSchema: z.object({
+        provisional: z.boolean(),
+        entered: z.number().int(),
+        total: z.number().int(),
+        pending: z.number().int(),
+        sections: z.array(
+          z.object({
+            page: z.string(),
+            title: z.string(),
+            entered: z.number().int(),
+            total: z.number().int(),
+            pending: z.number().int(),
+          }),
+        ),
+        rows: z
+          .array(
+            z.object({
+              ref: z.string(),
+              label: z.string(),
+              copy: z.string().optional(),
+              status: z.string(),
+              final: z.boolean(),
+              role: z.string(),
+              entered: z.boolean(),
+            }),
+          )
+          .optional(),
+      }),
+      annotations: { title: 'Get the values to type into the declaration', ...RO },
+    },
+    async ({ section }) => {
+      await ws.ready();
+      try {
+        const { text, structured } = formValues(ws, section);
+        return { content: [{ type: 'text', text }], structuredContent: structured };
       } catch (err) {
         return toolError(err);
       }

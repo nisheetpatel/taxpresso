@@ -6,6 +6,7 @@ import type { JSX } from 'preact';
 import { api, ApiError } from './api';
 import { Assessment } from './Assessment';
 import { Checks } from './Checks';
+import { CopyPanel } from './CopyPanel';
 import { DocumentCards } from './DocumentCards';
 import { isMessageKey, t, type Language } from './i18n';
 import { Securities } from './Securities';
@@ -168,6 +169,7 @@ export function App(): JSX.Element {
             <Documents state={state} lang={L} busy={busy} act={act} />
             <Securities view={state.securities} year={state.taxYear} lang={L} />
             <DocumentCards state={state} lang={L} act={act} />
+            <CopyPanel state={state} lang={L} act={act} />
           </div>
           <aside class="side-col">
             <Missing state={state} lang={L} act={act} />

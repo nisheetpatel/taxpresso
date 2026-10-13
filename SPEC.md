@@ -319,6 +319,7 @@ Schedule risk: if the 2025 declaration is already filed and read-only, the recor
 10.4 Reconciliation (the runtime safety net). After filling, the user downloads the declaration PDF from the online declaration into the vault (or Claude saves it). `reconcile_official_pdf` parses it and diffs every mapped field plus the official totals against the ledger and the engine. Any difference is red and must be fixed before the user transmits. Only then does screen 3 show "Ready to transmit".
 
 10.5 Copy panel fallback (always available, also the v0 if browser filling is unreliable). Screen 3 can show, section by section in the official form's order, each official French label with its value and a copy button. The user fills manually in 10 to 20 minutes. Reconciliation still applies. A second view groups the same values by document ("where each document went"): one card per document, each value with its official label, a copy button and an "Entered" tick, with a counter ("2 of 5 entered"). Ticks are local state and send nothing.
+The panel places values on the official form's own structure, read from the specimen of the declaration (`packages/filing-ge/src/<year>/form-map.ts`: pages, sections, rubric codes and labels as printed, each cited), and writes them as the form asks: whole francs without separators, imputations (annexe F) with centimes (ge-2025-guide-declaration-pp p. 9). The engine returns its values keyed by rubric code and person; until it covers a rubric, values come from the confirmed document values and answers. Claude reads the same panel with `get_form_values`.
 
 10.6 After transmission: the user saves the electronic receipt (quittance) into the vault. Mark the tax year filed. Export bundle = ledger + decisions + official PDF + receipt + originals, zipped.
 
@@ -348,6 +349,7 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 | `final_check` | Pre-filing check (10.0): caps, thresholds, confirmed estimates, unusual items, each with its governing passage | yes |
 | `list_optimizations` | Groups A/B/C with CHF deltas | yes |
 | `decide_optimization` | Accept/decline | no |
+| `get_form_values` | The copy panel (10.5) for manual entry: sections with progress, or one section's values in form order | yes |
 | `get_fill_plan` | Steps for a section | yes |
 | `report_section_state` / `report_fill_progress` | What Claude saw / set in the form | no |
 | `reconcile_official_pdf` | Diff the official PDF vs ledger/engine | no |

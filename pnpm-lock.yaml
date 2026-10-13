@@ -220,6 +220,9 @@ importers:
       '@modelcontextprotocol/server':
         specifier: ^2.3.0
         version: 2.3.1
+      '@taxpresso/filing-ge':
+        specifier: workspace:*
+        version: link:../packages/filing-ge
       '@taxpresso/intake':
         specifier: workspace:*
         version: link:../packages/intake
@@ -262,7 +265,17 @@ importers:
         version: 2.9.1
 
   packages/filing-ge:
+    dependencies:
+      '@taxpresso/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      '@taxpresso/rules-ge':
+        specifier: workspace:*
+        version: link:../rules-ge
     devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

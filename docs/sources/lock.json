@@ -2448,5 +2448,25 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-13T17:31:37.505Z",
     "status": "ok"
+  },
+  "ge-2025-declaration-specimen": {
+    "url": "https://www.ge.ch/document/42265/telecharger",
+    "final_url": "https://www.ge.ch/document/42265/telecharger",
+    "file": "ge/files/ge-2025-declaration-specimen.pdf",
+    "bytes": 908608,
+    "sha256": "3ee8eaf20c161f637f1e5d83bb79339f0382fe83fbbd41abafaf7483a33f7e07",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-13T21:26:37.515Z",
+    "status": "ok"
+  },
+  "ge-2025-documents-envoyes-page": {
+    "url": "https://www.ge.ch/document/declaration-impot-2025-documents-envoyes",
+    "final_url": "https://www.ge.ch/document/declaration-impot-2025-documents-envoyes",
+    "file": "ge/files/ge-2025-documents-envoyes-page.html",
+    "bytes": 98275,
+    "sha256": "887f53688db72d665ea905d53ece9b398496f3699fca06566d079eee58c33815",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-13T21:26:37.535Z",
+    "status": "ok"
   }
 }

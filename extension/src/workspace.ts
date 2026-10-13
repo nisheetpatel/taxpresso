@@ -79,6 +79,8 @@ interface Entered {
   version: 1;
   /** `${docId}|${key}|${person}` -> the value as it was when ticked (a changed value unticks). */
   entered: Record<string, string>;
+  /** Copy panel rows (SPEC.md 10.5), by row id -> the value as typed when ticked. */
+  form?: Record<string, string>;
 }
 
 export interface ExtractionResult {
@@ -688,6 +690,22 @@ export class Workspace {
       } else {
         delete this.#entered.entered[slot];
       }
+      await this.vault.writeState('entered.json', this.#entered);
+    });
+  }
+
+  /** What a copy panel row was when the user ticked it as entered, if they did. */
+  formEntered(rowId: string): string | undefined {
+    return this.#entered.form?.[rowId];
+  }
+
+  /** Ticks a copy panel row with its value as typed, or unticks it (undefined). Local only. */
+  async setFormEntered(rowId: string, typed: string | undefined): Promise<void> {
+    return this.#write(async () => {
+      const form = { ...this.#entered.form };
+      if (typed === undefined) delete form[rowId];
+      else form[rowId] = typed;
+      this.#entered = { ...this.#entered, form };
       await this.vault.writeState('entered.json', this.#entered);
     });
   }
