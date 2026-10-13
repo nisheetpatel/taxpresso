@@ -27,6 +27,13 @@ export const StatusSchema = z.object({
       .describe("Values read from documents that still need the user's OK."),
   }),
   missing: z.array(z.string()).describe('Documents still needed, with whose they are.'),
+  optional: z
+    .array(
+      z.object({ id: z.string(), label: z.string(), reason: z.string(), skipped: z.boolean() }),
+    )
+    .describe(
+      'Optional documents not here yet: the user can skip one, or take that back, with waive_requirement.',
+    ),
   checks: z
     .array(z.string())
     .describe('"Check this" items across documents, with their id and what to do.'),
@@ -79,6 +86,15 @@ export function buildStatus(
         'count' in r.expects && r.expects.count > 1 ? ` (${r.have} of ${r.expects.count})` : '';
       return `${r.label.en}${count}${who && snap.people.length > 1 ? `, ${who}` : ''}`;
     });
+  // The dashboard's "still missing" rows with a "Skip" (or "Undo") button, by the same id.
+  const optional = requirements
+    .filter((r) => r.optional && r.status !== 'satisfied')
+    .map((r) => ({
+      id: r.id,
+      label: `${r.label.en}${WHO[r.person] && snap.people.length > 1 ? `, ${WHO[r.person]}` : ''}`,
+      reason: r.reason.en,
+      skipped: r.status === 'waived',
+    }));
   const notSupported = ws.engine.notSupported(snap).map((n) => n.what.en);
   const documents = ws.activeDocuments();
   const toIdentify = documents.filter((d) => !d.kind).length;
@@ -155,6 +171,7 @@ export function buildStatus(
       valuesToConfirm: toConfirm,
     },
     missing,
+    optional,
     checks,
     notSupported,
     estimates,
@@ -188,6 +205,11 @@ export function statusText(s: Status): string {
       ? [`Values that need the user's OK: ${s.progress.valuesToConfirm}`]
       : []),
     `Still missing: ${s.missing.length ? s.missing.join('; ') : 'nothing'}`,
+    ...(s.optional.length
+      ? [
+          `Optional (waive_requirement): ${s.optional.map((o) => `${o.label} [${o.id}]: ${o.skipped ? 'skipped by the user' : o.reason}`).join(' | ')}`,
+        ]
+      : []),
     ...(s.checks.length ? [`Check this: ${s.checks.join(' | ')}`] : []),
   ];
   if (s.notSupported.length) lines.push(`Not supported yet: ${s.notSupported.join('; ')}`);
