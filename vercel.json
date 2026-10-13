@@ -33,23 +33,18 @@
       "permanent": false
     },
     {
-      "source": "/start",
+      "source": "/start{/}?",
       "destination": "/fr/start/",
       "permanent": true
     },
     {
-      "source": "/start/",
-      "destination": "/fr/start/",
-      "permanent": true
-    },
-    {
-      "source": "/guides",
+      "source": "/guides{/}?",
       "destination": "/fr/guides/",
       "permanent": true
     },
     {
-      "source": "/guides/:path*",
-      "destination": "/fr/guides/:path*",
+      "source": "/guides/:slug{/}?",
+      "destination": "/fr/guides/:slug/",
       "permanent": true
     }
   ]
