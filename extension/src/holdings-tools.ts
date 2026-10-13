@@ -48,7 +48,7 @@ export function registerHoldingTools(server: McpServer, ws: Workspace): void {
     {
       title: 'Get the securities list',
       description:
-        "The user's securities list (état des titres) and other movable wealth as Taxpresso computes them: each line with whose it is, its value (official or the broker's estimate) and income, the Swiss withholding tax claimed back, foreign tax, and what is missing. detail: true adds the amounts by official rubric code.",
+        "The securities list (état des titres) and other wealth as Taxpresso computes them: each line, whose it is, its value (official or the broker's estimate), income, the withholding tax claimed back, foreign tax, what is missing. detail: amounts by rubric code.",
       inputSchema: z.object({
         detail: z.boolean().optional().describe('Also list the amounts by rubric code and person.'),
       }),
@@ -80,6 +80,7 @@ export function registerHoldingTools(server: McpServer, ws: Workspace): void {
         );
         text.push(...lines.map(lineText));
       }
+      if (etat.other.length) text.push('Other wealth and debts:');
       for (const o of etat.other) {
         const rubric = o.rubric === 'lifeInsurance' ? 'lifeInsuranceValue' : o.rubric;
         text.push(
@@ -130,7 +131,7 @@ export function registerHoldingTools(server: McpServer, ws: Workspace): void {
     {
       title: 'Save a holding the user described',
       description:
-        'Saves what the user tells you about their securities list: the official value of a security from the ESTV price list (security = its ISIN, officialValue, from = where they read it), whose a line is, or an account, crypto, loan, life insurance, valuables or debt without a document (item = a short id, kind, name, value...). Amounts as text in CHF. Only what the user gave or confirmed.',
+        "Saves what the user said about their holdings: a security's official ESTV value (security, officialValue, from), whose a line is, or an account, crypto, loan, life insurance, valuables or debt without a document (item, kind, name, value). Amounts in CHF as text. Only what the user gave.",
       inputSchema: z.object({
         security: z.string().max(64).optional().describe('ISIN of a security in the list.'),
         officialValue: amount.describe(

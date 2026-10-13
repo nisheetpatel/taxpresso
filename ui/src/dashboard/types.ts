@@ -1,6 +1,6 @@
 // The /api/state shape (extension/src/api.ts, dashboardState). Kept in step by the API tests.
 import type { Language } from './i18n';
-import type { SecuritiesView } from './Securities';
+import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'multi' | 'commune';
@@ -99,6 +99,8 @@ export interface State extends DocumentsState {
   notSupported: string[];
   /** The securities list from broker exports, or null when there is none. */
   securities?: SecuritiesView | null;
+  /** "Your securities and accounts": the état des titres as computed, or null when empty. */
+  holdings?: HoldingsView | null;
   notSupportedMessage: string;
   activity: Activity[];
 }

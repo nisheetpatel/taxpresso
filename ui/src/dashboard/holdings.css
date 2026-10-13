@@ -1,0 +1,277 @@
+/* "Your securities and accounts" (Holdings.tsx). Only the shared tokens (../shared/tokens.css)
+   and status chips: no colors of its own. One column at phone width. */
+
+.hold-official {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.hold-card {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hold-lead {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* The four figures that matter, the money back first. */
+.hold-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.hold-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-button);
+  min-width: 0;
+}
+
+.hold-stat strong {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.hold-stat-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hold-stat-back {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+}
+
+.hold-stat-back strong {
+  color: var(--savings);
+}
+
+.hold-note {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.hold-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius-button);
+  background: var(--accent-soft);
+  font-size: 14px;
+}
+
+.hold-section h3 {
+  margin: 0;
+  padding-bottom: 6px;
+  font-size: 16px;
+  font-weight: 650;
+  border-bottom: 1px solid var(--line);
+}
+
+.hold-form {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hold-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hold-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.hold-row-missing {
+  border-left: 3px dashed var(--crema);
+  padding-left: 12px;
+}
+
+.hold-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px 12px;
+}
+
+.hold-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hold-head-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.hold-owner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hold-owner select {
+  min-height: 36px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.hold-figures {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px 16px;
+}
+
+.hold-figures dt {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.hold-figures dd {
+  margin: 2px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+}
+
+.hold-fig-wide {
+  grid-column: 1 / -1;
+}
+
+.hold-amount {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.hold-sub {
+  flex-basis: 100%;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.hold-subtotal {
+  padding-top: 10px;
+}
+
+.hold-subtotal dd {
+  font-weight: 650;
+}
+
+.hold-issues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.hold-issues li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.hold-official-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+}
+
+.hold-official-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.hold-official-form input {
+  min-height: var(--touch);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.hold-official-form input:focus-visible,
+.hold-owner select:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 1px;
+}
+
+.hold-official-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hold-official-form .dc-problem {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.hold-details summary {
+  cursor: pointer;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hold-details p,
+.hold-details ul {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.hold-details ul {
+  padding: 0 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
