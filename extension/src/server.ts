@@ -1,14 +1,13 @@
 // The MCP surface (SPEC.md section 11). Every tool: narrow description, title, readOnlyHint and
 // destructiveHint (C6), concise text plus structuredContent.
 
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { McpServer } from '@modelcontextprotocol/server';
 import { DOCUMENT_KINDS, LedgerError, type FactValue } from '@taxpresso/ledger';
 import type { RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
 import { formValues } from './copy-panel.js';
 import type { Dashboard } from './dashboard.js';
+import { DASHBOARD_VIEW_URI, registerDashboardView } from './dashboard-view.js';
 import { DOCUMENT_VALUE_KEYS, ENUM_LABELS, ExtractionError, formValue } from './extraction.js';
 import { computeTaxOutput } from './estimate.js';
 import { INSTRUCTIONS } from './instructions.js';
@@ -27,9 +26,8 @@ import { buildStatus, StatusSchema, statusText } from './status.js';
 import { formatDay, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ge';
 import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
 
-/** MCP Apps (SEP-1865): the inline card shown with open_dashboard where the host supports it. */
-export const DASHBOARD_VIEW_URI = 'ui://taxpresso/open-dashboard.html';
-export const MCP_APP_MIME_TYPE = 'text/html;profile=mcp-app';
+// MCP Apps: the dashboard in the conversation, and the tool it talks through (./dashboard-view.ts).
+export { DASHBOARD_VIEW_URI, MCP_APP_MIME_TYPE } from './dashboard-view.js';
 
 export interface ServerDeps {
   workspace: Workspace;
@@ -875,7 +873,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Open the Taxpresso dashboard',
       description:
-        'Starts the Taxpresso dashboard on this computer (127.0.0.1) if needed and returns its private link. Give the link to the user.',
+        'Shows the Taxpresso dashboard in the chat where the app can, and starts it on this computer (127.0.0.1) if needed. Returns its private link for the browser. Give the link to the user.',
       outputSchema: z.object({ url: z.string(), status: StatusSchema }),
       annotations: { title: 'Open the Taxpresso dashboard', ...RO },
       _meta: { ui: { resourceUri: DASHBOARD_VIEW_URI }, 'ui/resourceUri': DASHBOARD_VIEW_URI },
@@ -906,25 +904,8 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   // export_bundle: one ZIP of the tax-year folder, on this computer (./export.ts).
   registerExportTool(server, ws);
 
-  server.registerResource(
-    'dashboard-card',
-    DASHBOARD_VIEW_URI,
-    {
-      title: 'Taxpresso dashboard card',
-      description: 'Inline card with a button that opens the Taxpresso dashboard.',
-      mimeType: MCP_APP_MIME_TYPE,
-      _meta: { ui: { prefersBorder: true } },
-    },
-    async (uri) => ({
-      contents: [
-        {
-          uri: uri.href,
-          mimeType: MCP_APP_MIME_TYPE,
-          text: await readFile(path.join(ws.config.uiDir, 'views', 'open-dashboard.html'), 'utf8'),
-        },
-      ],
-    }),
-  );
+  // The dashboard view (ui://) and dashboard_api, which only that view calls.
+  registerDashboardView(server, ws, dashboard);
 
   server.registerPrompt(
     'start_geneva_tax_return',

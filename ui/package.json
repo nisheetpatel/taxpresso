@@ -9,7 +9,8 @@
     "build": "vite build && node scripts/build-views.mjs",
     "dev": "vite",
     "typecheck": "tsc -p .",
-    "preview:card": "node scripts/build-preview.mjs"
+    "preview:card": "node scripts/build-preview.mjs",
+    "preview:serve": "node scripts/preview-serve.mjs"
   },
   "devDependencies": {
     "@fontsource-variable/geist": "^5.3.0",

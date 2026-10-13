@@ -22,7 +22,7 @@ const pkg = JSON.parse(await readFile(path.join(extDir, 'package.json'), 'utf8')
 
 try {
   await access(path.join(uiDist, 'dashboard', 'index.html'));
-  await access(path.join(uiDist, 'views', 'open-dashboard.html'));
+  await access(path.join(uiDist, 'views', 'dashboard.html'));
 } catch {
   console.error('The UI is not built. Run: pnpm --filter @taxpresso/ui build');
   process.exit(1);

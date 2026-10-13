@@ -70,9 +70,24 @@ export interface DashboardOptions {
   api: (req: ApiRequest) => Promise<ApiResponse>;
 }
 
+/** One API request as it arrives, from the page over HTTP or from the view in the chat. */
+export interface ApiCall {
+  method: 'GET' | 'POST';
+  /** Path after /api, e.g. "/state". */
+  path: string;
+  query: URLSearchParams;
+  headers: IncomingMessage['headers'];
+  body: Buffer;
+  /** The CSRF token the caller sent with it, if any. */
+  csrfToken: string | undefined;
+}
+
 /** Largest request body: documents up to 40 MB (as the vault), anything else 64 KB. */
 const MAX_UPLOAD = 40 * 1024 * 1024 + 1024;
 const MAX_JSON = 64 * 1024;
+
+export const bodyLimit = (apiPath: string): number =>
+  apiPath === '/documents' ? MAX_UPLOAD : MAX_JSON;
 
 export class Dashboard {
   readonly #opts: DashboardOptions;
@@ -97,6 +112,42 @@ export class Dashboard {
       throw err;
     });
     return this.#starting;
+  }
+
+  /**
+   * Why a request may not reach the API, or undefined if it may. The same rules for both doors,
+   * the page over HTTP and the view in the chat (./dashboard-view.ts): a change carries this
+   * session's CSRF token, and its body stays under the size limit.
+   */
+  refuse(
+    method: ApiCall['method'],
+    apiPath: string,
+    csrfToken: string | undefined,
+    bytes: number,
+  ): ApiResponse | undefined {
+    if (method === 'POST' && !this.#csrfMatches(csrfToken)) {
+      return { status: 403, body: { error: 'Reload the dashboard and try again.' } };
+    }
+    if (bytes > bodyLimit(apiPath)) return { status: 413, body: { error: 'Too large.' } };
+    return undefined;
+  }
+
+  /**
+   * Runs one request through those rules, then the API (./api.ts), which validates its body. The
+   * page reaches it after the HTTP checks below (host, session token, origin); the view in the chat
+   * reaches it through the dashboard_api tool. Works whether or not the HTTP server is running.
+   */
+  async callApi(req: ApiCall): Promise<ApiResponse> {
+    const refused = this.refuse(req.method, req.path, req.csrfToken, req.body.length);
+    if (refused) return refused;
+    return this.#opts.api({
+      method: req.method,
+      path: req.path,
+      query: req.query,
+      headers: req.headers,
+      body: req.body,
+      csrf: this.#csrf,
+    });
   }
 
   async stop(): Promise<void> {
@@ -167,8 +218,11 @@ export class Dashboard {
     }
 
     if (isApi) {
+      const apiMethod = method === 'POST' ? 'POST' : 'GET';
+      const apiPath = url.pathname.slice(4);
+      const csrfToken = headerValue(req.headers['x-taxpresso-csrf']);
       if (method === 'POST') {
-        // Changes only from our own page: same origin, and the per-session CSRF token.
+        // Changes only from our own page: same origin here, then the per-session CSRF token.
         const origin = headerValue(req.headers.origin);
         if (
           origin !== undefined &&
@@ -177,20 +231,19 @@ export class Dashboard {
         ) {
           return send(res, 403, 'Wrong origin.');
         }
-        if (!this.#csrfMatches(headerValue(req.headers['x-taxpresso-csrf']))) {
-          return send(res, 403, 'Reload the dashboard and try again.');
-        }
       }
-      const limit = url.pathname === '/api/documents' ? MAX_UPLOAD : MAX_JSON;
-      const body = method === 'POST' ? await readBody(req, limit) : Buffer.alloc(0);
+      // The CSRF token before reading the body; callApi checks it again with the body's size.
+      const refused = this.refuse(apiMethod, apiPath, csrfToken, 0);
+      if (refused) return send(res, refused.status, (refused.body as { error: string }).error);
+      const body = method === 'POST' ? await readBody(req, bodyLimit(apiPath)) : Buffer.alloc(0);
       if (body === undefined) return send(res, 413, 'Too large.');
-      const result = await this.#opts.api({
-        method: method === 'POST' ? 'POST' : 'GET',
-        path: url.pathname.slice(4),
+      const result = await this.callApi({
+        method: apiMethod,
+        path: apiPath,
         query: url.searchParams,
         headers: req.headers,
         body,
-        csrf: this.#csrf,
+        csrfToken,
       });
       return send(res, result.status, JSON.stringify(result.body), {
         ...extra,
