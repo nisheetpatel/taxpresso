@@ -60,6 +60,7 @@ describe('MCP surface', () => {
       'open_dashboard',
       'propose_extraction',
       'replace_document',
+      'review_last_year',
       'set_document_owner',
       'set_fact',
       'set_holding',

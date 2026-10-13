@@ -21,6 +21,11 @@ export interface CatchUpPerson {
   hasPensionFund: boolean;
   /** 2026 3a room still open (./pillar3a.ts): it comes first. */
   room2026Centimes: number;
+  /**
+   * The person's own 2025 limit, when it is known: without a pension fund, 20 % of the 2025 earned
+   * income read from last year's declaration (./last-year-review.ts). Default: the 2025 maximum.
+   */
+  limit2025Centimes?: number;
 }
 
 export type CatchUpStatus =
@@ -65,16 +70,18 @@ function personResult(p: CatchUpPerson): CatchUpPersonResult {
   if (p.paid2025Centimes === undefined) {
     return { person: p.person, status: 'unknown', isMaximum: false, catchUpCentimes: 0 };
   }
-  const limit2025 = p.hasPensionFund
-    ? PILLAR3A_2025.value.capWithPensionFund
-    : PILLAR3A_2025.value.capWithoutPensionFund;
+  const limit2025 =
+    p.limit2025Centimes ??
+    (p.hasPensionFund
+      ? PILLAR3A_2025.value.capWithPensionFund
+      : PILLAR3A_2025.value.capWithoutPensionFund);
   const gap = Math.max(0, limit2025 - p.paid2025Centimes);
   const catchUp = Math.min(gap, cap);
   return {
     person: p.person,
     status: gap === 0 ? 'no_gap' : p.room2026Centimes > 0 ? 'pay_this_year_first' : 'possible',
     gapCentimes: gap,
-    isMaximum: !p.hasPensionFund && gap > 0,
+    isMaximum: !p.hasPensionFund && gap > 0 && p.limit2025Centimes === undefined,
     catchUpCentimes: catchUp,
   };
 }

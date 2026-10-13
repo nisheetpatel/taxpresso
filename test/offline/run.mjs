@@ -354,6 +354,25 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.match(last.content[0].text, /31\.40 Pillar 3a .*ICC CHF 7’000/);
   });
 
+  test("review_last_year reviews last year's declaration offline, read-only", async () => {
+    const before = readFileSync(path.join(vault, '2026', 'ledger.json'), 'utf8');
+    const res = await client.callTool({ name: 'review_last_year', arguments: {} });
+    assert.ok(!res.isError, res.content?.[0]?.text);
+    const r = res.structuredContent;
+    assert.deepEqual([r.found, r.status, r.year], [true, 'ready', 2025]);
+    // The Dupont 2025 declaration: 7'000 paid of the 2025 limit of 7'258 with a pension fund.
+    assert.deepEqual(
+      r.missed3a.map((m) => [m.person, m.code, m.paid, m.options[0].gap]),
+      [
+        ['p1', '31.40', 700000, 25800],
+        ['p2', '41.40', 700000, 25800],
+      ],
+    );
+    assert.match(res.content[0].text, /Tax 2025, recomputed: cantonal and communal \(ICC\) CHF/);
+    assert.match(res.content[0].text, /ge-na-law-lpfisc art\. 55 al\. 2/);
+    assert.equal(readFileSync(path.join(vault, '2026', 'ledger.json'), 'utf8'), before);
+  });
+
   test('Claude reads a PDF on this computer, proposes values, the user confirms them (C7)', async () => {
     assert.ok(dashboardSession, 'the dashboard test ran first');
     const { origin, host, cookie, csrf } = dashboardSession;

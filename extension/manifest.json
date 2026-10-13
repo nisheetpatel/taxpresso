@@ -57,6 +57,10 @@
       "description": "Last year's figures, read from your previous declaration, to compare with this year."
     },
     {
+      "name": "review_last_year",
+      "description": "Last year's return, reviewed: its tax recomputed, what you could have saved, what to ask yourself, and what you can still do."
+    },
+    {
       "name": "list_optimizations",
       "description": "Ways to lower your tax with their CHF value: before 31 December (pillar 3a, a pension fund buy-in, the 3a catch-up), and TOU if you are taxed at source."
     },

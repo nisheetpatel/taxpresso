@@ -158,6 +158,7 @@ export {
 } from './engine/assess.js';
 export { paramsFor, isTaxYear, TAX_YEARS, type TaxYear, type YearParams } from './engine/params.js';
 export { RUBRICS, rubric, codeFor, type RubricCode } from './engine/rubrics.js';
+export { pillar3aCapWithoutFund } from './engine/rules.js';
 export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
 export { bracketTax, federalScaleTax, chf } from './engine/calc.js';
 export type * from './engine/types.js';

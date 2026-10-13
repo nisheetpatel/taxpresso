@@ -127,19 +127,32 @@ export function lppView(ws: Workspace): LppBuyInResult {
   );
 }
 
+/**
+ * This year's 3a room per person, which a catch-up comes after: the 2026 limits from the 3a plan,
+ * against what was paid (the attestation when there is one). Also used by ./last-year-review.ts.
+ */
+export function room2026(ws: Workspace): Record<Who, number> {
+  const { h } = household(ws);
+  const caps = ws.plan().people;
+  const room: Record<Who, number> = { p1: 0, p2: 0 };
+  for (const p of h.people) {
+    const cap = caps.find((r) => r.person === p.person)?.capCentimes ?? 0;
+    room[p.person] = Math.max(0, cap - p.paidCentimes);
+  }
+  return room;
+}
+
 export function catchUpView(ws: Workspace): CatchUpResult {
   const { h } = household(ws);
-  // The 2026 limits from the 3a plan, against what was paid (the attestation when there is one).
-  const caps = ws.plan().people;
+  const room = room2026(ws);
   return pillar3aCatchUpPlan(
     h,
     h.people.map((p) => {
       const paid2025 = planMoney(ws, 'plan.pillar3a_paid_2025', p.person, true);
-      const cap = caps.find((r) => r.person === p.person)?.capCentimes ?? 0;
       return {
         person: p.person,
         hasPensionFund: p.hasPensionFund,
-        room2026Centimes: Math.max(0, cap - p.paidCentimes),
+        room2026Centimes: room[p.person],
         ...(paid2025 !== undefined ? { paid2025Centimes: paid2025 } : {}),
       };
     }),

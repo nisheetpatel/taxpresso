@@ -11,6 +11,7 @@ import { estimateView } from './estimate.js';
 import { ExtractionError } from './extraction.js';
 import { documentPerson, holdingsView, saveHolding } from './holdings.js';
 import { KIND_LABELS } from './kinds.js';
+import { reviewOf } from './last-year-review.js';
 import {
   decide,
   DecisionInput,
@@ -181,6 +182,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     holdings: holdingsView(ws, lang) ?? null,
     // Last year's declaration: main figures to compare, never filed (SPEC.md 5.4).
     lastYear: ws.lastYear(lang) ?? null,
+    // Last year's return, reviewed (./last-year-review.ts): read-only, never this year's tax.
+    review: reviewOf(ws),
     notSupportedMessage: ws.engine.notSupportedMessage(lang),
     activity: ws.activity().map((a) => {
       if (a.what === 'answer' && a.detail) {
