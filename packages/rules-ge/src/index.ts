@@ -54,3 +54,17 @@ export {
   type AssessmentView,
   type ObjectionDeadline,
 } from './2026/assessment.js';
+export { computeReturn, allLines, EngineInputError } from './engine/compute.js';
+export {
+  assess,
+  asItem,
+  incomeTotals,
+  type AssessInput,
+  type Assessment,
+} from './engine/assess.js';
+export { paramsFor, isTaxYear, TAX_YEARS, type TaxYear, type YearParams } from './engine/params.js';
+export { RUBRICS, rubric, codeFor, type RubricCode } from './engine/rubrics.js';
+export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
+export { bracketTax, federalScaleTax, chf } from './engine/calc.js';
+export type * from './engine/types.js';
+export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
