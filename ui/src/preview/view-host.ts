@@ -129,7 +129,12 @@ document
 document.documentElement.dataset.theme = theme;
 document.body.dataset.mode = mode;
 await bridge.connect(new PostMessageTransport(iframe.contentWindow!, iframe.contentWindow!));
-iframe.srcdoc = __VIEW_HTML__.replace(
+// With preview-serve.mjs, the view comes from the extension (resources/read), as in a host, with
+// its key; served statically, the built file is used and dashboard_api refuses its calls.
+const viewHtml = await fetch('/__mcp/view')
+  .then((r) => (r.ok ? r.text() : __VIEW_HTML__))
+  .catch(() => __VIEW_HTML__);
+iframe.srcdoc = viewHtml.replace(
   '<head>',
   `<head><meta http-equiv="Content-Security-Policy" content="${CSP}">`,
 );

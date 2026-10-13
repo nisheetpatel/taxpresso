@@ -6,7 +6,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApi, type DashboardState } from '../src/api.js';
 import { Dashboard } from '../src/dashboard.js';
-import { DASHBOARD_VIEW_URI, VIEW_MAX_FILE } from '../src/dashboard-view.js';
+import { DASHBOARD_VIEW_URI, VIEW_KEY_META } from '../src/dashboard-view.js';
 import { createTaxpressoServer } from '../src/server.js';
 import type { Workspace } from '../src/workspace.js';
 import { makeUiDir, makeWorkspace, request } from './helpers.js';
@@ -14,6 +14,8 @@ import { makeUiDir, makeWorkspace, request } from './helpers.js';
 let client: Client;
 let dashboard: Dashboard;
 let ws: Workspace;
+/** The key the extension writes into the view's HTML, read as the view reads it. */
+let key: string;
 
 interface Reply {
   status: number;
@@ -35,7 +37,14 @@ beforeEach(async () => {
   await server.connect(serverSide);
   client = new Client({ name: 'test', version: '0' });
   await client.connect(clientSide);
+  key = await keyOfView();
 });
+
+async function keyOfView(): Promise<string> {
+  const { contents } = await client.readResource({ uri: DASHBOARD_VIEW_URI });
+  const html = (contents[0] as { text: string }).text;
+  return new RegExp(`<meta name="${VIEW_KEY_META}" content="([^"]+)">`).exec(html)?.[1] ?? '';
+}
 
 afterEach(async () => {
   await client.close();
@@ -43,7 +52,7 @@ afterEach(async () => {
 });
 
 const view = async (args: Record<string, unknown>) =>
-  (await client.callTool({ name: 'dashboard_api', arguments: args })) as ToolResult;
+  (await client.callTool({ name: 'dashboard_api', arguments: { key, ...args } })) as ToolResult;
 /** As the page would see it: through JSON, like the HTTP body. */
 const plain = (value: unknown) => JSON.parse(JSON.stringify(value)) as unknown;
 
@@ -168,71 +177,41 @@ describe('the dashboard in the conversation', () => {
     expect((await view({ method: 'GET', path: '/state', query: { t: 'x' } })).isError).toBe(true);
   });
 
-  it('adds a document sent in parts, as an upload in the browser page would', async () => {
+  it('answers only the view: a call without its key, or with another, is refused (C7)', async () => {
+    expect(key).toMatch(/^[\w-]{32}$/);
     const { csrf } = await viewState();
-    await view({
+    const change = {
       method: 'POST',
       path: '/answer',
       body: { id: 'civil_status', value: 'single' },
       csrf,
-    });
-    const bytes = Buffer.from('%PDF-1.4 synthetic certificate for Dupont, not a real document');
-    const cuts = [0, 20, 40, bytes.length];
-    const file = { name: 'dupont certificat.pdf', upload: 'upload-0001', parts: 3 };
-    let last: ToolResult | undefined;
-    for (let part = 0; part < 3; part++) {
-      last = await view({
-        method: 'POST',
-        path: '/documents',
-        query: { lang: 'fr', kind: 'salary_certificate' },
-        csrf,
-        file: {
-          ...file,
-          part,
-          size: bytes.length,
-          data: bytes.subarray(cuts[part], cuts[part + 1]).toString('base64'),
-        },
-      });
-      expect(last.isError, JSON.stringify(last.structuredContent)).toBeFalsy();
-      if (part < 2)
-        expect(last.structuredContent).toEqual({ status: 202, body: { received: cuts[part + 1] } });
+    };
+    for (const other of ['', 'not-the-key', key.slice(1)]) {
+      const res = await view({ ...change, key: other });
+      expect(res).toMatchObject({ isError: true, structuredContent: { status: 403 } });
+      expect(res.content[0]!.text).toMatch(/Only the dashboard shown in the conversation/);
     }
-    const state = last!.structuredContent!.body as DashboardState;
-    expect(state.documents).toHaveLength(1);
-    expect(state.documents[0]).toMatchObject({
-      filename: 'dupont certificat.pdf',
-      bytes: bytes.length,
-      kind: 'salary_certificate',
-    });
+    expect(ws.ledger.get('profile.civil_status')).toBeUndefined();
+    // Without a key at all, the schema refuses the call.
+    const bare = (await client.callTool({
+      name: 'dashboard_api',
+      arguments: { method: 'GET', path: '/state' },
+    })) as ToolResult;
+    expect(bare.isError).toBe(true);
   });
 
-  it('refuses a document over 10 MB, without the token, or sent out of order', async () => {
+  it('never takes a document: they go to the folder or the browser page', async () => {
     const { csrf } = await viewState();
-    const part = (extra: Record<string, unknown>, withToken = true) =>
-      view({
-        method: 'POST',
-        path: '/documents',
-        ...(withToken ? { csrf } : {}),
-        file: {
-          name: 'x.pdf',
-          upload: 'upload-0002',
-          part: 0,
-          parts: 1,
-          size: 4,
-          data: 'JVBERg==',
-          ...extra,
-        },
-      });
-    const large = await part({ size: VIEW_MAX_FILE + 1, parts: 10 });
-    expect(large).toMatchObject({ isError: true, structuredContent: { status: 413 } });
-    expect(large.content[0]!.text).toMatch(/larger than 10 MB.*browser.*Taxpresso folder/);
-    expect(await part({}, false)).toMatchObject({ structuredContent: { status: 403 } });
-    expect(await part({ part: 1, parts: 2 })).toMatchObject({ structuredContent: { status: 400 } });
-    // Fewer bytes than announced: nothing is added.
-    expect(await part({ size: 9 })).toMatchObject({ structuredContent: { status: 400 } });
-    // A document comes only as file parts, never as a JSON body.
-    const asJson = await view({ method: 'POST', path: '/documents', body: { x: 1 }, csrf });
-    expect(asJson).toMatchObject({ isError: true, structuredContent: { status: 400 } });
+    const res = await view({ method: 'POST', path: '/documents', body: { x: 1 }, csrf });
+    expect(res).toMatchObject({ isError: true, structuredContent: { status: 400 } });
+    expect(res.content[0]!.text).toMatch(/out of the chat app.*browser.*Taxpresso folder/);
+    const withBytes = await view({
+      method: 'POST',
+      path: '/documents',
+      csrf,
+      file: { name: 'x.pdf', upload: 'upload-0001', part: 0, parts: 1, size: 4, data: 'JVBERg==' },
+    });
+    expect(withBytes.isError).toBe(true);
     expect(ws.activeDocuments()).toHaveLength(0);
   });
 });

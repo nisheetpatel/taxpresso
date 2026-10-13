@@ -3,7 +3,7 @@
 import { wordmark } from '../shared/logo';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
-import { api, ApiError } from './api';
+import { api, ApiError, embedded } from './api';
 import { Assessment } from './Assessment';
 import { Checks } from './Checks';
 import { CopyPanel } from './CopyPanel';
@@ -210,7 +210,7 @@ export function App(): JSX.Element {
         ) : null}
       </main>
       <footer class="foot">
-        <span>{t(L, 'footer')}</span>
+        <span>{t(L, embedded() ? 'footerChat' : 'footer')}</span>
         <span class="tnum">Taxpresso {state.version}</span>
       </footer>
     </>

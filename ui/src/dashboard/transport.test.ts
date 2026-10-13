@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api, ApiError, setTransport } from './api';
 import type { ApiRequest } from './transport';
 import { httpTransport } from './transport-http';
-import { DASHBOARD_TOOL, MAX_FILE_BYTES, mcpTransport, type ToolCaller } from './transport-mcp';
+import { DASHBOARD_TOOL, mcpTransport, viewKey, type ToolCaller } from './transport-mcp';
 import type { State } from './types';
 
 const STATE = { csrf: 'token-1', lang: 'fr' } as unknown as State;
@@ -112,13 +112,15 @@ function fakeHost(
   return { host, calls };
 }
 
+const KEY = 'view-key-for-tests';
+
 describe('MCP Apps transport (the dashboard in the conversation)', () => {
   it('calls dashboard_api with the same request, and returns the body', async () => {
     const { host, calls } = fakeHost(() => ({
       content: [{ type: 'text', text: 'Sent to the dashboard view.' }],
       structuredContent: { status: 200, body: STATE },
     }));
-    const mcp = mcpTransport(host);
+    const mcp = mcpTransport(host, KEY);
     const out = await mcp.send({
       method: 'POST',
       path: '/answer',
@@ -134,6 +136,7 @@ describe('MCP Apps transport (the dashboard in the conversation)', () => {
         query: { lang: 'fr' },
         body: { id: 'civil_status', value: 'single' },
         csrf: 'token-1',
+        key: KEY,
       },
     ]);
   });
@@ -145,7 +148,7 @@ describe('MCP Apps transport (the dashboard in the conversation)', () => {
         ? { structuredContent: { status: 200, etag: 'tag-1', body: STATE } }
         : { structuredContent: { status: 304, etag: 'tag-1' } },
     );
-    const mcp = mcpTransport(host);
+    const mcp = mcpTransport(host, KEY);
     const first = await mcp.send({ method: 'GET', path: '/state', query: { lang: 'fr' } });
     const again = await mcp.send({ method: 'GET', path: '/state', query: { lang: 'fr' } });
     expect(again).toBe(first);
@@ -162,67 +165,44 @@ describe('MCP Apps transport (the dashboard in the conversation)', () => {
       structuredContent: { status: 403, body: { error: 'Reload the dashboard and try again.' } },
     }));
     await expect(
-      mcpTransport(host).send({ method: 'POST', path: '/skip', query: {}, body: {} }),
+      mcpTransport(host, KEY).send({ method: 'POST', path: '/skip', query: {}, body: {} }),
     ).rejects.toThrow(new ApiError('Reload the dashboard and try again.'));
   });
 
-  it('sends a document in parts of at most 1 MB, as base64', async () => {
-    const { host, calls } = fakeHost((args) => {
-      const file = args.file as { part: number; parts: number };
-      return {
-        structuredContent:
-          file.part < file.parts - 1
-            ? { status: 202, body: { received: 1 } }
-            : { status: 200, body: STATE },
-      };
-    });
-    const size = 2 * 1024 * 1024 + 10;
-    const bytes = new Uint8Array(size).map((_, i) => i % 251);
-    const file = new File([bytes], 'dupont.pdf');
-    const out = await mcpTransport(host).send({
-      method: 'POST',
-      path: '/documents',
-      query: { lang: 'fr', kind: 'salary_certificate' },
-      file,
-      csrf: 'token-1',
-    });
-    expect(out).toBe(STATE);
-    expect(calls).toHaveLength(3);
-    const parts = calls.map(
-      (c) => c.file as { name: string; upload: string; part: number; parts: number; data: string },
-    );
-    expect(parts.map((p) => [p.part, p.parts])).toEqual([
-      [0, 3],
-      [1, 3],
-      [2, 3],
-    ]);
-    expect(new Set(parts.map((p) => p.upload)).size).toBe(1);
-    expect(calls[0]).toMatchObject({
-      method: 'POST',
-      path: '/documents',
-      query: { lang: 'fr', kind: 'salary_certificate' },
-      csrf: 'token-1',
-      file: { name: 'dupont.pdf', size },
-    });
-    const decoded = parts.map((p) => Uint8Array.from(atob(p.data), (c) => c.charCodeAt(0)));
-    expect(decoded.map((d) => d.length)).toEqual([1024 * 1024, 1024 * 1024, 10]);
-    expect(decoded.flatMap((d) => Array.from(d))).toEqual(Array.from(bytes));
-  });
-
-  it('says where to add a file over 10 MB instead of sending it', async () => {
+  it('never sends a document through the chat: it says where to add it', async () => {
     const { host, calls } = fakeHost(() => ({ structuredContent: { status: 200 } }));
-    const file = new File([new Uint8Array(MAX_FILE_BYTES + 1)], 'scan.pdf');
+    const file = new File(['%PDF'], 'dupont.pdf');
     await expect(
-      mcpTransport(host).send({ method: 'POST', path: '/documents', query: { lang: 'en' }, file }),
-    ).rejects.toThrow(/“scan\.pdf” is larger than 10 MB.*browser.*Taxpresso folder/);
+      mcpTransport(host, KEY).send({
+        method: 'POST',
+        path: '/documents',
+        query: { lang: 'en' },
+        file,
+      }),
+    ).rejects.toThrow(/out of the chat app.*“dupont\.pdf”.*browser.*Taxpresso folder/);
+    await expect(
+      mcpTransport(host, KEY).send({
+        method: 'POST',
+        path: '/documents',
+        query: { lang: 'fr' },
+        file,
+      }),
+    ).rejects.toThrow(/navigateur.*dossier Taxpresso/);
     expect(calls).toHaveLength(0);
   });
 
-  it('says the same when the host fails to carry a document', async () => {
-    const host: ToolCaller = { callServerTool: () => Promise.reject(new Error('too big')) };
-    const file = new File(['%PDF'], 'x.pdf');
-    await expect(
-      mcpTransport(host).send({ method: 'POST', path: '/documents', query: { lang: 'fr' }, file }),
-    ).rejects.toThrow(/n’a pas pu être ajouté depuis le chat.*navigateur.*dossier Taxpresso/);
+  it('is marked as the dashboard inside the conversation', () => {
+    expect(mcpTransport(fakeHost(() => ({})).host, KEY).embedded).toBe(true);
+  });
+
+  it('reads its key from the meta tag the extension writes into the view', () => {
+    const doc = {
+      querySelector: (sel: string) =>
+        sel === 'meta[name="taxpresso-view-key"]'
+          ? ({ content: 'k-123' } as HTMLMetaElement)
+          : null,
+    } as Pick<Document, 'querySelector'>;
+    expect(viewKey(doc)).toBe('k-123');
+    expect(viewKey({ querySelector: () => null })).toBe('');
   });
 });

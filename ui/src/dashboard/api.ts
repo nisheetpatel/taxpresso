@@ -11,6 +11,9 @@ let transport: Transport | undefined;
 let csrf = '';
 
 /** How this page reaches the extension: set once at start (main.tsx, or the MCP Apps view). */
+/** Whether the dashboard runs inside the conversation rather than in the browser. */
+export const embedded = (): boolean => transport?.embedded === true;
+
 export function setTransport(next: Transport): void {
   transport = next;
 }

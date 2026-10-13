@@ -21,4 +21,6 @@ export interface ApiRequest {
 export interface Transport {
   /** The handler's answer; throws ApiError with its message when it refuses. */
   send(req: ApiRequest): Promise<unknown>;
+  /** True inside the conversation (the MCP Apps view), where documents are not added. */
+  embedded?: boolean;
 }

@@ -74,6 +74,11 @@ const server = createServer((req, res) => {
         JSON.stringify(await client.callTool({ name: 'open_dashboard', arguments: {} })),
       );
     }
+    if (url.pathname === '/__mcp/view') {
+      // The view as a host gets it: read from the extension, with the key it writes into it.
+      const { contents } = await client.readResource({ uri: 'ui://taxpresso/dashboard.html' });
+      return reply(200, contents[0].text, 'text/html; charset=utf-8');
+    }
     if (url.pathname === '/__mcp/call' && req.method === 'POST') {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);

@@ -4,9 +4,8 @@
 import { ApiError, type ApiRequest, type Transport } from './transport';
 
 export const DASHBOARD_TOOL = 'dashboard_api';
-/** Same limits as the extension (extension/src/dashboard-view.ts): 10 MB a file, 1 MB a call. */
-export const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const PART_BYTES = 1024 * 1024;
+/** The meta tag the extension writes into this view's HTML: the key the dashboard_api tool asks for. */
+export const VIEW_KEY_META = 'taxpresso-view-key';
 
 /** What the view needs from the host: ext-apps' App has it. */
 export interface ToolCaller {
@@ -23,42 +22,33 @@ interface Reply {
   etag?: string;
 }
 
-const NBSP = ' ';
+const NBSP = '\u00a0';
+/**
+ * Documents are not added from the chat: their bytes would pass through the chat app's messages
+ * (and possibly its logs). The folder and the browser dashboard take them directly.
+ */
 const ADD_ELSEWHERE = {
-  en: (name: string, reason: string) =>
-    `“${name}” ${reason}. Add it in the dashboard in your browser, or put it in your Taxpresso folder.`,
-  fr: (name: string, reason: string) =>
-    `«${NBSP}${name}${NBSP}» ${reason}. Ajoutez-le dans le tableau de bord de votre navigateur, ou déposez-le dans votre dossier Taxpresso.`,
-};
-const TOO_LARGE = {
-  en: 'is larger than 10 MB, too large to add from the chat',
-  fr: `dépasse 10${NBSP}Mo, c’est trop lourd pour l’ajouter depuis le chat`,
-};
-const FAILED = {
-  en: 'could not be added from the chat',
-  fr: 'n’a pas pu être ajouté depuis le chat',
+  en: (name: string) =>
+    `To keep your documents out of the chat app, add “${name}” in the dashboard in your browser, or put it in your Taxpresso folder.`,
+  fr: (name: string) =>
+    `Pour que vos documents ne passent pas par l’application de chat, ajoutez «${NBSP}${name}${NBSP}» dans le tableau de bord de votre navigateur, ou déposez-le dans votre dossier Taxpresso.`,
 };
 
-function toBase64(bytes: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  }
-  return btoa(binary);
+/** The key from this view's HTML, or an empty string (the extension then refuses every call). */
+export function viewKey(doc: Pick<Document, 'querySelector'> = document): string {
+  return doc.querySelector<HTMLMetaElement>(`meta[name="${VIEW_KEY_META}"]`)?.content ?? '';
 }
 
-function uploadId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-export function mcpTransport(host: ToolCaller): Transport {
+export function mcpTransport(host: ToolCaller, key: string): Transport {
   /** The last state, by language, with its tag: unchanged state comes back without a body. */
   const states = new Map<string, { etag: string; body: unknown }>();
 
   /** One tool call. Throws ApiError when the extension refuses, Error when the host fails. */
   async function call(args: Record<string, unknown>): Promise<Reply> {
-    const result = await host.callServerTool({ name: DASHBOARD_TOOL, arguments: args });
+    const result = await host.callServerTool({
+      name: DASHBOARD_TOOL,
+      arguments: { ...args, key },
+    });
     const reply = result.structuredContent as Reply | undefined;
     if (!result.isError && reply && reply.status < 400) return reply;
     const error = (reply?.body as { error?: unknown } | undefined)?.error;
@@ -72,34 +62,12 @@ export function mcpTransport(host: ToolCaller): Transport {
     );
   }
 
-  async function upload(req: ApiRequest, file: File): Promise<unknown> {
-    const lang = req.query.lang === 'fr' ? 'fr' : 'en';
-    if (file.size > MAX_FILE_BYTES)
-      throw new ApiError(ADD_ELSEWHERE[lang](file.name, TOO_LARGE[lang]));
-    try {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const parts = Math.max(1, Math.ceil(bytes.length / PART_BYTES));
-      const upload = uploadId();
-      let reply: Reply | undefined;
-      for (let part = 0; part < parts; part++) {
-        const data = toBase64(bytes.subarray(part * PART_BYTES, (part + 1) * PART_BYTES));
-        reply = await call({
-          method: 'POST',
-          path: req.path,
-          query: req.query,
-          csrf: req.csrf,
-          file: { name: file.name, upload, part, parts, size: bytes.length, data },
-        });
-      }
-      return reply?.body;
-    } catch (err) {
-      // The extension's own refusals (not a document, folder problem...) are shown as they are.
-      if (err instanceof ApiError) throw err;
-      throw new ApiError(ADD_ELSEWHERE[lang](file.name, FAILED[lang]));
-    }
+  function upload(req: ApiRequest, file: File): never {
+    throw new ApiError(ADD_ELSEWHERE[req.query.lang === 'fr' ? 'fr' : 'en'](file.name));
   }
 
   return {
+    embedded: true,
     async send(req) {
       if (req.file) return upload(req, req.file);
       const key =

@@ -92,6 +92,8 @@ export const messages = {
     folderProblem: 'Your Taxpresso folder can’t be used',
     lost: 'Taxpresso is not answering. It stops when Claude Desktop closes. Ask Claude to open the dashboard again.',
     footer: 'Runs on 127.0.0.1. Nothing on this page leaves your computer.',
+    footerChat:
+      'Runs on this computer, inside Claude Desktop. To add documents, use your Taxpresso folder or the dashboard in your browser.',
     p1: 'You',
     p2: 'Your spouse or partner',
     p1Short: 'You',
@@ -235,6 +237,8 @@ export const messages = {
     folderProblem: 'Votre dossier Taxpresso ne peut pas être utilisé',
     lost: 'Taxpresso ne répond plus. Il s’arrête quand Claude Desktop se ferme. Demandez à Claude de rouvrir le tableau de bord.',
     footer: 'Fonctionne sur 127.0.0.1. Rien sur cette page ne quitte votre ordinateur.',
+    footerChat:
+      'Fonctionne sur cet ordinateur, dans Claude Desktop. Pour ajouter des documents, utilisez votre dossier Taxpresso ou le tableau de bord dans votre navigateur.',
     p1: 'Vous',
     p2: 'Votre conjoint ou partenaire',
     p1Short: 'Vous',

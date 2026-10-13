@@ -16,7 +16,7 @@ import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { App } from '../dashboard/App';
 import { setTransport } from '../dashboard/api';
-import { mcpTransport } from '../dashboard/transport-mcp';
+import { mcpTransport, viewKey } from '../dashboard/transport-mcp';
 import { loadFonts } from './fonts';
 
 const strings = {
@@ -193,7 +193,7 @@ try {
   if (capabilities && !capabilities.serverTools) {
     render(<BrowserOnly host={host} />, root);
   } else {
-    setTransport(mcpTransport(host));
+    setTransport(mcpTransport(host, viewKey()));
     render(<Embedded host={host} />, root);
   }
 } catch {

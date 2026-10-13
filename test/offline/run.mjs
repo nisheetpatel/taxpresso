@@ -270,7 +270,16 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.ok(dashboardSession, 'the dashboard test ran first');
     const { tools } = await client.listTools();
     assert.deepEqual(tools.find((t) => t.name === 'dashboard_api')?._meta?.ui?.visibility, ['app']);
-    const view = (args) => client.callTool({ name: 'dashboard_api', arguments: args });
+    // The view's key is in its HTML, which the model never reads; without it the tool refuses.
+    const { contents } = await client.readResource({ uri: VIEW_URI });
+    const key = /<meta name="taxpresso-view-key" content="([^"]+)">/.exec(contents[0].text)?.[1];
+    assert.ok(key, 'the view carries its key');
+    const keyless = await client.callTool({
+      name: 'dashboard_api',
+      arguments: { method: 'GET', path: '/state', key: 'not-the-key' },
+    });
+    assert.equal(keyless.structuredContent?.status, 403);
+    const view = (args) => client.callTool({ name: 'dashboard_api', arguments: { key, ...args } });
     const state = await view({ method: 'GET', path: '/state', query: { lang: 'fr' } });
     assert.ok(!state.isError);
     const { origin, host, cookie } = dashboardSession;

@@ -4,7 +4,7 @@
 // view calls the tool: hosts that follow MCP Apps hide it from the model (`_meta.ui.visibility`).
 // Nothing here opens a connection (C2): the view's requests come in over the MCP channel.
 
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/server';
@@ -17,14 +17,6 @@ export const DASHBOARD_VIEW_URI = 'ui://taxpresso/dashboard.html';
 export const MCP_APP_MIME_TYPE = 'text/html;profile=mcp-app';
 export const DASHBOARD_API_TOOL = 'dashboard_api';
 
-/** Largest document the view sends: 10 MB, in parts of at most 1 MB (a tool call each). */
-export const VIEW_MAX_FILE = 10 * 1024 * 1024;
-const PART_BYTES = 1024 * 1024;
-const PART_BASE64 = Math.ceil(PART_BYTES / 3) * 4;
-/** Uploads in progress at once, and how long an unfinished one is kept. */
-const OPEN_UPLOADS = 3;
-const UPLOAD_IDLE_MS = 2 * 60 * 1000;
-
 /**
  * The view needs nothing from outside: no connection, no remote script, style, font or frame
  * (empty lists are the hosts' most restrictive default). It asks to write to the clipboard for
@@ -36,9 +28,13 @@ const VIEW_META = {
   prefersBorder: true,
 };
 
-const TOO_LARGE =
-  'This file is larger than 10 MB, too large to add from the chat. Add it in the dashboard in your browser, or put it in your Taxpresso folder.';
-const INTERRUPTED = 'Adding the file was interrupted. Try again.';
+/** Written into the view's HTML: the key every dashboard_api call must carry (see below). */
+export const VIEW_KEY_META = 'taxpresso-view-key';
+
+const NOT_THE_VIEW =
+  'Only the dashboard shown in the conversation uses this. Ask Claude to open the dashboard again.';
+const NO_DOCUMENTS =
+  'To keep your documents out of the chat app, add them in the dashboard in your browser, or put them in your Taxpresso folder.';
 
 const Query = z
   .object({
@@ -49,22 +45,6 @@ const Query = z
     replace: z.string().max(80).optional(),
   })
   .strict();
-
-const FilePart = z.object({
-  name: z.string().min(1).max(255),
-  upload: z.string().regex(/^[\w-]{8,64}$/),
-  part: z.number().int().min(0),
-  parts: z
-    .number()
-    .int()
-    .min(1)
-    .max(Math.ceil(VIEW_MAX_FILE / PART_BYTES)),
-  size: z.number().int().min(0),
-  data: z
-    .string()
-    .max(PART_BASE64)
-    .regex(/^[A-Za-z0-9+/]*={0,2}$/),
-});
 
 const Input = z.object({
   method: z.enum(['GET', 'POST']),
@@ -77,84 +57,16 @@ const Input = z.object({
   csrf: z.string().max(100).optional(),
   /** The tag of the last state the view has: unchanged state comes back as 304, without a body. */
   etag: z.string().max(64).optional(),
-  file: FilePart.optional(),
+  /** The key from the view's HTML: the model never reads the view, so it can't call this. */
+  key: z.string().max(64),
 });
 type Input = z.infer<typeof Input>;
 
-interface Pending {
-  name: string;
-  size: number;
-  parts: number;
-  chunks: Buffer[];
-  bytes: number;
-  at: number;
+/** The view's HTML with its key in a meta tag, right after <head>. */
+export function withKey(html: string, key: string): string {
+  const tag = `<meta name="${VIEW_KEY_META}" content="${key}">`;
+  return /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (h) => h + tag) : tag + html;
 }
-
-/** Documents sent from the view in parts, put back together, then added like an HTTP upload. */
-class Uploads {
-  readonly #open = new Map<string, Pending>();
-  readonly #dashboard: Dashboard;
-
-  constructor(dashboard: Dashboard) {
-    this.#dashboard = dashboard;
-  }
-
-  async receive(input: Input, query: URLSearchParams): Promise<ApiResponse> {
-    const file = input.file!;
-    // Every part meets the CSRF rule of a change before anything is kept.
-    const refused = this.#dashboard.refuse('POST', '/documents', input.csrf, 0);
-    if (refused) {
-      this.#open.delete(file.upload);
-      return refused;
-    }
-    if (input.method !== 'POST' || input.path !== '/documents') return invalid();
-    if (file.size > VIEW_MAX_FILE) {
-      this.#open.delete(file.upload);
-      return { status: 413, body: { error: TOO_LARGE } };
-    }
-    const now = Date.now();
-    for (const [id, p] of this.#open) if (now - p.at > UPLOAD_IDLE_MS) this.#open.delete(id);
-    if (file.part === 0) {
-      this.#open.delete(file.upload);
-      const { name, size, parts } = file;
-      this.#open.set(file.upload, { name, size, parts, chunks: [], bytes: 0, at: now });
-      // Oldest first: keep only the most recent few.
-      for (const id of [...this.#open.keys()].slice(0, -OPEN_UPLOADS)) this.#open.delete(id);
-    }
-    const pending = this.#open.get(file.upload);
-    if (
-      !pending ||
-      file.part !== pending.chunks.length ||
-      file.parts !== pending.parts ||
-      file.size !== pending.size ||
-      file.name !== pending.name
-    ) {
-      this.#open.delete(file.upload);
-      return { status: 400, body: { error: INTERRUPTED } };
-    }
-    const chunk = Buffer.from(file.data, 'base64');
-    pending.chunks.push(chunk);
-    pending.bytes += chunk.length;
-    pending.at = now;
-    const last = file.part === file.parts - 1;
-    if (pending.bytes > pending.size || (last && pending.bytes !== pending.size)) {
-      this.#open.delete(file.upload);
-      return { status: 400, body: { error: INTERRUPTED } };
-    }
-    if (!last) return { status: 202, body: { received: pending.bytes } };
-    this.#open.delete(file.upload);
-    return this.#dashboard.callApi({
-      method: 'POST',
-      path: '/documents',
-      query,
-      headers: { 'x-filename': encodeURIComponent(pending.name) },
-      body: Buffer.concat(pending.chunks),
-      csrfToken: input.csrf,
-    });
-  }
-}
-
-const invalid = (): ApiResponse => ({ status: 400, body: { error: 'The request is not valid.' } });
 
 const tagOf = (body: unknown) =>
   createHash('sha256').update(JSON.stringify(body)).digest('base64url').slice(0, 32);
@@ -193,7 +105,15 @@ export function registerDashboardView(
   ws: Workspace,
   dashboard: Dashboard,
 ): void {
-  const uploads = new Uploads(dashboard);
+  // A new key each time the extension starts. It is only in the view's HTML, which the host
+  // renders and the model never reads: a call without it (the model's own, if a host ignored
+  // `visibility`) is refused, so nothing is ever confirmed "from the dashboard" by Claude (C7).
+  const viewKey = randomBytes(24).toString('base64url');
+  const keyOk = (key: string) => {
+    const a = Buffer.from(key);
+    const b = Buffer.from(viewKey);
+    return a.length === b.length && timingSafeEqual(a, b);
+  };
 
   server.registerResource(
     'dashboard-view',
@@ -209,7 +129,10 @@ export function registerDashboardView(
         {
           uri: uri.href,
           mimeType: MCP_APP_MIME_TYPE,
-          text: await readFile(path.join(ws.config.uiDir, 'views', 'dashboard.html'), 'utf8'),
+          text: withKey(
+            await readFile(path.join(ws.config.uiDir, 'views', 'dashboard.html'), 'utf8'),
+            viewKey,
+          ),
           _meta: { ui: VIEW_META },
         },
       ],
@@ -238,9 +161,10 @@ export function registerDashboardView(
         if (value !== undefined) query.set(key, value);
       }
       try {
-        if (input.file) return reply(await uploads.receive(input, query));
-        // A document only ever comes as file parts, never as a JSON body.
-        if (input.path === '/documents') return reply(invalid());
+        if (!keyOk(input.key)) return reply({ status: 403, body: { error: NOT_THE_VIEW } });
+        // Documents never come through the chat app: the folder and the browser page take them.
+        if (input.path === '/documents')
+          return reply({ status: 400, body: { error: NO_DOCUMENTS } });
         const body =
           input.method === 'POST' ? Buffer.from(JSON.stringify(input.body ?? {})) : Buffer.alloc(0);
         const res = await dashboard.callApi({
