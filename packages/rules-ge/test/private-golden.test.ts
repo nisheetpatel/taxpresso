@@ -18,7 +18,8 @@
 //                   communalIncome: { privileged: { base, tax }, domicile: { base, tax } },
 //                   communalWealth: { privileged: { base, tax }, domicile: { base, tax } },
 //                   personalTax, total } },
-//   ifd: { items, grossIncome, netIncome, totalIncome (95.00), taxableIncome (99.00), tax },
+//   ifd: { items, grossIncome, netIncome, totalIncome (95.00), taxableIncome (99.00),
+//          scaleIncome (the taxable income rounded down to CHF 100, as an assessment shows it), tax },
 //   input?: the engine input (EngineInput) from the raw figures: then the items the engine derives
 //           are checked against icc.items and ifd.items too (stage 2).
 //
@@ -87,6 +88,7 @@ interface GoldenCase {
     totalIncome?: number;
     netIncome?: number;
     taxableIncome?: number;
+    scaleIncome?: number;
     tax?: number;
   };
   input?: EngineInput;
@@ -190,6 +192,7 @@ function differences(c: GoldenCase): string[] {
   cmp('ifd.netIncome', c.ifd?.netIncome, ifd.netIncome.amount);
   cmp('ifd.totalIncome', c.ifd?.totalIncome, ifd.totalIncome.amount);
   cmp('ifd.taxableIncome', c.ifd?.taxableIncome, ifd.taxableIncome.amount);
+  cmp('ifd.scaleIncome', c.ifd?.scaleIncome, ifd.scaleIncome.amount);
   cmp('ifd.tax', c.ifd?.tax, ifd.tax.amount);
   if (r.shieldMayApply)
     out.push('icc: the tax shield may apply (LIPP art. 60); the engine does not compute it');
