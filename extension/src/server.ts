@@ -49,8 +49,8 @@ const chf = (centimes: number) => `CHF ${Math.round(centimes / 100).toLocaleStri
 const ASSUMPTION_TEXT: Record<string, string> = {
   icc_2025_scale: 'Geneva tax uses the 2025 scale; the 2026 scale is published in January 2027.',
   flat_deductions_only:
-    'Only flat deductions are counted; health premiums, childcare and Geneva family deductions are not, so the real saving may be a little lower.',
-  home_commune_rate: 'The communal part uses the home commune rate only.',
+    'Health premiums, childcare and other costs not given yet are not counted, so the real saving may be a little different.',
+  home_commune_rate: 'All income is taken as earned in the home commune.',
   net_from_gross: 'Net salary assumed to be 88 % of the gross; the payslip gives the real figure.',
   commune_default: 'Commune unknown: City of Geneva assumed.',
   no_income_for_some: 'No salary given for one person: counted as zero.',

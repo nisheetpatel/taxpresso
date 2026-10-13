@@ -2,7 +2,15 @@
 // comes from the rules engine (@taxpresso/rules-ge, SPEC.md section 7); nothing is computed here.
 // Concise by default (C6), the explanation tree with `detail`.
 import type { Lang } from '@taxpresso/questionnaire';
-import { chf, type Item, type Line, type TaxResult, type Text } from '@taxpresso/rules-ge';
+import {
+  chf,
+  compareWithLastYear,
+  type Item,
+  type LastYearRow,
+  type Line,
+  type TaxResult,
+  type Text,
+} from '@taxpresso/rules-ge';
 import type { Workspace } from './workspace.js';
 
 const WHO: Record<string, Text> = {
@@ -106,6 +114,25 @@ function lines(r: TaxResult): ReturnType<typeof lineOut>[] {
 
 const en = (list: readonly Text[]) => list.map((x) => x.en);
 
+const PERSON: Record<LastYearRow['person'], Text> = {
+  A: { en: 'you', fr: 'vous' },
+  B: { en: 'your spouse', fr: 'votre conjoint' },
+  household: { en: 'household', fr: 'ménage' },
+};
+
+/** "CHF 7'258.00" or "-" when a column is not there. */
+const money = (n: number | undefined) => (n === undefined ? '-' : chf(n));
+
+/** One row of the comparison, in plain words, for Claude. */
+function lastYearText(x: LastYearRow): string {
+  const col = (k: 'icc' | 'ifd', name: string) =>
+    x.lastYear[k] === undefined && x.thisYear[k] === undefined
+      ? ''
+      : `${name} ${money(x.lastYear[k])} last year, ${money(x.thisYear[k])} now`;
+  const cols = [col('icc', 'ICC'), col('ifd', 'IFD')].filter(Boolean).join('; ');
+  return `${x.code} ${x.official} (${PERSON[x.person].en}): ${cols}${x.lastYearNeedsOk ? ' [last year read, not checked by the user]' : ''}${x.thisYearProvisional ? ' [this year not final]' : ''}`;
+}
+
 /** compute_tax: text for Claude and the structured result. */
 export function computeTaxOutput(ws: Workspace, detail: boolean) {
   const { result: r, missing, notes } = ws.taxEstimate();
@@ -148,7 +175,19 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
       `Main ICC items: ${items.map((i) => `${i.code} ${i.label.fr} (${WHO[i.person]?.en ?? i.person}) ${chf(i.amount)}${i.estimates?.length ? ' [estimate]' : ''}${i.needsOk ? " [needs the user's OK]" : ''}`).join('; ')}.`,
     );
   }
+  const lastYear = compareWithLastYear(r, ws.countedFacts());
+  if (lastYear.length) {
+    say.push(
+      'Compared with last year (read from last year’s declaration; comparison only, never part of this year’s calculation):',
+      ...lastYear.map((x) => `- ${lastYearText(x)}`),
+    );
+  }
   if (r.estimates.length) say.push(`Estimates: ${r.estimates.map((e) => e.what.en).join(' ')}`);
+  if (!r.complete) {
+    say.push(
+      `Not final: some amounts are known only in part, so these taxes are at least what is shown. ${en(r.incomplete).join(' ')}`,
+    );
+  }
   if (r.needsOk) {
     say.push(
       `${r.needsOk} item${r.needsOk === 1 ? '' : 's'} rest on values that still need the user's OK (dashboard, Documents).`,
@@ -193,6 +232,23 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     unsupported: en(r.unsupported),
     notSupported,
     unverifiedRules: en(r.unverifiedRules),
+    complete: r.complete,
+    ...(r.incomplete.length ? { incomplete: en(r.incomplete) } : {}),
+    ...(lastYear.length
+      ? {
+          lastYear: lastYear.map((x) => ({
+            code: x.code,
+            form: x.form,
+            person: x.person,
+            label: x.official,
+            lastYear: x.lastYear,
+            thisYear: x.thisYear,
+            change: x.change,
+            lastYearNeedsOk: x.lastYearNeedsOk,
+            thisYearProvisional: x.thisYearProvisional,
+          })),
+        }
+      : {}),
   };
   if (detail) {
     structured.detail = {
@@ -300,7 +356,18 @@ export function estimateView(ws: Workspace, lang: Lang) {
     })),
     estimates: r.estimates.map((e) => e.what[lang]),
     needsOk: r.needsOk,
-    notes: [...r.unsupported, ...r.notCounted].map((n) => n[lang]),
+    notes: [...r.unsupported, ...r.incomplete, ...r.notCounted].map((n) => n[lang]),
+    complete: r.complete,
+    lastYear: compareWithLastYear(r, ws.countedFacts()).map((x) => ({
+      code: x.code,
+      label: x.label[lang],
+      official: x.official,
+      who:
+        ws.snapshot().people.length > 1 && x.person !== 'household' ? PERSON[x.person][lang] : '',
+      lastYear: x.lastYear,
+      thisYear: x.thisYear,
+      provisional: x.lastYearNeedsOk || x.thisYearProvisional,
+    })),
   };
 }
 

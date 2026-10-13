@@ -1,9 +1,10 @@
 // The copy panel (SPEC.md 10.5) for the dashboard and for Claude: the values to type into the
-// official declaration, in the form's order. Until the tax engine lands its items come from the
-// ledger (values read from documents and answers, through @taxpresso/filing-ge's routes); engine
-// items will take over rubric by rubric (mergeItems). Derived on every read; only the "Entered"
+// official declaration, in the form's order. Items come from the ledger (values read from
+// documents and answers, through @taxpresso/filing-ge's routes); the rubrics the tax engine
+// computes (flat deductions, two-earner, insurance limits, family and wealth deductions, net and
+// taxable income) come from the engine and take over rubric by rubric (mergeItems). Derived on every read; only the "Entered"
 // ticks are stored, in entered.json in the vault, never in the ledger.
-import type { FactStatus } from '@taxpresso/ledger';
+import type { FactStatus, Owner } from '@taxpresso/ledger';
 import {
   buildCopyPanel,
   enteredValue,
@@ -13,13 +14,71 @@ import {
   mergeItems,
   type CopyPanel,
   type CopyRow,
+  type FormColumn,
   type FormItem,
 } from '@taxpresso/filing-ge';
+import type { Line } from '@taxpresso/rules-ge';
 import type { Lang } from '@taxpresso/questionnaire';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
-/** The engine's items, when it lands (SPEC.md section 7). None yet: every value comes from the ledger. */
-const ENGINE_ITEMS: readonly FormItem[] = [];
+/** Rubrics the form works out and the engine computes, by the column they fill. */
+const ENGINE_RUBRICS = {
+  icc: new Set(['31.50', '41.50', '31.95', '41.95', '61.25', '61.30']),
+  ifd: new Set(['31.20', '41.20', '31.90', '41.90', '59.20', '61.20']),
+};
+
+/** The engine's values for the rubrics it computes (SPEC.md section 7), as form items. */
+export function engineItems(ws: Workspace): FormItem[] {
+  const r = ws.taxEstimate().result;
+  if (!r) return [];
+  const status = (l: Line): FactStatus =>
+    l.needsOk ? 'extracted' : l.estimates?.length || l.incomplete ? 'estimate' : 'computed';
+  const out: FormItem[] = [];
+  const add = (code: string, person: Owner, l: Line, column?: FormColumn, amount = l.amount) =>
+    out.push({
+      code,
+      person,
+      ...(column ? { column } : {}),
+      amount: Math.abs(amount),
+      status: status(l),
+      source: { ...(l.facts ? { facts: l.facts } : {}), rule: l.sources.join('; ') },
+    });
+  const icc = r.icc;
+  const ifd = r.ifd;
+  for (const i of icc?.items ?? [])
+    if (ENGINE_RUBRICS.icc.has(i.code)) add(i.code, i.person, i, 'icc');
+  for (const i of ifd?.items ?? [])
+    if (ENGINE_RUBRICS.ifd.has(i.code)) add(i.code, i.person, i, 'ifd');
+  if (icc) {
+    const life = icc.items.find((i) => i.code === '52.15');
+    if (life) add('52.15', 'household', life);
+    const insurance = icc.items.filter((i) => i.code === '52.15' || i.code === '52.21');
+    if (insurance.length) {
+      add(
+        '52.00',
+        'household',
+        insurance[0]!,
+        'icc',
+        insurance.reduce((s, i) => s + i.amount, 0),
+      );
+    }
+    add('95.00', 'household', icc.totalIncome, 'icc');
+    add('99.00', 'household', icc.taxableIncome, 'icc');
+    // The wealth page only when there is wealth to declare.
+    if (icc.wealth.grossWealth.amount > 0) {
+      add('51.50', 'household', icc.wealth.socialDeduction, 'wealth');
+      add('95.00', 'household', icc.wealth.taxableWealth, 'wealth');
+      add('99.00', 'household', icc.wealth.taxableWealth, 'wealth');
+    }
+  }
+  if (ifd) {
+    const insurance = ifd.items.find((i) => i.code === '52.00');
+    if (insurance) add('52.00', 'household', insurance, 'ifd');
+    add('95.00', 'household', ifd.totalIncome, 'ifd');
+    add('99.00', 'household', ifd.taxableIncome, 'ifd');
+  }
+  return out;
+}
 
 export type CopyPanelRowView = Omit<CopyRow, 'documents'> & {
   documents: { id: string; filename: string }[];
@@ -47,7 +106,7 @@ function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPane
   const form = ws.engine.taxYear === 2025 ? FORM_2025 : FORM_2026;
   const built = buildCopyPanel({
     form,
-    items: mergeItems(ENGINE_ITEMS, items),
+    items: mergeItems(engineItems(ws), items),
     lang,
     entered: (id) => ws.formEntered(id),
   });

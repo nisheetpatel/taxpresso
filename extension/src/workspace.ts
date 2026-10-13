@@ -393,7 +393,25 @@ export class Workspace {
     };
     const custody = answer('profile.children_custody');
     const commune = answer('profile.commune');
+    // What the ledger knows besides salaries and the plans' own deductions, so the plans run on
+    // the real tax (premiums, childcare, donations, the état des titres).
+    const known = engineInputFromFacts(
+      this.engine.taxYear,
+      this.countedFacts(),
+      this.activeDocuments(),
+    ).input;
     return {
+      ...(this.engine.taxYear === 2025 || this.engine.taxYear === 2026
+        ? { taxYear: this.engine.taxYear }
+        : {}),
+      ...(known
+        ? {
+            known: {
+              ...(known.household ? { household: known.household } : {}),
+              ...(known.wealthItems ? { wealthItems: known.wealthItems } : {}),
+            },
+          }
+        : {}),
       couple: snap.people.length > 1,
       children: Number(answer('profile.children_count') ?? 0),
       ...(custody ? { custody: custody as HouseholdInput['custody'] & string } : {}),

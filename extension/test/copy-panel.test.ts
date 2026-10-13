@@ -79,13 +79,22 @@ describe('the copy panel in the dashboard', () => {
       provisional: true,
       couple: false,
     });
-    expect(s.copyPanel.sections.map((x) => x.page)).toEqual(['PG1', 'A1']);
+    expect(s.copyPanel.sections.map((x) => x.page)).toEqual(['PG1', 'PG3', 'A1']);
     expect(rowsOf(s).map((r) => [r.page, r.ref, r.copy, r.status, r.final])).toEqual([
       ['PG1', 'PG1-COMMUNE', '6630', 'stated', true],
+      // From the tax engine: net and taxable income, ICC then IFD (85,000 - 5,413 - 1,812 and
+      // - 2,388), not final while the certificate needs the user's OK.
+      ['PG3', '95.00', '77775', 'extracted', false],
+      ['PG3', '95.00', '77199', 'extracted', false],
+      ['PG3', '99.00', '77775', 'extracted', false],
+      ['PG3', '99.00', '77199', 'extracted', false],
       ['A1', '11.10-1', '84000', 'extracted', false],
       ['A1', '11.15', '1000', 'extracted', false],
       ['A1', 'CS-G', undefined, 'extracted', false],
       ['A1', '31.10', '5413', 'extracted', false],
+      // The flat professional deductions, IFD (3 % of 79,587) and ICC (maximum 1,812).
+      ['A1', '31.20', '2388', 'extracted', false],
+      ['A1', '31.50', '1812', 'extracted', false],
     ]);
     const salary = rowsOf(s).find((r) => r.ref === '11.10-1')!;
     expect(salary).toMatchObject({
@@ -101,7 +110,7 @@ describe('the copy panel in the dashboard', () => {
     expect(a1).toMatchObject({
       entered: 0,
       total: 4,
-      pending: 4,
+      pending: 6,
       title: 'Activité dépendante 2025',
     });
   });
@@ -116,10 +125,11 @@ describe('the copy panel in the dashboard', () => {
 
     await ws.confirmDocument(docId, 'dashboard');
     let s = await state('/form/entered', { id: pending.id, entered: true });
+    // The ICC flat deduction stays an estimate until Geneva publishes its 2026 values.
     expect(s.copyPanel.sections.find((x) => x.page === 'A1')).toMatchObject({
       entered: 1,
       total: 4,
-      pending: 0,
+      pending: 1,
     });
     const file = JSON.parse(await readFile(path.join(ws.vault.dir, 'entered.json'), 'utf8')) as {
       form: Record<string, string>;
@@ -167,18 +177,18 @@ describe('get_form_values', () => {
     const text = (res: { content: unknown }) => (res.content as { text: string }[])[0]!.text;
 
     const all = await client.callTool({ name: 'get_form_values', arguments: {} });
-    expect(text(all)).toMatch(/Entered: 0 of 5; 4 not final yet/);
+    expect(text(all)).toMatch(/Entered: 0 of 5; 10 not final yet/);
     expect(text(all)).toMatch(
       /- PG1 Déclaration fiscale 2025 \(Cover page: about you\): 0 of 1 entered\n/,
     );
     expect(text(all)).toMatch(
-      /- A1 Activité dépendante 2025 \(Salaried work, taxpayer A\): 0 of 4 entered, 4 not final/,
+      /- A1 Activité dépendante 2025 \(Salaried work, taxpayer A\): 0 of 4 entered, 6 not final/,
     );
     expect(all.structuredContent).toMatchObject({
       provisional: true,
       entered: 0,
       total: 5,
-      pending: 4,
+      pending: 10,
     });
 
     await ws.confirmDocument(docId, 'chat');
@@ -193,7 +203,7 @@ describe('get_form_values', () => {
 
     const none = await client.callTool({ name: 'get_form_values', arguments: { section: 'D1' } });
     expect(none.isError).toBe(true);
-    expect(text(none)).toMatch(/Sections with values: PG1, A1/);
+    expect(text(none)).toMatch(/Sections with values: PG1, PG3, A1/);
     await client.close();
   });
 });

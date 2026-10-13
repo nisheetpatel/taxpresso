@@ -135,8 +135,8 @@ export const messages = {
     'assume.icc_2025_scale':
       'Geneva tax uses the 2025 scale: the 2026 one is published in January 2027.',
     'assume.flat_deductions_only':
-      'Only flat deductions are counted, not health premiums, childcare or Geneva family deductions, so your real saving may be a little lower.',
-    'assume.home_commune_rate': 'The communal part uses your commune’s rate only.',
+      'Health premiums, childcare and other costs you haven’t given yet are not counted, so your real saving may be a little different.',
+    'assume.home_commune_rate': 'All your income is taken as earned in your commune.',
     'assume.net_from_gross':
       'We assume about 88 % of your gross salary is left after social insurance and your pension fund. Your payslip has the real figure.',
     'assume.commune_default': 'Commune not answered yet: City of Geneva assumed.',
@@ -273,8 +273,8 @@ export const messages = {
     planSources: 'Sources',
     'assume.icc_2025_scale': `L’impôt genevois utilise le barème 2025${NB}: celui de 2026 paraît en janvier 2027.`,
     'assume.flat_deductions_only':
-      'Seules les déductions forfaitaires sont comptées, pas les primes maladie, les frais de garde ni les déductions familiales genevoises, donc l’économie réelle peut être un peu plus faible.',
-    'assume.home_commune_rate': 'La part communale utilise uniquement le taux de votre commune.',
+      'Les primes maladie, les frais de garde et les autres frais pas encore indiqués ne sont pas comptés, donc l’économie réelle peut être un peu différente.',
+    'assume.home_commune_rate': 'Tous vos revenus sont comptés comme gagnés dans votre commune.',
     'assume.net_from_gross':
       'Nous supposons qu’environ 88 % de votre salaire brut reste après les assurances sociales et la caisse de pension. Votre fiche de salaire indique le vrai chiffre.',
     'assume.commune_default': `Commune pas encore indiquée${NB}: Ville de Genève par défaut.`,

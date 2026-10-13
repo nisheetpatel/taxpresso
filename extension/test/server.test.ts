@@ -183,7 +183,7 @@ describe('MCP surface', () => {
     expect(text(res)).toMatch(/detail: true/);
 
     const detailed = await call('compute_tax', { detail: true });
-    expect(text(detailed)).toMatch(/- 31\.50 Déduction forfaitaire ICC pour frais professionnels/);
+    expect(text(detailed)).toMatch(/- 31\.50 Déduction forfaitaire pour frais professionnels ICC/);
     expect(text(detailed)).toMatch(/ge-2025-guide-declaration-pp p\. 11, p\. 19 \(31\.50\)/);
     expect(structured<{ detail: { lines: { id: string }[] } }>(detailed).detail.lines).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: 'icc.incomeBase' })]),

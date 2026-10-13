@@ -29,6 +29,18 @@ export type EstimateView =
       estimates: string[];
       needsOk: number;
       notes: string[];
+      /** False when some amount is known only in part: the taxes are then floors. */
+      complete: boolean;
+      /** This year against last year's declaration, rubric by rubric (comparison only). */
+      lastYear: {
+        code: string;
+        label: string;
+        official: string;
+        who: string;
+        lastYear: { icc?: number; ifd?: number };
+        thisYear: { icc?: number; ifd?: number };
+        provisional: boolean;
+      }[];
     };
 
 interface Row {
@@ -60,6 +72,14 @@ const text = {
     needsOkOne:
       '1 value read from your documents still needs your OK: the figures will change if you correct it.',
     notes: 'Not in these figures',
+    incomplete: 'At least',
+    lastYearTitle: 'This year and last year',
+    lastYearNote:
+      'Last year’s figures come from your previous declaration. They are only for comparison and never change this year’s tax.',
+    lastYearCol: 'Last year',
+    thisYearCol: 'This year',
+    icc: 'cantonal',
+    ifd: 'federal',
     foot: 'Computed on this computer by Taxpresso from the official documents. Ask Claude why any figure is what it is.',
   },
   fr: {
@@ -77,6 +97,14 @@ const text = {
     needsOk: `{n} montants lus dans vos documents attendent votre confirmation${NB}: les chiffres changeront si vous les corrigez.`,
     needsOkOne: `1 montant lu dans vos documents attend votre confirmation${NB}: les chiffres changeront si vous le corrigez.`,
     notes: 'Pas compris dans ces chiffres',
+    incomplete: 'Au moins',
+    lastYearTitle: 'Cette année et l’an dernier',
+    lastYearNote:
+      'Les montants de l’an dernier viennent de votre déclaration précédente. Ils servent seulement à comparer et ne changent jamais l’impôt de cette année.',
+    lastYearCol: 'L’an dernier',
+    thisYearCol: 'Cette année',
+    icc: 'cantonal',
+    ifd: 'fédéral',
     foot: 'Calculé sur cet ordinateur par Taxpresso à partir des documents officiels. Demandez à Claude pourquoi un montant est ce qu’il est.',
   },
 } as const;
@@ -99,6 +127,14 @@ function chf(centimes: number | null, lang: Language): string {
     currency: 'CHF',
     minimumFractionDigits: 2,
   }).format(centimesString(centimes));
+}
+
+/** One figure, or the cantonal and federal ones when they differ. */
+function pair(p: { icc?: number; ifd?: number }, lang: Language): string {
+  if (p.icc !== undefined && p.ifd !== undefined && p.icc !== p.ifd) {
+    return `${chf(p.icc, lang)} (${tr(lang, 'icc')}), ${chf(p.ifd, lang)} (${tr(lang, 'ifd')})`;
+  }
+  return chf(p.icc ?? p.ifd ?? null, lang);
 }
 
 function Flags({
@@ -155,7 +191,9 @@ export function Estimate({
         <div class="est-total">
           <span>{tr(lang, 'total')}</span>
           <strong class="tnum">
-            {view.total === null ? tr(lang, 'notComputed') : chf(view.total, lang)}
+            {view.total === null
+              ? tr(lang, 'notComputed')
+              : `${view.complete ? '' : `${tr(lang, 'incomplete')} `}${chf(view.total, lang)}`}
           </strong>
         </div>
         <ul class="est-rows">
@@ -207,6 +245,31 @@ export function Estimate({
               ))}
             </ul>
           </>
+        ) : null}
+        {view.lastYear.length ? (
+          <details class="est-details">
+            <summary>{tr(lang, 'lastYearTitle')}</summary>
+            <p class="est-note">{tr(lang, 'lastYearNote')}</p>
+            <ul class="est-items">
+              {view.lastYear.map((x) => (
+                <li key={`${x.code}-${x.who}`} class="est-item" title={x.official}>
+                  <span class="est-label">
+                    <span class="tnum est-code">{x.code}</span> {x.label}
+                    {x.who ? <span class="muted"> · {x.who}</span> : null}
+                  </span>
+                  <span class="est-amount">
+                    <span class="muted">{tr(lang, 'lastYearCol')}</span>
+                    <span class="tnum">{pair(x.lastYear, lang)}</span>
+                    <span class="muted">{tr(lang, 'thisYearCol')}</span>
+                    <span class="tnum">{pair(x.thisYear, lang)}</span>
+                    {x.provisional ? (
+                      <span class="chip chip-estimate">{tr(lang, 'estimate')}</span>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
         ) : null}
         {view.estimates.length ? (
           <div class="est-flagged">
