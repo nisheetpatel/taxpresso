@@ -2,7 +2,7 @@
   "name": "@taxpresso/site",
   "version": "0.0.0",
   "private": true,
-  "description": "Static landing page in French, English and German (SPEC.md section 12). No JavaScript, no cookies, fonts bundled.",
+  "description": "Static website in French, English, German, Italian, Spanish and Portuguese. No JavaScript, no cookies, fonts bundled.",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "scripts": {

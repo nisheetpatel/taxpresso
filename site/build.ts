@@ -1,6 +1,6 @@
-// Builds the static website into site/dist: the home page and the Get started page in French (/),
-// English (/en/) and German (/de/); styles.css with the logo's rules and only the Latin Geist
-// subsets (French, English, German); the fonts and their license; the favicon from the logo.
+// Builds the static website into site/dist: the home page and the Get started page for every
+// language in LANGS (French at /, then /en/, /de/, /it/, /es/, /pt/); styles.css with the logo's
+// rules and only the Latin Geist subsets; the fonts and their license; the favicon from the logo.
 // Usage: node site/build.ts   (Node 22.18+ runs TypeScript directly)
 
 import { createHash } from 'node:crypto';
