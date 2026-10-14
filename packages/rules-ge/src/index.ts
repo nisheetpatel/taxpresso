@@ -185,3 +185,5 @@ export {
   type OfficialDocument,
   type OfficialLink,
 } from './law/official-documents.js';
+// Geneva behind the canton interface (packages/rules-ch, canton.ts).
+export { genevaInput, rules, type GenevaCantonal } from './canton.js';

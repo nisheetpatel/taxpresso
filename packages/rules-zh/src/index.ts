@@ -44,3 +44,5 @@ export { ESTIMATE_TEXT, NOTE } from './explain.js';
 export { chf } from './calc.js';
 export type { Cited } from '@taxpresso/rules-ch';
 export type * from './types.js';
+// Zurich behind the canton interface (packages/rules-ch, canton.ts); not wired into the extension.
+export { rules, zurichInput, type ZurichCantonal } from './canton.js';

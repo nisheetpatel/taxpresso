@@ -91,6 +91,15 @@ export {
   type FederalConcept,
 } from './ifd/items.js';
 export { ifdTax } from './ifd/assess.js';
+// The canton interface (docs/design/cantons.md, section 2).
+export type {
+  CantonCode,
+  CantonFiling,
+  CantonRules,
+  Commune,
+  DocumentRule,
+  LedgerView,
+} from './canton.js';
 // Pillar 3a and the pension fund (2nd pillar): the federal limits, the same for every canton's tax.
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './pension/pillar3a.js';
 export {
