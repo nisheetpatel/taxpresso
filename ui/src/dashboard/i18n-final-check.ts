@@ -39,6 +39,8 @@ const messages = {
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Bern) for more time to file (Fristverlängerung), online in TaxMe',
     moreTimeBl:
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung Basel-Landschaft) for more time to file (Fristerstreckung), online at www.steuern.bl.ch',
+    moreTimeVd:
+      'A document won’t arrive in time? Ask the tax office (Administration cantonale des impôts, ACI) for more time to file (demande de délai), online with e-Délai',
     moreTimeBs:
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung Basel-Stadt) for more time to file (Fristerstreckung), online in the eSteuern.BS portal',
   },
@@ -73,6 +75,7 @@ const messages = {
     moreTimeZh: `Un document n’arrivera pas à temps${NB}? Demandez un délai (Fristerstreckung) à l’administration fiscale (kantonales Steueramt)`,
     moreTimeBe: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) à l’Intendance des impôts du canton de Berne, en ligne dans TaxMe`,
     moreTimeBl: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale de Bâle-Campagne (Steuerverwaltung), en ligne sur www.steuern.bl.ch`,
+    moreTimeVd: `Un document n’arrivera pas à temps${NB}? Demandez un délai à l’Administration cantonale des impôts (ACI), en ligne avec e-Délai`,
     moreTimeBs: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale (Steuerverwaltung Basel-Stadt), en ligne dans le portail eSteuern.BS`,
   },
   de: {
@@ -111,6 +114,8 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Bern eine Fristverlängerung, online in TaxMe',
     moreTimeBl:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung Basel-Landschaft eine Fristerstreckung, online unter www.steuern.bl.ch',
+    moreTimeVd:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der kantonalen Steuerverwaltung (Administration cantonale des impôts, ACI) eine Fristverlängerung (demande de délai), online mit e-Délai',
     moreTimeBs:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung Basel-Stadt eine Fristerstreckung, online im Portal eSteuern.BS',
   },

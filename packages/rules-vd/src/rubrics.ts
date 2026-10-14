@@ -97,7 +97,43 @@ export const WEALTH_RUBRICS = {
   '610': r('Dettes privées', 'Private debts', 3, 41),
 } as const satisfies Record<string, Rubric>;
 
+/**
+ * The federal direct tax's own lines on the guide's worksheet (vd-2025-guide p. 65, "Impôt fédéral
+ * direct - Détermination du revenu imposable"), where they differ from the return's: the insurance
+ * premiums, contributions and savings interest together (300, 340 and 480), the franchise of the
+ * medical costs added back, and the social deductions. Its other lines are the return's codes.
+ */
+const WORKSHEET = 'vd-2025-guide p. 65';
+const w = (fr: string, en: string, pages: string): Rubric => ({
+  label: { en: `${en} (${fr})`, fr },
+  source: `${WORKSHEET}; vd-2025-guide ${pages}`,
+});
+
+export const FEDERAL_RUBRICS = {
+  '300': w(
+    'Primes et cotisations d’assurances et intérêts de capitaux d’épargne',
+    'Insurance premiums and savings interest, federal tax',
+    'p. 62 and 63 (codes 300, 340, 480)',
+  ),
+  'franchise-medicale': w(
+    'Franchise frais médicaux (revenu intermédiaire II x 5/95)',
+    'Medical costs: the threshold added back, federal tax',
+    'p. 62 (code 710)',
+  ),
+  'deduction-maries': w(
+    'Déductions sociales pour les personnes mariées ou liées par un partenariat enregistré vivant en ménage commun',
+    'Married couple deduction, federal tax',
+    'p. 64 (déductions sociales)',
+  ),
+  'deduction-enfants': w(
+    'Déductions sociales par enfant à charge',
+    'Child deduction, federal tax',
+    'p. 64 (déductions sociales)',
+  ),
+} as const satisfies Record<string, Rubric>;
+
 export type RubricCode = keyof typeof RUBRICS;
+export type FederalCode = keyof typeof FEDERAL_RUBRICS;
 export type WealthCode = keyof typeof WEALTH_RUBRICS;
 
 export function rubric(code: string): Rubric | undefined {
@@ -106,6 +142,11 @@ export function rubric(code: string): Rubric | undefined {
 
 export function wealthRubric(code: string): Rubric | undefined {
   return (WEALTH_RUBRICS as Record<string, Rubric>)[code];
+}
+
+/** A line of the federal worksheet: its own where it differs, else the return's. */
+export function federalRubric(code: string): Rubric | undefined {
+  return (FEDERAL_RUBRICS as Record<string, Rubric>)[code] ?? rubric(code);
 }
 
 /** Income lines: the total of the income (the form's 400 and the income of 410 to 465). */

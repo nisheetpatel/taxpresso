@@ -463,7 +463,15 @@ describe('the questions every canton shares', () => {
     const file = sharedQuestionnaire2026();
     const canton = file.questions[0]!;
     expect(canton).toMatchObject({ id: 'canton', key: 'profile.canton', type: 'choice' });
-    expect(canton.options?.map((o) => o.value)).toEqual(['GE', 'ZH', 'BE', 'BL', 'BS', 'other']);
+    expect(canton.options?.map((o) => o.value)).toEqual([
+      'GE',
+      'ZH',
+      'BE',
+      'BL',
+      'VD',
+      'BS',
+      'other',
+    ]);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
     expect(canton.link?.url).toBe('https://github.com/nisheetpatel/taxpresso/issues/1');
     // A move from another canton: the canton of 31 December taxes the whole year (LIFD art. 105).
@@ -472,18 +480,20 @@ describe('the questions every canton shares', () => {
     expect(canton.help?.en).toMatch(/taxes the whole year/);
     // The cantons covered are named from the options themselves: a canton added there is named.
     expect(canton.explain?.en).toMatch(
-      /returns for Geneva, Zurich, Bern, Basel-Landschaft and Basel-Stadt so far\.$/,
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud and Basel-Stadt so far\.$/,
     );
     expect(canton.explain?.fr).toMatch(
-      new RegExp(`ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne et Bâle-Ville\\.$`),
+      new RegExp(
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud et Bâle-Ville\\.$`,
+      ),
     );
     expect(canton.explain?.de).toMatch(
-      /für Genf, Zürich, Bern, Basel-Landschaft und Basel-Stadt vor\.$/,
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt und Basel-Stadt vor\.$/,
     );
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
-      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft or Basel-Stadt',
-      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne ou Bâle-Ville',
-      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft oder Basel-Stadt',
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud or Basel-Stadt',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud ou Bâle-Ville',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt oder Basel-Stadt',
     });
     for (const f of [file, geQuestionnaire2026(), zhQuestionnaire2026(), bsQuestionnaire2026()]) {
       expect(JSON.stringify(f)).not.toMatch(/\{cantons/);
@@ -540,7 +550,7 @@ describe('the questions every canton shares', () => {
     expect(e.next(snap)?.id).toBe('civil_status');
     expect(e.render(slot, snap, 'en')).toMatchObject({ value: 'GE', assumed: true });
     // An answer the key doesn't take is not assumed.
-    const refused = e.snapshot(fresh, { 'profile.canton': 'VD' });
+    const refused = e.snapshot(fresh, { 'profile.canton': 'TI' });
     expect(refused.slots.find((s) => s.id === 'canton')?.value).toBeUndefined();
     // The user's answer wins.
     const answered = e.snapshot(ledger, { 'profile.canton': 'ZH' });

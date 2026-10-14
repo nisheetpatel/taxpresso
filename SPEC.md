@@ -445,7 +445,8 @@ taxpresso/
                         Bundessteuer column (wired into the extension as a preview)
     rules-bs/           Basel-Stadt's cantonal and communal tax, and the federal tax of its Bund
                         column (wired into the extension as a preview)
-    rules-vd/           Vaud's cantonal and communal tax (not wired into the extension yet)
+    rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
+                        worksheet (wired into the extension as a preview)
     optimizer/
     filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation; the form shapes
                         and the copy panel every canton's form uses
@@ -454,6 +455,8 @@ taxpresso/
     filing-bl/          the Basel-Landschaft return (pages 2 to 4, two columns) and the values to type
     filing-bs/          the Basel-Stadt main form and forms W, B, K, Z and F (Kanton and Bund columns)
                         and the values to type on them
+    filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
+                        worksheet for the federal tax, to check
   ui/                   Vite app; views reused as MCP Apps resources
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
@@ -467,6 +470,9 @@ taxpresso/
   data/bs/2026/         Basel-Stadt's questionnaire: the shared questions, its own (reference age, work
                         rate, shared custody, each child under 18, childcare per child, commune, church,
                         parties)
+  data/vd/2026/         Vaud's questionnaire: the shared questions, its own (commune and its part,
+                        household alone with the children, upkeep, rent, household contents,
+                        childcare per child, savings interest)
   test/golden/          households + GeTax expected outputs
   test/fixtures/        sample PDFs (synthetic only, never real data)
   docs/                 privacy policy, support, example prompts

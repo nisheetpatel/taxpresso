@@ -16,6 +16,7 @@
     "@taxpresso/filing-bl": "workspace:*",
     "@taxpresso/filing-bs": "workspace:*",
     "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/filing-vd": "workspace:*",
     "@taxpresso/filing-zh": "workspace:*",
     "@taxpresso/intake": "workspace:*",
     "@taxpresso/ledger": "workspace:*",
@@ -26,6 +27,7 @@
     "@taxpresso/rules-bs": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",
+    "@taxpresso/rules-vd": "workspace:*",
     "@taxpresso/rules-zh": "workspace:*",
     "zod": "catalog:"
   },

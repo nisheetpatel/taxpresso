@@ -16,5 +16,8 @@ export default defineConfig({
   test: {
     include: ['{extension,packages,ui,site}/**/*.test.ts'],
     environment: 'node',
+    // End-to-end tests (a whole household through the server) and the seeded 2,000-household
+    // comparisons take a few seconds; on a busy machine they ran past vitest's 5 s default.
+    testTimeout: 30_000,
   },
 });

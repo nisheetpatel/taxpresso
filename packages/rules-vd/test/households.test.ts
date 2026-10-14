@@ -77,9 +77,11 @@ describe('H1: single, Lausanne, 2025, employed, public transport', () => {
     expect(x.cantonalIncome.amount).toBe(chf(5_669.3));
     expect(x.communalIncome.amount).toBe(chf(2_990.85));
     expect(x.wealthBase.amount).toBe(0);
-    expect(r.total).toBe(chf(8_660.15));
+    expect(x.total.amount).toBe(chf(8_660.15));
     expect(r.commune).toEqual({ bfs: null, name: 'Lausanne', rate: 7_850 });
-    expect(r.ifd).toBeNull();
+    // The federal tax of the guide's worksheet comes with it (./federal.test.ts).
+    expect(r.ifd?.tax.amount).toBeGreaterThan(0);
+    expect(r.total).toBe(x.total.amount + r.ifd!.tax.amount);
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
     expect(r.notCounted).toContainEqual(NOTE.dependents);
   });
@@ -197,7 +199,8 @@ describe('H2: married, two earners, two children, Nyon, 2025', () => {
     expect(x.cantonalIncome.amount).toBe(chf(5_333.95));
     expect(x.communalIncome.amount).toBe(chf(2_186.65));
     expect(x.wealthBase.amount).toBe(0);
-    expect(r.total).toBe(chf(7_520.6));
+    expect(x.total.amount).toBe(chf(7_520.6));
+    expect(r.total).toBe(x.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.partYear);
   });
 });
@@ -270,7 +273,8 @@ describe('H3: single parent, one child, Yverdon-les-Bains, 2026, by car', () => 
     expect(x.incomeReduction.amount).toBe(chf(-33.9));
     expect(x.cantonalIncome.amount).toBe(chf(998.6));
     expect(x.communalIncome.amount).toBe(chf(508.6));
-    expect(r.total).toBe(chf(1_507.2));
+    expect(x.total.amount).toBe(chf(1_507.2));
+    expect(r.total).toBe(x.total.amount + r.ifd!.tax.amount);
     expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.guide2026]);
     expect(r.icc?.items.find((i) => i.code === '660')?.sources.join(' ')).toContain(
       'vd-2026-law-li art. 60 al. 1 and 2 (p. 31)',
@@ -368,7 +372,8 @@ describe('H4: widowed retiree with wealth, Montreux, 2025', () => {
     expect(x.wealthBase.amount).toBe(chf(5_686.6));
     expect(x.cantonalWealth.amount).toBe(chf(8_814.25));
     expect(x.communalWealth.amount).toBe(chf(3_696.3));
-    expect(r.total).toBe(chf(26_078.3));
+    expect(x.total.amount).toBe(chf(26_078.3));
+    expect(r.total).toBe(x.total.amount + r.ifd!.tax.amount);
   });
 
   it('fails closed where the maximum of LICom art. 8 could apply (much wealth, little income)', () => {
@@ -406,6 +411,8 @@ describe('H5: shared custody without child support, Morges, 2025', () => {
     commune: 'Morges',
     civilStatus: 'divorced',
     childSupport: 'none',
+    // Without child support, the federal parental scale goes to the parent who earns more.
+    ifdParentalScale: true,
     ownHousehold: true,
     mainUpkeep: true,
     rent: amt(13_000),
@@ -454,7 +461,8 @@ describe('H5: shared custody without child support, Morges, 2025', () => {
     expect(x.incomeReduction.amount).toBe(chf(-93.4));
     expect(x.cantonalIncome.amount).toBe(chf(3_474.85));
     expect(x.communalIncome.amount).toBe(chf(1_564.6));
-    expect(r.total).toBe(chf(5_039.45));
+    expect(x.total.amount).toBe(chf(5_039.45));
+    expect(r.total).toBe(x.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.sharedHalf);
     expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.sharedChildcare]);
     expect(r.icc?.rateIncome.sources.join(' ')).toContain('vd-na-law-rifam art. 4 al. 2 (p. 2)');
@@ -553,5 +561,89 @@ describe('fail closed', () => {
       VdInputError,
     );
     expect(() => computeReturn({ ...base, taxYear: 2024 as 2025 })).toThrow(/not supported/);
+  });
+});
+
+describe('what the extension gives as the ledger has it', () => {
+  // A single parent in Lausanne, 2025, two children under 14, both living with her, a household
+  // alone with them (part 1.3 + 2 x 0.5); one salary.
+  const base: VdEngineInput = {
+    taxYear: 2025,
+    commune: 'Lausanne',
+    civilStatus: 'divorced',
+    ownHousehold: true,
+    rent: amt(12_000),
+    people: [
+      {
+        id: 'p1',
+        employments: [{ gross: amt(90_000), socialContributions: amt(5_760) }],
+      },
+    ],
+    children: [{ custody: 'full' }, { custody: 'full' }],
+  };
+
+  it('childcare for the household: a child’s when within any child’s limit (code 670)', () => {
+    const r = computeReturn({ ...base, household: { childcare: amt(9_000) } });
+    expect(r.unsupported).toEqual([]);
+    expect(find(r, '670')).toBe(chf(-9_000));
+    const one = computeReturn({
+      ...base,
+      children: [{ custody: 'full' }],
+      household: { childcare: amt(20_000) },
+    });
+    // One child: that child's, at most its limit (15,200 in 2025, vd-2025-guide p. 44).
+    expect(find(one, '670')).toBe(chf(-15_200));
+  });
+
+  it('childcare for the household above one child’s limit, several children: not computed', () => {
+    const r = computeReturn({ ...base, household: { childcare: amt(20_000) } });
+    expect(r.icc).toBeNull();
+    expect(r.unsupported).toEqual([NOTE.childcareSplit]);
+    // Given per child, it is.
+    const split = computeReturn({
+      ...base,
+      children: [
+        { custody: 'full', childcare: amt(12_000) },
+        { custody: 'full', childcare: amt(8_000) },
+      ],
+    });
+    expect(find(split, '670')).toBe(chf(-20_000));
+    expect(() =>
+      computeReturn({
+        ...base,
+        children: [{ custody: 'full', childcare: amt(1_000) }, { custody: 'full' }],
+        household: { childcare: amt(1_000) },
+      }),
+    ).toThrow(VdInputError);
+  });
+
+  it('childcare for the household with no child under 14: not counted, and said', () => {
+    const r = computeReturn({
+      ...base,
+      children: [
+        { custody: 'full', under14: false },
+        { custody: 'full', under14: false },
+      ],
+      household: { childcare: amt(5_000) },
+    });
+    expect(find(r, '670')).toBe(0);
+    expect(r.notCounted).toContainEqual(NOTE.childcareNoChild);
+  });
+
+  it('savings interest above the income of code 410: at most that income, and said (p. 40)', () => {
+    const r = computeReturn({
+      ...base,
+      household: { savingsInterest: amt(300) },
+      movable: [{ owner: 'p1', value: amt(20_000), income: amt(100) }],
+    });
+    expect(find(r, '480')).toBe(chf(-100));
+    expect(r.notCounted).toContainEqual(NOTE.savingsAbove410);
+  });
+
+  it('household contents said to be within the deduction: nothing declared, nothing assumed', () => {
+    const within = computeReturn({ ...base, furnitureWithin: true });
+    expect(wealth(within, '440')).toBe(0);
+    expect(within.assumptions).not.toContainEqual(NOTE.furnitureNotGiven);
+    expect(computeReturn(base).assumptions).toContainEqual(NOTE.furnitureNotGiven);
   });
 });

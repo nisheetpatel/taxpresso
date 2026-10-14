@@ -35,8 +35,9 @@ questions:
   # the cantonal and communal tax, ge-2025-guide-declaration-pp p. 53 (Arrivée d'un canton suisse)
   # zh-2025-guide-natuerliche-personen p. 5 and 6 (Zuzug aus einem anderen Kanton),
   # be-2025-wegleitung-np-de p. 10 (Seite 1: Wohnsitz am Ende des Jahres), bl-2026-wegleitung
-  # p. 3 and 4 (Wer hat eine Steuererklärung einzureichen?; Zuzug aus einem anderen Kanton) and
-  # bs-2025-guide-wegleitung p. 8 (Zuzug aus einem anderen Kanton).
+  # p. 3 and 4 (Wer hat eine Steuererklärung einzureichen?; Zuzug aus einem anderen Kanton),
+  # vd-2025-guide p. 6 (Début et fin de l'assujettissement: arriving from another canton, the whole
+  # year) and bs-2025-guide-wegleitung p. 8 (Zuzug aus einem anderen Kanton).
   - id: canton
     key: profile.canton
     type: choice
@@ -82,6 +83,9 @@ questions:
             de: 'Kanton Basel-Landschaft',
           }
         chip: { en: 'Basel-Landschaft', fr: 'Bâle-Campagne', de: 'Basel-Landschaft' }
+      - value: VD
+        label: { en: 'Canton of Vaud', fr: 'Canton de Vaud', de: 'Kanton Waadt' }
+        chip: { en: 'Vaud', fr: 'Vaud', de: 'Waadt' }
       - value: BS
         label: { en: 'Canton of Basel-Stadt', fr: 'Canton de Bâle-Ville', de: 'Kanton Basel-Stadt' }
         chip: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' }

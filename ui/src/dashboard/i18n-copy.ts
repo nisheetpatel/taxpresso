@@ -1,5 +1,5 @@
 // UI strings for the copy panel (SPEC.md 10.5). Second person, plain words, the official label
-// (French in Geneva, German in Zurich) always next to its gloss. Status labels follow SPEC.md
+// (French in Geneva and Vaud, German in Zurich and Bern) always next to its gloss. Status labels follow SPEC.md
 // section 11b.
 import { cantonKey, type Language } from './i18n';
 
@@ -46,6 +46,10 @@ const messages = {
       'Type each value into E-Tax BL or the paper form, page by page in the form’s order: page 2 the income, page 3 the deductions in two columns, Staatssteuer and Bundessteuer, page 4 the wealth. Amounts are whole francs (CHF ohne Rappen), without separators. Tick each value once it is in.',
     coupleBl:
       'On the Basel-Landschaft return, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
+    leadVd:
+      'Type each value into VaudTax or the paper form, page by page in the form’s order. Amounts are whole francs, without centimes or separators. The last section, the federal tax (impôt fédéral direct), is only to check: VaudTax works it out. Tick each value once it is in.',
+    coupleVd:
+      'On the Vaud form, contribuable 1 is {a} and contribuable 2 is {b}. If your form has them the other way round, swap the values.',
     leadBs:
       'Type each value into BalTax Online or the paper form, form by form in the order the guide gives: first the auxiliary forms (W, B, K, Z, F), whose totals carry to pages 2 to 4. From 369 down, each line has a Kanton and a Bund column. Amounts are whole francs (CHF ohne Rappen), without separators. Tick each value once it is in.',
     coupleBs:
@@ -84,6 +88,8 @@ const messages = {
     coupleBe: `Sur le formulaire bernois, la colonne Mann est {a} et la colonne Frau est {b}, partenaires enregistrés compris. Si votre formulaire les inverse, inversez les valeurs.`,
     leadBl: `Recopiez chaque valeur dans E-Tax BL ou le formulaire papier, page par page dans l’ordre du formulaire${NB}: page 2 les revenus, page 3 les déductions en deux colonnes, Staatssteuer et Bundessteuer, page 4 la fortune. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. Cochez chaque valeur une fois saisie.`,
     coupleBl: `Sur la déclaration de Bâle-Campagne, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadVd: `Recopiez chaque valeur dans VaudTax ou le formulaire papier, page par page dans l’ordre du formulaire. Les montants sont en francs entiers, sans centimes ni séparateurs. La dernière section, l’impôt fédéral direct, est seulement à vérifier${NB}: VaudTax le calcule. Cochez chaque valeur une fois saisie.`,
+    coupleVd: `Sur le formulaire vaudois, le contribuable 1 est {a} et le contribuable 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
     leadBs: `Recopiez chaque valeur dans BalTax Online ou le formulaire papier, formulaire par formulaire dans l’ordre du guide${NB}: d’abord les formulaires annexes (W, B, K, Z, F), dont les totaux sont reportés aux pages 2 à 4. À partir du 369, chaque ligne a une colonne Kanton et une colonne Bund. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. Cochez chaque valeur une fois saisie.`,
     coupleBs: `Sur le formulaire bâlois, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
@@ -128,6 +134,10 @@ const messages = {
       'Tippe jeden Wert in E-Tax BL oder ins Papierformular, Seite für Seite in der Reihenfolge der Steuererklärung: Seite 2 die Einkünfte, Seite 3 die Abzüge in zwei Spalten, Staatssteuer und Bundessteuer, Seite 4 das Vermögen. Beträge in ganzen Franken (CHF ohne Rappen), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
     coupleBl:
       'Auf der Steuererklärung von Basel-Landschaft ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadVd:
+      'Tippe jeden Wert in VaudTax oder ins Papierformular, Seite für Seite in der Reihenfolge des Formulars. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Der letzte Abschnitt, die direkte Bundessteuer (impôt fédéral direct), ist nur zum Prüfen: VaudTax rechnet sie aus. Hake jeden Wert ab, sobald er drin ist.',
+    coupleVd:
+      'Auf dem Waadtländer Formular ist contribuable 1 {a} und contribuable 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
     leadBs:
       'Tippe jeden Wert in BalTax Online oder ins Papierformular, Formular für Formular in der Reihenfolge der Wegleitung: zuerst die Hilfsformulare (W, B, K, Z, F), deren Totale auf die Seiten 2 bis 4 übertragen werden. Ab Ziffer 369 hat jede Zeile eine Spalte Kanton und eine Spalte Bund. Beträge in ganzen Franken (CHF ohne Rappen), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
     coupleBs:

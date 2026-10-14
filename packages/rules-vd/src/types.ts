@@ -3,7 +3,15 @@
 // same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items carry
 // the code of the line on the Vaud return (./rubrics.ts), deductions negative, income and assets
 // positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { VdTaxYear } from './params.js';
 
 export type {
@@ -127,6 +135,17 @@ export interface VdEngineInput {
   rent?: Amount;
   /** 440: the fire insurance value of your household contents (valeur d'assurance incendie). */
   furnitureInsurance?: Amount;
+  /**
+   * 440: you said your household contents are insured for no more than the value the deduction
+   * leaves untaxed (30 % of it at most the deduction), so nothing is declared; instead of the value.
+   */
+  furnitureWithin?: boolean;
+  /**
+   * Federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24, ch. 13.4.2). Unknown, the federal
+   * tax is not computed for such a parent.
+   */
+  ifdParentalScale?: boolean;
   household?: {
     /** 300: health and accident insurance premiums paid for the household. */
     healthPremiums?: Amount;
@@ -138,6 +157,11 @@ export interface VdEngineInput {
     healthSubsidy?: Amount;
     /** 480: interest on savings (part of the accounts' income in `movable`). */
     savingsInterest?: Amount;
+    /**
+     * 670: childcare paid for the household as a whole, when not given per child (the limit is per
+     * child: see compute.ts).
+     */
+    childcare?: Amount;
     /** 710: medical and dental costs left to pay. */
     medicalCosts?: Amount;
     /** 720: donations to tax-exempt Swiss organisations. */
@@ -180,6 +204,23 @@ export interface Item extends Line {
   person: ItemPerson;
 }
 
+/**
+ * The federal direct tax as the guide's worksheet determines the taxable income (vd-2025-guide
+ * p. 65, "Impôt fédéral direct - Détermination du revenu imposable"): the same income lines as the
+ * return, the federal deductions on the return's codes, the medical costs in full, then the
+ * intermediate incomes I and II, the franchise of the medical costs added back and the social
+ * deductions (./ifd.ts).
+ */
+export interface VdIfdResult extends IfdResult {
+  items: Item[];
+  /** Revenu intermédiaire I: after every deduction down to the medical costs (710) in full. */
+  intermediateIncome1: Line;
+  /** 730, revenu intermédiaire II: less the donations (720). */
+  intermediateIncome2: Line;
+  /** The social deductions of the federal tax, together (negative). */
+  socialDeductions: Line;
+}
+
 /** Just the amount of an item, as an assessment or a filled-in return shows it. */
 export interface ItemAmount {
   code: string;
@@ -212,6 +253,19 @@ export interface VdIccResult {
   parts: number;
   /** 820, revenu déterminant pour le taux. */
   rateIncome: Line;
+  /**
+   * What the form asks next to a line, as declared: the yearly net rent before 660, the childcare
+   * paid before 670 ("Montant effectif"), 30 % of the household contents' fire insurance value
+   * before 440, and on page 4 (item 10) the premiums before the subsidies and the subsidies. Not
+   * deductions: the amounts the lines rest on, when there are some.
+   */
+  declared: {
+    rent?: Line;
+    childcarePaid?: Line;
+    contentsShare?: Line;
+    premiums?: Line;
+    subsidy?: Line;
+  };
   wealth: {
     items: Item[];
     /** The assets added up. */
@@ -242,11 +296,10 @@ export interface VdTaxResult {
   commune: CommuneRef;
   icc: VdIccResult | null;
   /**
-   * The federal tax is packages/rules-ch's; Vaud's result shows it once the federal column of the
-   * Vaud form is mapped (docs/design/cantons.md, section 6).
+   * The federal direct tax, as the guide's worksheet lays it out (./ifd.ts); null when not computed.
    */
-  ifd: null;
-  /** The cantonal and communal tax, when computed. */
+  ifd: VdIfdResult | null;
+  /** The cantonal and communal tax plus the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -256,4 +309,6 @@ export interface VdTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or choice a rule applied, in both taxes (SPEC.md 10.0). */
+  limits: LimitApplied[];
 }

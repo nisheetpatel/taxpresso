@@ -2,7 +2,7 @@
   "name": "@taxpresso/rules-vd",
   "version": "0.0.0",
   "private": true,
-  "description": "Deterministic Vaud cantonal and communal income and wealth tax (impôt cantonal et communal), every constant cited (SPEC.md section 7). Not wired into the extension yet (docs/design/cantons.md).",
+  "description": "Deterministic Vaud cantonal and communal income and wealth tax (impôt cantonal et communal) and the federal tax of the guide's worksheet, every constant cited (SPEC.md section 7). Wired into the extension as a preview (docs/design/cantons.md).",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "exports": {
@@ -12,10 +12,13 @@
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
+    "@taxpresso/rules-ge": "workspace:*",
+    "@taxpresso/rules-zh": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@taxpresso/ledger": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*"
   }
 }
