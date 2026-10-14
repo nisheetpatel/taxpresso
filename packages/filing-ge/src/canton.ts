@@ -9,7 +9,17 @@ import { LEDGER_ROUTES_2026 } from './2026/ledger-map.js';
 import type { CopyLabels } from './copy-panel.js';
 import type { FormItem, FormMap } from './form.js';
 
-const formOf = (taxYear: number): FormMap => (taxYear === 2025 ? FORM_2025 : FORM_2026);
+/**
+ * The form map of each tax year (docs/design/tax-years.md): adding a year adds its map here. Any
+ * other year fails closed, never another year's form.
+ */
+export const FORMS: Readonly<Record<number, FormMap>> = { 2025: FORM_2025, 2026: FORM_2026 };
+
+const formOf = (taxYear: number): FormMap => {
+  const form = FORMS[taxYear];
+  if (!form) throw new RangeError(`There is no Geneva form map for ${taxYear}.`);
+  return form;
+};
 
 export const filing: CantonFiling<FormMap, FormItem, CopyLabels> = {
   canton: 'GE',

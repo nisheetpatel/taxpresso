@@ -13,6 +13,8 @@
 // ribeiro-declaration-2025.pdf              single person, Meyrin
 // dupont-declaration-2025-two-employers.pdf other program (DrTax): no GAPP codes, other columns,
 //                                           two employers for A, annex A1 over two pages
+// dupont-declaration-2024.pdf               the 2025 one a year earlier (GAPP24 page codes): last
+//                                           year's declaration of a 2025 return
 // dupont-declaration-2026.pdf               this year's declaration, as checked before transmitting
 //                                           (SPEC.md 10.4): one amount typed wrong (31.40) and one
 //                                           line left out (41.30 buy-in); its page 1 tries to tell
@@ -199,7 +201,8 @@ function identity({ gapp, couple, address, commune, year = 2025, injection = INJ
 
 // ---- Dupont, couple, GeTax ------------------------------------------------------------------
 
-function dupont() {
+/** The Dupont couple's 2025 declaration, page by page (pieces of text). */
+function dupontPages() {
   const c = GETAX;
   const N = 8;
   const pg1 = [
@@ -374,7 +377,37 @@ function dupont() {
     ...lines(c, 760, [['14.00', 'Total état des titres', { icc: "185'400", ifd: "1'250" }]]),
     ...footer('GeTax', 8, N),
   ];
-  return document([pg1, pg2, pg3, pg4, a1, a2, c4, f1]);
+  return [pg1, pg2, pg3, pg4, a1, a2, c4, f1];
+}
+
+function dupont() {
+  return document(dupontPages());
+}
+
+/**
+ * The same declaration for the year before, as GeTax prints it: the page codes (GAPP25-1 becomes
+ * GAPP24-1) and the years in titles and footers move; the amounts stay. For a return of 2025, last
+ * year's declaration is this one (docs/design/tax-years.md).
+ */
+function retarget(pages, from, to) {
+  const yy = (y) => String(y).slice(2);
+  const move = (text) =>
+    text
+      .replaceAll(`GAPP${yy(from)}`, `GAPP${yy(to)}`)
+      .replace(/\b(20\d{2})\b/g, (y) =>
+        Number(y) === from || Number(y) === from + 1 ? String(Number(y) - (from - to)) : y,
+      );
+  return pages.map((page) =>
+    page.map((piece) =>
+      typeof piece[2] === 'string'
+        ? [piece[0], piece[1], move(piece[2]), ...piece.slice(3)]
+        : piece,
+    ),
+  );
+}
+
+function dupont2024() {
+  return document(retarget(dupontPages(), 2025, 2024));
 }
 
 // ---- Ribeiro, single, GeTax -----------------------------------------------------------------
@@ -669,6 +702,7 @@ const files = {
   'ribeiro-declaration-2025.pdf': ribeiro(),
   'dupont-declaration-2025-two-employers.pdf': twoEmployers(),
   'dupont-declaration-2026.pdf': dupont2026(),
+  'dupont-declaration-2024.pdf': dupont2024(),
 };
 for (const [name, bytes] of Object.entries(files)) writeFileSync(path.join(here, name), bytes);
 console.log(

@@ -92,6 +92,31 @@ input {
   border-radius: 999px;
 }
 
+/* The year switch (docs/design/tax-years.md): a pill you can choose from, and the canton next to it. */
+.year-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.year-select {
+  min-height: var(--touch);
+  padding: 0 12px;
+  color: var(--ink);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.year-select:disabled {
+  cursor: default;
+}
+
+/* A year that is over: its card's paragraphs are spaced by the card's own gap. */
+.plan-over p {
+  margin: 0;
+}
+
 .steps {
   display: flex;
   flex-wrap: wrap;

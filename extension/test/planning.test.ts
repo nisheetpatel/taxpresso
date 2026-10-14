@@ -55,16 +55,16 @@ describe('TOU in the dashboard', () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
     let { state } = await planning(api, '/planning', { field: 'withheld', value: 9_850 });
-    let tou = state.planning.tou;
+    let tou = state.planning!.tou;
     expect(tou).toMatchObject({ applies: true, compulsory: 'unknown', deadline: '2027-03-31' });
     expect(tou.withheld).toMatchObject({ totalCentimes: 985_000 });
     expect(tou.differenceCentimes).toBe(985_000 - tou.ordinary!.totalCentimes);
-    expect(state.planning.needsTou).toBe(true);
+    expect(state.planning!.needsTou).toBe(true);
 
     // TOU is not compulsory once the two remaining questions are answered no.
     await planning(api, '/planning', { field: 'otherIncome', value: false });
     ({ state } = await planning(api, '/planning', { field: 'taxableWealth', value: false }));
-    tou = state.planning.tou;
+    tou = state.planning!.tou;
     expect(tou.compulsory).toBe('no');
 
     const unconfirmed = await planning(api, '/decide', {
@@ -75,13 +75,13 @@ describe('TOU in the dashboard', () => {
     expect(unconfirmed.status).toBe(400);
     const ok = await planning(api, '/decide', { id: 'tou', choice: 'request', confirmed: true });
     expect(ok.status).toBe(200);
-    expect(ok.state.planning.tou.decision).toMatchObject({
+    expect(ok.state.planning!.tou.decision).toMatchObject({
       optimizationId: 'tou',
       choice: 'request',
       deltaCentimes: tou.differenceCentimes,
       via: 'dashboard',
     });
-    expect(ok.state.planning.needsTou).toBe(false);
+    expect(ok.state.planning!.needsTou).toBe(false);
     expect(ok.state.activity[0]).toMatchObject({ by: 'you', what: 'decide' });
     const file = JSON.parse(await readFile(path.join(ws.vault.dir, 'decisions.json'), 'utf8')) as {
       decisions: unknown[];
@@ -94,7 +94,7 @@ describe('TOU in the dashboard', () => {
       choice: 'decline',
       confirmed: false,
     });
-    expect(decline.state.planning.tou.decision?.choice).toBe('decline');
+    expect(decline.state.planning!.tou.decision?.choice).toBe('decline');
 
     // Another session on the same folder reads it back.
     const again = new Workspace(
@@ -120,8 +120,8 @@ describe('TOU in the dashboard', () => {
     await planning(api, '/planning', { field: 'withheld', value: 30_000 });
     await api(req('POST', '/plan', { person: 'p1', field: 'gross', value: 130_000 }));
     const { state } = await planning(api, '/planning', { field: 'otherIncome', value: false });
-    expect(state.planning.tou.compulsory).toBe('yes');
-    expect(state.planning.needsTou).toBe(false);
+    expect(state.planning!.tou.compulsory).toBe('yes');
+    expect(state.planning!.needsTou).toBe(false);
     const compulsory = await planning(api, '/decide', {
       id: 'tou',
       choice: 'decline',
@@ -134,11 +134,11 @@ describe('TOU in the dashboard', () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
     let res = await planning(api, '/planning', { field: 'tariff', value: 'h1' });
-    expect(res.state.planning.inputs[0]?.tariff).toBe('H1N');
-    const withheld = res.state.planning.tou.withheld!;
+    expect(res.state.planning!.inputs[0]?.tariff).toBe('H1N');
+    const withheld = res.state.planning!.tou.withheld!;
     expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'H1N' });
     expect(withheld.totalCentimes).toBeGreaterThan(0);
-    expect(res.state.planning.tou.assumptions).toContain('withheld_from_tariff');
+    expect(res.state.planning!.tou.assumptions).toContain('withheld_from_tariff');
     res = await planning(api, '/planning', { field: 'tariff', value: 'A0Y' });
     expect(res.status).toBe(400);
     res = await planning(api, '/planning', { field: 'tariff', value: 'D0' });
@@ -174,26 +174,26 @@ describe('pension fund buy-in and 3a catch-up in the dashboard', () => {
     const api = await ribeiro(ws);
     await planning(api, '/planning', { field: 'lppCapacity', value: 31_000 });
     let { state } = await planning(api, '/planning', { field: 'lppAmount', value: 5_000 });
-    expect(state.planning.inputs[0]).toMatchObject({ lppCapacity: 3_100_000, lppAmount: 500_000 });
-    expect(state.planning.lpp.saving?.totalCentimes).toBeGreaterThan(0);
+    expect(state.planning!.inputs[0]).toMatchObject({ lppCapacity: 3_100_000, lppAmount: 500_000 });
+    expect(state.planning!.lpp.saving?.totalCentimes).toBeGreaterThan(0);
     ({ state } = await planning(api, '/planning', { field: 'lppAmount', value: 40_000 }));
-    expect(state.planning.lpp.problem).toBe('over_capacity');
-    expect(state.planning.lpp.saving).toBeUndefined();
+    expect(state.planning!.lpp.problem).toBe('over_capacity');
+    expect(state.planning!.lpp.saving).toBeUndefined();
   });
 
   it('makes up a 2025 gap once the 2026 3a is paid in full', async () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
     const { state } = await planning(api, '/planning', { field: 'paid2025', value: 0 });
-    expect(state.planning.inputs[0]?.paid2025).toBe(0);
-    expect(state.planning.catchUp.people[0]).toMatchObject({
+    expect(state.planning!.inputs[0]?.paid2025).toBe(0);
+    expect(state.planning!.catchUp.people[0]).toMatchObject({
       status: 'pay_this_year_first',
       catchUpCentimes: 725_800,
     });
     await api(req('POST', '/plan', { person: 'p1', field: 'paid', value: 7_258 }));
     const after = (await api(req('GET', '/state'))).body as DashboardState;
-    expect(after.planning.catchUp.people[0]?.status).toBe('possible');
-    expect(after.planning.catchUp.saving?.totalCentimes).toBeGreaterThan(0);
+    expect(after.planning!.catchUp.people[0]?.status).toBe('possible');
+    expect(after.planning!.catchUp.saving?.totalCentimes).toBeGreaterThan(0);
   });
 });
 

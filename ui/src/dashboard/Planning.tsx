@@ -8,12 +8,13 @@ import type { JSX } from 'preact';
 import { api } from './api';
 import { t, type Language } from './i18n';
 import { assumption, day, pck, type PlanningMessageKey, tp } from './i18n-planning';
-import type { State } from './types';
+import type { PlannedState, State } from './types';
 import type { Estimate, PlanningField, PlanningState } from './types-planning';
 
 type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
 interface Props {
-  state: State;
+  /** A year whose plans before 31 December apply (types.ts, isPlanned). */
+  state: PlannedState;
   lang: Language;
   act: Act;
 }

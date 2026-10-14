@@ -11,6 +11,7 @@ import * as z from 'zod/v4';
 import { copyPanelView, setRowEntered, type CopyPanelRowView } from './copy-panel.js';
 import { documentCards } from './document-views.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 const ANNOTATIONS = {
   readOnlyHint: false,
@@ -191,7 +192,9 @@ function tickText(r: TickResult, entered: boolean): string {
 
 // --- The tools ----------------------------------------------------------------------------------
 
-export function registerParityTools(server: McpServer, ws: Workspace): void {
+export function registerParityTools(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'mark_entered',
     {
@@ -242,6 +245,7 @@ export function registerParityTools(server: McpServer, ws: Workspace): void {
       annotations: { title: 'Tick values as entered', ...ANNOTATIONS },
     },
     async ({ section, refs, taxpayer, document, entered }) => {
+      const ws = years.current;
       try {
         await ws.ready();
         const on = entered !== false;
@@ -289,6 +293,7 @@ export function registerParityTools(server: McpServer, ws: Workspace): void {
       annotations: { title: 'Skip a question for now', ...ANNOTATIONS },
     },
     async ({ id }) => {
+      const ws = years.current;
       try {
         await ws.ready();
         const slot = ws.snapshot().slots.find((s) => s.id === id);
@@ -331,6 +336,7 @@ export function registerParityTools(server: McpServer, ws: Workspace): void {
       annotations: { title: 'Skip an optional document', ...ANNOTATIONS },
     },
     async ({ id, waived }) => {
+      const ws = years.current;
       try {
         await ws.ready();
         const req = ws.requirements().find((r) => r.id === id);
@@ -384,6 +390,7 @@ export function registerParityTools(server: McpServer, ws: Workspace): void {
       annotations: { title: 'Replace a document', ...ANNOTATIONS },
     },
     async ({ id, by }) => {
+      const ws = years.current;
       try {
         const doc = await ws.replaceDocument(id, by);
         const old = ws.documents.find((d) => d.id === id);
@@ -415,6 +422,7 @@ export function registerParityTools(server: McpServer, ws: Workspace): void {
       annotations: { title: 'Say whose a document is', ...ANNOTATIONS },
     },
     async ({ id, person }) => {
+      const ws = years.current;
       try {
         const current = ws.documents.find((d) => d.id === id);
         if (!current) throw new WorkspaceError('No such document. Use an id from list_documents.');

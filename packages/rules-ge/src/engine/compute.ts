@@ -35,7 +35,7 @@ import {
   type RuleResult,
 } from '@taxpresso/rules-ch';
 import { assess, incomeTotals, type Assessment } from './assess.js';
-import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { ESTIMATE_TEXT, ICC_COMMUTE_PRICING, NOTE } from './explain.js';
 import { avsDeduction, lifeInsuranceCap } from './rules.js';
 import { paramsFor, type YearParams } from './params.js';
 import { codeFor, rubric, RUBRICS, type RubricCode } from './rubrics.js';
@@ -399,7 +399,7 @@ function personItems(
         ),
       );
       if (commuteIcc && way) {
-        if (way.federalPricing) notes.add(notes.unverified, NOTE.iccCommutePricing);
+        if (way.federalPricing) notes.add(notes.unverified, ICC_COMMUTE_PRICING[P.taxYear]);
         const at: [string, ItemPerson, 'icc'] = [codeFor('31.70', p.id), p.id, 'icc'];
         notes.limit(I.commuteMax, 'cap', at, commute, I.commuteMax.value, commuteIcc);
         icc.push(
@@ -449,7 +449,7 @@ function personItems(
     notes.apply(prof, p.id, 'ifd');
     if (prof.deduction) ifd.push(deductionItem(prof.deduction, p.id));
     if (!freeTransport && commute > 0 && way) {
-      const travel = commuteCosts(F, p, way, costTrace);
+      const travel = commuteCosts(F, p, way, costTrace, P.taxYear);
       notes.apply(travel, p.id, 'ifd');
       if (travel.deduction) ifd.push(deductionItem(travel.deduction, p.id));
     }

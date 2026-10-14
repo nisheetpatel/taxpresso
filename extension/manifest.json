@@ -33,6 +33,10 @@
       "description": "Where your tax return stands: canton, household, questions answered, documents, what is still missing and the next step."
     },
     {
+      "name": "open_tax_year",
+      "description": "Opens the tax year you want to prepare or check: 2026, or 2025 for Geneva. Each year keeps its own answers and documents."
+    },
+    {
       "name": "next_questions",
       "description": "The next questions about your situation."
     },
