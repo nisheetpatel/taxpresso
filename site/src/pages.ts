@@ -4,8 +4,11 @@ import { LANGS, type Lang, startPath } from './content.ts';
 import { GUIDE_IDS, guidePath, guidesPath } from './guides.ts';
 import { GENEVA_IDS, genevaPagePath, genevaPath } from './geneva.ts';
 import { privacyPath } from './privacy.ts';
+import { CANTON_PAGES, cantonPath, cantonsPath } from './canton-data.ts';
 import {
   render,
+  renderCanton,
+  renderCantons,
   renderGeneva,
   renderGenevaPage,
   renderGuide,
@@ -34,6 +37,11 @@ export const PAGES: readonly Page[] = [
   ...GENEVA_IDS.map((id): Page => ({
     at: (p) => genevaPagePath(p, id),
     render: (lang, css) => renderGenevaPage(lang, id, css),
+  })),
+  { at: cantonsPath, render: renderCantons },
+  ...CANTON_PAGES.map((page): Page => ({
+    at: (p) => cantonPath(p, page.slug),
+    render: (lang, css) => renderCanton(lang, page, css),
   })),
 ];
 
