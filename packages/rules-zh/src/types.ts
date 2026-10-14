@@ -1,0 +1,268 @@
+// The Zurich engine's input and result. Money is integer centimes everywhere. Field names follow
+// packages/rules-ge/src/engine/types.ts (EngineInput, TaxResult) wherever the concept is the
+// same, so one ledger mapping can feed both cantons (docs/design/cantons.md, section 2). Items
+// carry the line code printed on the Zurich return (StA Form. 300, zh-2025-form-steuererklaerung-
+// hauptformular), deductions negative, income and assets positive.
+import type { ZhTaxYear } from './params.js';
+
+/** Plain words for the user; German official terms appear in parentheses. */
+export interface Text {
+  en: string;
+  fr: string;
+}
+
+export type EnginePerson = 'p1' | 'p2';
+export type ItemPerson = EnginePerson | 'household';
+
+/** How sure a value given to the engine is (SPEC.md section 4 statuses). */
+export type InputStatus = 'verified' | 'stated' | 'extracted' | 'estimate';
+
+export interface Amount {
+  /** Centimes, zero or more. */
+  value: number;
+  status?: InputStatus;
+  facts?: readonly string[];
+  /** False when part of the amount is unknown: it is then a floor. */
+  complete?: boolean;
+}
+
+/** One salary certificate (Lohnausweis). */
+export interface EmploymentInput {
+  id?: string;
+  /** Box 8, gross salary. */
+  gross: Amount;
+  /** Box 9, AHV/IV/EO/ALV/NBUV contributions. */
+  socialContributions?: Amount;
+  /** Box 10.1, ordinary pension fund contributions. */
+  pensionFund?: Amount;
+  /** Box 10.2, pension fund buy-ins taken from the salary. */
+  pensionBuyIn?: Amount;
+  /** Box G: canteen or meal vouchers, so meals count at the reduced rate. */
+  canteen?: boolean;
+  /** Box F: free transport to work, so no travel costs. */
+  freeTransport?: boolean;
+  /** A side job (Nebenerwerb, line 102/103): its costs are the 20 % flat, nothing else. */
+  side?: boolean;
+}
+
+/** The way to work, for travel costs (Fahrkosten). */
+export interface CommuteMode {
+  by: 'public_transport' | 'car' | 'motorbike' | 'bike' | 'walk' | 'home';
+  /** Car or motorbike: whether public transport could have been used. */
+  transitUsable?: boolean;
+  /** Car or motorbike without usable public transport: kilometres one way, and days driven. */
+  kmOneWay?: number;
+  days?: number;
+  status?: InputStatus;
+  facts?: readonly string[];
+}
+
+export interface PersonInput {
+  id: EnginePerson;
+  employments?: readonly EmploymentInput[];
+  /** 142/143: daily allowances not paid through the employer (sickness, accident, maternity). */
+  replacementIncome?: Amount;
+  /** 140/141: unemployment benefits paid directly. */
+  unemploymentBenefits?: Amount;
+  /** Self-employment: not supported (Hilfsblatt A); given, the tax is not computed. */
+  selfEmploymentProfit?: Amount;
+  /** 130/131: AHV/IV pensions. */
+  pensionAvs?: Amount;
+  /** 134/136: pension fund pensions, taken at 100 %. */
+  pensionOccupational?: Amount;
+  /** 135/137: other pensions, taken at 100 %. */
+  pensionOther?: Amount;
+  /** 160: alimony received for oneself. */
+  alimonyReceived?: Amount;
+  /** 260/261: paid into pillar 3a in the year. */
+  pillar3a?: Amount;
+  /** 280: pension fund buy-ins paid directly, besides box 10.2. */
+  pensionBuyIn?: Amount;
+  /** Member of a pension fund. Default: when a certificate shows box 10.1. */
+  hasPensionFund?: boolean;
+  /** Yearly public transport pass (Abonnement), or what it would cost a driver who could use it. */
+  commuteCost?: Amount;
+  commuteMode?: CommuteMode;
+  /** Working days with a main meal away from home. */
+  mealDays?: number;
+  mealFacts?: readonly string[];
+  /** Actual other professional costs, used instead of the 3 % flat when higher (to be proven). */
+  otherProfessionalCosts?: Amount;
+  /** 292: professional training paid. */
+  trainingCosts?: Amount;
+}
+
+export interface ChildInput {
+  /**
+   * 'full': the child counts in full for you. 'shared': joint parental authority with a parent
+   * you are not taxed with; who counts it depends on child support (childSupport).
+   */
+  custody: 'full' | 'shared';
+  /** Lives with you (370 and the married tariff) or not (372). Default true. */
+  livesWithYou?: boolean;
+  /** Under 14 at year end, for childcare. Default true when childcare is given. */
+  under14?: boolean;
+  /** 376: childcare paid for this child. */
+  childcare?: Amount;
+}
+
+/** The three churches with a Zurich church tax (Kirchensteuer, StG § 201). */
+export type Confession = 'reformed' | 'catholic' | 'christ_catholic' | 'none';
+
+export interface ZhEngineInput {
+  taxYear: ZhTaxYear;
+  /** Commune of residence on 31 December, by its BFS number (StG § 190). */
+  commune: number;
+  /**
+   * 1, 2 or 3: which of the commune's multipliers applies, for the communes whose parts have
+   * different ones (two school districts, for example). Needed only there.
+   */
+  communeVariant?: number;
+  /** Registered partners are 'married' here (Weisung ZStB 34.1, Rz 52). */
+  civilStatus: 'single' | 'married' | 'separated' | 'divorced' | 'widowed';
+  people: readonly PersonInput[];
+  children?: readonly ChildInput[];
+  /**
+   * A parent not taxed with the other parent, joint authority: child support for the children.
+   * 'receives': they count in full here; 'pays': they count for the other parent; 'none': half
+   * each, and the married tariff goes to the parent who mainly supports them (marriedTariff).
+   */
+  childSupport?: 'receives' | 'pays' | 'none';
+  /** Shared custody without child support: true when you mainly support the children. */
+  marriedTariff?: boolean;
+  /** Opt-in church tax, by person; with two parishes in the commune, which one (1 or 2). */
+  church?: { p1?: Confession; p2?: Confession; parish?: number };
+  household?: {
+    /** 601: health insurance premiums paid, after any premium subsidy. */
+    healthPremiums?: Amount;
+    /** 602: private accident insurance premiums. */
+    accidentPremiums?: Amount;
+    /** 603: life and annuity insurance premiums. */
+    lifeInsurancePremiums?: Amount;
+    /** 604: interest on savings (it is income too: include it in `movable`). */
+    savingsInterest?: Amount;
+    /** 605: premium subsidy received, when not already netted from the premiums. */
+    healthSubsidy?: Amount;
+    /** 320: medical costs left to pay. */
+    medicalCosts?: Amount;
+    /** 324: donations to tax-exempt Swiss organisations. */
+    donations?: Amount;
+    /** 284: payments to political parties. */
+    politicalParty?: Amount;
+    /** 254: alimony paid to a former spouse. */
+    alimonyPaid?: Amount;
+    /** 255: child support paid, up to the month the child turns 18. */
+    childSupportPaid?: Amount;
+    /** 161: child support received, up to the month the child turns 18. */
+    childSupportReceived?: Amount;
+    /** 250: private debt interest paid. */
+    debtInterest?: Amount;
+    /** 470: private debts on 31 December. */
+    debts?: Amount;
+    /** 283: costs of having securities managed by third parties, as admitted. */
+    bankFees?: Amount;
+    /** 163: other taxable income, as given. */
+    otherIncome?: Amount;
+    /** 404: cash, gold and other precious metals. */
+    cash?: Amount;
+    /** 406: life and annuity insurance, surrender value. */
+    lifeInsuranceValue?: Amount;
+    /** 412: vehicles. */
+    vehicles?: Amount;
+    /** 416: other assets. */
+    otherAssets?: Amount;
+  };
+  /** Accounts and securities (Wertschriftenverzeichnis): 400 value on 31 December, 150 income. */
+  movable?: readonly { owner: ItemPerson; value?: Amount; income?: Amount }[];
+}
+
+/** A computed figure with its explanation. The same shape as Line in packages/rules-ge. */
+export interface Line {
+  amount: number;
+  label: Text;
+  how: Text;
+  /** Official sources: manifest id plus page, paragraph or sheet. */
+  sources: string[];
+  estimates?: string[];
+  needsOk?: boolean;
+  incomplete?: boolean;
+  facts?: string[];
+}
+
+export interface Item extends Line {
+  /** The line code printed on the return, e.g. '220'. */
+  code: string;
+  person: ItemPerson;
+}
+
+/** Just the amount of an item, as an assessment or a filled-in return shows it. */
+export interface ItemAmount {
+  code: string;
+  person: ItemPerson;
+  amount: number;
+}
+
+export interface CommuneRef {
+  bfs: number;
+  name: string;
+  /** The multiplier used, in percent of the einfache Staatssteuer; null until its part is known. */
+  rate: number | null;
+}
+
+/** The cantonal and communal tax (Staats- und Gemeindesteuern), named `icc` as in rules-ge. */
+export interface ZhIccResult {
+  items: Item[];
+  /** 199, Total der Einkünfte. */
+  grossIncome: Line;
+  /** 299, Total der Abzüge (negative). */
+  totalDeductions: Line;
+  /** 310, Nettoeinkommen: the base for medical costs and donations. */
+  subtotal310: Line;
+  /** 350, Reineinkommen: after every deduction except the social deductions. */
+  netIncome: Line;
+  /** 390, steuerbares Einkommen. */
+  taxableIncome: Line;
+  /** Grundtarif or Verheiratetentarif (StG § 35, § 47). */
+  tariff: 'basic' | 'married';
+  wealth: {
+    items: Item[];
+    /** 460, Total der Vermögenswerte. */
+    grossWealth: Line;
+    /** 490, steuerbares Vermögen. */
+    taxableWealth: Line;
+  };
+  taxes: {
+    /** Einfache Staatssteuer on income and on wealth, and their sum. */
+    simpleIncome: Line;
+    simpleWealth: Line;
+    simple: Line;
+    /** Staatssteuer: the simple tax times the cantonal multiplier. */
+    cantonal: Line;
+    /** Gemeindesteuer: the simple tax times the commune's multiplier. */
+    communal: Line;
+    /** Kirchensteuer, only when asked for. */
+    church: Line | null;
+    /** Personalsteuer. */
+    personalTax: Line;
+    total: Line;
+  };
+}
+
+export interface ZhTaxResult {
+  canton: 'ZH';
+  taxYear: ZhTaxYear;
+  commune: CommuneRef;
+  icc: ZhIccResult | null;
+  /** The federal tax comes from packages/rules-ch once it is split out of rules-ge. */
+  ifd: null;
+  /** The cantonal and communal tax, when computed. */
+  total: number | null;
+  estimates: { id: string; what: Text }[];
+  needsOk: number;
+  complete: boolean;
+  incomplete: Text[];
+  assumptions: Text[];
+  notCounted: Text[];
+  unsupported: Text[];
+  unverifiedRules: Text[];
+}

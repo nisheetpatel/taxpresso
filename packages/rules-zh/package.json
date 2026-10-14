@@ -1,0 +1,18 @@
+{
+  "name": "@taxpresso/rules-zh",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deterministic Zurich cantonal and communal tax (Staats- und Gemeindesteuern), every constant cited (SPEC.md section 7). Not wired into the extension yet (docs/design/cantons.md).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
