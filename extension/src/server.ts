@@ -31,17 +31,9 @@ import { registerReviewTool } from './last-year-review.js';
 import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
-import {
-  buildStatus,
-  cantonChoice,
-  cantonsWithPreviews,
-  formLanguages,
-  formPageExamples,
-  germanCantons,
-  StatusSchema,
-  statusText,
-} from './status.js';
-import { PILLAR3A_2026_FACTS } from '@taxpresso/rules-ch';
+import { buildStatus, StatusSchema, statusText } from './status.js';
+import { CANTONS, cantonNames, fullCantons, germanCantons, previewCantons } from './cantons.js';
+import { PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
 import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
 
@@ -223,7 +215,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'get_status',
     {
       title: 'Get tax return status',
-      description: `Where the user's tax return stands (${cantonsWithPreviews()}): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.`,
+      description: `Where the user's tax return stands (${cantonNames(fullCantons(), 'and')}, or ${cantonNames(previewCantons(), 'and')} as a preview): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.`,
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -245,7 +237,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'next_questions',
     {
       title: 'Get the next questions',
-      description: `The next unanswered questions about the user's situation, in English and French (German too, for ${germanCantons()}) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.`,
+      description: `The next unanswered questions about the user's situation, in English and French (German too, for ${cantonNames(germanCantons(), 'and')}) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.`,
       inputSchema: z.object({
         limit: z.number().int().min(1).max(5).optional().describe('How many questions. Default 1.'),
       }),
@@ -527,7 +519,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Compute the tax',
       description:
-        "The user's cantonal, communal and federal tax from the rules engine, for the year's canton, in the official terms of its form (Geneva: ICC, IFD): totals, main items by line code, estimates, values to confirm. detail: true explains each line with its source.",
+        "The user's cantonal, communal and federal tax from the rules engine, for the year's canton, each tax named as on its form (Geneva: ICC, IFD): totals, main items by line code, estimates, values to confirm. detail: true explains each line with its source.",
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -851,14 +843,14 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'get_form_values',
     {
       title: 'Get the values to type into the declaration',
-      description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label (${formLanguages()}), value as typed, status. No section: sections with progress. A section: its values.`,
+      description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label as printed, value as typed, status. No section: sections with progress. A section (${SUPPORTED_CANTONS.map((c) => `"${CANTONS[c].filing.words.example}"`).join(', ')}): its values.`,
       inputSchema: z.object({
         section: z
           .string()
           .max(4)
           .optional()
           .describe(
-            `A page of the form, e.g. ${formPageExamples()}. Default: the list of sections.`,
+            `A page of the form, e.g. ${SUPPORTED_CANTONS.map((c) => `"${CANTONS[c].filing.words.example}" (${CANTONS[c].name.en})`).join(', ')}. Default: the list of sections.`,
           ),
       }),
       outputSchema: z.object({
@@ -948,7 +940,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'start_geneva_tax_return',
     {
       title: 'Start my tax return',
-      description: `Begin or pick up your ${cantonChoice()} tax return with Taxpresso.`,
+      description: `Begin or pick up your ${cantonNames(SUPPORTED_CANTONS, 'or')} tax return with Taxpresso.`,
     },
     () => ({
       messages: [

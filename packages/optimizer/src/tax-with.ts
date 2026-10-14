@@ -51,10 +51,10 @@ export interface CantonPlan {
   /** The income tax of a result, as the canton's result view says (ResultView.incomeTax). */
   incomeTax(r: SharedResult): TaxEstimate | undefined;
   /**
-   * The commune assumed when none is answered, as the canton's engine takes it (its BFS number, or
-   * its slug where the official tables carry none, as in Vaud).
+   * The commune assumed when none is answered, as the canton's engine takes it: its BFS number, or
+   * its name or slug where the canton's tables carry none (Basel-Landschaft, Vaud).
    */
-  defaultCommune: string | number;
+  defaultCommune: number | string;
   /** The documents the canton's income tax rests on, for the year. */
   sources(taxYear: number): string[];
   /** The canton's assumptions: a preview, and the commune assumed. */
@@ -70,7 +70,7 @@ export interface CantonPlan {
 export interface CantonPlanInput {
   plan: CantonPlan;
   /** The commune as the canton's engine takes it; unknown, the plan's default is assumed. */
-  commune?: string | number;
+  commune?: number | string;
   known?: Pick<
     SharedHousehold,
     'household' | 'movable' | 'childSupport' | 'ifdParentalScale' | 'cantonal'
