@@ -5,6 +5,7 @@
 import { FORM_2025, FORM_2026, LEDGER_ROUTES_2026 } from '@taxpresso/filing-ge';
 import { zurichFormMap, zurichLineOf } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
+import type { CantonPlan } from '@taxpresso/optimizer';
 import {
   geQuestionnaire2026,
   QuestionnaireEngine,
@@ -22,6 +23,7 @@ import {
   type CantonLedgerReading,
   type CantonRules,
   type CantonTerms,
+  type HouseholdInput,
   type ResultView,
   type SupportedCanton,
   type TaxResult,
@@ -37,11 +39,14 @@ import {
 import {
   communeOptions,
   NOTE_VALUABLES,
+  zhParamsFor,
   rules as zurichRules,
   view as zurichView,
   ZH_FORM_NOTE,
   ZH_TERMS,
   ZURICH_READING,
+  type ZhTaxResult,
+  type ZurichCantonal,
 } from '@taxpresso/rules-zh';
 import { movableWealth } from './wealth.js';
 
@@ -97,6 +102,8 @@ export interface CantonEntry {
   keys(taxYear: number): KeyRegistry;
   /** The communes the questionnaire offers, by the value stored for profile.commune. */
   communes(taxYear: number): { slug: string; name: string }[];
+  /** For Claude, after "Answer: the name of the commune": what else the answer needs. */
+  communeHint?: string;
   /**
    * For a return started before Taxpresso asked for the canton: the answers that only this canton
    * asks, in words, when there are some (then the return is taken as this canton's).
@@ -118,6 +125,15 @@ export interface CantonEntry {
    * ledger read into the shared household input, with the canton's own part (`cantonal`).
    */
   household?(ctx: LedgerContext): CantonLedgerInput<unknown>;
+  /** The commune of the answer, as the canton's engine takes it (the shared reading's). */
+  communeOf?(answer: FactValue | undefined, taxYear: number): string | number | undefined;
+  /**
+   * How the plans run on the canton's engine (packages/optimizer, CantonPlan), and the commune they
+   * assume when none is answered, in words. Absent for Geneva, whose engine the plans run directly.
+   */
+  plan?: CantonPlan & { communeName: Text };
+  /** TOU (taxation ordinaire ultérieure), Geneva's procedure for people taxed at source. */
+  tou: boolean;
 }
 
 /**
@@ -129,7 +145,7 @@ export function sharedLedger<Cantonal extends object>(
   reading: CantonLedgerReading<Cantonal>,
   rules: CantonRules<Cantonal, TaxResult>,
   valuables?: Text,
-): Pick<CantonEntry, 'estimate' | 'household'> {
+): Pick<CantonEntry, 'estimate' | 'household' | 'communeOf'> {
   const household = (ctx: LedgerContext) =>
     cantonInputFromFacts(
       ctx.taxYear,
@@ -140,6 +156,7 @@ export function sharedLedger<Cantonal extends object>(
     );
   return {
     household,
+    communeOf: (answer, taxYear) => reading.commune(answer, taxYear),
     estimate(ctx) {
       const { input, missing, notes } = household(ctx);
       return { result: input ? rules.computeReturn(input) : null, missing, notes };
@@ -207,6 +224,7 @@ const GENEVA: CantonEntry = {
     },
     checksPdf: true,
   },
+  tou: true,
 };
 
 const ZURICH: CantonEntry = {
@@ -217,6 +235,7 @@ const ZURICH: CantonEntry = {
   questionnaire: (taxYear) => (taxYear === 2026 ? zhQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zurichRules.keys(taxYear) }),
   communes: (taxYear) => communeOptions(taxYear),
+  communeHint: ' (Uster and Turbenthal: the part too, as listed in the dashboard)',
   ...sharedLedger(ZURICH_READING, zurichRules, NOTE_VALUABLES),
   view: zurichView,
   filing: {
@@ -236,6 +255,27 @@ const ZURICH: CantonEntry = {
     checksPdf: false,
   },
   terms: ZH_TERMS,
+  plan: {
+    computeReturn: (input) => zurichRules.computeReturn(input as HouseholdInput<ZurichCantonal>),
+    incomeTax: (r) => zurichView.incomeTax(r as ZhTaxResult),
+    // The City of Zurich, by its BFS number.
+    defaultCommune: 261,
+    communeName: { en: 'City of Zurich', fr: 'Ville de Zurich', de: 'Stadt Zürich' },
+    sources(taxYear) {
+      // The documents a Zurich household's income tax rests on, for the year.
+      const P = zhParamsFor(taxYear);
+      return [
+        P.incomeTariff.married.source,
+        P.cantonalRate.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'zh_preview', communeDefault: 'zh_commune_default' },
+    // No Zurich document gives the cantonal rule of a 3a catch-up yet: no saving (fail closed).
+    catchUp: { field: 'pillar3a', unknownRule: 'zh_catchup_rule' },
+  },
+  tou: false,
 };
 
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = { GE: GENEVA, ZH: ZURICH };

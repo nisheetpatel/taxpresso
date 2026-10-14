@@ -45,8 +45,8 @@ function capOf(p: PersonInput): { cap: number; isMaximum: boolean } {
 
 export function pillar3aPlan(h: HouseholdInput): Pillar3aResult {
   const assumptions = new Set<Assumption>(
-    h.canton === 'ZH'
-      ? ['zh_preview', 'flat_deductions_only']
+    h.other
+      ? [h.other.plan.assumptions.preview, 'flat_deductions_only']
       : ['icc_2025_scale', 'flat_deductions_only', 'home_commune_rate'],
   );
   const people: PersonResult[] = h.people.map((p) => {

@@ -14,7 +14,12 @@ import {
   Vault,
   type VaultDocument,
 } from '@taxpresso/ledger';
-import { pillar3aPlan, type HouseholdInput, type Pillar3aResult } from '@taxpresso/optimizer';
+import {
+  pillar3aPlan,
+  type CantonPlan,
+  type HouseholdInput,
+  type Pillar3aResult,
+} from '@taxpresso/optimizer';
 import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import type { ContentLang } from './lang.js';
 import {
@@ -28,8 +33,8 @@ import {
   type ConsistencyCheck,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import type { HouseholdInput as HouseholdInputOf, Text } from '@taxpresso/rules-ch';
-import { communeOfAnswer, type ZhTaxResult, type ZurichCantonal } from '@taxpresso/rules-zh';
+import type { Text } from '@taxpresso/rules-ch';
+import type { ZhTaxResult } from '@taxpresso/rules-zh';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import type { CantonEntry, CantonRegistry, CantonState, LedgerContext } from './cantons.js';
 import { displayPath, type Config } from './config.js';
@@ -471,7 +476,8 @@ export class Workspace {
     };
     const custody = answer('profile.children_custody');
     const commune = answer('profile.commune');
-    if (this.canton().canton?.code === 'ZH') return this.#zurichPlanInput();
+    const canton = this.canton().canton;
+    if (canton?.plan) return this.#cantonPlanInput(canton, canton.plan);
     // What the ledger knows besides salaries and the plans' own deductions, so the plans run on
     // the real tax (premiums, childcare, donations, the état des titres).
     const known = engineInputFromFacts(
@@ -515,23 +521,24 @@ export class Workspace {
     };
   }
 
-  /** The household as the plans see it, for a Zurich return: its commune and Zurich's reading. */
-  #zurichPlanInput(): HouseholdInput {
+  /**
+   * The household as the plans see it, for a canton other than Geneva: its commune and the shared
+   * reading of the ledger, with the canton's own part (./cantons.ts, the canton's plan).
+   */
+  #cantonPlanInput(canton: CantonEntry, plan: CantonPlan): HouseholdInput {
     const snap = this.snapshot();
     const answer = (key: string) => snap.answers.get(`${key}|household`);
-    const taxYear = this.engine.taxYear;
-    const facts = this.countedFacts();
-    const docs = this.activeDocuments();
-    const people = snap.people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2');
-    const where = communeOfAnswer(taxYear, answer('profile.commune'));
-    const known = this.canton().canton!.household!({ taxYear, facts, documents: docs, people })
-      .input as HouseholdInputOf<ZurichCantonal> | null;
+    const ctx = this.ledgerContext();
+    const taxYear = ctx.taxYear;
+    const commune = canton.communeOf?.(answer('profile.commune'), taxYear);
+    const known = canton.household?.(ctx).input;
     const custody = answer('profile.children_custody');
     return {
-      canton: 'ZH',
+      canton: canton.code,
       ...(taxYear === 2025 || taxYear === 2026 ? { taxYear } : {}),
-      zurich: {
-        ...(where ? { commune: where.bfs } : {}),
+      other: {
+        plan,
+        ...(typeof commune === 'number' ? { commune } : {}),
         ...(known
           ? {
               known: {
@@ -549,7 +556,7 @@ export class Workspace {
       couple: snap.people.length > 1,
       children: Number(answer('profile.children_count') ?? 0),
       ...(custody ? { custody: custody as HouseholdInput['custody'] & string } : {}),
-      people: people.map((person) => {
+      people: ctx.people.map((person) => {
         const gross = this.#planMoney('plan.gross_salary', person);
         const net = this.#planMoney('plan.net_salary', person);
         return {

@@ -14,7 +14,14 @@ import { INSTRUCTIONS } from './instructions.js';
 import { KIND_LABELS } from './kinds.js';
 import { registerHoldingTools } from './holdings-tools.js';
 import { registerParityTools } from './parity-tools.js';
-import { decide, DecisionInput, planningReady, planningText, planningView } from './planning.js';
+import {
+  cantonAssumptionText,
+  decide,
+  DecisionInput,
+  planningReady,
+  planningText,
+  planningView,
+} from './planning.js';
 import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
 import { registerDeclarationCheckTool } from './reconcile-tool.js';
@@ -59,9 +66,6 @@ const ASSUMPTION_TEXT: Record<string, string> = {
   net_from_gross: 'Net salary assumed to be 88 % of the gross; the payslip gives the real figure.',
   commune_default: 'Commune unknown: City of Geneva assumed.',
   no_income_for_some: 'No salary given for one person: counted as zero.',
-  zh_commune_default: 'Commune unknown: City of Zurich assumed.',
-  zh_preview:
-    'Zurich is a preview: the rules its documents don’t spell out are applied as in the estimate (compute_tax lists them).',
 };
 
 const QuestionOut = z.object({
@@ -167,7 +171,8 @@ function toolError(err: unknown) {
   throw err;
 }
 
-function questionText(q: QuestionOut, place = 'Geneva'): string {
+/** `place`: the canton's name; `hint`: how its communes are named, when that needs saying. */
+function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
   const how =
     q.type === 'yesno'
       ? `Answer: yes or no.${q.options?.some((o) => o.value === 'yes' && o.notSupported) ? ' Yes is not supported yet.' : ''}`
@@ -176,7 +181,7 @@ function questionText(q: QuestionOut, place = 'Geneva'): string {
         : q.type === 'money'
           ? 'Answer: an amount in CHF as the user said it, e.g. 790 or "1\'250.50".'
           : q.type === 'commune'
-            ? `Answer: the name of the ${place} commune${place === 'Zurich' ? ' (Uster and Turbenthal: the part too, as listed in the dashboard)' : ''}.`
+            ? `Answer: the name of the ${place} commune${hint}.`
             : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
                 ?.map((o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`)
                 .join('; ')}`;
@@ -257,7 +262,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
       const text = questions.length
-        ? `${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en)).join('\n\n')}`
+        ? `${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}`
         : 'All questions are answered. Call get_status for the next step.';
       return {
         content: [{ type: 'text', text }],
@@ -312,7 +317,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         }
         lines.push(
           next
-            ? `\nNext question:\n${questionText(next, ws.engine.file.place?.en)}`
+            ? `\nNext question:\n${questionText(next, ws.engine.file.place?.en, ws.canton().canton?.communeHint)}`
             : '\nAll questions are answered.',
         );
         return {
@@ -469,9 +474,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       await planningReady(ws);
       const plan = ws.plan();
       const planning = planningView(ws);
-      const zh = ws.canton().canton?.code === 'ZH';
+      const canton = ws.canton().canton;
       const lines = [
-        `Before 31 December ${ws.config.taxYear}: pillar 3a (${zh ? 'Säule 3a' : '3e pilier A'})`,
+        `Before 31 December ${ws.config.taxYear}: pillar 3a (${canton?.terms?.pillar3a ?? '3e pilier A'})`,
       ];
       for (const p of plan.people) {
         const cap = p.capIsMaximum
@@ -490,11 +495,13 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           'No salary yet: ask for a rough yearly salary and save it with set_fact (plan.gross_salary) to estimate the saving.',
         );
       }
-      lines.push(`Assumptions: ${plan.assumptions.map((a) => ASSUMPTION_TEXT[a] ?? a).join(' ')}`);
+      lines.push(
+        `Assumptions: ${plan.assumptions.map((a) => ASSUMPTION_TEXT[a] ?? cantonAssumptionText(a) ?? a).join(' ')}`,
+      );
       lines.push(
         `Facts with sources: only payments made in ${ws.config.taxYear} count (${PILLAR3A_2026_FACTS.paidInYearOnly}); payouts are taxed (${PILLAR3A_2026_FACTS.payoutsTaxable}); missed years since 2025 can be made up from 2026, under conditions (${PILLAR3A_2026_FACTS.catchUpFrom2026}).`,
         "Don't recommend specific 3a providers or investments.",
-        ...planningText(planning, ws.config.taxYear),
+        ...planningText(planning, ws.config.taxYear, canton),
       );
       return {
         content: [{ type: 'text', text: lines.join('\n') }],

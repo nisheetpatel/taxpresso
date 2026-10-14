@@ -51,11 +51,8 @@ export interface CatchUpPersonResult {
   catchUpCentimes: number;
 }
 
-export type CatchUpAssumption =
-  | Assumption
-  | 'pension_fund_2025_same'
-  /** Zurich: no Zurich document gives the cantonal rule of a catch-up yet, so no saving. */
-  | 'zh_catchup_rule';
+/** The plans' assumptions, and the catch-up's own (a canton's unknown rule is an Assumption). */
+export type CatchUpAssumption = Assumption | 'pension_fund_2025_same';
 
 export interface CatchUpResult {
   people: CatchUpPersonResult[];
@@ -104,9 +101,11 @@ export function pillar3aCatchUpPlan(
     facts: PILLAR3A_CATCHUP_FACTS,
     sources: [PILLAR3A_CATCHUP_2026.source, PILLAR3A_2025.source, ...estimateSources(h)],
   };
-  // Zurich: the federal rule is known, the cantonal one is in no Zurich document yet (fail closed).
-  if (h.canton === 'ZH' && catchUpCentimes > 0) {
-    return { ...result, assumptions: [...result.assumptions, 'zh_catchup_rule'] };
+  // A canton whose documents don't give the cantonal rule of a catch-up yet (Zurich): the federal
+  // rule is known, the cantonal one is not, so no saving is shown (fail closed).
+  const unknownRule = h.other?.plan.catchUp.unknownRule;
+  if (unknownRule && catchUpCentimes > 0) {
+    return { ...result, assumptions: [...result.assumptions, unknownRule] };
   }
   const estimator = catchUpCentimes > 0 ? ordinaryTaxEstimator(h) : undefined;
   if (!estimator) return result;

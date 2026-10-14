@@ -18,6 +18,7 @@ import {
 } from '@taxpresso/optimizer';
 import { sourceTax, SourceTaxError, sourceTaxTariffs } from '@taxpresso/rules-ge';
 import * as z from 'zod/v4';
+import { CANTONS, type CantonEntry } from './cantons.js';
 import { PLAN_KEYS, WorkspaceError, type Via, type Workspace } from './workspace.js';
 
 type Who = 'p1' | 'p2';
@@ -165,9 +166,9 @@ export interface TouView extends TouResult {
 
 export function touView(ws: Workspace, today = new Date().toISOString().slice(0, 10)): TouView {
   const { h, unconfirmed: householdUnconfirmed } = household(ws);
-  // TOU is Geneva's (the AFC's directives): in Zurich, taxation at source and its NOV are not
-  // supported yet, so there is nothing to compare.
-  if (h.canton === 'ZH') {
+  // TOU is Geneva's (the AFC's directives): in another canton, taxation at source and its ordinary
+  // assessment afterwards (Zurich's NOV) are not supported yet, so there is nothing to compare.
+  if (h.other) {
     return touPlan({
       taxYear: ws.engine.taxYear,
       today,
@@ -276,9 +277,10 @@ export async function decide(
     const problem = ws.vault.problem();
     if (problem) throw new WorkspaceError(problem);
     const tou = touView(ws, today);
-    if (ws.canton().canton?.code === 'ZH') {
+    const canton = ws.canton().canton;
+    if (canton && !canton.tou) {
       throw new WorkspaceError(
-        'TOU is Geneva’s procedure. For Zurich, taxation at source and its NOV (nachträgliche ordentliche Veranlagung) are not supported yet.',
+        `TOU is Geneva’s procedure. For ${canton.name.en}, taxation at source and its ${canton.terms?.sourceTaxAssessment ?? 'ordinary assessment'} are not supported yet.`,
       );
     }
     if (!tou.applies) throw new WorkspaceError('No one in this household is taxed at source.');
@@ -327,7 +329,9 @@ export async function decide(
 export function planningView(ws: Workspace) {
   const snap = ws.snapshot();
   const tou = touView(ws);
-  const zh = ws.canton().canton?.code === 'ZH';
+  const canton = ws.canton().canton;
+  // TOU is Geneva's: another canton's taxation at source is not supported yet.
+  const genevaOnly = canton !== undefined && !canton.tou;
   const inputs = snap.people.map((person) => {
     const p = person as Who;
     const tariff = ws.ledger.get('plan.source_tax_tariff', p)?.value;
@@ -345,14 +349,14 @@ export function planningView(ws: Workspace) {
     inputs,
     otherIncome: planFlag(ws, 'plan.tou_other_income') ?? null,
     taxableWealth: planFlag(ws, 'plan.tou_taxable_wealth') ?? null,
-    tariffs: zh ? [] : sourceTaxTariffs(ws.engine.taxYear),
+    tariffs: genevaOnly ? [] : sourceTaxTariffs(ws.engine.taxYear),
     lpp: lppView(ws),
     catchUp: catchUpView(ws),
     tou,
     /** Taxed at source without a compulsory TOU: 3a and buy-ins lower the tax only with TOU. */
     needsTou: tou.applies && tou.compulsory !== 'yes' && tou.decision?.choice !== 'request',
-    /** Zurich: TOU is Geneva's, and taxation at source is not supported there yet. */
-    ...(zh ? { touGenevaOnly: true as const } : {}),
+    /** Another canton: TOU is Geneva's, and taxation at source is not supported there yet. */
+    ...(genevaOnly ? { touGenevaOnly: true as const } : {}),
   };
 }
 
@@ -384,10 +388,24 @@ const TOU_ASSUMPTION_TEXT: Record<string, string> = {
   net_from_gross: 'Net salary taken as 88 % of the gross.',
   commune_default: 'Commune unknown: City of Geneva assumed.',
   no_income_for_some: 'No salary for one person: counted as zero.',
-  zh_commune_default: 'Commune unknown: City of Zurich assumed.',
-  zh_preview:
-    'Zurich is a preview: the rules its documents don’t spell out are applied as in the estimate (compute_tax lists them).',
 };
+
+/**
+ * The assumptions of the plans on another canton's engine, in words ("zh_preview",
+ * "zh_commune_default"), from the registry: the canton's name and the commune assumed.
+ */
+export function cantonAssumptionText(a: string): string | undefined {
+  for (const c of Object.values(CANTONS)) {
+    if (!c.plan) continue;
+    if (a === c.plan.assumptions.communeDefault) {
+      return `Commune unknown: ${c.plan.communeName.en} assumed.`;
+    }
+    if (a === c.plan.assumptions.preview) {
+      return `${c.name.en} is a preview: the rules its documents don’t spell out are applied as in the estimate (compute_tax lists them).`;
+    }
+  }
+  return undefined;
+}
 const STATUS_TEXT: Record<string, string> = {
   yes: 'yes',
   no: 'no',
@@ -402,8 +420,8 @@ const withheldFrom = (p: { from: string; tariff?: string }) =>
       ? 'what the user said'
       : `the ${p.tariff} tariff on the gross salary`;
 
-function lppText(lpp: LppBuyInResult, year: number, zh: boolean): string[] {
-  const term = zh ? 'Einkauf in die Pensionskasse' : 'rachat 2e pilier';
+function lppText(lpp: LppBuyInResult, year: number, canton: CantonEntry | undefined): string[] {
+  const term = canton?.terms?.pensionBuyIn ?? 'rachat 2e pilier';
   const lines = ['', `Pension fund buy-in (${term}), before 31 December ${year}:`];
   for (const p of lpp.people) {
     const cap =
@@ -431,10 +449,10 @@ function lppText(lpp: LppBuyInResult, year: number, zh: boolean): string[] {
   return lines;
 }
 
-function catchUpText(cu: CatchUpResult, year: number, zh: boolean): string[] {
+function catchUpText(cu: CatchUpResult, year: number, canton: CantonEntry | undefined): string[] {
   const lines = [
     '',
-    `3a catch-up (${zh ? 'Einkauf in die Säule 3a' : 'rachat 3a'}, new from ${year}):`,
+    `3a catch-up (${canton?.terms?.pillar3aCatchUp ?? 'rachat 3a'}, new from ${year}):`,
   ];
   for (const p of cu.people) {
     const what =
@@ -445,9 +463,10 @@ function catchUpText(cu: CatchUpResult, year: number, zh: boolean): string[] {
           : `can make up ${p.isMaximum ? 'up to ' : ''}${chf(p.catchUpCentimes)} of the 2025 gap${p.status === 'pay_this_year_first' ? `, after paying the full ${year} 3a first` : ''}`;
     lines.push(`- ${WHO[p.person]}: ${what}`);
   }
-  if (cu.assumptions.includes('zh_catchup_rule')) {
+  const unknownRule = canton?.plan?.catchUp.unknownRule;
+  if (canton && unknownRule && cu.assumptions.includes(unknownRule)) {
     lines.push(
-      'No saving shown for Zurich: no Zurich document Taxpresso has gives the cantonal rule of a 3a catch-up yet. The federal rules below hold.',
+      `No saving shown for ${canton.name.en}: no ${canton.name.en} document Taxpresso has gives the cantonal rule of a 3a catch-up yet. The federal rules below hold.`,
     );
   }
   if (cu.saving) {
@@ -483,7 +502,7 @@ function touText(tou: TouView): string[] {
   }
   if (tou.ordinary) {
     lines.push(
-      `- Ordinary tax, estimated: ${chf(tou.ordinary.totalCentimes)}. Assumptions: ${tou.assumptions.map((a) => TOU_ASSUMPTION_TEXT[a] ?? a).join(' ')}`,
+      `- Ordinary tax, estimated: ${chf(tou.ordinary.totalCentimes)}. Assumptions: ${tou.assumptions.map((a) => TOU_ASSUMPTION_TEXT[a] ?? cantonAssumptionText(a) ?? a).join(' ')}`,
     );
   }
   if (tou.differenceCentimes !== undefined) {
@@ -508,22 +527,25 @@ function touText(tou: TouView): string[] {
   return lines;
 }
 
-/** The chat's view of the buy-in, the 3a catch-up and TOU (C6: short, with sources). */
-export function planningText(view: PlanningView, year: number): string[] {
-  const zh = 'touGenevaOnly' in view;
+/**
+ * The chat's view of the buy-in, the 3a catch-up and TOU (C6: short, with sources). `canton`: the
+ * canton of the return, for its official terms when it is not Geneva.
+ */
+export function planningText(view: PlanningView, year: number, canton?: CantonEntry): string[] {
+  const other = 'touGenevaOnly' in view ? canton : undefined;
   return [
     ...(view.needsTou
       ? [
           `Taxed at source: 3a, pension fund buy-ins and 3a catch-ups lower the tax only with TOU (${view.tou.facts.deductionsOnlyWithTou}). Say so with every saving.`,
         ]
       : []),
-    ...lppText(view.lpp, year, zh),
-    ...catchUpText(view.catchUp, year, zh),
+    ...lppText(view.lpp, year, other),
+    ...catchUpText(view.catchUp, year, other),
     ...(view.tou.applies ? touText(view.tou) : []),
-    ...('touGenevaOnly' in view
+    ...(other
       ? [
           '',
-          'TOU (taxation ordinaire ultérieure) is Geneva’s. For Zurich, taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) are not supported yet: if the user is taxed at source, say so and point to the official page.',
+          `TOU (taxation ordinaire ultérieure) is Geneva’s. For ${other.name.en}, taxation at source (${other.terms?.sourceTax ?? 'impôt à la source'}) and its ${other.terms?.sourceTaxAssessment ?? 'ordinary assessment'} are not supported yet: if the user is taxed at source, say so and point to the official page.`,
         ]
       : []),
   ];
