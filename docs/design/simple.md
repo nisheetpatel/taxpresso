@@ -136,6 +136,8 @@ A tool's description (at most 300 characters) says what it does and when to call
 
 **A new canton** adds its line in `FORM_TERMS` (`extension/src/status.ts`) and its walkthrough in `filing.words.guide`; its software and name come from the registry.
 
+When the instructions went from 16,000 characters to 1,500 (October 2026), the proof against main recorded 17,028 records for 2026 and 14,463 for 2025 (Dupont, Ribeiro and 20 seeded households in each of the 12 cantons): the data was identical, and only Claude's texts differed, each kind of difference as intended. The same change made `set_fact` accept a property abroad's rough figures (`plan.abroad_value`, `plan.abroad_rent`), which its next step already asked for.
+
 ## 10. Open points
 
 - **To check in a real Claude Desktop** (with the owner): whether it offers `pip` (`availableDisplayModes`), how pip looks and whether it stays in sight while the user scrolls and types; whether fullscreen keeps the chat composer; whether asking for pip at start is welcome or should wait for a click; whether the built-in browser pane of Cowork and the Code tab opens the dashboard's 127.0.0.1 link; whether the host passes the view's "Ask Claude how" message (`ui/message`) into the chat.
