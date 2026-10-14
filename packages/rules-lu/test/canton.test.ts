@@ -7,6 +7,7 @@ import {
   communesFor,
   computeReturn,
   LuInputError,
+  NOTE,
   rules,
   type LucerneCantonal,
   type LuEngineInput,
@@ -148,6 +149,7 @@ const HOUSEHOLDS: LuEngineInput[] = [
     commune: 'Luzern',
     civilStatus: 'divorced',
     childSupport: 'none',
+    ifdParentalScale: false,
     familyTariff: true,
     church: { p1: 'reformed', children: ['catholic'] },
     people: [
@@ -219,12 +221,13 @@ describe('Lucerne through the canton interface', () => {
     expect(computed).toBeLessThan(all.length);
   });
 
-  it('computes the state, communal and personal tax of each household; no federal tax here', () => {
+  it('computes the state, communal and personal tax of each household, and the federal tax', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
       expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.icc!.taxes.total.amount).toBeGreaterThan(0);
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     }
   });
 
@@ -234,7 +237,6 @@ describe('Lucerne through the canton interface', () => {
     const p1 = h.people[0]!;
     const more: HouseholdInput<LucerneCantonal> = {
       ...h,
-      ifdParentalScale: true,
       people: [
         {
           ...p1,
@@ -251,7 +253,8 @@ describe('Lucerne through the canton interface', () => {
   it('refuses a fact Lucerne does not read, and a commune given by number', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<LucerneCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      { ...h, cantonal: { ...h.cantonal, childcare: [amt(5_000)] } },
+      { ...h, cantonal: { ...h.cantonal, children: [{ under14: true }] } },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, commune: 1061 },
       { ...h, commune: 'Bern' },
@@ -278,15 +281,84 @@ describe('Lucerne through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys and its own, and what each document gives', () => {
     expect(rules.canton).toBe('LU');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2026))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'lu.church',
+        'lu.child_church',
+        'lu.child_under14',
+        'lu.child_lives_with_you',
+        'lu.child_away',
+        'lu.family_tariff',
+        'lu.child_care',
+      ]),
     );
-    expect(rules.documents(2025)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.documents(2025)).toContainEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(rules.documents(2025).map((d) => d.kind)).toEqual(
+      expect.arrayContaining(['pillar3a_attestation', 'health_premiums', 'childcare_invoice']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/lu');
+  });
+});
+
+describe('childcare given for the household, and each child’s answers', () => {
+  // A single parent in Luzern, 2026, with one or two children under 14 living with them: own care
+  // 2,000 each (353) and childcare by others up to 18,200 per child on top (360).
+  const base = (children: number, cantonal: LucerneCantonal = {}, care = 12_000) =>
+    rules.computeReturn({
+      taxYear: 2026,
+      commune: 'Luzern',
+      civilStatus: 'divorced',
+      people: [
+        {
+          id: 'p1',
+          employments: [{ gross: amt(90_000), socialContributions: amt(5_760) }],
+        },
+      ],
+      children: Array.from({ length: children }, () => ({ custody: 'full' as const })),
+      household: { childcare: amt(care) },
+      cantonal: {
+        church: { p1: 'none', children: Array.from({ length: children }, () => 'none' as const) },
+        children: Array.from({ length: children }, () => ({ under14: true, livesWithYou: true })),
+        ...cantonal,
+      },
+    });
+  const line = (r: ReturnType<typeof base>, code: string) =>
+    r.icc?.items.find((i) => i.code === code)?.amount;
+
+  it('one child: the invoices’ total is that child’s', () => {
+    const r = base(1);
+    expect(line(r, '360')).toBe(chf(-12_000));
+    expect(r.limits.find((l) => l.code === '360')?.person).toBe('child1');
+  });
+
+  it('two children: any split gives the same within one child’s limit, else it is asked', () => {
+    expect(line(base(2), '360')).toBe(chf(-12_000));
+    const split = base(2, {}, 30_000);
+    expect(split.icc).toBeNull();
+    expect(split.unsupported).toEqual([NOTE.childcareSplit]);
+    const given = base(2, { childcare: [amt(20_000), amt(10_000)] }, 30_000);
+    expect(line(given, '360')).toBe(chf(-(18_200 + 10_000)));
+  });
+
+  it('a child of 14 or more, or not living with you: no childcare, and the result says so', () => {
+    const older = base(1, { children: [{ under14: false, livesWithYou: true }] });
+    expect(line(older, '360')).toBeUndefined();
+    expect(line(older, '353')).toBeUndefined();
+    expect(older.notCounted).toContainEqual(NOTE.childcareNotCounted);
+    const away = base(1, { children: [{ under14: true, livesWithYou: false }] });
+    expect(away.notCounted).toContainEqual(NOTE.childcareNotCounted);
+    // The federal tax counts no child who does not live with you yet (fail closed).
+    expect(away.ifd).toBeNull();
+    expect(away.total).toBeNull();
   });
 });

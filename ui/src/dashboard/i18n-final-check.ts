@@ -45,6 +45,8 @@ const messages = {
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung Basel-Stadt) for more time to file (Fristerstreckung), online in the eSteuern.BS portal',
     moreTimeZg:
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Zug) for more time to file (Fristerstreckung), online at www.zg.ch/tax with your Pers ID',
+    moreTimeLu:
+      'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristerstreckung), online with the e-Fristerstreckung at steuern.lu.ch',
     moreTimeAg:
       'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristverlängerung), online at www.ag.ch/fristerstreckung',
   },
@@ -82,6 +84,7 @@ const messages = {
     moreTimeVd: `Un document n’arrivera pas à temps${NB}? Demandez un délai à l’Administration cantonale des impôts (ACI), en ligne avec e-Délai`,
     moreTimeBs: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale (Steuerverwaltung Basel-Stadt), en ligne dans le portail eSteuern.BS`,
     moreTimeZg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale de Zoug (Steuerverwaltung), en ligne sur www.zg.ch/tax avec votre Pers ID`,
+    moreTimeLu: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) au service des impôts de votre commune (Gemeindesteueramt), en ligne avec l’e-Fristerstreckung sur steuern.lu.ch`,
     moreTimeAg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), en ligne sur www.ag.ch/fristerstreckung`,
   },
   de: {
@@ -126,6 +129,8 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung Basel-Stadt eine Fristerstreckung, online im Portal eSteuern.BS',
     moreTimeZg:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Zug eine Fristerstreckung, online unter www.zg.ch/tax mit deiner Pers ID',
+    moreTimeLu:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristerstreckung, online mit der e-Fristerstreckung unter steuern.lu.ch',
     moreTimeAg:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristverlängerung, online unter www.ag.ch/fristerstreckung',
   },

@@ -1,8 +1,9 @@
 // Deterministic Lucerne state, communal and church income and wealth tax (Staats-, Gemeinde- und
-// Kirchensteuern) with the Personalsteuer, tax years 2025 and 2026, every constant cited (SPEC.md
-// section 7). Pure functions and data: not wired into the extension yet (docs/design/cantons.md).
-// The federal tax, the pillar 3a limits and the helpers every canton shares are in
-// packages/rules-ch.
+// Kirchensteuern) with the Personalsteuer, and the federal tax as the canton's Ergänzungsblatt
+// derives it from the return, tax years 2025 and 2026, every constant cited (SPEC.md section 7).
+// Pure functions and data, wired into the extension as a preview behind the canton registry
+// (extension/src/cantons.ts, docs/design/cantons.md). The federal rules, the pillar 3a limits and
+// the helpers every canton shares are in packages/rules-ch.
 // Citations: "p." is the page of the PDF file; the guides print the same page numbers. The
 // return's Ziffern are those of the 2025 forms as the guide prints them (lu-2025-guide-wegleitung
 // p. 13 to 19); the forms themselves cannot be downloaded.
@@ -46,7 +47,9 @@ export {
   ADDITIONAL,
   ASSETS,
   DEBTS,
+  anyRubric,
   DEDUCTIONS,
+  FEDERAL_RUBRICS,
   FORM_ORDER,
   INCOME,
   PERSON_CODES,
@@ -55,6 +58,7 @@ export {
   SOCIAL,
   WEALTH_FREE,
   WEALTH_RUBRICS,
+  type FederalCode,
   type Rubric,
   type RubricCode,
   type WealthCode,
@@ -83,5 +87,25 @@ export {
 export { ESTIMATE_TEXT, NOTE } from './explain.js';
 export type { Cited } from '@taxpresso/rules-ch';
 export type * from './types.js';
-// Lucerne behind the canton interface (packages/rules-ch, canton.ts); not wired into the extension.
+// Lucerne behind the canton interface (packages/rules-ch, canton.ts).
 export { lucerneInput, rules, type LucerneCantonal } from './canton.js';
+// The federal tax, as the Ergänzungsblatt Direkte Bundessteuer derives it from the return.
+export { FEDERAL_NOTE, federalReturn, federalTotals } from './ifd.js';
+// The ledger read into Lucerne's household input, its keys and the communes its questionnaire offers.
+export {
+  LUCERNE_READING,
+  lucerneInputFromFacts,
+  NOTE_VALUABLES,
+  type LucerneLedgerInput,
+} from './from-ledger.js';
+export {
+  communeOfAnswer,
+  communeOptions,
+  CONFESSIONS,
+  luKeys,
+  type CommuneOption,
+} from './keys.js';
+// How a Lucerne result reads in the generic views, and the official terms of the return.
+export { view } from './view.js';
+export { LU_TERMS } from './terms.js';
+export { LU_OFFICIAL_DOCUMENTS, type OfficialDocument } from './official-documents.js';

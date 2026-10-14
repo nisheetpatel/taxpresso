@@ -13,6 +13,7 @@ import { filing as bernFiling } from '@taxpresso/filing-be';
 import { filing as baselLandFiling } from '@taxpresso/filing-bl';
 import { filing as vaudFiling } from '@taxpresso/filing-vd';
 import { filing as baselFiling } from '@taxpresso/filing-bs';
+import { filing as lucerneFiling } from '@taxpresso/filing-lu';
 import { filing as zugFiling } from '@taxpresso/filing-zg';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
@@ -23,6 +24,7 @@ import {
   blQuestionnaire2026,
   bsQuestionnaire2026,
   geQuestionnaire2026,
+  luQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
   vdQuestionnaire2026,
@@ -121,6 +123,17 @@ import {
   type ZgTaxResult,
   type ZugCantonal,
 } from '@taxpresso/rules-zg';
+import {
+  communeOptions as lucerneCommunes,
+  LU_TERMS,
+  LUCERNE_READING,
+  luParamsFor,
+  NOTE_VALUABLES as LU_NOTE_VALUABLES,
+  rules as lucerneRules,
+  view as lucerneView,
+  type LucerneCantonal,
+  type LuTaxResult,
+} from '@taxpresso/rules-lu';
 import {
   AARGAU_READING,
   AG_TERMS,
@@ -497,6 +510,45 @@ const ZUG: CantonEntry = {
   tou: false,
 };
 
+const LUCERNE: CantonEntry = {
+  code: 'LU',
+  name: { en: 'Lucerne', fr: 'Lucerne', de: 'Luzern' },
+  // eSteuern.LU, the canton's online return, in the browser with your own eSteuern account and the
+  // PersID and Zugangscode eFiling printed on your return (lu-2025-efiling-merkblatt-esteuern).
+  software: 'eSteuern.LU',
+  rules: lucerneRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? luQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...lucerneRules.keys(taxYear) }),
+  communes: (taxYear) => lucerneCommunes(taxYear),
+  // Page 4 has lines of its own for cash and gold (404) and vehicles (412): say they are together.
+  ...sharedLedger(LUCERNE_READING, lucerneRules, LU_NOTE_VALUABLES),
+  view: lucerneView,
+  filing: lucerneFiling,
+  terms: LU_TERMS,
+  plan: {
+    computeReturn: (input) => lucerneRules.computeReturn(input as HouseholdInput<LucerneCantonal>),
+    incomeTax: (r) => lucerneView.incomeTax(r as LuTaxResult),
+    // The city of Lucerne, the capital, by its name (the canton's table has no BFS numbers).
+    defaultCommune: 'Luzern',
+    communeName: { en: 'City of Lucerne', fr: 'Ville de Lucerne', de: 'Stadt Luzern' },
+    sources(taxYear) {
+      // The documents a Lucerne household's income tax rests on, for the year.
+      const P = luParamsFor(taxYear);
+      return [
+        ...new Set([P.incomeTariff.single.source, P.incomeTariff.family.source]),
+        P.stateUnits.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'lu_preview', communeDefault: 'lu_commune_default' },
+    // No Lucerne document Taxpresso has gives the cantonal rule of a 3a catch-up (rules-lu fails
+    // closed, NOTE.catchUp): no saving is shown.
+    catchUp: { field: 'pillar3a', unknownRule: 'lu_catchup_rule' },
+  },
+  tou: false,
+};
+
 const AARGAU: CantonEntry = {
   code: 'AG',
   name: { en: 'Aargau', fr: 'Argovie', de: 'Aargau' },
@@ -543,6 +595,7 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   VD: VAUD,
   BS: BASEL,
   ZG: ZUG,
+  LU: LUCERNE,
   AG: AARGAU,
 };
 

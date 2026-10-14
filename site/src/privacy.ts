@@ -75,7 +75,7 @@ const fr: PrivacyCopy = frenchSpacing({
       p: [],
       list: [
         'Pas de cookies, pas de statistiques, pas de traceurs.',
-        'Le seul formulaire est l’avis facultatif du menu des pourboires : ce que vous écrivez et le prénom que vous choisissez nous sont envoyés et gardés en privé (sur GitHub). Nous ne le citons que si vous avez coché la case. Votre adresse IP n’est pas enregistrée avec l’avis.',
+        'Le seul formulaire est l’avis facultatif du menu des pourboires : ce que vous écrivez et le prénom que vous choisissez nous sont envoyés et gardés en privé, dans notre base de données (Upstash, reliée à notre hébergeur Vercel). Nous ne le citons que si vous avez coché la case. Votre adresse IP n’est pas enregistrée avec l’avis.',
         'Les polices et les styles viennent de ce site : rien ne se charge depuis un autre.',
         'Vercel, qui héberge ce site, peut garder les journaux de serveur habituels, comme les adresses IP et les pages demandées, comme tout hébergeur.',
         'Les liens vers GitHub (code source, téléchargements, tickets) et vers les pages officielles mènent à d’autres sites, avec leurs propres règles de confidentialité.',
@@ -143,7 +143,7 @@ const en: PrivacyCopy = {
       p: [],
       list: [
         'No cookies, no analytics and no trackers.',
-        'The only form is the optional review in the tip menu: what you write and the name you choose are sent to us and kept privately (on GitHub). We quote it only if you ticked the box. Your IP address isn’t stored with the review.',
+        'The only form is the optional review in the tip menu: what you write and the name you choose are sent to us and kept privately, in our database (Upstash, connected to our host Vercel). We quote it only if you ticked the box. Your IP address isn’t stored with the review.',
         'Fonts and styles come from this site: nothing loads from another one.',
         'Vercel, which hosts this site, may keep the usual server logs, such as IP addresses and the pages requested, as any web host does.',
         'Links to GitHub (source code, downloads, issues) and to official pages take you to other sites, with their own privacy rules.',
@@ -211,7 +211,7 @@ const de: PrivacyCopy = {
       p: [],
       list: [
         'Keine Cookies, keine Statistiken und keine Tracker.',
-        'Das einzige Formular ist die freiwillige Bewertung auf der Trinkgeldkarte: Was du schreibst und der Name, den du wählst, kommen zu uns und bleiben privat (auf GitHub). Wir zitieren sie nur, wenn du das Kästchen angekreuzt hast. Deine IP-Adresse wird nicht mit der Bewertung gespeichert.',
+        'Das einzige Formular ist die freiwillige Bewertung auf der Trinkgeldkarte: Was du schreibst und der Name, den du wählst, kommen zu uns und bleiben privat, in unserer Datenbank (Upstash, verbunden mit unserem Hoster Vercel). Wir zitieren sie nur, wenn du das Kästchen angekreuzt hast. Deine IP-Adresse wird nicht mit der Bewertung gespeichert.',
         'Schriften und Styles kommen von dieser Website: Nichts wird von einer anderen geladen.',
         'Vercel, das diese Website hostet, kann die üblichen Server-Logs speichern, etwa IP-Adressen und die aufgerufenen Seiten, wie jeder Webhoster.',
         'Links zu GitHub (Quellcode, Downloads, Issues) und zu offiziellen Seiten führen zu anderen Websites, mit ihren eigenen Datenschutzregeln.',
@@ -279,7 +279,7 @@ const it: PrivacyCopy = {
       p: [],
       list: [
         'Niente cookie, statistiche o tracker.',
-        'L’unico modulo è la recensione facoltativa nel menu delle mance: quello che scrivi e il nome che scegli arrivano a noi e restano privati (su GitHub). La citiamo solo se hai spuntato la casella. Il tuo indirizzo IP non viene salvato con la recensione.',
+        'L’unico modulo è la recensione facoltativa nel menu delle mance: quello che scrivi e il nome che scegli arrivano a noi e restano privati, nel nostro database (Upstash, collegato al nostro hosting Vercel). La citiamo solo se hai spuntato la casella. Il tuo indirizzo IP non viene salvato con la recensione.',
         'Font e stili arrivano da questo sito: nulla viene caricato da altri siti.',
         'Vercel, che ospita questo sito, può conservare i normali log del server, come gli indirizzi IP e le pagine richieste, come ogni hosting.',
         'I link a GitHub (codice sorgente, download, segnalazioni) e alle pagine ufficiali portano ad altri siti, con le loro regole sulla privacy.',
@@ -347,7 +347,7 @@ const es: PrivacyCopy = {
       p: [],
       list: [
         'Sin cookies, sin estadísticas y sin rastreadores.',
-        'El único formulario es la reseña opcional del menú de propinas: lo que escribes y el nombre que eliges nos llegan y se guardan en privado (en GitHub). Solo la citamos si marcaste la casilla. Tu dirección IP no se guarda con la reseña.',
+        'El único formulario es la reseña opcional del menú de propinas: lo que escribes y el nombre que eliges nos llegan y se guardan en privado, en nuestra base de datos (Upstash, conectada a nuestro alojamiento Vercel). Solo la citamos si marcaste la casilla. Tu dirección IP no se guarda con la reseña.',
         'Las fuentes y los estilos vienen de este sitio: nada se carga desde otro.',
         'Vercel, que aloja este sitio, puede guardar los registros de servidor habituales, como direcciones IP y las páginas pedidas, como cualquier alojamiento web.',
         'Los enlaces a GitHub (código fuente, descargas, incidencias) y a las páginas oficiales llevan a otros sitios, con sus propias normas de privacidad.',
@@ -415,7 +415,7 @@ const pt: PrivacyCopy = {
       p: [],
       list: [
         'Sem cookies, sem estatísticas e sem rastreadores.',
-        'O único formulário é a opinião opcional no menu das gorjetas: o que escreves e o nome que escolhes chegam até nós e ficam privados (no GitHub). Só a citamos se marcaste a caixa. O teu endereço IP não é guardado com a opinião.',
+        'O único formulário é a opinião opcional no menu das gorjetas: o que escreves e o nome que escolhes chegam até nós e ficam privados, na nossa base de dados (Upstash, ligada ao nosso alojamento Vercel). Só a citamos se marcaste a caixa. O teu endereço IP não é guardado com a opinião.',
         'Os tipos de letra e os estilos vêm deste site: nada é carregado de outro.',
         'A Vercel, que aloja este site, pode guardar os registos de servidor habituais, como endereços IP e as páginas pedidas, como qualquer alojamento web.',
         'As ligações para o GitHub (código-fonte e transferências) e para as páginas oficiais levam a outros sites, com as suas próprias regras de privacidade.',
