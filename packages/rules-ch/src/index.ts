@@ -127,6 +127,8 @@ export type {
   YearComparisonRow,
   YearPair,
 } from './view.js';
+// The official terms of a canton's form, for the generic texts (final check, plans, copy panel).
+export type { CantonTerms, OfficialDocument } from './terms.js';
 // Pillar 3a and the pension fund (2nd pillar): the federal limits, the same for every canton's tax.
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './pension/pillar3a.js';
 export {

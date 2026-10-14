@@ -2,6 +2,8 @@
 // rules (packages/rules-<c>), its questionnaire (data/<c>/<year>) and its communes, and the questions
 // every canton shares, which are all Taxpresso asks until it knows the canton. The canton is the
 // answer to the first question (profile.canton); one tax year has one canton.
+import { FORM_2025, FORM_2026, LEDGER_ROUTES_2026 } from '@taxpresso/filing-ge';
+import { zurichFormMap, zurichLineOf } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import {
   geQuestionnaire2026,
@@ -19,6 +21,7 @@ import {
   type CantonLedgerInput,
   type CantonLedgerReading,
   type CantonRules,
+  type CantonTerms,
   type ResultView,
   type SupportedCanton,
   type TaxResult,
@@ -36,6 +39,8 @@ import {
   NOTE_VALUABLES,
   rules as zurichRules,
   view as zurichView,
+  ZH_FORM_NOTE,
+  ZH_TERMS,
   ZURICH_READING,
 } from '@taxpresso/rules-zh';
 import { movableWealth } from './wealth.js';
@@ -65,6 +70,20 @@ export interface LedgerEstimate {
   notes: Text[];
 }
 
+/** The canton's official form, as the generic views place values on it. */
+export interface CantonFilingEntry {
+  /** Where each line code stands on the official form (lower first); undefined: not on it. */
+  formOrder(taxYear: number): (code: string) => number | undefined;
+  /** The line a ledger value goes to on the form, for this person (the final check's titles). */
+  lineOf(key: string, person: string): string | undefined;
+  /** The line of a person's salary, for a rough salary given as an estimate. */
+  salaryLine(person: string): string;
+  /** Shown when the form's codes and labels come from an earlier year. */
+  formNote(taxYear: number): Text | undefined;
+  /** Taxpresso checks the PDF of the canton's declaration (reconcile_official_pdf): Geneva only. */
+  checksPdf: boolean;
+}
+
 export interface CantonEntry {
   code: SupportedCanton;
   name: CantonName;
@@ -87,6 +106,13 @@ export interface CantonEntry {
   estimate(ctx: LedgerContext): LedgerEstimate;
   /** How its result reads in the generic views (compute_tax, the estimate card, the plans). */
   view: ResultView;
+  /** The official form. */
+  filing: CantonFilingEntry;
+  /**
+   * The official terms of the canton's form for the generic texts (final check, plans, copy
+   * panel). Absent for Geneva, whose texts are the defaults everywhere.
+   */
+  terms?: CantonTerms;
   /**
    * Every canton but Geneva (whose engine reads its own input, with the état des titres): the
    * ledger read into the shared household input, with the canton's own part (`cantonal`).
@@ -155,6 +181,32 @@ const GENEVA: CantonEntry = {
     return { result: input ? genevaReturn(input) : null, missing, notes };
   },
   view: genevaView,
+  filing: {
+    formOrder(taxYear) {
+      // The place of each rubric code on the official form, page by page.
+      const form = taxYear === 2025 ? FORM_2025 : FORM_2026;
+      const order = new Map<string, number>();
+      form.rubrics.forEach((r, i) => {
+        const code = r.code ?? r.key;
+        if (!order.has(code)) order.set(code, i);
+      });
+      return (code) => order.get(code);
+    },
+    lineOf(key, person) {
+      // The rubric a ledger value goes to, for this person (@taxpresso/filing-ge's routes).
+      const route = LEDGER_ROUTES_2026.find((r) => r.key === key);
+      if (!route) return undefined;
+      if (typeof route.to === 'string')
+        return /^\d{2}\.\d{2}$/.test(route.to) ? route.to : undefined;
+      return person === 'p2' ? route.to.B : route.to.A;
+    },
+    salaryLine: (person) => (person === 'p2' ? '21.10' : '11.10'),
+    formNote(taxYear) {
+      const form = taxYear === 2025 ? FORM_2025 : FORM_2026;
+      return form.provisional && form.note ? form.note : undefined;
+    },
+    checksPdf: true,
+  },
 };
 
 const ZURICH: CantonEntry = {
@@ -167,6 +219,23 @@ const ZURICH: CantonEntry = {
   communes: (taxYear) => communeOptions(taxYear),
   ...sharedLedger(ZURICH_READING, zurichRules, NOTE_VALUABLES),
   view: zurichView,
+  filing: {
+    formOrder(taxYear) {
+      // The form's order: the main form's lines first (p. 2 to 4), then the annexes' own lines.
+      const form = zurichFormMap(taxYear);
+      const main = form.rubrics.filter((r) => r.page.startsWith('S'));
+      const order = new Map<string, number>();
+      [...main, ...form.rubrics.filter((r) => !main.includes(r))].forEach((r, i) => {
+        if (!order.has(r.key)) order.set(r.key, i);
+      });
+      return (code) => order.get(code);
+    },
+    lineOf: zurichLineOf,
+    salaryLine: (person) => zurichLineOf('salary.gross', person)!,
+    formNote: () => ZH_FORM_NOTE,
+    checksPdf: false,
+  },
+  terms: ZH_TERMS,
 };
 
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = { GE: GENEVA, ZH: ZURICH };
