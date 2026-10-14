@@ -5,7 +5,10 @@
 // gloss. French says vous; German, Italian, Spanish and Portuguese use the informal you (du, tu,
 // tú, tu), with Swiss spelling in German (ss, never ß). No tax amounts or rules here: those live
 // in the product, each with its source. Links use [text](https://...) and are rendered by
-// render.ts.
+// render.ts. Canton names come from cantons.ts, never typed here: Geneva is named only where a
+// sentence is about Geneva (the example receipt, Geneva's PDF check, where Taxpresso is built).
+
+import { type CantonStatus, type CantonWhen, cantonNames, listOf } from './cantons.ts';
 
 const NB = String.fromCharCode(0xa0); // French spacing before : ? ! ; and inside « »
 
@@ -38,10 +41,73 @@ export const REVIEW_URL = `${SOURCE_URL}/issues/new?template=review.yml`;
 /** The association's entry in the Swiss business register (UID). */
 const PPB_REGISTER = 'https://www.uid.admin.ch/Detail.aspx?uid_id=CHE-185.673.320';
 
+/**
+ * The answer to "Which cantons work?", written from cantons.ts: the most complete canton, the
+ * previews, the ones coming next, then the vote. A canton added there shows up here in every
+ * language.
+ */
+function cantonsAnswer(lang: Lang): string {
+  const names = (group: CantonStatus | CantonWhen) => cantonNames(lang, group);
+  const list = (items: string[]) => listOf(lang, items);
+  const one = (items: string[]) => items.length === 1;
+  const complete = names('complete');
+  const preview = names('preview');
+  // If nothing is "next", the "then" cantons are next.
+  const soon = names('next');
+  const [next, then] = soon.length ? [soon, names('then')] : [names('then'), []];
+  const after = (word: string) => (then.length ? `, ${word} ${list(then)}` : '');
+  const vote = (text: string) => `[${text}](${ISSUE_URL.canton}).`;
+  const sentences: Record<Lang, (string | false)[]> = {
+    en: [
+      `${list(complete)} ${one(complete) ? 'is' : 'are'} the most complete.`,
+      preview.length > 0 &&
+        `${list(preview)} ${one(preview) ? 'works' : 'work'} too, as a preview.`,
+      next.length > 0 && `Coming next: ${list(next)}${after('then')}.`,
+      vote('Vote for your canton'),
+    ],
+    fr: [
+      `${list(complete)} ${one(complete) ? 'est le canton le plus complet' : 'sont les cantons les plus complets'}.`,
+      preview.length > 0 &&
+        `${list(preview)} ${one(preview) ? 'fonctionne' : 'fonctionnent'} aussi, en avant-première.`,
+      next.length > 0 && `À venir${NB}: ${list(next)}${after('puis')}.`,
+      vote('Votez pour votre canton'),
+    ],
+    de: [
+      `${list(complete)} ${one(complete) ? 'ist' : 'sind'} am vollständigsten.`,
+      preview.length > 0 &&
+        `${list(preview)} ${one(preview) ? 'funktioniert' : 'funktionieren'} auch, als Vorschau.`,
+      next.length > 0 && `Als Nächstes: ${list(next)}${after('danach')}.`,
+      vote('Stimm für deinen Kanton ab'),
+    ],
+    it: [
+      `${list(complete)} ${one(complete) ? 'è il cantone più completo' : 'sono i cantoni più completi'}.`,
+      preview.length > 0 &&
+        `Anche ${list(preview)} ${one(preview) ? 'funziona' : 'funzionano'}, in anteprima.`,
+      next.length > 0 && `In arrivo: ${list(next)}${after('poi')}.`,
+      vote('Vota il tuo cantone'),
+    ],
+    es: [
+      `${list(complete)} ${one(complete) ? 'es el cantón más completo' : 'son los cantones más completos'}.`,
+      preview.length > 0 &&
+        `${list(preview)} también ${one(preview) ? 'funciona' : 'funcionan'}, como versión preliminar.`,
+      next.length > 0 && `Próximamente: ${list(next)}${after('luego')}.`,
+      vote('Vota por tu cantón'),
+    ],
+    pt: [
+      `${list(complete)} ${one(complete) ? 'é o cantão mais completo' : 'são os cantões mais completos'}.`,
+      preview.length > 0 &&
+        `${list(preview)} também ${one(preview) ? 'funciona' : 'funcionam'}, em pré-visualização.`,
+      next.length > 0 && `Em breve: ${list(next)}${after('depois')}.`,
+      vote('Vota no teu cantão'),
+    ],
+  };
+  return sentences[lang].filter(Boolean).join(' ');
+}
+
 const fr = {
   htmlTitle: `Taxpresso${NB}: vos impôts, le temps d’un espresso`,
   metaDescription:
-    'Taxpresso prépare votre déclaration d’impôt genevoise avec Claude, sur votre ordinateur. Gratuit et open source.',
+    'Taxpresso prépare votre déclaration d’impôt suisse avec Claude, sur votre ordinateur. Gratuit et open source.',
   skip: 'Aller au contenu',
   navLabel: 'Sections',
   langLabel: 'Langue',
@@ -91,7 +157,7 @@ const fr = {
       ],
       [
         'Vérifiez, transmettez',
-        'Claude remplit pour vous la déclaration en ligne officielle (e-démarches), dans Claude in Chrome ou son navigateur intégré. Taxpresso compare le PDF officiel à vos chiffres. C’est vous qui appuyez sur Transmettre.',
+        'Claude remplit pour vous la déclaration en ligne officielle de votre canton, dans Claude in Chrome ou son navigateur intégré. Vous vous connectez, vous vérifiez et vous la transmettez vous-même. À Genève, Taxpresso compare aussi le PDF officiel à vos chiffres.',
       ],
     ] as [string, string][],
   },
@@ -117,12 +183,12 @@ const fr = {
       ],
       [
         'Les règles officielles',
-        'Chaque montant suit les guides fiscaux genevois et fédéral, et cite sa page. Claude explique, il ne calcule pas.',
+        'Chaque montant suit les guides fiscaux de votre canton et de la Confédération, et cite sa page. Claude explique, il ne calcule pas.',
         'rosetta',
       ],
       [
         'C’est vous qui transmettez',
-        'Claude remplit la déclaration en ligne pour vous. Vous vous connectez, vous relisez et vous appuyez sur Transmettre. Claude ne tape jamais vos mots de passe.',
+        'Claude remplit la déclaration en ligne pour vous. Vous vous connectez, vous relisez et vous la transmettez vous-même. Claude ne tape jamais vos mots de passe.',
         'check',
       ],
       [
@@ -133,7 +199,7 @@ const fr = {
     ] as [string, string, Art][],
     swiss: [
       'Swiss made',
-      'Conçu à Genève, pour les personnes imposées en Suisse. Indépendant de l’administration fiscale et d’Anthropic.',
+      'Conçu à Genève, pour les personnes imposées en Suisse. Indépendant de toute administration fiscale et d’Anthropic.',
     ] as [string, string],
   },
 
@@ -219,17 +285,14 @@ const fr = {
         `Faut-il Claude${NB}?`,
         'Oui, pour l’instant. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. ChatGPT n’est pas encore disponible.',
       ],
-      [
-        `Et les autres cantons${NB}?`,
-        `Genève d’abord. Zurich, Berne, Vaud, Bâle-Ville et Bâle-Campagne fonctionnent aussi, en avant-première. Fribourg, le Tessin, Lucerne, Argovie, Saint-Gall et Zoug sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
-      ],
+      [`Quels cantons sont disponibles${NB}?`, cantonsAnswer('fr')],
       [
         `Taxpresso transmet-il ma déclaration${NB}?`,
-        'Presque. Claude remplit pour vous la déclaration en ligne officielle, dans Claude in Chrome ou dans son navigateur intégré. Vous vous connectez, vous relisez le PDF officiel et vous appuyez vous-même sur Transmettre.',
+        'Presque. Claude remplit pour vous la déclaration en ligne officielle de votre canton, dans Claude in Chrome ou dans son navigateur intégré. Vous vous connectez, vous la vérifiez et vous la transmettez vous-même. Claude ne tape jamais vos mots de passe.',
       ],
       [
         `Est-ce un service officiel${NB}?`,
-        'Non. Taxpresso est indépendant : il n’est lié ni à l’Administration fiscale cantonale de Genève (AFC), ni à Anthropic.',
+        'Non. Taxpresso est indépendant : il n’est lié ni à une administration fiscale cantonale, ni à l’Administration fédérale des contributions, ni à Anthropic.',
       ],
       [
         `Pourquoi est-ce gratuit${NB}?`,
@@ -241,27 +304,27 @@ const fr = {
       ],
       [
         `Dans quelles langues${NB}?`,
-        'Claude vous répond dans la langue où vous écrivez. L’application est en français et en anglais, puis viendront l’allemand, l’italien, l’espagnol et le portugais. Les termes officiels restent en français, comme sur le formulaire.',
+        'Claude vous répond dans la langue où vous écrivez. L’application est en français, en anglais et en allemand, puis viendront l’italien, l’espagnol et le portugais. Les termes officiels restent dans la langue du formulaire de votre canton.',
       ],
     ] as [string, string][],
   },
 
   finePrint: {
     title: 'Les petites lignes, en clair',
-    text: 'Taxpresso est un outil gratuit, fourni tel quel, sans aucune garantie. Nous ne sommes pas conseillers fiscaux : nous l’avons construit justement pour ne plus nous soucier de nos propres impôts. Taxpresso vous aide à préparer votre déclaration, mais c’est vous qui décidez de son contenu, et la déclaration que vous transmettez relève de votre responsabilité. En cas de doute, demandez à l’Administration fiscale cantonale (AFC) ou à une fiduciaire.',
+    text: 'Taxpresso est un outil gratuit, fourni tel quel, sans aucune garantie. Nous ne sommes pas conseillers fiscaux : nous l’avons construit justement pour ne plus nous soucier de nos propres impôts. Taxpresso vous aide à préparer votre déclaration, mais c’est vous qui décidez de son contenu, et la déclaration que vous transmettez relève de votre responsabilité. En cas de doute, demandez à l’administration fiscale de votre canton ou à une fiduciaire.',
   },
 
   start: {
     htmlTitle: 'Commencer avec Taxpresso',
     metaDescription:
-      'Installez Taxpresso dans Claude Desktop et préparez votre déclaration genevoise, pas à pas.',
+      'Installez Taxpresso dans Claude Desktop et préparez votre déclaration d’impôt suisse, pas à pas.',
     title: 'Commencer',
     lead: 'Taxpresso est une extension pour Claude Desktop. Elle s’installe en une minute, et tout reste sur votre ordinateur.',
     download: 'Télécharger Taxpresso',
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
     platforms: ['Linux (bêta)', 'macOS', 'Windows'],
     needsTitle: 'Ce qu’il vous faut',
-    guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/fr/guides/) expliquent l’essentiel, avec les liens officiels.`,
+    guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/fr/guides/) expliquent l’essentiel pour Genève, avec les liens officiels.`,
     needs: [
       [
         'Claude Desktop',
@@ -293,17 +356,17 @@ const fr = {
       ],
       [
         'Répondez et ajoutez vos documents',
-        'Claude vous pose quelques questions simples, une à la fois. Pour répondre en cliquant ou déposer vos documents, demandez à Claude d’ouvrir votre tableau de bord.',
+        'Claude vous pose quelques questions simples, une à la fois, à commencer par votre canton. Pour répondre en cliquant ou déposer vos documents, demandez à Claude d’ouvrir votre tableau de bord.',
       ],
       [
         'Transmettez',
-        'Quand tout est prêt, Claude remplit la déclaration en ligne officielle dans Claude in Chrome ou son navigateur intégré. Vous vous connectez, vous vérifiez et vous appuyez vous-même sur Transmettre.',
+        'Quand tout est prêt, Claude remplit la déclaration en ligne officielle de votre canton dans Claude in Chrome ou son navigateur intégré. Vous vous connectez, vous vérifiez et vous la transmettez vous-même.',
       ],
     ] as [string, string][],
-    prompt: 'Aide-moi avec mes impôts genevois.',
+    prompt: 'Aide-moi avec mes impôts.',
     promptLabel: 'À écrire dans Claude',
     mockInstall: 'Installer',
-    mockExtension: 'Votre déclaration genevoise, sur votre ordinateur.',
+    mockExtension: 'Votre déclaration d’impôt, sur votre ordinateur.',
     notes: [
       [
         'Vos réglages',
@@ -327,7 +390,7 @@ const fr = {
 
   footer: {
     independent:
-      'Taxpresso est un projet logiciel indépendant, gratuit et open source. Il n’est ni affilié à une fiduciaire, un cabinet comptable ou une société de services fiscaux, en Suisse ou ailleurs, ni sponsorisé par l’une d’elles, et il n’est lié ni à l’Administration fiscale cantonale de Genève, ni à Anthropic. Claude est une marque d’Anthropic.',
+      'Taxpresso est un projet logiciel indépendant, gratuit et open source. Il n’est ni affilié à une fiduciaire, un cabinet comptable ou une société de services fiscaux, en Suisse ou ailleurs, ni sponsorisé par l’une d’elles, et il n’est lié ni à une administration fiscale cantonale, ni à l’Administration fédérale des contributions, ni à Anthropic. Claude est une marque d’Anthropic.',
     noTracking: 'Ce site n’utilise ni cookies, ni traceurs, ni polices externes.',
     source: 'Code source',
   },
@@ -338,7 +401,7 @@ export type Copy = typeof fr;
 const en: Copy = {
   htmlTitle: 'Taxpresso: your taxes, done over an espresso',
   metaDescription:
-    'Taxpresso prepares your Geneva tax return with Claude, on your own computer. Free and open source.',
+    'Taxpresso prepares your Swiss tax return with Claude, on your own computer. Free and open source.',
   skip: 'Skip to content',
   navLabel: 'Sections',
   langLabel: 'Language',
@@ -388,7 +451,7 @@ const en: Copy = {
       ],
       [
         'Check and file',
-        'Claude fills in the official online declaration (e-démarches) for you, in Claude in Chrome or its built-in browser. Taxpresso checks the official PDF against your numbers. You press Transmettre yourself.',
+        'Claude fills in your canton’s official online declaration for you, in Claude in Chrome or its built-in browser. You sign in, check it and submit it yourself. In Geneva, Taxpresso also checks the official PDF against your numbers.',
       ],
     ],
   },
@@ -414,12 +477,12 @@ const en: Copy = {
       ],
       [
         'Official rules only',
-        'Every amount follows the Geneva and federal tax guides, and cites its page. Claude explains; it doesn’t do the math.',
+        'Every amount follows your canton’s and the federal tax guides, and cites its page. Claude explains; it doesn’t do the math.',
         'rosetta',
       ],
       [
-        'You press transmit',
-        'Claude fills in the online declaration for you. You sign in, review it and press Transmettre. Claude never types your passwords.',
+        'You file it yourself',
+        'Claude fills in the online declaration for you. You sign in, review it and submit it yourself. Claude never types your passwords.',
         'check',
       ],
       [
@@ -430,7 +493,7 @@ const en: Copy = {
     ],
     swiss: [
       'Swiss made',
-      'Built in Geneva, for people taxed in Switzerland. Independent of the tax administration and of Anthropic.',
+      'Built in Geneva, for people taxed in Switzerland. Independent of any tax administration and of Anthropic.',
     ],
   },
 
@@ -496,17 +559,14 @@ const en: Copy = {
         'Do I need Claude?',
         'Yes, for now. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. ChatGPT isn’t available yet.',
       ],
-      [
-        'What about other cantons?',
-        `Geneva comes first. Zurich, Bern, Vaud, Basel-Stadt and Basel-Landschaft work too, as a preview. Fribourg, Ticino, Lucerne, Aargau, St. Gallen and Zug are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
-      ],
+      ['Which cantons work?', cantonsAnswer('en')],
       [
         'Does Taxpresso file my return?',
-        'Almost. Claude fills in the official online declaration for you, in Claude in Chrome or its built-in browser. You sign in, review the official PDF and press Transmettre yourself.',
+        'Almost. Claude fills in your canton’s official online declaration for you, in Claude in Chrome or its built-in browser. You sign in, check it and submit it yourself. Claude never types your passwords.',
       ],
       [
         'Is this an official service?',
-        'No. Taxpresso is independent and not affiliated with the Geneva cantonal tax administration (AFC) or with Anthropic.',
+        'No. Taxpresso is independent: it isn’t affiliated with any cantonal tax administration, the Federal Tax Administration or Anthropic.',
       ],
       [
         'Why is it free?',
@@ -518,20 +578,20 @@ const en: Copy = {
       ],
       [
         'Which languages?',
-        'Claude answers in the language you write in. The app is in French and English, with German, Italian, Spanish and Portuguese to come. Official terms stay in French, as on the form.',
+        'Claude answers in the language you write in. The app is in English, French and German, with Italian, Spanish and Portuguese to come. Official terms stay in the language of your canton’s form.',
       ],
     ],
   },
 
   finePrint: {
     title: 'The fine print, in plain words',
-    text: 'Taxpresso is a free tool, provided as is, with no warranty. We’re not tax advisers: we built it precisely so we’d stop worrying about our own taxes. Taxpresso helps you prepare your return, but you decide what goes in it, and the return you transmit is your responsibility. When in doubt, ask the cantonal tax administration (AFC) or a fiduciary.',
+    text: 'Taxpresso is a free tool, provided as is, with no warranty. We’re not tax advisers: we built it precisely so we’d stop worrying about our own taxes. Taxpresso helps you prepare your return, but you decide what goes in it, and the return you transmit is your responsibility. When in doubt, ask your canton’s tax office or a fiduciary.',
   },
 
   start: {
     htmlTitle: 'Get started with Taxpresso',
     metaDescription:
-      'Install Taxpresso in Claude Desktop and prepare your Geneva tax return, step by step.',
+      'Install Taxpresso in Claude Desktop and prepare your Swiss tax return, step by step.',
     title: 'Get started',
     lead: 'Taxpresso is an extension for Claude Desktop. It installs in a minute, and everything stays on your computer.',
     download: 'Download Taxpresso',
@@ -539,7 +599,7 @@ const en: Copy = {
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'What you need',
     guides:
-      'Which documents to gather, pillar 3a, TOU, your assessment: [our guides](/en/guides/) explain the basics, with the official links.',
+      'Which documents to gather, pillar 3a, TOU, your assessment: [our guides](/en/guides/) explain the basics for Geneva, with the official links.',
     needs: [
       [
         'Claude Desktop',
@@ -571,17 +631,17 @@ const en: Copy = {
       ],
       [
         'Answer and add your documents',
-        'Claude asks a few simple questions, one at a time. To answer by clicking or to drop in your documents, ask Claude to open your dashboard.',
+        'Claude asks a few simple questions, one at a time, starting with your canton. To answer by clicking or to drop in your documents, ask Claude to open your dashboard.',
       ],
       [
         'File',
-        'When everything is ready, Claude fills in the official online declaration in Claude in Chrome or its built-in browser. You sign in, check it and press Transmettre yourself.',
+        'When everything is ready, Claude fills in your canton’s official online declaration in Claude in Chrome or its built-in browser. You sign in, check it and submit it yourself.',
       ],
     ],
-    prompt: 'Help me with my Geneva taxes.',
+    prompt: 'Help me with my taxes.',
     promptLabel: 'Write this in Claude',
     mockInstall: 'Install',
-    mockExtension: 'Your Geneva tax return, on your computer.',
+    mockExtension: 'Your tax return, on your computer.',
     notes: [
       [
         'Your settings',
@@ -605,7 +665,7 @@ const en: Copy = {
 
   footer: {
     independent:
-      'Taxpresso is an independent, free and open-source software project. It is not affiliated with, sponsored by or associated with any accounting firm, fiduciary or tax-services company, in Switzerland or elsewhere, nor with the Geneva cantonal tax administration or Anthropic. Claude is a trademark of Anthropic.',
+      'Taxpresso is an independent, free and open-source software project. It is not affiliated with, sponsored by or associated with any accounting firm, fiduciary or tax-services company, in Switzerland or elsewhere, nor with any cantonal tax administration, the Federal Tax Administration or Anthropic. Claude is a trademark of Anthropic.',
     noTracking: 'This site uses no cookies, no trackers and no external fonts.',
     source: 'Source code',
   },
@@ -614,7 +674,7 @@ const en: Copy = {
 const de: Copy = {
   htmlTitle: 'Taxpresso: deine Steuern, erledigt bei einem Espresso',
   metaDescription:
-    'Taxpresso erstellt deine Genfer Steuererklärung mit Claude, auf deinem eigenen Computer. Kostenlos und Open Source.',
+    'Taxpresso erstellt deine Schweizer Steuererklärung mit Claude, auf deinem eigenen Computer. Kostenlos und Open Source.',
   skip: 'Zum Inhalt',
   navLabel: 'Abschnitte',
   langLabel: 'Sprache',
@@ -664,7 +724,7 @@ const de: Copy = {
       ],
       [
         'Prüfe und übermittle',
-        'Claude füllt die offizielle Online-Erklärung (e-démarches) für dich aus, in Claude in Chrome oder im integrierten Browser. Taxpresso vergleicht das offizielle PDF mit deinen Zahlen. Auf «Transmettre» drückst du selbst.',
+        'Claude füllt die offizielle Online-Erklärung deines Kantons für dich aus, in Claude in Chrome oder im integrierten Browser. Du meldest dich an, prüfst alles und reichst sie selbst ein. In Genf vergleicht Taxpresso zudem das offizielle PDF mit deinen Zahlen.',
       ],
     ],
   },
@@ -690,12 +750,12 @@ const de: Copy = {
       ],
       [
         'Nur offizielle Regeln',
-        'Jeder Betrag folgt den Steuerleitfäden von Genf und vom Bund und nennt die Seite. Claude erklärt, rechnet aber nicht.',
+        'Jeder Betrag folgt den Steuerleitfäden deines Kantons und des Bundes und nennt die Seite. Claude erklärt, rechnet aber nicht.',
         'rosetta',
       ],
       [
         'Du übermittelst selbst',
-        'Claude füllt die Online-Erklärung für dich aus. Du meldest dich an, prüfst alles und drückst auf «Transmettre». Claude tippt nie deine Passwörter ein.',
+        'Claude füllt die Online-Erklärung für dich aus. Du meldest dich an, prüfst alles und reichst sie selbst ein. Claude tippt nie deine Passwörter ein.',
         'check',
       ],
       [
@@ -706,7 +766,7 @@ const de: Copy = {
     ],
     swiss: [
       'Swiss made',
-      'In Genf entwickelt, für Menschen, die in der Schweiz Steuern zahlen. Unabhängig von der Steuerverwaltung und von Anthropic.',
+      'In Genf entwickelt, für Menschen, die in der Schweiz Steuern zahlen. Unabhängig von jeder Steuerverwaltung und von Anthropic.',
     ],
   },
 
@@ -788,17 +848,14 @@ const de: Copy = {
         'Brauche ich Claude?',
         'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar.',
       ],
-      [
-        'Und die anderen Kantone?',
-        `Genf kommt zuerst. Zürich, Bern, Waadt, Basel-Stadt und Basel-Landschaft funktionieren auch, als Vorschau. Freiburg, Tessin, Luzern, Aargau, St. Gallen und Zug sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
-      ],
+      ['Welche Kantone funktionieren?', cantonsAnswer('de')],
       [
         'Übermittelt Taxpresso meine Erklärung?',
-        'Fast. Claude füllt die offizielle Online-Erklärung für dich aus, in Claude in Chrome oder im integrierten Browser. Du meldest dich an, prüfst das offizielle PDF und drückst selbst auf «Transmettre».',
+        'Fast. Claude füllt die offizielle Online-Erklärung deines Kantons für dich aus, in Claude in Chrome oder im integrierten Browser. Du meldest dich an, prüfst sie und reichst sie selbst ein. Claude tippt nie deine Passwörter ein.',
       ],
       [
         'Ist das ein offizieller Dienst?',
-        'Nein. Taxpresso ist unabhängig. Es gehört weder zur kantonalen Steuerverwaltung Genf (AFC) noch zu Anthropic.',
+        'Nein. Taxpresso ist unabhängig. Es gehört weder zu einer kantonalen Steuerverwaltung noch zur Eidgenössischen Steuerverwaltung noch zu Anthropic.',
       ],
       [
         'Warum ist es kostenlos?',
@@ -810,20 +867,20 @@ const de: Copy = {
       ],
       [
         'In welchen Sprachen?',
-        'Claude antwortet in der Sprache, in der du schreibst. Die App gibt es auf Französisch und Englisch. Deutsch, Italienisch, Spanisch und Portugiesisch kommen noch. Offizielle Begriffe bleiben auf Französisch, wie im Formular.',
+        'Claude antwortet in der Sprache, in der du schreibst. Die App gibt es auf Deutsch, Französisch und Englisch. Italienisch, Spanisch und Portugiesisch kommen noch. Offizielle Begriffe bleiben in der Sprache des Formulars deines Kantons.',
       ],
     ],
   },
 
   finePrint: {
     title: 'Das Kleingedruckte, in klaren Worten',
-    text: 'Taxpresso ist ein kostenloses Werkzeug. Du bekommst es so, wie es ist, ohne jede Gewähr. Wir sind keine Steuerberater: Wir haben Taxpresso genau dafür gebaut, damit wir uns um unsere eigenen Steuern keine Sorgen mehr machen müssen. Taxpresso hilft dir, deine Erklärung vorzubereiten. Was hineinkommt, entscheidest aber du, und für die Erklärung, die du übermittelst, bist du verantwortlich. Im Zweifel frag die kantonale Steuerverwaltung (AFC) oder ein Treuhandbüro.',
+    text: 'Taxpresso ist ein kostenloses Werkzeug. Du bekommst es so, wie es ist, ohne jede Gewähr. Wir sind keine Steuerberater: Wir haben Taxpresso genau dafür gebaut, damit wir uns um unsere eigenen Steuern keine Sorgen mehr machen müssen. Taxpresso hilft dir, deine Erklärung vorzubereiten. Was hineinkommt, entscheidest aber du, und für die Erklärung, die du übermittelst, bist du verantwortlich. Im Zweifel frag die Steuerverwaltung deines Kantons oder ein Treuhandbüro.',
   },
 
   start: {
     htmlTitle: 'Loslegen mit Taxpresso',
     metaDescription:
-      'Installiere Taxpresso in Claude Desktop und erstelle deine Genfer Steuererklärung, Schritt für Schritt.',
+      'Installiere Taxpresso in Claude Desktop und erstelle deine Schweizer Steuererklärung, Schritt für Schritt.',
     title: 'Loslegen',
     lead: 'Taxpresso ist eine Erweiterung für Claude Desktop. Sie ist in einer Minute installiert, und alles bleibt auf deinem Computer.',
     download: 'Taxpresso herunterladen',
@@ -831,7 +888,7 @@ const de: Copy = {
     platforms: ['Linux (Beta)', 'macOS', 'Windows'],
     needsTitle: 'Was du brauchst',
     guides:
-      'Welche Dokumente du sammelst, Säule 3a, TOU, deine Veranlagung: [Unsere Ratgeber](/de/guides/) erklären das Wichtigste, mit den offiziellen Links.',
+      'Welche Dokumente du sammelst, Säule 3a, TOU, deine Veranlagung: [Unsere Ratgeber](/de/guides/) erklären das Wichtigste für Genf, mit den offiziellen Links.',
     needs: [
       [
         'Claude Desktop',
@@ -863,17 +920,17 @@ const de: Copy = {
       ],
       [
         'Antworte und füg deine Dokumente hinzu',
-        'Claude stellt dir ein paar einfache Fragen, eine nach der anderen. Willst du per Klick antworten oder Dokumente ablegen? Bitte Claude, dein Dashboard zu öffnen.',
+        'Claude stellt dir ein paar einfache Fragen, eine nach der anderen, angefangen mit deinem Kanton. Willst du per Klick antworten oder Dokumente ablegen? Bitte Claude, dein Dashboard zu öffnen.',
       ],
       [
         'Reich deine Erklärung ein',
-        'Wenn alles bereit ist, füllt Claude die offizielle Online-Erklärung in Claude in Chrome oder im integrierten Browser aus. Du meldest dich an, prüfst alles und drückst selbst auf «Transmettre».',
+        'Wenn alles bereit ist, füllt Claude die offizielle Online-Erklärung deines Kantons in Claude in Chrome oder im integrierten Browser aus. Du meldest dich an, prüfst alles und reichst sie selbst ein.',
       ],
     ],
-    prompt: 'Hilf mir mit meinen Genfer Steuern.',
+    prompt: 'Hilf mir mit meinen Steuern.',
     promptLabel: 'Schreib das in Claude',
     mockInstall: 'Installieren',
-    mockExtension: 'Deine Genfer Steuererklärung, auf deinem Computer.',
+    mockExtension: 'Deine Steuererklärung, auf deinem Computer.',
     notes: [
       [
         'Deine Einstellungen',
@@ -897,7 +954,7 @@ const de: Copy = {
 
   footer: {
     independent:
-      'Taxpresso ist ein unabhängiges, kostenloses Open-Source-Softwareprojekt. Es ist mit keinem Treuhand- oder Buchhaltungsbüro und keiner Steuerberatungsfirma verbunden und wird von keiner gesponsert, weder in der Schweiz noch anderswo. Es ist auch weder mit der kantonalen Steuerverwaltung Genf noch mit Anthropic verbunden. Claude ist eine Marke von Anthropic.',
+      'Taxpresso ist ein unabhängiges, kostenloses Open-Source-Softwareprojekt. Es ist mit keinem Treuhand- oder Buchhaltungsbüro und keiner Steuerberatungsfirma verbunden und wird von keiner gesponsert, weder in der Schweiz noch anderswo. Es ist auch weder mit einer kantonalen Steuerverwaltung noch mit der Eidgenössischen Steuerverwaltung noch mit Anthropic verbunden. Claude ist eine Marke von Anthropic.',
     noTracking:
       'Diese Website verwendet keine Cookies, keine Tracker und keine externen Schriften.',
     source: 'Quellcode',
@@ -907,7 +964,7 @@ const de: Copy = {
 const it: Copy = {
   htmlTitle: 'Taxpresso: le tue tasse, il tempo di un espresso',
   metaDescription:
-    'Taxpresso prepara la tua dichiarazione d’imposta ginevrina con Claude, sul tuo computer. Gratuito e open source.',
+    'Taxpresso prepara la tua dichiarazione d’imposta svizzera con Claude, sul tuo computer. Gratuito e open source.',
   skip: 'Vai al contenuto',
   navLabel: 'Sezioni',
   langLabel: 'Lingua',
@@ -957,7 +1014,7 @@ const it: Copy = {
       ],
       [
         'Controlla e trasmetti',
-        'Claude compila per te la dichiarazione online ufficiale (e-démarches), in Claude in Chrome o nel suo browser integrato. Taxpresso confronta il PDF ufficiale con i tuoi numeri. Il pulsante Transmettre lo premi tu.',
+        'Claude compila per te la dichiarazione online ufficiale del tuo cantone, in Claude in Chrome o nel suo browser integrato. Tu accedi, controlli e la invii tu. A Ginevra, Taxpresso confronta anche il PDF ufficiale con i tuoi numeri.',
       ],
     ],
   },
@@ -983,12 +1040,12 @@ const it: Copy = {
       ],
       [
         'Solo regole ufficiali',
-        'Ogni importo segue le guide fiscali di Ginevra e della Confederazione, e ne cita la pagina. Claude spiega, ma non fa i calcoli.',
+        'Ogni importo segue le guide fiscali del tuo cantone e della Confederazione, e ne cita la pagina. Claude spiega, ma non fa i calcoli.',
         'rosetta',
       ],
       [
         'Sei tu a trasmettere',
-        'Claude compila per te la dichiarazione online. Tu accedi, la ricontrolli e premi Transmettre. Claude non digita mai le tue password.',
+        'Claude compila per te la dichiarazione online. Tu accedi, la ricontrolli e la invii tu. Claude non digita mai le tue password.',
         'check',
       ],
       [
@@ -999,7 +1056,7 @@ const it: Copy = {
     ],
     swiss: [
       'Swiss made',
-      'Creato a Ginevra, per chi paga le tasse in Svizzera. Indipendente dall’amministrazione fiscale e da Anthropic.',
+      'Creato a Ginevra, per chi paga le tasse in Svizzera. Indipendente da qualsiasi amministrazione fiscale e da Anthropic.',
     ],
   },
 
@@ -1073,17 +1130,14 @@ const it: Copy = {
         'Mi serve Claude?',
         'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile.',
       ],
-      [
-        'E gli altri cantoni?',
-        `Prima Ginevra. Anche Zurigo, Berna, Vaud, Basilea Città e Basilea Campagna funzionano, in anteprima. Poi sono previsti Friburgo, Ticino, Lucerna, Argovia, San Gallo e Zugo. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
-      ],
+      ['Quali cantoni funzionano?', cantonsAnswer('it')],
       [
         'Taxpresso trasmette la mia dichiarazione?',
-        'Quasi. Claude compila per te la dichiarazione online ufficiale, in Claude in Chrome o nel suo browser integrato. Tu accedi, ricontrolli il PDF ufficiale, e il pulsante Transmettre lo premi tu.',
+        'Quasi. Claude compila per te la dichiarazione online ufficiale del tuo cantone, in Claude in Chrome o nel suo browser integrato. Tu accedi, la controlli e la invii tu. Claude non digita mai le tue password.',
       ],
       [
         'È un servizio ufficiale?',
-        'No. Taxpresso è indipendente: non ha legami né con l’Amministrazione fiscale cantonale di Ginevra (AFC), né con Anthropic.',
+        'No. Taxpresso è indipendente: non ha legami né con le amministrazioni fiscali cantonali, né con l’Amministrazione federale delle contribuzioni, né con Anthropic.',
       ],
       [
         'Perché è gratuito?',
@@ -1095,20 +1149,20 @@ const it: Copy = {
       ],
       [
         'In quali lingue?',
-        'Claude ti risponde nella lingua in cui scrivi. L’app è in francese e in inglese, poi arriveranno tedesco, italiano, spagnolo e portoghese. I termini ufficiali restano in francese, come sul modulo.',
+        'Claude ti risponde nella lingua in cui scrivi. L’app è in francese, inglese e tedesco, poi arriveranno italiano, spagnolo e portoghese. I termini ufficiali restano nella lingua del modulo del tuo cantone.',
       ],
     ],
   },
 
   finePrint: {
     title: 'Le scritte in piccolo, in parole semplici',
-    text: 'Taxpresso è uno strumento gratuito, fornito così com’è, senza alcuna garanzia. Non siamo consulenti fiscali: l’abbiamo creato proprio per non doverci più preoccupare delle nostre tasse. Taxpresso ti aiuta a preparare la tua dichiarazione, ma sei tu a decidere cosa contiene, e la dichiarazione che trasmetti è sotto la tua responsabilità. Se hai dubbi, chiedi all’Amministrazione fiscale cantonale (AFC) o a una fiduciaria.',
+    text: 'Taxpresso è uno strumento gratuito, fornito così com’è, senza alcuna garanzia. Non siamo consulenti fiscali: l’abbiamo creato proprio per non doverci più preoccupare delle nostre tasse. Taxpresso ti aiuta a preparare la tua dichiarazione, ma sei tu a decidere cosa contiene, e la dichiarazione che trasmetti è sotto la tua responsabilità. Se hai dubbi, chiedi all’amministrazione fiscale del tuo cantone o a una fiduciaria.',
   },
 
   start: {
     htmlTitle: 'Inizia con Taxpresso',
     metaDescription:
-      'Installa Taxpresso in Claude Desktop e prepara la tua dichiarazione d’imposta ginevrina, passo dopo passo.',
+      'Installa Taxpresso in Claude Desktop e prepara la tua dichiarazione d’imposta svizzera, passo dopo passo.',
     title: 'Inizia',
     lead: 'Taxpresso è un’estensione per Claude Desktop. Si installa in un minuto, e tutto resta sul tuo computer.',
     download: 'Scarica Taxpresso',
@@ -1116,7 +1170,7 @@ const it: Copy = {
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Cosa ti serve',
     guides:
-      'Quali documenti raccogliere, il pilastro 3a, la TOU, la tua tassazione: [le nostre guide](/it/guides/) spiegano l’essenziale, con i link ufficiali.',
+      'Quali documenti raccogliere, il pilastro 3a, la TOU, la tua tassazione: [le nostre guide](/it/guides/) spiegano l’essenziale per Ginevra, con i link ufficiali.',
     needs: [
       [
         'Claude Desktop',
@@ -1148,17 +1202,17 @@ const it: Copy = {
       ],
       [
         'Rispondi e aggiungi i tuoi documenti',
-        'Claude ti fa qualche domanda semplice, una alla volta. Per rispondere con un clic o aggiungere i tuoi documenti, chiedi a Claude di aprire la tua dashboard.',
+        'Claude ti fa qualche domanda semplice, una alla volta, a cominciare dal tuo cantone. Per rispondere con un clic o aggiungere i tuoi documenti, chiedi a Claude di aprire la tua dashboard.',
       ],
       [
         'Trasmetti',
-        'Quando è tutto pronto, Claude compila la dichiarazione online ufficiale in Claude in Chrome o nel suo browser integrato. Tu accedi, controlli, e il pulsante Transmettre lo premi tu.',
+        'Quando è tutto pronto, Claude compila la dichiarazione online ufficiale del tuo cantone in Claude in Chrome o nel suo browser integrato. Tu accedi, controlli e la invii tu.',
       ],
     ],
-    prompt: 'Aiutami con le mie tasse a Ginevra.',
+    prompt: 'Aiutami con le mie tasse.',
     promptLabel: 'Scrivi questo in Claude',
     mockInstall: 'Installa',
-    mockExtension: 'La tua dichiarazione d’imposta ginevrina, sul tuo computer.',
+    mockExtension: 'La tua dichiarazione d’imposta, sul tuo computer.',
     notes: [
       [
         'Le tue impostazioni',
@@ -1182,7 +1236,7 @@ const it: Copy = {
 
   footer: {
     independent:
-      'Taxpresso è un progetto software indipendente, gratuito e open source. Non è affiliato né sponsorizzato da alcuna fiduciaria, studio contabile o società di servizi fiscali, in Svizzera o altrove, e non è legato né all’Amministrazione fiscale cantonale di Ginevra, né ad Anthropic. Claude è un marchio di Anthropic.',
+      'Taxpresso è un progetto software indipendente, gratuito e open source. Non è affiliato né sponsorizzato da alcuna fiduciaria, studio contabile o società di servizi fiscali, in Svizzera o altrove, e non è legato né alle amministrazioni fiscali cantonali, né all’Amministrazione federale delle contribuzioni, né ad Anthropic. Claude è un marchio di Anthropic.',
     noTracking: 'Questo sito non usa cookie, tracker o font esterni.',
     source: 'Codice sorgente',
   },
@@ -1191,7 +1245,7 @@ const it: Copy = {
 const es: Copy = {
   htmlTitle: 'Taxpresso: tus impuestos, mientras te tomas un espresso',
   metaDescription:
-    'Taxpresso prepara tu declaración de impuestos de Ginebra con Claude, en tu propio ordenador. Gratis y de código abierto.',
+    'Taxpresso prepara tu declaración de impuestos suiza con Claude, en tu propio ordenador. Gratis y de código abierto.',
   skip: 'Ir al contenido',
   navLabel: 'Secciones',
   langLabel: 'Idioma',
@@ -1241,7 +1295,7 @@ const es: Copy = {
       ],
       [
         'Revisa y envía',
-        'Claude rellena por ti la declaración oficial en línea (e-démarches), en Claude in Chrome o en su navegador integrado. Taxpresso compara el PDF oficial con tus cifras. El botón Transmettre lo pulsas tú.',
+        'Claude rellena por ti la declaración oficial en línea de tu cantón, en Claude in Chrome o en su navegador integrado. Tú inicias sesión, la revisas y la envías tú. En Ginebra, Taxpresso también compara el PDF oficial con tus cifras.',
       ],
     ],
   },
@@ -1267,12 +1321,12 @@ const es: Copy = {
       ],
       [
         'Solo reglas oficiales',
-        'Cada importe sigue las guías fiscales de Ginebra y de la Confederación, y cita su página. Claude explica, pero no hace las cuentas.',
+        'Cada importe sigue las guías fiscales de tu cantón y de la Confederación, y cita su página. Claude explica, pero no hace las cuentas.',
         'rosetta',
       ],
       [
         'El envío es cosa tuya',
-        'Claude rellena la declaración en línea por ti. Tú inicias sesión, la revisas y pulsas Transmettre. Claude nunca escribe tus contraseñas.',
+        'Claude rellena la declaración en línea por ti. Tú inicias sesión, la revisas y la envías tú. Claude nunca escribe tus contraseñas.',
         'check',
       ],
       [
@@ -1283,7 +1337,7 @@ const es: Copy = {
     ],
     swiss: [
       'Swiss made',
-      'Creado en Ginebra, para quienes pagan impuestos en Suiza. Independiente de la administración fiscal y de Anthropic.',
+      'Creado en Ginebra, para quienes pagan impuestos en Suiza. Independiente de cualquier administración fiscal y de Anthropic.',
     ],
   },
 
@@ -1353,17 +1407,14 @@ const es: Copy = {
         '¿Necesito Claude?',
         'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible.',
       ],
-      [
-        '¿Y los demás cantones?',
-        `Primero Ginebra. Zúrich, Berna, Vaud, Basilea-Ciudad y Basilea-Campiña también funcionan, como versión preliminar. Después están previstos Friburgo, Tesino, Lucerna, Argovia, San Galo y Zug. [Vota por tu cantón](${ISSUE_URL.canton}).`,
-      ],
+      ['¿Qué cantones funcionan?', cantonsAnswer('es')],
       [
         '¿Taxpresso presenta mi declaración?',
-        'Casi. Claude rellena por ti la declaración oficial en línea, en Claude in Chrome o en su navegador integrado. Tú inicias sesión, revisas el PDF oficial y el botón Transmettre lo pulsas tú.',
+        'Casi. Claude rellena por ti la declaración oficial en línea de tu cantón, en Claude in Chrome o en su navegador integrado. Tú inicias sesión, la revisas y la envías tú. Claude nunca escribe tus contraseñas.',
       ],
       [
         '¿Es un servicio oficial?',
-        'No. Taxpresso es independiente: no tiene relación con la Administración fiscal cantonal de Ginebra (AFC) ni con Anthropic.',
+        'No. Taxpresso es independiente: no tiene relación con ninguna administración fiscal cantonal, ni con la administración fiscal federal, ni con Anthropic.',
       ],
       [
         '¿Por qué es gratis?',
@@ -1375,20 +1426,20 @@ const es: Copy = {
       ],
       [
         '¿En qué idiomas?',
-        'Claude te responde en el idioma en el que escribes. La aplicación está en francés e inglés, y después llegarán el alemán, el italiano, el español y el portugués. Los términos oficiales se quedan en francés, como en el formulario.',
+        'Claude te responde en el idioma en el que escribes. La aplicación está en francés, inglés y alemán, y después llegarán el italiano, el español y el portugués. Los términos oficiales se quedan en el idioma del formulario de tu cantón.',
       ],
     ],
   },
 
   finePrint: {
     title: 'La letra pequeña, en palabras claras',
-    text: 'Taxpresso es una herramienta gratuita, ofrecida tal cual, sin ninguna garantía. No somos asesores fiscales: lo creamos precisamente para dejar de preocuparnos por nuestros propios impuestos. Taxpresso te ayuda a preparar tu declaración, pero tú decides lo que incluye, y la declaración que envías es responsabilidad tuya. Si tienes dudas, pregunta a la Administración fiscal cantonal (AFC) o a una gestoría.',
+    text: 'Taxpresso es una herramienta gratuita, ofrecida tal cual, sin ninguna garantía. No somos asesores fiscales: lo creamos precisamente para dejar de preocuparnos por nuestros propios impuestos. Taxpresso te ayuda a preparar tu declaración, pero tú decides lo que incluye, y la declaración que envías es responsabilidad tuya. Si tienes dudas, pregunta a la administración fiscal de tu cantón o a una gestoría.',
   },
 
   start: {
     htmlTitle: 'Empieza con Taxpresso',
     metaDescription:
-      'Instala Taxpresso en Claude Desktop y prepara tu declaración de impuestos de Ginebra, paso a paso.',
+      'Instala Taxpresso en Claude Desktop y prepara tu declaración de impuestos suiza, paso a paso.',
     title: 'Empieza',
     lead: 'Taxpresso es una extensión para Claude Desktop. Se instala en un minuto, y todo se queda en tu ordenador.',
     download: 'Descarga Taxpresso',
@@ -1396,7 +1447,7 @@ const es: Copy = {
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Qué necesitas',
     guides:
-      'Qué documentos reunir, el pilar 3a, la TOU, tu liquidación: [nuestras guías](/es/guides/) explican lo esencial, con los enlaces oficiales.',
+      'Qué documentos reunir, el pilar 3a, la TOU, tu liquidación: [nuestras guías](/es/guides/) explican lo esencial para Ginebra, con los enlaces oficiales.',
     needs: [
       [
         'Claude Desktop',
@@ -1428,17 +1479,17 @@ const es: Copy = {
       ],
       [
         'Responde y añade tus documentos',
-        'Claude te hace unas preguntas sencillas, una a una. Para responder con clics o añadir tus documentos, pídele a Claude que abra tu panel.',
+        'Claude te hace unas preguntas sencillas, una a una, empezando por tu cantón. Para responder con clics o añadir tus documentos, pídele a Claude que abra tu panel.',
       ],
       [
         'Presenta tu declaración',
-        'Cuando todo esté listo, Claude rellena la declaración oficial en línea en Claude in Chrome o en su navegador integrado. Inicias sesión, la revisas y el botón Transmettre lo pulsas tú.',
+        'Cuando todo esté listo, Claude rellena la declaración oficial en línea de tu cantón en Claude in Chrome o en su navegador integrado. Inicias sesión, la revisas y la envías tú.',
       ],
     ],
-    prompt: 'Ayúdame con mis impuestos de Ginebra.',
+    prompt: 'Ayúdame con mis impuestos.',
     promptLabel: 'Escribe esto en Claude',
     mockInstall: 'Instalar',
-    mockExtension: 'Tu declaración de Ginebra, en tu ordenador.',
+    mockExtension: 'Tu declaración de impuestos, en tu ordenador.',
     notes: [
       [
         'Tu configuración',
@@ -1462,7 +1513,7 @@ const es: Copy = {
 
   footer: {
     independent:
-      'Taxpresso es un proyecto de software independiente, gratuito y de código abierto. No está afiliado a ninguna gestoría, firma contable ni empresa de servicios fiscales, ni patrocinado por ellas, en Suiza ni en ningún otro lugar, y no está vinculado ni a la Administración fiscal cantonal de Ginebra ni a Anthropic. Claude es una marca de Anthropic.',
+      'Taxpresso es un proyecto de software independiente, gratuito y de código abierto. No está afiliado a ninguna gestoría, firma contable ni empresa de servicios fiscales, ni patrocinado por ellas, en Suiza ni en ningún otro lugar, y no está vinculado a ninguna administración fiscal cantonal, ni a la administración fiscal federal, ni a Anthropic. Claude es una marca de Anthropic.',
     noTracking: 'Este sitio no usa cookies, ni rastreadores, ni fuentes externas.',
     source: 'Código fuente',
   },
@@ -1471,7 +1522,7 @@ const es: Copy = {
 const pt: Copy = {
   htmlTitle: 'Taxpresso: os teus impostos, no tempo de um expresso',
   metaDescription:
-    'O Taxpresso prepara a tua declaração de impostos de Genebra com o Claude, no teu próprio computador. Gratuito e de código aberto.',
+    'O Taxpresso prepara a tua declaração de impostos suíça com o Claude, no teu próprio computador. Gratuito e de código aberto.',
   skip: 'Saltar para o conteúdo',
   navLabel: 'Secções',
   langLabel: 'Idioma',
@@ -1521,7 +1572,7 @@ const pt: Copy = {
       ],
       [
         'Verifica e envia',
-        'O Claude preenche por ti a declaração online oficial (e-démarches), no Claude in Chrome ou no navegador integrado. O Taxpresso compara o PDF oficial com os teus números. Quem clica em Transmettre és tu.',
+        'O Claude preenche por ti a declaração online oficial do teu cantão, no Claude in Chrome ou no navegador integrado. Tu inicias sessão, verificas tudo e quem a envia és tu. Em Genebra, o Taxpresso também compara o PDF oficial com os teus números.',
       ],
     ],
   },
@@ -1547,12 +1598,12 @@ const pt: Copy = {
       ],
       [
         'Só as regras oficiais',
-        'Cada montante segue os guias fiscais de Genebra e da Confederação, e cita a página. O Claude explica, mas não faz as contas.',
+        'Cada montante segue os guias fiscais do teu cantão e da Confederação, e cita a página. O Claude explica, mas não faz as contas.',
         'rosetta',
       ],
       [
         'Quem envia és tu',
-        'O Claude preenche a declaração online por ti. Tu inicias sessão, revês tudo e clicas em Transmettre. O Claude nunca escreve as tuas palavras-passe.',
+        'O Claude preenche a declaração online por ti. Tu inicias sessão, revês tudo e quem a envia és tu. O Claude nunca escreve as tuas palavras-passe.',
         'check',
       ],
       [
@@ -1563,7 +1614,7 @@ const pt: Copy = {
     ],
     swiss: [
       'Swiss made',
-      'Criado em Genebra, para quem paga impostos na Suíça. Independente da administração fiscal e da Anthropic.',
+      'Criado em Genebra, para quem paga impostos na Suíça. Independente de qualquer administração fiscal e da Anthropic.',
     ],
   },
 
@@ -1641,17 +1692,14 @@ const pt: Copy = {
         'Preciso do Claude?',
         'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível.',
       ],
-      [
-        'E os outros cantões?',
-        `Primeiro Genebra. Zurique, Berna, Vaud, Basileia-Cidade e Basileia-Campo também funcionam, em pré-visualização. A seguir estão previstos Friburgo, Ticino, Lucerna, Argóvia, São Galo e Zug. [Vota no teu cantão](${ISSUE_URL.canton}).`,
-      ],
+      ['Que cantões funcionam?', cantonsAnswer('pt')],
       [
         'O Taxpresso envia a minha declaração?',
-        'Quase. O Claude preenche por ti a declaração online oficial, no Claude in Chrome ou no navegador integrado. Tu inicias sessão, revês o PDF oficial e quem clica em Transmettre és tu.',
+        'Quase. O Claude preenche por ti a declaração online oficial do teu cantão, no Claude in Chrome ou no navegador integrado. Tu inicias sessão, verificas tudo e quem a envia és tu. O Claude nunca escreve as tuas palavras-passe.',
       ],
       [
         'É um serviço oficial?',
-        'Não. O Taxpresso é independente: não tem ligação à Administração Fiscal Cantonal de Genebra (AFC) nem à Anthropic.',
+        'Não. O Taxpresso é independente: não tem ligação a nenhuma administração fiscal cantonal, nem à administração fiscal federal, nem à Anthropic.',
       ],
       [
         'Porque é gratuito?',
@@ -1663,20 +1711,20 @@ const pt: Copy = {
       ],
       [
         'Em que línguas?',
-        'O Claude responde-te na língua em que escreves. A aplicação está em francês e inglês, e depois virão o alemão, o italiano, o espanhol e o português. Os termos oficiais ficam em francês, como no formulário.',
+        'O Claude responde-te na língua em que escreves. A aplicação está em francês, inglês e alemão, e depois virão o italiano, o espanhol e o português. Os termos oficiais ficam na língua do formulário do teu cantão.',
       ],
     ],
   },
 
   finePrint: {
     title: 'A letra miudinha, em palavras simples',
-    text: 'O Taxpresso é uma ferramenta gratuita, fornecida tal como está, sem qualquer garantia. Não somos consultores fiscais: criámo-lo precisamente para deixarmos de nos preocupar com os nossos próprios impostos. O Taxpresso ajuda-te a preparar a tua declaração, mas és tu quem decide o que ela contém, e a declaração que envias é da tua responsabilidade. Em caso de dúvida, pergunta à Administração Fiscal Cantonal (AFC) ou a um contabilista.',
+    text: 'O Taxpresso é uma ferramenta gratuita, fornecida tal como está, sem qualquer garantia. Não somos consultores fiscais: criámo-lo precisamente para deixarmos de nos preocupar com os nossos próprios impostos. O Taxpresso ajuda-te a preparar a tua declaração, mas és tu quem decide o que ela contém, e a declaração que envias é da tua responsabilidade. Em caso de dúvida, pergunta à administração fiscal do teu cantão ou a um contabilista.',
   },
 
   start: {
     htmlTitle: 'Começa com o Taxpresso',
     metaDescription:
-      'Instala o Taxpresso no Claude Desktop e prepara a tua declaração de impostos de Genebra, passo a passo.',
+      'Instala o Taxpresso no Claude Desktop e prepara a tua declaração de impostos suíça, passo a passo.',
     title: 'Começa',
     lead: 'O Taxpresso é uma extensão para o Claude Desktop. Instala-se num minuto, e tudo fica no teu computador.',
     download: 'Descarrega o Taxpresso',
@@ -1684,7 +1732,7 @@ const pt: Copy = {
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Do que precisas',
     guides:
-      'Que documentos juntar, o pilar 3a, a TOU, a tua liquidação: [os nossos guias](/pt/guides/) explicam o essencial, com as ligações oficiais.',
+      'Que documentos juntar, o pilar 3a, a TOU, a tua liquidação: [os nossos guias](/pt/guides/) explicam o essencial para Genebra, com as ligações oficiais.',
     needs: [
       [
         'Claude Desktop',
@@ -1716,17 +1764,17 @@ const pt: Copy = {
       ],
       [
         'Responde e junta os teus documentos',
-        'O Claude faz-te algumas perguntas simples, uma de cada vez. Para responderes com cliques ou juntares os teus documentos, pede ao Claude que abra o teu painel.',
+        'O Claude faz-te algumas perguntas simples, uma de cada vez, a começar pelo teu cantão. Para responderes com cliques ou juntares os teus documentos, pede ao Claude que abra o teu painel.',
       ],
       [
         'Envia',
-        'Quando estiver tudo pronto, o Claude preenche a declaração online oficial no Claude in Chrome ou no navegador integrado. Inicias sessão, verificas tudo e quem clica em Transmettre és tu.',
+        'Quando estiver tudo pronto, o Claude preenche a declaração online oficial do teu cantão no Claude in Chrome ou no navegador integrado. Inicias sessão, verificas tudo e quem a envia és tu.',
       ],
     ],
-    prompt: 'Ajuda-me com os meus impostos de Genebra.',
+    prompt: 'Ajuda-me com os meus impostos.',
     promptLabel: 'Escreve isto no Claude',
     mockInstall: 'Instalar',
-    mockExtension: 'A tua declaração de Genebra, no teu computador.',
+    mockExtension: 'A tua declaração de impostos, no teu computador.',
     notes: [
       [
         'As tuas configurações',
@@ -1750,7 +1798,7 @@ const pt: Copy = {
 
   footer: {
     independent:
-      'O Taxpresso é um projeto de software independente, gratuito e de código aberto. Não está afiliado a nenhuma fiduciária, gabinete de contabilidade ou empresa de serviços fiscais, nem é patrocinado por nenhuma, na Suíça ou noutro lado, e não está ligado nem à Administração Fiscal Cantonal de Genebra, nem à Anthropic. Claude é uma marca da Anthropic.',
+      'O Taxpresso é um projeto de software independente, gratuito e de código aberto. Não está afiliado a nenhuma fiduciária, gabinete de contabilidade ou empresa de serviços fiscais, nem é patrocinado por nenhuma, na Suíça ou noutro lado, e não está ligado a nenhuma administração fiscal cantonal, nem à administração fiscal federal, nem à Anthropic. Claude é uma marca da Anthropic.',
     noTracking: 'Este site não usa cookies, nem rastreadores, nem tipos de letra externos.',
     source: 'Código-fonte',
   },
