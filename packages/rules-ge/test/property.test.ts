@@ -723,6 +723,19 @@ describe('what else the engine says', () => {
     expect(r.unsupported).toContainEqual(t);
   });
 
+  it('a year of arrival or departure with a property in Geneva stops the whole return', () => {
+    for (const period of [
+      { kind: 'arrival', date: '2026-04-01' },
+      { kind: 'departure', date: '2026-09-30' },
+    ] as const) {
+      const r = computeReturn({ ...bertholet(2026), period });
+      expect(r.icc).toBeNull();
+      expect(r.ifd).toBeNull();
+      expect(r.property).toBeUndefined();
+      expect(r.unsupported).toContainEqual(PROPERTY_UNSUPPORTED.partYear);
+    }
+  });
+
   it('without the property, the return is the same household’s without annexe D', () => {
     const input = bertholet(2025);
     delete input.property;

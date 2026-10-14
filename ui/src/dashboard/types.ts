@@ -9,7 +9,7 @@ import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
 import type { PlanningState } from './types-planning';
 
-export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune';
+export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune' | 'date';
 export type Value = string | number | boolean | string[];
 
 export interface OfficialLink {
@@ -34,6 +34,9 @@ export interface Question {
   none?: string;
   min?: number;
   max?: number;
+  /** A date question: the first and last day it takes (YYYY-MM-DD), the tax year. */
+  minDate?: string;
+  maxDate?: string;
   value?: Value;
   skipped?: boolean;
   /** Read from a document (last year's declaration), not an answer yet: the user confirms it. */

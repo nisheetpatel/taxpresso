@@ -34,6 +34,7 @@ import {
   type Deduction,
   type FederalConcept,
   type RuleLimit,
+  type PartYear,
   type RuleResult,
 } from '@taxpresso/rules-ch';
 import {
@@ -76,12 +77,22 @@ import type {
   LimitApplied,
   Line,
   PersonInput,
+  PartYearResult,
   TaxResult,
   Text,
   WealthItemInput,
 } from './types.js';
+import { EngineInputError } from './errors.js';
+import {
+  partYearNotes,
+  partYearOf,
+  partYearUnsupported,
+  periodParams,
+  rateLines,
+  yearInput,
+} from './part-year.js';
 
-export class EngineInputError extends Error {}
+export { EngineInputError };
 
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = '\u00a0';
@@ -586,8 +597,27 @@ function personItems(
   };
 }
 
+/**
+ * The return of a household: a whole year, or a year of arrival from abroad or of departure abroad
+ * (`input.period`, ./part-year.ts), whose taxes are on the income of the period of tax liability
+ * at the rate of a full year's income: the same rules run once on the year, periodic income
+ * converted (the income for the rate), and once on the period, with the deductions the documents
+ * reduce in proportion (the income taxed).
+ */
 export function computeReturn(input: EngineInput): TaxResult {
-  const P = paramsFor(input.taxYear);
+  const py = partYearOf(input);
+  if (!py) return computeWith(input, paramsFor(input.taxYear));
+  const year = computeWith(yearInput(input, py), paramsFor(input.taxYear));
+  return computeWith(input, periodParams(paramsFor(input.taxYear), py), { py, year });
+}
+
+/** A year of arrival or departure: its period, and the year's return the rate is read from. */
+interface PartYearRun {
+  py: PartYear;
+  year: TaxResult;
+}
+
+function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): TaxResult {
   const I = P.icc;
   const F = P.ifd;
   const notes = new Notes();
@@ -1261,10 +1291,12 @@ export function computeReturn(input: EngineInput): TaxResult {
 
   // A property in Geneva: what its figures put outside the simple case (fail closed), and the
   // taux d'effort of one's own home, once the gross income and the splitting are known. Only the
-  // cantonal tax has it (LIPP art. 24 al. 2): when it may lower the rental value, the cantonal and
-  // communal tax is not computed, the federal tax is.
+  // cantonal tax has it (LIPP art. 24 al. 2): when it lowers the rental value, the cantonal and
+  // communal tax is not computed, the federal tax is. A year of arrival or departure with a
+  // property in Geneva is not prepared yet (fail closed).
   const propertyUnsupported: Text[] = [...(input.property?.unsupported ?? [])];
   if (property?.problem) propertyUnsupported.push(PROPERTY_UNSUPPORTED[property.problem]);
+  if (input.property && input.period) propertyUnsupported.push(PROPERTY_UNSUPPORTED.partYear);
   let effort: Line | undefined;
   let effortFails = false;
   if (property?.rentalIcc) {
@@ -1349,7 +1381,53 @@ export function computeReturn(input: EngineInput): TaxResult {
       ...(foreignTax ? { foreignTax } : {}),
     },
     ...(split ? { abroad: { icc: split.icc, ifd: split.ifd, wealth: split.wealth } } : {}),
+    // A year of arrival or departure: the taxes at the rate of the year's income (./part-year.ts).
+    ...(part
+      ? {
+          partYear: {
+            py: part.py,
+            rate: {
+              icc: part.year.icc?.taxableIncome ?? null,
+              ifd: part.year.ifd?.taxableIncome ?? null,
+            },
+          },
+        }
+      : {}),
   });
+
+  // A year of arrival or departure: what the documents don't settle fails closed, each with its
+  // reason, and the readings taken are said (./part-year.ts).
+  const partUnsupported: Text[] = [];
+  let partIccClosed = false;
+  let partIfdClosed = false;
+  if (part) {
+    const words = partYearNotes(part.py);
+    notes.add(notes.assumptions, words.period);
+    notes.add(notes.assumptions, words.reduced);
+    notes.add(notes.assumptions, words.pillar3a);
+    if (part.py.kind === 'departure') notes.add(notes.assumptions, words.departureWealth);
+    notes.add(notes.unverified, words.converted);
+    notes.add(notes.unverified, words.days);
+    notes.add(notes.unverified, words.limits);
+    notes.add(notes.unverified, words.personalTax);
+    partUnsupported.push(...partYearUnsupported(input, part.py));
+    // The year's own reasons, when its tax can't be computed: no rate, no tax.
+    if (!part.year.icc || !part.year.ifd) {
+      for (const u of part.year.unsupported) notes.add(notes.unsupported, u);
+      partIccClosed ||= !part.year.icc;
+      partIfdClosed ||= !part.year.ifd;
+    }
+    // Wealth above the deduction: how the reduced tax and the reduced deductions go together is
+    // not spelled out (LIPP art. 64 al. 3, art. 65 al. 2): the cantonal tax fails closed.
+    if (result.icc.wealth.taxableWealth.amount > 0) {
+      notes.add(notes.unsupported, words.wealth);
+      partIccClosed = true;
+    }
+    if (result.personalTaxUnclear) {
+      notes.add(notes.unsupported, words.personalTaxUnclear);
+      partIccClosed = true;
+    }
+  }
 
   if (Object.keys(incomeByCommune).some((c) => c !== input.commune))
     notes.add(notes.unverified, NOTE.communalSplit);
@@ -1393,11 +1471,14 @@ export function computeReturn(input: EngineInput): TaxResult {
   for (const u of abroadUnsupported) notes.add(notes.unsupported, u);
   // A property in Geneva beyond the simple case (the answers or its figures say so): no tax either.
   for (const u of propertyUnsupported) notes.add(notes.unsupported, u);
+  // A year of arrival or departure with something the documents don't spell out for it.
+  for (const u of partUnsupported) notes.add(notes.unsupported, u);
   // A household amount of childcare whose split between the children decides: no tax either.
   const failClosed =
     (input.unsupported ?? []).length > 0 ||
     abroadUnsupported.length > 0 ||
     propertyUnsupported.length > 0 ||
+    partUnsupported.length > 0 ||
     careSplit;
 
   // Lump sums from the 2nd pillar and pillar 3a: a tax of their own (./capital.ts), with the
@@ -1424,8 +1505,10 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (buyInConflict) notes.add(notes.unsupported, NOTE.capitalBuyIn);
 
   const icc_ =
-    result.shieldMayApply || buyInConflict || failClosed || effortFails ? null : result.icc;
-  const ifd_ = ifdUnsupported || buyInConflict || failClosed ? null : result.ifd;
+    result.shieldMayApply || buyInConflict || failClosed || effortFails || partIccClosed
+      ? null
+      : result.icc;
+  const ifd_ = ifdUnsupported || buyInConflict || failClosed || partIfdClosed ? null : result.ifd;
   const capital = outcome.capital;
   const partial = (input.wealthItems ?? []).filter((w) => !w.complete);
   const incomplete = partial.map((w) =>
@@ -1444,6 +1527,21 @@ export function computeReturn(input: EngineInput): TaxResult {
   }
   incomplete.push(...incompleteAbroad, ...incompleteProperty);
   const lines = allLines({ icc: icc_, ifd: ifd_, ...(capital ? { capital } : {}) });
+  // A year of arrival or departure: the form's 95.00 for the rate and 97.00, in each tax computed.
+  const partYear: PartYearResult | undefined = part
+    ? {
+        kind: part.py.kind,
+        from: part.py.from,
+        to: part.py.to,
+        days: part.py.days,
+        ...(icc_ && part.year.icc
+          ? { icc: rateLines(part.year.icc.totalIncome, icc_.taxableIncome, 'ICC', part.py) }
+          : {}),
+        ...(ifd_ && part.year.ifd
+          ? { ifd: rateLines(part.year.ifd.totalIncome, ifd_.taxableIncome, 'IFD', part.py) }
+          : {}),
+      }
+    : undefined;
   return {
     taxYear: input.taxYear,
     commune: input.commune,
@@ -1485,6 +1583,7 @@ export function computeReturn(input: EngineInput): TaxResult {
           },
         }
       : {}),
+    ...(partYear ? { partYear } : {}),
     ...(abroad && split && !failClosed
       ? {
           abroad: {

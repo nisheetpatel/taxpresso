@@ -156,8 +156,11 @@ export const Question = z
   .object({
     id: z.string().regex(/^[a-z0-9_]+$/),
     key: z.string(),
-    /** money: an amount in CHF, stored as centimes (SPEC.md section 4). */
-    type: z.enum(['choice', 'yesno', 'number', 'money', 'multi', 'commune']),
+    /**
+     * money: an amount in CHF, stored as centimes (SPEC.md section 4). date: a day of the tax year,
+     * stored as YYYY-MM-DD.
+     */
+    type: z.enum(['choice', 'yesno', 'number', 'money', 'multi', 'commune', 'date']),
     perPerson: z.boolean().default(false),
     /**
      * Asked once per child of the household (child1, child2...: profile.children_count), on a key

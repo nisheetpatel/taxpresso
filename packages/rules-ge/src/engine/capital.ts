@@ -400,6 +400,14 @@ export function capitalTax(
       ),
     );
   }
+  if (input?.leftSwitzerland) {
+    blocked.push(
+      t(
+        `Tax on pension capital not computed: you left Switzerland this year, and a lump sum paid around a departure can be taxed at source (ge-${ctx.taxYear}-source-directives p. 39, ch. 6.5). Taxpresso doesn’t support it yet.`,
+        `Impôt sur les prestations en capital non calculé${NB}: vous avez quitté la Suisse cette année, et un capital versé autour d’un départ peut être imposé à la source (directives ${ctx.taxYear} p. 39, ch. 6.5). Taxpresso ne le prend pas encore en charge.`,
+      ),
+    );
+  }
   for (const b of blocked) add(notes.unsupported, b);
   if (blocked.length) {
     return {

@@ -588,7 +588,11 @@ describe('self-employment in Geneva, end to end', () => {
           value = q.id.startsWith('taxed_at_source') ? r() < 0.1 : r() < 0.4;
         else if (q.type === 'number') value = q.min ?? 0;
         else if (q.type === 'money') value = Math.floor(r() * 30_000);
-        else
+        else if (q.type === 'date') {
+          // A year of arrival or departure: self-employment then is not prepared (fail closed).
+          value = '2026-07-01';
+          outside = true;
+        } else
           value =
             r() < 0.08 && options.some((o) => o.notSupported)
               ? pick(options.filter((o) => o.notSupported)).value

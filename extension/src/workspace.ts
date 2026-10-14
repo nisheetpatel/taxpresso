@@ -615,10 +615,14 @@ export class Workspace {
       this.countedFacts(),
       this.activeDocuments(),
     ).input;
+    // A year of arrival or departure whose day isn't known yet: no tax at its real rate.
+    const moved = answer('profile.moved');
+    const partYear = moved === 'from_abroad' || moved === 'leaving_switzerland';
     return {
       ...(this.engine.taxYear === 2025 || this.engine.taxYear === 2026
         ? { taxYear: this.engine.taxYear }
         : {}),
+      ...(partYear && !known?.period ? { periodUnknown: true } : {}),
       ...(known
         ? {
             known: {
@@ -630,6 +634,7 @@ export class Workspace {
                 : {}),
               ...(known.abroad ? { abroad: known.abroad } : {}),
               ...(known.property ? { property: known.property } : {}),
+              ...(known.period ? { period: known.period } : {}),
             },
           }
         : {}),

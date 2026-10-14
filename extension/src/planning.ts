@@ -23,6 +23,7 @@ import { SOURCE_TAX_FACTS, sourceTaxTariffs, TOU_FACTS, touDeadline } from '@tax
 import { LPP_BUYIN_FACTS, PILLAR3A_CATCHUP_FACTS } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
 import { CANTONS, type CantonEntry } from './cantons.js';
+import { partYearAnswers } from './part-year.js';
 import { type SourceTax, sourceTaxLines, sourceTaxOf } from './source-tax.js';
 import { PLAN_KEYS, WorkspaceError, type Via, type Workspace } from './workspace.js';
 import { isYearOver } from './year-over.js';
@@ -340,6 +341,8 @@ function touViewOf(ws: Workspace, today: string): TouView {
   };
   const otherIncome = planFlag(ws, 'plan.tou_other_income');
   const taxableWealth = planFlag(ws, 'plan.tou_taxable_wealth');
+  // Leaving Switzerland: TOU goes with the departure form, before the day of departure.
+  const leaving = st?.period?.kind === 'departure' ? st.period : undefined;
   const result = touPlan({
     taxYear: ws.engine.taxYear,
     today,
@@ -349,6 +352,14 @@ function touViewOf(ws: Workspace, today: string): TouView {
     ...(taxableWealth !== undefined ? { taxableWealth } : {}),
     deductions,
     unconfirmed,
+    ...(leaving
+      ? {
+          deadline: {
+            date: leaving.to,
+            source: `ge-${ws.engine.taxYear}-source-directives ${ws.engine.taxYear === 2025 ? 'p. 53' : 'p. 54'} (ch. 8.5)`,
+          },
+        }
+      : {}),
   });
   const decision = currentDecision(ws, 'tou');
   return { ...result, ...(decision ? { decision } : {}) };
@@ -501,6 +512,8 @@ function planningViewOf(ws: Workspace) {
     ...(genevaOnly ? { touGenevaOnly: true as const } : {}),
     /** Who is taxed at source, the barème and the tax withheld (./source-tax.ts): Geneva, when someone is. */
     ...(st?.any ? { sourceTax: st } : {}),
+    /** A year of arrival from abroad or of departure abroad (Geneva, ./part-year.ts). */
+    ...(partYearAnswers(ws) ? { partYear: partYearAnswers(ws)!.kind } : {}),
   };
 }
 
@@ -806,6 +819,15 @@ function touText(tou: TouView, st: SourceTax | undefined): string[] {
  * The chat's view of the buy-in, the 3a catch-up and TOU (C6: short, with sources). `canton`: the
  * canton of the return, for its official terms when it is not Geneva.
  */
+/** A year of arrival or departure: what changes for the plans, with the documents that say it. */
+function partYearText(view: PlanningView): string[] {
+  if (!('partYear' in view) || !view.partYear) return [];
+  const arrival = view.partYear === 'arrival';
+  return [
+    `${arrival ? 'A year of arrival from abroad' : 'A year of departure abroad'}: the pillar 3a maximum is the whole year's, also for part of a year (ch-na-law-opp3 art. 7 al. 1; the federal instructions, p. 1, don't list it among the deductions reduced), and the savings shown are at the real rate, a full year's income (LIFD art. 40 al. 3).${arrival ? ' A pension fund buy-in: for someone arriving from abroad who was never in a Swiss pension fund, the law limits buy-ins in the first five years (ch-na-law-lpp art. 79b al. 2, the Federal Council sets how): the pension fund states what it accepts. Say so before the user decides.' : ' A lump sum paid because they leave (pension fund or 3a) is taxed at source: not prepared.'}`,
+  ];
+}
+
 export function planningText(view: PlanningView, year: number, canton?: CantonEntry): string[] {
   const other = 'touGenevaOnly' in view ? canton : undefined;
   return [
@@ -814,6 +836,7 @@ export function planningText(view: PlanningView, year: number, canton?: CantonEn
           `Taxed at source: 3a, pension fund buy-ins and 3a catch-ups lower the tax only with TOU (${view.tou.facts.deductionsOnlyWithTou}). Say so with every saving.`,
         ]
       : []),
+    ...partYearText(view),
     ...lppText(view.lpp, year, other),
     ...catchUpText(view.catchUp, year, other),
     ...(view.tou.applies ? touText(view.tou, view.sourceTax) : []),

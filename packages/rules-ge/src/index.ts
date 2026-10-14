@@ -212,6 +212,10 @@ export {
 } from './2026/property-keys.js';
 export { PROPERTY_NOTE, PROPERTY_UNSUPPORTED } from './engine/property.js';
 export { ABATTEMENT, EFFORT, IIC } from './law/property.js';
+// A year of arrival from abroad or of departure abroad: the income of the period at a full year's
+// rate (./engine/part-year.ts), the day read from the answers (./engine/from-ledger.ts).
+export { partYearNotes, partYearRules } from './engine/part-year.js';
+export { periodFromFacts } from './engine/from-ledger.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {

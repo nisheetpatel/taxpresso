@@ -117,9 +117,20 @@ export interface HouseholdInput {
    * What the ledger already knows besides the salaries and the plans' own deductions (health
    * premiums, childcare, donations, the état des titres...), so the plans run on the real tax.
    */
+  /**
+   * Geneva: the household arrived from abroad or leaves Switzerland this year, but the day isn't
+   * known yet: no tax can be worked out at its real rate, so the plans show no saving.
+   */
+  periodUnknown?: boolean;
   known?: Pick<
     EngineInput,
-    'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale' | 'abroad' | 'property'
+    | 'household'
+    | 'wealthItems'
+    | 'childSupport'
+    | 'ifdParentalScale'
+    | 'abroad'
+    | 'property'
+    | 'period'
   >;
 }
 
@@ -236,6 +247,9 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
     ...(h.known?.abroad ? { abroad: h.known.abroad } : {}),
     // A property in Geneva: its income and value count, so the plans' savings are at the real rate.
     ...(h.known?.property ? { property: h.known.property } : {}),
+    // A year of arrival or departure: the income of the period at a full year's rate, so the plans'
+    // savings are at the real rate (rules-ge, ./engine/part-year.ts).
+    ...(h.known?.period ? { period: h.known.period } : {}),
   };
 }
 
@@ -283,6 +297,7 @@ function incomeTax(r: TaxResult): TaxEstimate | undefined {
  */
 export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (h.other) return cantonEstimator(h, h.other);
+  if (h.periodUnknown) return undefined;
   const nets = h.people.map(netOf);
   const earned = h.people.map(earnedOf);
   const noIncome = (i: number) => earned[i] === undefined && !h.people[i]!.replacementCentimes;

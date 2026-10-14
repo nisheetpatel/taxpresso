@@ -398,5 +398,37 @@
     "priority": "core",
     "why_needed": "When the reform of the taxation of owner-occupied homes voted in September 2025 applies: the Federal Council set its entry into force on 1 January 2029, when the rental value (valeur locative) of homes occupied by their owner stops being taxed and the deduction of upkeep costs ends except for property let; so tax years 2025 and 2026 keep the rental value and the upkeep deduction, as the 2025 and 2026 federal instructions say.",
     "notes": "Press release of the ESTV, Berne, 1 April 2026. Added 14 October 2026 by the property agent."
+  },
+  {
+    "id": "ch-2026-afc-guide-futur-contribuable",
+    "canton": "CH",
+    "doc_type": "guide",
+    "title": "Guide du futur contribuable: Taxation du revenu et de la fortune en Suisse",
+    "tax_year": 2026,
+    "language": "fr",
+    "url": "https://www.efd.admin.ch/dam/fr/sd-web/SPiTLcf5pKap/leitfaden-steuerpflichtige-fr.pdf",
+    "format": "pdf",
+    "publisher": "AFC (ESTV)",
+    "published": "2026-06-18",
+    "verified_on": "2026-10-14",
+    "priority": "core",
+    "why_needed": "How every Swiss tax law (federal and cantonal) taxes a year of arrival from abroad or of departure abroad: only the income of the period of tax liability, the rate on periodic income converted to a year with the formula income x 360 / days of tax liability, non-periodic income never converted (p. 29 and 30, ch. 3.1.1.2 and 3.1.1.3; p. 31, ch. 3.1.2.1; p. 40, ch. 3.2.6); the wealth taxed on the day the tax liability ends (p. 21, ch. 2.1.5.2).",
+    "notes": "Published by the AFC on the site of the Federal Department of Finance, 63 pages, the edition whose examples are for 2026 (PDF dated 22 May 2026, changed 18 June 2026). PDF page numbers: the printed page number plus 2. Added by the arrival and departure agent on 14 October 2026."
+  },
+  {
+    "id": "ch-na-ordonnance-frais-professionnels",
+    "canton": "CH",
+    "doc_type": "law",
+    "title": "Ordonnance du DFF sur la déduction des frais professionnels des personnes exerçant une activité lucrative dépendante en matière d’impôt fédéral direct (Ordonnance sur les frais professionnels), RS 642.118.1",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1993/1363_1363_1363/20230101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1993-1363_1363_1363-20230101-fr-pdf-a.pdf",
+    "format": "pdf",
+    "publisher": "Chancellerie fédérale (Fedlex)",
+    "published": "2023-01-01",
+    "verified_on": "2026-10-14",
+    "priority": "core",
+    "why_needed": "Federal professional costs: the flat deduction for other professional costs is reduced appropriately for a salaried activity of part of the year or part time (art. 7 al. 2, p. 3), without saying how; travel (art. 5) and meals (art. 6).",
+    "notes": "Consolidated text, état le 1er janvier 2023, 6 pages, the Fedlex filestore PDF. Added by the arrival and departure agent on 14 October 2026."
   }
 ]

@@ -19,6 +19,7 @@ export type FinalCheckKind =
   | 'capital'
   | 'abroad'
   | 'property'
+  | 'part_year'
   | 'best_figure'
   | 'holding_check'
   | 'not_counted'

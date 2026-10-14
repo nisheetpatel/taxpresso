@@ -140,6 +140,10 @@ export const PROPERTY_UNSUPPORTED = {
     'Your home’s rental value is lowered by the taux d’effort: it can’t exceed 20 % of your gross income (LIPP art. 24 al. 2), and the documents don’t say by how much, since the reduction changes that gross income itself. Taxpresso can’t prepare it yet, so the cantonal and communal tax is not computed. The AFC’s calculation form (search "taux d’effort" on ge.ch) or GeTax works it out. The federal tax is computed.',
     `La valeur locative de votre logement est réduite par le taux d’effort${NB}: elle ne peut pas dépasser 20${NB}% de votre revenu brut (LIPP art. 24 al. 2), et les documents ne disent pas de combien, la réduction changeant ce revenu brut lui-même. Taxpresso ne peut pas encore le préparer, l’impôt cantonal et communal n’est donc pas calculé. Le formulaire de calcul de l’AFC (cherchez «${NB}taux d’effort${NB}» sur ge.ch) ou GeTax le fait. L’impôt fédéral est calculé.`,
   ),
+  partYear: t(
+    'A property in Geneva in the year you arrived from another country or left Switzerland: Taxpresso can’t prepare it yet, so no tax is computed.',
+    `Un immeuble à Genève l’année d’une arrivée d’un autre pays ou d’un départ de Suisse${NB}: Taxpresso ne peut pas encore le préparer, aucun impôt n’est donc calculé.`,
+  ),
   reform: t(
     'From 2029 the rental value of a home its owner lives in is no longer taxed (ch-na-reforme-valeur-locative-2029): Taxpresso has no rules for that year yet, so no tax is computed.',
     `Dès 2029, la valeur locative d’un logement occupé par son propriétaire n’est plus imposée${NB}: Taxpresso n’a pas encore les règles de cette année, aucun impôt n’est donc calculé.`,

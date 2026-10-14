@@ -18,6 +18,7 @@ import type {
   LimitApplied,
   Line,
   MovableAsset,
+  PartYearKind,
   PersonInput as HouseholdPerson,
   TaxResult as SharedTaxResult,
   Text,
@@ -46,6 +47,12 @@ export type {
 export interface EmploymentInput extends Omit<HouseholdEmployment, 'workCommune' | 'side'> {
   /** Commune where the work is done; default the commune of residence. 'outside': outside Geneva. */
   workCommune?: CommuneSlug | 'outside';
+  /**
+   * Boxes 3 to 7 of the certificate added up: pay that is not monthly salary (non-periodic pay,
+   * capital, participations, board fees, other benefits). Read only for a year of arrival or
+   * departure, where it isn't converted to a year (./part-year.ts).
+   */
+  nonPeriodic?: Amount;
 }
 
 /**
@@ -121,6 +128,8 @@ export interface CapitalInput {
   atSource?: readonly EnginePerson[];
   /** The household arrived from abroad during the year: not supported. */
   arrivedFromAbroad?: boolean;
+  /** The household left Switzerland during the year: not supported. */
+  leftSwitzerland?: boolean;
 }
 
 /**
@@ -230,6 +239,36 @@ export interface EngineInput {
   abroad?: AbroadPropertyInput;
   /** A property in Geneva: the household's home, or one let all year (./property.ts). */
   property?: SwissPropertyInput;
+  /**
+   * A year of arrival from abroad or of departure abroad: the day it happened (the first or the
+   * last day of tax liability). The amounts given are those of the period; the taxes are on them,
+   * at the rate of a full year's income (./part-year.ts).
+   */
+  period?: PeriodInput;
+}
+
+/** The day the household arrived from abroad, or left Switzerland, in the tax year. */
+export interface PeriodInput {
+  kind: PartYearKind;
+  /** YYYY-MM-DD, in the tax year. */
+  date: string;
+}
+
+/**
+ * A year of arrival from abroad or of departure abroad, in the result (./part-year.ts): the period
+ * of tax liability, and in each tax computed the form's lines for the rate (ge-2025-declaration-
+ * specimen p. 3): 95.00 "le cas échéant, revenu net pour le taux", the year's total net income;
+ * 97.00, what of it is not taxed here (99.00, the taxable income, is the period's).
+ */
+export interface PartYearResult {
+  kind: PartYearKind;
+  /** The first and last day of tax liability, YYYY-MM-DD. */
+  from: string;
+  to: string;
+  /** Days of tax liability, 30 to a month. */
+  days: number;
+  icc?: { rateTotal: Line; notTaxed: Line };
+  ifd?: { rateTotal: Line; notTaxed: Line };
 }
 
 /**
@@ -338,7 +377,10 @@ export interface IfdResult extends FederalResult {
   totalIncome: Line;
   /** 97.00 with a property abroad: the part of the total net income not taxed in Switzerland. */
   exemptIncome?: Line;
-  /** With a property abroad: the tax on 99.00 at the rate of the whole income (LIFD art. 7). */
+  /**
+   * With a property abroad: the tax on 99.00 at the rate of the whole income (LIFD art. 7). In a
+   * year of arrival or departure: the tax on 99.00 at the rate of a full year's income (art. 40).
+   */
   atRate?: Line;
 }
 
@@ -411,6 +453,8 @@ export interface TaxResult extends SharedTaxResult<IccResult> {
   abroad?: AbroadResult;
   /** A property in Geneva (./property.ts). Absent without one. */
   property?: PropertyResult;
+  /** A year of arrival from abroad or of departure abroad (./part-year.ts). Absent otherwise. */
+  partYear?: PartYearResult;
 }
 
 /** One sheet of annexe B, for one person: its lines per column, in the form's order. */

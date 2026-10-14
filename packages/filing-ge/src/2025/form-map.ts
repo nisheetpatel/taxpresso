@@ -110,6 +110,15 @@ const PG1 = [
     'Code de votre commune au 31 décembre (commune politique, qui peut différer de l’adresse postale)',
     { guide: '12 and 59' },
   ),
+  // "Si vous êtes arrivé en 2025, lieu de provenance ... Date d’arrivée" (specimen p. 1): the
+  // period of tax liability of a year of arrival from abroad (guide p. 53).
+  pg1(
+    'PG1-ARRIVEE',
+    'Date d’arrivée',
+    'The day you arrived in Switzerland, if you arrived during the year',
+    'Le jour de votre arrivée en Suisse, si vous êtes arrivé pendant l’année',
+    { format: 'date', guide: 53 },
+  ),
 ];
 
 const pg2 = on('PG2', 2, 'revenu', { role: 'report', columns: ICC_IFD });

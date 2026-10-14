@@ -68,6 +68,11 @@ export interface TouInput {
   deductions: Deduction[];
   /** Some figures come from documents the user hasn't confirmed yet. */
   unconfirmed?: boolean;
+  /**
+   * A departure abroad: the request (or the announcement of a compulsory TOU) goes with the
+   * departure form, before leaving (ge-<year>-source-directives ch. 8.5), not by 31 March.
+   */
+  deadline?: { date: string; source: string };
 }
 
 export type TouReasonId =
@@ -195,7 +200,7 @@ export function touPlan(input: TouInput): TouResult {
     { id: 'spouse_without_activity', status: spouse, source: TOU_FACTS.spouseWithoutActivity },
   ];
 
-  const deadline = touDeadline(input.taxYear);
+  const deadline = input.deadline?.date ?? touDeadline(input.taxYear);
   const compulsory = worst(reasons.map((r) => r.status));
   const result: TouResult = {
     applies: atSource.length > 0,
