@@ -10,7 +10,10 @@ import {
   type HouseholdInput,
   type LppBuyInResult,
   lppBuyInPlan,
+  noTaxOf,
+  ordinaryTaxEstimator,
   pillar3aCatchUpPlan,
+  savingOf,
   type TouPerson,
   type TouResult,
   touPlan,
@@ -55,6 +58,9 @@ export async function planningReady(ws: Workspace): Promise<void> {
     loaded.set(ws, { version: 1, decisions: Array.isArray(file.decisions) ? file.decisions : [] });
   }
 }
+
+/** What the plans read besides the workspace's state: the decisions recorded (Workspace.memo). */
+const decisionsKey = (ws: Workspace) => String(loaded.get(ws)?.decisions.length ?? -1);
 
 /** The decision that counts for each optimization: the latest one. */
 export function currentDecision(ws: Workspace, id: string): StoredDecision | undefined {
@@ -122,6 +128,10 @@ function household(ws: Workspace): { h: HouseholdInput; unconfirmed: boolean } {
 }
 
 export function lppView(ws: Workspace): LppBuyInResult {
+  return ws.memo('plan.lpp', '', () => lppViewOf(ws));
+}
+
+function lppViewOf(ws: Workspace): LppBuyInResult {
   const { h } = household(ws);
   return lppBuyInPlan(
     h,
@@ -142,6 +152,10 @@ export function lppView(ws: Workspace): LppBuyInResult {
  * against what was paid (the attestation when there is one). Also used by ./last-year-review.ts.
  */
 export function room2026(ws: Workspace): Record<Who, number> {
+  return ws.memo('plan.room2026', '', () => room2026Of(ws));
+}
+
+function room2026Of(ws: Workspace): Record<Who, number> {
   const { h } = household(ws);
   const caps = ws.plan().people;
   const room: Record<Who, number> = { p1: 0, p2: 0 };
@@ -153,6 +167,10 @@ export function room2026(ws: Workspace): Record<Who, number> {
 }
 
 export function catchUpView(ws: Workspace): CatchUpResult {
+  return ws.memo('plan.catchUp', '', () => catchUpViewOf(ws));
+}
+
+function catchUpViewOf(ws: Workspace): CatchUpResult {
   const { h } = household(ws);
   const room = room2026(ws);
   return pillar3aCatchUpPlan(
@@ -169,11 +187,90 @@ export function catchUpView(ws: Workspace): CatchUpResult {
   );
 }
 
+/** All the plans before 31 December together: one figure for "Ways to save" (docs/design/simple.md). */
+export interface SavingsTotal {
+  totalCentimes: number;
+  cantonalCentimes: number;
+  federalCentimes: number;
+  /** The plans it adds up: the 3a room, the 3a catch-up, a pension fund buy-in the user gave. */
+  parts: ('pillar3a' | 'pillar3a_catchup' | 'lpp_buyin')[];
+  /** Taxed at source without TOU: these deductions lower the tax only with TOU. */
+  onlyWithTou: boolean;
+  assumptions: string[];
+  sources: string[];
+}
+
+/**
+ * What paying everything in before 31 December would save, all plans at once: the engine run with
+ * and without the 3a room, the 3a catch-up and the buy-in amount the user gave (SPEC.md section 8),
+ * on the household the buy-in, catch-up and TOU cards read. Each part only when its own card shows
+ * a saving; nothing when no salary is known or the canton's tax can't be computed (fail closed).
+ */
+export function savingsTotal(ws: Workspace): SavingsTotal | undefined {
+  return ws.memo('plan.savings', decisionsKey(ws), () => savingsTotalOf(ws));
+}
+
+function savingsTotalOf(ws: Workspace): SavingsTotal | undefined {
+  if (ws.yearOver()) return undefined;
+  const { h } = household(ws);
+  if (noTaxOf(h)) return undefined;
+  const estimator = ordinaryTaxEstimator(h);
+  if (!estimator) return undefined;
+  const parts = new Set<SavingsTotal['parts'][number]>();
+  const extra: Deduction[] = [];
+  const room = room2026(ws);
+  for (const p of h.people) {
+    if (room[p.person] > 0) {
+      extra.push({ person: p.person, kind: 'pillar3a', centimes: room[p.person] });
+      parts.add('pillar3a');
+    }
+  }
+  const catchUp = catchUpView(ws);
+  if (catchUp.saving) {
+    for (const r of catchUp.people) {
+      if (r.catchUpCentimes > 0) {
+        extra.push({ person: r.person, kind: 'pillar3a_catchup', centimes: r.catchUpCentimes });
+        parts.add('pillar3a_catchup');
+      }
+    }
+  }
+  const lpp = lppView(ws);
+  if (lpp.saving) {
+    for (const r of lpp.people) {
+      if (r.amountCentimes) {
+        extra.push({ person: r.person, kind: 'lpp_buyin', centimes: r.amountCentimes });
+        parts.add('lpp_buyin');
+      }
+    }
+  }
+  if (!extra.length) return undefined;
+  const base: Deduction[] = h.people.map((p) => ({
+    person: p.person,
+    kind: 'pillar3a',
+    centimes: p.paidCentimes,
+  }));
+  const saving = savingOf(estimator.taxWith, base, extra);
+  // Less than CHF 10 is no saving to show.
+  if (saving.totalCentimes < 1000) return undefined;
+  const tou = touView(ws);
+  return {
+    ...saving,
+    parts: [...parts],
+    onlyWithTou: tou.applies && tou.compulsory !== 'yes' && tou.decision?.choice !== 'request',
+    assumptions: estimator.assumptions,
+    sources: estimator.sources,
+  };
+}
+
 export interface TouView extends TouResult {
   decision?: StoredDecision;
 }
 
 export function touView(ws: Workspace, today = ws.today()): TouView {
+  return ws.memo('plan.tou', `${decisionsKey(ws)}|${today}`, () => touViewOf(ws, today));
+}
+
+function touViewOf(ws: Workspace, today: string): TouView {
   const { h, unconfirmed: householdUnconfirmed } = household(ws);
   // TOU is Geneva's (the AFC's directives): in another canton, taxation at source and its ordinary
   // assessment afterwards (Zurich's NOV) are not supported yet, so there is nothing to compare.
@@ -341,6 +438,10 @@ export async function decide(
 
 /** Everything the dashboard shows for the plans and the TOU card. */
 export function planningView(ws: Workspace) {
+  return ws.memo('plan.view', decisionsKey(ws), () => planningViewOf(ws));
+}
+
+function planningViewOf(ws: Workspace) {
   const snap = ws.snapshot();
   const tou = touView(ws);
   const canton = ws.canton().canton;

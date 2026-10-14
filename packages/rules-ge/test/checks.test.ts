@@ -65,11 +65,15 @@ describe('consistency checks (SPEC.md 5.8)', () => {
     });
     const a3 = doc({ kind: 'pillar3a_attestation', taxYear: 2025 });
     const prior = doc({ kind: 'prior_declaration', taxYear: 2025 });
-    const checks = run([old, byPeriod, a3, prior]);
+    // Last year's assessment is read on purpose ("Last year, reviewed"); an older one is not.
+    const lastAssessment = doc({ kind: 'tax_assessment', taxYear: 2025 });
+    const older = doc({ kind: 'tax_assessment', taxYear: 2024 });
+    const checks = run([old, byPeriod, a3, prior, lastAssessment, older]);
     expect(checks.map((c) => c.id)).toEqual([
       `other_year:${old.id}`,
       `other_year:${byPeriod.id}`,
       `pillar3a_year:${a3.id}`,
+      `other_year:${older.id}`,
     ]);
     expect(checks[0]!.detail.en).toBe(`“${old.filename}” is for 2025, not 2026.`);
     expect(checks[0]!.detail.fr).toBe(`«\u00a0${old.filename}\u00a0» concerne 2025, pas 2026.`);

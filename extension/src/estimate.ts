@@ -83,6 +83,21 @@ function current(ws: Workspace) {
   return { e, view: e.entry?.view, result: e.result };
 }
 
+/**
+ * The tax rests on at least one income or wealth figure (items: income and assets positive). Without
+ * one there is nothing real to show: no CHF 0.00 estimate, no breakdown of nothing, no copy panel
+ * line computed from nothing (docs/design/simple.md). compute_tax itself is unchanged.
+ */
+export function hasFigures(ws: Workspace): boolean {
+  const r = ws.estimate().result;
+  if (!r) return false;
+  return (
+    (r.icc?.grossIncome.amount ?? 0) > 0 ||
+    (r.ifd?.grossIncome.amount ?? 0) > 0 ||
+    (r.icc?.wealth.items ?? []).some((i) => i.amount > 0)
+  );
+}
+
 /** compute_tax: text for Claude and the structured result. */
 export function computeTaxOutput(ws: Workspace, detail: boolean) {
   const { e, view, result: r } = current(ws);

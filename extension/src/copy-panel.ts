@@ -19,6 +19,7 @@ import {
 } from '@taxpresso/filing-ge';
 import type { Line } from '@taxpresso/rules-ch';
 import { CANTONS } from './cantons.js';
+import { hasFigures } from './estimate.js';
 import type { ContentLang as Lang } from './lang.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
@@ -31,16 +32,25 @@ const ENGINE_RUBRICS = {
 /** The engine's values for the rubrics it computes (SPEC.md section 7), as form items. */
 export function engineItems(ws: Workspace): FormItem[] {
   const r = ws.taxEstimate().result;
-  if (!r) return [];
+  // No income and no wealth: the engine's lines would be computed from nothing.
+  if (!r || !hasFigures(ws)) return [];
   const status = (l: Line): FactStatus =>
     l.needsOk ? 'extracted' : l.estimates?.length || l.incomplete ? 'estimate' : 'computed';
   const out: FormItem[] = [];
-  const add = (code: string, person: Owner, l: Line, column?: FormColumn, amount = l.amount) =>
+  // Deductions are negative in the engine and typed as positive amounts; a total keeps its sign.
+  const add = (
+    code: string,
+    person: Owner,
+    l: Line,
+    column?: FormColumn,
+    amount = l.amount,
+    signed = false,
+  ) =>
     out.push({
       code,
       person,
       ...(column ? { column } : {}),
-      amount: Math.abs(amount),
+      amount: signed ? amount : Math.abs(amount),
       status: status(l),
       source: { ...(l.facts ? { facts: l.facts } : {}), rule: l.sources.join('; ') },
     });
@@ -63,20 +73,20 @@ export function engineItems(ws: Workspace): FormItem[] {
         insurance.reduce((s, i) => s + i.amount, 0),
       );
     }
-    add('95.00', 'household', icc.totalIncome, 'icc');
-    add('99.00', 'household', icc.taxableIncome, 'icc');
+    add('95.00', 'household', icc.totalIncome, 'icc', icc.totalIncome.amount, true);
+    add('99.00', 'household', icc.taxableIncome, 'icc', icc.taxableIncome.amount, true);
     // The wealth page only when there is wealth to declare.
     if (icc.wealth.grossWealth.amount > 0) {
       add('51.50', 'household', icc.wealth.socialDeduction, 'wealth');
-      add('95.00', 'household', icc.wealth.taxableWealth, 'wealth');
-      add('99.00', 'household', icc.wealth.taxableWealth, 'wealth');
+      add('95.00', 'household', icc.wealth.taxableWealth, 'wealth', undefined, true);
+      add('99.00', 'household', icc.wealth.taxableWealth, 'wealth', undefined, true);
     }
   }
   if (ifd) {
     const insurance = ifd.items.find((i) => i.code === '52.00');
     if (insurance) add('52.00', 'household', insurance, 'ifd');
-    add('95.00', 'household', ifd.totalIncome, 'ifd');
-    add('99.00', 'household', ifd.taxableIncome, 'ifd');
+    add('95.00', 'household', ifd.totalIncome, 'ifd', ifd.totalIncome.amount, true);
+    add('99.00', 'household', ifd.taxableIncome, 'ifd', ifd.taxableIncome.amount, true);
   }
   return out;
 }
@@ -165,8 +175,12 @@ function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPane
 export function copyPanelView(ws: Workspace, lang: Lang): CopyPanelView {
   const { panel: p, waiting } = panel(ws, lang);
   const names = new Map(ws.documents.map((d) => [d.id, d.filename]));
+  // The note on the previous year's form matters when the form is filled in, after the year ends.
+  const { note, ...rest } = p;
+  const filling = ws.today() > `${ws.taxYear}-12-31`;
   return {
-    ...p,
+    ...rest,
+    ...(note !== undefined && filling ? { note } : {}),
     sections: p.sections.map((s) => ({
       ...s,
       groups: s.groups.map((g) => ({
