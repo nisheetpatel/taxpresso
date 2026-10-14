@@ -117,6 +117,8 @@ const HOUSEHOLDS: BeEngineInput[] = [
     civilStatus: 'divorced',
     ownHousehold: true,
     childSupport: 'none',
+    // The federal parental scale: this parent earns more (circular 30).
+    ifdParentalScale: true,
     marriedTariff: true,
     sharedChildWealth: 'full',
     church: { p1: 'catholic' },
@@ -178,12 +180,18 @@ describe('Bern through the canton interface', () => {
     }
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the cantonal, communal and federal tax of each household', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
+      // A side job in 2025: no 2025 document gives the federal flat's rate (fail closed).
+      if (e.taxYear === 2025 && e.people.some((p) => p.employments?.some((j) => j.side))) {
+        expect(r.ifd).toBeNull();
+        expect(r.unsupported).toHaveLength(1);
+        continue;
+      }
       expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     }
   });
 
@@ -233,15 +241,29 @@ describe('Bern through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys, Bern’s own, and what each document gives', () => {
     expect(rules.canton).toBe('BE');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2026))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'be.own_household',
+        'be.church',
+        'be.parish',
+        'be.party',
+        'be.child_education',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.documents(2026)).toContainEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(rules.documents(2026).map((d) => d.kind)).toEqual(
+      expect.arrayContaining(['pillar3a_attestation', 'health_premiums', 'bank_attestation']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/be');
   });
 });

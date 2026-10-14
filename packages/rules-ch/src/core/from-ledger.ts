@@ -408,6 +408,8 @@ export interface CantonAnswers {
   input: Omit<HouseholdInput, 'cantonal'>;
   /** An answer the user gave (never a value still waiting for their OK), the household's by default. */
   answer: (key: string, person?: Owner) => FactValue | undefined;
+  /** An amount the user gave (a money answer, or a child's), with its facts and status. */
+  amount: (key: string, person?: Owner) => Amount | undefined;
   /** Adds a note on how the ledger was read, once. */
   note: (x: Text) => void;
 }
@@ -443,7 +445,9 @@ export function cantonInputFromFacts<Cantonal extends object>(
   const note = (x: Text) => notes.some((n) => n.en === x.en) || notes.push(x);
   const answer = (key: string, person: Owner = 'household') =>
     facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
-  const cantonal = canton.cantonal({ taxYear, input, answer, note });
+  const amount = (key: string, person: Owner = 'household') =>
+    amountOf(facts.filter((f) => f.key === key && f.person === person));
+  const cantonal = canton.cantonal({ taxYear, input, answer, amount, note });
   for (const n of wealth.notes ?? []) note(n);
   const household = { ...input.household, ...wealth.household };
   return {

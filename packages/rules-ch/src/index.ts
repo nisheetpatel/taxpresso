@@ -79,10 +79,11 @@ export {
   ifdScaleTax2026,
   ifdTax2026,
 } from './ifd/2026.js';
-export { IFD_2026 } from './ifd/2026-amounts.js';
+export { IFD_2026, IFD_2026_SIDE_JOB } from './ifd/2026-amounts.js';
 export {
   IFD_TAX_YEARS,
   ifdParamsFor,
+  ifdSideJobFlat,
   isIfdTaxYear,
   type IfdParams,
   type IfdTaxYear,

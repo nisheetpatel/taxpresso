@@ -186,8 +186,13 @@ describe('Specimen 2025, Tim Schmutz (be-2025-steuererklaerung-formulare-de)', (
     expect(r.icc?.netIncome.amount).toBe(chf(41_344));
     expect(r.icc?.taxableIncome.amount).toBe(chf(35_611));
     expect(r.icc?.wealth.taxableWealth.amount).toBe(chf(12_753));
-    expect(r.total).toBe(chf(6_346.25));
-    expect(r.unsupported).toEqual([]);
+    expect(r.icc?.taxes.total.amount).toBe(chf(6_346.25));
+    // A side job: no 2025 document gives the federal flat's rate, so the federal tax fails closed.
+    expect(r.ifd).toBeNull();
+    expect(r.total).toBeNull();
+    expect(r.unsupported.map((n) => n.en)).toEqual([
+      expect.stringMatching(/^Federal tax not computed: .*side job \(Nebenerwerb, form 6\.5\)/),
+    ]);
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
   });
 });

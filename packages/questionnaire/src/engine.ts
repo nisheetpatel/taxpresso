@@ -157,7 +157,9 @@ export class QuestionnaireEngine {
       }
       if (def.type !== KIND[q.type])
         problems.push(`${q.id}: ${q.type} needs a ${KIND[q.type]} key`);
-      if (def.perPerson !== q.perPerson) problems.push(`${q.id}: perPerson differs from ${q.key}`);
+      if (def.perPerson !== (q.perPerson || q.perChild === true))
+        problems.push(`${q.id}: perPerson differs from ${q.key}`);
+      if (q.perPerson && q.perChild) problems.push(`${q.id}: per person or per child, not both`);
       if (!q.perPerson && 'p1' in q.text)
         problems.push(`${q.id}: per-person text on a household question`);
       const values =
@@ -192,9 +194,21 @@ export class QuestionnaireEngine {
       COUPLE.has(String(answers.get(slotKey('profile.civil_status', 'household'))))
         ? ['p1', 'p2']
         : ['p1'];
+    // The children of the household, for questions asked per child.
+    const children = (): Person[] => {
+      const n = Number(answers.get(slotKey('profile.children_count', 'household')) ?? 0);
+      return Array.from(
+        { length: Number.isInteger(n) && n > 0 ? n : 0 },
+        (_, i) => `child${i + 1}` as const,
+      );
+    };
     const slots: Slot[] = [];
     for (const question of this.file.questions) {
-      const owners: Owner[] = question.perPerson ? people() : ['household'];
+      const owners: Owner[] = question.perPerson
+        ? people()
+        : question.perChild
+          ? children()
+          : ['household'];
       for (const person of owners) {
         if (question.when && !this.#holds(question.when, person, answers, people())) continue;
         const stored = ledger.get(question.key, person);
@@ -211,7 +225,7 @@ export class QuestionnaireEngine {
               : assumed[question.key]
             : undefined;
         const slot: Slot = {
-          id: question.perPerson ? `${question.id}:${person}` : question.id,
+          id: question.perPerson || question.perChild ? `${question.id}:${person}` : question.id,
           question,
           person,
           ...(answer ? { value: answer.value, fact: answer } : {}),
@@ -346,8 +360,12 @@ export class QuestionnaireEngine {
 
   render(slot: Slot, snapshot: Snapshot, lang: Lang): RenderedQuestion {
     const q = slot.question;
-    const text =
-      'p1' in q.text ? say(q.text[slot.person === 'p2' ? 'p2' : 'p1'], lang) : say(q.text, lang);
+    // A question asked per child: {n} is the child's number.
+    const child = /^child(\d+)$/.exec(slot.person)?.[1];
+    const each = (s: string) => (child ? s.replaceAll('{n}', child) : s);
+    const text = each(
+      'p1' in q.text ? say(q.text[slot.person === 'p2' ? 'p2' : 'p1'], lang) : say(q.text, lang),
+    );
     const options =
       q.type === 'commune'
         ? this.communes.map((c) => ({ value: c.slug, label: c.name, notSupported: false }))
@@ -356,11 +374,16 @@ export class QuestionnaireEngine {
               { value: 'yes', label: YES_NO[lang][0], notSupported: !!q.yesNotSupported },
               { value: 'no', label: YES_NO[lang][1], notSupported: false },
             ]
-          : q.options?.map((o) => ({
-              value: o.value,
-              label: say(o.label, lang),
-              notSupported: !!o.notSupported,
-            }));
+          : q.options
+              ?.filter(
+                (o) =>
+                  !o.when || this.#holds(o.when, slot.person, snapshot.answers, snapshot.people),
+              )
+              .map((o) => ({
+                value: o.value,
+                label: say(o.label, lang),
+                notSupported: !!o.notSupported,
+              }));
     return {
       id: slot.id,
       questionId: q.id,
@@ -370,10 +393,11 @@ export class QuestionnaireEngine {
       (slot.person === 'p1' || slot.person === 'p2')
         ? { who: say(this.file.people[slot.person], lang) }
         : {}),
+      ...(child && this.file.people.child ? { who: each(say(this.file.people.child, lang)) } : {}),
       type: q.type,
       text,
-      ...(q.help ? { help: say(q.help, lang) } : {}),
-      ...(q.explain ? { explain: say(q.explain, lang) } : {}),
+      ...(q.help ? { help: each(say(q.help, lang)) } : {}),
+      ...(q.explain ? { explain: each(say(q.explain, lang)) } : {}),
       ...(q.learnMore
         ? { learnMore: { url: q.learnMore.url, label: say(q.learnMore.label, lang) } }
         : {}),

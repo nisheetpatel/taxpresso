@@ -65,9 +65,10 @@ describe('H1: single, Bern, 2026, employed, public transport, own household', ()
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(5_949.41));
     expect(r.icc?.taxes.communal.amount).toBe(chf(3_079.69));
     expect(r.icc?.taxes.church).toBeNull();
-    expect(r.total).toBe(chf(9_029.1));
+    expect(r.icc?.taxes.total.amount).toBe(chf(9_029.1));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.commune).toEqual({ bfs: 351, name: 'Bern', rate: 15_400 });
-    expect(r.ifd).toBeNull();
+    expect(r.ifd?.scale).toBe('single');
     expect(r.unsupported).toEqual([]);
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
     expect(r.notCounted).toContainEqual(NOTE.fireLevy);
@@ -169,7 +170,8 @@ describe('H2: married, two earners, two children, Thun, 2025, Reformed church ta
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(6_080.01));
     expect(r.icc?.taxes.communal.amount).toBe(chf(3_392.54));
     expect(r.icc?.taxes.church?.amount).toBe(chf(423.05));
-    expect(r.total).toBe(chf(9_895.6));
+    expect(r.icc?.taxes.total.amount).toBe(chf(9_895.6));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
   });
 });
 
@@ -210,7 +212,8 @@ describe('H3: widowed retiree, Biel/Bienne, 2026, securities, Roman Catholic chu
     expect(r.icc?.taxes.communal.amount).toBe(chf(3_336.77));
     expect(r.icc?.taxes.church?.amount).toBe(chf(470.83));
     expect(r.icc?.taxes.wealthCap).toBeNull();
-    expect(r.total).toBe(chf(9_897.72));
+    expect(r.icc?.taxes.total.amount).toBe(chf(9_897.72));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.pensions100);
   });
 });
@@ -280,8 +283,10 @@ describe('H4: married high earners with wealth, Muri, 2026, no church, maximum b
     expect(r.icc?.taxes.communal.amount).toBe(chf(17_617.33));
     expect(r.icc?.taxes.church).toBeNull();
     expect(r.icc?.taxes.wealthCap?.amount).toBe(chf(-6_968.35));
-    expect(r.total).toBe(chf(56_624.04));
-    expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.wealthCapRounding]);
+    expect(r.icc?.taxes.total.amount).toBe(chf(56_624.04));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
+    // The cantonal rules first, then the federal tax's (the bike's flat amount).
+    expect(r.unverifiedRules.slice(0, 2)).toEqual([NOTE.rounding, NOTE.wealthCapRounding]);
   });
 
   it('the maximum burden counts the church tax: without an answer on it, not computed', () => {
@@ -349,7 +354,8 @@ describe('H5: divorced parent, shared custody, child support received, Köniz, 2
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(2_122.37));
     expect(r.icc?.taxes.communal.amount).toBe(chf(1_127.17));
     expect(r.icc?.taxes.church?.amount).toBe(chf(135.55));
-    expect(r.total).toBe(chf(3_385.09));
+    expect(r.icc?.taxes.total.amount).toBe(chf(3_385.09));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.modestSteps]);
   });
 

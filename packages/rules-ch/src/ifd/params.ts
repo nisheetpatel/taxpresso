@@ -7,7 +7,7 @@
 import type { Cited, FederalStep, Param } from '../core/cited.js';
 import { IFD_2025, IFD_2025_MARRIED, IFD_2025_SINGLE, type IfdAmounts } from './2025.js';
 import { IFD_2026_MARRIED, IFD_2026_SINGLE } from './2026.js';
-import { IFD_2026 } from './2026-amounts.js';
+import { IFD_2026, IFD_2026_SIDE_JOB } from './2026-amounts.js';
 
 export const IFD_TAX_YEARS = [2025, 2026] as const;
 export type IfdTaxYear = (typeof IFD_TAX_YEARS)[number];
@@ -36,4 +36,15 @@ export function ifdParamsFor(taxYear: number): IfdParams {
     );
   }
   return PARAMS[taxYear];
+}
+
+/**
+ * The flat deduction of an employee's side job for the federal tax (Form. 2a): 2026 only. The 2025
+ * circular in the library gives its minimum and maximum (ch-2026-ifd-progression-deductions p. 2,
+ * 2025 column) but no 2025 document gives its rate: undefined, so a canton fails closed.
+ */
+export function ifdSideJobFlat(
+  taxYear: number,
+): Cited<{ rateBp: number; min: number; max: number }> | undefined {
+  return taxYear === 2026 ? IFD_2026_SIDE_JOB : undefined;
 }

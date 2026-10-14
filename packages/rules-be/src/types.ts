@@ -3,7 +3,15 @@
 // same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items carry
 // the code of the line on the Bern return (./rubrics.ts), deductions negative, income and assets
 // positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { Confession } from './communes.js';
 import type { BeTaxYear } from './params.js';
 
@@ -123,6 +131,12 @@ export interface BeEngineInput {
    */
   marriedTariff?: boolean;
   /**
+   * Federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24, ch. 13.4.2). Unknown, the federal
+   * tax is not computed for such a parent.
+   */
+  ifdParentalScale?: boolean;
+  /**
    * Shared custody without child support: the wealth deduction for a child whose deduction you
    * share, as your last assessment shows: in full or half. The law gives it per child with the
    * child deduction (Art. 64 Abs. 1 lit. b) and halves only income deductions (Art. 40 Abs. 8).
@@ -181,6 +195,21 @@ export interface Item extends Line {
   /** The line's code on the Bern return (./rubrics.ts). */
   code: string;
   person: ItemPerson;
+  /**
+   * What was declared on the form before the rule that set the line, with the line's sign: TaxMe's
+   * "Ihre Angaben" next to its "Steuerbar" (be-2025-steuererklaerung-formulare-de p. 9 and 11).
+   * Absent: the same as the amount.
+   */
+  given?: number;
+}
+
+/** The federal column of the Bern return: TaxMe's federal summary (p. 11). */
+export interface BeIfdResult extends IfdResult {
+  items: Item[];
+  /** Total Aufwendungen und allgemeine Abzüge, federal (negative). */
+  totalDeductions: Line;
+  /** Total persönliche Abzüge / Sozialabzüge, federal (negative). */
+  personalDeductions: Line;
 }
 
 /** Just the amount of an item, as an assessment or a filled-in return shows it. */
@@ -241,12 +270,9 @@ export interface BeTaxResult {
   taxYear: BeTaxYear;
   commune: CommuneRef;
   icc: BeIccResult | null;
-  /**
-   * The federal tax is packages/rules-ch's; Bern's result shows it once the federal column of the
-   * Bern form is mapped (docs/design/cantons.md, section 6).
-   */
-  ifd: null;
-  /** The cantonal, communal (and church, when asked for) tax, when computed. */
+  /** The federal direct tax, as TaxMe's federal summary lays it out (./ifd.ts); null when not computed. */
+  ifd: BeIfdResult | null;
+  /** The cantonal, communal (and church, when asked for) tax plus the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -256,4 +282,6 @@ export interface BeTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or choice a rule applied, in both taxes (SPEC.md 10.0). */
+  limits: LimitApplied[];
 }
