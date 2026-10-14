@@ -18,6 +18,7 @@ import {
   IFD_2026_CHILD_TAX_REDUCTION,
   IFD_2026_DEDUCTIONS,
   IFD_2026_MINIMUM_COLLECTED,
+  IFD_OBJECTION,
   IFD_PROFESSIONAL_FLAT_RATE_BP,
   IFD_TAX_YEARS,
   ifdParamsFor,
@@ -87,6 +88,12 @@ describe('citations of rules-ch', () => {
     }
     const facts = { ...PILLAR3A_2026_FACTS, ...LPP_BUYIN_FACTS, ...PILLAR3A_CATCHUP_FACTS };
     for (const [name, source] of Object.entries(facts)) expectCited(source, name, true);
+  });
+
+  it('the deadline to object to a federal assessment', () => {
+    expectCited(IFD_OBJECTION.days.source, 'IFD_OBJECTION.days', true);
+    expectCited(IFD_OBJECTION.counting, 'IFD_OBJECTION.counting', true);
+    expectCited(IFD_OBJECTION.to, 'IFD_OBJECTION.to', true);
   });
 
   it('withholding tax, the foreign tax credit and the exchange rates', () => {

@@ -91,6 +91,7 @@ export {
   type FederalConcept,
 } from './ifd/items.js';
 export { ifdTax } from './ifd/assess.js';
+export { IFD_OBJECTION, type ObjectionRule } from './ifd/objection.js';
 // The canton interface (docs/design/cantons.md, section 2).
 export type {
   CantonCode,

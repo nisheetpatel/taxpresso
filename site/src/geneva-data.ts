@@ -1,18 +1,18 @@
 // The figures on the Geneva reference pages (/<lang>/geneva/), read at build time from the rules
 // engines' own cited constants: Geneva's in packages/rules-ge, the federal ones every canton shares
-// in packages/rules-ch. No tax figure is typed here: each one comes
-// from a constant, with that constant's citation (manifest id plus page or article), and the
-// citation is looked up in docs/sources/manifest.json for the official document's title and
-// address. An id that isn't in the manifest fails the build. Anything the code doesn't hold yet is
-// left out, never guessed (CLAUDE.md, SPEC.md section 7b). The years below only say which module a
-// figure comes from; a test checks each against the tax year of the document it cites.
+// in packages/rules-ch. No tax figure is typed here: each one comes from a constant, with that
+// constant's citation (manifest id plus page or article), and the citation is looked up in
+// docs/sources/manifest.json for the official document's title and address. An id that isn't in
+// the manifest fails the build. Anything the code doesn't hold yet is left out, never guessed
+// (CLAUDE.md, SPEC.md section 7b). The years below only say which module a figure comes from; a
+// test checks each against the tax year of the document it cites.
 //
 // The modules are imported one by one: their only imports are type imports, which Node drops when
 // it runs TypeScript, so `node build.ts` needs no bundler.
 
 import manifest from '../../docs/sources/manifest.json' with { type: 'json' };
 import { ICC_2025_PROFESSIONAL_FLAT } from '../../packages/rules-ge/src/2025/icc.ts';
-import { OBJECTION_2026 } from '../../packages/rules-ge/src/2026/assessment.ts';
+import { ICC_OBJECTION_2026 } from '../../packages/rules-ge/src/2026/objection.ts';
 import { COMMUNE_CENTIMES_2026, COMMUNES_2026 } from '../../packages/rules-ge/src/2026/communes.ts';
 import {
   IFD_2026_CHILD_TAX_REDUCTION,
@@ -29,10 +29,14 @@ import {
   PILLAR3A_2026,
   PILLAR3A_2026_FACTS,
 } from '../../packages/rules-ch/src/pension/pillar3a.ts';
+import { IFD_OBJECTION } from '../../packages/rules-ch/src/ifd/objection.ts';
 import { TOU_FACTS, touDeadline } from '../../packages/rules-ge/src/2026/tou.ts';
 
 /** The tax year of the 2026 modules above. */
 export const TAX_YEAR = 2026;
+
+/** The deadlines to object: Geneva's (LPFisc) and the federal one (LIFD). */
+const OBJECTION_2026 = { icc: ICC_OBJECTION_2026, ifd: IFD_OBJECTION };
 
 /** One place in an official document. */
 export interface Citation {
