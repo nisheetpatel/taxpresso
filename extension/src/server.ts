@@ -485,10 +485,14 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           `- ${WHO[p.person]}: room left ${chf(p.roomCentimes)} (limit ${cap}, already paid ${chf(p.paidCentimes)})`,
         );
       }
+      const noTax = canton?.plan?.noTax;
       if (plan.saving) {
         lines.push(
           `Estimated tax saving if the room is paid in by 31 December: about ${chf(Math.round(plan.saving.totalCentimes / 1000) * 1000)} (cantonal and communal ${chf(plan.saving.cantonalCentimes)}, federal ${chf(plan.saving.federalCentimes)}). Say it is an estimate.`,
         );
+      } else if (noTax && plan.assumptions.includes(noTax.assumption)) {
+        // The canton's tax can't be computed for the year: no saving, and why (fail closed).
+        lines.push(`No saving shown: ${canton.plan?.noTaxText?.en ?? noTax.assumption}`);
       } else {
         lines.push(
           'No salary yet: ask for a rough yearly salary and save it with set_fact (plan.gross_salary) to estimate the saving.',

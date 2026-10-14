@@ -7,6 +7,7 @@ import be2026 from '../../../data/be/2026/questionnaire.yaml';
 import bl2026 from '../../../data/bl/2026/questionnaire.yaml';
 import bs2026 from '../../../data/bs/2026/questionnaire.yaml';
 import ch2026 from '../../../data/ch/2026/questions.yaml';
+import fr2026 from '../../../data/fr/2026/questionnaire.yaml';
 import ge2026 from '../../../data/ge/2026/questionnaire.yaml';
 import lu2026 from '../../../data/lu/2026/questionnaire.yaml';
 import vd2026 from '../../../data/vd/2026/questionnaire.yaml';
@@ -69,4 +70,12 @@ export function zgQuestionnaire2026(): QuestionnaireFile {
  */
 export function luQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(lu2026, ch2026);
+}
+
+/**
+ * The Fribourg questionnaire for tax year 2026, validated. Its wording follows the 2025 guide: the
+ * 2026 guide is not published yet (data/fr/2026/questionnaire.yaml).
+ */
+export function frQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(fr2026, ch2026);
 }
