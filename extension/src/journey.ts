@@ -3,7 +3,7 @@
 // numbers only, plus Claude's instruction in English: the dashboard words each id in the page's
 // language (ui/src/dashboard/i18n-journey.ts), get_status in English (journeyText below).
 import { SUPPORTED_CANTONS, type Text } from '@taxpresso/rules-ch';
-import { abroadFacts, abroadHint } from './abroad.js';
+import { abroadFacts, abroadHint, ownsPropertyAbroad } from './abroad.js';
 import { cantonNames, type CantonEntry } from './cantons.js';
 import { BARCODE_PENDING } from './barcode.js';
 import { hasFigures } from './estimate.js';
@@ -374,6 +374,33 @@ function selfEmployedInGeneva(ws: Workspace): boolean {
   });
 }
 
+/**
+ * A lump sum from a pension fund or pillar 3a in Geneva (98.12) whose attestation isn't read yet:
+ * the questions only ask who received which, the figures come from the attestation.
+ */
+function capitalHint(ws: Workspace): string {
+  if (ws.canton().canton?.code !== 'GE') return '';
+  const answers = ws.snapshot().answers;
+  const received = (['p1', 'p2'] as const).some((p) => {
+    const which = answers.get(`profile.pension_capital|${p}`);
+    return Array.isArray(which) && which.length > 0;
+  });
+  if (!received || (ws.estimate().result?.capital?.amount.amount ?? 0) > 0) return '';
+  return " For the lump sum from a pension fund or pillar 3a, ask for the institution's attestation: its amount, date and reason (motif du versement) are read from it, never asked.";
+}
+
+/** What a document of the household's situation needs when Claude reads it. */
+function readingHint(ws: Workspace): string {
+  return [
+    selfEmployedInGeneva(ws)
+      ? " The business's accounts (business_accounts): each line as printed; the person's own AVS contributions come from the compensation fund's statement (avs_contributions), never from the accounts' charges."
+      : '',
+    ownsPropertyAbroad(ws)
+      ? ' The property abroad’s documents: each amount as printed, with its currency.'
+      : '',
+  ].join('');
+}
+
 /** Claude's instruction for each next step: short, in English (C6). */
 function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): string {
   const software = c.canton
@@ -390,7 +417,7 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
     case 'start':
       return 'Nothing yet. In a sentence or two, say they can drop what they have (last year’s declaration or tax bill, this year’s documents) into their Taxpresso folder or the dashboard (open_dashboard), or just tell you about themselves. When they add files, call ingest_vault. When they’d rather talk, start with where the user lived on 31 December (next_questions).';
     case 'read':
-      return `${plural(n, 'document')} not read yet. Reading sends a document’s content to you, so ask the user first, once for all of them. Then read each (get_document_for_review) and propose what it shows with propose_extraction: an assessment (avis de taxation) also proposes the household answers it prints, each with its page. Then sum up what you found in a few plain lines. The user can also say what each one is in the dashboard.`;
+      return `${plural(n, 'document')} not read yet. Reading sends a document’s content to you, so ask the user first, once for all of them. Then read each (get_document_for_review) and propose what it shows with propose_extraction: an assessment (avis de taxation) also proposes the household answers it prints, each with its page.${readingHint(ws)} Then sum up what you found in a few plain lines. The user can also say what each one is in the dashboard.`;
     case 'whose':
       return `${n} certificate${n === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${n === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Documents), or tell you and you save it with set_document_owner; then the values fill in.`;
     case 'canton':
@@ -398,19 +425,19 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
     case 'prior':
       return "Before the next question, ask the user for last year's Geneva tax declaration (the PDF from GeTax, the online declaration or their tax software) or last year's tax bill (avis de taxation): Taxpresso suggests most answers from it for them to confirm. They drop it in the dashboard (open_dashboard) or in their Taxpresso folder, then call ingest_vault. If they don't have it, ask the next questions: call next_questions.";
     case 'questions':
-      return `Sum up what Taxpresso knows in a few plain lines (About you), then ask only what is still unknown, a few at a time (next_questions with limit 3), in plain words. Never ask for a technical figure (tariff, tax withheld): Taxpresso reads or estimates those.${c.suggestions ? suggestion : ''} If the user doesn't know an answer, call skip_question.`;
+      return `Sum up what Taxpresso knows in a few plain lines (About you), then ask only what is still unknown, a few at a time (next_questions with limit 3), in plain words, and save each answer with answer_question. Never ask for a technical figure (tariff, tax withheld) or whether someone is taxed at source: Taxpresso reads, works out or estimates those.${c.suggestions ? suggestion : ''} If the user doesn't know an answer, call skip_question.`;
     case 'confirm':
       return `${n} value${n === 1 ? '' : 's'} read from documents need the user's OK. Ask them to check each one in the dashboard (Documents), or to confirm in the chat; then save with set_fact.`;
     case 'checks':
-      return 'Go through the "Check this" items with the user. Each is settled by replacing the document in the dashboard, or with a short note from the user (set_fact, key check.note, instance = the item id).';
+      return 'Go through the "Check this" items with the user. Each is settled by replacing the document in the dashboard, or with a short note from the user (set_fact, key check.note, instance = the item id). Never settle one on your own.';
     case 'identify':
       return 'Ask the user to say what each new document is, in the dashboard (open_dashboard).';
     case 'assessment':
       return 'The assessment is in: go through the differences with the user in the dashboard ("Your assessment"). The deadline to object is in the card, with its legal source; the date printed on the assessment wins. Taxpresso never sends the objection.';
     case 'documents':
-      return `Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.${abroadHint(ws)}`;
+      return `Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.${capitalHint(ws)}${abroadHint(ws)}`;
     case 'income':
-      return `There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate.${selfEmployedInGeneva(ws) ? " For a business of their own, ask roughly what profit (bénéfice net) it makes this year, after their own AVS contributions, and save it with set_fact (plan.business_profit); or they add the business's accounts." : ''}${abroadHint(ws)} Then call compute_tax.`;
+      return `There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate.${selfEmployedInGeneva(ws) ? " For a business of their own, ask roughly what profit (bénéfice net) it makes this year, after their own AVS contributions, and save it with set_fact (plan.business_profit); or they add the business's accounts." : ''}${capitalHint(ws)}${abroadHint(ws)} Then call compute_tax.`;
     case 'save': {
       const then = c.then() === 'later' ? 'their documents come after 31 December' : 'file';
       const what = c.savings
@@ -419,7 +446,7 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
       return `Give the tax (compute_tax) in a line. ${what} Offer it once, as one question: "Want to see how to lower this before 31 December?" If yes, call list_optimizations and go through it. If not, move on: ${then}.`;
     }
     case 'later':
-      return `Nothing to do now: the ${ws.taxYear} documents still missing (${n}) come after 31 December. Tell the user to add them when they arrive (dashboard or Taxpresso folder, then ingest_vault). Meanwhile, compute_tax gives the tax so far.${abroadHint(ws)}`;
+      return `Nothing to do now: the ${ws.taxYear} documents still missing (${n}) come after 31 December. Tell the user to add them when they arrive (dashboard or Taxpresso folder, then ingest_vault). Meanwhile, compute_tax gives the tax so far.${capitalHint(ws)}${abroadHint(ws)}`;
     case 'file':
       return 'Everything is collected for now. Call compute_tax and give the user the tax it computes, with what is an estimate; then call final_check and go through it before they fill in the official form.';
   }

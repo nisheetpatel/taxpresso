@@ -347,7 +347,8 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
       `Waiting for what they are: ${waiting.map((w) => `${w.label}${w.filename ? ` (${w.filename})` : ''}`).join('; ')}.`,
     );
   }
-  if (words.guide) head.push(words.guide);
+  // The canton's form and software: said once the canton is known (Geneva's form is the default).
+  if (words.guide && ws.canton().canton) head.push(words.guide);
   if (couple) head.push(words.persons);
   const structured: FormValuesResult['structured'] = {
     provisional: p.provisional,
@@ -365,12 +366,19 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
       : [
           'Nothing to type yet: values come from the documents the user confirmed and their answers.',
         ];
+    // How Claude walks the user through it, once, with the list of sections.
+    const walk = p.sections.length
+      ? [
+          `Go through final_check with the user first. Then walk them through one section at a time, in the form's order: each value with its code and official label exactly as given here. When they say they typed values, tick them with mark_entered.${(ws.canton().canton ?? CANTONS.GE).filing.checksPdf ? ' Before they transmit, they add the PDF of their declaration and you check it with reconcile_official_pdf.' : ''}`,
+        ]
+      : [];
     return {
       text: [
         ...head,
         'Sections:',
         ...lines,
         `Call again with section (e.g. "${words.example}") for its values.`,
+        ...walk,
       ].join('\n'),
       structured,
     };

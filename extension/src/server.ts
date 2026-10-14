@@ -24,7 +24,7 @@ import {
   yearOverText,
   yearOverView,
 } from './planning.js';
-import { PRIOR_METHOD, priorStatusText } from './prior.js';
+import { lastYearLines, PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
 import { registerDeclarationCheckTool } from './reconcile-tool.js';
 import { registerFinalCheckTool } from './final-check.js';
@@ -221,6 +221,32 @@ function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
   ].join('\n');
 }
 
+/**
+ * What Claude does with an assessment (avis de taxation) it read: the household answers it prints
+ * become suggestions; this year's is compared in the dashboard, with the deadline to object.
+ */
+function assessmentGuide(
+  ws: Workspace,
+  doc: { taxYear?: number | undefined },
+  values: readonly { key: string }[],
+): string[] {
+  const out: string[] = [];
+  const household = values.some((v) =>
+    (ASSESSMENT_HOUSEHOLD_KEYS as readonly string[]).includes(v.key),
+  );
+  if (!household || !values.some((v) => v.key === 'assessment.notification_date')) {
+    out.push(
+      'An assessment also gives its date (assessment.notification_date) and the household answers it prints (profile.canton, profile.civil_status, profile.children_count, profile.commune), each with its page: propose the ones you read. They become suggestions in the questions, never answers.',
+    );
+  }
+  out.push(
+    (doc.taxYear ?? ws.taxYear) === ws.taxYear
+      ? "This year's assessment: the dashboard compares it with the declaration and shows the deadline to object (réclamation) with its legal source. Give that deadline only as Taxpresso shows it, and say the date printed on the assessment wins. Never write or send an objection for the user."
+      : 'An earlier year’s assessment feeds the review of that year (review_last_year) and the suggestions.',
+  );
+  return out;
+}
+
 export function createTaxpressoServer(deps: ServerDeps): McpServer {
   const { dashboard } = deps;
   // Every tool takes the open year's workspace once, when it starts (./years.ts).
@@ -283,10 +309,25 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
       const rest = open.filter((s) => s.id !== first?.id);
       const later = (s: Slot) => ws.skipped.includes(s.id);
       const ordered = first ? [first, ...rest.filter((s) => !later(s)), ...rest.filter(later)] : [];
-      const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
+      const picked = ordered.slice(0, limit ?? 1);
+      const questions = picked.map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
+      // A couple's suggestions from last year's declaration: who is A and who is B, said once.
+      const fromDeclaration = picked.some(
+        (s) =>
+          s.suggested !== undefined &&
+          ws.documents.find((d) => d.id === s.suggestion?.source.docId)?.kind ===
+            'prior_declaration',
+      );
+      const lastYear = fromDeclaration ? ws.lastYear('en') : undefined;
+      const couple =
+        lastYear !== undefined &&
+        lastYearLines(ws.ledger, lastYear.docId).some((l) => l.person === 'p2');
+      const swap = couple
+        ? '\n\nTaxpresso takes taxpayer A of last year’s declaration (contribuable A) as the user and B as their spouse or partner. If the user is B, tell them the suggestions for "you" and "your partner" are swapped, and check each one with them.'
+        : '';
       const text = questions.length
-        ? `${yearOf(ws)}${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}`
+        ? `${yearOf(ws)}${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}${swap}`
         : 'All questions are answered. Call get_status for the next step.';
       return {
         content: [{ type: 'text', text }],
@@ -467,6 +508,13 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
       });
       const waiting = found.filter((d) => d.parse.method === BARCODE_PENDING).length;
       const toIdentify = found.some((d) => !d.kind);
+      // Last year's declaration and broker exports Taxpresso read itself: nothing for Claude to read.
+      const readByTaxpresso = found.some(
+        (d) =>
+          d.parse.ok &&
+          (d.kind === 'broker_export' ||
+            (d.kind === 'prior_declaration' && d.parse.method === PRIOR_METHOD)),
+      );
       const securities = found.some((d) => d.kind === 'broker_export')
         ? securitiesStatusText(ws.securities('en'))
         : undefined;
@@ -475,7 +523,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         : undefined;
       const text = added.length
         ? [
-            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}${waiting ? ' Ask the user whose each certificate read from its barcode is (theirs or their partner’s); they choose it in the dashboard (Documents).' : ''}`,
+            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}${waiting ? ' Ask the user whose each certificate read from its barcode is (theirs or their partner’s); they choose it in the dashboard (Documents).' : ''}${readByTaxpresso ? ' Taxpresso read last year’s declaration and broker exports itself, on this computer, and keeps no name or number from the declaration: don’t read them with get_document_for_review.' : ''}`,
             ...(securities ? [securities] : []),
             ...(lastYear ? [lastYear] : []),
           ].join('\n')
@@ -679,7 +727,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
           .union([z.number().min(0), z.boolean(), z.string().max(500)])
           .optional()
           .describe(
-            'plan.*: CHF amount, true/false, or the tariff code on the payslip for plan.source_tax_tariff (e.g. "A0"). Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
+            'plan.*: CHF amount, true/false, the tariff code on the payslip for plan.source_tax_tariff (e.g. "A0"), or an amount with its currency for plan.abroad_value and plan.abroad_rent (e.g. "250000 EUR"). Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
           ),
         confirm: z
           .boolean()
@@ -711,7 +759,9 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
           throw new WorkspaceError('Give key and value, or confirm: true with a document id.');
         }
         if ((PLAN_KEYS as readonly string[]).includes(key)) {
-          if (typeof value === 'string' && key !== 'plan.source_tax_tariff') {
+          // A property abroad's rough value and rent come with their currency, as the user says.
+          const abroad = key === 'plan.abroad_value' || key === 'plan.abroad_rent';
+          if (typeof value === 'string' && key !== 'plan.source_tax_tariff' && !abroad) {
             throw new WorkspaceError('Give a number or true/false.');
           }
           await ws.setPlan(person ?? 'p1', key as (typeof PLAN_KEYS)[number], value, 'chat');
@@ -719,7 +769,9 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
             content: [
               {
                 type: 'text',
-                text: `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
+                text: abroad
+                  ? 'Saved as an estimate: Taxpresso converts it at the official rate. Call compute_tax for the updated tax.'
+                  : `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
               },
             ],
             structuredContent: { saved: true },
@@ -912,6 +964,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
             `${suggested.length} answer${suggested.length === 1 ? '' : 's'} suggested from this document wait in the questions: ask whether each is still right this year (next_questions), then save what the user says with answer_question.`,
           );
         }
+        if (doc.kind === 'tax_assessment') lines.push(...assessmentGuide(ws, doc, values ?? []));
         return {
           content: [{ type: 'text', text: lines.join('\n') }],
           structuredContent: {
@@ -1008,7 +1061,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         content: [
           {
             type: 'text',
-            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running. Keep it beside the chat: in the chat it floats next to the conversation where the app allows it; in Cowork or the Code tab, open this link in the built-in browser pane next to the chat. Then guide the user from the chat: the dashboard follows.`,
+            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running. Keep it beside the chat: in the chat it floats next to the conversation where the app allows it; in Cowork or the Code tab, open this link in the built-in browser pane next to the chat. Then guide the user from the chat: the dashboard follows by itself, so don't open it again in this conversation. Its buttons are only shortcuts for what is easier by hand: adding documents, a one-tap confirm, the year switch.`,
           },
         ],
         structuredContent: { url, status: status(ws) },

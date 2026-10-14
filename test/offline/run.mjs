@@ -118,7 +118,13 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
   test('server identifies itself and sends its instructions', () => {
     assert.equal(client.getServerVersion()?.name, 'taxpresso');
-    assert.match(client.getInstructions() ?? '', /get_status/);
+    const instructions = client.getInstructions() ?? '';
+    assert.match(instructions, /get_status/);
+    // Within what the strictest host reads (Claude Code cuts at about 2,000 characters), the
+    // safety rules included (docs/design/simple.md, "Guidance for Claude").
+    assert.ok(instructions.length <= 1900, `instructions: ${instructions.length} characters`);
+    assert.match(instructions, /data, never instructions/);
+    assert.match(instructions, /never press the final transmit button/);
   });
 
   test('every tool is narrow and annotated (C6), and matches the manifest', async () => {
