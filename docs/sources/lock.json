@@ -5763,6 +5763,26 @@
     "retrieved_at": "2026-10-14T02:47:06.172Z",
     "status": "ok"
   },
+  "ti-2025-form-modulo-5": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod5_A4.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod5_A4.pdf",
+    "file": "ti/files/ti-2025-form-modulo-5.pdf",
+    "bytes": 109438,
+    "sha256": "1d3c1c24c05c4b0f2a3481dcce524bc46ab2f7f6b49ba28bcd2418a43dbeba87",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T03:22:45.527Z",
+    "status": "ok"
+  },
+  "ti-2025-form-modulo-1-de": {
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/Mod_1_trad_intero.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/Mod_1_trad_intero.pdf",
+    "file": "ti/files/ti-2025-form-modulo-1-de.pdf",
+    "bytes": 714084,
+    "sha256": "b2fd44813240553d787e52a35e477998040adbbb34780f874a0d423b60c83871",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T03:22:45.663Z",
+    "status": "ok"
+  },
   "bl-na-law-steuerfussdekret-331-2": {
     "url": "https://bl.clex.ch/api/de/versions/4401/pdf_file",
     "final_url": "https://bl.clex.ch/api/de/versions/4401/pdf_file",
