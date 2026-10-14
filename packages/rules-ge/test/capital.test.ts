@@ -25,8 +25,10 @@
 // independent script, not the engine): the steps are in the comment of each household.
 import { ifdCapitalTax, Trace, type Line } from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   capitalIcc,
+  capitalLines,
   computeReturn,
   paramsFor,
   type CapitalInput,
@@ -338,6 +340,33 @@ describe('three households, hand-checked', () => {
       rochat(2026, { ...rochatCapital(2026), benefits: rochatCapital(2026).benefits.slice(0, 1) }),
     );
     expect(alone.capital!.icc!.tax.amount).toBeLessThan(r.capital!.icc!.tax.amount);
+  });
+
+  it('cites, on every line, documents downloaded and checked (docs/sources/lock.json)', () => {
+    const lock = JSON.parse(
+      readFileSync(new URL('../../../docs/sources/lock.json', import.meta.url), 'utf8'),
+    ) as Record<string, { status: string }>;
+    const r = computeReturn(rochat(2026, rochatCapital(2026)));
+    const sources = capitalLines(r.capital!).flatMap((l) => l.sources);
+    for (const id of [
+      'ge-na-law-lipp',
+      'ge-na-law-lcacant',
+      'ge-na-law-ldirpp',
+      'ge-na-law-lcp',
+      'ch-na-law-lifd',
+      'ge-2025-icc-tariff-pdf',
+      'ch-2026-ifd-tarif-personnes-physiques',
+    ]) {
+      expect(
+        sources.some((s) => s.startsWith(id)),
+        id,
+      ).toBe(true);
+    }
+    for (const s of sources) {
+      for (const id of s.match(/\b(?:ge|ch)-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]/g) ?? []) {
+        expect(lock[id]?.status, `${id} in "${s}"`).toBe('ok');
+      }
+    }
   });
 
   it('never changes the tax on the income, nor its total', () => {

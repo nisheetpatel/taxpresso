@@ -19,9 +19,11 @@ import {
   IFD_2026_DEDUCTIONS,
   IFD_2026_MINIMUM_COLLECTED,
   IFD_2026_SIDE_JOB,
+  IFD_CAPITAL_FIFTH,
   IFD_OBJECTION,
   IFD_PROFESSIONAL_FLAT_RATE_BP,
   IFD_TAX_YEARS,
+  ifdCapitalTax,
   ifdParamsFor,
   ifdTax,
   insurancePremiums,
@@ -81,6 +83,7 @@ describe('citations of rules-ch', () => {
       ['IFD_2026_SIDE_JOB', IFD_2026_SIDE_JOB],
       ['IFD_2026_DEDUCTIONS', IFD_2026_DEDUCTIONS],
       ['IFD_PROFESSIONAL_FLAT_RATE_BP', IFD_PROFESSIONAL_FLAT_RATE_BP],
+      ['IFD_CAPITAL_FIFTH', IFD_CAPITAL_FIFTH],
     ];
     for (const [name, c] of more) expectCited(c.source, name, true);
   });
@@ -182,6 +185,12 @@ describe('citations of rules-ch', () => {
       for (const l of [tax.scaleIncome, tax.scaleTax, tax.childReduction, tax.tax]) {
         lines.push(...l.sources);
       }
+      // The federal tax on pension capital (art. 38 LIFD).
+      const capital = ifdCapitalTax(F, taxable, 'married');
+      if ('unsupported' in capital) throw new Error('not computed');
+      const c = capital.tax;
+      for (const l of [c.scaleIncome, c.scaleTax, c.tax]) lines.push(...l.sources);
+      expect(lines).toContain('ch-na-law-lifd art. 38 al. 1 and 2 (p. 32)');
       expect(lines).toContain('ch-2026-ifd-instructions-personnes-physiques p. 8');
       expect(lines).toContain('ch-na-circulaire-30-epoux-famille p. 11 and 32 (ch. 7, 14.4.1)');
       for (const source of lines) expectCited(source, `IFD ${year} rule`, true);
