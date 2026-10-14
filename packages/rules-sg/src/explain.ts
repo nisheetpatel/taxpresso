@@ -75,6 +75,14 @@ export const NOTE = {
     en: 'Church tax of another religious community (for example the Jewish community, jüdische Gemeinde): its rate is not in the canton’s table. The tax is not computed; your community can tell you its rate.',
     fr: `Impôt d’une autre communauté religieuse (par exemple la communauté juive, jüdische Gemeinde)${NB}: son taux n’est pas dans le tableau du canton. L’impôt n’est pas calculé${NB}; votre communauté peut vous donner son taux.`,
   },
+  childcareSplit: {
+    en: 'Childcare by third parties (Kinderbetreuungskosten bei Drittbetreuung, 16.2) not computed: the limit is per child under 14 (StG Art. 45 Abs. 1 lit. h), and the costs you gave for the household are too high for every split between your children to give the same deduction. Taxpresso doesn’t compute the tax until it knows what was paid for each child.',
+    fr: `Frais de garde par des tiers (Kinderbetreuungskosten bei Drittbetreuung, 16.2) non calculés${NB}: la limite est par enfant de moins de 14 ans (StG Art. 45 al. 1 let. h), et les frais indiqués pour le ménage sont trop élevés pour que toute répartition entre vos enfants donne la même déduction. Taxpresso ne calcule pas l’impôt avant de savoir ce qui a été payé pour chaque enfant.`,
+  },
+  childcareNoChild: {
+    en: 'Childcare by third parties (Kinderbetreuungskosten bei Drittbetreuung, 16.2): not counted, no child under 14 who lives with you and counts for you was given.',
+    fr: `Frais de garde par des tiers (Kinderbetreuungskosten bei Drittbetreuung, 16.2)${NB}: non comptés, aucun enfant de moins de 14 ans vivant avec vous et compté pour vous n’est indiqué.`,
+  },
   educationScholarships: {
     en: 'Children’s education costs with scholarships (Stipendien, 23.3): the law reduces the deduction by the scholarships (StG Art. 48 Abs. 1 lit. a), while Form 10 takes them off the costs before the excess and the maximum, and here the two give different amounts. The documents disagree: the tax is not computed.',
     fr: `Frais de formation des enfants avec bourses (Stipendien, 23.3)${NB}: la loi réduit la déduction des bourses (StG Art. 48 al. 1 let. a), alors que le formulaire 10 les retire des frais avant la franchise et le maximum, et ici les deux donnent des montants différents. Les documents divergent${NB}: l’impôt n’est pas calculé.`,
