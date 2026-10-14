@@ -1091,6 +1091,90 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Basel-Stadt return: its questions, its tax and the values to type, offline', async () => {
+    // A sixth household in its own folder, in its own server process with the same guard: Lea
+    // Muster, single, in Riehen, with the synthetic salary certificate read from its barcode.
+    const bsVault = path.join(work, 'Basel-Stadt');
+    const bsTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: bsVault,
+        TAXPRESSO_UI_LANGUAGE: 'de',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    bsTransport.stderr?.on('data', (d) => (stderr += d));
+    const bs = new Client({ name: 'taxpresso-offline-test-bs', version: '0.0.0' });
+    await bs.connect(bsTransport);
+    try {
+      const answers = [
+        ['canton', 'BS'],
+        ['civil_status', 'single'],
+        ['reference_age:p1', false],
+        ['children', 0],
+        ['commune', 'Riehen'],
+        ['moved', 'no'],
+        ['church:p1', false],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['work_rate:p1', 100],
+        ['taxed_at_source:p1', false],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 824],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await bs.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await bs.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'BS');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(bsVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await bs.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await bs.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'BS');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'Riehen');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.ok(tax.structuredContent.icc.communalIncome > 0);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /Kantons- und Gemeindesteuern/);
+
+      const sections = await bs.callTool({ name: 'get_form_values', arguments: {} });
+      assert.ok(sections.structuredContent.sections.length > 0);
+      const values = await bs.callTool({ name: 'get_form_values', arguments: { section: 'H3' } });
+      assert.ok(!values.isError, values.content?.[0]?.text);
+
+      const check = await bs.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await bs.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await bs.close();
+    }
+  });
+
   test('no outbound network attempt was made (C2)', () => {
     const attempts = existsSync(guardLog) ? readFileSync(guardLog, 'utf8').trim() : '';
     assert.equal(attempts, '', `outbound attempts:\n${attempts}`);

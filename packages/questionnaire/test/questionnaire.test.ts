@@ -4,6 +4,7 @@ import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
+  bsQuestionnaire2026,
   geQuestionnaire2026,
   LearnMore,
   NBSP,
@@ -13,6 +14,7 @@ import {
   QuestionnaireError,
   resolveShared,
   sharedQuestionnaire2026,
+  zhQuestionnaire2026,
 } from '../src/index.js';
 
 /** Geneva's keys with the canton question every canton shares. */
@@ -461,13 +463,41 @@ describe('the questions every canton shares', () => {
     const file = sharedQuestionnaire2026();
     const canton = file.questions[0]!;
     expect(canton).toMatchObject({ id: 'canton', key: 'profile.canton', type: 'choice' });
-    expect(canton.options?.map((o) => o.value)).toEqual(['GE', 'ZH', 'BE', 'BL', 'VD', 'other']);
+    expect(canton.options?.map((o) => o.value)).toEqual([
+      'GE',
+      'ZH',
+      'BE',
+      'BL',
+      'VD',
+      'BS',
+      'other',
+    ]);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
     expect(canton.link?.url).toBe('https://github.com/nisheetpatel/taxpresso/issues/1');
     // A move from another canton: the canton of 31 December taxes the whole year (LIFD art. 105).
     expect(canton.learnMore?.url).toMatch(/fedlex\.admin\.ch\/.+#page=58$/);
     expect(official).toContain(canton.learnMore!.url.replace(/#page=\d+$/, ''));
     expect(canton.help?.en).toMatch(/taxes the whole year/);
+    // The cantons covered are named from the options themselves: a canton added there is named.
+    expect(canton.explain?.en).toMatch(
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud and Basel-Stadt so far\.$/,
+    );
+    expect(canton.explain?.fr).toMatch(
+      new RegExp(
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud et Bâle-Ville\\.$`,
+      ),
+    );
+    expect(canton.explain?.de).toMatch(
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt und Basel-Stadt vor\.$/,
+    );
+    expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud or Basel-Stadt',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud ou Bâle-Ville',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt oder Basel-Stadt',
+    });
+    for (const f of [file, geQuestionnaire2026(), zhQuestionnaire2026(), bsQuestionnaire2026()]) {
+      expect(JSON.stringify(f)).not.toMatch(/\{cantons/);
+    }
     for (const item of [...file.questions, ...file.requirements]) {
       expect(item.explain?.de, item.id).toBeTruthy();
       expect(item.learnMore?.label.de, item.id).toBeTruthy();

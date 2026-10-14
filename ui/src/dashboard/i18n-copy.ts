@@ -50,6 +50,10 @@ const messages = {
       'Type each value into VaudTax or the paper form, page by page in the form’s order. Amounts are whole francs, without centimes or separators. The last section, the federal tax (impôt fédéral direct), is only to check: VaudTax works it out. Tick each value once it is in.',
     coupleVd:
       'On the Vaud form, contribuable 1 is {a} and contribuable 2 is {b}. If your form has them the other way round, swap the values.',
+    leadBs:
+      'Type each value into BalTax Online or the paper form, form by form in the order the guide gives: first the auxiliary forms (W, B, K, Z, F), whose totals carry to pages 2 to 4. From 369 down, each line has a Kanton and a Bund column. Amounts are whole francs (CHF ohne Rappen), without separators. Tick each value once it is in.',
+    coupleBs:
+      'On the Basel-Stadt form, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -86,6 +90,8 @@ const messages = {
     coupleBl: `Sur la déclaration de Bâle-Campagne, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
     leadVd: `Recopiez chaque valeur dans VaudTax ou le formulaire papier, page par page dans l’ordre du formulaire. Les montants sont en francs entiers, sans centimes ni séparateurs. La dernière section, l’impôt fédéral direct, est seulement à vérifier${NB}: VaudTax le calcule. Cochez chaque valeur une fois saisie.`,
     coupleVd: `Sur le formulaire vaudois, le contribuable 1 est {a} et le contribuable 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadBs: `Recopiez chaque valeur dans BalTax Online ou le formulaire papier, formulaire par formulaire dans l’ordre du guide${NB}: d’abord les formulaires annexes (W, B, K, Z, F), dont les totaux sont reportés aux pages 2 à 4. À partir du 369, chaque ligne a une colonne Kanton et une colonne Bund. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    coupleBs: `Sur le formulaire bâlois, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
     title: 'Fülle deine Steuererklärung aus',
@@ -132,6 +138,10 @@ const messages = {
       'Tippe jeden Wert in VaudTax oder ins Papierformular, Seite für Seite in der Reihenfolge des Formulars. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Der letzte Abschnitt, die direkte Bundessteuer (impôt fédéral direct), ist nur zum Prüfen: VaudTax rechnet sie aus. Hake jeden Wert ab, sobald er drin ist.',
     coupleVd:
       'Auf dem Waadtländer Formular ist contribuable 1 {a} und contribuable 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadBs:
+      'Tippe jeden Wert in BalTax Online oder ins Papierformular, Formular für Formular in der Reihenfolge der Wegleitung: zuerst die Hilfsformulare (W, B, K, Z, F), deren Totale auf die Seiten 2 bis 4 übertragen werden. Ab Ziffer 369 hat jede Zeile eine Spalte Kanton und eine Spalte Bund. Beträge in ganzen Franken (CHF ohne Rappen), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    coupleBs:
+      'Auf dem Basler Formular ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
 } as const;
 

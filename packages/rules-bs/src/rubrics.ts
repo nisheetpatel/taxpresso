@@ -15,7 +15,7 @@ export interface Rubric {
 }
 
 const r = (de: string, en: string, fr: string, page: 2 | 3 | 4, guide: number): Rubric => ({
-  label: { en: `${en} (${de})`, fr: `${fr} (${de})` },
+  label: { en: `${en} (${de})`, fr: `${fr} (${de})`, de },
   source: `${FORM} p. ${page} (form page ${page}); bs-2025-guide-wegleitung p. ${guide}`,
 });
 
@@ -200,6 +200,14 @@ export const RUBRICS = {
     3,
     35,
   ),
+  // The federal column only: the federal insurance deduction's supplement per child.
+  '632': r(
+    'Zuschlag für Kinder und unterstützte Personen (Bund)',
+    'Insurance deduction, supplement for children, federal tax',
+    'Déduction pour assurances, supplément pour enfants, impôt fédéral',
+    3,
+    35,
+  ),
   '652': r(
     'Selbstgetragene Aus- und Weiterbildungskosten Person 1',
     'Professional training, person 1',
@@ -331,6 +339,31 @@ export const PERSON_CODES = {
   training: { p1: '652', p2: '657' },
 } as const satisfies Record<string, { p1: RubricCode; p2: RubricCode }>;
 
+/**
+ * The lines of form B (Berufskosten) whose total is a person's 519 or 539, as printed for person 1
+ * and person 2 (bs-2025-form-b-berufskosten p. 1 and 2): the canton's flat amount (Kanton only),
+ * travel, meals, the other costs (Kanton: actual; Bund: the flat 3 % or actual) and a side job's
+ * flat (Bund only).
+ */
+export const FORM_B = {
+  p1: { flat: '500', travel: '503', meals: '504', other: '514', side: '516' },
+  p2: { flat: '520', travel: '523', meals: '524', other: '534', side: '536' },
+} as const;
+
+/**
+ * The lines of page 4 of form W (Wertschriftenverzeichnis, bs-2025-form-w-wertschriftenverzeichnis
+ * p. 4) Taxpresso fills from the totals of the accounts and securities: the gross income (line 1),
+ * the costs of keeping them (line 6), the market value (line 11), the yield value (line 14) and the
+ * mean (line 16); line 10 is 369 and the lower of 11 and 16 is 800.
+ */
+export const FORM_W = {
+  grossIncome: 'W-1',
+  fees: 'W-6',
+  market: 'W-11',
+  yieldValue: 'W-14',
+  mean: 'W-16',
+} as const;
+
 /** Income lines (Einkünfte, 100 to 489): their total is 499. */
 export const INCOME = new Set<string>([
   '100',
@@ -364,6 +397,7 @@ export const DEDUCTIONS = new Set<string>([
   '625',
   '630',
   '631',
+  '632',
   '652',
   '657',
   '660',
