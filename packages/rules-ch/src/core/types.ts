@@ -6,10 +6,14 @@
 // that only one canton reads says so, and an adapter refuses a fact its canton does not read
 // (packages/rules-<c>/src/canton.ts), so nothing given is silently left out.
 
-/** Plain words for the user, in both languages; official terms appear in parentheses. */
+/**
+ * Plain words for the user, in English and French; official terms appear in parentheses. German
+ * where a canton gives it (Zurich's form terms); elsewhere the English text stands in.
+ */
 export interface Text {
   en: string;
   fr: string;
+  de?: string;
 }
 
 export type EnginePerson = 'p1' | 'p2';
@@ -292,6 +296,11 @@ export interface LimitApplied {
   source: string;
   /** The limit itself is an estimate (a constant not published yet for the year). */
   estimate?: boolean;
+  /**
+   * Which rule, where one line has several (Zurich's 220: travel, meals, other costs), named as
+   * the federal concepts are (ifd/items.ts, FederalConcept). Optional.
+   */
+  rule?: string;
 }
 
 /** The federal scale applied: married couples, single parents (parental) or anyone else. */
@@ -340,7 +349,7 @@ export interface TaxResult<Icc extends CantonalResult = CantonalResult> {
   ifd: IfdResult | null;
   /**
    * The taxes computed: in Geneva the cantonal and communal tax plus the federal tax, when both are;
-   * in Zurich, until its federal tax is wired, the cantonal and communal tax.
+   * in Zurich the same (its Bundessteuer column).
    */
   total: number | null;
   /** Every estimate the result relies on (SPEC.md section 9). */

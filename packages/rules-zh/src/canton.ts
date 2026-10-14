@@ -1,10 +1,10 @@
 // Zurich behind the canton interface (packages/rules-ch, canton.ts; docs/design/cantons.md,
 // section 2): the household input becomes Zurich's engine input, and computeReturn gives exactly
-// what the engine gives (the cantonal and communal tax; the federal column of the Zurich form is
-// not mapped yet, so `ifd` is null). Not wired into the extension. A fact that changes the tax and
-// that Zurich's engine does not read is refused, never dropped (fail closed); facts only Geneva's
-// rules use (a person's age band, Geneva's meal rule, the commune of work, the withholding tax
-// credit shown next to the tax) don't change Zurich's tax and are left aside.
+// what the engine gives (the cantonal and communal tax, and the federal tax of the Bundessteuer
+// column, ./ifd.ts). The extension reads it through its canton registry. A fact that changes the
+// tax and that Zurich's engine does not read is refused, never dropped (fail closed); facts only
+// Geneva's rules use (a person's age band, Geneva's meal rule, the commune of work, the withholding
+// tax credit shown next to the tax) don't change Zurich's tax and are left aside.
 import type { DocumentKind } from '@taxpresso/ledger';
 import {
   ATTESTATION_FIELDS_2026,
@@ -52,9 +52,6 @@ export function zurichInput(input: HouseholdInput<ZurichCantonal>): ZhEngineInpu
   if (typeof input.commune !== 'number') {
     throw new ZhInputError(`Zurich communes are given by their BFS number, not ${input.commune}.`);
   }
-  if (input.household?.childcare) {
-    refuse('Childcare for the household (household.childcare; give it per child)');
-  }
   const movable = input.movable?.map((m) => {
     if (!isZurichOwner(m.owner)) refuse(`Accounts or securities of ${m.owner} (movable[].owner)`);
     return { ...without(m, ['owner', 'withholdingSwiss']), owner: m.owner };
@@ -69,8 +66,9 @@ export function zurichInput(input: HouseholdInput<ZurichCantonal>): ZhEngineInpu
     ...(input.children ? { children: input.children.map((c) => without(c, ['age'])) } : {}),
     ...(input.childSupport ? { childSupport: input.childSupport } : {}),
     ...(marriedTariff !== undefined ? { marriedTariff } : {}),
+    ...(input.ifdParentalScale !== undefined ? { ifdParentalScale: input.ifdParentalScale } : {}),
     ...(church ? { church } : {}),
-    ...(input.household ? { household: without(input.household, ['childcare']) } : {}),
+    ...(input.household ? { household: input.household } : {}),
     ...(movable ? { movable } : {}),
   };
 }

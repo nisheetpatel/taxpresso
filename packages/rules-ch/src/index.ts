@@ -46,6 +46,14 @@ export {
   type RuleLimit,
   type RuleResult,
 } from './core/items.js';
+// The ledger read into the household input, the part every canton shares.
+export {
+  amountOf,
+  factsOfYear,
+  householdFromFacts,
+  type CantonReading,
+  type HouseholdReading,
+} from './core/from-ledger.js';
 // The federal direct tax (IFD): the constants of each year, the federal deductions keyed by
 // concept, and the tax on a taxable income.
 export {

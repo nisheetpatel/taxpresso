@@ -11,7 +11,11 @@
 // legal check (SPEC.md 7b, [HUMAN]). Each rule is cited by manifest id, page or article, and the
 // official link (../law/official-documents.ts).
 import type { ConsistencyCheck, Text } from '../2026/checks.js';
-import { officialLinks, type OfficialLink } from '../law/official-documents.js';
+import {
+  officialLinks,
+  type OfficialDocument,
+  type OfficialLink,
+} from '../law/official-documents.js';
 import { chf } from '@taxpresso/rules-ch';
 import { ESTIMATE_TEXT } from './explain.js';
 import { rubric } from './rubrics.js';
@@ -87,17 +91,51 @@ export interface FinalRequirement {
 /** Where the check of the official PDF stands (reconcile_official_pdf, SPEC.md 10.4). */
 export type OfficialPdfState =
   | { status: 'none' }
+  /** The check reads Geneva declarations only: another canton's has none yet. */
+  | { status: 'not_available' }
   | { status: 'pending' }
   | { status: 'unreadable'; file: string }
   | { status: 'other_year'; file: string }
   | { status: 'checked'; file: string; clear: boolean; toFix: number; notFinal: number };
 
+/**
+ * The result the check reads: what every canton's engine gives (Geneva's TaxResult, Zurich's
+ * ZhTaxResult), with the limits each rule applied.
+ */
+export type FinalCheckResult = Pick<
+  TaxResult,
+  'estimates' | 'incomplete' | 'assumptions' | 'notCounted' | 'unsupported' | 'unverifiedRules'
+> & { limits: readonly LimitApplied[] };
+
+/**
+ * What the check says differently in another canton: its form's labels, its software, the names of
+ * its two taxes. Without it, Geneva's (docs/design/cantons.md).
+ */
+export interface FinalCheckCanton {
+  /** The label of a line code on the canton's form. */
+  label(code: string): Text | undefined;
+  /** What was given, for a line with a limit ("Paid into pillar 3a"). */
+  given(limit: LimitApplied): Text | undefined;
+  /** Lines with a limit in each tax: their title says which tax. */
+  inBothTaxes(code: string): boolean;
+  /** The names of the two taxes, in the titles of limits. */
+  taxes: Record<LimitApplied['tax'], Text>;
+  /** For what Taxpresso can't prepare: the canton's own software, or a fiduciary. */
+  notSupported: Text;
+  /** For a limit that is an estimate: who publishes the final amount. */
+  limitEstimate: Text;
+  /** The canton's official documents, for the link of each rule cited. */
+  documents?: Readonly<Record<string, OfficialDocument>>;
+}
+
 export interface FinalCheckInput {
   taxYear: number;
+  /** Another canton's words; Geneva's when absent. */
+  canton?: FinalCheckCanton;
   /** A couple: say whose each value is. */
   couple: boolean;
   /** The engine's result on the values that count now; null when it can't compute yet. */
-  result: TaxResult | null;
+  result: FinalCheckResult | null;
   /** What must be answered before the engine can compute anything. */
   missing: readonly Text[];
   /** How the ledger was read: what is left out or assumed. */
@@ -243,9 +281,29 @@ const TAX: Record<LimitApplied['tax'], Text> = {
 /** Rubrics with a limit in each tax: their title says which tax (the others' labels already do). */
 const IN_BOTH_TAXES = new Set(['31.60', '55.10', '59.50', '71.00', '73.00', '74.00']);
 
-function rubricTitle(code: string, who: Text | undefined, extra?: Text): Text {
-  const r = rubric(code);
-  const label = r?.label ?? t(code, code);
+/** Geneva's words, the check's default. */
+const GENEVA: FinalCheckCanton = {
+  label: (code) => rubric(code)?.label,
+  given: (l) => GIVEN[aCode(l.code)],
+  inBothTaxes: (code) => IN_BOTH_TAXES.has(aCode(code)),
+  taxes: TAX,
+  notSupported: t(
+    'Taxpresso can’t prepare this part. GeTax, the canton’s free software, or a fiduciary can.',
+    'Taxpresso ne peut pas préparer cette partie. GeTax, le logiciel gratuit du canton, ou une fiduciaire le peuvent.',
+  ),
+  limitEstimate: t(
+    ' This limit is an estimate until Geneva publishes its amounts for the year.',
+    ` Cette limite est une estimation jusqu’à ce que Genève publie ses montants de l’année.`,
+  ),
+};
+
+function rubricTitle(
+  canton: FinalCheckCanton,
+  code: string,
+  who: Text | undefined,
+  extra?: Text,
+): Text {
+  const label = canton.label(code) ?? t(code, code);
   const tail = (lang: 'en' | 'fr') =>
     [who?.[lang], extra?.[lang]].filter((x): x is string => Boolean(x)).join(', ');
   return t(
@@ -255,8 +313,8 @@ function rubricTitle(code: string, who: Text | undefined, extra?: Text): Text {
 }
 
 /** The plain words for a value at or near its limit, with the numbers. */
-function limitDetail(l: LimitApplied, at: LimitPosition): Text {
-  const g = GIVEN[aCode(l.code)] ?? t('Amount', 'Montant');
+function limitDetail(canton: FinalCheckCanton, l: LimitApplied, at: LimitPosition): Text {
+  const g = canton.given(l) ?? t('Amount', 'Montant');
   const [given, limit, counted] = [chf(l.given), chf(l.limit), chf(l.counted)];
   const gap = chf(Math.abs(l.given - l.limit));
   const said = t(`${g.en}: ${given}`, `${g.fr}${NB}: ${given}`);
@@ -311,17 +369,13 @@ function limitDetail(l: LimitApplied, at: LimitPosition): Text {
             `, ${at === 'at' ? 'autant que' : 'juste sous'} la déduction forfaitaire de ${limit}${NB}: la déduction forfaitaire est retenue.`,
           );
   }
-  const estimate = l.estimate
-    ? t(
-        ' This limit is an estimate until Geneva publishes its amounts for the year.',
-        ` Cette limite est une estimation jusqu’à ce que Genève publie ses montants de l’année.`,
-      )
-    : t('', '');
+  const estimate = l.estimate ? canton.limitEstimate : t('', '');
   return t(said.en + rest.en + estimate.en, said.fr + rest.fr + estimate.fr);
 }
 
 function limitItems(input: FinalCheckInput): FinalCheckItem[] {
   const out: FinalCheckItem[] = [];
+  const canton = input.canton ?? GENEVA;
   for (const l of input.result?.limits ?? []) {
     const position = limitPosition(l);
     if (!position) continue;
@@ -332,13 +386,14 @@ function limitItems(input: FinalCheckInput): FinalCheckItem[] {
       code: l.code,
       person: l.person,
       title: rubricTitle(
+        canton,
         l.code,
         who,
-        l.tax === 'both' || IN_BOTH_TAXES.has(aCode(l.code)) ? TAX[l.tax] : undefined,
+        l.tax === 'both' || canton.inBothTaxes(l.code) ? canton.taxes[l.tax] : undefined,
       ),
-      detail: limitDetail(l, position),
+      detail: limitDetail(canton, l, position),
       limit: { ...l, position },
-      sources: officialLinks(l.source),
+      sources: officialLinks(l.source, canton.documents),
     });
   }
   return out;
@@ -418,6 +473,7 @@ const ESTIMATE_RULE_TODO: Record<EstimateReason, (year: number) => Text> = {
 };
 
 export function finalCheck(input: FinalCheckInput): FinalCheck {
+  const links = (source: string) => officialLinks(source, input.canton?.documents);
   const fix: FinalCheckItem[] = [];
   const know: FinalCheckItem[] = [];
   const r = input.result;
@@ -448,10 +504,7 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
       status: 'fix',
       title: t('Not supported yet', 'Pas encore pris en charge'),
       detail: n,
-      todo: t(
-        'Taxpresso can’t prepare this part. GeTax, the canton’s free software, or a fiduciary can.',
-        'Taxpresso ne peut pas préparer cette partie. GeTax, le logiciel gratuit du canton, ou une fiduciaire le peuvent.',
-      ),
+      todo: (input.canton ?? GENEVA).notSupported,
       sources: [],
     }),
   );
@@ -511,7 +564,7 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
             'Add it in the dashboard or your Taxpresso folder.',
             'Ajoutez-le dans le tableau de bord ou votre dossier Taxpresso.',
           ),
-      sources: q.source ? officialLinks(q.source) : [],
+      sources: q.source ? links(q.source) : [],
     };
     (q.optional ? know : fix).push(item);
   }
@@ -596,7 +649,7 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
       title: c.title,
       detail: c.detail,
       todo: c.todo,
-      sources: c.source ? officialLinks(c.source) : [],
+      sources: c.source ? links(c.source) : [],
     });
   }
 
@@ -626,7 +679,7 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
       kind: 'holding_check',
       title: t('Your securities list (état des titres)', 'Votre état des titres'),
       detail: i.text,
-      sources: i.source ? officialLinks(i.source) : [],
+      sources: i.source ? links(i.source) : [],
     }),
   );
 
@@ -636,7 +689,19 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
     'You transmit the declaration yourself; Taxpresso and Claude never do.',
     `Vous transmettez la déclaration vous-même${NB}; ni Taxpresso ni Claude ne le font.`,
   );
-  if (pdf.status === 'none' || pdf.status === 'pending') {
+  if (pdf.status === 'not_available') {
+    know.push({
+      id: 'official_pdf',
+      kind: 'official_pdf',
+      title: t('Check of your declaration PDF', 'Vérification du PDF de votre déclaration'),
+      detail: t(
+        'Not available for this canton yet: Taxpresso checks Geneva declarations only. Compare what you typed with the values to type yourself.',
+        `Pas encore disponible pour ce canton${NB}: Taxpresso ne vérifie que les déclarations genevoises. Comparez vous-même ce que vous avez saisi avec les valeurs à saisir.`,
+      ),
+      todo: transmit,
+      sources: [],
+    });
+  } else if (pdf.status === 'none' || pdf.status === 'pending') {
     know.push({
       id: 'official_pdf',
       kind: 'official_pdf',

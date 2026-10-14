@@ -18,6 +18,12 @@ import {
   type FinalCheckItem,
   type PendingValue,
 } from '@taxpresso/rules-ge';
+import {
+  allLines as zurichLines,
+  formPlace,
+  ZH_FINAL_CHECK,
+  ZH_FORM_NOTE,
+} from '@taxpresso/rules-zh';
 import * as z from 'zod/v4';
 import { BARCODE_PENDING } from './barcode.js';
 import { ENUM_LABELS } from './extraction.js';
@@ -53,6 +59,22 @@ const FINAL_HOLDING = t(
 );
 /** The official page to ask for more time to file (docs/sources/ge/manifest.json). */
 const MORE_TIME = 'ge-na-other-demander-delai';
+/** Zurich's: filing, deadlines and more time (docs/sources/zh/manifest.json). */
+const MORE_TIME_ZH = 'zh-na-efiling-steuererklaerung-privatpersonen';
+
+/** The same texts for a Zurich return: its salary certificate and its tax office. */
+const FINAL_SALARY_ZH = t(
+  'Your salary certificate (Lohnausweis): it replaces this rough figure.',
+  `Votre certificat de salaire (Lohnausweis)${NB}: il remplace ce montant approximatif.`,
+);
+const FINAL_OFFICIAL_VALUE_ZH = t(
+  'Its official value from the ESTV price list (Kursliste, ictax.admin.ch), which you look up and give in the dashboard (Your securities and accounts) or in the chat.',
+  'Sa valeur officielle selon la liste des cours de l’AFC (Kursliste, ictax.admin.ch), que vous cherchez et indiquez dans le tableau de bord (Vos titres et comptes) ou dans la conversation.',
+);
+const FINAL_DOCUMENT_ZH = t(
+  'The document that shows it. If none will come in time, you can ask the tax office (kantonales Steueramt) for more time to file (Fristerstreckung) instead of filing a guess.',
+  'Le document qui le montre. S’il n’arrivera pas à temps, vous pouvez demander un délai (Fristerstreckung) à l’administration fiscale (kantonales Steueramt) plutôt que déclarer une estimation.',
+);
 
 /** The rubric a ledger value goes to, for this person (@taxpresso/filing-ge's routes). */
 function rubricOf(key: string, person: string): string | undefined {
@@ -106,25 +128,32 @@ function pending(
 export function finalCheckInput(ws: Workspace): FinalCheckInput {
   const snap = ws.snapshot();
   const taxYear = ws.engine.taxYear;
-  const { result, missing, notes } = ws.taxEstimate();
+  const estimate = ws.estimate();
+  const zh = estimate.canton === 'ZH';
+  const { result, missing, notes } = estimate;
   const docs = ws.activeDocuments();
   const read = ws.toRead();
 
   // Values that are not final: those waiting for the user's OK, then the estimates the return
   // rests on (a planning figure only when the engine used it as the salary).
   const values: PendingValue[] = ws.toConfirm().map((f) => pending(ws, f, 'extracted', FINAL_OK));
-  const used = new Set(result ? allLines(result).flatMap((l) => l.facts ?? []) : []);
+  const lines =
+    estimate.canton === 'ZH'
+      ? estimate.result && zurichLines(estimate.result)
+      : estimate.result && allLines(estimate.result);
+  const used = new Set((lines ?? []).flatMap((l) => l.facts ?? []));
+  const finalDocument = zh ? FINAL_DOCUMENT_ZH : FINAL_DOCUMENT;
   for (const f of ws.countedFacts()) {
     if (f.status !== 'estimate' || HOLDING_KEY.test(f.key)) continue;
     if (f.key.startsWith('plan.')) {
       if (f.key === 'plan.gross_salary' && used.has(f.id))
         values.push({
-          ...pending(ws, f, 'estimate', FINAL_SALARY),
-          code: f.person === 'p2' ? '21.10' : '11.10',
+          ...pending(ws, f, 'estimate', zh ? FINAL_SALARY_ZH : FINAL_SALARY),
+          code: zh ? (f.person === 'p2' ? '101' : '100') : f.person === 'p2' ? '21.10' : '11.10',
         });
       continue;
     }
-    values.push(pending(ws, f, 'estimate', FINAL_DOCUMENT));
+    values.push(pending(ws, f, 'estimate', finalDocument));
   }
   // The securities list, line by line (values waiting for the user's OK are listed above).
   const etat = holdings(ws);
@@ -133,14 +162,21 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
     values.push({
       id: `etat:${l.id}`,
       status: 'estimate',
-      label: t(`${l.name} (état des titres)`, `${l.name} (état des titres)`),
+      label: zh
+        ? t(
+            `${l.name} (securities list, Wertschriftenverzeichnis)`,
+            `${l.name} (état des titres, Wertschriftenverzeichnis)`,
+          )
+        : t(`${l.name} (état des titres)`, `${l.name} (état des titres)`),
       amount: l.columns.taxableValue,
       final:
         l.valueBasis === 'broker'
-          ? FINAL_OFFICIAL_VALUE
+          ? zh
+            ? FINAL_OFFICIAL_VALUE_ZH
+            : FINAL_OFFICIAL_VALUE
           : l.origin === 'you'
             ? FINAL_HOLDING
-            : FINAL_DOCUMENT,
+            : finalDocument,
     });
   }
   for (const o of etat.other) {
@@ -154,10 +190,25 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
         : o.flow !== undefined
           ? { amount: o.flow }
           : {}),
-      final: o.origin === 'you' ? FINAL_HOLDING : FINAL_DOCUMENT,
+      final: o.origin === 'you' ? FINAL_HOLDING : finalDocument,
     });
   }
 
+  if (zh) {
+    return {
+      ...shared(ws, snap, docs, read, values, etat),
+      canton: ZH_FINAL_CHECK,
+      result: estimate.result,
+      missing,
+      ledgerNotes: notes,
+      officialPdf: { status: 'not_available' },
+      formOrder: (code) => {
+        const at = formPlace(code);
+        return at < 0 ? undefined : at;
+      },
+      formNote: ZH_FORM_NOTE,
+    };
+  }
   const pdf = declarationCheckView(ws, 'en');
   const file = pdf.document?.filename ?? '';
   const officialPdf: FinalCheckInput['officialPdf'] =
@@ -182,11 +233,28 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
   });
 
   return {
-    taxYear,
-    couple: snap.people.length > 1,
+    ...shared(ws, snap, docs, read, values, etat),
     result,
     missing,
     ledgerNotes: notes,
+    officialPdf,
+    formOrder: (code) => order.get(code),
+    ...(form.provisional && form.note ? { formNote: form.note } : {}),
+  };
+}
+
+/** What the final check reads the same way in every canton. */
+function shared(
+  ws: Workspace,
+  snap: ReturnType<Workspace['snapshot']>,
+  docs: ReturnType<Workspace['activeDocuments']>,
+  read: ReturnType<Workspace['toRead']>,
+  values: PendingValue[],
+  etat: ReturnType<typeof holdings>,
+) {
+  return {
+    taxYear: ws.engine.taxYear,
+    couple: snap.people.length > 1,
     notSupported: ws.engine.notSupported(snap).map((n) => n.what),
     questionsOpen: snap.slots.filter((s) => s.value === undefined).length,
     documents: {
@@ -212,9 +280,6 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
       text: i.text,
       ...(i.source ? { source: i.source } : {}),
     })),
-    officialPdf,
-    formOrder: (code) => order.get(code),
-    ...(form.provisional && form.note ? { formNote: form.note } : {}),
   };
 }
 
@@ -275,9 +340,12 @@ function itemView(i: FinalCheckItem, lang: Lang): FinalCheckItemView {
 }
 
 export function finalCheckView(ws: Workspace, lang: Lang): FinalCheckView {
-  const check = finalCheck(finalCheckInput(ws));
+  const input = finalCheckInput(ws);
+  const check = finalCheck(input);
   const moreTime = check.fix.some((i) => i.kind === 'estimate')
-    ? officialLinks(MORE_TIME)[0]?.url
+    ? input.canton
+      ? officialLinks(MORE_TIME_ZH, input.canton.documents)[0]?.url
+      : officialLinks(MORE_TIME)[0]?.url
     : undefined;
   return {
     taxYear: check.taxYear,

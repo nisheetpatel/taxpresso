@@ -6,7 +6,7 @@ import { LPP_BUYIN_FACTS } from '@taxpresso/rules-ch';
 import {
   type Assumption,
   type Deduction,
-  ESTIMATE_SOURCES,
+  estimateSources,
   type HouseholdInput,
   ordinaryTaxEstimator,
   savingOf,
@@ -56,7 +56,7 @@ export function lppBuyInPlan(h: HouseholdInput, people: readonly LppBuyInPerson[
     capacityUnknown: rows.some((p) => p.amountCentimes && p.capacityCentimes === undefined),
     assumptions: [],
     facts: LPP_BUYIN_FACTS,
-    sources: [LPP_BUYIN_FACTS.capacityFromFund, LPP_BUYIN_FACTS.deductible, ...ESTIMATE_SOURCES],
+    sources: [LPP_BUYIN_FACTS.capacityFromFund, LPP_BUYIN_FACTS.deductible, ...estimateSources(h)],
   };
   if (rows.some((p) => p.overCapacity)) return { ...result, problem: 'over_capacity' };
   if (amountCentimes === 0) return result;

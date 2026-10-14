@@ -1,10 +1,11 @@
 // "Before 31 December": pillar 3a room and the tax it would save (SPEC.md section 8, group B).
 // The saving is the rules engine run twice, with and without paying the room in. It is an
-// estimate: Geneva's 2025 scale (2026 is published in January 2027), and only flat deductions.
+// estimate: in Geneva on its 2025 scale (2026 is published in January 2027); in Zurich with the
+// rules its documents don't spell out applied as in the estimate.
 import { PILLAR3A_2026 } from '@taxpresso/rules-ch';
 import {
   type Assumption,
-  ESTIMATE_SOURCES,
+  estimateSources,
   type HouseholdInput,
   netOf,
   ordinaryTaxEstimator,
@@ -43,11 +44,11 @@ function capOf(p: PersonInput): { cap: number; isMaximum: boolean } {
 }
 
 export function pillar3aPlan(h: HouseholdInput): Pillar3aResult {
-  const assumptions = new Set<Assumption>([
-    'icc_2025_scale',
-    'flat_deductions_only',
-    'home_commune_rate',
-  ]);
+  const assumptions = new Set<Assumption>(
+    h.canton === 'ZH'
+      ? ['zh_preview', 'flat_deductions_only']
+      : ['icc_2025_scale', 'flat_deductions_only', 'home_commune_rate'],
+  );
   const people: PersonResult[] = h.people.map((p) => {
     const { cap, isMaximum } = capOf(p);
     return {
@@ -59,7 +60,7 @@ export function pillar3aPlan(h: HouseholdInput): Pillar3aResult {
     };
   });
   const roomCentimes = people.reduce((sum, p) => sum + p.roomCentimes, 0);
-  const sources = [PILLAR3A_2026.source, ...ESTIMATE_SOURCES];
+  const sources = [PILLAR3A_2026.source, ...estimateSources(h)];
   const estimator = ordinaryTaxEstimator(h);
   if (!estimator) return { people, roomCentimes, assumptions: [...assumptions], sources };
   // The engine says what it assumed for this household.

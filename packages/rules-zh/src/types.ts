@@ -4,7 +4,15 @@
 // carry the line code printed on the Zurich return (StA Form. 300, zh-2025-form-steuererklaerung-
 // hauptformular), deductions negative, income and assets positive.
 // The shapes every canton shares (Text, Amount, Line, the way to work) are packages/rules-ch's.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { ZhTaxYear } from './params.js';
 
 export type {
@@ -111,6 +119,12 @@ export interface ZhEngineInput {
   childSupport?: 'receives' | 'pays' | 'none';
   /** Shared custody without child support: true when you mainly support the children. */
   marriedTariff?: boolean;
+  /**
+   * Federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24, ch. 13.4.2). Unknown, the federal
+   * tax is not computed.
+   */
+  ifdParentalScale?: boolean;
   /** Opt-in church tax, by person; with two parishes in the commune, which one (1 or 2). */
   church?: { p1?: Confession; p2?: Confession; parish?: number };
   household?: {
@@ -128,6 +142,8 @@ export interface ZhEngineInput {
     medicalCosts?: Amount;
     /** 324: donations to tax-exempt Swiss organisations. */
     donations?: Amount;
+    /** 376: childcare paid for the children, when not given per child. */
+    childcare?: Amount;
     /** 284: payments to political parties. */
     politicalParty?: Amount;
     /** 254: alimony paid to a former spouse. */
@@ -216,17 +232,22 @@ export interface ZhIccResult {
   };
 }
 
+/** The Bundessteuer column of the Zurich return: the federal tax (packages/rules-ch). */
+export interface ZhIfdResult extends IfdResult {
+  /** 299, Total der Abzüge, federal (negative). */
+  totalDeductions: Line;
+  /** 310, Nettoeinkommen, federal: the base of the federal medical costs and donations. */
+  subtotal310: Line;
+}
+
 export interface ZhTaxResult {
   canton: 'ZH';
   taxYear: ZhTaxYear;
   commune: CommuneRef;
   icc: ZhIccResult | null;
-  /**
-   * The federal tax is packages/rules-ch's; Zurich's result shows it once the federal column of the
-   * Zurich form is mapped (docs/design/cantons.md, section 6).
-   */
-  ifd: null;
-  /** The cantonal and communal tax, when computed. */
+  /** The federal direct tax, the Bundessteuer column (./ifd.ts); null when not computed. */
+  ifd: ZhIfdResult | null;
+  /** The cantonal and communal tax plus the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -236,4 +257,6 @@ export interface ZhTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or choice a rule applied, in both taxes (SPEC.md 10.0). */
+  limits: LimitApplied[];
 }

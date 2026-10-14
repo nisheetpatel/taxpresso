@@ -12,8 +12,14 @@ export interface Rubric {
   source: string;
 }
 
+/** The German term as printed, with the person where the line is a person's ("Person 1"). */
+const german = (de: string, en: string) => {
+  const who = /, person ([12])$/.exec(en);
+  return who ? `${de}, Person ${who[1]}` : de;
+};
+
 const r = (de: string, en: string, fr: string, page: number): Rubric => ({
-  label: { en: `${en} (${de})`, fr: `${fr} (${de})` },
+  label: { en: `${en} (${de})`, fr: `${fr} (${de})`, de: german(de, en) },
   source: `${FORM} p. ${page}`,
 });
 
@@ -137,6 +143,13 @@ export const RUBRICS = {
     'Déduction pour enfants vivant ailleurs',
     3,
   ),
+  // The Bundessteuer column only (Ziffer 24.3).
+  '365': r(
+    'Abzug für Ehegatten / Partn.',
+    'Married couple deduction, federal tax',
+    'Déduction pour couple marié, impôt fédéral',
+    3,
+  ),
   // Wealth, p. 4.
   '400': r('Wertschriften und Guthaben', 'Securities and accounts', 'Titres et avoirs', 4),
   '404': r(
@@ -158,6 +171,61 @@ export const RUBRICS = {
 } as const satisfies Record<string, Rubric>;
 
 export type RubricCode = keyof typeof RUBRICS;
+
+/**
+ * The lines in the order the return prints them (p. 2 income, p. 3 deductions, p. 4 wealth). The
+ * codes are numbers, which an object's keys would sort numerically: the form's order is not that.
+ */
+export const FORM_ORDER: readonly RubricCode[] = [
+  '100',
+  '101',
+  '102',
+  '103',
+  '130',
+  '131',
+  '134',
+  '135',
+  '136',
+  '137',
+  '140',
+  '141',
+  '142',
+  '143',
+  '150',
+  '160',
+  '161',
+  '163',
+  '188',
+  '220',
+  '240',
+  '250',
+  '254',
+  '255',
+  '260',
+  '261',
+  '270',
+  '280',
+  '292',
+  '283',
+  '284',
+  '376',
+  '290',
+  '320',
+  '324',
+  '370',
+  '372',
+  '365',
+  '400',
+  '404',
+  '406',
+  '412',
+  '416',
+  '421',
+  '470',
+];
+
+/** For sorting items in the form's order. */
+export const formPlace = (code: string) => FORM_ORDER.indexOf(code as RubricCode);
 
 export function rubric(code: string): Rubric | undefined {
   return (RUBRICS as Record<string, Rubric>)[code];
@@ -221,8 +289,8 @@ export const DEDUCTIONS = new Set<string>([
 ]);
 /** Zusätzliche Abzüge (22.1, 22.2): from the Nettoeinkommen to the Reineinkommen (350). */
 export const EXTRA = new Set<string>(['320', '324']);
-/** Sozialabzüge (24): from the Reineinkommen to the steuerbares Einkommen (390). */
-export const SOCIAL = new Set<string>(['370', '372']);
+/** Sozialabzüge (24): from the Reineinkommen to the steuerbares Einkommen (390); 365 federal only. */
+export const SOCIAL = new Set<string>(['370', '372', '365']);
 /** Vermögenswerte (460) and Schulden (470). */
 export const ASSETS = new Set<string>(['400', '404', '406', '412', '416', '421']);
 export const DEBTS = new Set<string>(['470']);

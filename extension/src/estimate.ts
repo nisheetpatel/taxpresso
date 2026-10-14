@@ -5,6 +5,7 @@
 import type { Lang } from '@taxpresso/questionnaire';
 import { chf, type Item, type Line, type Text } from '@taxpresso/rules-ch';
 import { compareWithLastYear, type LastYearRow, type TaxResult } from '@taxpresso/rules-ge';
+import { zurichEstimateView, zurichTaxOutput } from './estimate-zh.js';
 import type { Workspace } from './workspace.js';
 
 const WHO: Record<string, Text> = {
@@ -129,13 +130,18 @@ function lastYearText(x: LastYearRow): string {
 
 /** compute_tax: text for Claude and the structured result. */
 export function computeTaxOutput(ws: Workspace, detail: boolean) {
-  const { result: r, missing, notes } = ws.taxEstimate();
+  const e = ws.estimate();
+  if (e.canton === 'ZH') return zurichTaxOutput(ws, e, detail);
+  const { result: r, missing, notes } = e;
   const notSupported = ws.engine.notSupported(ws.snapshot()).map((n) => n.what.en);
   if (!r) {
     const text = `No tax computed yet: Taxpresso needs ${missing.map((m) => m.en).join(' and ')}. Ask with next_questions.`;
     return {
       text,
-      structured: { taxYear: ws.config.taxYear, computed: false, missing: en(missing) },
+      structured: { taxYear: ws.config.taxYear, computed: false, missing: en(missing) } as Record<
+        string,
+        unknown
+      >,
     };
   }
   const icc = r.icc;
@@ -279,7 +285,18 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
 
 /** "Your estimate" in the dashboard, in the UI language. */
 export function estimateView(ws: Workspace, lang: Lang) {
-  const { result: r, missing } = ws.taxEstimate();
+  const e = ws.estimate();
+  if (e.canton === 'ZH') return zurichEstimateView(ws, e, lang);
+  return genevaEstimateView(ws, e, lang);
+}
+
+/** Geneva's "Your estimate" (and what is missing while there is no canton). */
+function genevaEstimateView(
+  ws: Workspace,
+  e: { result: TaxResult | null; missing: Text[] },
+  lang: Lang,
+) {
+  const { result: r, missing } = e;
   if (!r) return { computed: false as const, missing: missing.map((m) => m[lang]) };
   const icc = r.icc;
   const ifd = r.ifd;

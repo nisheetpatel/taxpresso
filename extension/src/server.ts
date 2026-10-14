@@ -59,6 +59,9 @@ const ASSUMPTION_TEXT: Record<string, string> = {
   net_from_gross: 'Net salary assumed to be 88 % of the gross; the payslip gives the real figure.',
   commune_default: 'Commune unknown: City of Geneva assumed.',
   no_income_for_some: 'No salary given for one person: counted as zero.',
+  zh_commune_default: 'Commune unknown: City of Zurich assumed.',
+  zh_preview:
+    'Zurich is a preview: the rules its documents don’t spell out are applied as in the estimate (compute_tax lists them).',
 };
 
 const QuestionOut = z.object({
@@ -466,7 +469,10 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       await planningReady(ws);
       const plan = ws.plan();
       const planning = planningView(ws);
-      const lines = [`Before 31 December ${ws.config.taxYear}: pillar 3a (3e pilier A)`];
+      const zh = ws.canton().canton?.code === 'ZH';
+      const lines = [
+        `Before 31 December ${ws.config.taxYear}: pillar 3a (${zh ? 'Säule 3a' : '3e pilier A'})`,
+      ];
       for (const p of plan.people) {
         const cap = p.capIsMaximum
           ? `up to ${chf(p.capCentimes)} (no pension fund: 20 % of earned income)`
@@ -507,7 +513,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Compute the tax',
       description:
-        "The user's Geneva cantonal and communal tax (ICC) and federal tax (IFD) from Taxpresso's rules engine: totals, main items by rubric code, what is an estimate or still needs the user's OK. detail: true explains every line with its official source.",
+        "The user's cantonal and communal tax and federal tax from Taxpresso's rules engine, for the canton of the year (Geneva: ICC and IFD; Zurich: Staats- und Gemeindesteuern and direkte Bundessteuer): totals, main items by line code, what is an estimate or still needs the user's OK. detail: true explains every line with its official source.",
       inputSchema: z.object({
         detail: z
           .boolean()

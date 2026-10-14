@@ -11,6 +11,8 @@ export type EstimateView =
   | { computed: false; missing: string[] }
   | {
       computed: true;
+      /** Set for a Zurich return (extension/src/estimate-zh.ts); Geneva's has none. */
+      canton?: 'ZH';
       taxYear: number;
       total: number | null;
       estimate: boolean;
@@ -31,6 +33,9 @@ export type EstimateView =
       notes: string[];
       /** False when some amount is known only in part: the taxes are then floors. */
       complete: boolean;
+      /** Zurich, a preview: the rules the documents don't spell out, and what was assumed. */
+      unverified?: string[];
+      assumptions?: string[];
       /** This year against last year's declaration, rubric by rubric (comparison only). */
       lastYear: {
         code: string;
@@ -81,6 +86,13 @@ const text = {
     icc: 'cantonal',
     ifd: 'federal',
     foot: 'Computed on this computer by Taxpresso from the official documents. Ask Claude why any figure is what it is.',
+    officialZh: 'Steuern {year}',
+    breakdownZh: 'What the cantonal and communal tax (Staats- und Gemeindesteuern) is made of',
+    taxableZh:
+      'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
+    previewZh: 'Zurich is a preview: what to check',
+    previewZhNote:
+      'Taxpresso computes Zurich from the official documents. A few rules aren’t spelled out in them, and some answers were assumed. Here they are.',
   },
   fr: {
     title: 'Votre estimation',
@@ -106,6 +118,12 @@ const text = {
     icc: 'cantonal',
     ifd: 'fédéral',
     foot: 'Calculé sur cet ordinateur par Taxpresso à partir des documents officiels. Demandez à Claude pourquoi un montant est ce qu’il est.',
+    officialZh: 'Steuern {year}',
+    breakdownZh: 'Ce qui compose l’impôt cantonal et communal (Staats- und Gemeindesteuern)',
+    taxableZh: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
+    previewZh: `Zurich est en avant-première${NB}: ce qu’il faut vérifier`,
+    previewZhNote:
+      'Taxpresso calcule Zurich à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
   },
 } as const;
 
@@ -176,12 +194,16 @@ export function Estimate({
       </section>
     );
   }
+  const zh = view.canton === 'ZH';
+  const preview = [...(view.unverified ?? []), ...(view.assumptions ?? [])];
   return (
     <section class="stack" aria-labelledby="est-title">
       <div class="section-head">
         <h2 id="est-title">
           {tr(lang, 'title')}{' '}
-          <span class="est-official">({tr(lang, 'official', { year: view.taxYear })})</span>
+          <span class="est-official">
+            ({tr(lang, zh ? 'officialZh' : 'official', { year: view.taxYear })})
+          </span>
         </h2>
         <span class={`chip ${view.estimate ? 'chip-estimate' : 'chip-computed'}`}>
           {tr(lang, view.estimate ? 'estimate' : 'computed')}
@@ -209,7 +231,7 @@ export function Estimate({
         </ul>
         {view.parts.length ? (
           <details class="est-details">
-            <summary>{tr(lang, 'breakdown')}</summary>
+            <summary>{tr(lang, zh ? 'breakdownZh' : 'breakdown')}</summary>
             <ul class="est-rows">
               {view.parts.map((r) => (
                 <li key={r.id} class="est-row">
@@ -221,7 +243,7 @@ export function Estimate({
           </details>
         ) : null}
         <p class="est-note">
-          {tr(lang, 'taxable', {
+          {tr(lang, zh ? 'taxableZh' : 'taxable', {
             icc: chf(view.taxable.icc, lang),
             ifd: chf(view.taxable.ifd, lang),
             wealth: chf(view.taxable.wealth, lang),
@@ -291,6 +313,17 @@ export function Estimate({
             <summary>{tr(lang, 'notes')}</summary>
             <ul>
               {view.notes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
+        {preview.length ? (
+          <details class="est-details">
+            <summary>{tr(lang, 'previewZh')}</summary>
+            <p class="est-note">{tr(lang, 'previewZhNote')}</p>
+            <ul>
+              {preview.map((n) => (
                 <li key={n}>{n}</li>
               ))}
             </ul>

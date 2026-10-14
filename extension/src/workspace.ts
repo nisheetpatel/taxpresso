@@ -29,6 +29,13 @@ import {
   type TaxResult,
 } from '@taxpresso/rules-ge';
 import type { Text } from '@taxpresso/rules-ch';
+import {
+  communeOfAnswer,
+  rules as zurichRules,
+  zurichInputFromFacts,
+  type ZhTaxResult,
+} from '@taxpresso/rules-zh';
+import { zurichWealth } from './zurich-wealth.js';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import type { CantonRegistry, CantonState } from './cantons.js';
 import { displayPath, type Config } from './config.js';
@@ -61,6 +68,12 @@ import {
 } from './extraction.js';
 
 export type Via = 'chat' | 'dashboard';
+
+/** The tax of the year's canton (Workspace.estimate). */
+export type CantonEstimate =
+  | { canton: 'GE'; result: TaxResult | null; missing: Text[]; notes: Text[] }
+  | { canton: 'ZH'; result: ZhTaxResult | null; missing: Text[]; notes: Text[] }
+  | { canton: undefined; result: null; missing: Text[]; notes: Text[] };
 
 export interface ActivityEntry {
   at: string;
@@ -271,32 +284,53 @@ export class Workspace {
    * never stored. Null result when an answer the engine needs is missing (`missing` says which).
    */
   taxEstimate(): { result: TaxResult | null; missing: Text[]; notes: Text[] } {
-    const canton = this.canton();
-    if (canton.canton?.code !== 'GE') {
+    const e = this.estimate();
+    if (e.canton === 'GE') return { result: e.result, missing: e.missing, notes: e.notes };
+    return { result: null, missing: e.missing, notes: e.notes };
+  }
+
+  /**
+   * The tax of the canton of the year (SPEC.md section 7), from the values that count, on every
+   * read; never stored. Geneva's result through its engine (@taxpresso/rules-ge), Zurich's through
+   * its own (@taxpresso/rules-zh), each with the federal tax; nothing without the canton.
+   */
+  estimate(): CantonEstimate {
+    const canton = this.canton().canton;
+    const taxYear = this.engine.taxYear;
+    if (canton?.code === 'GE') {
+      const { input, missing, notes } = engineInputFromFacts(
+        taxYear,
+        this.countedFacts(),
+        this.activeDocuments(),
+      );
+      return { canton: 'GE', result: input ? computeReturn(input) : null, missing, notes };
+    }
+    if (canton?.code === 'ZH') {
+      const facts = this.countedFacts();
+      const docs = this.activeDocuments();
+      const people = this.snapshot().people.filter(
+        (p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2',
+      );
+      const wealth = zurichWealth(taxYear, people, facts, docs);
+      const { input, missing, notes } = zurichInputFromFacts(taxYear, facts, docs, wealth);
       return {
-        result: null,
-        missing: canton.canton
-          ? [
-              {
-                en: `the ${canton.canton.name.en} tax rules, which come in a later step`,
-                fr: `les règles fiscales de ${canton.canton.name.fr}, qui arrivent dans une prochaine étape`,
-              },
-            ]
-          : [
-              {
-                en: 'the canton where you lived on 31 December',
-                fr: 'le canton où vous habitiez au 31 décembre',
-              },
-            ],
-        notes: [],
+        canton: 'ZH',
+        result: input ? zurichRules.computeReturn(input) : null,
+        missing,
+        notes,
       };
     }
-    const { input, missing, notes } = engineInputFromFacts(
-      this.engine.taxYear,
-      this.countedFacts(),
-      this.activeDocuments(),
-    );
-    return { result: input ? computeReturn(input) : null, missing, notes };
+    return {
+      canton: undefined,
+      result: null,
+      missing: [
+        {
+          en: 'the canton where you lived on 31 December',
+          fr: 'le canton où vous habitiez au 31 décembre',
+        },
+      ],
+      notes: [],
+    };
   }
 
   /** Documents Claude hasn't read yet and that can give values or still need a kind. */
@@ -450,6 +484,7 @@ export class Workspace {
     };
     const custody = answer('profile.children_custody');
     const commune = answer('profile.commune');
+    if (this.canton().canton?.code === 'ZH') return this.#zurichPlanInput();
     // What the ledger knows besides salaries and the plans' own deductions, so the plans run on
     // the real tax (premiums, childcare, donations, the état des titres).
     const known = engineInputFromFacts(
@@ -491,6 +526,63 @@ export class Workspace {
         };
       }),
     };
+  }
+
+  /** The household as the plans see it, for a Zurich return: its commune and Zurich's reading. */
+  #zurichPlanInput(): HouseholdInput {
+    const snap = this.snapshot();
+    const answer = (key: string) => snap.answers.get(`${key}|household`);
+    const taxYear = this.engine.taxYear;
+    const facts = this.countedFacts();
+    const docs = this.activeDocuments();
+    const people = snap.people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2');
+    const where = communeOfAnswer(taxYear, answer('profile.commune'));
+    const known = zurichInputFromFacts(
+      taxYear,
+      facts,
+      docs,
+      zurichWealth(taxYear, people, facts, docs),
+    ).input;
+    const custody = answer('profile.children_custody');
+    return {
+      canton: 'ZH',
+      ...(taxYear === 2025 || taxYear === 2026 ? { taxYear } : {}),
+      zurich: {
+        ...(where ? { commune: where.bfs } : {}),
+        ...(known
+          ? {
+              known: {
+                ...(known.household ? { household: known.household } : {}),
+                ...(known.movable ? { movable: known.movable } : {}),
+                ...(known.childSupport ? { childSupport: known.childSupport } : {}),
+                ...(known.ifdParentalScale !== undefined
+                  ? { ifdParentalScale: known.ifdParentalScale }
+                  : {}),
+                ...(known.cantonal ? { cantonal: known.cantonal } : {}),
+              },
+            }
+          : {}),
+      },
+      couple: snap.people.length > 1,
+      children: Number(answer('profile.children_count') ?? 0),
+      ...(custody ? { custody: custody as HouseholdInput['custody'] & string } : {}),
+      people: people.map((person) => {
+        const gross = this.#planMoney('plan.gross_salary', person);
+        const net = this.#planMoney('plan.net_salary', person);
+        return {
+          person,
+          ...(gross !== undefined ? { grossCentimes: gross } : {}),
+          ...(net !== undefined ? { netCentimes: net } : {}),
+          hasPensionFund: this.ledger.get('plan.has_pension_fund', person)?.value !== false,
+          paidCentimes: this.#planMoney('plan.pillar3a_paid', person) ?? 0,
+        };
+      }),
+    };
+  }
+
+  #planMoney(key: PlanKey, person: 'p1' | 'p2'): number | undefined {
+    const v = this.ledger.get(key, person)?.value;
+    return typeof v === 'number' && v > 0 ? v : undefined;
   }
 
   plan(): Pillar3aResult {

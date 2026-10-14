@@ -338,14 +338,18 @@ export interface OfficialLink {
  * The documents a source string cites ("id p. 5; other-id art. 3"), each with its official link.
  * An id that is not in the list keeps no link (never a guessed one).
  */
-export function officialLinks(source: string): OfficialLink[] {
+/** The links of a citation; `more`: another canton's documents (docs/design/cantons.md). */
+export function officialLinks(
+  source: string,
+  more: Readonly<Record<string, OfficialDocument>> = {},
+): OfficialLink[] {
   const out: OfficialLink[] = [];
   for (const part of source.split(';')) {
     const text = part.trim();
     if (!text) continue;
     const [id = '', ...rest] = text.split(' ');
     const where = rest.join(' ');
-    const doc = OFFICIAL_DOCUMENTS[id];
+    const doc = OFFICIAL_DOCUMENTS[id] ?? more[id];
     const page = [...where.matchAll(/\bp\. (\d+)/g)].at(-1)?.[1];
     const url = doc ? (doc.pdf && page ? `${doc.url}#page=${page}` : doc.url) : undefined;
     const link: OfficialLink = {

@@ -325,6 +325,9 @@ importers:
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../rules-ge
+      '@taxpresso/rules-zh':
+        specifier: workspace:*
+        version: link:../rules-zh
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -418,6 +421,9 @@ importers:
         specifier: workspace:*
         version: link:../rules-ch
     devDependencies:
+      '@taxpresso/rules-ge':
+        specifier: workspace:*
+        version: link:../rules-ge
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.1

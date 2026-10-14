@@ -145,12 +145,20 @@ describe('Zurich through the canton interface', () => {
     }
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the cantonal, communal and federal tax of each household', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.icc!.taxes.total.amount).toBeGreaterThan(0);
+      if (r.ifd) expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd.tax.amount);
+      else {
+        // A side job, or shared custody without saying who earns more: not computed, said why.
+        expect(r.total).toBeNull();
+        expect(r.unsupported.map((u) => u.en).join(' ')).toMatch(/^Federal tax not computed/);
+      }
     }
+    expect(rules.computeReturn(household(HOUSEHOLDS[0]!)).ifd?.tax.amount).toBeGreaterThan(0);
+    const parent = { ...household(HOUSEHOLDS[2]!), ifdParentalScale: true };
+    expect(rules.computeReturn(parent).ifd?.scale).toBe('parental');
   });
 
   it('leaves aside the facts only Geneva uses', () => {
@@ -177,7 +185,6 @@ describe('Zurich through the canton interface', () => {
     const p1 = h.people[0]!;
     const refused: HouseholdInput<ZurichCantonal>[] = [
       { ...h, people: [{ ...p1, pillar3aCatchUp: amt(2_000) }] },
-      { ...h, household: { childcare: amt(5_000) } },
       { ...h, movable: [{ owner: 'child0', value: amt(1_000) }] },
       { ...h, commune: 'zurich' },
       { ...h, commune: 9_999 },
