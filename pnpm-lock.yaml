@@ -285,6 +285,28 @@ importers:
         specifier: ^2.9.1
         version: 2.9.1
 
+  packages/filing-ag:
+    dependencies:
+      '@taxpresso/filing-ge':
+        specifier: workspace:*
+        version: link:../filing-ge
+      '@taxpresso/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      '@taxpresso/rules-ag':
+        specifier: workspace:*
+        version: link:../rules-ag
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/filing-be:
     dependencies:
       '@taxpresso/filing-ge':
@@ -429,6 +451,9 @@ importers:
         specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
+      '@taxpresso/rules-ag':
+        specifier: workspace:*
+        version: link:../rules-ag
       '@taxpresso/rules-be':
         specifier: workspace:*
         version: link:../rules-be
