@@ -210,7 +210,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get tax return status',
       description:
-        "Where the user's Geneva tax return stands: household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.",
+        "Where the user's tax return stands (Geneva, or Zurich as a preview): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.",
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -233,7 +233,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get the next questions',
       description:
-        "The next unanswered questions about the user's situation, in French and English with their options. Ask them one at a time in the user's language, then save each answer with answer_question.",
+        "The next unanswered questions about the user's situation, in English and French (German too, for Zurich) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.",
       inputSchema: z.object({
         limit: z.number().int().min(1).max(5).optional().describe('How many questions. Default 1.'),
       }),
@@ -513,7 +513,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Compute the tax',
       description:
-        "The user's cantonal and communal tax and federal tax from Taxpresso's rules engine, for the canton of the year (Geneva: ICC and IFD; Zurich: Staats- und Gemeindesteuern and direkte Bundessteuer): totals, main items by line code, what is an estimate or still needs the user's OK. detail: true explains every line with its official source.",
+        "The user's cantonal, communal and federal tax from Taxpresso's rules engine, for the canton of the year (Geneva: ICC, IFD; Zurich: Staats- und Gemeindesteuern, Bundessteuer): totals, main items by line code, estimates, values needing the user's OK. detail: true explains each line with its source.",
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -838,7 +838,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get the values to type into the declaration',
       description:
-        'The values the user types by hand into the official declaration of their canton, in the form\'s order, as in the dashboard\'s copy panel: line code, official label (Geneva: French; Zurich: German), value as typed, status. No section: the sections with progress. A section (e.g. "A1" in Geneva, "S2" in Zurich): its values.',
+        'Values the user types by hand into their canton\'s official declaration, in the form\'s order, as in the dashboard\'s copy panel: line code, official label (Geneva: French; Zurich: German), value as typed, status. No section: sections with progress. A section ("A1", "S2"): its values.',
       inputSchema: z.object({
         section: z
           .string()
@@ -934,8 +934,8 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   server.registerPrompt(
     'start_geneva_tax_return',
     {
-      title: 'Start my Geneva tax return',
-      description: 'Begin or pick up your Geneva tax return with Taxpresso.',
+      title: 'Start my tax return',
+      description: 'Begin or pick up your Geneva or Zurich tax return with Taxpresso.',
     },
     () => ({
       messages: [
@@ -943,7 +943,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           role: 'user',
           content: {
             type: 'text',
-            text: `I want to work on my Geneva tax return for ${ws.config.taxYear} with Taxpresso. Check where I am and tell me the next step.`,
+            text: `I want to work on my tax return for ${ws.config.taxYear} with Taxpresso. Check where I am and tell me the next step.`,
           },
         },
       ],

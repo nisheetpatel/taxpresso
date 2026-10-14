@@ -161,9 +161,9 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.equal(res.isError, true);
   });
 
-  test('the prompt starts a Geneva tax return', async () => {
+  test('the prompt starts a tax return', async () => {
     const res = await client.getPrompt({ name: 'start_geneva_tax_return' });
-    assert.match(res.messages[0].content.text, /Geneva tax return/);
+    assert.match(res.messages[0].content.text, /my tax return for 2026/);
   });
 
   test('open_dashboard serves the page on 127.0.0.1 only to the token holder', async () => {
@@ -755,6 +755,83 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     ]);
     if (code === 'timeout') child.kill();
     assert.equal(code, 0);
+  });
+
+  test('a Zurich return: its questions, its tax and the values to type, offline', async () => {
+    // A second household in its own folder, in a second server process with the same guard:
+    // Lea Beispiel, single, in Zürich, with the synthetic salary certificate read from its barcode.
+    const zhVault = path.join(work, 'Zurich');
+    const zhTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: zhVault,
+        TAXPRESSO_UI_LANGUAGE: 'de',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    zhTransport.stderr?.on('data', (d) => (stderr += d));
+    const zh = new Client({ name: 'taxpresso-offline-test-zh', version: '0.0.0' });
+    await zh.connect(zhTransport);
+    try {
+      const answers = [
+        ['canton', 'ZH'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Zürich'],
+        ['moved', 'no'],
+        ['church:p1', 'none'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 880],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await zh.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await zh.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'ZH');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(zhVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await zh.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await zh.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'ZH');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.deepEqual(tax.structuredContent.commune, { bfs: 261, name: 'Zürich', rate: 119 });
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.match(tax.content[0].text, /Staats- und Gemeindesteuern/);
+
+      const sections = await zh.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['S2', 'BA1', 'S3'],
+      );
+      const income = await zh.callTool({ name: 'get_form_values', arguments: { section: 'S2' } });
+      assert.match(income.content[0].text, /- 100 Haupterwerb, Person 1 /);
+
+      const pdf = await zh.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await zh.close();
+    }
   });
 
   test('no outbound network attempt was made (C2)', () => {
