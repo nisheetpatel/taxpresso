@@ -9,4 +9,11 @@ export interface Testimonial {
   lang: 'fr' | 'en' | 'de' | 'it' | 'es' | 'pt';
 }
 
-export const TESTIMONIALS: readonly Testimonial[] = [];
+export const TESTIMONIALS: readonly Testimonial[] = [
+  {
+    quote:
+      'Omg this is the best advance Christmas gift anyone can dream of. Tax admin is such a pain !',
+    name: 'Charlotte',
+    lang: 'en',
+  },
+];
