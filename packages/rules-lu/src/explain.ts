@@ -153,6 +153,14 @@ export const NOTE = {
     en: 'Donations: under CHF 100 in the year, nothing is deductible.',
     fr: `Dons${NB}: en dessous de CHF 100 dans l’année, rien n’est déductible.`,
   },
+  childcareNotCounted: {
+    en: 'Childcare by others (Fremdbetreuungskosten, Ziffer 360) counts only for a child under 14 living with you (StG § 42 Abs. 1 lit. b): the costs you gave for another child are not counted.',
+    fr: `Les frais de garde par des tiers (Fremdbetreuungskosten, Ziffer 360) ne comptent que pour un enfant de moins de 14 ans vivant avec vous (StG § 42 al. 1 let. b)${NB}: les frais indiqués pour un autre enfant ne sont pas comptés.`,
+  },
+  childcareSplit: {
+    en: 'Childcare by others (Fremdbetreuungskosten, Ziffer 360) not computed: the limit is per child under 14 living with you (StG § 42 Abs. 1 lit. b). The costs you gave for the household are above one child’s limit, so how they split between your children decides the deduction. Taxpresso doesn’t compute the tax until it knows what was paid for each child.',
+    fr: `Frais de garde par des tiers (Fremdbetreuungskosten, Ziffer 360) non calculés${NB}: la limite est par enfant de moins de 14 ans vivant avec vous (StG § 42 al. 1 let. b). Les frais indiqués pour le ménage dépassent la limite d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Taxpresso ne calcule pas l’impôt avant de savoir ce qui a été payé pour chaque enfant.`,
+  },
   fireLevy: {
     en: 'Not in this calculation: the fire service replacement levy (Feuerwehrersatzabgabe) your commune may charge. The documents Taxpresso has give its amount only for people taxed at source (CHF 100 a year, Steuerbuch Band 2).',
     fr: `Pas dans ce calcul${NB}: la taxe d’exemption du service du feu (Feuerwehrersatzabgabe) que votre commune peut prélever. Les documents dont dispose Taxpresso n’en donnent le montant que pour les personnes imposées à la source (CHF 100 par an, Steuerbuch Band 2).`,

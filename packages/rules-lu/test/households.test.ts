@@ -86,7 +86,8 @@ describe('1. A single person in Luzern, 2025, Roman Catholic', () => {
     expect(chf(x.church?.amount)).toBe(520.38);
     expect(x.incomeCap).toBeNull();
     expect(chf(x.personal.amount)).toBe(50);
-    expect(chf(r.total!)).toBe(7_023.04);
+    expect(chf(r.icc!.taxes.total.amount)).toBe(7_023.04);
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.commune).toEqual({ bfs: null, name: 'Luzern', rate: 15_500 });
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
   });
@@ -189,7 +190,8 @@ describe('2. A couple with two children in Kriens, 2026, Reformed', () => {
     expect(chf(x.communal.amount)).toBe(4_414.1);
     expect(chf(x.church?.amount)).toBe(596.5);
     expect(chf(x.personal.amount)).toBe(50);
-    expect(chf(r.total!)).toBe(8_520.3);
+    expect(chf(r.icc!.taxes.total.amount)).toBe(8_520.3);
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
   });
 
   it('one spouse at home: no two-earner deduction and no childcare, own care stays', () => {
@@ -265,7 +267,8 @@ describe('3. A single parent in Emmen, 2025, no church', () => {
     expect(chf(x.cantonal.amount)).toBe(110.83);
     expect(chf(x.communal.amount)).toBe(153.73);
     expect(x.church).toBeNull();
-    expect(chf(r.total!)).toBe(314.56);
+    expect(chf(r.icc!.taxes.total.amount)).toBe(314.56);
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
   });
 });
 
@@ -316,7 +319,8 @@ describe('4. A retired couple with wealth in Horw, 2026, no church', () => {
     expect(x.church).toBeNull();
     expect(x.incomeCap).toBeNull();
     expect(x.wealthCap).toBeNull();
-    expect(chf(r.total!)).toBe(14_352.01);
+    expect(chf(r.icc!.taxes.total.amount)).toBe(14_352.01);
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.assumptions).toContainEqual(NOTE.pensions100);
   });
 });
@@ -344,6 +348,8 @@ describe('5. Shared custody without child support, Luzern, 2026, a Reformed pare
     commune: 'Luzern',
     civilStatus: 'divorced',
     childSupport: 'none',
+    // The federal parental scale: this parent earns more (the cantonal tax doesn't read it).
+    ifdParentalScale: true,
     familyTariff: true,
     church: { p1: 'reformed', children: ['catholic'] },
     people: [
@@ -380,7 +386,8 @@ describe('5. Shared custody without child support, Luzern, 2026, a Reformed pare
     expect(chf(x.cantonal.amount)).toBe(1_423.9);
     expect(chf(x.communal.amount)).toBe(1_423.9);
     expect(chf(x.church?.amount)).toBe(235.68);
-    expect(chf(r.total!)).toBe(3_133.48);
+    expect(chf(r.icc!.taxes.total.amount)).toBe(3_133.48);
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.unverifiedRules).toContainEqual(NOTE.churchShares);
     expect(r.assumptions).toContainEqual(NOTE.sharedCare);
   });
