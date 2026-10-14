@@ -142,6 +142,22 @@ function useSave(lang: Language, act: Act) {
     void act(() => api.planning(person, field, value, lang));
 }
 
+/**
+ * A case that makes TOU compulsory, in words, with its threshold: on the TOU card, and as why a
+ * compulsory TOU is one in "About you" (Simple.tsx).
+ */
+export function touReasonText(tou: PlanningState['tou'], id: string, lang: Language): string {
+  return tp(lang, `reason.${id}` as PlanningMessageKey, {
+    amount: chf(
+      id === 'gross' ? tou.thresholds.grossCentimes : tou.thresholds.otherIncomeCentimes,
+      lang,
+    ),
+    single: chf(tou.thresholds.wealthFree.single, lang),
+    couple: chf(tou.thresholds.wealthFree.coupleOrSingleParent, lang),
+    child: chf(tou.thresholds.wealthFree.perDependant, lang),
+  });
+}
+
 /** The TOU card: shown to people taxed at source, before everything else ("Decide first"). */
 export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   const planning: PlanningState = state.planning;
@@ -165,16 +181,7 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   const deadline = day(tou.deadline, lang);
   const diff = tou.differenceCentimes;
   const reasons = tou.reasons.filter((r) => r.status === 'yes' || r.status === 'check');
-  const reasonText = (id: string) =>
-    tp(lang, `reason.${id}` as PlanningMessageKey, {
-      amount: chf(
-        id === 'gross' ? tou.thresholds.grossCentimes : tou.thresholds.otherIncomeCentimes,
-        lang,
-      ),
-      single: chf(tou.thresholds.wealthFree.single, lang),
-      couple: chf(tou.thresholds.wealthFree.coupleOrSingleParent, lang),
-      child: chf(tou.thresholds.wealthFree.perDependant, lang),
-    });
+  const reasonText = (id: string) => touReasonText(tou, id, lang);
   const decide = async (choice: 'request' | 'decline') => {
     if (await act(() => api.decide(choice, understood, lang))) {
       setChanging(false);

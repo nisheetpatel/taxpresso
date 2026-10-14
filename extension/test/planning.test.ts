@@ -145,12 +145,19 @@ describe('TOU in the dashboard', () => {
     expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'H1N' });
     expect(withheld.totalCentimes).toBeGreaterThan(0);
     expect(res.state.planning!.tou.assumptions).toContain('withheld_from_tariff');
+    // Each fact one sentence, why behind it.
     const facts = (st: DashboardState) =>
-      st.journey.about.filter((f) => f.id === 'source_tax').map((f) => f.text?.en ?? '');
+      st.journey.about
+        .filter((f) => f.id === 'source_tax')
+        .map((f) => `${f.text?.en ?? ''}${f.why ? ` | ${f.why.en}` : ''}`);
     expect(facts(res.state)).toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/^Barème H1N: single parent, the children living with you/),
-        expect.stringMatching(/^Tax taken at source for 2026: about CHF/),
+        expect.stringMatching(
+          /^Your barème is H1N\. \| Single parent, the children living with you/,
+        ),
+        expect.stringMatching(
+          /^Your tax taken at source for 2026: about CHF [\d,]+\. \| Estimated with barème H1N on the gross salary\.$/,
+        ),
       ]),
     );
     expect(res.state.journey.about.find((f) => /about CHF/.test(f.text?.en ?? ''))?.estimate).toBe(
@@ -167,7 +174,7 @@ describe('TOU in the dashboard', () => {
       documentTariff: 'A0N',
     });
     expect(facts(res.state)).toContain(
-      'Barème A0N, from a payslip; it wins over the one Taxpresso works out, H1N.',
+      'Your barème is A0N, from a payslip. | It wins over the one Taxpresso works out, H1N.',
     );
     res = await planning(api, '/planning', { field: 'tariff', value: 'A0Y' });
     expect(res.status).toBe(400);

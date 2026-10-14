@@ -330,7 +330,7 @@ describe('a property in Geneva, end to end (2026)', () => {
     // get_status: the fact in "About you", with its source.
     const status = texts(await call('get_status'));
     expect(status).toMatch(
-      /Your home in Geneva is declared on annexe D \(immeubles occupés par le propriétaire\): its value CHF.632’400 \(after the 32 % abattement\) and its rental value CHF.27’600, CHF.18’768 for the cantonal tax\. \[ge-2025-guide-declaration-pp p\. 32 to 34/,
+      /Your home in Geneva is declared on annexe D \(immeubles occupés par le propriétaire\)\. Its value CHF.632’400 \(after the 32 % abattement\) and its rental value CHF.27’600, CHF.18’768 for the cantonal tax: the AFC’s figures for the year\. \[ge-2025-guide-declaration-pp p\. 32 to 34/,
     );
 
     // The dashboard: the fact in each language, the kinds of the property's documents, the IIC
@@ -346,6 +346,15 @@ describe('a property in Geneva, end to end (2026)', () => {
     expect(fact.text!.fr).toMatch(/^Votre logement à Genève est déclaré à l’annexe D/);
     expect(fact.text!.de).toMatch(/^Deine Wohnung in Genf wird in der annexe D deklariert/);
     expect(fact.text!.it).toMatch(/^La tua abitazione a Ginevra si dichiara nell’annexe D/);
+    // One short sentence; its figures behind "Why?", its sources by their titles, linked.
+    expect(fact.why!.fr).toMatch(
+      /^Sa valeur CHF.632’400 \(après l’abattement de 32.%\) et sa valeur locative CHF.27’600, CHF.18’768 pour l’impôt cantonal.: les chiffres de l’AFC pour l’année\.$/,
+    );
+    expect(fact.sources!.map((x) => x.id)).toEqual([
+      'ge-2025-guide-declaration-pp',
+      'ge-na-law-lipp',
+    ]);
+    expect(fact.sources![0]!.url).toMatch(/^https:\/\/www\.ge\.ch\//);
     expect(s.kinds.map((k) => k.value)).toEqual(
       expect.arrayContaining([
         'property_values',
@@ -466,7 +475,12 @@ describe('a property in Geneva, end to end (2026)', () => {
     ]);
     const s = await state('fr');
     const fact = s.journey.about.find((f) => f.id === 'property')!;
-    expect(fact.text!.fr).toMatch(/taux d’effort/);
+    expect(fact.text!.fr).toBe(
+      'Le taux d’effort réduit la valeur locative de votre logement, d’un montant que Taxpresso ne sait pas encore calculer.',
+    );
+    expect(fact.why!.fr).toMatch(
+      /^La valeur locative de votre logement est réduite par le taux d’effort/,
+    );
     const check = (await call('final_check')).structuredContent as {
       fix: { kind: string; detail: string }[];
     };

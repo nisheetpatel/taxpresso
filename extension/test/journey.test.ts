@@ -167,7 +167,33 @@ describe('the next step and the stages', () => {
     expect(status.next).toMatchObject({ id: 'income', stage: 'tax' });
     expect(status.nextStep).toMatch(/Never|plan\.gross_salary/);
     const s = await state();
-    expect(touFacts(s.journey.about)).toEqual([{ id: 'tou_already', who: 'both', vars: {} }]);
+    // One fact for both, in the dashboard's words; why TOU stays (the TOU question's own
+    // explanation) and its sources behind the disclosures.
+    expect(touFacts(s.journey.about)).toHaveLength(1);
+    const tou = s.journey.about.find((f) => f.id === 'tou_already');
+    expect(tou).toMatchObject({
+      id: 'tou_already',
+      who: 'both',
+      vars: {},
+      source: 'ge-na-law-lisp art. 4 al. 5, art. 5 al. 5; ge-2026-source-directives p. 51 and 52',
+    });
+    expect(tou!.why!.en).toMatch(/^Once the tax office has taxed you ordinarily/);
+    expect(tou!.why!.fr).toMatch(/^Une fois que l’administration fiscale/);
+    expect(tou!.sources).toEqual([
+      {
+        id: 'ge-na-law-lisp',
+        where: 'art. 4 al. 5, art. 5 al. 5',
+        title:
+          "Loi sur l'imposition à la source des personnes physiques et morales (LISP), rsGE D 3 20",
+        url: 'https://silgeneve.ch/legis/data/rsg_d3_20.htm',
+      },
+      {
+        id: 'ge-2026-source-directives',
+        where: 'p. 51 and 52',
+        title: "Directives concernant l'impôt à la source 2026",
+        url: 'https://www.ge.ch/document/42009/annexe/file/580297#page=51',
+      },
+    ]);
     expect(s.journey.touChoice).toBe(false);
     expect(s.journey.hasFigures).toBe(false);
     expect(s.journey.savings).toBeNull();
@@ -311,9 +337,78 @@ describe('the next step and the stages', () => {
     await call('set_fact', { key: 'plan.gross_salary', value: 150_000 });
     s = await state();
     expect(s.journey.touChoice).toBe(false);
+    // Why it is compulsory is the plan's case (the dashboard words it); its sources are the fact's.
     expect(touFacts(s.journey.about)).toMatchObject([
       { id: 'tou_compulsory', vars: { date: '2027-03-31' } },
     ]);
+    expect(s.journey.about.find((f) => f.id === 'tou_compulsory')!.source).toMatch(
+      /ge-2025-dris-tou-page/,
+    );
+    expect(s.planning!.tou.reasons.filter((r) => r.status === 'yes').map((r) => r.id)).toEqual([
+      'gross',
+    ]);
+  });
+});
+
+describe('"About you", short', () => {
+  it('says a fact the same for both of a couple once, and each one’s own tax withheld apart', async () => {
+    const call = await connect();
+    for (const [id, value] of KELLER) await ws.answer(id, value, 'chat');
+    const s = await state();
+    const sourceTax = s.journey.about.filter((f) => f.id === 'source_tax');
+    expect(sourceTax.map((f) => [f.who, f.text?.en])).toEqual([
+      ['both', 'You’re both taxed at source (no C permit).'],
+      ['both', 'Your barème is C0N.'],
+      ['p1', 'Your tax taken at source for 2026: not known yet.'],
+      ['p2', 'Your spouse or partner’s tax taken at source for 2026: not known yet.'],
+    ]);
+    // Claude reads it once too, with why and the sources.
+    const told = (text(await call('get_status')).match(/^Facts: .*$/m) ?? [''])[0];
+    expect(told.match(/taxed at source \(no C permit\)/g)).toHaveLength(1);
+    expect(told.match(/barème is C0N/g)).toHaveLength(1);
+    expect(told).not.toMatch(/Your spouse or partner is taxed at source|partner’s barème/);
+    expect(told).toMatch(
+      /You’re both taxed at source \(no C permit\)\. Without a C permit, tax is taken at source .*\[ge-na-law-lisp art\. 1 al\. 1/,
+    );
+    // The chips no longer repeat what the facts just above say; the answers stay editable.
+    expect(s.chips).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/Taxed at source|^TOU$|Partner: TOU/)]),
+    );
+    expect(s.chips).toEqual(expect.arrayContaining(['Married', 'Permit B, L, F, N, S or Ci']));
+    expect(s.answers.map((a) => a.id)).toEqual(expect.arrayContaining(['tou:p1', 'tou:p2']));
+  });
+
+  it('keeps every fact’s sources in the data: each document cited, with its title and link', async () => {
+    const call = await connect();
+    for (const [id, value] of KELLER) await ws.answer(id, value, 'chat');
+    await call('set_fact', { key: 'plan.gross_salary', value: 72_000 });
+    const s = await state();
+    const cited = s.journey.about.filter((f) => f.source);
+    // Who is taxed at source, the barème, the estimate of the tax withheld, TOU in place; the
+    // partner's tax withheld, not known yet, cites nothing (their certificate gives it).
+    expect(cited.map((f) => [f.id, f.who])).toEqual([
+      ['source_tax', 'both'],
+      ['source_tax', 'both'],
+      ['source_tax', 'p1'],
+      ['tou_already', 'both'],
+    ]);
+    for (const f of s.journey.about) {
+      if (!f.source) {
+        expect(f.sources).toBeUndefined();
+        continue;
+      }
+      // Each place cited in `source` (what get_status says), once, in the same order.
+      const places = [...new Set(f.source.split(';').map((x) => x.trim()))];
+      expect(f.sources!.map((x) => (x.where ? `${x.id} ${x.where}` : x.id))).toEqual(places);
+      for (const x of f.sources!) {
+        expect(x.title, x.id).toBeTruthy();
+        expect(x.url, x.id).toMatch(/^https:\/\//);
+      }
+    }
+    // An estimate keeps its sources: the official tables it was worked out with.
+    expect(cited.find((f) => f.estimate)?.sources?.map((x) => x.id)).toEqual(
+      expect.arrayContaining(['ge-2026-source-tariff-ascii']),
+    );
   });
 });
 

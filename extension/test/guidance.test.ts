@@ -153,6 +153,28 @@ async function worker(h: Household, moved: 'no' | 'from_abroad' | 'leaving_switz
   ]);
 }
 
+/**
+ * A salaried household in Geneva, in Carouge, without children, with B permits and employers in
+ * Switzerland: taxed at source, worked out. A married couple, or a single person.
+ */
+async function permitB(h: Household, couple: boolean) {
+  const each = (person: 'p1' | 'p2'): [string, unknown][] => [
+    [`income_sources:${person}`, ['salary']],
+    [`employers:${person}`, 1],
+    [`residence:${person}`, 'permit_other'],
+    [`employer_in_switzerland:${person}`, true],
+  ];
+  await h.answer([
+    ['canton', 'GE'],
+    ['civil_status', couple ? 'married' : 'single'],
+    ['children', 0],
+    ['commune', 'Carouge'],
+    ['moved', 'no'],
+    ...each('p1'),
+    ...(couple ? each('p2') : []),
+  ]);
+}
+
 /** A home in France, the household's own, used by it, no loan. */
 const HOME_ABROAD: [string, unknown][] = [
   ['abroad_property', 'own_use'],
@@ -299,6 +321,35 @@ const ROWS: Row[] = [
       return h.status();
     },
     whenNot: async () => (await household()).status(),
+  },
+  {
+    guidance: 'get_status: a fact the same for both of a couple is said once',
+    pattern: /Facts: You’re both taxed at source \(no C permit\)\./,
+    when: async () => {
+      const h = await household();
+      await permitB(h, true);
+      return h.status();
+    },
+    whenNot: async () => {
+      const h = await household();
+      await permitB(h, false);
+      return h.status();
+    },
+  },
+  {
+    guidance: 'get_status: each fact keeps why it holds and its sources',
+    pattern:
+      /Your barème is A0N\. Single, no child in the household\. \[ge-2026-source-directives p\. 2/,
+    when: async () => {
+      const h = await household();
+      await permitB(h, false);
+      return h.status();
+    },
+    whenNot: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      return h.status();
+    },
   },
   {
     guidance: 'get_status: a lump sum’s figures come from its attestation, never asked',

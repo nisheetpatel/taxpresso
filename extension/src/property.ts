@@ -25,24 +25,42 @@ export function ownsPropertyInGeneva(ws: Workspace): boolean {
   return ws.activeDocuments().some((d) => d.kind !== undefined && PROPERTY_KINDS.has(d.kind));
 }
 
-/** A sentence of "About you" about the property in Geneva, in every language, with its source. */
+/**
+ * A fact of "About you" about the property in Geneva, in every language: one short sentence, why in
+ * a few more words (behind "Why?" on the dashboard), and its source.
+ */
 export interface PropertyFact {
   id: 'property';
   text: Required<Text>;
+  why?: Required<Text>;
   source: string;
   estimate?: true;
 }
 
-const NB = ' ';
+const NB = '\u00a0';
+
+/** Outside the simple case: one short sentence; the engine's reason goes behind "Why?". */
+const EFFORT_SHORT: Required<Text> = {
+  en: 'The taux d’effort lowers your home’s rental value, by an amount Taxpresso can’t work out yet.',
+  fr: `Le taux d’effort réduit la valeur locative de votre logement, d’un montant que Taxpresso ne sait pas encore calculer.`,
+  de: 'Der taux d’effort senkt den Eigenmietwert deiner Wohnung, um einen Betrag, den Taxpresso noch nicht berechnen kann.',
+  it: 'Il taux d’effort riduce il valore locativo della tua abitazione, di un importo che Taxpresso non sa ancora calcolare.',
+};
+const CANT_SHORT: Required<Text> = {
+  en: 'Taxpresso can’t prepare your property in Geneva yet.',
+  fr: 'Taxpresso ne peut pas encore préparer votre immeuble à Genève.',
+  de: 'Taxpresso kann deine Liegenschaft in Genf noch nicht vorbereiten.',
+  it: 'Taxpresso non può ancora preparare il tuo immobile a Ginevra.',
+};
 
 /** CHF 1'234, in whole francs, the Swiss way, for the sentences (the engine's lines have the cents). */
 const francs = (centimes: number) =>
   `CHF${NB}${String(Math.round(Math.abs(centimes) / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '’')}`;
 
 /**
- * "About you" for a household with a property in Geneva: what is declared (its value after the
- * abattement, its rental value or rents), or, when Taxpresso can't prepare it, why (the engine's own
- * words). Nothing without one.
+ * "About you" for a household with a property in Geneva: where it is declared, and behind "Why?" its
+ * figures (its value after the abattement, its rental value or rents); or, when Taxpresso can't
+ * prepare it, that it can't, with the engine's own reason behind "Why?". Nothing without one.
  */
 export function propertyFacts(ws: Workspace): PropertyFact[] {
   if (!ownsPropertyInGeneva(ws)) return [];
@@ -56,7 +74,8 @@ export function propertyFacts(ws: Workspace): PropertyFact[] {
   if (stopped.length) {
     return stopped.map((u) => ({
       id: 'property' as const,
-      text: { en: u.en, fr: u.fr, de: u.de ?? u.en, it: u.it ?? u.en },
+      text: /taux d’effort/.test(u.en) ? EFFORT_SHORT : CANT_SHORT,
+      why: { en: u.en, fr: u.fr, de: u.de ?? u.en, it: u.it ?? u.en },
       source: 'ge-na-law-lipp art. 24 and 50 let. e; ge-2025-guide-declaration-pp p. 32 to 35',
     }));
   }
@@ -115,28 +134,39 @@ export function propertyFacts(ws: Workspace): PropertyFact[] {
   };
   const join = (lang: 'en' | 'fr' | 'de' | 'it') =>
     parts[lang].filter(Boolean).join({ en: ' and ', fr: ' et ', de: ' und ', it: ' e ' }[lang]);
-  const what = own
+  const text = own
     ? {
-        en: 'Your home in Geneva is declared on annexe D (immeubles occupés par le propriétaire)',
-        fr: 'Votre logement à Genève est déclaré à l’annexe D (immeubles occupés par le propriétaire)',
-        de: 'Deine Wohnung in Genf wird in der annexe D deklariert (immeubles occupés par le propriétaire)',
-        it: 'La tua abitazione a Ginevra si dichiara nell’annexe D (immeubles occupés par le propriétaire)',
+        en: 'Your home in Geneva is declared on annexe D (immeubles occupés par le propriétaire).',
+        fr: 'Votre logement à Genève est déclaré à l’annexe D (immeubles occupés par le propriétaire).',
+        de: 'Deine Wohnung in Genf wird in der annexe D deklariert (immeubles occupés par le propriétaire).',
+        it: 'La tua abitazione a Ginevra si dichiara nell’annexe D (immeubles occupés par le propriétaire).',
       }
     : {
-        en: 'Your property let in Geneva is declared on annexe D (immeubles locatifs ou loués)',
-        fr: 'Votre immeuble loué à Genève est déclaré à l’annexe D (immeubles locatifs ou loués)',
-        de: 'Deine vermietete Liegenschaft in Genf wird in der annexe D deklariert (immeubles locatifs ou loués)',
-        it: 'Il tuo immobile affittato a Ginevra si dichiara nell’annexe D (immeubles locatifs ou loués)',
+        en: 'Your property let in Geneva is declared on annexe D (immeubles locatifs ou loués).',
+        fr: 'Votre immeuble loué à Genève est déclaré à l’annexe D (immeubles locatifs ou loués).',
+        de: 'Deine vermietete Liegenschaft in Genf wird in der annexe D deklariert (immeubles locatifs ou loués).',
+        it: 'Il tuo immobile affittato a Ginevra si dichiara nell’annexe D (immeubles locatifs ou loués).',
       };
+  // Behind "Why?": its figures, and where they come from.
+  const from = {
+    en: 'the AFC’s figures for the year',
+    fr: 'les chiffres de l’AFC pour l’année',
+    de: 'die Zahlen der AFC für das Jahr',
+    it: 'le cifre dell’AFC per l’anno',
+  };
+  const why = (lang: 'en' | 'fr' | 'de' | 'it') => {
+    const figures = join(lang);
+    if (!figures) return '';
+    const head = figures.charAt(0).toUpperCase() + figures.slice(1);
+    const are = { en: ': ', fr: `${NB}: `, de: ': ', it: ': ' }[lang];
+    return `${head}${are}${from[lang]}.`;
+  };
+  const whyText = { en: why('en'), fr: why('fr'), de: why('de'), it: why('it') };
   return [
     {
       id: 'property',
-      text: {
-        en: `${what.en}${join('en') ? `: ${join('en')}` : ''}.`,
-        fr: `${what.fr}${join('fr') ? `${NB}: ${join('fr')}` : ''}.`,
-        de: `${what.de}${join('de') ? `: ${join('de')}` : ''}.`,
-        it: `${what.it}${join('it') ? `: ${join('it')}` : ''}.`,
-      },
+      text,
+      ...(whyText.en ? { why: whyText } : {}),
       source: own
         ? 'ge-2025-guide-declaration-pp p. 32 to 34; ge-na-law-lipp art. 24 al. 2 and 50 let. e'
         : 'ge-2025-guide-declaration-pp p. 34 and 35; ge-na-revenu-immobilier-page (Si vous louez votre bien)',

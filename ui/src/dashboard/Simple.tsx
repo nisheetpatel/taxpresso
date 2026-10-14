@@ -8,6 +8,8 @@ import { api, askClaude, embedded } from './api';
 import { t, type Language } from './i18n';
 import { day, pck, tp } from './i18n-planning';
 import { isJourneyKey, tj } from './i18n-journey';
+import { touReasonText } from './Planning';
+import { SourceList } from './Sources';
 import type { JourneyVars, StageId, State } from './types';
 
 type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
@@ -268,7 +270,64 @@ export function StageCard({
   );
 }
 
-/** "About you": the facts that need no decision, as sentences. */
+type Fact = State['journey']['about'][number];
+
+/** A fact's own words in the page's language: German and Italian fall back to English. */
+const inLang = (words: Fact['text'], lang: Language): string =>
+  words ? (lang === 'de' || lang === 'it' ? (words[lang] ?? words.en) : words[lang]) : '';
+
+/** Why a fact holds: its own words, or for a compulsory TOU the cases that make it so. */
+function whyOf(f: Fact, state: State, lang: Language): string[] {
+  if (f.why) return [inLang(f.why, lang)];
+  const tou = state.planning?.tou;
+  if (f.id !== 'tou_compulsory' || !tou) return [];
+  return tou.reasons.filter((r) => r.status === 'yes').map((r) => touReasonText(tou, r.id, lang));
+}
+
+/**
+ * Why a fact holds, closed by default, with its sources closed inside it; a fact with sources
+ * and nothing more to say has only "Sources" (docs/design/simple.md: every detail stays one or
+ * two clicks away).
+ */
+function FactMore({
+  why,
+  sources,
+  lang,
+}: {
+  why: string[];
+  sources: NonNullable<Fact['sources']>;
+  lang: Language;
+}): JSX.Element | null {
+  const list = sources.length ? (
+    <details class="fact-more fact-sources">
+      <summary>{tj(lang, 'sources')}</summary>
+      <SourceList sources={sources} />
+    </details>
+  ) : null;
+  if (!why.length) return list;
+  return (
+    <details class="fact-more">
+      <summary>{tj(lang, 'why')}</summary>
+      <div class="fact-why">
+        {why.length > 1 ? (
+          <ul>
+            {why.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>{why[0]}</p>
+        )}
+        {list}
+      </div>
+    </details>
+  );
+}
+
+/**
+ * "About you": the facts that need no decision, each one short sentence, the same for both of a
+ * couple said once (extension/src/journey.ts). Why, and the official sources, are one click away.
+ */
 export function Facts({
   state,
   lang,
@@ -284,12 +343,9 @@ export function Facts({
     <ul class="facts">
       {facts.map((f, i) => {
         const key = `fact.${f.id}`;
-        // A tax-at-source fact comes worded in every language, with its source.
-        const own = f.text
-          ? lang === 'de' || lang === 'it'
-            ? (f.text[lang] ?? f.text.en)
-            : f.text[lang]
-          : '';
+        // A fact the extension words (tax at source, a property abroad, a part year) comes in
+        // every language; the TOU facts are worded here from their id.
+        const own = inLang(f.text, lang);
         const text = own
           ? own
           : f.id === 'tou_already'
@@ -302,14 +358,16 @@ export function Facts({
         if (!text) return null;
         return (
           <li key={`${f.id}-${i}`} class="fact">
-            <span>{text}</span>
-            {f.estimate ? <span class="chip chip-estimate">{tp(lang, 'estimate')}</span> : null}
-            {f.source ? <span class="muted small-text tnum">{f.source}</span> : null}
-            {f.id === 'tou_chosen_request' || f.id === 'tou_chosen_decline' ? (
-              <button type="button" class="link" onClick={() => onOpen('save')}>
-                {tj(lang, 'changeChoice')}
-              </button>
-            ) : null}
+            <p class="fact-text">
+              <span>{text}</span>
+              {f.estimate ? <span class="chip chip-estimate">{tp(lang, 'estimate')}</span> : null}
+              {f.id === 'tou_chosen_request' || f.id === 'tou_chosen_decline' ? (
+                <button type="button" class="link" onClick={() => onOpen('save')}>
+                  {tj(lang, 'changeChoice')}
+                </button>
+              ) : null}
+            </p>
+            <FactMore why={whyOf(f, state, lang)} sources={f.sources ?? []} lang={lang} />
           </li>
         );
       })}
