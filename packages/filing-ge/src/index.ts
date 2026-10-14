@@ -4,6 +4,8 @@
 // official PDF against it before the user transmits (10.4). Fill plans for browser filling come
 // later (10.1 to 10.3).
 export * from './form.js';
+// Geneva behind the canton interface (packages/rules-ch, canton.ts).
+export { filing } from './canton.js';
 export { FORM_2025, FORM_PAGES_2025, FORM_RUBRICS_2025 } from './2025/form-map.js';
 export { COMMUNE_CODES_2025, COMMUNE_CODES_2025_SOURCE } from './2025/commune-codes.js';
 export { FORM_2026 } from './2026/form-map.js';

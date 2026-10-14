@@ -9,7 +9,6 @@ import {
   type Item,
   type Line,
   type ResultView,
-  type TaxResult,
   type Text,
   type ViewLine,
   type YearComparisonRow,
@@ -81,7 +80,7 @@ function lastYearText(x: YearComparisonRow): string {
 /** The canton's result and its view, or why there is none. */
 function current(ws: Workspace) {
   const e = ws.estimate();
-  return { e, view: e.entry?.view, result: e.result as TaxResult | null };
+  return { e, view: e.entry?.view, result: e.result };
 }
 
 /** compute_tax: text for Claude and the structured result. */

@@ -278,6 +278,9 @@ importers:
       '@taxpresso/ledger':
         specifier: workspace:*
         version: link:../ledger
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../rules-ge

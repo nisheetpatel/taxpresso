@@ -280,7 +280,7 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
   return {
     ...shared(ws, snap, docs, read, values, etat),
     ...(terms ? { canton: cantonCheckWords(canton, terms) } : {}),
-    result,
+    result: result && { ...result, limits: result.limits ?? [] },
     missing,
     ledgerNotes: notes,
     officialPdf,

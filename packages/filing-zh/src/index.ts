@@ -10,3 +10,5 @@ export {
   type ZhPageId,
 } from './form-map.js';
 export { ZH_COPY_LABELS, zurichFormItems, zurichLineOf } from './items.js';
+// Zurich behind the canton interface (packages/rules-ch, canton.ts).
+export { filing } from './canton.js';

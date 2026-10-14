@@ -2,8 +2,13 @@
 // rules (packages/rules-<c>), its questionnaire (data/<c>/<year>) and its communes, and the questions
 // every canton shares, which are all Taxpresso asks until it knows the canton. The canton is the
 // answer to the first question (profile.canton); one tax year has one canton.
-import { FORM_2025, FORM_2026, LEDGER_ROUTES_2026 } from '@taxpresso/filing-ge';
-import { zurichFormMap, zurichLineOf } from '@taxpresso/filing-zh';
+import {
+  filing as genevaFiling,
+  type CopyLabels,
+  type FormItem,
+  type FormMap,
+} from '@taxpresso/filing-ge';
+import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
 import {
@@ -19,6 +24,7 @@ import {
   SUPPORTED_CANTONS,
   type CantonAnswer,
   type CantonCode,
+  type CantonFiling,
   type CantonLedgerInput,
   type CantonLedgerReading,
   type CantonRules,
@@ -42,7 +48,6 @@ import {
   zhParamsFor,
   rules as zurichRules,
   view as zurichView,
-  ZH_FORM_NOTE,
   ZH_TERMS,
   ZURICH_READING,
   type ZhTaxResult,
@@ -75,19 +80,8 @@ export interface LedgerEstimate {
   notes: Text[];
 }
 
-/** The canton's official form, as the generic views place values on it. */
-export interface CantonFilingEntry {
-  /** Where each line code stands on the official form (lower first); undefined: not on it. */
-  formOrder(taxYear: number): (code: string) => number | undefined;
-  /** The line a ledger value goes to on the form, for this person (the final check's titles). */
-  lineOf(key: string, person: string): string | undefined;
-  /** The line of a person's salary, for a rough salary given as an estimate. */
-  salaryLine(person: string): string;
-  /** Shown when the form's codes and labels come from an earlier year. */
-  formNote(taxYear: number): Text | undefined;
-  /** Taxpresso checks the PDF of the canton's declaration (reconcile_official_pdf): Geneva only. */
-  checksPdf: boolean;
-}
+/** A canton's filing side, with the shapes of the shared copy panel (@taxpresso/filing-ge). */
+export type CantonFilingEntry = CantonFiling<FormMap<string>, FormItem, CopyLabels>;
 
 export interface CantonEntry {
   code: SupportedCanton;
@@ -198,32 +192,7 @@ const GENEVA: CantonEntry = {
     return { result: input ? genevaReturn(input) : null, missing, notes };
   },
   view: genevaView,
-  filing: {
-    formOrder(taxYear) {
-      // The place of each rubric code on the official form, page by page.
-      const form = taxYear === 2025 ? FORM_2025 : FORM_2026;
-      const order = new Map<string, number>();
-      form.rubrics.forEach((r, i) => {
-        const code = r.code ?? r.key;
-        if (!order.has(code)) order.set(code, i);
-      });
-      return (code) => order.get(code);
-    },
-    lineOf(key, person) {
-      // The rubric a ledger value goes to, for this person (@taxpresso/filing-ge's routes).
-      const route = LEDGER_ROUTES_2026.find((r) => r.key === key);
-      if (!route) return undefined;
-      if (typeof route.to === 'string')
-        return /^\d{2}\.\d{2}$/.test(route.to) ? route.to : undefined;
-      return person === 'p2' ? route.to.B : route.to.A;
-    },
-    salaryLine: (person) => (person === 'p2' ? '21.10' : '11.10'),
-    formNote(taxYear) {
-      const form = taxYear === 2025 ? FORM_2025 : FORM_2026;
-      return form.provisional && form.note ? form.note : undefined;
-    },
-    checksPdf: true,
-  },
+  filing: genevaFiling,
   tou: true,
 };
 
@@ -238,22 +207,7 @@ const ZURICH: CantonEntry = {
   communeHint: ' (Uster and Turbenthal: the part too, as listed in the dashboard)',
   ...sharedLedger(ZURICH_READING, zurichRules, NOTE_VALUABLES),
   view: zurichView,
-  filing: {
-    formOrder(taxYear) {
-      // The form's order: the main form's lines first (p. 2 to 4), then the annexes' own lines.
-      const form = zurichFormMap(taxYear);
-      const main = form.rubrics.filter((r) => r.page.startsWith('S'));
-      const order = new Map<string, number>();
-      [...main, ...form.rubrics.filter((r) => !main.includes(r))].forEach((r, i) => {
-        if (!order.has(r.key)) order.set(r.key, i);
-      });
-      return (code) => order.get(code);
-    },
-    lineOf: zurichLineOf,
-    salaryLine: (person) => zurichLineOf('salary.gross', person)!,
-    formNote: () => ZH_FORM_NOTE,
-    checksPdf: false,
-  },
+  filing: zurichFiling,
   terms: ZH_TERMS,
   plan: {
     computeReturn: (input) => zurichRules.computeReturn(input as HouseholdInput<ZurichCantonal>),

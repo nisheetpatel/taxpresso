@@ -33,8 +33,7 @@ import {
   type ConsistencyCheck,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import type { Text } from '@taxpresso/rules-ch';
-import type { ZhTaxResult } from '@taxpresso/rules-zh';
+import type { SupportedCanton, TaxResult as SharedTaxResult, Text } from '@taxpresso/rules-ch';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import type { CantonEntry, CantonRegistry, CantonState, LedgerContext } from './cantons.js';
 import { displayPath, type Config } from './config.js';
@@ -70,8 +69,13 @@ export type Via = 'chat' | 'dashboard';
 
 /** The tax of the year's canton (Workspace.estimate). */
 export type CantonEstimate =
-  | { canton: 'GE'; entry: CantonEntry; result: TaxResult | null; missing: Text[]; notes: Text[] }
-  | { canton: 'ZH'; entry: CantonEntry; result: ZhTaxResult | null; missing: Text[]; notes: Text[] }
+  | {
+      canton: SupportedCanton;
+      entry: CantonEntry;
+      result: SharedTaxResult | null;
+      missing: Text[];
+      notes: Text[];
+    }
   | { canton: undefined; entry?: undefined; result: null; missing: Text[]; notes: Text[] };
 
 export interface ActivityEntry {
@@ -284,23 +288,22 @@ export class Workspace {
    */
   taxEstimate(): { result: TaxResult | null; missing: Text[]; notes: Text[] } {
     const e = this.estimate();
-    if (e.canton === 'GE') return { result: e.result, missing: e.missing, notes: e.notes };
+    // Geneva's engine gives Geneva's result (./cantons.ts).
+    if (e.canton === 'GE') {
+      return { result: e.result as TaxResult | null, missing: e.missing, notes: e.notes };
+    }
     return { result: null, missing: e.missing, notes: e.notes };
   }
 
   /**
    * The tax of the canton of the year (SPEC.md section 7), from the values that count, on every
-   * read; never stored. Geneva's result through its engine (@taxpresso/rules-ge), Zurich's through
-   * its own (@taxpresso/rules-zh), each with the federal tax; nothing without the canton.
+   * read; never stored: the canton's registry entry reads the ledger and runs its engine
+   * (./cantons.ts), with the federal tax; nothing without the canton.
    */
   estimate(): CantonEstimate {
     const canton = this.canton().canton;
     if (canton) {
-      return {
-        canton: canton.code,
-        entry: canton,
-        ...canton.estimate(this.ledgerContext()),
-      } as CantonEstimate;
+      return { canton: canton.code, entry: canton, ...canton.estimate(this.ledgerContext()) };
     }
     return {
       canton: undefined,

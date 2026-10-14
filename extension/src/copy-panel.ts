@@ -18,8 +18,8 @@ import {
   type FormColumn,
   type FormItem,
 } from '@taxpresso/filing-ge';
-import { ZH_COPY_LABELS, zurichFormItems, zurichFormMap } from '@taxpresso/filing-zh';
 import type { Line } from '@taxpresso/rules-ch';
+import { CANTONS } from './cantons.js';
 import type { ContentLang as Lang } from './lang.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
@@ -109,16 +109,18 @@ function withDocuments(ws: Workspace, items: FormItem[]): FormItem[] {
 }
 
 function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPanelView['waiting'] } {
-  // Zurich: every value from Zurich's engine (@taxpresso/filing-zh), on the Zurich form.
-  const estimate = ws.canton().canton?.code === 'ZH' ? ws.estimate() : undefined;
-  if (estimate?.canton === 'ZH') {
+  // A canton whose filing package gives the values to type from its engine (Zurich's,
+  // @taxpresso/filing-zh): every value from its result, on its form.
+  const filing = ws.canton().canton?.filing;
+  if (filing?.formValues) {
+    const result = ws.estimate().result;
     return {
       panel: buildCopyPanel({
-        form: zurichFormMap(ws.engine.taxYear),
-        items: estimate.result ? withDocuments(ws, zurichFormItems(estimate.result)) : [],
+        form: filing.formMap(ws.engine.taxYear),
+        items: result ? withDocuments(ws, [...filing.formValues(result)]) : [],
         lang,
         entered: (id) => ws.formEntered(id),
-        labels: ZH_COPY_LABELS,
+        ...(filing.labels ? { labels: filing.labels } : {}),
       }),
       waiting: [],
     };
@@ -246,7 +248,8 @@ export interface FormValuesResult {
 export function formValues(ws: Workspace, section?: string): FormValuesResult {
   const { panel: p, waiting } = panel(ws, 'en');
   const couple = ws.snapshot().people.length > 1;
-  const zh = ws.canton().canton?.code === 'ZH';
+  // Before the canton is known, Geneva's form (the defaults).
+  const words = (ws.canton().canton ?? CANTONS.GE).filing.words;
   const sections = p.sections.map((s) => ({
     page: s.page,
     title: s.title,
@@ -255,7 +258,7 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
     pending: s.pending,
   }));
   const head = [
-    `Values to type into the official declaration, in the form's order (dashboard: "Fill in your declaration"). Amounts in whole francs, no separators, as the form asks${zh ? ' (CHF ohne Rappen)' : '; imputations with centimes'}.${p.provisional ? ` ${p.note ?? ''}` : ''}`,
+    `Values to type into the official declaration, in the form's order (dashboard: "Fill in your declaration"). Amounts in whole francs, no separators, as the form asks${words.amounts}.${p.provisional ? ` ${p.note ?? ''}` : ''}`,
     `Entered: ${p.entered} of ${p.total}${p.pending ? `; ${p.pending} not final yet (need the user's OK or are estimates)` : ''}.`,
   ];
   if (waiting.length) {
@@ -263,18 +266,8 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
       `Waiting for what they are: ${waiting.map((w) => `${w.label}${w.filename ? ` (${w.filename})` : ''}`).join('; ')}.`,
     );
   }
-  if (zh) {
-    head.push(
-      'Zurich: type them in ZHprivateTax, the canton’s free software, or on the paper form. The Berufsauslagen and Versicherungsprämien forms come first: their totals carry to page 3. The securities list (Wertschriftenverzeichnis) is not laid out yet: 150 and 400 are its totals.',
-    );
-  }
-  if (couple) {
-    head.push(
-      zh
-        ? 'Person 1 is you (p1), Person 2 your spouse or partner (p2), as on the Zurich form.'
-        : 'Contribuable A is you (p1), B your partner (p2). If the form prints them the other way round, swap A and B.',
-    );
-  }
+  if (words.guide) head.push(words.guide);
+  if (couple) head.push(words.persons);
   const structured: FormValuesResult['structured'] = {
     provisional: p.provisional,
     entered: p.entered,
@@ -296,7 +289,7 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
         ...head,
         'Sections:',
         ...lines,
-        `Call again with section (e.g. "${zh ? 'S2' : 'A1'}") for its values.`,
+        `Call again with section (e.g. "${words.example}") for its values.`,
       ].join('\n'),
       structured,
     };

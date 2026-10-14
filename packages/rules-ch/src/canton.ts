@@ -4,7 +4,7 @@
 // extension keeps one registry of them by canton.
 import type { DocumentKind, Fact, KeyRegistry, VaultDocument } from '@taxpresso/ledger';
 import type { Cited } from './core/cited.js';
-import type { HouseholdInput, TaxResult } from './core/types.js';
+import type { HouseholdInput, TaxResult, Text } from './core/types.js';
 
 export type CantonCode = 'GE' | 'ZH' | 'BE' | 'VD' | 'BS' | 'FR';
 
@@ -67,16 +67,40 @@ export interface LedgerView {
 }
 
 /**
- * A canton's filing side: its form, the copy panel's values and the check of the official PDF.
- * Each filing package gives the shapes (Geneva: packages/filing-ge, FormMap, CopyPanel,
- * DeclarationCheck).
+ * A canton's filing side, as the generic views use it (the copy panel, get_form_values, the final
+ * check): its form, where values go on it, and the values to type. Each filing package exports its
+ * own `filing` with its shapes (packages/filing-ge: FormMap, FormItem, CopyLabels).
  */
-export interface CantonFiling<FormMap = unknown, FormValues = unknown, Reconciliation = unknown> {
+export interface CantonFiling<FormMap = unknown, FormItem = unknown, Labels = unknown> {
   canton: CantonCode;
   /** Pages, sections, codes and labels as printed, cited. */
   formMap(taxYear: number): FormMap;
-  /** The copy panel: where each computed or stated value goes on the form. */
-  formValues(result: TaxResult, facts: LedgerView): FormValues;
-  /** The official PDF's text against the values (before the user transmits). */
-  reconcile(pdfText: string, values: FormValues): Reconciliation;
+  /** Where each line code stands on the official form (lower first); undefined: not on it. */
+  formOrder(taxYear: number): (code: string) => number | undefined;
+  /** The line a ledger value goes to on the form, for this person (the final check's titles). */
+  lineOf(key: string, person: string): string | undefined;
+  /** The line of a person's salary, for a rough salary given as an estimate. */
+  salaryLine(person: string): string;
+  /** Shown when the form's codes and labels come from an earlier year. */
+  formNote(taxYear: number): Text | undefined;
+  /**
+   * The values to type, from the canton's result, in the form's terms (the copy panel). Absent for
+   * Geneva, whose values come from the ledger's routes and its engine together.
+   */
+  formValues?(result: TaxResult): readonly FormItem[];
+  /** How the form heads its columns and parts, when not as Geneva's. */
+  labels?: Labels;
+  /** For Claude (get_form_values): how amounts are typed, where, whose, a section to ask for. */
+  words: {
+    /** After "Amounts in whole francs, no separators, as the form asks". */
+    amounts: string;
+    /** Where and in which order to type them, when that needs saying. */
+    guide?: string;
+    /** Who is who on the form, for a couple. */
+    persons: string;
+    /** A section id, for "Call again with section". */
+    example: string;
+  };
+  /** Taxpresso checks the PDF of the canton's declaration (reconcile_official_pdf): Geneva only. */
+  checksPdf: boolean;
 }
