@@ -5,7 +5,7 @@ import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
-const messages = {
+export const messages = {
   en: {
     title: 'Fill in your declaration',
     lead: 'Type each value into the official declaration (e-démarches or GeTax), page by page in the form’s order. Amounts are whole francs, without centimes or separators, as the form asks. Tick each value once it is in.',
@@ -172,6 +172,68 @@ const messages = {
       'Tippe jeden Wert in E-Tax SG oder in die Papierformulare, in der Reihenfolge des Formulars: zuerst das Formular 4 (Berufskosten) für jede Person, dessen Total in Ziffer 10.1 oder 10.2 kommt, dann auf der Steuererklärung Seite 2 die Einkünfte, Seite 3 die Abzüge, Seite 4 das Vermögen. Die Steuererklärung hat eine Spalte: Die Steuerbehörde leitet die direkte Bundessteuer daraus ab. Beträge in ganzen Franken, ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
     coupleSg:
       'Auf der St. Galler Steuererklärung ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+  },
+  it: {
+    title: 'Compila la tua dichiarazione',
+    lead: 'Inserisci ogni valore nella dichiarazione ufficiale (e-démarches o GeTax), pagina per pagina nell’ordine del modulo. Gli importi sono in franchi interi, senza centesimi né separatori, come chiede il modulo. Spunta ogni valore una volta inserito.',
+    progress: '{n} di {total} inseriti',
+    pending: '{n} non ancora definitivi',
+    couple:
+      'Sul modulo, il contribuable A è la persona stampata a sinistra, B l’altra. Qui A è {a} e B è {b}: se il tuo modulo li ha al contrario, scambia i valori di A e B.',
+    waiting: 'Non ancora sul modulo, indica cos’è: {list}',
+    copy: 'Copia',
+    copied: 'Copiato',
+    copyFailed: 'Copia questo: {value}',
+    copyLabel: 'Copia {label}',
+    entered: 'Inserito',
+    tick: 'Spunta questa casella',
+    rounded: 'Da {amount}, arrotondato al franco',
+    confirmFirst: 'Controllalo prima, in “Cosa ha letto Claude nei tuoi documenti”.',
+    estimateFirst: 'Una stima: sistemala prima di inserirla.',
+    formWorksOut: 'Il modulo lo calcola: controlla che mostri questo importo.',
+    from: 'Letto in {files}',
+    statusNeedsOk: 'Da confermare',
+    statusConfirmed: 'Confermato da te',
+    statusVerified: 'Verificato',
+    statusEstimate: 'Stima',
+    statusComputed: 'Calcolato',
+    pageLabel: 'Pagina {page} del modulo',
+    column: 'Colonna {list}',
+    columns: 'Colonne {list}',
+    split:
+      'Per tutta l’economia domestica: sul modulo, ripartiscilo tra {parts}, come sul tuo documento.',
+    leadZh:
+      'Inserisci ogni valore in ZHprivateTax o nel modulo cartaceo, pagina per pagina nell’ordine del modulo: prima i moduli Berufsauslagen e Versicherungsprämien, i cui totali vanno riportati a pagina 3. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleZh:
+      'Sul modulo di Zurigo, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadBe:
+      'Inserisci ogni valore in TaxMe-Online o nel modulo cartaceo, modulo per modulo nell’ordine della dichiarazione. Gli importi sono in franchi interi, senza separatori. TaxMe calcola i limiti e due riepiloghi (Zusammenzug): confrontali con le ultime due sezioni. Spunta ogni valore una volta inserito.',
+    coupleBe:
+      'Sul modulo di Berna, la colonna Mann è {a} e la colonna Frau è {b}, anche per le unioni domestiche registrate. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadBl:
+      'Inserisci ogni valore in E-Tax BL o nel modulo cartaceo, pagina per pagina nell’ordine del modulo: a pagina 2 i redditi, a pagina 3 le deduzioni in due colonne, Staatssteuer e Bundessteuer, a pagina 4 la sostanza. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleBl:
+      'Sulla dichiarazione di Basilea Campagna, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadVd:
+      'Inserisci ogni valore in VaudTax o nel modulo cartaceo, pagina per pagina nell’ordine del modulo. Gli importi sono in franchi interi, senza centesimi né separatori. L’ultima sezione, l’imposta federale diretta (impôt fédéral direct), serve solo da controllo: la calcola VaudTax. Spunta ogni valore una volta inserito.',
+    coupleVd:
+      'Sul modulo di Vaud, il contribuable 1 è {a} e il contribuable 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadBs:
+      'Inserisci ogni valore in BalTax Online o nel modulo cartaceo, modulo per modulo nell’ordine indicato dalla guida: prima i moduli ausiliari (W, B, K, Z, F), i cui totali vanno riportati alle pagine da 2 a 4. Dal 369 in poi, ogni riga ha una colonna Kanton e una colonna Bund. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleBs:
+      'Sul modulo di Basilea Città, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadZg:
+      'Inserisci ogni valore in eTax.zug o nel modulo cartaceo K, pagina per pagina nell’ordine del modulo: a pagina 2 i redditi, a pagina 3 le deduzioni, ognuna in due colonne, Kanton e Bund, a pagina 4 la sostanza. Gli importi sono in franchi interi (keine Rappenbeträge), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleZg:
+      'Sul modulo K di Zugo, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadLu:
+      'Inserisci ogni valore in eSteuern.LU o nei moduli cartacei, nell’ordine consigliato dalla guida: prima il modulo B e l’elenco dei titoli, poi le pagine da 2 a 4 della dichiarazione, nella sua unica colonna. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. L’Ergänzungsblatt Direkte Bundessteuer è facoltativo: i suoi valori servono da controllo. Spunta ogni valore una volta inserito.',
+    coupleLu:
+      'Sulla dichiarazione di Lucerna, Person 1 è {a} e Person 2 è {b}. La dichiarazione stampa il marito come Person 1: se la tua li ha al contrario, scambia i valori.',
+    leadSg:
+      'Inserisci ogni valore in E-Tax SG o nei moduli cartacei, nell’ordine del modulo: prima il modulo 4 (Berufskosten) per ogni persona, il cui totale va al 10.1 o al 10.2, poi sulla dichiarazione a pagina 2 i redditi, a pagina 3 le deduzioni, a pagina 4 la sostanza. La dichiarazione ha una sola colonna: l’amministrazione fiscale ne ricava l’imposta federale. Gli importi sono in franchi interi, senza separatori. Spunta ogni valore una volta inserito.',
+    coupleSg:
+      'Sulla dichiarazione di San Gallo, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
   },
 } as const;
 

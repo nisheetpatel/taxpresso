@@ -24,11 +24,14 @@ import {
   type Text,
 } from './schema.js';
 
-export type Lang = 'en' | 'fr' | 'de';
+export type Lang = 'en' | 'fr' | 'de' | 'it';
 
-/** A text in the language asked for; English where a text has no German yet. */
-export function say(text: { en: string; fr: string; de?: string | undefined }, lang: Lang): string {
-  return lang === 'de' ? (text.de ?? text.en) : text[lang];
+/** A text in the language asked for; English where a text has no German or Italian yet. */
+export function say(
+  text: { en: string; fr: string; de?: string | undefined; it?: string | undefined },
+  lang: Lang,
+): string {
+  return lang === 'de' || lang === 'it' ? (text[lang] ?? text.en) : text[lang];
 }
 
 export interface CommuneOption {
@@ -96,6 +99,7 @@ const YES_NO: Record<Lang, [string, string]> = {
   en: ['Yes', 'No'],
   fr: ['Oui', 'Non'],
   de: ['Ja', 'Nein'],
+  it: ['Sì', 'No'],
 };
 const COUPLE = new Set(['married', 'registered_partnership']);
 const slotKey = (key: string, owner: Owner) => `${key}|${owner}`;

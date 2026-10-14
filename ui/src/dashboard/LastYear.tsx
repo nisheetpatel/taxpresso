@@ -31,7 +31,7 @@ export interface LastYearView {
 
 const NB = String.fromCharCode(0xa0);
 
-const text = {
+export const text = {
   en: {
     title: 'Last year',
     official: 'déclaration {year}',
@@ -110,6 +110,35 @@ const text = {
     lines: '{n} Zeilen',
     warningsOne: '1 Punkt zu prüfen',
     warnings: '{n} Punkte zu prüfen',
+  },
+  it: {
+    title: 'L’anno scorso',
+    official: 'déclaration {year}',
+    officialNoYear: 'déclaration de l’an dernier',
+    by: 'Stampata da {software}',
+    note: 'Taxpresso ha letto queste cifre su questo computer nella tua dichiarazione {year}, per confrontarle con il {taxYear}. Niente di quello che vedi qui finisce nella tua dichiarazione {taxYear}, e Taxpresso non ne conserva nessun nome né numero.',
+    noteNoYear:
+      'Taxpresso ha letto queste cifre su questo computer nella tua ultima dichiarazione, per confrontarle con il {taxYear}. Niente di quello che vedi qui finisce nella tua dichiarazione {taxYear}, e Taxpresso non ne conserva nessun nome né numero.',
+    suggestionsOne:
+      '1 risposta proposta in base a questa dichiarazione: controllala con le domande qui sopra.',
+    suggestions:
+      '{n} risposte proposte in base a questa dichiarazione: controllale con le domande qui sopra.',
+    older:
+      'Questa è la tua dichiarazione {year}, non quella del {expected}: le cifre sono del {year}.',
+    income: 'Redditi',
+    incomeFr: 'revenus',
+    deductions: 'Deduzioni',
+    deductionsFr: 'déductions',
+    wealth: 'Sostanza',
+    wealthFr: 'fortune',
+    icc: 'Imposta cantonale (ICC)',
+    ifd: 'Imposta federale (IFD)',
+    page: 'pagina {page}',
+    none: 'Taxpresso non vi ha trovato nessuna delle righe principali.',
+    linesOne: '1 riga',
+    lines: '{n} righe',
+    warningsOne: '1 punto da verificare',
+    warnings: '{n} punti da verificare',
   },
 } as const;
 

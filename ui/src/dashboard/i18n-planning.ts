@@ -5,7 +5,7 @@ import { cantonKey, isMessageKey, type Language, t } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
-const messages = {
+export const messages = {
   en: {
     when: 'Before 31 December',
     saving: 'Tax you’d save, about',
@@ -500,6 +500,183 @@ const messages = {
     touGenevaOnlySg:
       'Die TOU ist ein Genfer Verfahren. Für St. Gallen unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
   },
+  it: {
+    when: 'Prima del 31 dicembre',
+    saving: 'Imposte che risparmieresti, circa',
+    split: 'Ginevra {icc} · federale {ifd}',
+    onlyWithTou:
+      'Paghi l’imposta alla fonte: questo riduce le tue imposte solo con una tassazione ordinaria ulteriore (TOU, taxation ordinaire ultérieure).',
+    how: 'Come viene calcolato',
+    sources: 'Fonti',
+    yes: 'Sì',
+    no: 'No',
+    lppTitle: 'Fai un riscatto nella tua cassa pensione',
+    lppOfficial: 'rachat 2e pilier (LPP)',
+    lppLead:
+      'Un versamento in più nella cassa pensione del tuo lavoro si deduce dal tuo reddito imponibile, nell’anno in cui lo fai.',
+    lppCapacity: 'Quanto ti permette la tua cassa',
+    lppCapacityHint: 'Sul tuo certificato di previdenza (certificat de prévoyance)',
+    lppAmount: 'Importo a cui pensi',
+    lppOver: 'Più di quanto permette la tua cassa ({cap}): non lo accetterebbe.',
+    lppNoAmount: 'Inserisci un importo per vedere il risparmio',
+    lppNoSalary: 'Inserisci un salario approssimativo nella scheda del pilastro 3a per vederlo',
+    lppCapacityUnknown: 'Controlla sul tuo certificato di previdenza quanto puoi riscattare.',
+    lppThreeYears:
+      'Per 3 anni dopo un riscatto, non puoi prelevare quei soldi sotto forma di capitale, per esempio al pensionamento o per comprare un’abitazione. Se lo fai, la deduzione viene annullata.',
+    lppPaidInYear: 'Conta per il {year} solo se la tua cassa lo riceve nel {year}.',
+    lppHome:
+      'Se hai prelevato dei soldi per comprare un’abitazione, devi rimborsarli prima di un riscatto.',
+    lppAttestation:
+      'La tua cassa conferma il versamento sul modulo 21EDP: conservalo per la tua dichiarazione.',
+    cuTitle: 'Recupera il 2025 nel tuo pilastro 3a',
+    cuOfficial: 'rachat 3e pilier A',
+    cuLead:
+      'Novità 2026: se nel 2025 hai versato nel pilastro 3a meno del massimo, ora puoi colmare la lacuna, in aggiunta al versamento di quest’anno.',
+    cuPaid2025: 'Versato nel pilastro 3a nel 2025',
+    cuPaid2025Hint: 'Sulla tua attestazione del pilastro 3a 2025',
+    cuUnknown: 'Inserisci quanto hai versato nel 2025 per vedere se c’è una lacuna.',
+    cuNoGap: 'Nel 2025 hai versato il massimo: niente da recuperare.',
+    cuPossible: 'Puoi recuperare {amount}.',
+    cuPossibleMax:
+      'Puoi recuperare fino a {amount}: senza cassa pensione, il tuo limite 2025 era il 20 % del tuo reddito da lavoro 2025.',
+    cuFirst: 'Prima versa per intero il pilastro 3a di quest’anno, poi il riscatto.',
+    cuRuleGaps: 'Si possono recuperare solo le lacune dal 2025 in poi, al massimo {cap} all’anno.',
+    cuRuleIncome: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS.',
+    cuRuleOnce:
+      'Un solo riscatto per ogni anno mancato, e nessuno dopo che hai prelevato i soldi del tuo pilastro 3a per il pensionamento.',
+    cuRuleAsk:
+      'Chiedilo per iscritto alla tua banca o assicurazione del pilastro 3a: indichi quale anno recuperi e quanto.',
+    touWhen: 'Da decidere prima',
+    touTitle: 'Chiedere una tassazione ordinaria invece dell’imposta alla fonte?',
+    touOfficial: 'taxation ordinaire ultérieure (TOU)',
+    touLead:
+      'Senza la TOU, l’imposta trattenuta dal tuo salario è definitiva: il pilastro 3a, i riscatti nella cassa pensione e le spese di custodia dei figli non la riducono. Con la TOU, compili una dichiarazione normale e l’imposta già trattenuta viene conteggiata.',
+    touDeadline: 'Da chiedere entro il {date}',
+    touDeadlinePassed: 'Il termine ({date}) è scaduto',
+    touWithheld: 'Trattenuto alla fonte',
+    touOrdinary: 'Tassazione ordinaria, circa',
+    touDifference: 'Differenza per te',
+    touBack: '≈ {amount} rimborsati',
+    touMore: '≈ {amount} in più',
+    touSame: 'Più o meno uguale',
+    'from.certificate': 'dal tuo certificato di salario',
+    'from.stated': 'la tua cifra',
+    'from.tariff': 'stimato con la tariffa {tariff}',
+    touNeedWithheld:
+      'Quanta imposta ti è stata trattenuta alla fonte quest’anno? La trovi sulle tue buste paga, poi alla cifra 12 del tuo certificato di salario.',
+    touWithheldLabel: 'Imposta trattenuta alla fonte per l’anno',
+    touTariffLabel: 'Oppure la tua tariffa (barème), da una busta paga',
+    touTariffNone: 'Scegli',
+    touNeedSalary:
+      'Inserisci un salario approssimativo nella scheda del pilastro 3a per fare il confronto.',
+    touMixed:
+      'Solo una persona della coppia paga l’imposta alla fonte. Taxpresso non può confrontare questo caso: chiedi all’amministrazione fiscale (AFC).',
+    touCompulsoryYes: 'Per te la TOU è obbligatoria: annunciala entro il {date}.',
+    touCompulsoryCheck:
+      'Per te la TOU potrebbe essere obbligatoria. Chiedi all’amministrazione fiscale (AFC) prima di decidere.',
+    touCompulsoryUnknown: 'Due domande decidono se per te la TOU è obbligatoria:',
+    'reason.gross': 'Un salario lordo di {amount} o più nell’anno',
+    'reason.other_income':
+      'Altri redditi non soggetti all’imposta alla fonte di {amount} o più nell’anno: interessi, dividendi, alimenti ricevuti, affitti…',
+    'reason.taxable_wealth':
+      'Sostanza imponibile (fortune imposable) al 31 dicembre: più di {single} per una persona sola, {couple} per una coppia o una famiglia monoparentale, più {child} per figlio',
+    'reason.previous_tou': 'Hai già avuto una tassazione ordinaria (TOU) in passato',
+    'reason.spouse_without_activity':
+      'Un coniuge senza lavoro né prestazioni: la pagina web del Cantone cita questo caso, le sue direttive 2026 no',
+    touIrrevocable:
+      'Non si può annullare. Una volta inviata la richiesta, non puoi più ritirarla, anche se il risultato è peggiore. Vale poi ogni anno finché paghi l’imposta alla fonte, anche per il tuo coniuge.',
+    touUnderstand: 'Ho capito: una volta inviata, una richiesta di TOU non si può ritirare.',
+    touRequest: 'Sì, chiederò la TOU',
+    touDecline: 'Non quest’anno',
+    touChosenRequest: 'La tua scelta: chiedere la TOU ({date}).',
+    touChosenDecline:
+      'La tua scelta: niente TOU quest’anno ({date}). L’imposta trattenuta alla fonte resta definitiva.',
+    touChange: 'Cambia la mia scelta',
+    touNextRequest:
+      'Poi: invia il modulo DRIS/TOU dal tuo spazio fiscale e-démarches entro il {date}. Taxpresso non lo invia al posto tuo.',
+    touNextCompulsory:
+      'Annunciala con il modulo DRIS/TOU dal tuo spazio fiscale e-démarches entro il {date}.',
+    touNeedComparison: 'Potrai registrare qui la tua scelta quando sarà visibile il confronto.',
+    'assume.income_tax_only':
+      'Qui l’imposta ordinaria è solo l’imposta sul reddito (cantonale, comunale e federale). L’imposta sulla sostanza non è conteggiata: con una sostanza imponibile, la TOU è comunque obbligatoria.',
+    'assume.withheld_from_tariff':
+      'L’imposta trattenuta alla fonte è stimata in base alla tua tariffa e al tuo salario lordo annuo. Il tuo certificato di salario (cifra 12) indica l’importo reale.',
+    'assume.tariff_c_correction':
+      'Quando entrambi i coniugi lavorano (tariffa C), l’amministrazione fiscale può correggere l’imposta trattenuta alla fonte in base ai due redditi reali.',
+    'assume.values_to_confirm': 'Alcune cifre vengono da documenti che non hai ancora confermato.',
+    'assume.ordinary_may_be_lower':
+      'Per ora l’imposta ordinaria tiene conto solo delle deduzioni forfettarie: non delle deduzioni ginevrine per la famiglia, dei premi dell’assicurazione malattia o delle spese di custodia dei figli. La tua imposta ordinaria reale è probabilmente più bassa, quindi la TOU potrebbe convenirti più di quanto mostrato.',
+    estimate: 'Stima',
+    'assume.pension_fund_2025_same':
+      'Supponiamo che nel 2025 la tua situazione con la cassa pensione fosse la stessa di oggi.',
+    splitZh: 'Zurigo {icc} · federale {ifd}',
+    lppOfficialZh: 'Einkauf in die Pensionskasse',
+    lppAttestationZh:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): conservala per la tua dichiarazione.',
+    cuOfficialZh: 'Einkauf in die Säule 3a',
+    cuRuleIncomeZh: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
+    'assume.zh_catchup_rule':
+      'Nessun risparmio per Zurigo: nessun documento zurighese di cui dispone Taxpresso fissa ancora la regola cantonale del riscatto nel pilastro 3a. Valgono le regole federali qui sopra.',
+    touGenevaOnly:
+      'La TOU è una procedura ginevrina. Per Zurigo, Taxpresso non supporta ancora l’imposta alla fonte né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+    splitBe: 'Berna {icc} · federale {ifd}',
+    lppOfficialBe: 'Einkauf 2. Säule (Pensionskasse)',
+    lppAttestationBe:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): conservala per la tua dichiarazione.',
+    cuOfficialBe: 'Nachzahlung (Einkauf) in die Säule 3a',
+    cuRuleIncomeBe: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
+    touGenevaOnlyBe:
+      'La TOU è una procedura ginevrina. Per Berna, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+    splitBl: 'Basilea Campagna {icc} · federale {ifd}',
+    lppOfficialBl: 'Einkäufe 2. Säule (Pensionskasse)',
+    lppAttestationBl:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): conservala per la tua dichiarazione.',
+    cuOfficialBl: 'Nachträglicher Einkauf in die Säule 3a',
+    cuRuleIncomeBl: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
+    touGenevaOnlyBl:
+      'La TOU è una procedura ginevrina. Per Basilea Campagna, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+    splitVd: 'Vaud {icc} · federale {ifd}',
+    lppOfficialVd: 'Rachats d’années d’assurance (2e pilier)',
+    lppAttestationVd:
+      'La tua cassa conferma il versamento con un’attestazione ufficiale del riscatto: conservala per la tua dichiarazione.',
+    cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
+    touGenevaOnlyVd:
+      'Il confronto TOU di Taxpresso segue le regole ginevrine. Per Vaud, Taxpresso non supporta ancora l’imposta alla fonte (impôt à la source) né la relativa TOU (taxation ordinaire ultérieure).',
+    splitBs: 'Basilea Città {icc} · federale {ifd}',
+    lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
+    lppAttestationBs:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): conservala per la tua dichiarazione.',
+    cuOfficialBs: 'zusätzlicher Einkauf in die Säule 3a',
+    cuRuleIncomeBs: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
+    touGenevaOnlyBs:
+      'La TOU è una procedura ginevrina. Per Basilea Città, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+    splitZg: 'Zugo {icc} · federale {ifd}',
+    lppOfficialZg: 'Beiträge an die 2. Säule (Einkaufsbeiträge)',
+    lppAttestationZg:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): allegala alla tua dichiarazione.',
+    cuOfficialZg: 'Nachträglicher Einkauf in die Säule 3a',
+    cuRuleIncomeZg: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
+    touGenevaOnlyZg:
+      'La TOU è una procedura ginevrina. Per Zugo, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+    splitLu: 'Lucerna {icc} · federale {ifd}',
+    lppOfficialLu: 'Beiträge an 2. Säule (Einkauf)',
+    lppAttestationLu:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): allegala alla tua dichiarazione insieme al tuo certificato di previdenza (Vorsorgeausweis).',
+    cuOfficialLu: 'Einkauf in die Säule 3a',
+    cuRuleIncomeLu: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
+    'assume.lu_catchup_rule':
+      'Nessun risparmio per Lucerna: nessun documento lucernese di cui dispone Taxpresso fissa ancora la regola cantonale del riscatto nel pilastro 3a. Valgono le regole federali qui sopra.',
+    touGenevaOnlyLu:
+      'La TOU è una procedura ginevrina. Per Lucerna, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+    splitSg: 'San Gallo {icc} · federale {ifd}',
+    lppOfficialSg: 'Säule 2 (BVG) inkl. Einkaufsbeiträge',
+    lppAttestationSg:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): allegala alla tua dichiarazione.',
+    cuOfficialSg: 'Nachträgliche Einkäufe Säule 3a',
+    cuRuleIncomeSg: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
+    touGenevaOnlySg:
+      'La TOU è una procedura ginevrina. Per San Gallo, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+  },
 } as const;
 
 export type PlanningMessageKey = keyof (typeof messages)['en'];
@@ -529,7 +706,7 @@ export function assumption(lang: Language, id: string): string {
  */
 export function day(iso: string, lang: Language): string {
   const isDay = /^\d{4}-\d{2}-\d{2}$/.test(iso);
-  return new Intl.DateTimeFormat({ en: 'en-GB', fr: 'fr-CH', de: 'de-CH' }[lang], {
+  return new Intl.DateTimeFormat({ en: 'en-GB', fr: 'fr-CH', de: 'de-CH', it: 'it-CH' }[lang], {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

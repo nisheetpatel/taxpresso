@@ -22,13 +22,13 @@ import type { OfficialLink, Question, RequirementView, State, Value } from './ty
 
 const POLL_MS = 2000;
 
-/** The language button cycles English, French, German. */
-const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'en' };
+/** The language button cycles English, French, German, Italian. */
+const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'it', it: 'en' };
 
 function readLang(): Language | undefined {
   try {
     const v = localStorage.getItem('taxpresso.lang');
-    return v === 'en' || v === 'fr' || v === 'de' ? v : undefined;
+    return v === 'en' || v === 'fr' || v === 'de' || v === 'it' ? v : undefined;
   } catch {
     return undefined;
   }

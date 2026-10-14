@@ -5,7 +5,7 @@ import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
-const messages = {
+export const messages = {
   en: {
     title: 'Final check',
     lead: 'Before you fill in the official form, Taxpresso runs your figures through its rules again and lists what to settle first. Each rule links to the official document it comes from.',
@@ -133,6 +133,52 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristerstreckung, online mit der e-Fristerstreckung unter steuern.lu.ch',
     moreTimeSg:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt vor Ablauf der Frist eine Fristverlängerung, online unter www.steuern.sg.ch',
+  },
+  it: {
+    title: 'Controllo finale',
+    lead: 'Prima di compilare il modulo ufficiale, Taxpresso ricontrolla i tuoi importi con le sue regole ed elenca cosa sistemare per primo. Ogni regola rimanda al documento ufficiale da cui proviene.',
+    summary: '{fix} da correggere · {know} buono a sapersi',
+    ready: 'Tutto pronto per compilare',
+    readyLead:
+      'Niente da correggere. Leggi qui sotto cosa è utile sapere, poi compila il modulo ufficiale con i valori da inserire.',
+    notReady: 'Da correggere prima di trasmettere',
+    notReadyLead: 'Sistema prima questi punti, in quest’ordine. Claude può rivederli con te.',
+    know: 'Buono a sapersi',
+    knowLead:
+      'Niente di questo ti blocca. Importi al limite o vicini al limite, e come ha contato Taxpresso.',
+    more: 'Cosa ha ipotizzato o tralasciato Taxpresso ({n})',
+    toSettle: 'Da sistemare',
+    source: 'Fonte',
+    sources: 'Fonti',
+    moreTime:
+      'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale (AFC) una proroga del termine',
+    moreTimeAfter: 'invece di trasmettere una stima.',
+    near: '“Vicino” a un limite vuol dire entro {share} dal limite, e almeno CHF {min}. Un tetto che ha ridotto un importo viene sempre mostrato.',
+    needs_ok: 'Da confermare',
+    estimate: 'Stima',
+    missing: 'Manca',
+    fix: 'Da correggere',
+    atLimit: 'Al limite',
+    nearLimit: 'Vicino al limite',
+    justBelow: 'Appena sotto',
+    justAbove: 'Appena sopra',
+    colon: ': ',
+    moreTimeZh:
+      'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale (kantonales Steueramt) una proroga del termine (Fristerstreckung)',
+    moreTimeBe:
+      'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale (Steuerverwaltung des Kantons Bern) una proroga del termine (Fristverlängerung), online in TaxMe',
+    moreTimeBl:
+      'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale (Steuerverwaltung Basel-Landschaft) una proroga del termine (Fristerstreckung), online su www.steuern.bl.ch',
+    moreTimeVd:
+      'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale (Administration cantonale des impôts, ACI) una proroga del termine (demande de délai), online con e-Délai',
+    moreTimeBs:
+      'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale (Steuerverwaltung Basel-Stadt) una proroga del termine (Fristerstreckung), online nel portale eSteuern.BS',
+    moreTimeZg:
+      'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale (Steuerverwaltung des Kantons Zug) una proroga del termine (Fristerstreckung), online su www.zg.ch/tax con il tuo Pers ID',
+    moreTimeLu:
+      'Un documento non arriverà in tempo? Chiedi all’ufficio delle imposte del tuo Comune (Gemeindesteueramt) una proroga del termine (Fristerstreckung), online con la e-Fristerstreckung su steuern.lu.ch',
+    moreTimeSg:
+      'Un documento non arriverà in tempo? Chiedi all’ufficio delle imposte del tuo Comune (Gemeindesteueramt) una proroga del termine (Fristverlängerung), prima della scadenza, online su www.steuern.sg.ch',
   },
 } as const;
 

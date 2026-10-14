@@ -235,7 +235,7 @@ export function buildStatus(
 }
 
 /** The cantons Taxpresso prepares returns for, in words: "Geneva, Zurich and Bern". */
-export function cantonList(lang: 'en' | 'fr' | 'de' = 'en'): string {
+export function cantonList(lang: 'en' | 'fr' | 'de' | 'it' = 'en'): string {
   return cantonNames(SUPPORTED_CANTONS, 'and', lang);
 }
 

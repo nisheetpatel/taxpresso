@@ -1,5 +1,5 @@
-// Strings for "Your securities and accounts" (Holdings.tsx), English, French and German. Second person,
-// plain words, the official French term next to its gloss (SPEC.md section 11b).
+// Strings for "Your securities and accounts" (Holdings.tsx), English, French, German and Italian.
+// Second person, plain words, the official French term next to its gloss (SPEC.md section 11b).
 import type { Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -176,6 +176,64 @@ export const messages = {
     youSaid: 'Wie du gesagt hast',
     fromDocument: 'Aus dem Dokument',
     statusMissing: 'Fehlt',
+  },
+  it: {
+    title: 'I tuoi titoli e conti',
+    official: 'état des titres',
+    lines: '{n} righe',
+    linesOne: '1 riga',
+    lead: 'Tutto quello che possedevi al 31 dicembre, nell’ordine del modulo ufficiale, con quello che ti restituisce l’imposta preventiva svizzera.',
+    back: 'Recuperi',
+    backLead:
+      'Imposta preventiva svizzera (impôt anticipé): il 35{nb}% di {subject} di redditi soggetti a questa imposta.',
+    backSoFar: 'Per ora: manca un importo più sotto.',
+    value: 'Valore imponibile al 31 dicembre',
+    valueOfficial: 'fortune brute mobilière, rubrica {code}',
+    income: 'Reddito lordo',
+    incomeOfficial: 'revenu brut mobilier, rubrica {code}',
+    foreign: 'Imposte estere',
+    foreignCredit: '{amount} computati con il modulo DA-1 (imputation d’impôts étrangers).',
+    foreignSmall:
+      'L’imposta estera non recuperabile è di CHF 100 o meno: niente computo, quindi il tuo reddito viene invece ridotto di {amount}.',
+    foreignPending: 'Il computo (modulo DA-1) non è ancora calcolato: vedi più sotto.',
+    foreignAbroad: '{amount} si possono recuperare solo presso l’amministrazione fiscale estera.',
+    estimateNote:
+      'Alcuni valori sono stime o aspettano la tua conferma: i totali cambiano quando li sistemi.',
+    confirmExport: 'Corrispondono all’estratto del mio broker',
+    exportToConfirm: '{file}: {n} valori da confermare',
+    exportToConfirmOne: '{file}: 1 valore da confermare',
+    subtotal: 'Subtotale',
+    owner: 'Di chi è',
+    ownerMissing: 'Scegli di chi è',
+    civilite: 'civilité {c}',
+    held: 'Quantità: {quantity}',
+    colValue: 'Valore al 31 dicembre (valeur imposable)',
+    colSubject: 'Redditi soggetti all’imposta preventiva (soumis à l’impôt anticipé)',
+    colNotSubject: 'Redditi non soggetti (non soumis)',
+    colFees: 'Spese bancarie (frais bancaires)',
+    colWithheld: 'Imposta svizzera trattenuta (impôt anticipé)',
+    colForeign: 'Imposte estere trattenute',
+    official_: 'Valore ufficiale, lista dei corsi dell’AFC',
+    broker: 'Valore del tuo broker',
+    brokerValue: 'Valore del tuo broker: {amount}',
+    officialFrom: 'Valore ufficiale, fonte: {from}',
+    enterOfficial: 'Inserisci il valore ufficiale',
+    changeOfficial: 'Modifica il valore ufficiale',
+    officialAmount: 'Valore ufficiale di tutta la posizione, in CHF',
+    officialFromLabel: 'Dove l’hai trovato',
+    officialFromHint: 'ad es. lista dei corsi AFC {year}, CHF 61.70 x 20',
+    howToFind: 'Come trovare il valore ufficiale',
+    nonRecoverable: '{amount} non recuperabili ({rate}{nb}%)',
+    recoverable: '{amount} da recuperare all’estero',
+    otherTitle: 'Altri elementi di sostanza e debiti',
+    flow: '{label} ({code}): {amount}',
+    warnings: '{n} punti da verificare nei tuoi file esportati',
+    warningsOne: '1 punto da verificare nei tuoi file esportati',
+    complete: 'Completo',
+    incomplete: 'Manca qualcosa',
+    youSaid: 'Come hai indicato tu',
+    fromDocument: 'Dal documento',
+    statusMissing: 'Manca',
   },
 } as const;
 

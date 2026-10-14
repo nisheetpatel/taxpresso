@@ -14,6 +14,7 @@ export interface Text {
   en: string;
   fr: string;
   de?: string;
+  it?: string;
 }
 
 export type EnginePerson = 'p1' | 'p2';
