@@ -6,7 +6,7 @@ import type { DocumentKind, Fact, KeyRegistry, VaultDocument } from '@taxpresso/
 import type { Cited } from './core/cited.js';
 import type { HouseholdInput, TaxResult } from './core/types.js';
 
-export type CantonCode = 'GE' | 'ZH' | 'BE' | 'VD' | 'BS' | 'FR' | 'TI' | 'BL';
+export type CantonCode = 'GE' | 'ZH' | 'BE' | 'VD' | 'BS' | 'FR' | 'TI' | 'BL' | 'AG';
 
 /** A commune of residence, with its multiplier for the tax year. */
 export interface Commune {
