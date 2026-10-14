@@ -21,6 +21,7 @@ import type { VaultDocument } from '@taxpresso/ledger';
 import type { ContentLang as Lang } from './lang.js';
 import { copyPanelView } from './copy-panel.js';
 import { OFFICIAL_KIND, rememberDeclaration, rememberedDeclaration } from './official.js';
+import type { CantonEntry } from './cantons.js';
 import type { Workspace } from './workspace.js';
 
 /** This year's declaration PDFs that count, the latest added first. */
@@ -74,7 +75,8 @@ export interface DeclarationCheckView {
 
 export function declarationCheckView(ws: Workspace, lang: Lang): DeclarationCheckView {
   const taxYear = ws.engine.taxYear;
-  if (ws.canton().canton?.code === 'ZH') {
+  const canton = ws.canton().canton;
+  if (canton && !canton.filing.checksPdf) {
     return { taxYear, status: 'not_available', older: 0, warnings: [] };
   }
   const [doc, ...older] = officialDocuments(ws);
@@ -183,6 +185,7 @@ const TRANSMIT =
 export function declarationCheckResult(
   view: DeclarationCheckView,
   detail: boolean,
+  canton?: CantonEntry,
 ): DeclarationCheckResult {
   const year = view.taxYear;
   const doc = view.document;
@@ -203,7 +206,7 @@ export function declarationCheckResult(
   };
   if (view.status === 'not_available') {
     return {
-      text: `The check of the declaration PDF reads Geneva declarations only for now, and this is a Zurich return. Tell the user plainly; they compare what they typed in ZHprivateTax with the values to type (get_form_values) themselves. ${TRANSMIT}`,
+      text: `The check of the declaration PDF reads Geneva declarations only for now, and this is a ${canton?.name.en ?? 'non-Geneva'} return. Tell the user plainly; they compare what they typed in ${canton?.software ?? "their canton's software"} with the values to type (get_form_values) themselves. ${TRANSMIT}`,
       structured: base,
     };
   }

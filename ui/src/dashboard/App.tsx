@@ -11,7 +11,7 @@ import { DocumentCards } from './DocumentCards';
 import { Estimate } from './Estimate';
 import { ExportCard } from './Export';
 import { FinalCheck } from './FinalCheck';
-import { isMessageKey, t, type Language } from './i18n';
+import { ck, isMessageKey, type Language, t } from './i18n';
 import { Holdings } from './Holdings';
 import { tp } from './i18n-planning';
 import { LastYear } from './LastYear';
@@ -187,7 +187,7 @@ export function App(): JSX.Element {
                 </div>
               )}
             </section>
-            <Estimate view={state.estimate} lang={L} />
+            <Estimate view={state.estimate} lang={L} cantonName={state.canton?.name} />
             <Assessment state={state} lang={L} />
             <Documents state={state} lang={L} busy={busy} act={act} />
             <Holdings state={state} lang={L} act={act} />
@@ -262,7 +262,7 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
       <h2 id="plan-title">
         {t(lang, 'planTitle')}
         <Explain
-          text={t(lang, state.canton?.code === 'ZH' ? 'planExplainZh' : 'planExplain')}
+          text={t(lang, ck('planExplain', state.canton?.code))}
           topic={t(lang, 'planTopic')}
           lang={lang}
         />
@@ -284,7 +284,7 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
                 {money(Math.round(result.saving.totalCentimes / 1000) * 1000, lang)}
               </strong>
               <span class="figure-note tnum">
-                {t(lang, state.canton?.code === 'ZH' ? 'planSavingSplitZh' : 'planSavingSplit', {
+                {t(lang, ck('planSavingSplit', state.canton?.code), {
                   icc: money(result.saving.cantonalCentimes, lang),
                   ifd: money(result.saving.federalCentimes, lang),
                 })}

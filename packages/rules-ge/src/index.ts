@@ -151,6 +151,8 @@ export {
   type ObjectionDeadline,
 } from './2026/assessment.js';
 export { computeReturn, allLines, EngineInputError } from './engine/compute.js';
+// How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
+export { view } from './engine/view.js';
 export {
   assess,
   asItem,

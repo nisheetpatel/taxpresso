@@ -1,7 +1,7 @@
 // UI strings for the pension fund buy-in, the 3a catch-up and the TOU card (SPEC.md section 8,
 // groups B and C). Second person, plain words, official terms next to their gloss (French in
 // Geneva, German in Zurich).
-import { isMessageKey, t, type Language } from './i18n';
+import { cantonKey, isMessageKey, type Language, t } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
@@ -121,6 +121,14 @@ const messages = {
       'No saving for Zurich: no Zurich document Taxpresso has gives the cantonal rule of a 3a catch-up yet. The federal rules above hold.',
     touGenevaOnly:
       'TOU is Geneva’s procedure. For Zurich, Taxpresso doesn’t support taxation at source and its NOV (nachträgliche ordentliche Veranlagung) yet.',
+    splitBe: 'Bern {icc} · federal {ifd}',
+    lppOfficialBe: 'Einkauf 2. Säule (Pensionskasse)',
+    lppAttestationBe:
+      'Your fund confirms the payment with a certificate (Bescheinigung): keep it for your return.',
+    cuOfficialBe: 'Nachzahlung (Einkauf) in die Säule 3a',
+    cuRuleIncomeBe: 'You must have had earned income subject to AHV in 2025.',
+    touGenevaOnlyBe:
+      'TOU is Geneva’s procedure. For Bern, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
   },
   fr: {
     when: 'Avant le 31 décembre',
@@ -223,6 +231,12 @@ const messages = {
     cuRuleIncomeZh: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
     'assume.zh_catchup_rule': `Pas d’économie pour Zurich${NB}: aucun document zurichois dont dispose Taxpresso ne fixe encore la règle cantonale du rattrapage. Les règles fédérales ci-dessus s’appliquent.`,
     touGenevaOnly: `La TOU est une procédure genevoise. Pour Zurich, Taxpresso ne prend pas encore en charge l’imposition à la source ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
+    splitBe: 'Berne {icc} · fédéral {ifd}',
+    lppOfficialBe: 'Einkauf 2. Säule (Pensionskasse)',
+    lppAttestationBe: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: gardez-la pour votre déclaration.`,
+    cuOfficialBe: 'Nachzahlung (Einkauf) in die Säule 3a',
+    cuRuleIncomeBe: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
+    touGenevaOnlyBe: `La TOU est une procédure genevoise. Pour Berne, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
   },
   de: {
     when: 'Vor dem 31. Dezember',
@@ -343,10 +357,22 @@ const messages = {
       'Keine Ersparnis für Zürich: Kein Zürcher Dokument, das Taxpresso hat, legt die Regel für den Nachkauf in der Staatssteuer schon fest. Die Bundesregeln oben gelten.',
     touGenevaOnly:
       'Die TOU ist ein Genfer Verfahren. Für Zürich unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
+    splitBe: 'Bern {icc} · Bund {ifd}',
+    lppOfficialBe: 'Einkauf 2. Säule (Pensionskasse)',
+    lppAttestationBe:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Bewahre sie für deine Steuererklärung auf.',
+    cuOfficialBe: 'Nachzahlung (Einkauf) in die Säule 3a',
+    cuRuleIncomeBe: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    touGenevaOnlyBe:
+      'Die TOU ist ein Genfer Verfahren. Für Bern unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
   },
 } as const;
 
 export type PlanningMessageKey = keyof (typeof messages)['en'];
+
+/** The key of a canton's own text, else Geneva's (./i18n.ts, cantonKey). */
+export const pck = (key: PlanningMessageKey, canton: string | undefined): PlanningMessageKey =>
+  cantonKey(messages.en, key, canton);
 
 export function tp(
   lang: Language,

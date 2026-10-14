@@ -1,12 +1,13 @@
 // The canton of the tax year (docs/design/cantons.md, section 3): the first question, before any
 // other. The canton you lived in on 31 December taxes the whole year, also after a move from another
 // canton during it: for the federal tax ch-na-law-lifd art. 105 al. 1 (p. 58); for the cantonal and
-// communal tax, ge-2025-guide-declaration-pp p. 53 and zh-2025-guide-natuerliche-personen p. 5 and 6.
+// communal tax, ge-2025-guide-declaration-pp p. 53, zh-2025-guide-natuerliche-personen p. 5 and 6
+// and be-2025-wegleitung-np-de p. 10 (Seite 1).
 import type { KeyRegistry } from '@taxpresso/ledger';
 import type { CantonCode } from '../canton.js';
 
 /** The cantons Taxpresso prepares a return for, in the order the question lists them. */
-export const SUPPORTED_CANTONS = ['GE', 'ZH'] as const satisfies readonly CantonCode[];
+export const SUPPORTED_CANTONS = ['GE', 'ZH', 'BE'] as const satisfies readonly CantonCode[];
 export type SupportedCanton = (typeof SUPPORTED_CANTONS)[number];
 
 /** The answers to the canton question: a supported canton, or another one (not supported yet). */
@@ -20,7 +21,7 @@ export const KEYS_CANTON_2026 = {
     perPerson: false,
     label: { en: 'Canton on 31 December', fr: 'Canton au 31 décembre' },
     source:
-      'ch-na-law-lifd art. 105 al. 1 (p. 58); ge-2025-guide-declaration-pp p. 53; zh-2025-guide-natuerliche-personen p. 5 and 6',
+      'ch-na-law-lifd art. 105 al. 1 (p. 58); ge-2025-guide-declaration-pp p. 53; zh-2025-guide-natuerliche-personen p. 5 and 6; be-2025-wegleitung-np-de p. 10 (Seite 1)',
   },
 } as const satisfies KeyRegistry;
 

@@ -49,10 +49,15 @@ export {
 // The ledger read into the household input, the part every canton shares.
 export {
   amountOf,
+  cantonInputFromFacts,
   factsOfYear,
   householdFromFacts,
+  type CantonAnswers,
+  type CantonLedgerInput,
+  type CantonLedgerReading,
   type CantonReading,
   type HouseholdReading,
+  type MovableWealth,
 } from './core/from-ledger.js';
 // The federal direct tax (IFD): the constants of each year, the federal deductions keyed by
 // concept, and the tax on a taxable income.
@@ -74,10 +79,11 @@ export {
   ifdScaleTax2026,
   ifdTax2026,
 } from './ifd/2026.js';
-export { IFD_2026 } from './ifd/2026-amounts.js';
+export { IFD_2026, IFD_2026_SIDE_JOB } from './ifd/2026-amounts.js';
 export {
   IFD_TAX_YEARS,
   ifdParamsFor,
+  ifdSideJobFlat,
   isIfdTaxYear,
   type IfdParams,
   type IfdTaxYear,
@@ -112,6 +118,18 @@ export type {
   DocumentRule,
   LedgerView,
 } from './canton.js';
+// How a canton's result reads: one generic view for every canton (compute_tax, the estimate card,
+// the final check, the plans).
+export type {
+  IncomeTax,
+  ResultView,
+  ViewLine,
+  ViewRow,
+  YearComparisonRow,
+  YearPair,
+} from './view.js';
+// The official terms of a canton's form, for the generic texts (final check, plans, copy panel).
+export type { CantonTerms, OfficialDocument } from './terms.js';
 // Pillar 3a and the pension fund (2nd pillar): the federal limits, the same for every canton's tax.
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './pension/pillar3a.js';
 export {

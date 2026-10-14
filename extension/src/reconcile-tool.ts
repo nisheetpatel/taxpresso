@@ -75,6 +75,7 @@ export function registerDeclarationCheckTool(server: McpServer, ws: Workspace): 
       const { text, structured } = declarationCheckResult(
         declarationCheckView(ws, 'en'),
         detail === true,
+        ws.canton().canton,
       );
       return { content: [{ type: 'text', text }], structuredContent: structured };
     },

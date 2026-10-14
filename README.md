@@ -16,6 +16,7 @@ Early preview for tax year 2026 (returns filed in early 2027).
   - your documents in one folder: salary certificates and bank e-tax statements read from their barcodes, other documents read with Claude (PDFs and photos, read on your computer), each value confirmed by you, with checks across documents;
   - your estimate: Geneva cantonal and communal tax (ICC) and federal tax (IFD), income and wealth, every line explained with its official source;
   - Zurich, as a preview: the canton is the first question; Zurich's own questions (commune, church tax), your cantonal, communal, church and federal tax (Staats- und Gemeindesteuern, direkte Bundessteuer), and the values to type in the Zurich form's order, its annexes included, with the few rules the documents don't spell out shown to you;
+  - Bern, as a preview: Bern's own questions in English, French and German (your own household, church tax and parish, shared custody, payments to political parties, education costs per child), your cantonal, communal, church and federal tax (Kantons-, Gemeinde- und Kirchensteuern, direkte Bundessteuer) laid out as TaxMe's summaries, and the values to type form by form, with the few rules the documents don't spell out shown to you;
   - the dashboard in English, French or German;
   - your securities list (état des titres): bank accounts, broker exports (Interactive Brokers, DEGIRO), crypto and bank tax statements, with the Swiss withholding tax you get back and the foreign tax credit;
   - before 31 December: a pillar 3a payment, a pension fund buy-in and the 3a catch-up, each with what it saves on your actual tax;
@@ -23,7 +24,7 @@ Early preview for tax year 2026 (returns filed in early 2027).
   - every value in the official form's order, ready to copy into your declaration;
   - your tax assessment checked against your return, with the deadline to object.
 - Coming next: a check of the official PDF before you transmit, a review of what you could have saved last year, Geneva's 2026 rates when the canton publishes them, and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
-- Geneva first, Zurich as a preview. The goal is all 26 cantons.
+- Geneva first, Zurich and Bern as a preview. The goal is all 26 cantons.
 
 ## Install
 

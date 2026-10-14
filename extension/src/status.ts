@@ -1,4 +1,6 @@
+import { SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
+import { CANTONS } from './cantons.js';
 import { UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
@@ -11,7 +13,7 @@ export const StatusSchema = z.object({
   version: z.string(),
   taxYear: z.number().int(),
   canton: z
-    .enum(['GE', 'ZH'])
+    .enum(SUPPORTED_CANTONS)
     .nullable()
     .describe('The canton of the return: where the user lived on 31 December. null until known.'),
   cantonFrom: z
@@ -150,7 +152,7 @@ export function buildStatus(
   else if (notSupported.length) {
     nextStep = `Tell the user plainly that Taxpresso can't prepare this yet: ${notSupported.join('; ')}. Suggest ${software} or a fiduciary. Don't work around it.`;
   } else if (!canton.answer) {
-    nextStep = `Ask the first question: where the user lived on 31 December (next_questions). That canton taxes the whole year, and it decides the questions and the tax. Taxpresso prepares Geneva and Zurich returns so far.${lastYear?.suggestions ? " It comes with a suggestion from last year's declaration: ask the user whether it is still right, then save their answer with answer_question." : ''}`;
+    nextStep = `Ask the first question: where the user lived on 31 December (next_questions). That canton taxes the whole year, and it decides the questions and the tax. Taxpresso prepares ${cantonList()} returns so far.${lastYear?.suggestions ? " It comes with a suggestion from last year's declaration: ask the user whether it is still right, then save their answer with answer_question." : ''}`;
   } else if (
     // Taxpresso reads Geneva's declarations (GeTax, the online declaration) so far.
     canton.canton?.code === 'GE' &&
@@ -232,11 +234,18 @@ export function buildStatus(
   return status;
 }
 
-/** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */
-const CANTON_NAME: Record<string, string> = { GE: 'Geneva', ZH: 'Zurich' };
+/** The cantons Taxpresso prepares returns for, in words: "Geneva, Zurich and Bern". */
+export function cantonList(lang: 'en' | 'fr' | 'de' = 'en'): string {
+  const names = SUPPORTED_CANTONS.map((c) => CANTONS[c].name[lang]);
+  const and = { en: 'and', fr: 'et', de: 'und' }[lang];
+  return names.length > 1
+    ? `${names.slice(0, -1).join(', ')} ${and} ${names.at(-1)}`
+    : names.join('');
+}
 
+/** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */
 export function statusText(s: Status): string {
-  const canton = s.canton ? CANTON_NAME[s.canton] : undefined;
+  const canton = s.canton ? CANTONS[s.canton].name.en : undefined;
   const lines = [
     `Taxpresso ${s.version}, tax year ${s.taxYear}, ${canton ?? 'canton not known yet'}`,
     ...(s.cantonFrom === 'earlier_answers' && canton

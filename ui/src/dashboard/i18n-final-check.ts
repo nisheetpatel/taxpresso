@@ -1,7 +1,7 @@
 // UI strings for "Final check" (SPEC.md 10.0). Second person, plain words, official French terms
 // next to their gloss. Status labels follow SPEC.md section 11b. The items' own texts come worded
 // from the extension (extension/src/final-check.ts), in the page's language.
-import type { Language } from './i18n';
+import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
@@ -35,6 +35,8 @@ const messages = {
     colon: ': ',
     moreTimeZh:
       'A document won’t arrive in time? Ask the tax office (kantonales Steueramt) for more time to file (Fristerstreckung)',
+    moreTimeBe:
+      'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Bern) for more time to file (Fristverlängerung), online in TaxMe',
   },
   fr: {
     title: 'Vérification finale',
@@ -65,6 +67,7 @@ const messages = {
     justAbove: 'Juste au-dessus',
     colon: `${NB}: `,
     moreTimeZh: `Un document n’arrivera pas à temps${NB}? Demandez un délai (Fristerstreckung) à l’administration fiscale (kantonales Steueramt)`,
+    moreTimeBe: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) à l’Intendance des impôts du canton de Berne, en ligne dans TaxMe`,
   },
   de: {
     title: 'Schlusskontrolle',
@@ -98,10 +101,16 @@ const messages = {
     colon: ': ',
     moreTimeZh:
       'Kommt ein Dokument nicht rechtzeitig? Bitte das kantonale Steueramt um eine Fristerstreckung',
+    moreTimeBe:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Bern eine Fristverlängerung, online in TaxMe',
   },
 } as const;
 
 export type FinalCheckMessageKey = keyof (typeof messages)['en'];
+
+/** The key of a canton's own text, else Geneva's (./i18n.ts, cantonKey). */
+export const fck = (key: FinalCheckMessageKey, canton: string | undefined): FinalCheckMessageKey =>
+  cantonKey(messages.en, key, canton);
 
 export function tf(
   lang: Language,

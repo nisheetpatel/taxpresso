@@ -33,14 +33,15 @@ questions:
   # The canton you lived in on 31 December taxes the whole year, also when you moved there from
   # another canton during the year: for the federal tax, ch-na-law-lifd art. 105 al. 1 (p. 58); for
   # the cantonal and communal tax, ge-2025-guide-declaration-pp p. 53 (Arrivée d'un canton suisse)
-  # and zh-2025-guide-natuerliche-personen p. 5 and 6 (Zuzug aus einem anderen Kanton).
+  # zh-2025-guide-natuerliche-personen p. 5 and 6 (Zuzug aus einem anderen Kanton) and
+  # be-2025-wegleitung-np-de p. 10 (Seite 1: Wohnsitz am Ende des Jahres).
   - id: canton
     key: profile.canton
     type: choice
     explain:
-      en: 'The canton you lived in on 31 December taxes your whole year: cantonal, communal and federal tax. Taxpresso prepares returns for Geneva and Zurich so far.'
-      fr: 'Le canton où vous habitiez au 31 décembre vous impose pour toute l’année : impôt cantonal, communal et fédéral. Taxpresso prépare pour l’instant les déclarations de Genève et de Zurich.'
-      de: 'Der Kanton, in dem du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr: Staats-, Gemeinde- und Bundessteuer. Taxpresso bereitet bisher Steuererklärungen für Genf und Zürich vor.'
+      en: 'The canton you lived in on 31 December taxes your whole year: cantonal, communal and federal tax. Taxpresso prepares returns for Geneva, Zurich and Bern so far.'
+      fr: 'Le canton où vous habitiez au 31 décembre vous impose pour toute l’année : impôt cantonal, communal et fédéral. Taxpresso prépare pour l’instant les déclarations de Genève, de Zurich et de Berne.'
+      de: 'Der Kanton, in dem du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr: Staats-, Gemeinde- und Bundessteuer. Taxpresso bereitet bisher Steuererklärungen für Genf, Zürich und Bern vor.'
     learnMore:
       url: 'https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf#page=58'
       label:
@@ -68,12 +69,15 @@ questions:
       - value: ZH
         label: { en: 'Canton of Zurich', fr: 'Canton de Zurich', de: 'Kanton Zürich' }
         chip: { en: 'Zurich', fr: 'Zurich', de: 'Zürich' }
+      - value: BE
+        label: { en: 'Canton of Bern', fr: 'Canton de Berne', de: 'Kanton Bern' }
+        chip: { en: 'Bern', fr: 'Berne', de: 'Bern' }
       - value: other
         label: { en: 'Another canton', fr: 'Un autre canton', de: 'Ein anderer Kanton' }
         notSupported:
-          en: 'A canton other than Geneva or Zurich'
-          fr: 'Un autre canton que Genève ou Zurich'
-          de: 'Ein anderer Kanton als Genf oder Zürich'
+          en: 'A canton other than Geneva, Zurich or Bern'
+          fr: 'Un autre canton que Genève, Zurich ou Berne'
+          de: 'Ein anderer Kanton als Genf, Zürich oder Bern'
 
   # ch-2026-ifd-instructions-personnes-physiques p. 1 (situation on 31 December)
   - id: civil_status

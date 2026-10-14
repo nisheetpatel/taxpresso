@@ -5,23 +5,21 @@
 // sends nothing. The passages of the official documents are not attached: bundling them waits for
 // the legal check (SPEC.md 7b); each rule is cited by manifest id, page or article, and link.
 import type { McpServer } from '@modelcontextprotocol/server';
-import { FORM_2025, FORM_2026, LEDGER_ROUTES_2026 } from '@taxpresso/filing-ge';
 import type { Fact } from '@taxpresso/ledger';
 import type { ContentLang as Lang } from './lang.js';
-import type { Text } from '@taxpresso/rules-ch';
+import type { CantonTerms, LimitApplied, Text } from '@taxpresso/rules-ch';
 import {
-  allLines,
   finalCheck,
   officialLinks,
   type FinalCheck,
+  type FinalCheckCanton,
   type FinalCheckInput,
   type FinalCheckItem,
   type PendingValue,
 } from '@taxpresso/rules-ge';
-import { zurichFormMap, zurichLineOf } from '@taxpresso/filing-zh';
-import { allLines as zurichLines, ZH_FINAL_CHECK, ZH_FORM_NOTE } from '@taxpresso/rules-zh';
 import * as z from 'zod/v4';
 import { BARCODE_PENDING } from './barcode.js';
+import { CANTONS, type CantonEntry } from './cantons.js';
 import { ENUM_LABELS } from './extraction.js';
 import { holdings } from './holdings.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
@@ -55,30 +53,107 @@ const FINAL_HOLDING = t(
 );
 /** The official page to ask for more time to file (docs/sources/ge/manifest.json). */
 const MORE_TIME = 'ge-na-other-demander-delai';
-/** Zurich's: filing, deadlines and more time (docs/sources/zh/manifest.json). */
-const MORE_TIME_ZH = 'zh-na-efiling-steuererklaerung-privatpersonen';
 
-/** The same texts for a Zurich return: its salary certificate and its tax office. */
-const FINAL_SALARY_ZH = t(
-  'Your salary certificate (Lohnausweis): it replaces this rough figure.',
-  `Votre certificat de salaire (Lohnausweis)${NB}: il remplace ce montant approximatif.`,
-);
-const FINAL_OFFICIAL_VALUE_ZH = t(
-  'Its official value from the ESTV price list (Kursliste, ictax.admin.ch), which you look up and give in the dashboard (Your securities and accounts) or in the chat.',
-  'Sa valeur officielle selon la liste des cours de l’AFC (Kursliste, ictax.admin.ch), que vous cherchez et indiquez dans le tableau de bord (Vos titres et comptes) ou dans la conversation.',
-);
-const FINAL_DOCUMENT_ZH = t(
-  'The document that shows it. If none will come in time, you can ask the tax office (kantonales Steueramt) for more time to file (Fristerstreckung) instead of filing a guess.',
-  'Le document qui le montre. S’il n’arrivera pas à temps, vous pouvez demander un délai (Fristerstreckung) à l’administration fiscale (kantonales Steueramt) plutôt que déclarer une estimation.',
-);
+/** What makes a value final, worded from the official terms of a canton's form. */
+interface FinalTexts {
+  salary: Text;
+  document: Text;
+  officialValue: Text;
+  /** A line of the securities list, by its name. */
+  securities(name: string): Text;
+}
 
-/** The rubric a ledger value goes to, for this person (@taxpresso/filing-ge's routes). */
-function rubricOf(key: string, person: string, zh = false): string | undefined {
-  if (zh) return zurichLineOf(key, person);
-  const route = LEDGER_ROUTES_2026.find((r) => r.key === key);
-  if (!route) return undefined;
-  if (typeof route.to === 'string') return /^\d{2}\.\d{2}$/.test(route.to) ? route.to : undefined;
-  return person === 'p2' ? route.to.B : route.to.A;
+/** Geneva's: the defaults, also before the canton is known. */
+const GENEVA_TEXTS: FinalTexts = {
+  salary: FINAL_SALARY,
+  document: FINAL_DOCUMENT,
+  officialValue: FINAL_OFFICIAL_VALUE,
+  securities: (name) => t(`${name} (état des titres)`, `${name} (état des titres)`),
+};
+
+/** The same texts for a canton's own form: its salary certificate, tax office and lists. */
+function cantonTexts(terms: CantonTerms): FinalTexts {
+  return {
+    salary: t(
+      `Your salary certificate (${terms.salaryCertificate}): it replaces this rough figure.`,
+      `Votre certificat de salaire (${terms.salaryCertificate})${NB}: il remplace ce montant approximatif.`,
+    ),
+    document: t(
+      `The document that shows it. If none will come in time, you can ask the tax office (${terms.taxOffice}) for more time to file (${terms.moreTime}) instead of filing a guess.`,
+      `Le document qui le montre. S’il n’arrivera pas à temps, vous pouvez demander un délai (${terms.moreTime}) à l’administration fiscale (${terms.taxOffice}) plutôt que déclarer une estimation.`,
+    ),
+    officialValue: t(
+      `Its official value from the ESTV price list (${terms.priceList}, ictax.admin.ch), which you look up and give in the dashboard (Your securities and accounts) or in the chat.`,
+      `Sa valeur officielle selon la liste des cours de l’AFC (${terms.priceList}, ictax.admin.ch), que vous cherchez et indiquez dans le tableau de bord (Vos titres et comptes) ou dans la conversation.`,
+    ),
+    securities: (name) =>
+      t(
+        `${name} (securities list, ${terms.securitiesList})`,
+        `${name} (état des titres, ${terms.securitiesList})`,
+      ),
+  };
+}
+
+/** What was given for a line with a limit, by the rule that set it: the gloss of each term. */
+const GIVEN: Readonly<Record<string, readonly [string, string]>> = {
+  commute: ['Travel costs', 'Frais de déplacement'],
+  meals: ['Meals away from home', 'Repas hors du domicile'],
+  'professional.other': [
+    'Your actual other professional costs',
+    'Vos autres frais professionnels effectifs',
+  ],
+  pillar3a: ['Paid into pillar 3a', 'Versé au 3e pilier A'],
+  training: ['Training paid', 'Frais de formation payés'],
+  debt_interest: ['Interest on private debts', 'Intérêts de dettes privées'],
+  insurance: [
+    'Insurance premiums and savings interest',
+    'Primes d’assurances et intérêts d’épargne',
+  ],
+  party: ['Paid to political parties', 'Versé aux partis politiques'],
+  childcare: ['Childcare paid', 'Frais de garde payés'],
+  medical: ['Medical costs', 'Frais médicaux'],
+  donations: ['Donations', 'Dons'],
+};
+
+/** The gloss in English and French with the official term, and the official term alone. */
+const g = (en: string, fr: string, term: string): Text => ({
+  en: `${en} (${term})`,
+  fr: `${fr} (${term})`,
+  de: term,
+});
+
+/**
+ * The final check's words for a canton's own form (docs/design/cantons.md): its labels, the terms
+ * of what was given, its two taxes, and its name and software from the registry.
+ */
+export function cantonCheckWords(canton: CantonEntry, terms: CantonTerms): FinalCheckCanton {
+  const sw = canton.software;
+  return {
+    label: (code) => terms.label(code),
+    given: (l: LimitApplied) => {
+      const term = l.rule ? terms.given[l.rule] : undefined;
+      const gloss = l.rule ? GIVEN[l.rule] : undefined;
+      return term && gloss ? g(gloss[0], gloss[1], term) : undefined;
+    },
+    // The two taxes keep their own limits unless a rule applied alike: always say which tax.
+    inBothTaxes: () => true,
+    taxes: {
+      icc: g('cantonal tax', 'impôt cantonal', terms.taxes.icc),
+      ifd: g('federal tax', 'impôt fédéral', terms.taxes.ifd),
+      both: g('cantonal and federal tax', 'impôts cantonal et fédéral', terms.taxes.both),
+    },
+    notSupported: {
+      en: `Taxpresso can’t prepare this part. ${sw}, the canton’s free software, or a fiduciary can.`,
+      fr: `Taxpresso ne peut pas préparer cette partie. ${sw}, le logiciel gratuit du canton, ou une fiduciaire le peuvent.`,
+      de: `Taxpresso kann diesen Teil nicht vorbereiten. ${sw}, die kostenlose Software des Kantons, oder ein Treuhandbüro können das.`,
+    },
+    limitEstimate: {
+      en: ' This limit is an estimate until its amount for the year is published.',
+      fr: ` Cette limite est une estimation jusqu’à la publication de son montant pour l’année.`,
+      de: ' Diese Grenze ist geschätzt, bis ihr Betrag für das Jahr veröffentlicht ist.',
+    },
+    documents: terms.documents,
+  };
 }
 
 /** A fact as the final check shows it: its label, value, document and page. */
@@ -90,7 +165,7 @@ function pending(
 ): PendingValue {
   const def = ws.keys[f.key];
   const doc = f.source.docId ? ws.documents.find((d) => d.id === f.source.docId) : undefined;
-  const code = rubricOf(f.key, f.person, ws.canton().canton?.code === 'ZH');
+  const code = (ws.canton().canton ?? CANTONS.GE).filing.lineOf(f.key, f.person);
   const v = f.value;
   const text: Text | undefined =
     typeof v === 'boolean'
@@ -126,7 +201,10 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
   const snap = ws.snapshot();
   const taxYear = ws.engine.taxYear;
   const estimate = ws.estimate();
-  const zh = estimate.canton === 'ZH';
+  // Before the canton is known, the defaults: Geneva's.
+  const canton = estimate.entry ?? CANTONS.GE;
+  const terms = estimate.entry?.terms;
+  const texts = terms ? cantonTexts(terms) : GENEVA_TEXTS;
   const { result, missing, notes } = estimate;
   const docs = ws.activeDocuments();
   const read = ws.toRead();
@@ -134,23 +212,19 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
   // Values that are not final: those waiting for the user's OK, then the estimates the return
   // rests on (a planning figure only when the engine used it as the salary).
   const values: PendingValue[] = ws.toConfirm().map((f) => pending(ws, f, 'extracted', FINAL_OK));
-  const lines =
-    estimate.canton === 'ZH'
-      ? estimate.result && zurichLines(estimate.result)
-      : estimate.result && allLines(estimate.result);
+  const lines = result && canton.view.allLines(result);
   const used = new Set((lines ?? []).flatMap((l) => l.facts ?? []));
-  const finalDocument = zh ? FINAL_DOCUMENT_ZH : FINAL_DOCUMENT;
   for (const f of ws.countedFacts()) {
     if (f.status !== 'estimate' || HOLDING_KEY.test(f.key)) continue;
     if (f.key.startsWith('plan.')) {
       if (f.key === 'plan.gross_salary' && used.has(f.id))
         values.push({
-          ...pending(ws, f, 'estimate', zh ? FINAL_SALARY_ZH : FINAL_SALARY),
-          code: zh ? (f.person === 'p2' ? '101' : '100') : f.person === 'p2' ? '21.10' : '11.10',
+          ...pending(ws, f, 'estimate', texts.salary),
+          code: canton.filing.salaryLine(f.person),
         });
       continue;
     }
-    values.push(pending(ws, f, 'estimate', finalDocument));
+    values.push(pending(ws, f, 'estimate', texts.document));
   }
   // The securities list, line by line (values waiting for the user's OK are listed above).
   const etat = holdings(ws);
@@ -159,21 +233,14 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
     values.push({
       id: `etat:${l.id}`,
       status: 'estimate',
-      label: zh
-        ? t(
-            `${l.name} (securities list, Wertschriftenverzeichnis)`,
-            `${l.name} (état des titres, Wertschriftenverzeichnis)`,
-          )
-        : t(`${l.name} (état des titres)`, `${l.name} (état des titres)`),
+      label: texts.securities(l.name),
       amount: l.columns.taxableValue,
       final:
         l.valueBasis === 'broker'
-          ? zh
-            ? FINAL_OFFICIAL_VALUE_ZH
-            : FINAL_OFFICIAL_VALUE
+          ? texts.officialValue
           : l.origin === 'you'
             ? FINAL_HOLDING
-            : finalDocument,
+            : texts.document,
     });
   }
   for (const o of etat.other) {
@@ -187,61 +254,39 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
         : o.flow !== undefined
           ? { amount: o.flow }
           : {}),
-      final: o.origin === 'you' ? FINAL_HOLDING : finalDocument,
+      final: o.origin === 'you' ? FINAL_HOLDING : texts.document,
     });
   }
 
-  if (zh) {
-    // The form's order: the main form's lines first (p. 2 to 4), then the annexes' own lines.
-    const form = zurichFormMap(taxYear);
-    const main = form.rubrics.filter((r) => r.page.startsWith('S'));
-    const zhOrder = new Map<string, number>();
-    [...main, ...form.rubrics.filter((r) => !main.includes(r))].forEach((r, i) => {
-      if (!zhOrder.has(r.key)) zhOrder.set(r.key, i);
-    });
-    return {
-      ...shared(ws, snap, docs, read, values, etat),
-      canton: ZH_FINAL_CHECK,
-      result: estimate.result,
-      missing,
-      ledgerNotes: notes,
-      officialPdf: { status: 'not_available' },
-      formOrder: (code) => zhOrder.get(code),
-      formNote: ZH_FORM_NOTE,
-    };
+  // The check of the official PDF: Geneva's declarations only, so far.
+  let officialPdf: FinalCheckInput['officialPdf'] = { status: 'not_available' };
+  if (canton.filing.checksPdf) {
+    const pdf = declarationCheckView(ws, 'en');
+    const file = pdf.document?.filename ?? '';
+    officialPdf =
+      pdf.status === 'checked' && pdf.check
+        ? {
+            status: 'checked',
+            file,
+            clear: pdf.check.clear,
+            toFix: pdf.check.counts.toFix,
+            notFinal: pdf.check.counts.notFinal,
+          }
+        : pdf.status === 'unreadable' || pdf.status === 'other_year'
+          ? { status: pdf.status, file }
+          : { status: pdf.status === 'checked' ? 'pending' : pdf.status };
   }
-  const pdf = declarationCheckView(ws, 'en');
-  const file = pdf.document?.filename ?? '';
-  // (Zurich returns earlier, with the PDF check not available.)
-  const officialPdf: FinalCheckInput['officialPdf'] =
-    pdf.status === 'checked' && pdf.check
-      ? {
-          status: 'checked',
-          file,
-          clear: pdf.check.clear,
-          toFix: pdf.check.counts.toFix,
-          notFinal: pdf.check.counts.notFinal,
-        }
-      : pdf.status === 'unreadable' || pdf.status === 'other_year'
-        ? { status: pdf.status, file }
-        : { status: pdf.status === 'checked' ? 'pending' : pdf.status };
-
-  // The form's order: the place of each rubric code on the official form, page by page.
-  const form = taxYear === 2025 ? FORM_2025 : FORM_2026;
-  const order = new Map<string, number>();
-  form.rubrics.forEach((r, i) => {
-    const code = r.code ?? r.key;
-    if (!order.has(code)) order.set(code, i);
-  });
-
+  const formNote = canton.filing.formNote(taxYear);
   return {
     ...shared(ws, snap, docs, read, values, etat),
-    result,
+    ...(terms ? { canton: cantonCheckWords(canton, terms) } : {}),
+    result: result && { ...result, limits: result.limits ?? [] },
     missing,
     ledgerNotes: notes,
     officialPdf,
-    formOrder: (code) => order.get(code),
-    ...(form.provisional && form.note ? { formNote: form.note } : {}),
+    // The form's order: the place of each line code on the official form.
+    formOrder: canton.filing.formOrder(taxYear),
+    ...(formNote ? { formNote } : {}),
   };
 }
 
@@ -344,9 +389,10 @@ function itemView(i: FinalCheckItem, lang: Lang): FinalCheckItemView {
 export function finalCheckView(ws: Workspace, lang: Lang): FinalCheckView {
   const input = finalCheckInput(ws);
   const check = finalCheck(input);
+  const terms = ws.canton().canton?.terms;
   const moreTime = check.fix.some((i) => i.kind === 'estimate')
-    ? input.canton
-      ? officialLinks(MORE_TIME_ZH, input.canton.documents)[0]?.url
+    ? terms
+      ? officialLinks(terms.moreTimeSource, terms.documents)[0]?.url
       : officialLinks(MORE_TIME)[0]?.url
     : undefined;
   return {
@@ -373,7 +419,8 @@ const cite = (s: FinalCheckItemView['sources'], titles: boolean) =>
     ? ` [${s.map((x) => `${x.id} ${x.where}${titles && x.title ? ` (${x.title})` : ''}${x.url ? `: ${x.url}` : ''}`).join('; ')}]`
     : '';
 
-export function finalCheckText(v: FinalCheckView, detail: boolean): string {
+/** `office`: the canton's tax office as its form names it, when it is not Geneva's AFC. */
+export function finalCheckText(v: FinalCheckView, detail: boolean, office?: string): string {
   const out = [
     `Final check before filling in the official form (tax year ${v.taxYear}), re-run on the current values: ${v.verdict === 'ready' ? 'READY TO FILL IN' : 'NOT READY'}. Fix before filing: ${v.fix.length}. Good to know: ${v.know.length}.`,
   ];
@@ -399,7 +446,7 @@ export function finalCheckText(v: FinalCheckView, detail: boolean): string {
     });
     if (v.moreTime) {
       out.push(
-        `If a document won't arrive in time, the user can ask the AFC for more time to file (official page: ${v.moreTime}); Taxpresso doesn't do it for them.`,
+        `If a document won't arrive in time, the user can ask ${office ? `the tax office (${office})` : 'the AFC'} for more time to file (official page: ${v.moreTime}); Taxpresso doesn't do it for them.`,
       );
     }
   }
@@ -471,7 +518,12 @@ export function registerFinalCheckTool(server: McpServer, ws: Workspace): void {
       await declarationCheckReady(ws);
       const view = finalCheckView(ws, 'en');
       return {
-        content: [{ type: 'text', text: finalCheckText(view, detail === true) }],
+        content: [
+          {
+            type: 'text',
+            text: finalCheckText(view, detail === true, ws.canton().canton?.terms?.taxOffice),
+          },
+        ],
         structuredContent: { ...view },
       };
     },

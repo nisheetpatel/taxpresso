@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-be",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bern form map and the values to type on the Bern return, in the form's order and TaxMe's summaries (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-be": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

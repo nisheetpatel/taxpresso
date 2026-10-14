@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@taxpresso/rules-ch": "workspace:*",
-    "@taxpresso/rules-ge": "workspace:*",
-    "@taxpresso/rules-zh": "workspace:*"
+    "@taxpresso/rules-ge": "workspace:*"
   }
 }

@@ -14,12 +14,16 @@ import {
   Vault,
   type VaultDocument,
 } from '@taxpresso/ledger';
-import { pillar3aPlan, type HouseholdInput, type Pillar3aResult } from '@taxpresso/optimizer';
+import {
+  pillar3aPlan,
+  type CantonPlan,
+  type HouseholdInput,
+  type Pillar3aResult,
+} from '@taxpresso/optimizer';
 import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import type { ContentLang } from './lang.js';
 import {
   assessmentViews,
-  computeReturn,
   consistencyChecks,
   documentFields,
   engineInputFromFacts,
@@ -29,16 +33,9 @@ import {
   type ConsistencyCheck,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import type { Text } from '@taxpresso/rules-ch';
-import {
-  communeOfAnswer,
-  rules as zurichRules,
-  zurichInputFromFacts,
-  type ZhTaxResult,
-} from '@taxpresso/rules-zh';
-import { zurichWealth } from './zurich-wealth.js';
+import type { SupportedCanton, TaxResult as SharedTaxResult, Text } from '@taxpresso/rules-ch';
 import type { SecuritiesSummary } from '@taxpresso/intake';
-import type { CantonRegistry, CantonState } from './cantons.js';
+import type { CantonEntry, CantonRegistry, CantonState, LedgerContext } from './cantons.js';
 import { displayPath, type Config } from './config.js';
 import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';
 import {
@@ -72,9 +69,14 @@ export type Via = 'chat' | 'dashboard';
 
 /** The tax of the year's canton (Workspace.estimate). */
 export type CantonEstimate =
-  | { canton: 'GE'; result: TaxResult | null; missing: Text[]; notes: Text[] }
-  | { canton: 'ZH'; result: ZhTaxResult | null; missing: Text[]; notes: Text[] }
-  | { canton: undefined; result: null; missing: Text[]; notes: Text[] };
+  | {
+      canton: SupportedCanton;
+      entry: CantonEntry;
+      result: SharedTaxResult | null;
+      missing: Text[];
+      notes: Text[];
+    }
+  | { canton: undefined; entry?: undefined; result: null; missing: Text[]; notes: Text[] };
 
 export interface ActivityEntry {
   at: string;
@@ -286,40 +288,22 @@ export class Workspace {
    */
   taxEstimate(): { result: TaxResult | null; missing: Text[]; notes: Text[] } {
     const e = this.estimate();
-    if (e.canton === 'GE') return { result: e.result, missing: e.missing, notes: e.notes };
+    // Geneva's engine gives Geneva's result (./cantons.ts).
+    if (e.canton === 'GE') {
+      return { result: e.result as TaxResult | null, missing: e.missing, notes: e.notes };
+    }
     return { result: null, missing: e.missing, notes: e.notes };
   }
 
   /**
    * The tax of the canton of the year (SPEC.md section 7), from the values that count, on every
-   * read; never stored. Geneva's result through its engine (@taxpresso/rules-ge), Zurich's through
-   * its own (@taxpresso/rules-zh), each with the federal tax; nothing without the canton.
+   * read; never stored: the canton's registry entry reads the ledger and runs its engine
+   * (./cantons.ts), with the federal tax; nothing without the canton.
    */
   estimate(): CantonEstimate {
     const canton = this.canton().canton;
-    const taxYear = this.engine.taxYear;
-    if (canton?.code === 'GE') {
-      const { input, missing, notes } = engineInputFromFacts(
-        taxYear,
-        this.countedFacts(),
-        this.activeDocuments(),
-      );
-      return { canton: 'GE', result: input ? computeReturn(input) : null, missing, notes };
-    }
-    if (canton?.code === 'ZH') {
-      const facts = this.countedFacts();
-      const docs = this.activeDocuments();
-      const people = this.snapshot().people.filter(
-        (p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2',
-      );
-      const wealth = zurichWealth(taxYear, people, facts, docs);
-      const { input, missing, notes } = zurichInputFromFacts(taxYear, facts, docs, wealth);
-      return {
-        canton: 'ZH',
-        result: input ? zurichRules.computeReturn(input) : null,
-        missing,
-        notes,
-      };
+    if (canton) {
+      return { canton: canton.code, entry: canton, ...canton.estimate(this.ledgerContext()) };
     }
     return {
       canton: undefined,
@@ -331,6 +315,16 @@ export class Workspace {
         },
       ],
       notes: [],
+    };
+  }
+
+  /** What a canton's tax is computed from: the values that count, for the year's household. */
+  ledgerContext(): LedgerContext {
+    return {
+      taxYear: this.engine.taxYear,
+      facts: this.countedFacts(),
+      documents: this.activeDocuments(),
+      people: this.snapshot().people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2'),
     };
   }
 
@@ -485,7 +479,8 @@ export class Workspace {
     };
     const custody = answer('profile.children_custody');
     const commune = answer('profile.commune');
-    if (this.canton().canton?.code === 'ZH') return this.#zurichPlanInput();
+    const canton = this.canton().canton;
+    if (canton?.plan) return this.#cantonPlanInput(canton, canton.plan);
     // What the ledger knows besides salaries and the plans' own deductions, so the plans run on
     // the real tax (premiums, childcare, donations, the état des titres).
     const known = engineInputFromFacts(
@@ -529,27 +524,24 @@ export class Workspace {
     };
   }
 
-  /** The household as the plans see it, for a Zurich return: its commune and Zurich's reading. */
-  #zurichPlanInput(): HouseholdInput {
+  /**
+   * The household as the plans see it, for a canton other than Geneva: its commune and the shared
+   * reading of the ledger, with the canton's own part (./cantons.ts, the canton's plan).
+   */
+  #cantonPlanInput(canton: CantonEntry, plan: CantonPlan): HouseholdInput {
     const snap = this.snapshot();
     const answer = (key: string) => snap.answers.get(`${key}|household`);
-    const taxYear = this.engine.taxYear;
-    const facts = this.countedFacts();
-    const docs = this.activeDocuments();
-    const people = snap.people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2');
-    const where = communeOfAnswer(taxYear, answer('profile.commune'));
-    const known = zurichInputFromFacts(
-      taxYear,
-      facts,
-      docs,
-      zurichWealth(taxYear, people, facts, docs),
-    ).input;
+    const ctx = this.ledgerContext();
+    const taxYear = ctx.taxYear;
+    const commune = canton.communeOf?.(answer('profile.commune'), taxYear);
+    const known = canton.household?.(ctx).input;
     const custody = answer('profile.children_custody');
     return {
-      canton: 'ZH',
+      canton: canton.code,
       ...(taxYear === 2025 || taxYear === 2026 ? { taxYear } : {}),
-      zurich: {
-        ...(where ? { commune: where.bfs } : {}),
+      other: {
+        plan,
+        ...(typeof commune === 'number' ? { commune } : {}),
         ...(known
           ? {
               known: {
@@ -567,7 +559,7 @@ export class Workspace {
       couple: snap.people.length > 1,
       children: Number(answer('profile.children_count') ?? 0),
       ...(custody ? { custody: custody as HouseholdInput['custody'] & string } : {}),
-      people: people.map((person) => {
+      people: ctx.people.map((person) => {
         const gross = this.#planMoney('plan.gross_salary', person);
         const net = this.#planMoney('plan.net_salary', person);
         return {

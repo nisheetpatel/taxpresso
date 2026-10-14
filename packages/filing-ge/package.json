@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*"
   },
   "devDependencies": {

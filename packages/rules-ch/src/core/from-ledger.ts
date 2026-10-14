@@ -15,6 +15,7 @@ import type {
   HouseholdAmounts,
   HouseholdInput,
   InputStatus,
+  MovableAsset,
   PersonInput,
   Text,
 } from './types.js';
@@ -371,6 +372,90 @@ export function householdFromFacts(
       children,
       ...sharing,
       household: hh,
+    },
+    missing,
+    notes,
+  };
+}
+
+/**
+ * Accounts, securities and the other movable wealth, read for a canton's lines by the caller (the
+ * securities rules are the same in every canton; the extension reads them with the état des titres
+ * and puts their totals on the shared household fields).
+ */
+export interface MovableWealth {
+  /** Value on 31 December and gross income, per owner. */
+  movable?: readonly MovableAsset[];
+  /** Costs, savings interest, life insurance, other assets, private debts and their interest. */
+  household?: Pick<
+    HouseholdAmounts,
+    | 'bankFees'
+    | 'savingsInterest'
+    | 'lifeInsurancePremiums'
+    | 'debtInterest'
+    | 'debts'
+    | 'lifeInsuranceValue'
+    | 'otherAssets'
+  >;
+  /** How they were read: what was assumed. */
+  notes?: readonly Text[];
+}
+
+/** What a canton's own answers can read: the household so far, its answers, a note. */
+export interface CantonAnswers {
+  taxYear: number;
+  /** The household read from the shared answers and documents. */
+  input: Omit<HouseholdInput, 'cantonal'>;
+  /** An answer the user gave (never a value still waiting for their OK), the household's by default. */
+  answer: (key: string, person?: Owner) => FactValue | undefined;
+  /** An amount the user gave (a money answer, or a child's), with its facts and status. */
+  amount: (key: string, person?: Owner) => Amount | undefined;
+  /** Adds a note on how the ledger was read, once. */
+  note: (x: Text) => void;
+}
+
+/**
+ * A canton's reading of the ledger (docs/design/cantons.md, section 2): the shared reading's
+ * commune and lines, and what only this canton asks (`cantonal`, the household input's canton part).
+ */
+export interface CantonLedgerReading<Cantonal extends object> extends CantonReading {
+  /** The canton's own part of the household input; undefined or empty when there is none. */
+  cantonal(answers: CantonAnswers): Cantonal | undefined;
+}
+
+export interface CantonLedgerInput<Cantonal> {
+  input: HouseholdInput<Cantonal> | null;
+  missing: Text[];
+  notes: Text[];
+}
+
+/**
+ * The ledger read into a canton's household input: the shared answers and documents
+ * (householdFromFacts), the canton's own answers, then the movable wealth the caller read.
+ */
+export function cantonInputFromFacts<Cantonal extends object>(
+  taxYear: number,
+  facts: readonly Fact[],
+  documents: readonly VaultDocument[],
+  canton: CantonLedgerReading<Cantonal>,
+  wealth: MovableWealth = {},
+): CantonLedgerInput<Cantonal> {
+  const { input, missing, notes } = householdFromFacts(taxYear, facts, documents, canton);
+  if (!input) return { input: null, missing, notes };
+  const note = (x: Text) => notes.some((n) => n.en === x.en) || notes.push(x);
+  const answer = (key: string, person: Owner = 'household') =>
+    facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
+  const amount = (key: string, person: Owner = 'household') =>
+    amountOf(facts.filter((f) => f.key === key && f.person === person));
+  const cantonal = canton.cantonal({ taxYear, input, answer, amount, note });
+  for (const n of wealth.notes ?? []) note(n);
+  const household = { ...input.household, ...wealth.household };
+  return {
+    input: {
+      ...input,
+      household,
+      ...(wealth.movable?.length ? { movable: wealth.movable } : {}),
+      ...(cantonal !== undefined && Object.keys(cantonal).length ? { cantonal } : {}),
     },
     missing,
     notes,

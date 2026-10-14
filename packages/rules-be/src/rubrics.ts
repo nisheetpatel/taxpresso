@@ -18,7 +18,7 @@ export interface Rubric {
 }
 
 const r = (de: string, en: string, fr: string, page: number, more = ''): Rubric => ({
-  label: { en: `${en} (${de})`, fr: `${fr} (${de})` },
+  label: { en: `${en} (${de})`, fr: `${fr} (${de})`, de },
   source: `${FORM} p. ${page}${more}`,
 });
 const AUTO = 'be-na-deductions-abzuege-freigrenzen sheet 2022-2027 (rows 26 to 44)';
@@ -152,6 +152,15 @@ export const RUBRICS = {
     ),
     source: `${FORM} p. 1 (1.2); ${AUTO}`,
   },
+  // The federal tax's deduction for married couples (TaxMe's federal summary, p. 11).
+  verheiratet: {
+    label: label(
+      'Abzug für Verheiratete',
+      'Married couple deduction',
+      'Déduction pour couples mariés',
+    ),
+    source: `${FORM} p. 11`,
+  },
   '2.1-kinder': r('Kinderabzug', 'Child deduction', 'Déduction pour enfants', 2, ' (2.1)'),
   '2.1-ausbildung': r(
     'Auswärtige bzw. zusätzliche Ausbildungskosten',
@@ -199,7 +208,7 @@ export const RUBRICS = {
 } as const satisfies Record<string, Rubric>;
 
 function label(de: string, en: string, fr: string): Text {
-  return { en: `${en} (${de})`, fr: `${fr} (${de})` };
+  return { en: `${en} (${de})`, fr: `${fr} (${de})`, de };
 }
 
 export type RubricCode = keyof typeof RUBRICS;
@@ -240,6 +249,7 @@ export const DEDUCTIONS = new Set<string>([
 ]);
 /** Persönliche Abzüge / Sozialabzüge (Art. 38a, Art. 40): from the Reineinkommen to the taxable income. */
 export const PERSONAL = new Set<string>([
+  'verheiratet',
   '5.3',
   '5.4',
   'allgemein',

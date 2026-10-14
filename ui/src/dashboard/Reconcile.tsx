@@ -7,7 +7,7 @@ import { useRef, useState } from 'preact/hooks';
 import './reconcile.css';
 import { api } from './api';
 import type { Language } from './i18n';
-import { tr } from './i18n-reconcile';
+import { rck, tr } from './i18n-reconcile';
 import type { State } from './types';
 import type {
   ByEyeLine,
@@ -247,7 +247,7 @@ export function Reconcile({
         <div class="section-head">
           <h2 id="rc-title">{tr(lang, 'title')}</h2>
         </div>
-        <p class="muted rc-lead">{tr(lang, 'notAvailable')}</p>
+        <p class="muted rc-lead">{tr(lang, rck('notAvailable', state.canton?.code))}</p>
       </section>
     );
   }

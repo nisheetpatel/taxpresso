@@ -1,33 +1,30 @@
-// Accounts, securities and the other movable wealth of a Zurich return. The securities rules are
-// the same in every canton (the ESTV price list, Swiss withholding tax, the foreign tax credit:
-// packages/rules-ch); Taxpresso reads them with the état des titres (@taxpresso/rules-ge,
-// etatDesTitres), whose totals per owner then go on the Zurich lines: 400 and 150
-// (Wertschriftenverzeichnis), 283 costs, 270 savings interest and life insurance premiums, 406 the
-// surrender value, 416 the other valuables, 470 and 250 the private debts and their interest
-// (zh-2025-form-steuererklaerung-hauptformular p. 2 to 4). The Zurich securities list itself
-// (Wertschriftenverzeichnis, its columns and the Verrechnungssteuer refund) is a later step.
+// Accounts, securities and the other movable wealth of a return in any canton but Geneva. The
+// securities rules are the same in every canton (the ESTV price list, Swiss withholding tax, the
+// foreign tax credit: packages/rules-ch); Taxpresso reads them with the état des titres
+// (@taxpresso/rules-ge, etatDesTitres), whose totals per owner then go on the shared household
+// fields each canton puts on its own lines (Zurich: 400 and 150, 283, 270, 406, 416, 470, 250,
+// zh-2025-form-steuererklaerung-hauptformular p. 2 to 4; Bern: form 3.0, 4.1 to 4.3). A canton's
+// own securities list (Zurich's and Bern's Wertschriftenverzeichnis, with the withholding tax
+// refund) is a later step.
 import type { Fact, VaultDocument } from '@taxpresso/ledger';
-import type { Amount, MovableAsset, Text } from '@taxpresso/rules-ch';
+import type { Amount, MovableAsset, MovableWealth, Text } from '@taxpresso/rules-ch';
 import { etatDesTitres } from '@taxpresso/rules-ge';
-import type { ZurichWealth } from '@taxpresso/rules-zh';
 
-const NB = ' ';
-
-export const NOTE_VALUABLES: Text = {
-  en: 'Cash, precious metals and vehicles you described are taken together on line 416 (Übrige Vermögenswerte); the form also has 404 for cash and gold and 412 for vehicles: the taxable wealth is the same.',
-  fr: `Les espèces, métaux précieux et véhicules décrits sont pris ensemble à la ligne 416 (Übrige Vermögenswerte)${NB}; le formulaire a aussi 404 pour les espèces et l’or et 412 pour les véhicules${NB}: la fortune imposable est la même.`,
-};
-
-/** The movable wealth of the ledger, on Zurich's lines. */
-export function zurichWealth(
+/**
+ * The movable wealth of the ledger, on the shared household fields. `valuables`: what to note when
+ * cash, precious metals or vehicles are taken together as other assets, when the canton's form has
+ * lines of their own for them.
+ */
+export function movableWealth(
   taxYear: number,
   people: readonly ('p1' | 'p2')[],
   facts: readonly Fact[],
   documents: readonly VaultDocument[],
-): ZurichWealth {
+  valuables?: Text,
+): MovableWealth {
   const etat = etatDesTitres({ taxYear, people: [...people], facts, documents });
   const movable: MovableAsset[] = [];
-  const household: NonNullable<ZurichWealth['household']> = {};
+  const household: NonNullable<MovableWealth['household']> = {};
   const notes: Text[] = [];
   const amount = (centimes: number, estimate: boolean, complete: boolean): Amount => ({
     value: centimes,
@@ -35,7 +32,7 @@ export function zurichWealth(
     ...(complete ? {} : { complete: false }),
   });
   const addTo = (
-    field: keyof NonNullable<ZurichWealth['household']>,
+    field: keyof NonNullable<MovableWealth['household']>,
     centimes: number,
     estimate: boolean,
     complete: boolean,
@@ -72,7 +69,7 @@ export function zurichWealth(
         break;
       case 'valuables':
         addTo('otherAssets', item.centimes, item.estimate, item.complete);
-        if (!notes.includes(NOTE_VALUABLES)) notes.push(NOTE_VALUABLES);
+        if (valuables && !notes.includes(valuables)) notes.push(valuables);
         break;
       case 'debts':
         addTo('debts', item.centimes, item.estimate, item.complete);

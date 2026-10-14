@@ -371,4 +371,9 @@ export interface TaxResult<Icc extends CantonalResult = CantonalResult> {
   unsupported: Text[];
   /** Rules applied whose detail the official documents don't spell out. */
   unverifiedRules: Text[];
+  /**
+   * Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes (SPEC.md
+   * 10.0): what the final check reads for values at or near a limit. Absent: none reported.
+   */
+  limits?: LimitApplied[];
 }

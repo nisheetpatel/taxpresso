@@ -51,6 +51,8 @@ export { rules, zurichInput, type ZurichCantonal } from './canton.js';
 export {
   NOTE_CHURCH,
   NOTE_MARRIED_TARIFF,
+  NOTE_VALUABLES,
+  ZURICH_READING,
   zurichInputFromFacts,
   type ZurichLedgerInput,
   type ZurichWealth,
@@ -75,6 +77,9 @@ export {
   zurichKeys,
   type CommuneOption,
 } from './keys.js';
-// The words of the final check for a Zurich return, and the official documents it links.
-export { ZH_FINAL_CHECK, ZH_FORM_NOTE } from './final-check.js';
+// How a Zurich result reads in the generic views (compute_tax, the estimate card, the plans).
+export { view } from './view.js';
+// The official terms of the Zurich return for the generic texts (final check, plans, copy panel),
+// and the official documents they link.
+export { ZH_FORM_NOTE, ZH_TERMS } from './terms.js';
 export { ZH_OFFICIAL_DOCUMENTS, type OfficialDocument } from './official-documents.js';

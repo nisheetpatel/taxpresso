@@ -4,6 +4,7 @@
 // (the table of deductions for 2026, art. 26, 33, 33a, 35 and 36 LIFD); ch-2026-ifd-instructions-
 // personnes-physiques (Form. 2a 2026), p. 6 (3 % flat) and p. 7 (pillar 3a); ch-2026-ifd-tarif-
 // personnes-physiques (Form. 58c 2026) notes 1 and 2 for rounding; ch-na-law-lifd for the rules.
+import type { Cited } from '../core/cited.js';
 import { PILLAR3A_2026 } from '../pension/pillar3a.js';
 import type { IfdAmounts } from './2025.js';
 
@@ -72,4 +73,14 @@ export const IFD_2026: IfdAmounts = {
   },
   child: { value: 680_000, source: `${CIRCULAR} p. 2 (art. 35 al. 1 let. a)` },
   married: { value: 280_000, source: `${CIRCULAR} p. 2 (art. 35 al. 1 let. c)` },
+};
+
+/**
+ * A side job (activité accessoire) of an employee: 20 % of its net income, at least 800, at most
+ * 2,400 (Form. 2a 2026 p. 7; the circular's table, p. 2). Read by the cantons whose form has its own
+ * line for it (Bern's 6.5); Geneva's and Zurich's engines don't read it.
+ */
+export const IFD_2026_SIDE_JOB: Cited<{ rateBp: number; min: number; max: number }> = {
+  value: { rateBp: 2_000, min: 80_000, max: 240_000 },
+  source: `${INSTRUCTIONS} p. 7; ${CIRCULAR} p. 2`,
 };

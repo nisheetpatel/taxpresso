@@ -5,10 +5,15 @@
 // buy-in on 31.30/41.30. The tax is the income tax: cantonal (base, centimes, 12 % reduction, home
 // care) plus communal plus federal; the wealth tax and the taxe personnelle don't change with a
 // deduction and are not part of what the source tax replaces. All money in integer centimes.
-// A Zurich household runs on Zurich's engine (@taxpresso/rules-zh) the same way: 3a on 260/261, a
-// buy-in on 280; its income tax is the cantonal, communal and church tax on income (the simple tax
-// times each multiplier) plus the federal tax of its Bundessteuer column.
-import type { HouseholdInput as SharedHousehold } from '@taxpresso/rules-ch';
+// A household of another canton runs on that canton's engine the same way, through the canton
+// interface (CantonPlan, given by the extension's registry): 3a, the 3a catch-up and a buy-in on the
+// shared household input, its income tax as the canton's result view says (packages/rules-ch,
+// view.ts: Zurich's cantonal, communal and church tax on income plus the federal tax).
+import type {
+  CantonCode,
+  HouseholdInput as SharedHousehold,
+  TaxResult as SharedResult,
+} from '@taxpresso/rules-ch';
 import {
   computeReturn,
   type CommuneSlug,
@@ -16,12 +21,6 @@ import {
   type PersonInput as EnginePerson,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import {
-  rules as zurichRules,
-  zhParamsFor,
-  type ZhTaxResult,
-  type ZurichCantonal,
-} from '@taxpresso/rules-zh';
 
 /**
  * Share of gross salary assumed to remain after social insurance and pension fund contributions,
@@ -39,21 +38,47 @@ export interface PersonInput {
   paidCentimes: number;
 }
 
-/** What a Zurich household's plans read besides the salaries (Workspace.planInput). */
-export interface ZurichPlanInput {
-  /** The commune by its BFS number; unknown, the City of Zurich (261) is assumed. */
+/** The cantons other than Geneva, by the prefix of their assumptions ("zh_preview"). */
+type CantonPrefix = Lowercase<Exclude<CantonCode, 'GE'>>;
+
+/**
+ * How the plans run on a canton other than Geneva: its engine behind the canton interface and what
+ * the plans assume for it (the extension's registry gives it, extension/src/cantons.ts).
+ */
+export interface CantonPlan {
+  /** The cantonal, communal and federal tax of a household (CantonRules.computeReturn). */
+  computeReturn(input: SharedHousehold): SharedResult;
+  /** The income tax of a result, as the canton's result view says (ResultView.incomeTax). */
+  incomeTax(r: SharedResult): TaxEstimate | undefined;
+  /** The commune assumed when none is answered, as the canton's engine takes it (BFS number). */
+  defaultCommune: number;
+  /** The documents the canton's income tax rests on, for the year. */
+  sources(taxYear: number): string[];
+  /** The canton's assumptions: a preview, and the commune assumed. */
+  assumptions: { preview: Assumption; communeDefault: Assumption };
+  /**
+   * A 3a catch-up: the field of the household input it goes on, and, when no document of the canton
+   * gives its cantonal rule, the assumption that says so (no saving is shown: fail closed).
+   */
+  catchUp: { field: 'pillar3a' | 'pillar3aCatchUp'; unknownRule?: Assumption };
+}
+
+/** What a household of another canton's plans read besides the salaries (Workspace.planInput). */
+export interface CantonPlanInput {
+  plan: CantonPlan;
+  /** The commune as the canton's engine takes it; unknown, the plan's default is assumed. */
   commune?: number;
   known?: Pick<
-    SharedHousehold<ZurichCantonal>,
+    SharedHousehold,
     'household' | 'movable' | 'childSupport' | 'ifdParentalScale' | 'cantonal'
   >;
 }
 
 export interface HouseholdInput {
   /** The canton of the year; Geneva when absent. */
-  canton?: 'GE' | 'ZH';
-  /** Zurich's commune and what the ledger knows, for a Zurich household. */
-  zurich?: ZurichPlanInput;
+  canton?: CantonCode;
+  /** Another canton's engine, commune and what the ledger knows, for a household not in Geneva. */
+  other?: CantonPlanInput;
   couple: boolean;
   children: number;
   custody?: 'with_household' | 'shared' | 'elsewhere';
@@ -75,10 +100,12 @@ export type Assumption =
   | 'net_from_gross'
   | 'commune_default'
   | 'no_income_for_some'
-  /** Zurich: commune not answered, the City of Zurich assumed. */
-  | 'zh_commune_default'
-  /** Zurich is a preview: the rules its documents don't spell out, as in the estimate. */
-  | 'zh_preview';
+  /** Another canton: commune not answered, its default assumed ("zh_commune_default"). */
+  | `${CantonPrefix}_commune_default`
+  /** A preview canton: the rules its documents don't spell out, as in the estimate. */
+  | `${CantonPrefix}_preview`
+  /** No document of the canton gives the cantonal rule of a 3a catch-up yet: no saving. */
+  | `${CantonPrefix}_catchup_rule`;
 
 /** What a deduction is, for the engine's rubric codes (31.40/41.40, 31.30/41.30 in the guide). */
 export type DeductionKind = 'pillar3a' | 'pillar3a_catchup' | 'lpp_buyin';
@@ -113,20 +140,9 @@ export const ESTIMATE_SOURCES = [
   'ch-2026-ifd-progression-deductions p. 2, p. 4',
 ];
 
-/** The documents a Zurich household's income tax rests on, for the year. */
-export function zurichEstimateSources(taxYear: number): string[] {
-  const P = zhParamsFor(taxYear);
-  return [
-    P.incomeTariff.married.source,
-    P.cantonalRate.source,
-    P.communes.source,
-    'ch-2026-ifd-progression-deductions p. 2, p. 4',
-  ];
-}
-
 /** The documents the plans' savings rest on, for this household's canton. */
 export function estimateSources(h: HouseholdInput): string[] {
-  return h.canton === 'ZH' ? zurichEstimateSources(h.taxYear ?? 2026) : ESTIMATE_SOURCES;
+  return h.other ? h.other.plan.sources(h.taxYear ?? 2026) : ESTIMATE_SOURCES;
 }
 
 export const pct = (centimes: number, bp: number) => Math.round((centimes * bp) / 10_000);
@@ -216,7 +232,7 @@ function incomeTax(r: TaxResult): TaxEstimate | undefined {
  * guessed).
  */
 export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
-  if (h.canton === 'ZH') return zurichEstimator(h);
+  if (h.other) return cantonEstimator(h, h.other);
   const nets = h.people.map(netOf);
   if (nets.every((n) => n === undefined)) return undefined;
   const base = engineInput(h, nets);
@@ -253,18 +269,16 @@ export function savingOf(
   };
 }
 
-// ---- Zurich ------------------------------------------------------------------------------------
+// ---- Another canton ----------------------------------------------------------------------------
 
-/** The City of Zurich, by its BFS number: the commune assumed when none is answered. */
-const ZURICH_CITY = 261;
-
-/** Zurich's input for the household, before the plans' deductions: income only, no wealth. */
-function zurichInput(
+/** The canton's input for the household, before the plans' deductions: income only, no wealth. */
+function cantonInput(
   h: HouseholdInput,
+  c: CantonPlanInput,
   nets: (number | undefined)[],
-): SharedHousehold<ZurichCantonal> {
+): SharedHousehold {
   const kids = h.custody === 'elsewhere' ? 0 : h.children;
-  const known = h.zurich?.known;
+  const known = c.known;
   // Deductions don't change the wealth tax: leave wealth out, so the tax is the income tax.
   const household = known?.household && {
     ...known.household,
@@ -279,7 +293,7 @@ function zurichInput(
     .map((m) => ({ owner: m.owner, income: m.income }));
   return {
     taxYear: h.taxYear ?? 2026,
-    commune: h.zurich?.commune ?? ZURICH_CITY,
+    commune: c.commune ?? c.plan.defaultCommune,
     civilStatus: h.couple ? 'married' : 'single',
     people: h.people.map((p, i) => {
       const net = nets[i];
@@ -312,19 +326,24 @@ function zurichInput(
   };
 }
 
-/** The input with the plans' deductions added: 3a on 260/261, a buy-in on 280. */
-function zurichWith(
-  base: SharedHousehold<ZurichCantonal>,
+/** The input with the plans' deductions added: 3a, the 3a catch-up and a buy-in. */
+function cantonWith(
+  base: SharedHousehold,
   deductions: readonly Deduction[],
-): SharedHousehold<ZurichCantonal> {
+  catchUp: CantonPlan['catchUp']['field'],
+): SharedHousehold {
   return {
     ...base,
     people: base.people.map((p) => {
       let q = p;
       for (const d of deductions) {
         if (d.person !== p.id || d.centimes <= 0) continue;
-        // No Zurich document gives the cantonal rule of a 3a catch-up: the plan doesn't ask.
-        const field = d.kind === 'lpp_buyin' ? 'pensionBuyIn' : 'pillar3a';
+        const field =
+          d.kind === 'lpp_buyin'
+            ? 'pensionBuyIn'
+            : d.kind === 'pillar3a_catchup'
+              ? catchUp
+              : 'pillar3a';
         q = { ...q, [field]: { value: (q[field]?.value ?? 0) + d.centimes, status: 'estimate' } };
       }
       return q;
@@ -332,37 +351,23 @@ function zurichWith(
   };
 }
 
-/** The income tax of a Zurich result: cantonal, communal and church tax, and federal. */
-function zurichIncomeTax(r: ZhTaxResult): TaxEstimate | undefined {
-  if (!r.icc || !r.ifd) return undefined;
-  const x = r.icc.taxes;
-  const cantonal = x.cantonal.amount + x.communal.amount + (x.church?.amount ?? 0);
-  const federal = r.ifd.tax.amount;
-  return {
-    cantonalCentimes: cantonal,
-    federalCentimes: federal,
-    totalCentimes: cantonal + federal,
-  };
-}
-
-function zurichEstimator(h: HouseholdInput): Estimator | undefined {
+function cantonEstimator(h: HouseholdInput, c: CantonPlanInput): Estimator | undefined {
   const nets = h.people.map(netOf);
   if (nets.every((n) => n === undefined)) return undefined;
-  const base = zurichInput(h, nets);
-  const run = (input: SharedHousehold<ZurichCantonal>) =>
-    zurichIncomeTax(zurichRules.computeReturn(input));
+  const plan = c.plan;
+  const base = cantonInput(h, c, nets);
+  const run = (input: SharedHousehold) => plan.incomeTax(plan.computeReturn(input));
   const first = run(base);
   if (!first) return undefined;
-  const assumptions: Assumption[] = ['zh_preview'];
-  if (!Object.keys(h.zurich?.known?.household ?? {}).length)
-    assumptions.push('flat_deductions_only');
+  const assumptions: Assumption[] = [plan.assumptions.preview];
+  if (!Object.keys(c.known?.household ?? {}).length) assumptions.push('flat_deductions_only');
   if (h.people.some((p) => p.netCentimes === undefined && p.grossCentimes !== undefined))
     assumptions.push('net_from_gross');
   if (nets.some((n) => n === undefined)) assumptions.push('no_income_for_some');
-  if (h.zurich?.commune === undefined) assumptions.push('zh_commune_default');
+  if (c.commune === undefined) assumptions.push(plan.assumptions.communeDefault);
   return {
     assumptions,
-    sources: zurichEstimateSources(h.taxYear ?? 2026),
-    taxWith: (deductions) => run(zurichWith(base, deductions)) ?? first,
+    sources: plan.sources(h.taxYear ?? 2026),
+    taxWith: (deductions) => run(cantonWith(base, deductions, plan.catchUp.field)) ?? first,
   };
 }

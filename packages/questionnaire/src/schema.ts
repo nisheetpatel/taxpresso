@@ -54,6 +54,7 @@ export const OFFICIAL_HOSTS = [
   'getax.ch',
   'silgeneve.ch',
   'zh.ch', // www.zh.ch, notes.zh.ch (ZH-Lex)
+  'be.ch', // www.sv.fin.be.ch (guides, TaxInfo), www.fin.be.ch, www.belex.sites.be.ch (BELEX)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
 ] as const;
@@ -108,6 +109,8 @@ const Option = z
     label: Text,
     chip: Text.optional(),
     notSupported: Text.optional(),
+    /** Offered only when this holds (a commune's own parishes): the other options are hidden. */
+    when: Condition.optional(),
   })
   .strict();
 
@@ -118,6 +121,11 @@ export const Question = z
     /** money: an amount in CHF, stored as centimes (SPEC.md section 4). */
     type: z.enum(['choice', 'yesno', 'number', 'money', 'multi', 'commune']),
     perPerson: z.boolean().default(false),
+    /**
+     * Asked once per child of the household (child1, child2...: profile.children_count), on a key
+     * that is per person; `{n}` in its texts is the child's number.
+     */
+    perChild: z.boolean().optional(),
     when: Condition.optional(),
     text: z.union([Text, PerPersonText]),
     help: Text.optional(),
@@ -161,7 +169,13 @@ export const QuestionnaireFile = z
     taxYear: z.number().int(),
     /** The canton the file is for, in words: "Geneva" in "not a Geneva commune". */
     place: Text.optional(),
-    people: z.object({ p1: Text, p2: Text, p2Chip: Text }),
+    people: z.object({
+      p1: Text,
+      p2: Text,
+      p2Chip: Text,
+      /** A child, for questions asked per child: "Child {n}". */
+      child: Text.optional(),
+    }),
     notSupported: Text,
     questions: z.array(Question).min(1),
     requirements: z.array(RequirementDef),

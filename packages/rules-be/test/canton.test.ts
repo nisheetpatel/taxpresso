@@ -117,6 +117,8 @@ const HOUSEHOLDS: BeEngineInput[] = [
     civilStatus: 'divorced',
     ownHousehold: true,
     childSupport: 'none',
+    // The federal parental scale: this parent earns more (circular 30).
+    ifdParentalScale: true,
     marriedTariff: true,
     sharedChildWealth: 'full',
     church: { p1: 'catholic' },
@@ -178,12 +180,18 @@ describe('Bern through the canton interface', () => {
     }
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the cantonal, communal and federal tax of each household', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
+      // A side job in 2025: no 2025 document gives the federal flat's rate (fail closed).
+      if (e.taxYear === 2025 && e.people.some((p) => p.employments?.some((j) => j.side))) {
+        expect(r.ifd).toBeNull();
+        expect(r.unsupported).toHaveLength(1);
+        continue;
+      }
       expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     }
   });
 
@@ -209,7 +217,12 @@ describe('Bern through the canton interface', () => {
   it('refuses a fact Bern does not read, and a commune given by name', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<BernCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      // Childcare both per child and for the household.
+      {
+        ...h,
+        children: [{ custody: 'full', childcare: amt(1_000) }],
+        household: { childcare: amt(5_000) },
+      },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, cantonal: { ...h.cantonal, childEducation: [amt(1_000)] } },
       { ...h, commune: 'bern' },
@@ -217,6 +230,40 @@ describe('Bern through the canton interface', () => {
     ];
     for (const x of refused) expect(() => rules.computeReturn(x)).toThrow(BeInputError);
     expect(() => rules.computeReturn({ ...h, taxYear: 2024 })).toThrow(/not supported/);
+  });
+
+  it('takes childcare paid for the household where one child’s limit settles it', () => {
+    const h = household(HOUSEHOLDS[0]!);
+    const child = { custody: 'full' as const, under14: true };
+    const one = rules.computeReturn({
+      ...h,
+      children: [child],
+      household: { ...h.household, childcare: amt(5_000) },
+    });
+    expect(one.icc?.items.find((i) => i.code === '2.1-betreuung')?.amount).toBe(-500_000);
+    // Two children, within one child's limit: whatever the split, all of it counts.
+    const small = rules.computeReturn({
+      ...h,
+      children: [child, child],
+      household: { ...h.household, childcare: amt(2_000) },
+    });
+    expect(small.icc?.items.find((i) => i.code === '2.1-betreuung')?.amount).toBe(-200_000);
+    // Two children, above one child's limit: the split decides, so not computed.
+    const big = rules.computeReturn({
+      ...h,
+      children: [child, child],
+      household: { ...h.household, childcare: amt(60_000) },
+    });
+    expect(big.icc).toBeNull();
+    expect(big.unsupported.map((n) => n.en).join(' ')).toMatch(/limit is per child/);
+    // Split per child (the questionnaire's child_care): it replaces the household's total.
+    const split = rules.computeReturn({
+      ...h,
+      children: [child, child],
+      household: { ...h.household, childcare: amt(60_000) },
+      cantonal: { ...h.cantonal, childcare: [amt(5_000), amt(3_000)] },
+    });
+    expect(split.icc?.items.find((i) => i.code === '2.1-betreuung')?.amount).toBe(-800_000);
   });
 
   it('lists the communes by BFS number with their Steueranlagen, cited', () => {
@@ -233,15 +280,29 @@ describe('Bern through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys, Bern’s own, and what each document gives', () => {
     expect(rules.canton).toBe('BE');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2026))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'be.own_household',
+        'be.church',
+        'be.parish',
+        'be.party',
+        'be.child_education',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.documents(2026)).toContainEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(rules.documents(2026).map((d) => d.kind)).toEqual(
+      expect.arrayContaining(['pillar3a_attestation', 'health_premiums', 'bank_attestation']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/be');
   });
 });

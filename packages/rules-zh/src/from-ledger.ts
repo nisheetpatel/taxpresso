@@ -1,15 +1,16 @@
-// From the ledger to Zurich's household input. The part every canton shares is packages/rules-ch's
-// (core/from-ledger.ts); Zurich gives it its commune (by BFS number, the part of the commune where
-// the official table gives two multipliers), its form's lines, unemployment benefits on their own
-// line (140/141), and adds what only Zurich asks: the church of each person (opt-in church tax),
-// the parish, and who has the married tariff in shared custody without child support. Accounts,
-// securities and the other movable wealth come from the caller (`wealth`), already read.
+// From the ledger to Zurich's household input. The reading every canton shares is packages/rules-ch's
+// (core/from-ledger.ts, cantonInputFromFacts); Zurich gives it its commune (by BFS number, the part
+// of the commune where the official table gives two multipliers), its form's lines, unemployment
+// benefits on their own line (140/141), and what only Zurich asks: the church of each person
+// (opt-in church tax), the parish, and who has the married tariff in shared custody without child
+// support. Accounts, securities and the other movable wealth come from the caller (`wealth`),
+// already read.
 import type { Fact, VaultDocument } from '@taxpresso/ledger';
 import {
-  householdFromFacts,
-  type HouseholdAmounts,
-  type HouseholdInput,
-  type MovableAsset,
+  cantonInputFromFacts,
+  type CantonLedgerInput,
+  type CantonLedgerReading,
+  type MovableWealth,
   type Text,
 } from '@taxpresso/rules-ch';
 import type { ZurichCantonal } from './canton.js';
@@ -17,33 +18,13 @@ import { communeOfAnswer } from './keys.js';
 import { isZhTaxYear } from './params.js';
 import type { Confession } from './types.js';
 
-const NB = ' ';
+const NB = '\u00a0';
 const t = (en: string, fr: string): Text => ({ en, fr });
 
 /** Accounts, securities and the other movable wealth, read for the Zurich lines. */
-export interface ZurichWealth {
-  /** 400 value on 31 December and 150 income, per owner. */
-  movable?: readonly MovableAsset[];
-  /** 283 costs, 270 savings interest and life insurance premiums, 250 and 470 debts, 406, 416. */
-  household?: Pick<
-    HouseholdAmounts,
-    | 'bankFees'
-    | 'savingsInterest'
-    | 'lifeInsurancePremiums'
-    | 'debtInterest'
-    | 'debts'
-    | 'lifeInsuranceValue'
-    | 'otherAssets'
-  >;
-  /** How they were read: what was assumed. */
-  notes?: readonly Text[];
-}
+export type ZurichWealth = MovableWealth;
 
-export interface ZurichLedgerInput {
-  input: HouseholdInput<ZurichCantonal> | null;
-  missing: Text[];
-  notes: Text[];
-}
+export type ZurichLedgerInput = CantonLedgerInput<ZurichCantonal>;
 
 const CHURCHES = new Set<Confession>(['reformed', 'catholic', 'christ_catholic', 'none']);
 
@@ -56,59 +37,56 @@ export const NOTE_MARRIED_TARIFF = t(
   `Garde partagée sans contribution d’entretien${NB}: le barème des personnes mariées (Verheiratetentarif) est attribué au parent qui gagne le plus, en règle générale celui qui assume l’essentiel de l’entretien (zh-2026-tariff-weisung-sozialabzuege p. 7 et 8).`,
 );
 
+/** Cash, precious metals and vehicles, which the shared reading takes together as other assets. */
+export const NOTE_VALUABLES: Text = {
+  en: 'Cash, precious metals and vehicles you described are taken together on line 416 (Übrige Vermögenswerte); the form also has 404 for cash and gold and 412 for vehicles: the taxable wealth is the same.',
+  fr: `Les espèces, métaux précieux et véhicules décrits sont pris ensemble à la ligne 416 (Übrige Vermögenswerte)${NB}; le formulaire a aussi 404 pour les espèces et l’or et 412 pour les véhicules${NB}: la fortune imposable est la même.`,
+};
+
+/** Zurich's reading of the ledger: its communes and lines, and its own answers. */
+export const ZURICH_READING: CantonLedgerReading<ZurichCantonal> = {
+  isTaxYear: isZhTaxYear,
+  commune: (answer, year) => communeOfAnswer(year, answer)?.bfs,
+  alimonyLines: {
+    received: t('160 and 161', '160 et 161'),
+    paid: t('254 and 255', '254 et 255'),
+  },
+  unemploymentApart: true,
+  cantonal({ taxYear, input, answer, note }) {
+    // The commune's part, where the official table gives the parts different multipliers.
+    const where = communeOfAnswer(taxYear, answer('profile.commune'));
+    // The church of each person: church tax only for a member (opt-in).
+    const church: { p1?: Confession; p2?: Confession; parish?: number } = {};
+    for (const p of input.people) {
+      const c = answer('zh.church', p.id);
+      if (typeof c === 'string' && CHURCHES.has(c as Confession)) church[p.id] = c as Confession;
+      else note(NOTE_CHURCH);
+    }
+    const parish = answer('zh.parish');
+    if (parish === '1' || parish === '2') church.parish = Number(parish);
+    // Shared custody without child support: who has the married tariff (StG § 35 Abs. 2bis).
+    const support = input.childSupport === 'none' ? answer('profile.child_support') : undefined;
+    const marriedTariff =
+      support === 'none_i_earn_more'
+        ? true
+        : support === 'none_other_earns_more'
+          ? false
+          : undefined;
+    if (marriedTariff !== undefined) note(NOTE_MARRIED_TARIFF);
+    const members = Object.values(church).filter((c) => typeof c === 'string' && c !== 'none');
+    return {
+      ...(where?.variant !== undefined ? { communeVariant: where.variant } : {}),
+      ...(marriedTariff !== undefined ? { marriedTariff } : {}),
+      ...(members.length ? { church } : {}),
+    };
+  },
+};
+
 export function zurichInputFromFacts(
   taxYear: number,
   facts: readonly Fact[],
   documents: readonly VaultDocument[],
   wealth: ZurichWealth = {},
 ): ZurichLedgerInput {
-  const { input, missing, notes } = householdFromFacts(taxYear, facts, documents, {
-    isTaxYear: isZhTaxYear,
-    commune: (answer, year) => communeOfAnswer(year, answer)?.bfs,
-    alimonyLines: {
-      received: t('160 and 161', '160 et 161'),
-      paid: t('254 and 255', '254 et 255'),
-    },
-    unemploymentApart: true,
-  });
-  if (!input) return { input: null, missing, notes };
-  const note = (x: Text) => notes.some((n) => n.en === x.en) || notes.push(x);
-  const answer = (key: string, person = 'household') =>
-    facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
-
-  // The commune's part, where the official table gives the parts different multipliers.
-  const where = communeOfAnswer(taxYear, answer('profile.commune'));
-  // The church of each person: church tax only for a member (opt-in).
-  const church: { p1?: Confession; p2?: Confession; parish?: number } = {};
-  for (const p of input.people) {
-    const c = answer('zh.church', p.id);
-    if (typeof c === 'string' && CHURCHES.has(c as Confession)) church[p.id] = c as Confession;
-    else note(NOTE_CHURCH);
-  }
-  const parish = answer('zh.parish');
-  if (parish === '1' || parish === '2') church.parish = Number(parish);
-  // Shared custody without child support: who has the married tariff (StG § 35 Abs. 2bis).
-  const support = input.childSupport === 'none' ? answer('profile.child_support') : undefined;
-  const marriedTariff =
-    support === 'none_i_earn_more' ? true : support === 'none_other_earns_more' ? false : undefined;
-  if (marriedTariff !== undefined) note(NOTE_MARRIED_TARIFF);
-  for (const n of wealth.notes ?? []) note(n);
-
-  const members = Object.values(church).filter((c) => typeof c === 'string' && c !== 'none');
-  const cantonal: ZurichCantonal = {
-    ...(where?.variant !== undefined ? { communeVariant: where.variant } : {}),
-    ...(marriedTariff !== undefined ? { marriedTariff } : {}),
-    ...(members.length ? { church } : {}),
-  };
-  const household = { ...input.household, ...wealth.household };
-  return {
-    input: {
-      ...input,
-      household,
-      ...(wealth.movable?.length ? { movable: wealth.movable } : {}),
-      ...(Object.keys(cantonal).length ? { cantonal } : {}),
-    },
-    missing,
-    notes,
-  };
+  return cantonInputFromFacts(taxYear, facts, documents, ZURICH_READING, wealth);
 }
