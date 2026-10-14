@@ -18,7 +18,7 @@ import {
 } from '@taxpresso/filing-ge';
 import { readPriorDeclaration } from '@taxpresso/intake';
 import type { VaultDocument } from '@taxpresso/ledger';
-import type { Lang } from '@taxpresso/questionnaire';
+import type { ContentLang as Lang } from './lang.js';
 import { copyPanelView } from './copy-panel.js';
 import { OFFICIAL_KIND, rememberDeclaration, rememberedDeclaration } from './official.js';
 import type { Workspace } from './workspace.js';

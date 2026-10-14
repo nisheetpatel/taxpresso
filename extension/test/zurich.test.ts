@@ -251,6 +251,45 @@ describe('a Zurich return', () => {
     expect(est.lastYear).toEqual([]);
   });
 
+  it('speaks German in the dashboard: the questions, the canton, the documents, the estimate', async () => {
+    await answer([['canton', 'ZH']]);
+    let s = await state('de');
+    expect(s.lang).toBe('de');
+    expect(s.canton).toMatchObject({ code: 'ZH', name: 'Zürich' });
+    expect(s.question?.text).toMatch(/Zivilstand|verheiratet|ledig/i);
+    expect(s.answers[0]).toMatchObject({ answer: 'Kanton Zürich' });
+    await muster();
+    s = await state('de');
+    expect(s.kinds.find((k) => k.value === 'salary_certificate')?.label).toBe('Lohnausweis');
+    expect(s.documents.find((d) => d.kind === 'pillar3a_attestation')?.kindLabel).toBe(
+      'Bescheinigung Säule 3a',
+    );
+    const est = s.estimate;
+    expect(est?.computed).toBe(true);
+    if (!est?.computed) return;
+    expect(est.rows.map((r) => r.label)).toEqual([
+      'Staats- und Gemeindesteuern',
+      'Direkte Bundessteuer',
+    ]);
+    expect(est.items.find((i) => i.code === '260')?.label).toBe(
+      'Beiträge an die 3. Säule a, Person 1',
+    );
+    // Views with English and French content only show English on a German page.
+    expect(s.finalCheck.know.find((i) => i.kind === 'official_pdf')?.detail).toMatch(
+      /Geneva declarations only/,
+    );
+    // Asked for a language Taxpresso doesn't have, the page gets the configured one.
+    const res = await createApi(ws)({
+      method: 'GET',
+      path: '/state',
+      query: new URLSearchParams('lang=it'),
+      headers: {},
+      body: Buffer.from('{}'),
+      csrf: 'csrf-token',
+    });
+    expect((res.body as DashboardState).lang).toBe('en');
+  });
+
   it('runs the final check with Zurich’s lines, software and terms', async () => {
     await muster();
     const res = await call('final_check');

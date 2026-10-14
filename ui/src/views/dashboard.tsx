@@ -37,10 +37,19 @@ const strings = {
     noTools:
       'Votre tableau de bord ne peut pas s’afficher dans ce chat. Ouvrez-le dans le navigateur de cet ordinateur.',
   },
+  de: {
+    full: 'Vollbild',
+    exitFull: 'Vollbild verlassen',
+    browser: 'Im Browser öffnen',
+    copyLink: 'Wenn sich nichts öffnet, kopiere diesen Link in einen Browser auf diesem Computer:',
+    alone: 'Bitte Claude, dein Taxpresso-Dashboard zu öffnen.',
+    noTools:
+      'Dein Dashboard kann in diesem Chat nicht laufen. Öffne es im Browser auf diesem Computer.',
+  },
 };
 type Lang = keyof typeof strings;
 const asLang = (value: unknown): Lang | undefined =>
-  value === 'fr' || value === 'en' ? value : undefined;
+  value === 'fr' || value === 'en' || value === 'de' ? value : undefined;
 
 /** The open_dashboard result: the private link for the browser. */
 interface OpenResult {

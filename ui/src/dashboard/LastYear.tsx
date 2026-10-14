@@ -84,6 +84,33 @@ const text = {
     warningsOne: '1 point à vérifier',
     warnings: '{n} points à vérifier',
   },
+  de: {
+    title: 'Letztes Jahr',
+    official: 'déclaration {year}',
+    officialNoYear: 'déclaration de l’an dernier',
+    by: 'Gedruckt von {software}',
+    note: 'Von Taxpresso auf diesem Computer aus deiner Steuererklärung {year} gelesen, zum Vergleich mit {taxYear}. Nichts davon kommt in deine Steuererklärung {taxYear}, und Taxpresso behält keinen Namen und keine Nummer daraus.',
+    noteNoYear:
+      'Von Taxpresso auf diesem Computer aus deiner letzten Steuererklärung gelesen, zum Vergleich mit {taxYear}. Nichts davon kommt in deine Steuererklärung {taxYear}, und Taxpresso behält keinen Namen und keine Nummer daraus.',
+    suggestionsOne: '1 Antwort daraus vorgeschlagen: Prüfe sie bei den Fragen oben.',
+    suggestions: '{n} Antworten daraus vorgeschlagen: Prüfe sie bei den Fragen oben.',
+    older:
+      'Das ist deine Steuererklärung {year}, nicht die von {expected}: Die Zahlen sind von {year}.',
+    income: 'Einkünfte',
+    incomeFr: 'revenus',
+    deductions: 'Abzüge',
+    deductionsFr: 'déductions',
+    wealth: 'Vermögen',
+    wealthFr: 'fortune',
+    icc: 'Kantonssteuer (ICC)',
+    ifd: 'Bundessteuer (IFD)',
+    page: 'Seite {page}',
+    none: 'Taxpresso hat darin keine der Hauptzeilen gefunden.',
+    linesOne: '1 Zeile',
+    lines: '{n} Zeilen',
+    warningsOne: '1 Punkt zu prüfen',
+    warnings: '{n} Punkte zu prüfen',
+  },
 } as const;
 
 type Key = keyof (typeof text)['en'];

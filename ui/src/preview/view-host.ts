@@ -14,7 +14,8 @@ import type {
 declare const __VIEW_HTML__: string;
 
 const params = new URLSearchParams(location.search);
-const lang = params.get('lang') === 'fr' ? 'fr' : 'en';
+const asked = params.get('lang');
+const lang = asked === 'fr' || asked === 'de' ? asked : 'en';
 let theme: McpUiTheme = params.get('theme') === 'dark' ? 'dark' : 'light';
 let mode: McpUiDisplayMode = params.get('mode') === 'fullscreen' ? 'fullscreen' : 'inline';
 
@@ -55,7 +56,7 @@ const context: McpUiHostContext = {
   theme,
   displayMode: mode,
   availableDisplayModes: ['inline', 'fullscreen'],
-  locale: lang === 'fr' ? 'fr-CH' : 'en-GB',
+  locale: { en: 'en-GB', fr: 'fr-CH', de: 'de-CH' }[lang],
   platform: 'desktop',
 };
 const bridge = new AppBridge(

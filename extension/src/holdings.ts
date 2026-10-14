@@ -10,7 +10,7 @@ import {
   type FactValue,
   type Owner,
 } from '@taxpresso/ledger';
-import type { Lang } from '@taxpresso/questionnaire';
+import type { ContentLang as Lang } from './lang.js';
 import {
   CIVILITE,
   etatDesTitres,

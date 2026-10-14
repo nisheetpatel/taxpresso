@@ -20,7 +20,7 @@ import {
 } from '@taxpresso/filing-ge';
 import { ZH_COPY_LABELS, zurichFormItems, zurichFormMap } from '@taxpresso/filing-zh';
 import type { Line } from '@taxpresso/rules-ch';
-import type { Lang } from '@taxpresso/questionnaire';
+import type { ContentLang as Lang } from './lang.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
 /** Rubrics the engine computes, by the column they fill (@taxpresso/filing-ge, cited there). */

@@ -156,7 +156,7 @@
     "ui_language": {
       "type": "string",
       "title": "Dashboard language",
-      "description": "en for English, fr for French. Claude answers in the language you write in.",
+      "description": "en for English, fr for French, de for German (Deutsch). Claude answers in the language you write in.",
       "required": false,
       "default": "en"
     }

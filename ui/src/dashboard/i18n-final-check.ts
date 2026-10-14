@@ -33,6 +33,8 @@ const messages = {
     justBelow: 'Just under',
     justAbove: 'Just over',
     colon: ': ',
+    moreTimeZh:
+      'A document won’t arrive in time? Ask the tax office (kantonales Steueramt) for more time to file (Fristerstreckung)',
   },
   fr: {
     title: 'Vérification finale',
@@ -62,6 +64,40 @@ const messages = {
     justBelow: 'Juste en dessous',
     justAbove: 'Juste au-dessus',
     colon: `${NB}: `,
+    moreTimeZh: `Un document n’arrivera pas à temps${NB}? Demandez un délai (Fristerstreckung) à l’administration fiscale (kantonales Steueramt)`,
+  },
+  de: {
+    title: 'Schlusskontrolle',
+    lead: 'Bevor du das offizielle Formular ausfüllst, rechnet Taxpresso deine Zahlen nochmals mit seinen Regeln durch und listet auf, was du zuerst klären solltest. Jede Regel verweist auf das offizielle Dokument, aus dem sie stammt.',
+    summary: '{fix} zu korrigieren · {know} gut zu wissen',
+    ready: 'Bereit zum Ausfüllen',
+    readyLead:
+      'Nichts zu korrigieren. Lies unten, was gut zu wissen ist, und fülle dann das offizielle Formular mit den Werten zum Eintragen aus.',
+    notReady: 'Vor dem Einreichen korrigieren',
+    notReadyLead:
+      'Kläre diese Punkte zuerst, in dieser Reihenfolge. Claude kann sie mit dir durchgehen.',
+    know: 'Gut zu wissen',
+    knowLead:
+      'Nichts davon hält dich auf. Beträge an oder nahe einer Grenze, und wie Taxpresso gezählt hat.',
+    more: 'Was Taxpresso angenommen oder weggelassen hat ({n})',
+    toSettle: 'Zu klären',
+    source: 'Quelle',
+    sources: 'Quellen',
+    moreTime:
+      'Kommt ein Dokument nicht rechtzeitig? Bitte das Steueramt (AFC) um mehr Zeit für die Einreichung',
+    moreTimeAfter: 'statt eine Schätzung einzureichen.',
+    near: '«Nahe» an einer Grenze heisst innerhalb von {share} davon, und mindestens CHF {min}. Eine Grenze, die einen Betrag gekürzt hat, wird immer gezeigt.',
+    needs_ok: 'Braucht dein OK',
+    estimate: 'Schätzung',
+    missing: 'Fehlt',
+    fix: 'Korrigieren',
+    atLimit: 'An der Grenze',
+    nearLimit: 'Nahe der Grenze',
+    justBelow: 'Knapp darunter',
+    justAbove: 'Knapp darüber',
+    colon: ': ',
+    moreTimeZh:
+      'Kommt ein Dokument nicht rechtzeitig? Bitte das kantonale Steueramt um eine Fristerstreckung',
   },
 } as const;
 

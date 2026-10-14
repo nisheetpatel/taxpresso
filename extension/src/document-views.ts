@@ -2,7 +2,7 @@
 // per document with its values, the "Check this" items, and the assessment against what was
 // declared. Derived from the workspace on every read; nothing here is stored.
 import type { Fact, Owner } from '@taxpresso/ledger';
-import type { Lang } from '@taxpresso/questionnaire';
+import type { ContentLang as Lang } from './lang.js';
 import {
   ASSESSMENT_ITEMS_2026,
   assessmentText,

@@ -225,6 +225,128 @@ const messages = {
     'a.pension_fund_2025_same':
       'Votre caisse de pension prise comme aujourd’hui, aussi pour l’an dernier.',
   },
+  de: {
+    title: 'Letztes Jahr, überprüft',
+    official: 'déclaration {year}',
+    noneLead:
+      'Leg die Steuererklärung des Vorjahres ab (das PDF aus GeTax, der Online-Steuererklärung oder deiner Steuersoftware), und Taxpresso überprüft sie hier, auf diesem Computer: was du hättest sparen können, was du vielleicht vergessen hast, und was du noch tun kannst.',
+    lead: 'Aus deiner Steuererklärung {year}, von Taxpresso auf diesem Computer gelesen, mit den Regeln von {year}. Nichts davon ändert deine Steuern {taxYear}.',
+    taxTitle: 'Deine Steuern {year}, neu berechnet',
+    taxOfficial: 'impôts {year}',
+    total: 'Total',
+    icc: 'Kantons- und Gemeindesteuer (ICC)',
+    ifd: 'Direkte Bundessteuer (IFD)',
+    computed: 'Berechnet',
+    estimate: 'Schätzung',
+    checkThis: 'Prüf das',
+    taxNote:
+      'Deine Steuererklärung zeigt die Steuer nicht, deine Veranlagung (bordereau) schon. Diese Zahlen stammen aus dem, was Taxpresso in deiner Steuererklärung gelesen hat.',
+    allMatch:
+      'Die Totale auf deiner Steuererklärung stimmen mit denen von Taxpresso überein ({n} von {n}).',
+    someMatch: 'Die anderen Totale auf deiner Steuererklärung stimmen überein ({n}).',
+    checkLine: '{what} ({column}): {printed} auf deiner {where}, {recomputed} neu berechnet.',
+    checkWhy:
+      'Vielleicht hat Taxpresso eine Zahl falsch gelesen, oder eine Regel ist noch nicht abgedeckt. Vergleiche mit der Seite deiner Steuererklärung.',
+    whereDeclaration: 'Steuererklärung',
+    whereAssessment: 'Veranlagung',
+    needsCommune:
+      'Um sie neu zu berechnen, braucht Taxpresso deine Gemeinde Ende {year}: Beantworte oben die Frage zu deiner Gemeinde.',
+    needsCivil:
+      'Um sie neu zu berechnen, braucht Taxpresso deinen Zivilstand Ende {year}: Beantworte oben die Frage.',
+    savedTitle: 'Was du hättest sparen können',
+    pillar3a: 'Säule 3a',
+    pillar3aOfficial: '3e pilier A',
+    paidOf: 'Du hast {paid} von {limit} eingezahlt.',
+    paidOfPartner: '{paid} von {limit} eingezahlt.',
+    paidAll: 'Voll eingezahlt: {limit}.',
+    upTo: 'bis zu {amount}',
+    withFund: 'Mit Pensionskasse (2e pilier)',
+    withoutFund: 'Ohne Pensionskasse',
+    fundUnknown:
+      'Hattest du {year} eine Pensionskasse (2e pilier)? Dein Lohnausweis zeigt Beiträge in Feld 10.1.',
+    left: 'noch {amount}',
+    saved: 'Steuern, die du gespart hättest, etwa',
+    noSaving: 'Taxpresso zeigt die mögliche Ersparnis, sobald es die Steuer neu berechnen kann.',
+    nothingMissed: 'Taxpresso hat keine ungenutzte Säule 3a gefunden.',
+    askTitle: 'Eine Frage wert',
+    askLead: 'Diese waren letztes Jahr leer oder pauschal. Nur Fragen: keine Beträge.',
+    stillTitle: 'Was du noch tun kannst',
+    catchUp:
+      'Hol {gapYear} in deiner Säule 3a nach (rachat 3a): bis zu {amount} im Jahr {year}, zusätzlich zur Einzahlung dieses Jahres.',
+    catchUpFirst: 'Zahl zuerst die Säule 3a dieses Jahres voll ein.',
+    catchUpEnter:
+      'Deine Steuererklärung zeigt {paid} in die Säule 3a eingezahlt im Jahr {gapYear}: Trag es in der Karte zum Nachkauf ein, wenn es stimmt.',
+    catchUpLink: 'Plane es, mit der Ersparnis',
+    catchUpNone: 'Eine 3a-Lücke vor 2025 kann nie nachgeholt werden.',
+    deadline: 'Frist für eine Einsprache (réclamation), {tax}: {date}',
+    deadlinePassed: 'abgelaufen',
+    deadlineNoDate:
+      'Taxpresso kennt das Datum deiner Veranlagung {year} nicht: Die Einsprachefrist steht darauf.',
+    deadlineNote:
+      'Das Datum auf deiner Veranlagung gilt immer. Wenn du nicht einverstanden bist, schreibst du die Einsprache (réclamation) selbst; Taxpresso schickt sie nie.',
+    noAssessment:
+      'Wenn du deine Veranlagung {year} (avis de taxation) hast, leg sie ab: Taxpresso zeigt ihre Einsprachefrist.',
+    unknownYear:
+      '{n} Veranlagung in deinen Dokumenten hat noch kein Steuerjahr: Sag Claude, für welches Jahr sie ist.',
+    unknownYears:
+      '{n} Veranlagungen in deinen Dokumenten haben noch kein Steuerjahr: Sag Claude, für welches Jahr jede ist.',
+    final:
+      'Ist eine Veranlagung rechtskräftig, kann sie nicht einfach geändert werden: Eine Revision (révision) wird für alles abgelehnt, was du mit zumutbarer Sorgfalt vorher hättest geltend machen können.',
+    how: 'So wird es berechnet',
+    assumptions: 'Was Taxpresso angenommen hat',
+    sources: 'Quellen',
+    page: 'Seite {page}',
+    you: 'Du',
+    partner: 'Partner',
+    household: 'Haushalt',
+    'tax.icc': 'Kanton',
+    'tax.ifd': 'Bund',
+    'column.icc': 'Kanton',
+    'column.ifd': 'Bund',
+    'column.total': 'Kanton und Bund',
+    'check.gross_income': 'Bruttoeinkommen (revenu brut, 91.00)',
+    'check.subtotal_9220': 'Zwischentotal 92.20',
+    'check.subtotal_9240': 'Zwischentotal 92.40',
+    'check.net_income': 'Total Nettoeinkommen (revenu net total, 95.00)',
+    'check.taxable_income': 'Steuerbares Einkommen (revenu imposable, 99.00)',
+    'check.gross_wealth': 'Bruttovermögen (fortune brute, 91.00)',
+    'check.net_wealth': 'Nettovermögen (fortune nette, 95.00)',
+    'check.taxable_wealth': 'Steuerbares Vermögen (fortune imposable, 99.00)',
+    'check.assessed_tax': 'Steuer auf deiner Veranlagung (montant de l’impôt)',
+    'q.professional_actual':
+      'Der Pauschalabzug für Berufskosten (déduction forfaitaire). Waren die tatsächlichen Kosten (frais effectifs) höher, zum Beispiel Werkzeug oder Gewerkschaftsbeiträge?',
+    'q.commute':
+      'Keine Fahrkosten (frais de déplacement). Zahlst du für den Arbeitsweg, zum Beispiel ein Abonnement oder ein Velo?',
+    'q.meals':
+      'Keine Verpflegungskosten (frais de repas). Isst du an Arbeitstagen deine Hauptmahlzeit auswärts?',
+    'q.childcare':
+      'Keine Kinderbetreuungskosten (frais de garde). Zahlst du für eine Krippe, eine schulergänzende Betreuung (parascolaire) oder eine Nanny für ein Kind unter 14?',
+    'q.medical':
+      'Keine Krankheitskosten (frais médicaux). Sind Kosten, die deine Krankenkasse nicht übernommen hat, wie Zahnarzt, Brille oder Franchise, zusammengekommen? Nur der Teil über einem Anteil deines Einkommens zählt.',
+    'q.donations': 'Keine Spenden (dons). Spendest du an steuerbefreite Organisationen?',
+    'q.pension_buyin':
+      'Kein Einkauf in die Pensionskasse (rachat 2e pilier). Dein Vorsorgeausweis zeigt, ob du dich einkaufen kannst; ein Einkauf, den deine Kasse bis zum 31. Dezember erhält, zählt für dieses Jahr.',
+    'u.year':
+      'Taxpresso berechnet nur eine Steuererklärung 2025 neu: Das sind die Regeln, die es hat.',
+    'u.not_read':
+      'Taxpresso konnte die Übersichtsseiten (récapitulation, Seiten 2 und 3) deiner Steuererklärung nicht lesen.',
+    'u.income_elsewhere':
+      'Ein Teil deines Einkommens war anderswo steuerbar (97.00): Der Satz hängt von Einkommen ab, das Taxpresso nicht sieht.',
+    'u.shield':
+      'Der Steuerschild (bouclier fiscal) könnte für dich gelten, den Taxpresso noch nicht berechnet; GeTax schon.',
+    'u.ifd_shared_custody':
+      'Bei geteilter Obhut ist noch nicht bekannt, welcher Elternteil den Elterntarif der Bundessteuer erhält.',
+    'a.year_not_printed': 'Deine Steuererklärung druckt ihr Jahr nicht: als Vorjahr angenommen.',
+    'a.commune_from_answers': 'Deine Gemeinde, wie du sie für dieses Jahr angegeben hast.',
+    'a.couple_from_answers': 'Dein Zivilstand, wie du ihn für dieses Jahr angegeben hast.',
+    'a.children_from_answers': 'Deine Kinder, wie du sie für dieses Jahr angegeben hast.',
+    'a.no_children_given': 'Keine Kinder gezählt: keine in deinen Antworten angegeben.',
+    'a.home_commune_only':
+      'Die ganze Gemeindesteuer in deiner Wohngemeinde: Taxpresso behält nicht, wo du gearbeitet hast.',
+    'a.others_as_declared':
+      'Jede Ersparnis ändert eine Zahl und lässt die anderen wie deklariert, auch Krankheitskosten und Spenden, deren Grenzen mit dem Einkommen gehen: Die tatsächliche Ersparnis kann etwas anders sein.',
+    'a.pension_fund_2025_same': 'Deine Pensionskasse wie heute, auch für letztes Jahr.',
+  },
 } as const;
 
 export type ReviewMessageKey = keyof (typeof messages)['en'];

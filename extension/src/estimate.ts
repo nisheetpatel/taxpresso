@@ -2,7 +2,7 @@
 // comes from the rules engine (@taxpresso/rules-ge, with the federal tax and the shared shapes of
 // @taxpresso/rules-ch, SPEC.md section 7); nothing is computed here.
 // Concise by default (C6), the explanation tree with `detail`.
-import type { Lang } from '@taxpresso/questionnaire';
+import { contentLang, type ContentLang, type UiLang } from './lang.js';
 import { chf, type Item, type Line, type Text } from '@taxpresso/rules-ch';
 import { compareWithLastYear, type LastYearRow, type TaxResult } from '@taxpresso/rules-ge';
 import { zurichEstimateView, zurichTaxOutput } from './estimate-zh.js';
@@ -284,17 +284,17 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
 }
 
 /** "Your estimate" in the dashboard, in the UI language. */
-export function estimateView(ws: Workspace, lang: Lang) {
+export function estimateView(ws: Workspace, lang: UiLang) {
   const e = ws.estimate();
   if (e.canton === 'ZH') return zurichEstimateView(ws, e, lang);
-  return genevaEstimateView(ws, e, lang);
+  return genevaEstimateView(ws, e, contentLang(lang));
 }
 
 /** Geneva's "Your estimate" (and what is missing while there is no canton). */
 function genevaEstimateView(
   ws: Workspace,
   e: { result: TaxResult | null; missing: Text[] },
-  lang: Lang,
+  lang: ContentLang,
 ) {
   const { result: r, missing } = e;
   if (!r) return { computed: false as const, missing: missing.map((m) => m[lang]) };

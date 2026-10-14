@@ -125,9 +125,45 @@ const text = {
     previewZhNote:
       'Taxpresso calcule Zurich à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
   },
+  de: {
+    title: 'Deine Schätzung',
+    official: 'impôts {year}',
+    estimate: 'Schätzung',
+    computed: 'Berechnet',
+    total: 'Total',
+    missing: 'Um deine Steuern zu berechnen, braucht Taxpresso zuerst: {what}.',
+    notComputed: 'Nicht berechnet',
+    breakdown: 'Woraus die Kantons- und Gemeindesteuer besteht',
+    taxable:
+      'Steuerbares Einkommen (revenu imposable): Kanton {icc}, Bund {ifd}. Steuerbares Vermögen (fortune imposable): {wealth}.',
+    items: 'Wichtigste Posten',
+    estimated: 'Was geschätzt ist',
+    needsOk:
+      '{n} Werte aus deinen Dokumenten brauchen noch dein OK: Die Zahlen ändern sich, wenn du sie korrigierst.',
+    needsOkOne:
+      '1 Wert aus deinen Dokumenten braucht noch dein OK: Die Zahlen ändern sich, wenn du ihn korrigierst.',
+    notes: 'Nicht in diesen Zahlen',
+    incomplete: 'Mindestens',
+    lastYearTitle: 'Dieses Jahr und letztes Jahr',
+    lastYearNote:
+      'Die Zahlen des Vorjahres stammen aus deiner letzten Steuererklärung. Sie dienen nur zum Vergleich und ändern die Steuer dieses Jahres nie.',
+    lastYearCol: 'Letztes Jahr',
+    thisYearCol: 'Dieses Jahr',
+    icc: 'Kanton',
+    ifd: 'Bund',
+    foot: 'Von Taxpresso auf diesem Computer aus den offiziellen Dokumenten berechnet. Frag Claude, warum eine Zahl so ist, wie sie ist.',
+    officialZh: 'Steuern {year}',
+    breakdownZh: 'Woraus die Staats- und Gemeindesteuern bestehen',
+    taxableZh:
+      'Steuerbares Einkommen: Staatssteuer {icc}, Bundessteuer {ifd}. Steuerbares Vermögen: {wealth}.',
+    previewZh: 'Zürich ist eine Vorschau: Was du prüfen solltest',
+    previewZhNote:
+      'Taxpresso berechnet Zürich aus den offiziellen Dokumenten. Ein paar Regeln sind darin nicht genau festgelegt, und einige Antworten wurden angenommen. Hier sind sie.',
+  },
 } as const;
 
 type Key = keyof (typeof text)['en'];
+const AND: Record<Language, string> = { en: ' and ', fr: ' et ', de: ' und ' };
 const tr = (lang: Language, key: Key, vars: Record<string, string | number> = {}) =>
   text[lang][key].replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
 
@@ -187,9 +223,7 @@ export function Estimate({
           <h2 id="est-title">{tr(lang, 'title')}</h2>
         </div>
         <div class="card est-card">
-          <p class="est-note">
-            {tr(lang, 'missing', { what: view.missing.join(lang === 'fr' ? ' et ' : ' and ') })}
-          </p>
+          <p class="est-note">{tr(lang, 'missing', { what: view.missing.join(AND[lang]) })}</p>
         </div>
       </section>
     );

@@ -1,7 +1,8 @@
 // The dashboard's API (/api/*). Same state and same rules as the MCP tools: answering here or in
 // the chat with Claude is the same thing (SPEC.md section 6).
 import { DOCUMENT_KINDS, LedgerError, VaultError } from '@taxpresso/ledger';
-import { NBSP, QuestionnaireError, type Lang } from '@taxpresso/questionnaire';
+import { NBSP, QuestionnaireError } from '@taxpresso/questionnaire';
+import { contentLang, say, type UiLang as Lang } from './lang.js';
 import * as z from 'zod/v4';
 import { copyPanelView, setRowEntered } from './copy-panel.js';
 import type { ApiRequest, ApiResponse } from './dashboard.js';
@@ -90,11 +91,13 @@ function suggestedFrom(ws: Workspace, slot: Slot) {
 }
 
 export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
+  // Views with English and French content only show English on a German page (./lang.ts).
+  const content = contentLang(lang);
   const snap = ws.snapshot();
   const people = ws.engine.file.people;
   const who = (person: string) =>
     snap.people.length > 1 && (person === 'p1' || person === 'p2')
-      ? people[person][lang]
+      ? say(people[person], lang)
       : undefined;
   const next = ws.next();
   const canton = ws.canton();
@@ -105,15 +108,15 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     canton: canton.canton
       ? {
           code: canton.canton.code,
-          name: canton.canton.name[lang],
+          name: say(canton.canton.name, lang),
           from: canton.from,
-          because: canton.because.map((b) => b[lang]),
+          because: canton.because.map((b) => say(b, lang)),
         }
       : null,
     lang,
     csrf,
     vault: ws.vaultInfo(),
-    people: snap.people.map((p) => ({ id: p, label: people[p as 'p1' | 'p2'][lang] })),
+    people: snap.people.map((p) => ({ id: p, label: say(people[p as 'p1' | 'p2'], lang) })),
     progress: {
       answered: snap.slots.filter((s) => s.value !== undefined).length,
       total: snap.slots.length,
@@ -141,7 +144,7 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       filename: d.filename,
       bytes: d.bytes,
       addedAt: d.addedAt,
-      ...(d.kind ? { kind: d.kind, kindLabel: KIND_LABELS[d.kind][lang] } : {}),
+      ...(d.kind ? { kind: d.kind, kindLabel: say(KIND_LABELS[d.kind], lang) } : {}),
       ...(d.kindSource ? { kindSource: d.kindSource } : {}),
       ...(d.person ? { person: d.person } : {}),
       // Read from its barcode; "pending" while whose it is isn't known (./barcode.ts).
@@ -149,31 +152,31 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
     })),
-    kinds: KIND_ORDER.map((k) => ({ value: k, label: KIND_LABELS[k][lang] })),
+    kinds: KIND_ORDER.map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
     // 10.5 second view, 10.8): ./document-views.ts.
-    cards: documentCards(ws, lang),
+    cards: documentCards(ws, content),
     replaced: ws.documents
       .filter((d) => d.replacedBy)
       .map((d) => ({ id: d.id, filename: d.filename, by: d.replacedBy! })),
-    checks: documentChecks(ws, lang),
-    assessments: assessmentCards(ws, lang),
+    checks: documentChecks(ws, content),
+    assessments: assessmentCards(ws, content),
     // The values to type into the official declaration, in the form's order (SPEC.md 10.5).
-    copyPanel: copyPanelView(ws, lang),
+    copyPanel: copyPanelView(ws, content),
     // "Check before you transmit": this year's declaration PDF against them (SPEC.md 10.4).
-    declarationCheck: declarationCheckView(ws, lang),
+    declarationCheck: declarationCheckView(ws, content),
     // "A copy of your folder": the ZIP made last, if any (./export.ts).
     folderExport: exportView(ws),
     // "Final check" before filling in the official form (SPEC.md 10.0, ./final-check.ts).
-    finalCheck: finalCheckView(ws, lang),
+    finalCheck: finalCheckView(ws, content),
     toConfirm: ws.toConfirm().length,
     requirements: ws.requirements().map((r) => ({
       id: r.id,
-      label: r.label[lang],
-      reason: r.reason[lang],
-      ...(r.explain ? { explain: r.explain[lang] } : {}),
+      label: say(r.label, lang),
+      reason: say(r.reason, lang),
+      ...(r.explain ? { explain: say(r.explain, lang) } : {}),
       ...(r.learnMore
-        ? { learnMore: { url: r.learnMore.url, label: r.learnMore.label[lang] } }
+        ? { learnMore: { url: r.learnMore.url, label: say(r.learnMore.label, lang) } }
         : {}),
       group: r.id.split(':')[0] ?? r.id,
       status: r.status,
@@ -196,13 +199,13 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
     },
     // Pension fund buy-in, 3a catch-up and TOU (SPEC.md section 8, groups B and C): ./planning.ts.
     planning: planningView(ws),
-    notSupported: ws.engine.notSupported(snap).map((n) => n.what[lang]),
-    securities: ws.securities(lang) ?? null,
+    notSupported: ws.engine.notSupported(snap).map((n) => say(n.what, lang)),
+    securities: ws.securities(content) ?? null,
     // The tax from the rules engine (./estimate.ts).
     estimate: estimateView(ws, lang),
-    holdings: holdingsView(ws, lang) ?? null,
+    holdings: holdingsView(ws, content) ?? null,
     // Last year's declaration: main figures to compare, never filed (SPEC.md 5.4).
-    lastYear: ws.lastYear(lang) ?? null,
+    lastYear: ws.lastYear(content) ?? null,
     // Last year's return, reviewed (./last-year-review.ts): read-only, never this year's tax.
     review: reviewOf(ws),
     notSupportedMessage: ws.engine.notSupportedMessage(lang),
@@ -210,7 +213,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       if (a.what === 'answer' && a.detail) {
         const slot = snap.slots.find((s) => s.id === a.detail);
         if (!slot) return { ...a, detail: '' };
-        const label = ws.keys[slot.question.key]?.label[lang];
+        const def = ws.keys[slot.question.key];
+        const label = def ? say(def.label, lang) : undefined;
         const answer = ws.engine.describe(slot, lang);
         return {
           ...a,
@@ -218,7 +222,7 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
         };
       }
       if (a.what === 'kind' && a.detail && a.detail in KIND_LABELS) {
-        return { ...a, detail: KIND_LABELS[a.detail as keyof typeof KIND_LABELS][lang] };
+        return { ...a, detail: say(KIND_LABELS[a.detail as keyof typeof KIND_LABELS], lang) };
       }
       return a;
     }),
@@ -237,12 +241,9 @@ const parse = <T>(schema: z.ZodType<T>, body: Buffer): T => {
 
 export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiResponse> {
   return async (req) => {
+    const asked = req.query.get('lang');
     const lang: Lang =
-      req.query.get('lang') === 'fr'
-        ? 'fr'
-        : req.query.get('lang') === 'en'
-          ? 'en'
-          : ws.config.uiLanguage;
+      asked === 'fr' || asked === 'en' || asked === 'de' ? asked : ws.config.uiLanguage;
     const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf) });
     try {
       await ws.ready();

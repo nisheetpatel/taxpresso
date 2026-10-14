@@ -24,7 +24,12 @@ import {
   type Text,
 } from './schema.js';
 
-export type Lang = 'en' | 'fr';
+export type Lang = 'en' | 'fr' | 'de';
+
+/** A text in the language asked for; English where a text has no German yet. */
+export function say(text: { en: string; fr: string; de?: string | undefined }, lang: Lang): string {
+  return lang === 'de' ? (text.de ?? text.en) : text[lang];
+}
 
 export interface CommuneOption {
   slug: string;
@@ -87,7 +92,11 @@ export interface RenderedQuestion {
 
 export class QuestionnaireError extends Error {}
 
-const YES_NO: Record<Lang, [string, string]> = { en: ['Yes', 'No'], fr: ['Oui', 'Non'] };
+const YES_NO: Record<Lang, [string, string]> = {
+  en: ['Yes', 'No'],
+  fr: ['Oui', 'Non'],
+  de: ['Ja', 'Nein'],
+};
 const COUPLE = new Set(['married', 'registered_partnership']);
 const slotKey = (key: string, owner: Owner) => `${key}|${owner}`;
 
@@ -317,18 +326,18 @@ export class QuestionnaireEngine {
         const selected = this.#selected(slot);
         const anyChips = (q.options ?? []).some((o) => o.chip);
         texts = selected.flatMap((o) =>
-          o.chip ? [o.chip[lang]] : anyChips ? [] : [o.label[lang]],
+          o.chip ? [say(o.chip, lang)] : anyChips ? [] : [say(o.label, lang)],
         );
       } else if (q.type === 'yesno') {
-        if (slot.value === true && q.chip && 'en' in q.chip) texts = [q.chip[lang]];
+        if (slot.value === true && q.chip && 'en' in q.chip) texts = [say(q.chip, lang)];
       } else if (q.type === 'number' && q.chip && 'one' in q.chip) {
         const n = Number(slot.value);
         const form = n === 0 ? q.chip.zero : n === 1 ? q.chip.one : q.chip.other;
-        if (form) texts = [form[lang].replace('{n}', String(n))];
+        if (form) texts = [say(form, lang).replace('{n}', String(n))];
       }
       const prefix =
         slot.person === 'p2'
-          ? `${this.file.people.p2Chip[lang]}${lang === 'fr' ? `${NBSP}: ` : ': '}`
+          ? `${say(this.file.people.p2Chip, lang)}${lang === 'fr' ? `${NBSP}: ` : ': '}`
           : '';
       chips.push(...texts.map((t) => prefix + t));
     }
@@ -337,7 +346,8 @@ export class QuestionnaireEngine {
 
   render(slot: Slot, snapshot: Snapshot, lang: Lang): RenderedQuestion {
     const q = slot.question;
-    const text = 'p1' in q.text ? q.text[slot.person === 'p2' ? 'p2' : 'p1'][lang] : q.text[lang];
+    const text =
+      'p1' in q.text ? say(q.text[slot.person === 'p2' ? 'p2' : 'p1'], lang) : say(q.text, lang);
     const options =
       q.type === 'commune'
         ? this.communes.map((c) => ({ value: c.slug, label: c.name, notSupported: false }))
@@ -348,7 +358,7 @@ export class QuestionnaireEngine {
             ]
           : q.options?.map((o) => ({
               value: o.value,
-              label: o.label[lang],
+              label: say(o.label, lang),
               notSupported: !!o.notSupported,
             }));
     return {
@@ -358,18 +368,18 @@ export class QuestionnaireEngine {
       ...(q.perPerson &&
       snapshot.people.length > 1 &&
       (slot.person === 'p1' || slot.person === 'p2')
-        ? { who: this.file.people[slot.person][lang] }
+        ? { who: say(this.file.people[slot.person], lang) }
         : {}),
       type: q.type,
       text,
-      ...(q.help ? { help: q.help[lang] } : {}),
-      ...(q.explain ? { explain: q.explain[lang] } : {}),
+      ...(q.help ? { help: say(q.help, lang) } : {}),
+      ...(q.explain ? { explain: say(q.explain, lang) } : {}),
       ...(q.learnMore
-        ? { learnMore: { url: q.learnMore.url, label: q.learnMore.label[lang] } }
+        ? { learnMore: { url: q.learnMore.url, label: say(q.learnMore.label, lang) } }
         : {}),
-      ...(q.link ? { link: { url: q.link.url, label: q.link.label[lang] } } : {}),
+      ...(q.link ? { link: { url: q.link.url, label: say(q.link.label, lang) } } : {}),
       ...(options ? { options } : {}),
-      ...(q.none ? { none: q.none[lang] } : {}),
+      ...(q.none ? { none: say(q.none, lang) } : {}),
       ...(q.min !== undefined ? { min: q.min } : {}),
       ...(q.max !== undefined ? { max: q.max } : {}),
       ...(slot.value !== undefined ? { value: slot.value } : {}),
@@ -386,12 +396,12 @@ export class QuestionnaireEngine {
     if (q.type === 'yesno') return YES_NO[lang][value ? 0 : 1];
     if (q.type === 'number') return String(value);
     if (q.type === 'money') return typeof value === 'number' ? chfText(value) : String(value);
-    const labels = this.#selected(slot, value).map((o) => o.label[lang]);
-    return labels.length ? labels.join(', ') : (q.none?.[lang] ?? '');
+    const labels = this.#selected(slot, value).map((o) => say(o.label, lang));
+    return labels.length ? labels.join(', ') : q.none ? say(q.none, lang) : '';
   }
 
   notSupportedMessage(lang: Lang): string {
-    return this.file.notSupported[lang];
+    return say(this.file.notSupported, lang);
   }
 
   #selected(slot: Slot, value: FactValue | undefined = slot.value) {

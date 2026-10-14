@@ -391,7 +391,7 @@ export function Holdings({
             <div class="hold-section" key={s.id}>
               <h3>
                 <span class="hold-form tnum">{s.form}</span> {s.label}
-                {lang === 'en' ? (
+                {lang !== 'fr' ? (
                   <span class="hold-official" lang="fr">
                     {' '}
                     ({s.official})

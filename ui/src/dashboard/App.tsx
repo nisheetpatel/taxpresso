@@ -22,10 +22,13 @@ import type { OfficialLink, Question, RequirementView, State, Value } from './ty
 
 const POLL_MS = 2000;
 
+/** The language button cycles English, French, German. */
+const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'en' };
+
 function readLang(): Language | undefined {
   try {
     const v = localStorage.getItem('taxpresso.lang');
-    return v === 'en' || v === 'fr' ? v : undefined;
+    return v === 'en' || v === 'fr' || v === 'de' ? v : undefined;
   } catch {
     return undefined;
   }
@@ -258,7 +261,11 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
       <span class="plan-when">{t(lang, 'planWhen')}</span>
       <h2 id="plan-title">
         {t(lang, 'planTitle')}
-        <Explain text={t(lang, 'planExplain')} topic={t(lang, 'planTopic')} lang={lang} />
+        <Explain
+          text={t(lang, state.canton?.code === 'ZH' ? 'planExplainZh' : 'planExplain')}
+          topic={t(lang, 'planTopic')}
+          lang={lang}
+        />
       </h2>
       <div class="plan-figures">
         <div class="figure">
@@ -277,7 +284,7 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
                 {money(Math.round(result.saving.totalCentimes / 1000) * 1000, lang)}
               </strong>
               <span class="figure-note tnum">
-                {t(lang, 'planSavingSplit', {
+                {t(lang, state.canton?.code === 'ZH' ? 'planSavingSplitZh' : 'planSavingSplit', {
                   icc: money(result.saving.cantonalCentimes, lang),
                   ifd: money(result.saving.federalCentimes, lang),
                 })}
@@ -441,9 +448,9 @@ function Header({
           type="button"
           class="ghost"
           aria-label={t(lang, 'langButton')}
-          onClick={() => onLang(lang === 'en' ? 'fr' : 'en')}
+          onClick={() => onLang(NEXT_LANG[lang])}
         >
-          {lang === 'en' ? 'EN' : 'FR'}
+          {lang.toUpperCase()}
         </button>
         <span class="chip chip-verified">{t(lang, 'localOnly')}</span>
       </div>

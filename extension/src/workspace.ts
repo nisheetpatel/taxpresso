@@ -16,6 +16,7 @@ import {
 } from '@taxpresso/ledger';
 import { pillar3aPlan, type HouseholdInput, type Pillar3aResult } from '@taxpresso/optimizer';
 import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpresso/questionnaire';
+import type { ContentLang } from './lang.js';
 import {
   assessmentViews,
   computeReturn,
@@ -999,7 +1000,7 @@ export class Workspace {
   }
 
   /** The securities list for the dashboard, from the ledger, with export warnings. */
-  securities(lang: Lang): SecuritiesView | undefined {
+  securities(lang: ContentLang): SecuritiesView | undefined {
     const s = this.#securities ?? { summary: emptySummary(this.engine.taxYear), unreadable: [] };
     return securitiesView(this.ledger, s.summary, lang, s.unreadable);
   }
@@ -1010,7 +1011,7 @@ export class Workspace {
   }
 
   /** The "Last year" card: last year's main figures and the suggestions still waiting. */
-  lastYear(lang: Lang): LastYearView | undefined {
+  lastYear(lang: ContentLang): LastYearView | undefined {
     return lastYearView(this.ledger, this.activeDocuments(), this.engine.taxYear, lang);
   }
 

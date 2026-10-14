@@ -7,7 +7,7 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import { FORM_2025, FORM_2026, LEDGER_ROUTES_2026 } from '@taxpresso/filing-ge';
 import type { Fact } from '@taxpresso/ledger';
-import type { Lang } from '@taxpresso/questionnaire';
+import type { ContentLang as Lang } from './lang.js';
 import type { Text } from '@taxpresso/rules-ch';
 import {
   allLines,
