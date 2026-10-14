@@ -37,6 +37,8 @@ export const messages = {
     suggestedFromPriorNoYear:
       'From last year’s declaration (page {page}). Check it is still right for {taxYear}, or change it.',
     suggestedFromDoc: 'Read in one of your documents (page {page}). Check it, or change it.',
+    suggestedFromAssessment:
+      'From your {year} assessment (avis de taxation, page {page}). Check it is still right for {taxYear}, or change it.',
     confirmNext: 'Confirm and continue',
     none: 'None of these',
     chooseCommune: 'Choose your commune',
@@ -245,6 +247,8 @@ export const messages = {
     suggestedFromPriorNoYear:
       'D’après votre déclaration de l’an dernier (page {page}). Vérifiez que c’est toujours juste pour {taxYear}, ou modifiez-le.',
     suggestedFromDoc: 'Lu dans un de vos documents (page {page}). Vérifiez-le, ou modifiez-le.',
+    suggestedFromAssessment:
+      'D’après votre avis de taxation {year} (page {page}). Vérifiez que c’est toujours juste pour {taxYear}, ou modifiez-le.',
     confirmNext: 'Confirmer et continuer',
     none: 'Aucun de ceux-là',
     chooseCommune: 'Choisissez votre commune',
@@ -441,6 +445,8 @@ export const messages = {
     suggestedFromPriorNoYear:
       'Aus deiner Steuererklärung des Vorjahres (Seite {page}). Prüfe, ob es für {taxYear} noch stimmt, oder ändere es.',
     suggestedFromDoc: 'In einem deiner Dokumente gelesen (Seite {page}). Prüfe es, oder ändere es.',
+    suggestedFromAssessment:
+      'Aus deiner Veranlagung {year} (avis de taxation, Seite {page}). Prüfe, ob es für {taxYear} noch stimmt, oder ändere es.',
     confirmNext: 'Bestätigen und weiter',
     none: 'Nichts davon',
     chooseCommune: 'Wähle deine Gemeinde',
@@ -653,6 +659,8 @@ export const messages = {
       'Dalla dichiarazione dell’anno scorso (pagina {page}). Controlla che sia ancora giusto per il {taxYear}, oppure cambialo.',
     suggestedFromDoc:
       'Letto in uno dei tuoi documenti (pagina {page}). Controllalo, oppure cambialo.',
+    suggestedFromAssessment:
+      'Dalla tua notifica di tassazione {year} (avis de taxation, pagina {page}). Controlla che sia ancora giusto per il {taxYear}, oppure cambialo.',
     confirmNext: 'Conferma e continua',
     none: 'Nessuna di queste',
     chooseCommune: 'Scegli il tuo Comune',

@@ -5812,5 +5812,45 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-14T13:12:48.225Z",
     "status": "ok"
+  },
+  "ge-na-law-ldirpp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",
+    "file": "ge/files/ge-na-law-ldirpp.html",
+    "bytes": 14294,
+    "sha256": "aac5f6aa7a085cdf53e7fcdd6cd62fb97382b9bd7a93203dc572894723b85c2b",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T13:14:20.640Z",
+    "status": "ok"
+  },
+  "ge-na-law-lcacant": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_07.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_07.htm",
+    "file": "ge/files/ge-na-law-lcacant.html",
+    "bytes": 16564,
+    "sha256": "dbe6eac7fcfd400ad59ebfec1888e7da7ec566f25064c4c06334e1aa38412cb9",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T13:14:20.642Z",
+    "status": "ok"
+  },
+  "ge-2026-source-capital-icc-tariff": {
+    "url": "https://www.ge.ch/document/41804/telecharger",
+    "final_url": "https://www.ge.ch/document/41804/telecharger",
+    "file": "ge/files/ge-2026-source-capital-icc-tariff.pdf",
+    "bytes": 76480,
+    "sha256": "2f1cd19647e0baa7f930a9f364571908df7b5fd29568b21132677f0860132e63",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:14:20.704Z",
+    "status": "ok"
+  },
+  "ge-2025-source-capital-icc-tariff": {
+    "url": "https://www.ge.ch/document/38083/telecharger",
+    "final_url": "https://www.ge.ch/document/38083/telecharger",
+    "file": "ge/files/ge-2025-source-capital-icc-tariff.pdf",
+    "bytes": 155772,
+    "sha256": "bd8012f29b25b8606282091fb28fc045d671741bb1f8a1a9ab61d40ca568437a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:14:20.828Z",
+    "status": "ok"
   }
 }

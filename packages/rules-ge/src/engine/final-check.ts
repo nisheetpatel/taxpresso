@@ -16,7 +16,7 @@ import {
   type OfficialDocument,
   type OfficialLink,
 } from '../law/official-documents.js';
-import { chf } from '@taxpresso/rules-ch';
+import { chf, type CapitalTax } from '@taxpresso/rules-ch';
 import { ESTIMATE_TEXT } from './explain.js';
 import { rubric } from './rubrics.js';
 import type { EstimateReason, LimitApplied, TaxResult } from './types.js';
@@ -105,7 +105,11 @@ export type OfficialPdfState =
 export type FinalCheckResult = Pick<
   TaxResult,
   'estimates' | 'incomplete' | 'assumptions' | 'notCounted' | 'unsupported' | 'unverifiedRules'
-> & { limits: readonly LimitApplied[] };
+> & {
+  limits: readonly LimitApplied[];
+  /** The separate tax on pension capital, in a canton that computes it (Geneva). */
+  capital?: CapitalTax;
+};
 
 /**
  * What the check says differently in another canton: its form's labels, its software, the names of
@@ -172,6 +176,7 @@ export type FinalCheckKind =
   | 'incomplete'
   | 'official_pdf'
   | 'limit'
+  | 'capital'
   | 'best_figure'
   | 'holding_check'
   | 'not_counted'
@@ -226,6 +231,7 @@ const FIX_ORDER: FinalCheckKind[] = [
   'official_pdf',
 ];
 const KNOW_ORDER: FinalCheckKind[] = [
+  'capital',
   'limit',
   'best_figure',
   'holding_check',
@@ -472,6 +478,69 @@ const ESTIMATE_RULE_TODO: Record<EstimateReason, (year: number) => Text> = {
       `Rien à faire de votre côté${NB}: quand Genève publie son guide ${year} (janvier ${year + 1}), installez la version de Taxpresso qui le contient. Ses montants sont alors définitifs.`,
     ),
 };
+
+/**
+ * The lump sums from the 2nd pillar and pillar 3a: unusual items, each with the rule that governs
+ * it (SPEC.md 10.0). The tax apart, and the three-year rule on buy-ins for a 2nd pillar lump sum.
+ */
+function capitalItems(input: FinalCheckInput): FinalCheckItem[] {
+  const c = input.result?.capital;
+  if (!c) return [];
+  const links = (source: string) => officialLinks(source, input.canton?.documents);
+  const out: FinalCheckItem[] = [];
+  const taxes =
+    c.icc && c.ifd && c.total
+      ? t(
+          ` Its tax: cantonal and communal ${chf(c.icc.tax.amount)}, federal ${chf(c.ifd.tax.amount)}, ${chf(c.total.amount)} together.`,
+          ` Son impôt${NB}: cantonal et communal ${chf(c.icc.tax.amount)}, fédéral ${chf(c.ifd.tax.amount)}, ${chf(c.total.amount)} au total.`,
+        )
+      : t(
+          ' Its tax is not computed: see above.',
+          ` Son impôt n’est pas calculé${NB}: voir plus haut.`,
+        );
+  out.push({
+    id: 'capital:taxed_apart',
+    kind: 'capital',
+    code: '98.12',
+    title: t(
+      '98.12 Pension capital, taxed apart (prestations en capital du 2e et 3e pilier A)',
+      '98.12 Prestations en capital du 2e et 3e pilier A, imposées à part',
+    ),
+    detail: t(
+      `${chf(c.amount.amount)} received this year, taxed apart from the rest of your income at a fifth of the scale, every lump sum of the year together.${taxes.en}`,
+      `${chf(c.amount.amount)} reçus cette année, imposés à part du reste de vos revenus au cinquième du barème, tous les capitaux de l’année ensemble.${taxes.fr}`,
+    ),
+    todo: t(
+      'Declare the amount at 98.12 and attach each attestation.',
+      'Déclarez le montant au 98.12 et joignez chaque attestation.',
+    ),
+    // The federal instructions exist for 2026 only (docs/design/tax-years.md).
+    sources: links(
+      `ge-2025-guide-declaration-pp p. 13; ge-na-law-lipp art. 45; ch-na-law-lifd art. 38 (p. 32)${input.taxYear >= 2026 ? '; ch-2026-ifd-instructions-personnes-physiques p. 9' : ''}`,
+    ),
+  });
+  if (c.secondPillar) {
+    out.push({
+      id: 'capital:buy_ins',
+      kind: 'capital',
+      code: '98.12',
+      title: t(
+        'Buy-ins of the three years before a 2nd pillar lump sum',
+        'Rachats des trois années avant un capital du 2e pilier',
+      ),
+      detail: t(
+        'Benefits that come from a buy-in can’t be paid as a lump sum for three years. If you bought into your pension fund in the three years before, the tax office can take back those buy-ins’ deductions (rappel d’impôt).',
+        `Les prestations qui résultent d’un rachat ne peuvent pas être versées en capital pendant trois ans. Si vous avez fait un rachat dans votre caisse de pension pendant les trois années précédentes, l’administration peut reprendre la déduction de ces rachats (rappel d’impôt).`,
+      ),
+      todo: t(
+        'If you made such a buy-in, ask the AFC what it means for you.',
+        'Si vous avez fait un tel rachat, demandez à l’AFC ce que cela implique pour vous.',
+      ),
+      sources: links('ge-2025-guide-declaration-pp p. 18; ch-na-law-lpp art. 79b al. 3 (p. 66)'),
+    });
+  }
+  return out;
+}
 
 export function finalCheck(input: FinalCheckInput): FinalCheck {
   const links = (source: string) => officialLinks(source, input.canton?.documents);
@@ -777,7 +846,9 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
     });
   }
 
-  // Good to know: limits, what the engine doesn't count, assumes or can't verify.
+  // Good to know: the lump sums taxed apart, limits, what the engine doesn't count, assumes or
+  // can't verify.
+  know.push(...capitalItems(input));
   know.push(...limitItems(input));
   (r?.notCounted ?? []).forEach((n, i) =>
     know.push({

@@ -373,3 +373,26 @@ describe('annexe B in the PDF: one sheet per self-employed taxpayer, the same co
     expect(c.counts.toFix).toBe(1);
   });
 });
+
+describe('the lump sums from the 2nd pillar and pillar 3a (98.12)', () => {
+  it('compares the one amount of the household with the PDF, both spouses’ together', () => {
+    // Printed under the ICC column of PG2's information (ge-2025-declaration-specimen p. 2).
+    const c = check(
+      [item('98.12', 'p1', chf(300_000)), item('98.12', 'p2', chf(60_000))],
+      [at('PG2', '98.12', 'household', { icc: chf(360_000) }, 2)],
+    );
+    expect(lineOf(c, 'PG2', '98.12')).toMatchObject({
+      outcome: 'match',
+      label: 'Prestations en capital du 2ème et 3ème pilier A imposées au 1/5ème du barème',
+      cells: [{ column: 'amount', taxpresso: 360_000, pdf: 360_000 }],
+    });
+    const off = check(
+      [item('98.12', 'p1', chf(85_000))],
+      [at('PG2', '98.12', 'household', { icc: chf(58_000) }, 2)],
+    );
+    expect(lineOf(off, 'PG2', '98.12')).toMatchObject({
+      outcome: 'differs',
+      cells: [{ column: 'amount', taxpresso: 85_000, pdf: 58_000 }],
+    });
+  });
+});

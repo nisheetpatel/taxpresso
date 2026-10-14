@@ -2,10 +2,12 @@
 // part every canton shares is packages/rules-ch's (core/from-ledger.ts); Geneva gives it its commune
 // (a slug of its list), the lines of its form for the alimony note, and adds its own: the securities
 // list and the other movable wealth by rubric (the état des titres, ../2026/etat-des-titres.ts), and
-// self-employment, the simple case (annexe B, ./business.ts).
-import type { Fact, Owner, VaultDocument } from '@taxpresso/ledger';
+// self-employment, the simple case (annexe B, ./business.ts), and the lump sums from the 2nd pillar
+// and pillar 3a, taxed apart (./capital.ts).
+import type { DocumentKind, Fact, Owner, VaultDocument } from '@taxpresso/ledger';
 import {
   amountOf,
+  businessYear,
   factsOfYear,
   householdFromFacts,
   type BusinessInput,
@@ -15,7 +17,16 @@ import type { CommuneSlug } from '../2026/communes.js';
 import { COMMUNES_2026 } from '../2026/communes.js';
 import { etatDesTitres } from '../2026/etat-des-titres.js';
 import { isTaxYear } from './params.js';
-import type { EngineInput, PersonInput, Text, WealthItemInput } from './types.js';
+import type {
+  CapitalBenefitInput,
+  CapitalInput,
+  CapitalReason,
+  EngineInput,
+  EnginePerson,
+  PersonInput,
+  Text,
+  WealthItemInput,
+} from './types.js';
 
 export interface LedgerInput {
   input: EngineInput | null;
@@ -127,9 +138,10 @@ const WHO: Record<'p1' | 'p2', Text> = {
 function selfEmployment(
   people: readonly PersonInput[],
   facts: readonly Fact[],
-): { people: PersonInput[]; missing: Text[]; unsupported: Text[] } {
+): { people: PersonInput[]; missing: Text[]; unsupported: Text[]; notes: Text[] } {
   const missing: Text[] = [];
   const unsupported: Text[] = [];
+  const notes: Text[] = [];
   const couple = people.length > 1;
   const answer = (key: string, person: Owner) =>
     facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
@@ -209,9 +221,33 @@ function selfEmployment(
         ...(lossIfd ? { federal: lossIfd } : {}),
       };
     }
+    // Before the year's accounts are in: the profit the user gave in their own words, as an
+    // estimate (the rough salary's way, packages/rules-ch core/from-ledger.ts), on 12.01.
+    if (!businessYear(business).hasAccounts) {
+      const rough = amountOf(
+        facts.filter(
+          (f) =>
+            f.key === 'plan.business_profit' &&
+            f.person === p.id &&
+            typeof f.value === 'number' &&
+            f.value > 0,
+        ),
+      );
+      if (rough) {
+        notes.push(
+          whose(
+            t(
+              'No business accounts yet: your rough profit is used as an estimate, after your own AVS contributions and without earlier losses or business wealth.',
+              `Pas encore de comptes commerciaux${NB}: votre bénéfice approximatif est utilisé comme estimation, après vos cotisations AVS et sans pertes antérieures ni fortune commerciale.`,
+            ),
+          ),
+        );
+        return { ...p, selfEmploymentProfit: { ...rough, status: 'estimate' as const } };
+      }
+    }
     return { ...p, business };
   });
-  return { people: out, missing, unsupported };
+  return { people: out, missing, unsupported, notes };
 }
 
 export function engineInputFromFacts(
@@ -237,6 +273,23 @@ export function engineInputFromFacts(
   const counted = factsOfYear(taxYear, facts, documents, () => undefined);
   const self = selfEmployment(input.people as PersonInput[], counted);
   if (self.missing.length) return { input: null, missing: [...missing, ...self.missing], notes };
+  notes.push(...self.notes);
+
+  // Lump sums from the 2nd pillar and pillar 3a, taxed apart (./capital.ts).
+  const capital = capitalFromFacts(taxYear, facts, documents, people, notes);
+  // Capital paid by an employer (salary certificate box 4, 11.70) stays with the salary, as box 8
+  // adds it in: the guide taxes it otherwise when it replaces regular payments or is a pension
+  // benefit (ge-2025-guide-declaration-pp p. 17 and 18; ch-2026-ifd-instructions-personnes-
+  // physiques p. 9), which Taxpresso can't tell. Said, not changed.
+  const box4 = factsOfYear(taxYear, facts, documents, () => undefined).some(
+    (f) => f.key === 'salary.capital' && typeof f.value === 'number' && f.value > 0,
+  );
+  if (box4) {
+    notes.push({
+      en: 'Capital paid by your employer (salary certificate box 4, 11.70) is counted with your salary, as box 8 adds it in. If it replaces regular payments or is a pension benefit, it is taxed otherwise (guide p. 17 and 18): ask the AFC.',
+      fr: `Les prestations en capital versées par votre employeur (chiffre 4 du certificat de salaire, 11.70) sont comptées avec votre salaire, comme le chiffre 8 les inclut. Si elles remplacent des prestations périodiques ou relèvent de la prévoyance, elles sont imposées autrement (guide p. 17 et 18)${NB}: demandez à l’AFC.`,
+    });
+  }
 
   return {
     input: {
@@ -246,8 +299,91 @@ export function engineInputFromFacts(
       commune: input.commune as CommuneSlug,
       wealthItems,
       ...(self.unsupported.length ? { unsupported: self.unsupported } : {}),
+      ...(capital ? { capital } : {}),
     },
     missing,
     notes,
+  };
+}
+
+/** The pillar of each kind of attestation of a lump sum. */
+const CAPITAL_KINDS: Partial<Record<DocumentKind, CapitalBenefitInput['pillar']>> = {
+  lpp_capital_attestation: 'pillar2',
+  pillar3a_capital_attestation: 'pillar3a',
+};
+
+const REASONS: readonly CapitalReason[] = [
+  'retirement',
+  'home',
+  'self_employment',
+  'leaving',
+  'other',
+];
+
+/**
+ * The household's lump sums of the year, one per attestation (capital.amount, capital.date,
+ * capital.reason), with the answers that decide whether Taxpresso can tax them: a salary taxed at
+ * source, an arrival from abroad. Undefined when there is none.
+ */
+export function capitalFromFacts(
+  taxYear: number,
+  facts: readonly Fact[],
+  documents: readonly VaultDocument[],
+  people: readonly EnginePerson[],
+  notes: Text[] = [],
+): CapitalInput | undefined {
+  const note = (x: Text) => notes.some((n) => n.en === x.en) || notes.push(x);
+  const year = factsOfYear(taxYear, facts, documents, () => undefined);
+  const docs = new Map(documents.map((d) => [d.id, d]));
+  const owner = (p: Fact['person']): EnginePerson | undefined =>
+    p === 'p1' || p === 'p2' ? p : people.length === 1 ? 'p1' : undefined;
+  const benefits: CapitalBenefitInput[] = [];
+  const instances = [
+    ...new Set(year.filter((f) => f.key === 'capital.amount').map((f) => f.instance)),
+  ];
+  for (const instance of instances) {
+    const doc = instance ? docs.get(instance) : undefined;
+    const pillar = doc?.kind ? CAPITAL_KINDS[doc.kind] : undefined;
+    const own = year.filter((f) => f.key === 'capital.amount' && f.instance === instance);
+    for (const person of new Set(own.map((f) => owner(f.person)))) {
+      if (!pillar || !person) continue;
+      const amount = amountOf(own.filter((f) => owner(f.person) === person));
+      if (!amount) continue;
+      const read = (key: string) =>
+        year.find((f) => f.key === key && f.instance === instance && owner(f.person) === person)
+          ?.value;
+      const date = read('capital.date');
+      const reason = read('capital.reason');
+      benefits.push({
+        ...(instance ? { id: instance } : {}),
+        person,
+        pillar,
+        amount,
+        ...(typeof date === 'string' ? { date } : {}),
+        ...(typeof reason === 'string' && REASONS.includes(reason as CapitalReason)
+          ? { reason: reason as CapitalReason }
+          : {}),
+      });
+    }
+  }
+  // An answer the user gave, not a suggestion read from a document.
+  const answer = (key: string, person: Fact['person']) =>
+    year.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
+  const said = people.filter((p) => {
+    const v = answer('profile.pension_capital', p);
+    return Array.isArray(v) && v.length > 0;
+  });
+  if (said.some((p) => !benefits.some((b) => b.person === p))) {
+    note({
+      en: 'Pension capital: no attestation read yet for a lump sum you said you received, so its separate tax is not computed for it.',
+      fr: `Prestations en capital${NB}: aucune attestation lue pour un capital que vous avez dit avoir reçu, son impôt séparé n’est donc pas calculé.`,
+    });
+  }
+  if (!benefits.length) return undefined;
+  const atSource = people.filter((p) => answer('profile.taxed_at_source', p) === true);
+  return {
+    benefits,
+    ...(atSource.length ? { atSource } : {}),
+    ...(answer('profile.moved', 'household') === 'from_abroad' ? { arrivedFromAbroad: true } : {}),
   };
 }

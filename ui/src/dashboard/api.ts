@@ -16,6 +16,10 @@ let shownYear: number | undefined;
 /** Whether the dashboard runs inside the conversation rather than in the browser. */
 export const embedded = (): boolean => transport?.embedded === true;
 
+/** Hands a request to Claude in the chat when the host can; false when the user should paste it. */
+export const askClaude = async (text: string): Promise<boolean> =>
+  (await transport?.ask?.(text)) === true;
+
 export function setTransport(next: Transport): void {
   transport = next;
 }

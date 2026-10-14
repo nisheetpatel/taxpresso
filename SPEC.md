@@ -34,6 +34,7 @@ In scope:
 - Salaried income (one or more employers), pensions/annuities
 - Bank accounts and securities, preferably via e-tax statements (eCH-0196)
 - Pillar 3a, pension fund (LPP) buy-ins
+- Lump sums from the 2nd pillar (pension fund, vested benefits) and pillar 3a in Geneva (prestations en capital, 98.12), paid at retirement, for one's own home or to start self-employment, for tax years 2025 and 2026: the separate tax on them, cantonal and communal (LIPP art. 45) and federal (LIFD art. 38), never in the progressive income base. Added by the owner's decision of 14 October 2026. Not supported (fail closed): a lump sum paid on leaving Switzerland or to someone living abroad (taxed at source), a person whose salary is taxed at source, the year of an arrival from abroad, any other reason (disability, a death, a divorce, a transfer), capital indemnities other than pension benefits (98.75; capital paid by the employer, salary certificate box 4, stays with the salary as before), a buy-in in the same year as a 2nd pillar lump sum (the income tax is then not computed), and every other canton
 - Health insurance premiums, medical costs, childcare costs, professional expenses (flat vs actual), donations, private debt interest, alimony
 - Simple crypto holdings (wealth + declared income)
 - Self-employment in Geneva, the simplest common case (decided 14 October 2026; tax years 2025 and 2026): a sole proprietor (raison individuelle) living in Geneva, one spouse or both, possibly also salaried, with one business in their commune of residence. The net result (bénéfice net or perte) from their own accounts (bilan et compte de résultat) or simple records (relevé des recettes et dépenses), their own AVS/AI/APG contributions (32.10, 32.11), the business wealth and its deduction (12.50, 57.50, 51.60), losses of the seven previous years (57.20), pillar 3a without a pension fund (the higher limit, 32.40) and its room before 31 December. Sources: the guide for the self-employed (ge-2025-guide-independants), the federal instructions of each year (ch-2025-ifd-instructions-personnes-physiques, ch-2026-ifd-instructions-personnes-physiques), LIPP and LIFD.
@@ -149,7 +150,9 @@ interface Document {
       | 'alimony_proof' | 'crypto_statement' | 'separation_judgment'
       | 'broker_export'   // a broker's position or activity export (5.7)
       | 'other'           // unset until read or until the user says what it is
-      | 'tax_assessment'; // bordereaux ICC/IFD and avis de taxation (section 10.8)
+      | 'tax_assessment'  // bordereaux ICC/IFD and avis de taxation (section 10.8)
+      // a lump sum from the 2nd pillar or pillar 3a, the institution's copy (LIFD art. 129 al. 2)
+      | 'lpp_capital_attestation' | 'pillar3a_capital_attestation';
   kindSource?: 'user' | 'barcode' | 'pdf_text' | 'claude' | 'export';
   person?: Person | 'household';
   issuer?: string; pages?: number;
@@ -232,7 +235,7 @@ export const PILLAR3A_CAP_EMPLOYEE_WITH_LPP = {
 
 Fill values only from official sources in the sources library (section 7b): Geneva guide fiscal for the year, LIPP/LPFisc, federal LIFD, ESTV/AFC circulars, Geneva barèmes and communal centimes additionnels. Each constant's `source` names the manifest entry id plus page or article, e.g. `ge-2025-icc-tariff-pdf p. 3`. No value from memory, blogs or the model. If a value is unknown, the build fails rather than guessing.
 
-Coverage v1: employment income and its deductions, pensions, investment income, wealth and wealth deductions, family/child deductions (note the 2024 Geneva family-charges reform as an example of annual change), insurance premiums, medical costs threshold, childcare, professional expenses (flat vs actual), 3a, LPP buy-ins, donations, debt interest, alimony, joint taxation/splitting, communal multipliers, IFD with its own deductions.
+Coverage v1: employment income and its deductions, pensions, investment income, wealth and wealth deductions, family/child deductions (note the 2024 Geneva family-charges reform as an example of annual change), insurance premiums, medical costs threshold, childcare, professional expenses (flat vs actual), 3a, LPP buy-ins, donations, debt interest, alimony, joint taxation/splitting, communal multipliers, IFD with its own deductions, and in Geneva the separate tax on lump sums from the 2nd pillar and pillar 3a (`TaxResult.capital`: its own lines, never in the income base or the return's total).
 
 Build order: implement tax year 2025 first (guide fiscal 2025 and GeTax 2025 exist today), then add 2026 when the 2026 guide is published (expected January 2027). Keep every year. Federal amounts differ every year (the 2027 cold-progression circular is already out): never carry a federal amount from one year to the next. Until then the engine computes 2026 with the official 2026 federal values and communal rates, and with Geneva's 2025 scales and amounts, each of those flagged as an estimate everywhere it shows (section 9); the 2026 guide replaces them and clears the flags.
 

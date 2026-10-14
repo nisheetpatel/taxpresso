@@ -670,6 +670,28 @@ describe('from the ledger: answers and the business’s documents', () => {
     expect(input!.people[0]!.business!.turnover).toBeUndefined();
   });
 
+  it('before the accounts, takes the profit the user gave as an estimate; the accounts win', () => {
+    const { l, put, docs } = ledgerOf();
+    put('plan.business_profit', 'p1', chf(86_000));
+    // The accounts are read: they count, the rough figure doesn't.
+    const read = engineInputFromFacts(2026, l.view(), docs).input!;
+    expect(read.people[0]!.business!.turnover).toBeDefined();
+    expect(read.people[0]!.selfEmploymentProfit).toBeUndefined();
+    // Not in yet (the accounts of another year): the rough profit, on 12.01, as an estimate.
+    const old = docs.map((d) => (d.id === 'd_accounts' ? { ...d, taxYear: 2025 } : d));
+    const { input, notes } = engineInputFromFacts(2026, l.view(), old);
+    expect(input!.people[0]!.business).toBeUndefined();
+    expect(input!.people[0]!.selfEmploymentProfit).toMatchObject({
+      value: chf(86_000),
+      status: 'estimate',
+    });
+    expect(notes.map((n) => n.en).join(' ')).toMatch(/your rough profit is used as an estimate/);
+    const r = computeReturn(input!);
+    const profit = r.icc!.items.find((i) => i.code === '12.01')!;
+    expect(profit.amount).toBe(chf(86_000));
+    expect(r.estimates.length).toBeGreaterThan(0);
+  });
+
   it('changes nothing for a household without self-employment', () => {
     const l = new Ledger(2026, KEYS_2026);
     const user = { method: 'user' as const, via: 'chat' as const };

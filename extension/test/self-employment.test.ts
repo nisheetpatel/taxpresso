@@ -109,6 +109,23 @@ const BUSINESS = (who: string): [string, unknown][] => [
 ];
 
 /** S1. Léa Martin, single, Carouge: a graphic design studio in her own name, no pension fund. */
+/** Léa's answers, the plain facts she knows. */
+const LEA: [string, unknown][] = [
+  ['canton', 'GE'],
+  ['civil_status', 'single'],
+  ['children', 0],
+  ['commune', 'Carouge'],
+  ['moved', 'no'],
+  ['income_sources:p1', ['self_employment']],
+  ...BUSINESS('p1'),
+  ['business_losses:p1', false],
+  ['pillar3a:p1', true],
+  ['banks', 0],
+  ['crypto', false],
+  ['payments', []],
+  ['special', []],
+];
+
 async function lea({ confirmAvs = true } = {}) {
   await answer([
     ['canton', 'GE'],
@@ -428,6 +445,45 @@ describe('self-employment in Geneva, end to end', () => {
     expect(check.fix.map((i) => i.kind)).toEqual(
       expect.arrayContaining(['not_supported', 'not_computed']),
     );
+  });
+
+  it('before the accounts: one next step, her rough profit as an estimate, the 3a room to save', async () => {
+    await answer(LEA);
+    // No income figure yet: Claude asks, in plain words, roughly what the business makes.
+    let status = (await call('get_status')).structuredContent as {
+      next: { id: string };
+      nextStep: string;
+      stages: { id: string; status: string }[];
+    };
+    expect(status.next.id).toBe('income');
+    expect(status.nextStep).toMatch(/what profit \(bénéfice net\) it makes this year/);
+    expect(status.nextStep).toMatch(/plan\.business_profit/);
+    expect(status.stages.find((x) => x.id === 'documents')?.status).toBe('later');
+    // She says about 86'000 after her AVS contributions: the tax appears, as an estimate.
+    const said = await call('set_fact', { key: 'plan.business_profit', value: 86_000 });
+    expect(said.isError, texts(said)).toBeFalsy();
+    const tax = await call('compute_tax');
+    const out = tax.structuredContent as TaxOut & { estimates?: unknown[] };
+    expect(out.computed).toBe(true);
+    expect(out.icc.total).toBeGreaterThan(0);
+    expect(texts(tax)).toMatch(/your rough profit is used as an estimate/);
+    status = (await call('get_status')).structuredContent as typeof status;
+    expect(status.next.id).not.toBe('income');
+    expect(status.stages.find((x) => x.id === 'tax')?.status).toBe('estimate');
+    // Ways to save: without a pension fund, 20 % of 86'000, in the existing 3a plan.
+    const plans = (await call('list_optimizations')).structuredContent as {
+      pillar3a: { people: { capCentimes: number; capIsMaximum: boolean }[] };
+    };
+    expect(plans.pillar3a.people[0]).toMatchObject({ capCentimes: 1_720_000, capIsMaximum: false });
+    expect(status.stages.find((x) => x.id === 'save')?.status).toBe('total');
+    // Nothing new in the dashboard: the same planning inputs, no field for the profit.
+    const s = await state();
+    expect(Object.keys(s.plan!.inputs[0]!).sort()).toEqual(
+      ['gross', 'hasPensionFund', 'net', 'paid', 'person'].sort(),
+    );
+    // Once the accounts are read, they replace the rough profit (and nothing comes from nothing
+    // before: annexe B appears with them).
+    expect(rowsOf(s).filter((r) => r.page === 'B2')).toEqual([]);
   });
 
   it('plans the 3a room of a self-employed person from the year’s expected profit', async () => {

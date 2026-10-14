@@ -155,6 +155,38 @@ export const DOCUMENT_KEYS_2026 = {
     `${GE_GUIDE} p. 37`,
   ),
 
+  // A lump sum from a pension fund or vested benefits institution (2nd pillar) or from pillar 3a,
+  // one per attestation (lpp_capital_attestation, pillar3a_capital_attestation): the institution
+  // sends you a copy of what it reports (ch-na-law-lifd art. 129 al. 1 let. b and al. 2, p. 69),
+  // declared at 98.12 and taxed apart (ge-2025-guide-declaration-pp p. 13; ../engine/capital.ts).
+  'capital.amount': money(
+    true,
+    { en: 'Pension capital paid', fr: 'Prestation en capital versée' },
+    'Prestations en capital du 2e et 3e pilier A',
+    `ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ${GE_GUIDE} p. 13`,
+  ),
+  'capital.date': {
+    type: 'date',
+    perPerson: true,
+    multiple: true,
+    label: { en: 'Date it was paid', fr: 'Date du versement' },
+    official: 'date du versement',
+    // The tax is for the year the capital was received (acquis).
+    source: 'ch-na-law-lifd art. 38 al. 1bis (p. 32); ge-na-law-lipp art. 45 al. 1',
+  },
+  // Why it was paid, as the attestation says: the reasons the law allows a lump sum
+  // (ch-na-law-opp3 art. 3; ch-na-law-lpp art. 30c). Leaving Switzerland is taxed at source
+  // (ge-2026-source-directives p. 39) and another reason may go elsewhere (98.75): not computed.
+  'capital.reason': {
+    type: 'enum',
+    values: ['retirement', 'home', 'self_employment', 'leaving', 'other'],
+    perPerson: true,
+    multiple: true,
+    label: { en: 'Why it was paid', fr: 'Motif du versement' },
+    official: 'motif du versement',
+    source: 'ch-na-law-opp3 art. 3 (p. 2 and 3); ch-na-law-lpp art. 30c (p. 16)',
+  },
+
   // Bank statements, tax statements, crypto and life insurance: ./document-keys-wealth.ts.
   ...DOCUMENT_KEYS_WEALTH_2026,
 
@@ -194,6 +226,8 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
     'assessment.debt_interest',
   ],
   ...DOCUMENT_FIELDS_WEALTH_2026,
+  lpp_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
+  pillar3a_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
   ...BUSINESS_FIELDS_2026,
 };
 
