@@ -288,8 +288,104 @@ export const WEALTH_RUBRICS = {
   ),
 } satisfies Record<string, Rubric>;
 
+/**
+ * The lines of the Ergänzungsblatt Direkte Bundessteuer (lu-2025-form-ergaenzungsblatt-dbst p. 1,
+ * Form. 930117): the optional sheet that derives the federal taxable income from the return
+ * (./ifd.ts). A code is "E" and the Ziffer the sheet prints (E8 is its Ziffer 8). The labels leave
+ * out the amounts the sheet prints next to some lines: they are the federal ones of a year, and
+ * the 2025 sheet prints two of them otherwise than the federal circular (docs/sources/lu/NOTES.md,
+ * Wiring Lucerne in the app). Ziffer 4, 6, 11, 14 and 21 are not covered (property, qualified
+ * participations, disability costs, support).
+ */
+const SHEET = 'lu-2025-form-ergaenzungsblatt-dbst';
+const e = (de: string, en: string, fr: string): Rubric => ({
+  label: { en: `${en} (${de})`, fr: `${fr} (${de})`, de },
+  source: `${SHEET} p. 1`,
+});
+export const FEDERAL_RUBRICS = {
+  E1: e(
+    'Nettoeinkommen gemäss Ziffer 310 der Steuererklärung (1)',
+    'Net income of the return, Ziffer 310',
+    'Revenu net de la déclaration, Ziffer 310',
+  ),
+  E2: e(
+    'Abzug für Fahrkosten zwischen Wohn- und Arbeitsstätte, Ziff. 208t (2)',
+    'Cantonal travel costs added back, person 1',
+    'Frais de déplacement cantonaux rajoutés, personne 1',
+  ),
+  E3: e(
+    'Abzug für Fahrkosten zwischen Wohn- und Arbeitsstätte, Ziff. 209t (3)',
+    'Cantonal travel costs added back, person 2',
+    'Frais de déplacement cantonaux rajoutés, personne 2',
+  ),
+  E5: e(
+    'Abzug für Versicherungsprämien und Zinsen von Sparkapitalien (5)',
+    'Cantonal insurance deduction added back',
+    'Déduction d’assurance cantonale rajoutée',
+  ),
+  E7: e('Zwischentotal (7)', 'Subtotal', 'Sous-total'),
+  E8: e(
+    'Abzug für Fahrkosten zwischen Wohn- und Arbeitsstätte; Ziffer 2 (8)',
+    'Federal travel costs, person 1',
+    'Frais de déplacement fédéraux, personne 1',
+  ),
+  E9: e(
+    'Abzug für Fahrkosten zwischen Wohn- und Arbeitsstätte; Ziffer 3 (9)',
+    'Federal travel costs, person 2',
+    'Frais de déplacement fédéraux, personne 2',
+  ),
+  E10: e(
+    'Abzug für Versicherungsprämien und Zinsen von Sparkapitalien (10)',
+    'Federal insurance deduction',
+    'Déduction d’assurance fédérale',
+  ),
+  E12: e('Nettoeinkommen (12)', 'Net income, federal tax', 'Revenu net, impôt fédéral'),
+  E13: e(
+    'Abzug der Krankheits- und Unfallkosten (13)',
+    'Medical costs, federal tax',
+    'Frais de maladie et d’accident, impôt fédéral',
+  ),
+  E15: e('Abzug der Zuwendungen (15)', 'Donations, federal tax', 'Dons, impôt fédéral'),
+  E16: e(
+    'Abzug der Zuwendungen an politische Parteien (16)',
+    'Political parties, federal tax',
+    'Partis politiques, impôt fédéral',
+  ),
+  E17: e(
+    'Abzug vom Erwerbseinkommen des zweitverdienenden Ehegatten (17)',
+    'Both spouses earn, federal tax',
+    'Double activité des époux, impôt fédéral',
+  ),
+  E18: e(
+    'Abzug Fremdbetreuungskosten (18)',
+    'Childcare by others, federal tax',
+    'Frais de garde par des tiers, impôt fédéral',
+  ),
+  E19: e(
+    'Reineinkommen (19)',
+    'Net income after deductions, federal tax',
+    'Revenu net après déductions, impôt fédéral',
+  ),
+  E20: e(
+    'Abzug für minderjährige oder in der beruflichen Ausbildung stehende Kinder (20)',
+    'Child deduction, federal tax',
+    'Déduction pour enfants, impôt fédéral',
+  ),
+  E22: e(
+    'Abzug für Ehegatten, die in rechtlich und tatsächlich ungetrennter Ehe leben (22)',
+    'Married couples, federal tax',
+    'Couples mariés, impôt fédéral',
+  ),
+  E23: e(
+    'Steuerbares Einkommen direkte Bundessteuer (23)',
+    'Taxable income, federal tax',
+    'Revenu imposable, impôt fédéral',
+  ),
+} satisfies Record<string, Rubric>;
+
 export type RubricCode = keyof typeof RUBRICS;
 export type WealthCode = keyof typeof WEALTH_RUBRICS;
+export type FederalCode = keyof typeof FEDERAL_RUBRICS;
 
 /**
  * The lines in the order of the return (an object's numeric keys come first in JavaScript, so the
@@ -428,4 +524,9 @@ export function rubric(code: string): Rubric | undefined {
   return (
     (RUBRICS as Record<string, Rubric>)[code] ?? (WEALTH_RUBRICS as Record<string, Rubric>)[code]
   );
+}
+
+/** A line of the return, or of the Ergänzungsblatt (E1 to E23), with its label and source. */
+export function anyRubric(code: string): Rubric | undefined {
+  return rubric(code) ?? (FEDERAL_RUBRICS as Record<string, Rubric>)[code];
 }

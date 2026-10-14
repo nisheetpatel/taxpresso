@@ -17,6 +17,7 @@
     "@taxpresso/rules-bs": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",
+    "@taxpresso/rules-lu": "workspace:*",
     "@taxpresso/rules-sg": "workspace:*",
     "@taxpresso/rules-vd": "workspace:*",
     "@taxpresso/rules-zg": "workspace:*",
