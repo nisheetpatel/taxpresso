@@ -24,6 +24,7 @@ import type {
   AbroadResult,
   EstimateReason,
   LimitApplied,
+  PropertyResult,
   PartYearResult,
   TaxResult,
 } from './types.js';
@@ -118,6 +119,8 @@ export type FinalCheckResult = Pick<
   capital?: CapitalTax;
   /** A property abroad, counted for the rate (Geneva). */
   abroad?: AbroadResult;
+  /** A property in Geneva, the household's home or one let (Geneva). */
+  property?: PropertyResult;
   /** A year of arrival from abroad or of departure abroad (Geneva). */
   partYear?: PartYearResult;
 };
@@ -189,6 +192,7 @@ export type FinalCheckKind =
   | 'limit'
   | 'capital'
   | 'abroad'
+  | 'property'
   | 'part_year'
   | 'best_figure'
   | 'holding_check'
@@ -247,6 +251,7 @@ const KNOW_ORDER: FinalCheckKind[] = [
   'part_year',
   'capital',
   'abroad',
+  'property',
   'limit',
   'best_figure',
   'holding_check',
@@ -289,6 +294,15 @@ const GIVEN: Record<string, Text> = {
   '73.00': t('Donations', 'Dons'),
   '74.00': t('Paid to political parties', 'Versé aux partis politiques'),
   '51.60': t('Half of your business’s equity', 'La moitié des fonds propres de votre activité'),
+  '58.00': t('Your actual upkeep costs', 'Vos frais d’entretien effectifs'),
+};
+
+/** Lines whose label in the catalogue is a property abroad's, said for any property here. */
+const ANY_PROPERTY: Record<string, Text> = {
+  '58.00': t(
+    'Upkeep costs of your property (charges et frais d’entretien d’immeuble)',
+    'Charges et frais d’entretien d’immeuble',
+  ),
 };
 
 /** Taxpayer B's code read as A's (41.40 -> 31.40), for the words above. */
@@ -305,7 +319,7 @@ const IN_BOTH_TAXES = new Set(['31.60', '55.10', '59.50', '71.00', '73.00', '74.
 
 /** Geneva's words, the check's default. */
 const GENEVA: FinalCheckCanton = {
-  label: (code) => rubric(code)?.label,
+  label: (code) => ANY_PROPERTY[code] ?? rubric(code)?.label,
   given: (l) => GIVEN[aCode(l.code)],
   inBothTaxes: (code) => IN_BOTH_TAXES.has(aCode(code)),
   taxes: TAX,
@@ -552,6 +566,132 @@ function capitalItems(input: FinalCheckInput): FinalCheckItem[] {
         'Si vous avez fait un tel rachat, demandez à l’AFC ce que cela implique pour vous.',
       ),
       sources: links('ge-2025-guide-declaration-pp p. 18; ch-na-law-lpp art. 79b al. 3 (p. 66)'),
+    });
+  }
+  return out;
+}
+
+/**
+ * A property in Geneva: what is declared on annexe D and how its figures were reached, what to keep
+ * or attach, and the impôt immobilier complémentaire apart (SPEC.md 10.0).
+ */
+function propertyItems(input: FinalCheckInput): FinalCheckItem[] {
+  const p = input.result?.property;
+  if (!p) return [];
+  const links = (source: string) => officialLinks(source, input.canton?.documents);
+  const own = p.use === 'own_home';
+  const code = own ? '15.10' : '15.20';
+  const value = p.wealth.find((i) => i.code === code)?.amount;
+  const icc = p.icc.find((i) => i.code === code)?.amount;
+  const ifd = p.ifd.find((i) => i.code === code)?.amount;
+  const upkeepIcc = p.icc.find((i) => i.code === '58.00')?.amount;
+  const upkeepIfd = p.ifd.find((i) => i.code === '58.00')?.amount;
+  const pct = p.abattementBp !== undefined ? `${p.abattementBp / 100}` : undefined;
+  const out: FinalCheckItem[] = [];
+  const figures = (lang: 'en' | 'fr') =>
+    [
+      p.value
+        ? lang === 'en'
+          ? `tax value ${chf(p.value.amount)}`
+          : `valeur fiscale ${chf(p.value.amount)}`
+        : '',
+      own && pct !== undefined && value !== undefined
+        ? lang === 'en'
+          ? `less the abattement of ${pct} % (occupé dès ${p.since}): ${chf(value)}`
+          : `moins l’abattement de ${pct}${NB}% (occupé dès ${p.since})${NB}: ${chf(value)}`
+        : '',
+      own && ifd !== undefined
+        ? lang === 'en'
+          ? `rental value ${chf(ifd)} (federal), ${chf(icc ?? 0)} after the abattement (cantonal)`
+          : `valeur locative ${chf(ifd)} (fédéral), ${chf(icc ?? 0)} après abattement (cantonal)`
+        : '',
+      !own && icc !== undefined ? (lang === 'en' ? `rents ${chf(icc)}` : `loyers ${chf(icc)}`) : '',
+    ]
+      .filter(Boolean)
+      .join(lang === 'en' ? ', ' : ', ');
+  out.push({
+    id: own ? 'property:home' : 'property:let',
+    kind: 'property',
+    code,
+    title: own
+      ? t(
+          `${code} Your home in Geneva (immeubles occupés par le propriétaire)`,
+          `${code} Votre logement à Genève (immeubles occupés par le propriétaire)`,
+        )
+      : t(
+          `${code} Your property let in Geneva (immeubles locatifs ou loués)`,
+          `${code} Votre immeuble loué à Genève (immeubles locatifs ou loués)`,
+        ),
+    detail: t(
+      `On annexe ${own ? 'D1' : 'D2'}${figures('en') ? `: ${figures('en')}` : ''}. The tax value and the rental value are the AFC’s for the year (its letter before 31 March); Taxpresso doesn’t compute them.`,
+      `À l’annexe ${own ? 'D1' : 'D2'}${figures('fr') ? `${NB}: ${figures('fr')}` : ''}. La valeur fiscale et la valeur locative sont celles de l’AFC pour l’année (son courrier avant le 31 mars)${NB}; Taxpresso ne les calcule pas.`,
+    ),
+    todo: own
+      ? t(
+          'Copy the cadastral commune and parcel number from your avis de taxation immobilier. The questionnaire valeur locative is needed only after a purchase or works that change the home.',
+          'Reprenez la commune cadastrale et le numéro de parcelle de votre avis de taxation immobilier. Le questionnaire valeur locative n’est demandé qu’après un achat ou des travaux qui modifient le logement.',
+        )
+      : t(
+          'Attach the management account (compte de gestion) to your declaration.',
+          'Joignez le compte de gestion à votre déclaration.',
+        ),
+    sources: links(
+      `ge-2025-guide-declaration-pp p. 32 to 35; ge-2025-declaration-specimen p. 15 and 16; ge-na-revenu-immobilier-page (Votre bien est situé dans le canton de Genève); ge-na-valeur-fiscale-page (Votre bien est situé dans le canton de Genève); ge-na-law-lipp art. 24 and 50 let. e`,
+    ),
+  });
+  if (upkeepIcc !== undefined || upkeepIfd !== undefined) {
+    const how = (u: 'flat' | 'actual' | 'none', lang: 'en' | 'fr') =>
+      u === 'flat'
+        ? lang === 'en'
+          ? 'the flat deduction'
+          : 'le forfait'
+        : u === 'actual'
+          ? lang === 'en'
+            ? 'your actual costs'
+            : 'vos frais effectifs'
+          : lang === 'en'
+            ? 'nothing'
+            : 'rien';
+    out.push({
+      id: 'property:upkeep',
+      kind: 'property',
+      code: '58.00',
+      title: t(
+        '58.00 Upkeep of your property (charges et frais d’entretien d’immeuble)',
+        '58.00 Entretien de votre immeuble (charges et frais d’entretien d’immeuble)',
+      ),
+      detail: t(
+        `Cantonal: ${how(p.upkeep.icc, 'en')}${upkeepIcc !== undefined ? `, ${chf(-upkeepIcc)}` : ''}; federal: ${how(p.upkeep.ifd, 'en')}${upkeepIfd !== undefined ? `, ${chf(-upkeepIfd)}` : ''}. For each tax the higher one counts, and the choice can differ between the two.`,
+        `Cantonal${NB}: ${how(p.upkeep.icc, 'fr')}${upkeepIcc !== undefined ? `, ${chf(-upkeepIcc)}` : ''}${NB}; fédéral${NB}: ${how(p.upkeep.ifd, 'fr')}${upkeepIfd !== undefined ? `, ${chf(-upkeepIfd)}` : ''}. Pour chaque impôt, le plus élevé compte, et le choix peut différer entre les deux.`,
+      ),
+      todo:
+        p.upkeep.icc === 'actual' || p.upkeep.ifd === 'actual'
+          ? t(
+              'List the invoices in the online form’s upkeep sheet (annexe D4, déductions sur immeubles) and keep them: they are shown only on request.',
+              'Listez les factures dans la feuille des frais d’entretien du formulaire en ligne (annexe D4, déductions sur immeubles) et gardez-les${NB}: elles ne sont montrées que sur demande.'.replace(
+                '${NB}',
+                NB,
+              ),
+            )
+          : t('Nothing to attach for the flat deduction.', 'Rien à joindre pour le forfait.'),
+      sources: links(
+        'ge-2025-guide-declaration-pp p. 33 to 35; ge-na-information-1-2021-frais-entretien p. 2 and 4; ge-2025-declaration-specimen p. 18; ch-na-law-lifd art. 32 al. 2 and 4 (p. 24)',
+      ),
+    });
+  }
+  if (p.iic) {
+    out.push({
+      id: 'property:iic',
+      kind: 'property',
+      title: t(
+        'Impôt immobilier complémentaire (IIC), apart from the total',
+        'Impôt immobilier complémentaire (IIC), hors du total',
+      ),
+      detail: t(
+        `${chf(p.iic.amount)}: ${own ? '0.2' : '1'} per mille of the tax value, without the abattement or debts. A building with a high energy performance standard (HPE, THPE) attested by the OCEN is exempt for 20 years.`,
+        `${chf(p.iic.amount)}${NB}: ${own ? '0,2' : '1'} pour mille de la valeur fiscale, sans abattement ni dettes. Un bâtiment de haute ou très haute performance énergétique (HPE, THPE) attesté par l’OCEN en est exonéré 20 ans.`,
+      ),
+      sources: links('ge-na-law-lcp art. 76 and 78; ge-na-iic-page (Vous êtes un particulier)'),
     });
   }
   return out;
@@ -1013,6 +1153,7 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
   // can't verify.
   know.push(...capitalItems(input));
   know.push(...abroadItems(input));
+  know.push(...propertyItems(input));
   know.push(...partYearItems(input));
   know.push(...limitItems(input));
   (r?.notCounted ?? []).forEach((n, i) =>

@@ -34,6 +34,7 @@ import type {
   EnginePerson,
   PeriodInput,
   PersonInput,
+  SwissPropertyInput,
   Text,
   WealthItemInput,
 } from './types.js';
@@ -307,6 +308,13 @@ export function engineInputFromFacts(
     return { input: null, missing: [...missing, ...abroad.missing], notes };
   }
 
+  // A property in Geneva (./property.ts): the answers, then its documents or the user's figures;
+  // a mortgage known only from the user's words goes with the securities list's debts.
+  const property = propertyFromFacts(taxYear, facts, documents, people, notes);
+  if (property.missing.length) {
+    return { input: null, missing: [...missing, ...property.missing], notes };
+  }
+  wealthItems.push(...property.mortgage);
   // A year of arrival from abroad or of departure abroad (./part-year.ts): the day, the pay that
   // isn't monthly salary on each certificate, and what can't be prepared yet.
   const period = periodFromFacts(taxYear, counted, documents, self.people);
@@ -349,6 +357,7 @@ export function engineInputFromFacts(
       ...(period.input ? { period: period.input } : {}),
       ...(capital ? { capital } : {}),
       ...(abroad.input ? { abroad: abroad.input } : {}),
+      ...(property.input ? { property: property.input } : {}),
     },
     missing,
     notes,
@@ -708,6 +717,248 @@ export function abroadFromFacts(
     );
   }
   return { input: out, missing: [] };
+}
+
+/** Why an answer puts a property in Geneva outside the simple case (the questions say so too). */
+const PROPERTY_SPECIAL: Readonly<Record<string, Text>> = {
+  moved: t(
+    'a property bought or sold during the year, or moved into or out of',
+    'un immeuble acheté ou vendu dans l’année, ou dans lequel vous avez emménagé ou duquel vous êtes parti',
+  ),
+  part_let: t(
+    'a home partly let or let for holidays',
+    'un logement loué en partie ou en location de vacances',
+  ),
+  business: t('a property used for a business', 'un immeuble utilisé pour une activité'),
+  works: t(
+    'works that add value, demolition or works on a listed building',
+    'des travaux à plus-value, une démolition ou des travaux sur un monument historique',
+  ),
+  subsidy: t(
+    'a subsidy for works or a subsidised home (HLM, HBM, HM, épargne logement)',
+    'une subvention pour travaux ou un logement subventionné (HLM, HBM, HM, épargne logement)',
+  ),
+  carried: t(
+    'costs carried over from earlier years (frais immobiliers reportés)',
+    'des frais immobiliers reportés des années précédentes',
+  ),
+  usufruct: t(
+    'a usufruct or a right of residence (usufruit, droit d’habitation)',
+    'un usufruit ou un droit d’habitation',
+  ),
+};
+
+/**
+ * The household's property in Geneva, from the answers (profile.special, profile.swiss_property,
+ * its owner, since when, its age, what is special about it, whether it is in the commune of a
+ * property let) and the values of its documents (the AFC's letter or avis de taxation immobilier,
+ * the management account, the upkeep invoices and PPE charges, the mortgage statement), or the
+ * user's own figures until they are in (plan.property_*, plan.mortgage_*), flagged as estimates.
+ * Answers still open are `missing`; what the simple case doesn't cover is in the input's
+ * `unsupported` (fail closed), or the questionnaire already says it isn't supported. No input
+ * without one.
+ */
+export function propertyFromFacts(
+  taxYear: number,
+  allFacts: readonly Fact[],
+  documents: readonly VaultDocument[],
+  people: readonly EnginePerson[],
+  notes: Text[] = [],
+): { input?: SwissPropertyInput; missing: Text[]; mortgage: WealthItemInput[] } {
+  const note = (x: Text) => notes.some((n) => n.en === x.en) || notes.push(x);
+  const facts = factsOfYear(taxYear, allFacts, documents, () => undefined);
+  const answer = (key: string, person: Fact['person'] = 'household') =>
+    facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
+  const none = { missing: [], mortgage: [] };
+  const special = answer('profile.special');
+  if (!Array.isArray(special) || !special.includes('real_estate')) return none;
+  const what = answer('profile.swiss_property');
+  const owner = answer('profile.swiss_property_owner');
+  // Another canton, several properties, something else, shared with someone outside the
+  // household: the questionnaire says it isn't supported yet, and the property is left out.
+  if (what === 'other_canton' || what === 'several' || what === 'other' || owner === 'others') {
+    return none;
+  }
+  const own = what === 'own_house' || what === 'own_flat';
+  const since = answer('profile.swiss_property_since');
+  const old = answer('profile.swiss_property_old');
+  const specials = answer('profile.swiss_property_special');
+  const loan = answer('profile.swiss_property_loan');
+  const otherCommune = answer('profile.swiss_property_other_commune');
+  const open =
+    what === undefined ||
+    owner === undefined ||
+    typeof old !== 'boolean' ||
+    !Array.isArray(specials) ||
+    typeof loan !== 'boolean' ||
+    (own && typeof since !== 'number') ||
+    (!own && typeof otherCommune !== 'boolean');
+  if (open) {
+    return {
+      missing: [
+        t(
+          'the questions about your property in Geneva',
+          'les questions sur votre immeuble à Genève',
+        ),
+      ],
+      mortgage: [],
+    };
+  }
+  if (specials.some((v) => PROPERTY_SPECIAL[String(v)]) || (!own && otherCommune === true)) {
+    return none;
+  }
+  const couple = people.length > 1;
+  const whose: SwissPropertyInput['owner'] =
+    owner === 'p2' && couple ? 'p2' : owner === 'both' && couple ? 'household' : 'p1';
+
+  // Outside the simple case, from the other answers (fail closed).
+  const unsupported: Text[] = [];
+  if (people.some((p) => answer('profile.taxed_at_source', p) === true)) {
+    unsupported.push(
+      t(
+        'A property in Geneva of someone taxed at source: the source-tax directives make the ordinary taxation afterwards (TOU) compulsory for an owner (ge-2026-source-directives p. 6 and 51), which Taxpresso doesn’t prepare yet with a property, so no tax is computed.',
+        `Un immeuble à Genève d’une personne imposée à la source${NB}: les directives de l’impôt à la source rendent la taxation ordinaire ultérieure (TOU) obligatoire pour un propriétaire (ge-2026-source-directives p. 6 et 51), ce que Taxpresso ne prépare pas encore avec un immeuble${NB}; aucun impôt n’est donc calculé.`,
+      ),
+    );
+  }
+  if (own && typeof since === 'number' && since >= taxYear) {
+    unsupported.push(
+      t(
+        `Your home in Geneva: you started living in it in ${since}, so ${taxYear} is not a whole year in it (the rental value counts from the move). Taxpresso can’t prepare that yet, so no tax is computed.`,
+        `Votre logement à Genève${NB}: vous l’occupez depuis ${since}, ${taxYear} n’y est donc pas une année entière (la valeur locative compte dès l’emménagement). Taxpresso ne peut pas encore le préparer, aucun impôt n’est donc calculé.`,
+      ),
+    );
+  }
+
+  // The values of its documents (in francs), each document once.
+  const kinds = new Map(documents.map((d) => [d.id, d.kind]));
+  const fromDocuments = (key: string, kind: DocumentKind[]): Amount | undefined =>
+    amountOf(
+      facts.filter(
+        (f) =>
+          f.key === key &&
+          f.instance !== undefined &&
+          kind.includes(kinds.get(f.instance) as DocumentKind),
+      ),
+    );
+  /** A value the AFC sets for the year: one document's (the latest added), never added up. */
+  const single = (key: string, kind: DocumentKind[]): Amount | undefined => {
+    const order = documents.map((d) => d.id);
+    const own = facts.filter(
+      (f) =>
+        f.key === key &&
+        f.instance !== undefined &&
+        kind.includes(kinds.get(f.instance) as DocumentKind),
+    );
+    const last = own.reduce<string | undefined>(
+      (best, f) =>
+        best === undefined || order.indexOf(f.instance!) > order.indexOf(best) ? f.instance : best,
+      undefined,
+    );
+    return amountOf(own.filter((f) => f.instance === last));
+  };
+  /** The user's own figure, in francs, as an estimate. */
+  const plan = (key: string): Amount | undefined => {
+    const a = amountOf(
+      facts.filter((x) => x.key === key && x.person === 'household' && typeof x.value === 'number'),
+    );
+    return a && a.value > 0 ? { ...a, status: 'estimate' as const } : undefined;
+  };
+  const value = single('property.tax_value', ['property_values']) ?? plan('plan.property_value');
+  const out: SwissPropertyInput = {
+    owner: whose,
+    use: own ? 'own_home' : 'let',
+    ...(what === 'own_house' ? { kind: 'house' as const } : {}),
+    ...(what === 'own_flat' ? { kind: 'flat' as const } : {}),
+    ...(own && typeof since === 'number' ? { since } : {}),
+    old,
+    ...(value ? { value } : {}),
+    ...(unsupported.length ? { unsupported } : {}),
+  };
+  if (own) {
+    const rv =
+      single('property.rental_value', ['property_values']) ?? plan('plan.property_rental_value');
+    if (rv) out.rentalValue = rv;
+    const upkeep = fromDocuments('property.upkeep', [
+      'property_upkeep_invoices',
+      'ppe_charges_statement',
+    ]);
+    if (upkeep) out.upkeep = upkeep;
+  } else {
+    const rents =
+      fromDocuments('property.rents', ['property_rent_statement']) ?? plan('plan.property_rent');
+    if (rents) out.rents = rents;
+    // The management account's costs and any upkeep invoices of the year, added up.
+    const costs = [
+      fromDocuments('property.costs', ['property_rent_statement']),
+      fromDocuments('property.upkeep', ['property_upkeep_invoices', 'ppe_charges_statement']),
+    ].filter((a): a is Amount => !!a);
+    if (costs.length) {
+      out.upkeep = {
+        value: costs.reduce((s, a) => s + a.value, 0),
+        status: weakest(costs),
+        facts: costs.flatMap((a) => a.facts ?? []),
+      };
+    }
+  }
+  // The mortgage: its statement (E1 55.20, read with the état des titres), or until it is in, the
+  // user's rough figures as estimates. Its interest is the financing the taux d'effort looks at.
+  const mortgage: WealthItemInput[] = [];
+  if (loan === true) {
+    const statement = documents.some(
+      (d) =>
+        d.kind === 'mortgage_statement' &&
+        !d.replacedBy &&
+        facts.some((f) => f.instance === d.id && f.key === 'debt.interest'),
+    );
+    const interest = statement
+      ? fromDocuments('debt.interest', ['mortgage_statement'])
+      : plan('plan.mortgage_interest');
+    if (interest) out.mortgageInterest = interest;
+    if (!statement) {
+      const label = (en: string, fr: string) => ({ en, fr });
+      const balance = plan('plan.mortgage_balance');
+      const source = `ge-2025-declaration-specimen p. 3, 4 and 19 (E1, 55.20); ge-2025-guide-declaration-pp p. 37`;
+      if (balance) {
+        mortgage.push({
+          code: '55.20',
+          part: 'wealth_deduction',
+          person: 'household',
+          centimes: balance.value,
+          taxes: ['icc'],
+          estimate: true,
+          complete: true,
+          label: label('Mortgage, your rough figure', 'Dettes hypothécaires, votre estimation'),
+          source,
+        });
+      }
+      if (interest) {
+        mortgage.push({
+          code: '55.20',
+          part: 'deduction',
+          person: 'household',
+          centimes: interest.value,
+          taxes: ['icc', 'ifd'],
+          estimate: true,
+          complete: true,
+          label: label(
+            'Mortgage interest, your rough figure',
+            'Intérêts hypothécaires, votre estimation',
+          ),
+          source,
+        });
+      }
+      if (!balance && !interest) {
+        note(
+          t(
+            'Your mortgage: no statement and no rough figure yet, so neither the debt nor its interest is counted. The taxes are higher than they will be.',
+            `Votre hypothèque${NB}: ni relevé ni montant approximatif pour l’instant, ni la dette ni ses intérêts ne sont donc comptés. Les impôts sont plus élevés qu’ils ne le seront.`,
+          ),
+        );
+      }
+    }
+  }
+  return { input: out, missing: [], mortgage };
 }
 
 /** The pillar of each kind of attestation of a lump sum. */

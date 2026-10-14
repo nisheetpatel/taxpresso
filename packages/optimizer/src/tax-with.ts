@@ -124,7 +124,13 @@ export interface HouseholdInput {
   periodUnknown?: boolean;
   known?: Pick<
     EngineInput,
-    'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale' | 'abroad' | 'period'
+    | 'household'
+    | 'wealthItems'
+    | 'childSupport'
+    | 'ifdParentalScale'
+    | 'abroad'
+    | 'property'
+    | 'period'
   >;
 }
 
@@ -239,6 +245,8 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
     ...(h.known?.wealthItems ? { wealthItems: h.known.wealthItems } : {}),
     // A home or land abroad: counted for the rate, so the plans' savings are at the real rate.
     ...(h.known?.abroad ? { abroad: h.known.abroad } : {}),
+    // A property in Geneva: its income and value count, so the plans' savings are at the real rate.
+    ...(h.known?.property ? { property: h.known.property } : {}),
     // A year of arrival or departure: the income of the period at a full year's rate, so the plans'
     // savings are at the real rate (rules-ge, ./engine/part-year.ts).
     ...(h.known?.period ? { period: h.known.period } : {}),

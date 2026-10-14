@@ -13,10 +13,11 @@
 //
 // Self-employment (annexe B): the simple case of SPEC.md section 1 (a sole proprietorship), one
 // sheet per taxpayer; its lines for partnerships and the cases Taxpresso doesn't prepare are listed,
-// not supported. Property (annexe D): a home or land abroad, the simple case of SPEC.md section 1,
-// on D1 (15.10, a home the owner uses) and D2 (15.20, let, or land), with its totals on the main
-// form (PG2 15.00, PG3 58.00, PG4 15.00) and 97.00, the share not taxed in Geneva; property in
-// Switzerland, D3 and D4 (subsidised housing, the detail of upkeep invoices) are not supported.
+// not supported. Property (annexe D): a home or land abroad and a property in Geneva, the simple
+// cases of SPEC.md section 1, on D1 (15.10, a home the owner uses) and D2 (15.20, let, or land),
+// with their totals on the main form (PG2 15.00, PG3 58.00, PG4 15.00) and 97.00, the share not
+// taxed in Geneva; a mortgage on E1 (55.20); property in another canton, D3 and D4 (subsidised
+// housing, the detail of upkeep invoices) are not supported.
 import type {
   FormColumn,
   FormMap,
@@ -1441,7 +1442,7 @@ const C4 = [
   c4a('59.00', 'Total', 'Total other deductions', 'Total des autres déductions', { role: 'total' }),
 ];
 
-// --- Annexe D: property. A home or land abroad, the simple case -----------------------------------
+// --- Annexe D: property. A home or land abroad, a property in Geneva, the simple cases -----------
 
 /** What each line of D1 and D2 asks about the property, as printed (specimen p. 15 and 16). */
 const PROPERTY_LINE = (pdfPage: number, own: boolean): readonly LineField[] => [
@@ -1452,6 +1453,16 @@ const PROPERTY_LINE = (pdfPage: number, own: boolean): readonly LineField[] => [
     hint: g(
       'The code of the country; the online form and GeTax list it',
       'Le code du pays; le formulaire en ligne et GeTax le proposent',
+    ),
+    source: `${SPEC} p. ${pdfPage}; ${GUIDE} p. 32`,
+  },
+  {
+    id: 'parcel',
+    label: 'Commune cadastrale/Numéro de parcelle',
+    format: 'text',
+    hint: g(
+      'On the avis de taxation immobilier sent with your tax bill, or the deed of purchase',
+      'Sur l’avis de taxation immobilier joint au bordereau, ou l’acte d’achat',
     ),
     source: `${SPEC} p. ${pdfPage}; ${GUIDE} p. 32`,
   },
@@ -1467,6 +1478,20 @@ const PROPERTY_LINE = (pdfPage: number, own: boolean): readonly LineField[] => [
   },
   { id: 'partA', label: 'Part contr. A', format: 'percent' },
   { id: 'partB', label: 'Part contr. B', format: 'percent' },
+  ...(own
+    ? [
+        {
+          id: 'since',
+          label: 'Occupé dès le',
+          format: 'text',
+          hint: g(
+            'The date you started living there; Taxpresso knows the year',
+            'La date où vous avez commencé à l’occuper; Taxpresso en connaît l’année',
+          ),
+          source: `${SPEC} p. ${pdfPage}; ${GUIDE} p. 32`,
+        } as const,
+      ]
+    : []),
   own
     ? { id: 'capital', label: 'Capital selon estimation fiscale', format: 'count' }
     : {
@@ -1476,6 +1501,7 @@ const PROPERTY_LINE = (pdfPage: number, own: boolean): readonly LineField[] => [
       },
   ...(own
     ? [
+        { id: 'abattement', label: 'Abattement', format: 'percent' } as const,
         { id: 'vlBrute', label: 'Valeur locative brute', format: 'count' } as const,
         { id: 'vlApres', label: 'Valeur locative après abattement', format: 'count' } as const,
       ]

@@ -338,11 +338,13 @@ describe('a 2nd pillar lump sum for a home (Morel)', () => {
 
   it('still taxes the lump sum when the home itself is not supported yet', async () => {
     await morel(['real_estate', 'pension_capital']);
+    // A property in Geneva is prepared (property.test.ts); one in another canton is not.
+    await answer([['swiss_property', 'other_canton']]);
     expect(
       ws()
         .engine.notSupported(ws().snapshot())
         .map((x) => x.what.en),
-    ).toEqual(['Real estate in Switzerland (annexe D)']);
+    ).toEqual(['A property in another canton']);
     const out = (await call('compute_tax')).structuredContent as { capital: { total: number } };
     expect(out.capital.total).toBe(391_680);
   });

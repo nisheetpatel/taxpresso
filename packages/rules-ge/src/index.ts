@@ -202,6 +202,16 @@ export {
   type AbroadDocumentKey,
 } from './2026/abroad-keys.js';
 export { ABROAD_CODES, ABROAD_NOTE, ABROAD_UNSUPPORTED } from './engine/abroad.js';
+// A property in Geneva, the simple case (annexe D): its keys, the notes, the reasons it fails closed
+// and the rules of Geneva's laws it applies.
+export {
+  KEYS_PROPERTY_DOCUMENTS_2026,
+  KEYS_PROPERTY_PROFILE_2026,
+  PROPERTY_FIELDS_2026,
+  type PropertyDocumentKey,
+} from './2026/property-keys.js';
+export { PROPERTY_NOTE, PROPERTY_UNSUPPORTED } from './engine/property.js';
+export { ABATTEMENT, EFFORT, IIC } from './law/property.js';
 // A year of arrival from abroad or of departure abroad: the income of the period at a full year's
 // rate (./engine/part-year.ts), the day read from the answers (./engine/from-ledger.ts).
 export { partYearNotes, partYearRules } from './engine/part-year.js';
@@ -225,6 +235,7 @@ export {
   abroadFromFacts,
   capitalFromFacts,
   engineInputFromFacts,
+  propertyFromFacts,
   type LedgerInput,
 } from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';

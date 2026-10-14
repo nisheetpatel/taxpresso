@@ -113,16 +113,24 @@ export function holdingsView(ws: Workspace, lang: Lang) {
       ? RUBRICS_2026.valuables
       : o.rubric === 'lifeInsurance'
         ? RUBRICS_2026.lifeInsuranceValue
-        : RUBRICS_2026.debts)[lang],
-    code: RUBRICS_2026[o.rubric === 'lifeInsurance' ? 'lifeInsuranceValue' : o.rubric].code,
+        : o.mortgage
+          ? RUBRICS_2026.mortgages
+          : RUBRICS_2026.debts)[lang],
+    code: RUBRICS_2026[
+      o.rubric === 'lifeInsurance' ? 'lifeInsuranceValue' : o.mortgage ? 'mortgages' : o.rubric
+    ].code,
     ...(o.rubric !== 'valuables'
       ? {
           flowLabel: (o.rubric === 'lifeInsurance'
             ? RUBRICS_2026.lifeInsurancePremiums
-            : RUBRICS_2026.debtInterest)[lang],
+            : o.mortgage
+              ? RUBRICS_2026.mortgageInterest
+              : RUBRICS_2026.debtInterest)[lang],
           flowCode: (o.rubric === 'lifeInsurance'
             ? RUBRICS_2026.lifeInsurancePremiums
-            : RUBRICS_2026.debtInterest
+            : o.mortgage
+              ? RUBRICS_2026.mortgageInterest
+              : RUBRICS_2026.debtInterest
           ).code,
         }
       : {}),

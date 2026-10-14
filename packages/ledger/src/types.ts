@@ -92,6 +92,17 @@ export const DOCUMENT_KINDS = [
   'foreign_property_tax_notice',
   'foreign_property_deed',
   'foreign_property_rent_statement',
+  // A property in Geneva (annexe D; ge-2025-guide-declaration-pp p. 8, 10, 32 to 37): the AFC's
+  // letter with its tax value and rental value for the year, or the avis de taxation immobilier
+  // (ge-na-valeur-fiscale-page, ge-na-revenu-immobilier-page); the management account (compte de
+  // gestion) of a property let; the upkeep invoices (factures d'entretien) and the PPE charges
+  // statement (décompte de charges de copropriété); and the lender's mortgage statement (annexe E,
+  // intérêts et dettes hypothécaires).
+  'property_values',
+  'property_rent_statement',
+  'property_upkeep_invoices',
+  'ppe_charges_statement',
+  'mortgage_statement',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 

@@ -98,6 +98,39 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune',
     pdf: false,
   },
+  // A property in Geneva (../engine/property.ts).
+  'ge-na-charges-deductibles-page': {
+    title: "L'impôt des propriétaires immobiliers: les charges et frais déductibles",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles',
+    pdf: false,
+  },
+  'ge-na-information-1-2021-frais-entretien': {
+    title: "Information N° 1/2021: Déductibilité des frais d'entretien des immeubles privés",
+    url: 'https://www.ge.ch/document/23670/telecharger',
+    pdf: true,
+  },
+  'ge-na-iic-page': {
+    title: "L'impôt des propriétaires immobiliers: l'impôt immobilier complémentaire",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire',
+    pdf: false,
+  },
+  'ge-na-law-lefi': {
+    title: 'Loi sur les estimations fiscales de certains immeubles (LEFI), rsGE D 3 10',
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_10.htm',
+    pdf: false,
+  },
+  'ge-na-law-rivfi': {
+    title:
+      "Règlement fixant l'indexation de la valeur fiscale de certains immeubles (RIVFI), rsGE D 3 10.03",
+    url: 'https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm',
+    pdf: false,
+  },
+  'ch-na-reforme-valeur-locative-2029': {
+    title:
+      "Le Conseil fédéral met en vigueur l'abolition de l'imposition de la valeur locative (communiqué de presse, 1er avril 2026)",
+    url: 'https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q',
+    pdf: false,
+  },
   'zh-na-zstb-5-3': {
     title:
       'Zürcher Steuerbuch Nr. 5.3: Internationale Steuerausscheidung bei Grundstücken, Geschäftsbetrieben und Betriebsstätten',

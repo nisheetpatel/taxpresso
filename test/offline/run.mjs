@@ -2569,6 +2569,262 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a home in Geneva: a PPE flat with a mortgage, a flat let, the taux d’effort, offline', async () => {
+    // Julien and Anaïs Chevalley, married, Lancy, their PPE flat and its mortgage; Olivier Sandoz,
+    // single, Carouge, a flat let all year; Georges and Monique Perrenoud, married, Onex, retired,
+    // whose rental value the taux d'effort lowers by an amount the documents don't give: the
+    // cantonal tax fails closed (packages/rules-ge/test/property.test.ts, P1, P3 and P4, derived by
+    // hand from the official documents). Each in its own folder and server process, same guard.
+    const run = async (folder, answers, docs) => {
+      const prVault = path.join(work, folder);
+      const prTransport = new StdioClientTransport({
+        command: process.execPath,
+        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        env: {
+          ...process.env,
+          TAXPRESSO_VAULT_PATH: prVault,
+          TAXPRESSO_UI_LANGUAGE: 'fr',
+          TAXPRESSO_NET_GUARD_LOG: guardLog,
+        },
+        stderr: 'pipe',
+      });
+      prTransport.stderr?.on('data', (d) => (stderr += d));
+      const pr = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
+      await pr.connect(prTransport);
+      const call = async (name, args = {}) => {
+        const res = await pr.callTool({ name, arguments: args });
+        assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+        return res;
+      };
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(prVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind, taxYear: 2026, person },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      return { pr, call };
+    };
+    const salary = (person, gross, social, lpp) => [
+      'salary_certificate',
+      person,
+      [
+        ['salary.base', gross],
+        ['salary.gross', gross],
+        ['salary.social_contributions', social],
+        ['salary.lpp_ordinary', lpp],
+      ],
+    ];
+    const bank = (person, balance) => [
+      'bank_attestation',
+      person,
+      [
+        ['bank.balance', balance],
+        ['bank.interest_gross', '0.00'],
+      ],
+    ];
+    const worker = (p) => [
+      [`income_sources:${p}`, ['salary']],
+      [`employers:${p}`, 1],
+      ...(p === 'p1' ? [[`residence:${p}`, 'swiss']] : []),
+      [`pillar3a:${p}`, false],
+      [`lpp_buyin:${p}`, false],
+      [`commute:${p}`, 'walk'],
+      [`meal_days:${p}`, 0],
+    ];
+    const common = [
+      ['banks', 1],
+      ['crypto', false],
+      ['payments', []],
+      ['special', ['real_estate']],
+    ];
+
+    const chevalley = await run(
+      'Immeuble-Chevalley',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Lancy'],
+        ['moved', 'no'],
+        ...worker('p1'),
+        ...worker('p2'),
+        ...common,
+        ['swiss_property', 'own_flat'],
+        ['swiss_property_owner', 'both'],
+        ['swiss_property_since', 2019],
+        ['swiss_property_old', true],
+        ['swiss_property_loan', true],
+        ['swiss_property_special', []],
+      ],
+      {
+        'certificat-julien-2026.pdf': salary('p1', "118'000.00", "7'434.00", "8'260.00"),
+        'certificat-anais-2026.pdf': salary('p2', "82'000.00", "5'166.00", "4'920.00"),
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "11'600.00"]]],
+        'banque-2026.pdf': bank('household', "35'000.00"),
+        'afc-valeurs-2026.pdf': [
+          'property_values',
+          'household',
+          [
+            ['property.tax_value', "930'000.00"],
+            ['property.rental_value', "27'600.00"],
+            ['property.parcel', 'Lancy 4521'],
+          ],
+        ],
+        'hypotheque-2026.pdf': [
+          'mortgage_statement',
+          'household',
+          [
+            ['debt.balance', "450'000.00"],
+            ['debt.interest', "6'750.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await chevalley.call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, 2_760_970, tax.content[0].text);
+      assert.equal(tax.structuredContent.ifd.tax, 716_100);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      assert.deepEqual(tax.structuredContent.notSupported, []);
+      assert.match(tax.content[0].text, /impôt immobilier complémentaire \(IIC\), CHF 186\.00/);
+      const d1 = await chevalley.call('get_form_values', { section: 'D1' });
+      assert.match(d1.content[0].text, /15\.10-1 Immeubles occupés par le propriétaire/);
+      const e1 = await chevalley.call('get_form_values', { section: 'E1' });
+      assert.match(e1.content[0].text, /55\.20-1/);
+      const status = await chevalley.call('get_status');
+      assert.match(status.content[0].text, /annexe D \(immeubles occupés par le propriétaire\)/);
+      const check = await chevalley.call('final_check');
+      const know = check.structuredContent.know.map((i) => i.id);
+      for (const id of ['property:home', 'property:upkeep', 'property:iic']) {
+        assert.ok(know.includes(id), `${id} in ${know}`);
+      }
+    } finally {
+      await chevalley.pr.close();
+    }
+
+    const sandoz = await run(
+      'Immeuble-Sandoz',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Carouge'],
+        ['moved', 'no'],
+        ...worker('p1'),
+        ...common,
+        ['swiss_property', 'let'],
+        ['swiss_property_owner', 'p1'],
+        ['swiss_property_old', false],
+        ['swiss_property_other_commune', false],
+        ['swiss_property_loan', true],
+        ['swiss_property_special', []],
+      ],
+      {
+        'certificat-2026.pdf': salary('p1', "92'000.00", "5'796.00", "5'520.00"),
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "5'400.00"]]],
+        'banque-2026.pdf': bank('p1', "40'000.00"),
+        'afc-valeur-2026.pdf': [
+          'property_values',
+          'household',
+          [['property.tax_value', "640'000.00"]],
+        ],
+        'gerance-2026.pdf': [
+          'property_rent_statement',
+          'household',
+          [
+            ['property.rents', "26'400.00"],
+            ['property.costs', "2'150.00"],
+          ],
+        ],
+        'hypotheque-2026.pdf': [
+          'mortgage_statement',
+          'p1',
+          [
+            ['debt.balance', "380'000.00"],
+            ['debt.interest', "4'940.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await sandoz.call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, 1_635_610, tax.content[0].text);
+      assert.equal(tax.structuredContent.ifd.tax, 236_755);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      const d2 = await sandoz.call('get_form_values', { section: 'D2' });
+      assert.match(d2.content[0].text, /15\.20-1/);
+    } finally {
+      await sandoz.pr.close();
+    }
+
+    const perrenoud = await run(
+      'Immeuble-Perrenoud',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Onex'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['pension']],
+        ['residence:p1', 'swiss'],
+        ['income_sources:p2', ['pension']],
+        ...common,
+        ['swiss_property', 'own_house'],
+        ['swiss_property_owner', 'both'],
+        ['swiss_property_since', 1990],
+        ['swiss_property_old', true],
+        ['swiss_property_loan', false],
+        ['swiss_property_special', []],
+      ],
+      {
+        'avs-georges-2026.pdf': [
+          'pension_certificate',
+          'p1',
+          [
+            ['pension.amount', "24'000.00"],
+            ['pension.type', 'avs_ai'],
+          ],
+        ],
+        'avs-monique-2026.pdf': [
+          'pension_certificate',
+          'p2',
+          [
+            ['pension.amount', "18'000.00"],
+            ['pension.type', 'avs_ai'],
+          ],
+        ],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "9'000.00"]]],
+        'banque-2026.pdf': bank('household', "20'000.00"),
+        'afc-valeurs-2026.pdf': [
+          'property_values',
+          'household',
+          [
+            ['property.tax_value', "780'000.00"],
+            ['property.rental_value', "26'000.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await perrenoud.call('compute_tax');
+      assert.equal(tax.structuredContent.icc, null);
+      assert.equal(tax.structuredContent.ifd.tax, 25_700);
+      assert.match(tax.structuredContent.unsupported.join(' '), /taux d’effort/);
+    } finally {
+      await perrenoud.pr.close();
+    }
+  });
+
   test('an Aargau return: its questions, its tax and the values to type, offline', async () => {
     // Another household in its own folder, in its own server process with the same guard: Lea
     // Huber, single, in Aarau, with the synthetic salary certificate read from its barcode.

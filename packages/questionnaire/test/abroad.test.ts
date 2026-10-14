@@ -29,10 +29,9 @@ describe('a property abroad in the questionnaires', () => {
       fr: 'Je suis propriétaire d’un logement ou d’un terrain hors de Suisse',
     });
     expect(abroad?.label.de && abroad.label.it).toBeTruthy();
-    // Real estate in Switzerland, and other income from abroad, are still not supported.
-    expect(options.find((o) => o.value === 'real_estate')?.notSupported?.en).toBe(
-      'Real estate in Switzerland (annexe D)',
-    );
+    // Real estate in Switzerland is Geneva's simple case too (property.test.ts); other income
+    // from abroad is still not supported.
+    expect(options.find((o) => o.value === 'real_estate')?.notSupported).toBeUndefined();
     expect(options.find((o) => o.value === 'foreign_income')?.notSupported?.en).toBe(
       'Income from abroad',
     );

@@ -173,6 +173,13 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
       'Property abroad: Taxpresso counts it only to set the rate (exemption avec réserve de progression) and shares the debts, their interest and the deductions with it (97.00). Give these figures as they are, and say the rules it lists as not spelled out in the documents.',
     );
   }
+  // A property in Geneva (annexe D): the AFC's values, the abattement, the upkeep, the IIC apart.
+  const property = (r as { property?: { iic?: Line; use: string } }).property;
+  if (property) {
+    say.push(
+      `Property in Geneva (annexe D): its tax value and ${property.use === 'let' ? 'its rents' : 'rental value'} are the AFC’s or the user’s documents’ for the year (the user’s rough figures count as estimates); Taxpresso applies the abattement, the flat or actual upkeep for each tax (the higher one) and checks the taux d’effort.${property.iic ? ` The impôt immobilier complémentaire (IIC), ${chf(property.iic.amount)}, is a tax of its own, not in the total.` : ''} Give these figures as they are; never state a tax value, a rental value or a rate from your own knowledge.`,
+    );
+  }
   // A year of arrival from abroad or of departure abroad (Geneva): the period, at a full year's rate.
   const partYear = partYearGuide(r as Parameters<typeof partYearGuide>[0]);
   if (partYear) say.push(partYear);
