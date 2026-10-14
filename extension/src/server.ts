@@ -520,7 +520,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Compute the tax',
       description:
-        "The user's cantonal, communal and federal tax from Taxpresso's rules engine, for the canton of the year (Geneva: ICC, IFD; Zurich: Staats- und Gemeindesteuern, Bundessteuer; Bern: Kantons-, Gemeinde- und Kirchensteuern, direkte Bundessteuer): totals, main items by line code, estimates, values needing the user's OK. detail: true explains each line with its source.",
+        "The user's cantonal, communal and federal tax from the rules engine, for the year's canton (Geneva: ICC, IFD; Zurich: Staats- und Gemeindesteuern; Bern: Kantons- und Gemeindesteuern): totals, main items by line code, estimates, values to confirm. detail: true explains each line with its source.",
       inputSchema: z.object({
         detail: z
           .boolean()

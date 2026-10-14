@@ -1,5 +1,5 @@
 // UI strings in English, French and German (SPEC.md section 1). Second person, plain words (German:
-// the informal "du"), official terms next to their gloss: French for Geneva, German for Zurich.
+// the informal "du"), official terms next to their gloss: French for Geneva, German for Zurich and Bern.
 // Status labels follow SPEC.md section 11b.
 const NB = String.fromCharCode(0xa0);
 
