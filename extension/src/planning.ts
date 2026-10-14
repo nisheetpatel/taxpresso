@@ -326,11 +326,8 @@ export async function decide(
       );
     }
     if (tou.mode === 'unknown') {
-      const open = tou.reasons
-        .filter((r) => r.status === 'unknown')
-        .map((r) => TOU_REASON_TEXT[r.id] ?? r.id);
       throw new WorkspaceError(
-        `Taxpresso needs to know first whether TOU is compulsory: ${open.join('; ')}. Ask the user, then save it (set_fact) or let them answer on the TOU card.`,
+        `Taxpresso needs to know first whether TOU is compulsory: ${stillOpen(tou).join('; ')}. Then the user decides.`,
       );
     }
     if (tou.differenceCentimes === undefined) {
@@ -535,6 +532,21 @@ export function cantonAssumptionText(a: string): string | undefined {
   }
   return undefined;
 }
+/** What decides each compulsory case not known yet, and how Taxpresso learns it: plain facts. */
+const OPEN_HOW: Record<string, string> = {
+  gross:
+    'the gross taxed at source of each person (the salary certificate, the benefits attestation, or a rough salary saved with set_fact plan.gross_salary)',
+  other_income:
+    'whether the household had CHF 3,000 or more of income not taxed at source, such as interest, dividends, alimony received or rent (ask yes or no; set_fact plan.tou_other_income, or the TOU card)',
+  taxable_wealth:
+    'whether its wealth on 31 December was over the limits the TOU card shows (ask yes or no; set_fact plan.tou_taxable_wealth, or the TOU card)',
+  previous_tou:
+    'whether the tax office already taxed them ordinarily (TOU) before (the TOU question)',
+  spouse_without_activity: 'the income of each spouse (the income question)',
+};
+const stillOpen = (tou: TouView) =>
+  tou.reasons.filter((r) => r.status === 'unknown').map((r) => OPEN_HOW[r.id] ?? r.id);
+
 const withheldFrom = (p: { from: string; tariff?: string }) =>
   p.from === 'certificate'
     ? 'the documents (salary certificate box 12, benefits attestation)'
@@ -641,11 +653,8 @@ function touText(tou: TouView, st: SourceTax | undefined): string[] {
     return lines;
   }
   if (tou.mode === 'unknown') {
-    const open = tou.reasons
-      .filter((r) => r.status === 'unknown')
-      .map((r) => TOU_REASON_TEXT[r.id] ?? r.id);
     lines.push(
-      `- Whether TOU is compulsory isn't known yet: ${open.join('; ')} (${tou.facts.compulsoryCases}). Ask the plain yes/no questions (the TOU card has them; set_fact plan.tou_other_income, plan.tou_taxable_wealth). No decision before that.`,
+      `- Whether TOU is compulsory isn't known yet (${tou.facts.compulsoryCases}): ${stillOpen(tou).join('; ')}. No decision before that.`,
     );
   }
   if (tou.mode === 'check') {

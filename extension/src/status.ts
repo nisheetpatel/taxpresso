@@ -169,11 +169,13 @@ export function buildStatus(
   const lastYear = ws.lastYear('en');
   const priorText = priorStatusText(lastYear);
   const st = sourceTaxOf(ws);
-  const sourceTax = st?.any
-    ? sourceTaxLines(st, 'en').map(
-        (l) => `${l.text}${l.estimate ? ' (an estimate)' : ''}${l.source ? ` [${l.source}]` : ''}`,
-      )
-    : undefined;
+  const sourceTax =
+    st?.any || st?.credited
+      ? sourceTaxLines(st, 'en').map(
+          (l) =>
+            `${l.text}${l.estimate ? ' (an estimate)' : ''}${l.source ? ` [${l.source}]` : ''}`,
+        )
+      : undefined;
   const estimates = securitiesView?.rows.some((r) => r.estimate)
     ? [
         "Securities values at the broker's prices and rates, until the official ESTV price list (Kursliste) for the year is available.",

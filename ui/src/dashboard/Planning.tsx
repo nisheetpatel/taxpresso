@@ -140,7 +140,7 @@ function useSave(lang: Language, act: Act) {
 }
 
 /** Tax at source as facts (extension/src/source-tax.ts): plain sentences, each with its source. */
-function SourceTaxFacts({ state, lang }: { state: PlannedState; lang: Language }) {
+export function SourceTaxFacts({ state, lang }: { state: State; lang: Language }) {
   const lines = state.sourceTax?.lines ?? [];
   if (!lines.length) return null;
   const couple = state.people.length > 1;

@@ -741,10 +741,10 @@ questions:
           it: 'Senza permesso C, l’imposta è trattenuta alla fonte sul salario e sulle indennità che lo sostituiscono (disoccupazione, malattia, infortunio, maternità).'
         source: 'ch-na-law-lifd p. 49 (art. 83 al. 1, art. 84 al. 2 let. a and b)'
     explain:
-      en: 'Taxpresso can’t tell from your permit alone, for example with a legitimation card, or with a pension as your only income. Your statements say whether tax was taken at source.'
-      fr: 'Taxpresso ne peut pas le savoir avec votre seul permis, par exemple avec une carte de légitimation, ou si une rente est votre seul revenu. Vos attestations disent si l’impôt a été retenu à la source.'
-      de: 'Das kann Taxpresso nicht allein aus deiner Bewilligung ableiten, zum Beispiel mit einer Legitimationskarte oder wenn eine Rente dein einziges Einkommen ist. Deine Bescheinigungen zeigen, ob die Steuer an der Quelle abgezogen wurde.'
-      it: 'Taxpresso non può saperlo dal solo permesso, per esempio con una carta di legittimazione, o se una rendita è il tuo unico reddito. Le tue attestazioni dicono se l’imposta è stata trattenuta alla fonte.'
+      en: 'Taxpresso can’t tell from your permit alone: for example with a legitimation card, with a pension as your only income, or with a salary paid directly from abroad. Your statements say whether tax was taken at source.'
+      fr: 'Taxpresso ne peut pas le savoir avec votre seul permis : par exemple avec une carte de légitimation, si une rente est votre seul revenu, ou avec un salaire versé directement depuis l’étranger. Vos attestations disent si l’impôt a été retenu à la source.'
+      de: 'Das kann Taxpresso nicht allein aus deiner Bewilligung ableiten: zum Beispiel mit einer Legitimationskarte, wenn eine Rente dein einziges Einkommen ist oder mit einem Lohn, der direkt aus dem Ausland bezahlt wird. Deine Bescheinigungen zeigen, ob die Steuer an der Quelle abgezogen wurde.'
+      it: 'Taxpresso non può saperlo dal solo permesso: per esempio con una carta di legittimazione, se una rendita è il tuo unico reddito, o con un salario versato direttamente dall’estero. Le tue attestazioni dicono se l’imposta è stata trattenuta alla fonte.'
     learnMore:
       url: 'https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf'
       label:

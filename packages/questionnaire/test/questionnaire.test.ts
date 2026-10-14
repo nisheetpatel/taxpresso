@@ -627,7 +627,9 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       'income_sources:p2': ['replacement_income'],
       'employers:p1': 1,
       'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
       'residence:p2': 'permit_other',
+      'employer_in_switzerland:p2': true,
     });
     // The spouse on benefits is asked the permit too; "taxed at source?" is never asked.
     expect(asked).toContain('residence:p2');
@@ -636,7 +638,8 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       expect(derived(e, ledger, `taxed_at_source:${p}`)).toMatchObject({
         value: true,
         derived: {
-          source: 'ge-na-law-lisp art. 1 al. 1, art. 2 al. 2 let. a and b; ge-na-law-risp art. 3',
+          source:
+            'ge-na-law-lisp art. 1 al. 1, art. 2 al. 2 let. a and b; ge-na-law-risp art. 3 and 5',
         },
       });
     }
@@ -695,6 +698,7 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
       'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
       'tou:p1': 'no',
     });
     expect(derived(e, ledger, 'taxed_at_source:p1')?.value).toBe(true);
@@ -718,7 +722,9 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       'employers:p1': 1,
       'employers:p2': 1,
       'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
       'residence:p2': 'permit_other',
+      'employer_in_switzerland:p2': true,
       'tou:p1': 'already',
       'tou:p2': 'already',
     });
@@ -744,6 +750,20 @@ describe('tax at source, worked out from plain facts (never asked where the law 
     e.answer(card, 'taxed_at_source:p1', false, USER);
     expect(e.snapshot(card).answers.get('profile.taxed_at_source|p1')).toBe(false);
 
+    // A salary paid directly by an employer abroad is taxed ordinarily (RISP art. 5): asked.
+    const abroad = new Ledger(2026, KEYS_2026);
+    walk(e, abroad, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': false,
+    });
+    expect(e.next(e.snapshot(abroad))?.id).toBe('taxed_at_source:p1');
+
     const pension = new Ledger(2026, KEYS_2026);
     walk(e, pension, {
       canton: 'GE',
@@ -752,6 +772,7 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       ...START,
       'income_sources:p1': ['pension'],
       'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
     });
     const slot = e.next(e.snapshot(pension))!;
     expect(slot.id).toBe('taxed_at_source:p1');

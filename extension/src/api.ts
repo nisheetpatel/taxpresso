@@ -270,7 +270,7 @@ export type DashboardState = ReturnType<typeof dashboardState>;
 /** The `sourceTax` part of the state, only for a household with someone taxed at source. */
 function sourceTaxState(ws: Workspace, lang: Lang) {
   const st = sourceTaxOf(ws);
-  if (!st?.any) return {};
+  if (!st?.any && !st?.credited) return {};
   return {
     sourceTax: {
       lines: sourceTaxLines(st, lang),

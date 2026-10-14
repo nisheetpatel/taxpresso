@@ -35,6 +35,18 @@ export const KEYS_2026 = {
   'profile.income_sources': H['profile.income_sources'],
   'profile.employers': H['profile.employers'],
   'profile.residence': H['profile.residence'],
+  // Paid by an employer in Switzerland (or its Swiss branch, or the Swiss company in the end): a
+  // salary paid directly from abroad is taxed ordinarily (ge-na-law-risp art. 5).
+  'profile.employer_in_switzerland': {
+    type: 'boolean',
+    perPerson: true,
+    label: {
+      en: 'Salary paid by an employer in Switzerland',
+      fr: 'Salaire versé par un employeur en Suisse',
+    },
+    official: 'débiteur de la prestation imposable (DPI)',
+    source: 'ge-na-law-risp art. 5; ge-2026-source-directives p. 6 (ch. 1.1.2)',
+  },
   'profile.taxed_at_source': H['profile.taxed_at_source'],
   // Already taxed ordinarily after source tax (TOU) before this year: a fact, which keeps TOU every
   // year while taxed at source (ge-na-law-lisp art. 4 al. 5, art. 5 al. 5). Whether to ask for it is

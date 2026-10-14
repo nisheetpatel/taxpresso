@@ -114,7 +114,9 @@ describe('a couple with B permits, one salaried, the other on unemployment benef
         'income_sources:p2': ['replacement_income'],
         'employers:p1': 1,
         'residence:p1': 'permit_other',
+        'employer_in_switzerland:p1': true,
         'residence:p2': 'permit_other',
+        'employer_in_switzerland:p2': true,
         'tou:p1': 'no',
         'tou:p2': 'no',
         ...REST,
@@ -127,8 +129,8 @@ describe('a couple with B permits, one salaried, the other on unemployment benef
       const status = await call('get_status');
       expect(status.structured.sourceTax).toEqual(
         expect.arrayContaining([
-          expect.stringMatching(/^You are taxed at source: without a C permit/),
-          expect.stringMatching(/^Your spouse or partner is taxed at source: without a C permit/),
+          expect.stringMatching(/^You are taxed at source\. Without a C permit/),
+          expect.stringMatching(/^Your spouse or partner is taxed at source\. Without a C permit/),
           expect.stringMatching(/^Barème C0N: married, both of you with income/),
         ]),
       );
@@ -225,6 +227,7 @@ describe('a single parent with a B permit and two children', () => {
         'income_sources:p1': ['salary'],
         'employers:p1': 1,
         'residence:p1': 'permit_other',
+        'employer_in_switzerland:p1': true,
         'tou:p1': 'no',
         lives_with_other_parent: false,
         ...REST,
@@ -277,7 +280,9 @@ describe('a couple already in TOU', () => {
         'employers:p1': 1,
         'employers:p2': 1,
         'residence:p1': 'permit_other',
+        'employer_in_switzerland:p1': true,
         'residence:p2': 'permit_other',
+        'employer_in_switzerland:p2': true,
         'tou:p1': 'already',
         'tou:p2': 'already',
         ...REST,
@@ -320,7 +325,9 @@ describe('a couple whose income makes TOU compulsory', () => {
         'income_sources:p2': [],
         'employers:p1': 1,
         'residence:p1': 'permit_other',
+        'employer_in_switzerland:p1': true,
         'residence:p2': 'permit_other',
+        'employer_in_switzerland:p2': true,
         'tou:p1': 'no',
         ...REST,
       });
@@ -366,6 +373,7 @@ describe('where the law leaves it open', () => {
         'employers:p1': 1,
         'employers:p2': 1,
         'residence:p1': 'permit_other',
+        'employer_in_switzerland:p1': true,
         // An international civil servant: a legitimation card, not taxed at source.
         'residence:p2': 'other',
         'taxed_at_source:p2': false,
@@ -380,12 +388,45 @@ describe('where the law leaves it open', () => {
       const s = await state();
       expect(s.planning!.tou.problem).toBe('mixed_couple');
       expect(s.sourceTax!.lines.map((l) => l.text)).toContain(
-        'Your spouse or partner is not taxed at source: as you said',
+        'Your spouse or partner is not taxed at source. That is what you said.',
       );
       const list = await call('list_optimizations');
       expect(list.text).toMatch(
         /Only one of the couple is taxed at source; the other isn't and has income of their own .*ge-2026-source-directives p\. 25 and 26/,
       );
+    } finally {
+      await close();
+    }
+  });
+});
+
+describe('a C permit received during the year', () => {
+  it('the whole year is ordinary, and the tax taken at source counts towards it', async () => {
+    const { ws, call, state, close } = await connect();
+    try {
+      await answerAll(call, {
+        canton: 'GE',
+        civil_status: 'single',
+        children: 0,
+        commune: 'Meyrin',
+        moved: 'no',
+        'income_sources:p1': ['salary'],
+        'employers:p1': 1,
+        'residence:p1': 'permit_c',
+        ...REST,
+      });
+      await confirmed(ws, 'salary_certificate', 'p1', [
+        ['salary.gross', "80'000.00"],
+        ['salary.source_tax', "3'100.00"],
+      ]);
+      const s = await state();
+      expect(s.planning!.tou.applies).toBe(false);
+      expect(s.sourceTax!.lines.map((l) => l.text)).toEqual([
+        'You are not taxed at source. Swiss citizens and C permit holders are not taxed at source, and neither is someone married to one of them.',
+        'Tax taken at source in 2026 all the same, salary certificate box 12: CHF 3,100. The whole year is taxed ordinarily (a C permit, Swiss citizenship or a marriage during the year, for example), and this tax counts towards it.',
+      ]);
+      expect(s.sourceTax!.lines[1]?.source).toMatch(/ge-na-law-risp art\. 10/);
+      expect((await call('get_status')).structured.sourceTax).toHaveLength(2);
     } finally {
       await close();
     }

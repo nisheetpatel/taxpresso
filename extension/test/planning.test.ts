@@ -36,6 +36,7 @@ const RIBEIRO: [string, unknown][] = [
   ['employers:p1', 1],
   // The plain fact; taxed at source follows from it (LISP art. 1, LIFD art. 83).
   ['residence:p1', 'permit_other'],
+  ['employer_in_switzerland:p1', true],
   ['tou:p1', 'no'],
   ['lives_with_other_parent', false],
 ];

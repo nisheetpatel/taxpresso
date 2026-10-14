@@ -260,10 +260,60 @@ questions:
           de: 'Weisungen zur Quellensteuer 2025, S. 6: wer an der Quelle besteuert wird, auf Französisch'
           it: 'Direttive sull’imposta alla fonte 2025, p. 6: chi paga l’imposta alla fonte, in francese'
 
+  # A salary paid directly by an employer abroad is taxed ordinarily, not at source, unless a Swiss
+  # branch, the Swiss company of a secondment or a Swiss hirer pays it in the end (ge-na-law-risp
+  # art. 5; ge-<year>-source-directives p. 6, ch. 1.1.2). Asked of a salaried person without a C
+  # permit only.
+  - id: employer_in_switzerland
+    key: profile.employer_in_switzerland
+    type: yesno
+    perPerson: true
+    when:
+      all:
+        - { key: profile.residence, in: [permit_other] }
+        - { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'An employer in Switzerland takes the tax from your salary at source. A salary paid directly from abroad is taxed through a normal declaration instead.'
+      fr: 'Un employeur en Suisse retient l’impôt à la source sur votre salaire. Un salaire versé directement depuis l’étranger est imposé par une déclaration normale.'
+      de: 'Ein Arbeitgeber in der Schweiz zieht die Steuer an der Quelle vom Lohn ab. Ein Lohn, der direkt aus dem Ausland bezahlt wird, wird über eine normale Steuererklärung besteuert.'
+      it: 'Un datore di lavoro in Svizzera trattiene l’imposta alla fonte dal tuo salario. Un salario versato direttamente dall’estero è tassato con una dichiarazione normale.'
+    learnMore:
+      - year: 2026
+        url: 'https://www.ge.ch/document/42009/annexe/file/580297#page=6'
+        label:
+          en: 'Directives on tax at source 2026, p. 6: who is taxed at source'
+          fr: 'Directives sur l’imposition à la source 2026, p. 6 : Assujettissement'
+          de: 'Weisungen zur Quellensteuer 2026, S. 6: wer an der Quelle besteuert wird, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2026, p. 6: chi paga l’imposta alla fonte, in francese'
+      - year: 2025
+        url: 'https://www.ge.ch/document/38036/annexe/file/374849#page=6'
+        label:
+          en: 'Directives on tax at source 2025, p. 6: who is taxed at source'
+          fr: 'Directives sur l’imposition à la source 2025, p. 6 : Assujettissement'
+          de: 'Weisungen zur Quellensteuer 2025, S. 6: wer an der Quelle besteuert wird, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2025, p. 6: chi paga l’imposta alla fonte, in francese'
+    text:
+      p1:
+        en: 'In {year}, did an employer in Switzerland pay your salary?'
+        fr: 'En {year}, votre salaire était-il versé par un employeur en Suisse ?'
+        de: 'Hat dir {year} ein Arbeitgeber in der Schweiz den Lohn bezahlt?'
+        it: 'Nel {year} il tuo salario era versato da un datore di lavoro in Svizzera?'
+      p2:
+        en: 'In {year}, did an employer in Switzerland pay your spouse or partner’s salary?'
+        fr: 'En {year}, le salaire de votre conjoint ou partenaire était-il versé par un employeur en Suisse ?'
+        de: 'Hat deinem Partner oder deiner Partnerin {year} ein Arbeitgeber in der Schweiz den Lohn bezahlt?'
+        it: 'Nel {year} il salario del tuo coniuge o partner era versato da un datore di lavoro in Svizzera?'
+    help:
+      en: 'Yes if at least one employer is in Switzerland, or if a Swiss branch or the Swiss company you work for pays your salary in the end. No if only an employer abroad paid you directly.'
+      fr: 'Oui si au moins un employeur est en Suisse, ou si une succursale suisse ou l’entreprise suisse pour laquelle vous travaillez paie finalement votre salaire. Non si seul un employeur à l’étranger vous a payé directement.'
+      de: 'Ja, wenn mindestens ein Arbeitgeber in der Schweiz ist oder eine Schweizer Niederlassung oder die Schweizer Firma, für die du arbeitest, deinen Lohn letztlich bezahlt. Nein, wenn dich nur ein Arbeitgeber im Ausland direkt bezahlt hat.'
+      it: 'Sì se almeno un datore di lavoro è in Svizzera, o se una succursale svizzera o l’azienda svizzera per cui lavori paga alla fine il tuo salario. No se ti ha pagato direttamente solo un datore di lavoro all’estero.'
+
   # Taxed at source, worked out with Geneva's own law: LISP art. 1 (foreign workers without a C
   # permit; not spouses of a Swiss or a C permit holder), LISP art. 2 al. 2 and RISP art. 3 (the
-  # benefits that replace pay: unemployment, sickness, accident, invalidity, maternity). Asked only
-  # where they don't settle it (data/ch/2026/questions.yaml).
+  # benefits that replace pay: unemployment, sickness, accident, invalidity, maternity), RISP art.
+  # 5 (a salary paid from abroad). Asked only where they don't settle it: a legitimation card, a
+  # pension as the only income, a salary paid directly from abroad (data/ch/2026/questions.yaml).
   - use: taxed_at_source
     derive:
       - when: { key: profile.residence, in: [swiss, permit_c], anyPerson: true }
@@ -277,14 +327,16 @@ questions:
       - when:
           all:
             - { key: profile.residence, in: [permit_other] }
-            - { key: profile.income_sources, includesAny: [salary, replacement_income] }
+            - any:
+                - { key: profile.income_sources, includes: replacement_income }
+                - { key: profile.employer_in_switzerland, is: true }
         value: true
         because:
           en: 'Without a C permit, tax is taken at source from a salary and from the benefits that replace it (unemployment, sickness, accident, maternity).'
           fr: 'Sans permis C, l’impôt est retenu à la source sur le salaire et sur les indemnités qui le remplacent (chômage, maladie, accident, maternité).'
           de: 'Ohne Ausweis C wird die Steuer an der Quelle abgezogen, vom Lohn und von den Taggeldern, die ihn ersetzen (Arbeitslosigkeit, Krankheit, Unfall, Mutterschaft).'
           it: 'Senza permesso C, l’imposta è trattenuta alla fonte sul salario e sulle indennità che lo sostituiscono (disoccupazione, malattia, infortunio, maternità).'
-        source: 'ge-na-law-lisp art. 1 al. 1, art. 2 al. 2 let. a and b; ge-na-law-risp art. 3'
+        source: 'ge-na-law-lisp art. 1 al. 1, art. 2 al. 2 let. a and b; ge-na-law-risp art. 3 and 5'
     # ge-2025-dris-tou-page
     learnMore:
       url: 'https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure'

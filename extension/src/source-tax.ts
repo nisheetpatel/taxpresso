@@ -13,7 +13,6 @@ import type { Text } from '@taxpresso/rules-ch';
 import {
   deriveTariffs,
   type DerivedTariff,
-  normalizeTariff,
   SOURCE_TAX_FACTS,
   SOURCE_TAX_SOURCES,
   SOURCE_TAX_SUBJECT,
@@ -90,6 +89,12 @@ export interface SourceTaxPerson {
   missing: WithheldMissing[];
   /** Some figure still needs the user's OK. */
   unconfirmed: boolean;
+  /**
+   * Not taxed at source for the year, yet tax was taken at source (box 12): a C permit, Swiss
+   * citizenship or a marriage during the year makes the whole year ordinary, and that tax counts
+   * towards it (ge-na-law-risp art. 10).
+   */
+  creditedCentimes?: number;
 }
 
 export interface SourceTax {
@@ -98,6 +103,8 @@ export interface SourceTax {
   people: SourceTaxPerson[];
   /** Someone in the household is taxed at source. */
   any: boolean;
+  /** Someone not taxed at source had tax taken at source all the same (creditedCentimes). */
+  credited: boolean;
   /** Arrived from abroad in the year: the CHF 120,000 counts the salary over a whole year. */
   partYear: boolean;
 }
@@ -276,7 +283,12 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
       missing: [],
       unconfirmed,
     };
-    if (p.atSource !== true) return person;
+    if (p.atSource !== true) {
+      if (p.atSource === false && certTax && certTax.centimes > 0) {
+        person.creditedCentimes = certTax.centimes;
+      }
+      return person;
+    }
 
     // The tax withheld: documents first, then a figure from an official statement, then the
     // official tables on the gross salary (an estimate). Benefits paid by the insurance have no
@@ -339,12 +351,14 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
     }
     return person;
   });
-  return { taxYear, couple, people: out, any: out.some((p) => p.atSource === true), partYear };
-}
-
-/** A barème read from a payslip, as the official code, or why it isn't one. */
-export function payslipTariff(taxYear: number, code: string): string {
-  return normalizeTariff(taxYear, code);
+  return {
+    taxYear,
+    couple,
+    people: out,
+    any: out.some((p) => p.atSource === true),
+    credited: out.some((p) => p.creditedCentimes !== undefined),
+    partYear,
+  };
 }
 
 // ---- Words -----------------------------------------------------------------------------------
@@ -394,12 +408,17 @@ const WHO_IS: Record<Who, { yes: Text; no: Text; open: Text }> = {
   },
 };
 
-const ANSWERED = T('as you said', 'selon votre réponse', 'wie du gesagt hast', 'come hai detto');
+const ANSWERED = T(
+  'That is what you said.',
+  'C’est votre réponse.',
+  'Das hast du so angegeben.',
+  'È quanto hai indicato.',
+);
 const NO_SALARY = T(
-  'no salary or benefits',
-  'ni salaire ni indemnités',
-  'kein Lohn und keine Taggelder',
-  'né salario né indennità',
+  'There is no salary or benefits to tax at source.',
+  'Il n’y a ni salaire ni indemnités à imposer à la source.',
+  'Es gibt keinen Lohn und keine Taggelder, die an der Quelle besteuert würden.',
+  'Non ci sono né salario né indennità da tassare alla fonte.',
 );
 
 const WHY: Record<string, Text> = {
@@ -579,11 +598,22 @@ const W = {
     'Imposta trattenuta alla fonte per il {year}',
   ),
   about: T('about', 'environ', 'etwa', 'circa'),
+  credited: T(
+    'Tax taken at source in {year} all the same, salary certificate box 12',
+    'Impôt retenu à la source en {year} tout de même, certificat de salaire chiffre 12',
+    'Trotzdem {year} an der Quelle abgezogene Steuer, Lohnausweis Ziffer 12',
+    'Imposta trattenuta comunque alla fonte nel {year}, certificato di salario cifra 12',
+  ),
+  creditedWhy: T(
+    'The whole year is taxed ordinarily (a C permit, Swiss citizenship or a marriage during the year, for example), and this tax counts towards it.',
+    'Toute l’année est taxée de façon ordinaire (un permis C, la nationalité suisse ou un mariage en cours d’année, par exemple), et cet impôt est imputé.',
+    'Das ganze Jahr wird ordentlich veranlagt (zum Beispiel wegen eines Ausweises C, des Schweizer Bürgerrechts oder einer Heirat im Lauf des Jahres), und diese Steuer wird angerechnet.',
+    'Tutto l’anno è tassato in via ordinaria (per esempio con un permesso C, la cittadinanza svizzera o un matrimonio durante l’anno), e questa imposta viene computata.',
+  ),
   notKnown: T('not known yet.', 'pas encore connu.', 'noch nicht bekannt.', 'non ancora nota.'),
 };
 
 const sep = (lang: UiLang) => (lang === 'fr' ? ' ; ' : '; ');
-const lowerFirst = (s: string) => (s ? s[0]!.toLowerCase() + s.slice(1) : s);
 const capital = (s: string) => (s ? s[0]!.toUpperCase() + s.slice(1) : s);
 
 /** The facts in plain words, in the page's language (and English for Claude). */
@@ -603,10 +633,19 @@ export function sourceTaxLines(st: SourceTax, lang: UiLang): SourceTaxLine[] {
     const reason = p.source ?? (p.atSource ? subject?.who : undefined);
     lines.push({
       person: p.person,
-      text: `${w(p.atSource ? who.yes : who.no)}${colon(lang)}${lowerFirst(why)}`,
+      text: `${w(p.atSource ? who.yes : who.no)}. ${why}`,
       ...(reason ? { source: reason } : {}),
     });
-    if (!p.atSource) continue;
+    if (!p.atSource) {
+      if (p.creditedCentimes !== undefined) {
+        lines.push({
+          person: p.person,
+          text: `${w(W.credited).replace('{year}', String(st.taxYear))}${colon(lang)}${chf(p.creditedCentimes, lang)}. ${w(W.creditedWhy)}`,
+          ...(subject ? { source: subject.toOrdinary } : {}),
+        });
+      }
+      continue;
+    }
     const t = p.derivedTariff;
     if (p.documentTariff) {
       const differs = t?.code !== undefined && t.code !== p.documentTariff;
