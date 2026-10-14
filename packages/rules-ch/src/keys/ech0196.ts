@@ -1,7 +1,7 @@
 // Keys for what a bank's e-tax statement (relevé fiscal électronique, eCH-0196) gives, read from its
 // barcode (SPEC.md section 5.2): bank accounts and liabilities, one instance per account (the IBAN,
 // or the account number), and whether a security's tax value comes from the ESTV price list. The
-// securities themselves use keys-securities.ts (instance = ISIN). Household values: whose each
+// securities themselves use ./securities.ts (instance = ISIN). Household values: whose each
 // account is (civilité A, B or E on the form) is not in the statement.
 //
 // Official terms, Geneva guide for 2025 (the latest published), ge-2025-guide-declaration-pp:

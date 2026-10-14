@@ -1,6 +1,9 @@
 // What every canton shares (docs/design/cantons.md, section 1): cited constants and exact integer
-// arithmetic on centimes, the household input and the result's shapes, and the deduction rules
-// that take each canton's cited parameters. Every constant is cited (SPEC.md section 7).
+// arithmetic on centimes, the household input and the result's shapes, the deduction rules that
+// take each canton's cited parameters, the federal direct tax (IFD), pillar 3a and pension limits,
+// withholding tax and exchange rates, the ESTV source-tax record format, the ledger keys of the
+// documents that are the same everywhere, and the canton interface. Every constant is cited
+// (SPEC.md section 7). Pure functions and data: no canton, no network, no model.
 export {
   estimated,
   type BracketScale,

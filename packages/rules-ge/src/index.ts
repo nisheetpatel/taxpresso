@@ -1,7 +1,10 @@
-// Deterministic Geneva ICC and federal IFD engine, every constant cited (SPEC.md section 7).
-// So far: the 2026 keys and communes, the Geneva 2025 income scale (latest published), the federal
-// 2026 scale and deductions, the 2026 pillar 3a limits, the keys for values read from documents,
-// the consistency checks across documents, and the assessment check with its objection deadline.
+// Deterministic Geneva engine, every constant cited (SPEC.md section 7): the cantonal and communal
+// tax (ICC) on the Geneva form, with the federal tax (IFD) and what every canton shares from
+// packages/rules-ch. So far: the 2026 keys and communes, the Geneva 2025 income scale (latest
+// published), the keys for values read from documents, the consistency checks across documents,
+// and the assessment check with its objection deadline. The names that moved to rules-ch (the
+// federal constants, pillar 3a and pension limits, withholding tax, the shared keys and shapes)
+// are still exported from here, so importers can move at their own pace.
 export {
   iccBaseIncomeTax2025,
   iccTotalIncomeTax2025,

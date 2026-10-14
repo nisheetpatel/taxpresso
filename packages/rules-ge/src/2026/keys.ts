@@ -324,7 +324,7 @@ export const KEYS_2026 = {
     official: 'fortune imposable',
     source: TOU_FACTS.compulsoryCases,
   },
-  // The securities list (état des titres), one instance per security: keys-securities.ts.
+  // The securities list (état des titres), one instance per security: rules-ch, keys/securities.ts.
   ...KEYS_SECURITIES_2026,
   // Accounts, crypto, loans, life insurance, valuables and debts the user describes: keys-wealth.ts.
   ...KEYS_WEALTH_2026,
@@ -332,7 +332,7 @@ export const KEYS_2026 = {
   ...DOCUMENT_KEYS_2026,
   // Last year's figures from the prior-year declaration, for comparison only (./keys-prior.ts).
   ...KEYS_PRIOR_2026,
-  // Bank accounts and liabilities from e-tax statements, one per account: keys-ech0196.ts.
+  // Bank accounts and liabilities from e-tax statements, one per account: rules-ch, keys/ech0196.ts.
   ...KEYS_ECH0196_2026,
 } as const satisfies KeyRegistry;
 
