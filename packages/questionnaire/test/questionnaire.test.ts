@@ -4,8 +4,16 @@ import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
+  beQuestionnaire2026,
+  blQuestionnaire2026,
   bsQuestionnaire2026,
+  frQuestionnaire2026,
+  geQuestionnaire,
   geQuestionnaire2026,
+  luQuestionnaire2026,
+  sgQuestionnaire2026,
+  tiQuestionnaire2026,
+  vdQuestionnaire2026,
   LearnMore,
   NBSP,
   parseQuestionnaire,
@@ -451,6 +459,107 @@ describe('Geneva questionnaire 2026', () => {
       suggested: ['salary'],
     });
     expect(snap.slots.find((s) => s.id === 'income_sources:p2')?.value).toBeUndefined();
+  });
+});
+
+describe('pension capital (prestations en capital, 98.12)', () => {
+  const COUPLE = {
+    canton: 'GE',
+    civil_status: 'married',
+    children: 0,
+    commune: 'Vernier',
+    moved: 'no',
+    'income_sources:p1': ['pension'],
+    'income_sources:p2': ['pension'],
+    // Swiss: not taxed at source; the spouse is not asked.
+    'residence:p1': 'swiss',
+    banks: 0,
+    crypto: false,
+    payments: [],
+    special: ['pension_capital'],
+    'pension_capital:p1': ['pillar2', 'pillar3a'],
+    'pension_capital:p2': [],
+  };
+
+  it('asks only who received which, in Geneva: the rest is on the attestation', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, ledger, COUPLE);
+    expect(asked.slice(-3)).toEqual(['special', 'pension_capital:p1', 'pension_capital:p2']);
+    const snap = e.snapshot(ledger);
+    expect(e.next(snap)).toBeUndefined();
+    expect(e.notSupported(snap)).toEqual([]);
+    const reqs = e.requirements(snap, [doc('lpp_capital_attestation', 'p1')]);
+    expect(
+      reqs.filter((r) => r.id.includes('capital')).map((r) => [r.id, r.status, r.source]),
+    ).toEqual([
+      [
+        'lpp_capital:p1',
+        'satisfied',
+        'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13',
+      ],
+      [
+        'pillar3a_capital:p1',
+        'missing',
+        'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13',
+      ],
+    ]);
+    expect(e.chips(snap, 'en')).toEqual(
+      expect.arrayContaining([
+        'I received a lump sum from my pension fund or pillar 3a',
+        'Capital, 2nd pillar',
+        'Capital, pillar 3a',
+      ]),
+    );
+  });
+
+  it('asks nothing more without a lump sum', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, { ...COUPLE, special: [] });
+    expect(e.snapshot(ledger).slots.some((s) => s.question.id.startsWith('pension_capital'))).toBe(
+      false,
+    );
+  });
+
+  it('cites 2025 documents only for the 2025 return', () => {
+    const e = new QuestionnaireEngine(geQuestionnaire(2025), KEYS_2026, COMMUNES_2026);
+    const ledger = new Ledger(2025, KEYS_2026);
+    walk(e, ledger, COUPLE);
+    const reqs = e.requirements(e.snapshot(ledger), []);
+    const capital = reqs.filter((r) => r.id.includes('capital'));
+    expect(capital.map((r) => r.id)).toEqual(['lpp_capital:p1', 'pillar3a_capital:p1']);
+    for (const r of capital) {
+      expect(r.source).toBe(
+        'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ge-2025-guide-declaration-pp p. 13',
+      );
+    }
+  });
+
+  it('stays not supported in every other canton', () => {
+    for (const [canton, file] of [
+      ['ZH', zhQuestionnaire2026()],
+      ['BE', beQuestionnaire2026()],
+      ['BL', blQuestionnaire2026()],
+      ['VD', vdQuestionnaire2026()],
+      ['BS', bsQuestionnaire2026()],
+      ['ZG', zgQuestionnaire2026()],
+      ['LU', luQuestionnaire2026()],
+      ['SG', sgQuestionnaire2026()],
+      ['FR', frQuestionnaire2026()],
+      ['TI', tiQuestionnaire2026()],
+      ['shared', sharedQuestionnaire2026()],
+    ] as const) {
+      const special = file.questions.find((q) => q.id === 'special')!;
+      const option = special.options!.find((o) => o.value === 'pension_capital')!;
+      expect(option.notSupported, canton).toBeDefined();
+      expect(
+        file.questions.some((q) => q.id.startsWith('pension_capital')),
+        canton,
+      ).toBe(false);
+    }
+    const ge = geQuestionnaire2026().questions.find((q) => q.id === 'special')!;
+    expect(ge.options!.find((o) => o.value === 'pension_capital')!.notSupported).toBeUndefined();
   });
 });
 

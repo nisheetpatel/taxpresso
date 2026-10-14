@@ -325,6 +325,10 @@ describe('a Zurich return', () => {
     await ws.setPlan('p1', 'plan.pillar3a_paid', 7_258, 'chat');
     await ws.setPlan('p2', 'plan.lpp_buyin_amount', 10_000, 'chat');
     await ws.setPlan('p2', 'plan.lpp_buyin_capacity', 40_000, 'chat');
+    // Tax withheld at source is a Geneva planning value: refused plainly, not a crash.
+    await expect(ws.setPlan('p1', 'plan.source_tax_withheld', 1_000, 'dashboard')).rejects.toThrow(
+      'Not a planning value in this canton',
+    );
     const res = await call('list_optimizations');
     const out = res.structuredContent as {
       pillar3a: { saving?: { totalCentimes: number }; assumptions: string[]; sources: string[] };

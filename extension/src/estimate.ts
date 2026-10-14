@@ -6,6 +6,8 @@
 // with `detail`.
 import {
   chf,
+  type CapitalTax,
+  type CapitalView,
   type Item,
   type Line,
   type ResultView,
@@ -77,6 +79,23 @@ function lastYearText(x: YearComparisonRow): string {
   return `${x.code} ${x.official} (${PERSON[x.person].en}): ${cols}${x.lastYearNeedsOk ? ' [last year read, not checked by the user]' : ''}${x.thisYearProvisional ? ' [this year not final]' : ''}`;
 }
 
+/** The tax on pension capital, for Claude: the amount, each tax, and that it is apart. */
+function capitalText(c: CapitalView, capital: CapitalTax): string {
+  const each = capital.items
+    .map(
+      (i) =>
+        `${i.code} (${WHO[i.person]?.en ?? i.person}) ${chf(i.amount)}${i.needsOk ? " [needs the user's OK]" : ''}`,
+    )
+    .join('; ');
+  const taxes = [
+    capital.icc ? `cantonal and communal ${chf(capital.icc.tax.amount)}` : '',
+    capital.ifd ? `federal ${chf(capital.ifd.tax.amount)}` : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+  return `${c.amount.label.en}: ${chf(c.amount.line.amount)} (${each}). A tax of its own, apart from the tax on income, at a fifth of the scale, never in the total${taxes ? `: ${taxes}` : ': not computed (see "Not computed")'}${c.total ? `; together ${chf(c.total.line.amount)}` : ''}.`;
+}
+
 /** The canton's result and its view, or why there is none. */
 function current(ws: Workspace) {
   const e = ws.estimate();
@@ -115,6 +134,8 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     );
   }
   if (r.total !== null) say.push(`Total: ${chf(r.total)}.`);
+  const capital = view.capital?.(r);
+  if (capital && r.capital) say.push(capitalText(capital, r.capital));
   const items = icc ? mainItems(icc.items, 8) : [];
   if (items.length) {
     say.push(
@@ -166,6 +187,21 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     unsupported: en(r.unsupported),
     notSupported,
     unverifiedRules: en(r.unverifiedRules),
+    ...(capital && r.capital
+      ? {
+          capital: {
+            amount: capital.amount.line.amount,
+            items: r.capital.items.map((i) => ({
+              code: i.code,
+              person: i.person,
+              amount: i.amount,
+            })),
+            icc: r.capital.icc?.tax.amount ?? null,
+            ifd: r.capital.ifd?.tax.amount ?? null,
+            total: capital.total?.line.amount ?? null,
+          },
+        }
+      : {}),
     complete: r.complete,
     ...(r.incomplete.length ? { incomplete: en(r.incomplete) } : {}),
     ...(lastYear.length
@@ -196,7 +232,13 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     const all = [
       ...(icc ? [...icc.items, ...wealth] : []),
       ...(ifd ? ifd.items.map((i) => ({ ...i, code: `${view.ifdCode} ${i.code}` })) : []),
+      ...(r.capital?.items ?? []),
     ];
+    if (r.capital) {
+      (structured.detail as Record<string, unknown>).capitalItems = r.capital.items.map((i) =>
+        itemOut(view, i),
+      );
+    }
     say.push(
       `Detail, each item with how it was computed and its source${view.detailNote}:`,
       ...all.map(
@@ -233,20 +275,24 @@ export function estimateView(ws: Workspace, lang: UiLang) {
     needsOk: Boolean(line.needsOk),
   });
   const couple = ws.snapshot().people.length > 1;
+  const capital = view.capital?.(r);
   return {
     computed: true as const,
     ...(view.preview ? { canton: view.canton } : {}),
     taxYear: r.taxYear,
     total: r.total,
     estimate: r.estimates.length > 0,
-    rows: view.rows(r).map(row),
+    // The tax on pension capital, a tax of its own: its rows follow, each saying it is not in the
+    // total (only when there is one).
+    rows: [...view.rows(r), ...(capital?.rows ?? [])].map(row),
     parts: view.parts(r).map(row),
     taxable: {
       icc: icc?.taxableIncome.amount ?? null,
       ifd: ifd?.taxableIncome.amount ?? null,
       wealth: icc?.wealth.taxableWealth.amount ?? null,
     },
-    items: (icc ? mainItems(icc.items, 8) : []).map((i) => ({
+    // The form's main lines, then each lump sum of pension capital (98.12).
+    items: [...(icc ? mainItems(icc.items, 8) : []), ...(r.capital?.items ?? [])].map((i) => ({
       code: i.code,
       label: say(i.label, l),
       who: i.person !== 'household' && couple ? say(WHO[i.person] ?? WHO.household!, l) : '',

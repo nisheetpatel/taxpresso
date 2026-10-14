@@ -599,7 +599,14 @@ questions:
         fr: 'Guide fiscal 2025, p. 11 : Principales déductions'
         it: 'Guida fiscale di Ginevra 2025, p. 11: le principali deduzioni'
 
+  # A lump sum from the 2nd pillar or pillar 3a is supported in Geneva since 14 October 2026 (SPEC.md
+  # section 1): the questions below ask who received which, and why.
   - use: special
+    explain:
+      en: 'Most of these need checks that Taxpresso can’t do yet. Better to know now than in March. A lump sum from your pension fund or pillar 3a is the exception: Taxpresso computes the separate tax on it.'
+      fr: 'La plupart de ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars. Un capital de votre caisse de pension ou du 3e pilier A fait exception : Taxpresso calcule l’impôt séparé sur ce capital.'
+      de: 'Die meisten davon brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März. Ein Kapitalbezug aus der Pensionskasse oder der Säule 3a ist die Ausnahme: Taxpresso berechnet die separate Steuer darauf.'
+      it: 'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. Un capitale della tua cassa pensione o del pilastro 3a fa eccezione: Taxpresso calcola l’imposta separata su di esso.'
     # ge-2025-getax-software
     learnMore:
       url: 'https://www.ge.ch/getax/telecharger-installer-getax-particuliers'
@@ -643,18 +650,92 @@ questions:
           }
         notSupported:
           { en: 'Income from abroad', fr: 'Des revenus de l’étranger', it: 'Redditi dall’estero' }
+      # 98.12, Prestations en capital du 2e et 3e pilier A (ge-2025-guide-declaration-pp p. 13).
       - value: pension_capital
         label:
           {
-            en: 'I withdrew pension capital (2nd or 3rd pillar)',
-            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
-            it: 'Ho prelevato un capitale di previdenza (2° o 3° pilastro)',
+            en: 'I received a lump sum from my pension fund or pillar 3a',
+            fr: 'J’ai reçu un capital de ma caisse de pension ou du 3e pilier A',
+            de: 'Ich habe Kapital aus der Pensionskasse oder der Säule 3a bezogen',
+            it: 'Ho ricevuto un capitale dalla mia cassa pensione o dal pilastro 3a',
           }
-        notSupported:
+        # No chip of its own: the other options have none, so each shows its label (a chip here
+        # would hide theirs).
+
+  # Who received which lump sum (prestation en capital): from a pension fund or vested benefits
+  # (2nd pillar: ch-na-law-lifd art. 22 al. 1 and 2, p. 17) or from pillar 3a. Each is taxed apart
+  # from the other income, at a fifth of the scale, every lump sum of the year and both spouses'
+  # added together (ge-na-law-lipp art. 45; ch-na-law-lifd art. 9 al. 1, p. 5, and art. 38, p. 32;
+  # ch-2026-ifd-instructions-personnes-physiques p. 4 and 9), declared at 98.12
+  # (ge-2025-guide-declaration-pp p. 13; ge-2025-declaration-specimen p. 2). Only what you know is
+  # asked: who received which. The amount, the date and the reason (motif du versement) are read on
+  # the institution's attestation (capital.amount, capital.date, capital.reason), and what Taxpresso
+  # can't tax yet (leaving Switzerland, another reason) is derived from them.
+  - id: pension_capital
+    key: profile.pension_capital
+    type: multi
+    perPerson: true
+    when: { key: profile.special, includes: pension_capital }
+    explain:
+      en: 'A lump sum from your pension fund, a vested benefits account (2nd pillar) or pillar 3a is taxed apart from your other income, at a fifth of the usual rate. Every lump sum of the year counts together, your spouse’s too.'
+      fr: 'Un capital versé par votre caisse de pension, un compte de libre passage (2e pilier) ou le 3e pilier A est imposé séparément de vos autres revenus, au cinquième du taux habituel. Tous les capitaux de l’année comptent ensemble, ceux de votre conjoint aussi.'
+      de: 'Kapital aus deiner Pensionskasse, einem Freizügigkeitskonto (2. Säule) oder der Säule 3a wird getrennt von deinem übrigen Einkommen besteuert, zu einem Fünftel des üblichen Satzes. Alle Kapitalbezüge des Jahres zählen zusammen, auch die deines Partners oder deiner Partnerin.'
+      it: 'Un capitale versato dalla tua cassa pensione, da un conto di libero passaggio (2° pilastro) o dal pilastro 3a è tassato separatamente dagli altri redditi, a un quinto dell’aliquota abituale. Tutti i capitali dell’anno contano insieme, anche quelli del tuo coniuge.'
+    # ge-2025-guide-declaration-pp p. 13
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=13'
+      label:
+        en: 'Geneva tax guide 2025, p. 13: pension capital (98.12)'
+        fr: 'Guide fiscal 2025, p. 13 : Prestations en capital du 2e et 3e pilier A'
+        it: 'Guida fiscale di Ginevra 2025, p. 13: prestazioni in capitale (98.12)'
+    text:
+      p1:
+        en: 'Which lump sum did you receive in {year}?'
+        fr: 'Quel capital avez-vous reçu en {year} ?'
+        de: 'Welches Kapital hast du {year} bezogen?'
+        it: 'Quale capitale hai ricevuto nel {year}?'
+      p2:
+        en: 'Which lump sum did your spouse or partner receive in {year}?'
+        fr: 'Quel capital votre conjoint ou partenaire a-t-il reçu en {year} ?'
+        de: 'Welches Kapital hat dein Partner oder deine Partnerin {year} bezogen?'
+        it: 'Quale capitale ha ricevuto il tuo coniuge o partner nel {year}?'
+    help:
+      en: 'A lump sum, not a pension paid every month. Choose all that apply. On the official form: prestations en capital du 2e et 3e pilier A (98.12).'
+      fr: 'Un capital, pas une rente versée chaque mois. Choisissez tout ce qui s’applique. Sur le formulaire officiel : prestations en capital du 2e et 3e pilier A (98.12).'
+      de: 'Ein Kapital, keine monatliche Rente. Wähl alles, was zutrifft. Auf dem offiziellen Formular: prestations en capital du 2e et 3e pilier A (98.12).'
+      it: 'Un capitale, non una rendita mensile. Scegli tutto ciò che vale. Sul modulo ufficiale: prestations en capital du 2e et 3e pilier A (98.12).'
+    none: { en: 'None', fr: 'Aucun', de: 'Keines', it: 'Nessuno' }
+    options:
+      - value: pillar2
+        label:
           {
-            en: 'A pension capital withdrawal',
-            fr: 'Un retrait de capital de prévoyance',
-            it: 'Un prelievo di capitale di previdenza',
+            en: 'From a pension fund or a vested benefits account (2nd pillar)',
+            fr: 'D’une caisse de pension ou d’un compte de libre passage (2e pilier)',
+            de: 'Aus einer Pensionskasse oder einem Freizügigkeitskonto (2. Säule)',
+            it: 'Da una cassa pensione o da un conto di libero passaggio (2° pilastro)',
+          }
+        chip:
+          {
+            en: 'Capital, 2nd pillar',
+            fr: 'Capital 2e pilier',
+            de: 'Kapital 2. Säule',
+            it: 'Capitale 2° pilastro',
+          }
+      - value: pillar3a
+        label:
+          {
+            en: 'From pillar 3a',
+            fr: 'Du 3e pilier A',
+            de: 'Aus der Säule 3a',
+            it: 'Dal pilastro 3a',
+          }
+        chip:
+          {
+            en: 'Capital, pillar 3a',
+            fr: 'Capital 3e pilier A',
+            de: 'Kapital Säule 3a',
+            it: 'Capitale pilastro 3a',
           }
 
 # What the "still missing" list asks for. Labels use the guide's words (p. 8 and p. 10).
@@ -844,6 +925,81 @@ requirements:
         fr: 'Guide fiscal 2025, p. 10 : Les justificatifs'
         it: 'Guida fiscale di Ginevra 2025, p. 10: i giustificativi'
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
+
+  # The institution that paid a lump sum reports it to the tax office and sends you a copy
+  # (ch-na-law-lifd art. 129 al. 1 let. b and al. 2, p. 69); the federal instructions ask you to
+  # attach it (ch-2026-ifd-instructions-personnes-physiques p. 9). Rubric 98.12: guide p. 13.
+  - id: lpp_capital
+    perPerson: true
+    when: { key: profile.pension_capital, includes: pillar2 }
+    expects: { kinds: [lpp_capital_attestation] }
+    label:
+      {
+        en: 'Pension capital attestation, 2nd pillar',
+        fr: 'Attestation de prestation en capital du 2e pilier',
+        de: 'Bescheinigung Kapitalleistung 2. Säule',
+        it: 'Attestazione di prestazione in capitale, 2° pilastro',
+      }
+    explain:
+      en: 'The statement your pension fund or vested benefits institution sends when it pays a lump sum: the amount, the date and the reason. Paid by two institutions? Add both.'
+      fr: 'Le décompte que votre caisse de pension ou votre institution de libre passage envoie quand elle verse un capital : le montant, la date et le motif. Versé par deux institutions ? Ajoutez les deux.'
+      de: 'Die Abrechnung, die deine Pensionskasse oder Freizügigkeitseinrichtung schickt, wenn sie Kapital auszahlt: Betrag, Datum und Grund. Von zwei Einrichtungen bezahlt? Füg beide hinzu.'
+      it: 'Il conteggio che la tua cassa pensione o il tuo istituto di libero passaggio invia quando versa un capitale: l’importo, la data e il motivo. Versato da due istituti? Aggiungili entrambi.'
+    # ge-2025-guide-declaration-pp p. 13
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=13'
+      label:
+        en: 'Geneva tax guide 2025, p. 13: pension capital (98.12)'
+        fr: 'Guide fiscal 2025, p. 13 : Prestations en capital du 2e et 3e pilier A'
+        it: 'Guida fiscale di Ginevra 2025, p. 13: prestazioni in capitale (98.12)'
+    reason:
+      {
+        en: 'From your pension fund or vested benefits institution.',
+        fr: 'De votre caisse de pension ou institution de libre passage.',
+        de: 'Von deiner Pensionskasse oder Freizügigkeitseinrichtung.',
+        it: 'Dalla tua cassa pensione o dal tuo istituto di libero passaggio.',
+      }
+    # For 2025, the 2025 guide (the 2025 federal instructions are not in the library).
+    source:
+      - 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ge-2025-guide-declaration-pp p. 13'
+      - 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13'
+
+  - id: pillar3a_capital
+    perPerson: true
+    when: { key: profile.pension_capital, includes: pillar3a }
+    expects: { kinds: [pillar3a_capital_attestation] }
+    label:
+      {
+        en: 'Pension capital attestation, pillar 3a',
+        fr: 'Attestation de prestation en capital du 3e pilier A',
+        de: 'Bescheinigung Kapitalleistung Säule 3a',
+        it: 'Attestazione di prestazione in capitale, pilastro 3a',
+      }
+    explain:
+      en: 'The statement your bank or insurer sends when it pays out a pillar 3a account: the amount, the date and the reason. Several 3a accounts? Add each one.'
+      fr: 'Le décompte que votre banque ou votre assurance envoie quand elle verse un compte du 3e pilier A : le montant, la date et le motif. Plusieurs comptes 3a ? Ajoutez chacun.'
+      de: 'Die Abrechnung, die deine Bank oder Versicherung schickt, wenn sie ein Säule-3a-Konto auszahlt: Betrag, Datum und Grund. Mehrere 3a-Konten? Füg jedes hinzu.'
+      it: 'Il conteggio che la tua banca o la tua assicurazione invia quando versa un conto del pilastro 3a: l’importo, la data e il motivo. Più conti 3a? Aggiungili tutti.'
+    # ge-2025-guide-declaration-pp p. 13
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=13'
+      label:
+        en: 'Geneva tax guide 2025, p. 13: pension capital (98.12)'
+        fr: 'Guide fiscal 2025, p. 13 : Prestations en capital du 2e et 3e pilier A'
+        it: 'Guida fiscale di Ginevra 2025, p. 13: prestazioni in capitale (98.12)'
+    reason:
+      {
+        en: 'From your bank or insurer.',
+        fr: 'De votre banque ou de votre assurance.',
+        de: 'Von deiner Bank oder Versicherung.',
+        it: 'Dalla tua banca o dalla tua assicurazione.',
+      }
+    # For 2025, the 2025 guide (the 2025 federal instructions are not in the library).
+    source:
+      - 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ge-2025-guide-declaration-pp p. 13'
+      - 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13'
 
   - id: prior_declaration
     optional: true

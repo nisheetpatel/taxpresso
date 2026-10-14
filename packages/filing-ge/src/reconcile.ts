@@ -247,6 +247,16 @@ function printedValues(line: PrintedLine, rubric: FormRubric | undefined): Value
     : undefined;
   const withParts = (cols: Values['cols']): Values => (parts ? { cols, parts } : { cols });
   if (line.form === 'PG4') return withParts(defined({ wealth: francs(line.icc) }));
+  // A "Montant" box of the information the form asks on PG2 (98.12 and the other 98.xx): one
+  // amount, printed under the ICC column (ge-2025-declaration-specimen p. 2).
+  if (
+    rubric?.columns.length === 1 &&
+    rubric.columns[0] === 'amount' &&
+    line.ifd === undefined &&
+    line.icc !== undefined
+  ) {
+    return withParts({ amount: francs(line.icc)! });
+  }
   if (line.icc !== undefined || line.ifd !== undefined) {
     return withParts(defined({ icc: francs(line.icc), ifd: francs(line.ifd) }));
   }
