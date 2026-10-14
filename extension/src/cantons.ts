@@ -7,6 +7,7 @@ import {
   geQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
+  zhQuestionnaire2026,
   type QuestionnaireFile,
 } from '@taxpresso/questionnaire';
 import {
@@ -18,7 +19,7 @@ import {
   type Text,
 } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, rules as genevaRules } from '@taxpresso/rules-ge';
-import { rules as zurichRules } from '@taxpresso/rules-zh';
+import { communeOptions, rules as zurichRules } from '@taxpresso/rules-zh';
 
 /** A canton's name in the UI languages. */
 export interface CantonName extends Text {
@@ -80,11 +81,9 @@ const ZURICH: CantonEntry = {
   name: { en: 'Zurich', fr: 'Zurich', de: 'Zürich' },
   software: 'ZHprivateTax',
   rules: zurichRules,
-  // The Zurich questionnaire comes with its questions (docs/design/cantons.md, section 6): until
-  // then a Zurich return asks the questions every canton shares.
-  questionnaire: () => undefined,
+  questionnaire: (taxYear) => (taxYear === 2026 ? zhQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zurichRules.keys(taxYear) }),
-  communes: () => [],
+  communes: (taxYear) => communeOptions(taxYear),
 };
 
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = { GE: GENEVA, ZH: ZURICH };

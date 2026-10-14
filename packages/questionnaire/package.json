@@ -14,6 +14,7 @@
   "devDependencies": {
     "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",
+    "@taxpresso/rules-zh": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

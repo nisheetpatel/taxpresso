@@ -24,7 +24,11 @@ import {
   ifdParamsFor,
   ifdTax,
   insurancePremiums,
+  DOCUMENT_KEYS_WEALTH_2026,
+  KEYS_ATTESTATIONS_2026,
   KEYS_CANTON_2026,
+  KEYS_HOUSEHOLD_2026,
+  KEYS_WEALTH_2026,
   KEYS_ECH0196_2026,
   KEYS_SALARY_CERTIFICATE_2026,
   KEYS_SECURITIES_2026,
@@ -122,6 +126,10 @@ describe('citations of rules-ch', () => {
   it('the shared ledger keys', () => {
     const keys: KeyRegistry = {
       ...KEYS_CANTON_2026,
+      ...KEYS_HOUSEHOLD_2026,
+      ...KEYS_ATTESTATIONS_2026,
+      ...KEYS_WEALTH_2026,
+      ...DOCUMENT_KEYS_WEALTH_2026,
       ...KEYS_SALARY_CERTIFICATE_2026,
       ...KEYS_SECURITIES_2026,
       ...KEYS_ECH0196_2026,

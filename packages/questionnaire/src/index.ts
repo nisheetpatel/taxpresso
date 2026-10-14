@@ -5,6 +5,7 @@
 /// <reference path="./yaml.d.ts" />
 import ch2026 from '../../../data/ch/2026/questions.yaml';
 import ge2026 from '../../../data/ge/2026/questionnaire.yaml';
+import zh2026 from '../../../data/zh/2026/questionnaire.yaml';
 import { parseQuestionnaire, type QuestionnaireFile } from './schema.js';
 
 export * from './engine.js';
@@ -21,4 +22,9 @@ export function sharedQuestionnaire2026(): QuestionnaireFile {
 /** The Geneva questionnaire for tax year 2026, validated. */
 export function geQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(ge2026, ch2026);
+}
+
+/** The Zurich questionnaire for tax year 2026, validated. */
+export function zhQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(zh2026, ch2026);
 }

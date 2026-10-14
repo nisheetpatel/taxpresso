@@ -293,6 +293,10 @@ export class QuestionnaireEngine {
   notSupported(snapshot: Snapshot): { slotId: string; what: Text }[] {
     const out: { slotId: string; what: Text }[] = [];
     for (const slot of snapshot.slots) {
+      const q = slot.question;
+      if (q.type === 'yesno' && slot.value === true && q.yesNotSupported) {
+        out.push({ slotId: slot.id, what: q.yesNotSupported });
+      }
       for (const option of this.#selected(slot)) {
         if (option.notSupported) out.push({ slotId: slot.id, what: option.notSupported });
       }
@@ -339,7 +343,7 @@ export class QuestionnaireEngine {
         ? this.communes.map((c) => ({ value: c.slug, label: c.name, notSupported: false }))
         : q.type === 'yesno'
           ? [
-              { value: 'yes', label: YES_NO[lang][0], notSupported: false },
+              { value: 'yes', label: YES_NO[lang][0], notSupported: !!q.yesNotSupported },
               { value: 'no', label: YES_NO[lang][1], notSupported: false },
             ]
           : q.options?.map((o) => ({
@@ -459,11 +463,20 @@ export class QuestionnaireEngine {
         if (typeof raw !== 'string') return bad('expected a commune');
         const f = fold(raw.replace(/^(ville de|commune de|le|la)\s+/i, ''));
         const hit = this.communes.find((c) => c.slug === raw || fold(c.name) === f);
-        return (
-          hit?.slug ??
-          bad(
-            `"${raw}" is not ${this.file.place ? `a ${this.file.place.en}` : 'one of the'} commune${this.file.place ? '' : 's'}`,
-          )
+        if (hit) return hit.slug;
+        // A commune listed once per part ("Uster, Teil 1 (...)"): its name alone names one part
+        // only when it has one; otherwise the user says which.
+        const parts = this.communes.filter(
+          (c) => c.name.includes(',') && fold(c.name.slice(0, c.name.indexOf(','))) === f,
+        );
+        if (parts.length === 1) return parts[0]!.slug;
+        if (parts.length > 1) {
+          return bad(
+            `"${raw}" has ${parts.length} parts: ${parts.map((c) => c.name).join('; ')}. Say which.`,
+          );
+        }
+        return bad(
+          `"${raw}" is not ${this.file.place ? `a ${this.file.place.en}` : 'one of the'} commune${this.file.place ? '' : 's'}`,
         );
       }
       case 'yesno': {

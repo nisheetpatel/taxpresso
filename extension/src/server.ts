@@ -164,16 +164,16 @@ function toolError(err: unknown) {
   throw err;
 }
 
-function questionText(q: QuestionOut): string {
+function questionText(q: QuestionOut, place = 'Geneva'): string {
   const how =
     q.type === 'yesno'
-      ? 'Answer: yes or no.'
+      ? `Answer: yes or no.${q.options?.some((o) => o.value === 'yes' && o.notSupported) ? ' Yes is not supported yet.' : ''}`
       : q.type === 'number'
         ? `Answer: a whole number from ${q.min} to ${q.max}.`
         : q.type === 'money'
           ? 'Answer: an amount in CHF as the user said it, e.g. 790 or "1\'250.50".'
           : q.type === 'commune'
-            ? 'Answer: the name of the Geneva commune.'
+            ? `Answer: the name of the ${place} commune${place === 'Zurich' ? ' (Uster and Turbenthal: the part too, as listed in the dashboard)' : ''}.`
             : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
                 ?.map((o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`)
                 .join('; ')}`;
@@ -254,7 +254,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
       const text = questions.length
-        ? `${answered} answered, ${open.length} to go.\n\n${questions.map(questionText).join('\n\n')}`
+        ? `${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en)).join('\n\n')}`
         : 'All questions are answered. Call get_status for the next step.';
       return {
         content: [{ type: 'text', text }],
@@ -308,7 +308,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           );
         }
         lines.push(
-          next ? `\nNext question:\n${questionText(next)}` : '\nAll questions are answered.',
+          next
+            ? `\nNext question:\n${questionText(next, ws.engine.file.place?.en)}`
+            : '\nAll questions are answered.',
         );
         return {
           content: [{ type: 'text', text: lines.join('\n') }],

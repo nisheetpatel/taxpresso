@@ -126,6 +126,8 @@ export const Question = z
     learnMore: LearnMore.optional(),
     /** A page of the project, e.g. where to vote for the next canton. */
     link: ProjectLink.optional(),
+    /** A yes/no question whose "yes" puts the return outside what Taxpresso supports: what it is. */
+    yesNotSupported: Text.optional(),
     options: z.array(Option).optional(),
     none: Text.optional(),
     min: z.number().int().optional(),

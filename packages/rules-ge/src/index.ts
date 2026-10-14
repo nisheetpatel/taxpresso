@@ -28,18 +28,17 @@ export {
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from '@taxpresso/rules-ch';
 // The securities list (état des titres), other movable wealth and the withholding tax claimed back.
+// The wealth keys are the same in every canton: packages/rules-ch (keys/wealth.ts).
 export {
+  DOCUMENT_FIELDS_WEALTH_2026,
+  DOCUMENT_KEYS_WEALTH_2026,
   KEYS_WEALTH_2026,
   OWNERS,
   WEALTH_KINDS,
   type LineOwner,
   type WealthKey,
   type WealthKind,
-} from './2026/keys-wealth.js';
-export {
-  DOCUMENT_FIELDS_WEALTH_2026,
-  DOCUMENT_KEYS_WEALTH_2026,
-} from './2026/document-keys-wealth.js';
+} from '@taxpresso/rules-ch';
 export {
   CIVILITE,
   etatDesTitres,

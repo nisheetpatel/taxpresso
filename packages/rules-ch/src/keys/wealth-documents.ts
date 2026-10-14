@@ -1,6 +1,7 @@
 // Values Claude reads from the documents behind the securities list and the other movable wealth
-// (SPEC.md 5.2 and 5.5), one value per document (instance = the document id), each mapped to its
-// line of the official form by etat-des-titres.ts:
+// (SPEC.md 5.2 and 5.5), one value per document (instance = the document id). The same documents in
+// every canton; each canton maps them to its own form. Geneva's lines (packages/rules-ge,
+// 2026/etat-des-titres.ts):
 //   bank_attestation            one account: état des titres, comptes bancaires et postaux (F2)
 //   ech0196_statement           a bank's tax statement (relevé fiscal, e-relevé): one total line
 //                               per deposit (F4). The eCH-0196 barcode reader, when it lands,

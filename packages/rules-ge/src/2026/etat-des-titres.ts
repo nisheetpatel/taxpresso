@@ -43,7 +43,7 @@ import {
   splitForeignTax,
   type Text,
 } from '@taxpresso/rules-ch';
-import { OWNERS, type LineOwner, type WealthKind } from './keys-wealth.js';
+import { OWNERS, type LineOwner, type WealthKind } from '@taxpresso/rules-ch';
 
 const SPECIMEN = 'ge-2025-declaration-specimen';
 const GUIDE = 'ge-2025-guide-declaration-pp';

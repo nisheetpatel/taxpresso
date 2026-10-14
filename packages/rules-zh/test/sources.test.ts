@@ -10,6 +10,7 @@ import {
   RUBRICS,
   tariffRule,
   zhParamsFor,
+  zurichKeys,
   type Cited,
 } from '../src/index.js';
 
@@ -64,5 +65,15 @@ describe('citations', () => {
 
   it('every line of the return', () => {
     for (const [code, r] of Object.entries(RUBRICS)) expectCited(r.source, code);
+  });
+
+  it('Zurich’s own keys and the Zurich terms it gives the shared ones', () => {
+    const keys = zurichKeys(2026);
+    for (const k of ['profile.commune', 'profile.moved', 'zh.church', 'zh.parish']) {
+      expectCited(keys[k]!.source!, k);
+    }
+    for (const [k, def] of Object.entries(keys)) {
+      if (def.source?.startsWith('zh-')) expectCited(def.source, k);
+    }
   });
 });

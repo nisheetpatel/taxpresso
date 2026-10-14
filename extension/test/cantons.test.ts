@@ -65,7 +65,10 @@ describe('the canton question', () => {
     expect(status.nextStep).toMatch(/where the user lived on 31 December/);
     expect(text(await call('get_status'))).toMatch(/tax year 2026, canton not known yet/);
     const q = await call('next_questions');
-    expect(text(q)).toMatch(/^0 answered, 1 to go\.\n\n\[canton\]/);
+    // The canton first; before it, only the questions every canton shares.
+    expect(text(q)).toMatch(/^0 answered, \d+ to go\.\n\n\[canton\]/);
+    expect(structured<{ open: number }>(q).open).toBe(ws.snapshot().slots.length);
+    expect(ws.snapshot().slots.map((s) => s.question.key)).not.toContain('profile.commune');
     expect(text(q)).toMatch(/it taxes the whole year, as if you had lived there since January/);
     const tax = await call('compute_tax');
     expect(structured<{ computed: boolean }>(tax).computed).toBe(false);
@@ -178,6 +181,53 @@ describe('the canton question', () => {
     ]);
     await call('answer_question', { id: 'canton', value: 'GE' });
     expect(structured<Status>(await call('get_status')).progress.questionsAnswered).toBe(4);
+  });
+
+  it('takes Zurich and asks the Zurich questions, keeping the shared answers', async () => {
+    const ws = await makeWorkspace();
+    const call = await connect(ws);
+    // The questions every canton shares can come before the canton.
+    await call('answer_question', { id: 'civil_status', value: 'married' });
+    await call('answer_question', { id: 'canton', value: 'ZH' });
+    expect(structured<Status>(await call('get_status'))).toMatchObject({
+      canton: 'ZH',
+      cantonFrom: 'answer',
+    });
+    expect(text(await call('get_status'))).toMatch(/tax year 2026, Zurich/);
+    await call('answer_question', { id: 'children', value: 0 });
+    const q = await call('next_questions');
+    expect(text(q)).toMatch(/\[commune\][\s\S]*Official page \(Current communal multipliers/);
+    const uster = await call('answer_question', { id: 'commune', value: 'Uster' });
+    expect(uster.isError).toBe(true);
+    expect(text(uster)).toMatch(/"Uster" has 2 parts/);
+    await call('answer_question', { id: 'commune', value: 'Uster, Teil 1 (Steuerfuss 112 %)' });
+    await call('answer_question', { id: 'moved', value: 'from_other_canton' });
+    const church = await call('next_questions');
+    expect(text(church)).toMatch(/\[church:p1\]/);
+    expect(text(church)).toMatch(/reformed = Reformed \(evangelisch-reformiert\)/);
+    await call('answer_question', { id: 'church:p1', value: 'reformed' });
+    await call('answer_question', { id: 'church:p2', value: 'none' });
+    const status = structured<Status & { household: { summary: string[] } }>(
+      await call('get_status'),
+    );
+    expect(status.notSupported).toEqual([]);
+    expect(status.household.summary).toEqual([
+      'Zurich',
+      'Married',
+      'No children',
+      'Uster, Teil 1 (Steuerfuss 112 %)',
+      'Moved from another canton',
+      'Reformed',
+    ]);
+    // The same answers in the dashboard, in French.
+    const s = await state(ws, 'fr');
+    expect(s.canton).toMatchObject({ code: 'ZH', name: 'Zurich' });
+    expect(s.question?.id).toBe('income_sources:p1');
+    // Taxed at source: not covered in Zurich yet, said plainly with Zurich's own software.
+    await call('answer_question', { id: 'income_sources:p1', value: ['salary'] });
+    await call('answer_question', { id: 'employers:p1', value: 1 });
+    const source = await call('answer_question', { id: 'taxed_at_source:p1', value: true });
+    expect(text(source)).toMatch(/Not supported yet: Tax at source in Zurich .*ZHprivateTax/);
   });
 });
 
