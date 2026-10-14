@@ -4,14 +4,19 @@
 // page). The citations written into the rules (the form's lines, the laws' rules) too. A 2026
 // constant cites 2026 documents, or documents valid for every year, except where the 2026 guide
 // is missing and the constant says so (a lower bound, or the 2025 guide's convention).
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { ifdParamsFor } from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   ASSESS_RULES,
   COMPUTE_RULES,
+  FEDERAL_NOTE,
+  FEDERAL_RUBRICS,
   NOTE,
+  partOptions,
   RUBRICS,
+  vaudKeys,
+  VD_OFFICIAL_DOCUMENTS,
   vdParamsFor,
   WEALTH_RUBRICS,
   type Cited,
@@ -74,6 +79,8 @@ describe('citations', () => {
   it('every line of the return', () => {
     for (const [code, r] of Object.entries(RUBRICS)) expectCited(r.source, code);
     for (const [code, r] of Object.entries(WEALTH_RUBRICS)) expectCited(r.source, `wealth ${code}`);
+    for (const [code, r] of Object.entries(FEDERAL_RUBRICS))
+      expectCited(r.source, `federal ${code}`);
   });
 
   it('the 2026 amounts the documents do not print are null or lower bounds', () => {
@@ -97,8 +104,73 @@ describe('citations', () => {
   });
 
   it('the texts shown to the user have no en or em dash (CLAUDE.md, user-facing copy)', () => {
-    for (const [name, text] of Object.entries(NOTE)) {
+    for (const [name, text] of Object.entries({ ...NOTE, ...FEDERAL_NOTE })) {
       expect(`${text.en} ${text.fr}`, name).not.toMatch(/[–—]/);
+    }
+  });
+});
+
+describe('Vaud’s keys', () => {
+  it('cite Vaud’s documents, with the page or article', () => {
+    const keys = vaudKeys(2026);
+    for (const k of [
+      'profile.commune',
+      'profile.moved',
+      'vd.commune_part',
+      'vd.own_household',
+      'vd.main_upkeep',
+      'vd.rent',
+      'vd.contents_high',
+      'vd.contents_value',
+      'vd.child_care',
+      'vd.savings_interest',
+    ]) {
+      expectCited(keys[k]!.source!, k);
+    }
+    for (const [k, def] of Object.entries(keys)) {
+      if (def.source?.startsWith('vd-')) expectCited(def.source, k);
+    }
+  });
+
+  it('offer each part of L’Abbaye and Le Chenit, from the communal table', () => {
+    const parts = partOptions(2026);
+    expect(parts.map((p) => p.value)).toEqual([
+      'l-abbaye:l-abbaye',
+      'l-abbaye:les-bioux',
+      'le-chenit:le-chenit',
+      'le-chenit:le-brassus',
+      'le-chenit:le-sentier',
+      'le-chenit:l-orient',
+    ]);
+    expect(vaudKeys(2026)['vd.commune_part']!.values).toEqual(parts.map((p) => p.value));
+  });
+});
+
+describe('the official Vaud documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/vd/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    expect(Object.keys(VD_OFFICIAL_DOCUMENTS).sort()).toEqual(manifest.map((m) => m.id).sort());
+    for (const [id, doc] of Object.entries(VD_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id)!;
+      expect(doc, id).toEqual({ title: m.title, url: m.url, pdf: m.format === 'pdf' });
+    }
+  });
+
+  it('cover every Vaud document the rules cite', () => {
+    const dir = new URL('../src/', import.meta.url);
+    const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    for (const f of files) {
+      const text = readFileSync(new URL(f, dir), 'utf8');
+      for (const id of text.match(/\bvd-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]\b/g) ?? []) {
+        if (manifest.some((m) => m.id === id)) {
+          expect(Object.keys(VD_OFFICIAL_DOCUMENTS), `${f}: ${id}`).toContain(id);
+        }
+      }
     }
   });
 });

@@ -1,6 +1,6 @@
 // UI strings in English, French and German (SPEC.md section 1). Second person, plain words (German:
-// the informal "du"), official terms next to their gloss: French for Geneva, German for Zurich, Bern,
-// Basel-Landschaft and Zug.
+// the informal "du"), official terms next to their gloss: French for Geneva and Vaud, German for
+// Zurich, Bern, Basel-Landschaft and Zug.
 // Status labels follow SPEC.md section 11b.
 const NB = String.fromCharCode(0xa0);
 
@@ -168,6 +168,10 @@ export const messages = {
     planSavingSplitBl: 'Basel-Landschaft {icc} · federal {ifd}',
     planExplainBl:
       'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
+    'assume.vd_commune_default': 'Commune not answered yet: Lausanne assumed.',
+    'assume.vd_preview':
+      'Vaud is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    planSavingSplitVd: 'Vaud {icc} · federal {ifd}',
     'assume.zg_commune_default': 'Commune not answered yet: Zug assumed.',
     'assume.zg_preview':
       'Zug is a preview: the rules its documents don’t spell out are applied as in your estimate.',
@@ -334,6 +338,9 @@ export const messages = {
     planSavingSplitBl: 'Bâle-Campagne {icc} · fédéral {ifd}',
     planExplainBl:
       'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
+    'assume.vd_commune_default': `Commune pas encore indiquée${NB}: Lausanne par défaut.`,
+    'assume.vd_preview': `Vaud est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    planSavingSplitVd: 'Vaud {icc} · fédéral {ifd}',
     'assume.zg_commune_default': `Commune pas encore indiquée${NB}: Zoug par défaut.`,
     'assume.zg_preview': `Zoug est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
     planSavingSplitZg: 'Zoug {icc} · fédéral {ifd}',
@@ -506,6 +513,10 @@ export const messages = {
     planSavingSplitBl: 'Basel-Landschaft {icc} · Bund {ifd}',
     planExplainBl:
       'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+    'assume.vd_commune_default': 'Gemeinde noch nicht angegeben: Lausanne angenommen.',
+    'assume.vd_preview':
+      'Die Waadt ist eine Vorschau: Regeln, die ihre Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    planSavingSplitVd: 'Waadt {icc} · Bund {ifd}',
     'assume.zg_commune_default': 'Gemeinde noch nicht angegeben: Zug angenommen.',
     'assume.zg_preview':
       'Zug ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',

@@ -1,7 +1,8 @@
 // The one entry point: computeReturn(input) gives the lines of the Vaud return by code and person,
-// the totals and the cantonal and communal tax, each line explained with its sources. First stage
-// here (household figures to the lines of the return, every cap, floor and threshold of the Vaud
-// documents, in the order of the form), second stage in ./assess.ts (lines to taxes). The same two
+// the totals and the cantonal and communal tax, each line explained with its sources, then the
+// federal tax on the guide's worksheet (./ifd.ts). First stage here (household figures to the lines
+// of the return, every cap, floor and threshold of the Vaud documents, in the order of the form,
+// with the limits each rule applied), second stage in ./assess.ts (lines to taxes). The same two
 // stages, with the same names, as packages/rules-zh and packages/rules-be.
 import {
   answered,
@@ -11,6 +12,7 @@ import {
   shareFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import {
   assess,
@@ -24,9 +26,10 @@ import {
 } from './assess.js';
 import { communeRate } from './communes.js';
 import { ESTIMATE_TEXT, NOTE, personalTaxNote } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import { familySituation, parts, personalTax, sharedChildren } from './law.js';
 import { vdParamsFor, type VdYearParams } from './params.js';
-import { RUBRICS, WEALTH_RUBRICS, type RubricCode, type WealthCode } from './rubrics.js';
+import { INCOME, RUBRICS, WEALTH_RUBRICS, type RubricCode, type WealthCode } from './rubrics.js';
 import {
   donationDeduction,
   drivingCost,
@@ -48,6 +51,7 @@ import type {
   PersonInput,
   Text,
   VdEngineInput,
+  VdIccResult,
   VdTaxResult,
 } from './types.js';
 
@@ -61,8 +65,36 @@ class Notes {
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A cap, threshold, minimum or choice a cantonal rule applied (SPEC.md 10.0), on `code` for
+   * `person`, cited by the constant `p` that sets it: `given` before the rule, `counted` after it.
+   * `rule` names it as the federal concepts are (packages/rules-ch, ifd/items.ts).
+   */
+  limit(
+    rule: string,
+    p: { source: string },
+    kind: LimitApplied['kind'],
+    code: string,
+    person: ItemPerson,
+    given: number,
+    limit: number,
+    counted: number,
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: 'icc',
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      rule,
+    });
   }
 }
 
@@ -201,6 +233,18 @@ function travel(
     notes.add(notes.notCounted, NOTE.transitDetails);
     return none(t('travel: not counted', `transport${NB}: non compté`));
   }
+  if (paid !== undefined && flat !== undefined) {
+    notes.limit(
+      'commute',
+      A.publicTransport,
+      'choice',
+      '140',
+      p.id,
+      paid,
+      flat,
+      Math.max(paid, flat),
+    );
+  }
   if (paid !== undefined && (flat === undefined || paid > flat)) {
     notes.add(notes.assumptions, flat === undefined ? NOTE.transitCostOnly : NOTE.actualTransport);
     return {
@@ -265,6 +309,16 @@ function personItems(P: VdYearParams, p: PersonInput, items: Item[], notes: Note
       const perYear = canteen ? m.halfPerYear : m.perYear;
       const days = p.mealDays ?? 0;
       const meals = prorated(perYear, days, yearDays);
+      notes.limit(
+        'meals',
+        A.meals,
+        'cap',
+        '150',
+        p.id,
+        roundFranc(perYear * Math.max(0, days), yearDays),
+        perYear,
+        meals,
+      );
       if (days < yearDays) notes.add(notes.assumptions, NOTE.partYear);
       if (meals > 0) {
         items.push(
@@ -293,6 +347,16 @@ function personItems(P: VdYearParams, p: PersonInput, items: Item[], notes: Note
     );
     if (p.otherProfessionalCosts) {
       const actual = total(trOther, [p.otherProfessionalCosts]);
+      notes.limit(
+        'professional.other',
+        A.professionalFlat,
+        'choice',
+        '160',
+        p.id,
+        actual,
+        flat,
+        Math.max(actual, flat),
+      );
       if (actual > flat) {
         other = actual;
         otherHow = t(`Actual costs: ${chf(actual)}.`, `Frais effectifs${NB}: ${chf(actual)}.`);
@@ -363,6 +427,9 @@ function personItems(P: VdYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limit('pillar3a', l.param, l.kind, '310', p.id, l.given, l.limit, l.counted);
+  }
   if (r3a.deduction && r3a.deduction.amount < 0) {
     contributions += -r3a.deduction.amount;
     items.push(item('310', p.id, r3a.deduction.trace, r3a.deduction.amount, r3a.deduction.how));
@@ -384,6 +451,7 @@ function personItems(P: VdYearParams, p: PersonInput, items: Item[], notes: Note
     const paid = total(tr, [p.trainingCosts]);
     const cap = tr.p(A.training);
     const ded = Math.min(paid, cap);
+    if (paid > 0) notes.limit('training', A.training, 'cap', '618', p.id, paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -412,20 +480,23 @@ function personItems(P: VdYearParams, p: PersonInput, items: Item[], notes: Note
 interface CountedChild {
   weight: 1 | 0.5;
   livesWithYou: boolean;
+  child: ChildInput;
 }
 
 /** Who counts the children and the parts without children (LI art. 43; RIFam art. 5). */
 function family(
   input: VdEngineInput,
+  children: readonly ChildInput[],
   couple: boolean,
   notes: Notes,
-): { family: VdFamily; counted: CountedChild[]; sources: string[] } {
+): { family: VdFamily; counted: CountedChild[]; sources: string[]; childSources: string[] } {
   const counted: CountedChild[] = [];
   const sources = [parts(input.taxYear).source, familySituation(input.taxYear).source];
-  for (const ch of input.children ?? []) {
-    const livesWithYou = ch.livesWithYou ?? true;
-    if (ch.custody === 'full') {
-      counted.push({ weight: 1, livesWithYou });
+  const childSources: string[] = [];
+  for (const child of children) {
+    const livesWithYou = child.livesWithYou ?? true;
+    if (child.custody === 'full') {
+      counted.push({ weight: 1, livesWithYou, child });
       continue;
     }
     if (couple) {
@@ -433,9 +504,10 @@ function family(
       continue;
     }
     sources.push(sharedChildren(input.taxYear).source);
-    if (input.childSupport === 'receives') counted.push({ weight: 1, livesWithYou });
+    childSources.push(sharedChildren(input.taxYear).source);
+    if (input.childSupport === 'receives') counted.push({ weight: 1, livesWithYou, child });
     else if (input.childSupport === 'none') {
-      counted.push({ weight: 0.5, livesWithYou });
+      counted.push({ weight: 0.5, livesWithYou, child });
       notes.add(notes.assumptions, NOTE.sharedHalf);
     } else if (input.childSupport === 'pays') notes.add(notes.assumptions, NOTE.childSupportPaid);
     else notes.add(notes.unsupported, NOTE.childSupport);
@@ -459,6 +531,7 @@ function family(
     },
     counted,
     sources: [...new Set(sources)],
+    childSources: [...new Set(childSources)],
   };
 }
 
@@ -486,7 +559,33 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   }
   notes.add(notes.notCounted, NOTE.dependents);
 
-  const fam = family(input, couple, notes);
+  // Childcare paid for the household as a whole (the invoices of a crèche, say): the form asks it
+  // per child under 14 (code 670), and the limit is per child. It is that child's when one child can
+  // have it, or when the whole amount is within any child's limit; otherwise how it splits decides
+  // the deduction, and it is not computed without it (fail closed).
+  const children: ChildInput[] = (input.children ?? []).map((ch) => ({ ...ch }));
+  if (hh.childcare) {
+    if (children.some((ch) => ch.childcare)) {
+      throw new VdInputError('Childcare: give it per child or for the household, not both.');
+    }
+    const care = A.childcare.value;
+    const eligible = children.filter((ch) => ch.livesWithYou !== false && ch.under14 !== false);
+    const paid = total(new Trace(), [hh.childcare]);
+    const capOf = (ch: ChildInput) =>
+      ch.custody === 'shared' ? care.sharedPerParent : care.perChild;
+    if (
+      eligible.length === 1 ||
+      (eligible.length > 1 && paid <= Math.min(...eligible.map(capOf)))
+    ) {
+      eligible[0]!.childcare = hh.childcare;
+    } else if (eligible.length > 1) {
+      notes.add(notes.unsupported, NOTE.childcareSplit);
+    } else if (paid > 0) {
+      notes.add(notes.notCounted, NOTE.childcareNoChild);
+    }
+  }
+
+  const fam = family(input, children, couple, notes);
   if (notes.unsupported.length) {
     // Something every later line rests on is missing or not supported (a question about the family,
     // the part of the commune, self-employment): the result says that first, and nothing more.
@@ -505,6 +604,7 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
       notCounted: notes.notCounted,
       unsupported: notes.unsupported,
       unverifiedRules: [],
+      limits: [],
     };
   }
   const weight = fam.counted.reduce((s, c) => s + c.weight, 0);
@@ -519,6 +619,15 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
       : t('', '');
 
   const items: Item[] = [];
+  const declared: VdIccResult['declared'] = {};
+  /** An amount as declared next to a line (`code`'s page and the guide), from the given values. */
+  const asDeclared = (code: RubricCode, amounts: readonly (Amount | undefined)[], label: Text) => {
+    const tr = new Trace().src(RUBRICS[code].source);
+    const value = total(tr, amounts);
+    return value > 0
+      ? tr.line(value, label, t(`As given: ${chf(value)}.`, `Tel que donné${NB}: ${chf(value)}.`))
+      : undefined;
+  };
   const figures = people.map((p) => personItems(P, p, items, notes));
 
   // Both spouses work (235): from the lower income, at most that income after its costs (140 to
@@ -544,8 +653,21 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     }
   }
 
-  // Insurance premiums (300): health, accident and life, less subsidies, at most the limit.
+  // Insurance premiums (300): health, accident and life, less subsidies, at most the limit. Page 4
+  // (item 10) asks the premiums before the subsidies and the subsidies.
   const premiums = [hh.healthPremiums, hh.accidentPremiums, hh.lifeInsurancePremiums];
+  const gross = asDeclared(
+    '300',
+    premiums,
+    t('Gross premiums (montant des primes brutes)', 'Montant des primes brutes selon police(s)'),
+  );
+  if (gross) declared.premiums = gross;
+  const subsidy = asDeclared(
+    '300',
+    [hh.healthSubsidy],
+    t('Premium subsidies (montant des subsides)', 'Montant des subsides'),
+  );
+  if (subsidy) declared.subsidy = subsidy;
   if (premiums.some(Boolean)) {
     const tr = new Trace();
     const paid = Math.max(0, total(tr, premiums) - total(tr, [hh.healthSubsidy]));
@@ -553,6 +675,7 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     if (shared) tr.src(sharedSource);
     const cap = (couple ? ins.married : ins.single) + Math.round(ins.perChild * weight);
     const ded = Math.min(paid, cap);
+    if (paid > 0) notes.limit('insurance', A.insurance, 'cap', '300', 'household', paid, cap, ded);
     if (ded > 0) {
       const kids = perChildText(ins.perChild);
       items.push(
@@ -610,19 +733,30 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   householdGiven('195', [hh.otherIncome], 1);
   householdGiven('280', [hh.childSupportReceived], 1);
 
-  // Interest on savings (480): at most the limit, never more than that interest.
+  // Interest on savings (480): at most the limit, never more than that interest, and only what the
+  // income of code 410 includes ("elle ne peut en aucun cas dépasser lesdits revenus",
+  // vd-2025-guide p. 40).
   if (hh.savingsInterest) {
     const tr = new Trace();
-    const interest = total(tr, [hh.savingsInterest]);
-    if (interest > movableIncome) {
-      throw new VdInputError(
-        'household.savingsInterest is part of the income of accounts and securities (movable).',
-      );
-    }
+    const stated = total(tr, [hh.savingsInterest]);
+    const interest = Math.min(stated, movableIncome);
+    if (stated > movableIncome) notes.add(notes.notCounted, NOTE.savingsAbove410);
     const s = tr.p(A.savingsInterest);
     if (shared) tr.src(sharedSource);
     const cap = (couple ? s.married : s.single) + Math.round(s.perChild * weight);
     const ded = Math.min(interest, cap);
+    if (interest > 0) {
+      notes.limit(
+        'savings_interest',
+        A.savingsInterest,
+        'cap',
+        '480',
+        'household',
+        interest,
+        cap,
+        ded,
+      );
+    }
     if (ded > 0) {
       const kids = perChildText(s.perChild);
       items.push(
@@ -648,6 +782,9 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     const extra = tr.p(A.debtInterestExtra);
     const cap = movableIncome + extra;
     const ded = Math.min(paid, cap);
+    if (paid > 0) {
+      notes.limit('debt_interest', A.debtInterestExtra, 'cap', '610', 'household', paid, cap, ded);
+    }
     if (ded > 0) {
       items.push(
         item(
@@ -670,6 +807,7 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     const paid = total(tr, [hh.politicalParty]);
     const max = tr.p(A.party);
     const ded = Math.min(paid, max);
+    if (paid > 0) notes.limit('party', A.party, 'cap', '620', 'household', paid, max, ded);
     if (couple && paid > max) notes.add(notes.unverified, NOTE.partyCouple);
     if (ded > 0) {
       items.push(
@@ -689,7 +827,7 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   householdGiven('630', [hh.alimonyPaid, hh.childSupportPaid], -1);
 
   // Childcare (670): per child under 14 in your household; married, both must work.
-  const withCare = (input.children ?? []).filter((ch): ch is ChildInput & { childcare: Amount } =>
+  const withCare = children.filter((ch): ch is ChildInput & { childcare: Amount } =>
     Boolean(ch.childcare),
   );
   if (withCare.length) {
@@ -701,18 +839,35 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
       const tr = new Trace();
       const care = tr.p(A.childcare);
       let ded = 0;
+      let paidAll = 0;
+      let capAll = 0;
       const parts: string[] = [];
+      const counted: Amount[] = [];
       for (const ch of withCare) {
         if (ch.under14 === false || ch.livesWithYou === false) continue;
+        counted.push(ch.childcare);
         if (ch.under14 === undefined) notes.add(notes.assumptions, NOTE.under14);
         const cap = ch.custody === 'shared' ? care.sharedPerParent : care.perChild;
         if (ch.custody === 'shared') {
           tr.src(sharedSource);
           notes.add(notes.unverified, NOTE.sharedChildcare);
         }
-        const one = Math.min(total(tr, [ch.childcare]), cap);
+        const paid = total(tr, [ch.childcare]);
+        const one = Math.min(paid, cap);
+        paidAll += paid;
+        capAll += cap;
         ded += one;
         parts.push(chf(one));
+      }
+      if (paidAll > 0) {
+        notes.limit('childcare', A.childcare, 'cap', '670', 'household', paidAll, capAll, ded);
+        // The box before 670: what was actually paid ("Montant effectif").
+        const effective = asDeclared(
+          '670',
+          counted,
+          t('Childcare actually paid (montant effectif)', 'Montant effectif'),
+        );
+        if (effective) declared.childcarePaid = effective;
       }
       if (ded > 0) {
         items.push(
@@ -737,6 +892,13 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   else {
     const tr = new Trace();
     const rent = total(tr, [input.rent]);
+    // The box before 660: the yearly net rent.
+    const rentLine = asDeclared(
+      '660',
+      [input.rent],
+      t('Yearly net rent (loyer annuel net)', 'Loyer annuel net'),
+    );
+    if (rentLine) declared.rent = rentLine;
     const h = tr.p(A.housing);
     const caps = tr.p(A.rentCap);
     const certainFamily = couple || fam.family.base === 'singleParent';
@@ -811,6 +973,16 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     const tr = new Trace();
     const costs = total(tr, [hh.medicalCosts]);
     const m = medicalDeduction(costs, intermediate, tr.p(A.medicalThresholdBp));
+    notes.limit(
+      'medical',
+      A.medicalThresholdBp,
+      'threshold',
+      '710',
+      'household',
+      costs,
+      m.threshold,
+      m.deduction,
+    );
     if (m.deduction > 0) {
       items.push(
         item(
@@ -830,6 +1002,19 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     const tr = new Trace();
     const gifts = total(tr, [hh.donations]);
     const d = donationDeduction(gifts, intermediate, tr.p(A.donations));
+    notes.limit(
+      'donations',
+      A.donations,
+      'minimum',
+      '720',
+      'household',
+      gifts,
+      A.donations.value.min,
+      d.deduction,
+    );
+    if (gifts >= A.donations.value.min) {
+      notes.limit('donations', A.donations, 'cap', '720', 'household', gifts, d.cap, d.deduction);
+    }
     if (d.deduction > 0) {
       items.push(
         item(
@@ -905,6 +1090,16 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     if (share > deduction) {
       if (A.furniture.floorOnly) notes.add(notes.unsupported, NOTE.furniture2026);
       else {
+        // The box before 440: 30 % of the fire insurance value.
+        const str = new Trace().src(WEALTH_RUBRICS['440'].source).with(tr);
+        declared.contentsShare = str.line(
+          share,
+          t('30 % of the fire insurance value (30% valeur d’assurance)', '30% valeur d’assurance'),
+          t(
+            `30 % of the fire insurance value ${chf(insured)}: ${chf(share)}.`,
+            `30${NB}% de la valeur d’assurance incendie ${chf(insured)}${NB}: ${chf(share)}.`,
+          ),
+        );
         wealthItems.push(
           wealthItem(
             '440',
@@ -918,31 +1113,38 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
         );
       }
     }
-  } else notes.add(notes.assumptions, NOTE.furnitureNotGiven);
+  } else if (!input.furnitureWithin) notes.add(notes.assumptions, NOTE.furnitureNotGiven);
   asset('445', [hh.otherAssets], 1);
   asset('610', [hh.debts], -1);
 
-  const allLines: Line[] = [...items, ...wealthItems];
+  const cantonalLines: Line[] = [...items, ...wealthItems];
+  const summary = (lines: readonly Line[], needsOk: readonly Line[]) => ({
+    estimates: lines.some((l) => l.estimates?.includes('input-estimate'))
+      ? [{ id: 'input-estimate', what: ESTIMATE_TEXT['input-estimate'] }]
+      : [],
+    needsOk: needsOk.filter((l) => l.needsOk).length,
+    complete: !lines.some((l) => l.incomplete),
+    incomplete: lines
+      .filter((l) => l.incomplete)
+      .map((l) => l.label)
+      .filter((x, i, all) => all.findIndex((y) => y.en === x.en) === i),
+  });
   const base = {
     canton: 'VD' as const,
     taxYear: input.taxYear,
     commune: communeRef(input.taxYear, input.commune, input.communePart),
-    ifd: null,
-    estimates: allLines.some((l) => l.estimates?.includes('input-estimate'))
-      ? [{ id: 'input-estimate', what: ESTIMATE_TEXT['input-estimate'] }]
-      : [],
-    needsOk: allLines.filter((l) => l.needsOk).length,
-    complete: !allLines.some((l) => l.incomplete),
-    incomplete: allLines.filter((l) => l.incomplete).map((l) => l.label),
     assumptions: notes.assumptions,
-    notCounted: notes.notCounted,
   };
   const unsupported = () => ({
     ...base,
+    ...summary(cantonalLines, cantonalLines),
+    notCounted: notes.notCounted,
     unsupported: notes.unsupported,
     icc: null,
+    ifd: null,
     total: null,
     unverifiedRules: [],
+    limits: notes.limits,
   });
   if (notes.unsupported.length) return unsupported();
 
@@ -953,24 +1155,65 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   const wealthOrder = Object.keys(WEALTH_RUBRICS).sort();
   wealthItems.sort((x, y) => wealthOrder.indexOf(x.code) - wealthOrder.indexOf(y.code));
   try {
-    const icc = assess({
-      taxYear: input.taxYear,
-      commune: input.commune,
-      ...(input.communePart !== undefined ? { communePart: input.communePart } : {}),
-      family: fam.family,
-      partsSources: fam.sources,
-      incomeItems: items,
-      wealthItems,
-    });
+    const icc: VdIccResult = {
+      ...assess({
+        taxYear: input.taxYear,
+        commune: input.commune,
+        ...(input.communePart !== undefined ? { communePart: input.communePart } : {}),
+        family: fam.family,
+        partsSources: fam.sources,
+        incomeItems: items,
+        wealthItems,
+      }),
+      declared,
+    };
     if (partsOf(fam.family) !== icc.parts) throw new Error('parts');
     const unverified = [NOTE.rounding, ...notes.unverified];
     if (P.amounts.yearDays.carriedFrom) unverified.push(NOTE.guide2026);
+
+    // The federal tax, on the guide's worksheet (./ifd.ts): the same income lines, the federal
+    // deductions. Who counts the children follows the same child support rule (circular 30).
+    const support = fam.childSources.length ? input.childSupport : undefined;
+    const federalChildSources =
+      support === 'receives'
+        ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'pays'
+          ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+          : support === 'none' && input.ifdParentalScale !== undefined
+            ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 13.4.2, 14.4)`]
+            : [];
+    const federal = federalReturn(
+      {
+        input,
+        couple,
+        incomeItems: items.filter((i) => INCOME.has(i.code)),
+        inFull: items.filter((i) => IN_FULL.has(i.code)),
+        children: fam.counted.map((c): FederalChild => ({
+          weight: c.weight,
+          livesWithYou: c.livesWithYou,
+          ...(c.child.under14 !== undefined ? { under14: c.child.under14 } : {}),
+          ...(c.child.childcare ? { childcare: c.child.childcare } : {}),
+        })),
+        childSources: federalChildSources,
+        wealthIncome: movableIncome,
+      },
+      people.map((p) => ({
+        input: p,
+        salaries: items.filter((i) => i.person === p.id && (i.code === '100' || i.code === '105')),
+      })),
+    );
+    const ifd = federal.ifd;
+    for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
     return {
       ...base,
-      unsupported: [],
+      ...summary([...allLines({ icc, ifd })], [...items, ...(ifd?.items ?? []), ...wealthItems]),
+      notCounted: notes.notCounted,
+      unsupported: [...federal.notes.unsupported],
       icc,
-      total: icc.taxes.total.amount,
-      unverifiedRules: unverified,
+      ifd,
+      total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
+      unverifiedRules: [...unverified, ...federal.notes.unverified],
+      limits: bothTaxes(notes.limits, federal.notes.limits),
     };
   } catch (e) {
     if (!(e instanceof VdUnsupported)) throw e;
@@ -979,9 +1222,55 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   }
 }
 
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+/** Deductions in full in both taxes: buy-ins paid directly, the costs of the securities, alimony. */
+const IN_FULL = new Set(['320', '490', '630']);
+
+/**
+ * The limits of both taxes, a limit applied alike in each (same line, rule kind and amounts, as
+ * the pillar 3a cap) said once for both: the final check then shows it once (SPEC.md 10.0).
+ */
+function bothTaxes(icc: readonly LimitApplied[], ifd: readonly LimitApplied[]): LimitApplied[] {
+  const out = icc.map((l) => ({ ...l }));
+  for (const f of ifd) {
+    const same = out.find(
+      (l) =>
+        l.tax === 'icc' &&
+        l.code === f.code &&
+        l.person === f.person &&
+        l.kind === f.kind &&
+        l.given === f.given &&
+        l.limit === f.limit &&
+        l.counted === f.counted &&
+        l.rule === f.rule &&
+        Boolean(l.estimate) === Boolean(f.estimate),
+    );
+    if (same) same.tax = 'both';
+    else out.push(f);
+  }
+  return out;
+}
+
 /** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<VdTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+export function allLines(r: Pick<VdTaxResult, 'icc'> & { ifd?: VdTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.intermediateIncome1,
+        f.intermediateIncome2,
+        f.netIncome,
+        f.socialDeductions,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
@@ -1002,6 +1291,7 @@ export function allLines(r: Pick<VdTaxResult, 'icc'>): Line[] {
     x.taxes.cantonalWealth,
     x.taxes.communalWealth,
     x.taxes.total,
+    ...federal,
   ];
 }
 

@@ -87,6 +87,10 @@ export const NOTE = {
     en: 'Travel to work (code 140) not computed for 2026: the flat amounts for public transport, bikes and motorbikes are in the 2026 guide, which is not published yet.',
     fr: `Frais de transport (code 140) non calculés pour 2026${NB}: les forfaits pour les transports publics, le vélo et la moto figurent dans le guide 2026, pas encore publié.`,
   },
+  childcareSplit: {
+    en: 'Childcare (déduction pour frais de garde, code 670): the limit is per child under 14, and what you paid for the household is more than one child’s limit, so how it splits between the children changes the deduction. Say how much you paid for each child.',
+    fr: `Frais de garde (code 670)${NB}: la limite est par enfant de moins de 14 ans, et ce que vous avez payé pour le ménage dépasse la limite d’un enfant${NB}: la répartition entre les enfants change la déduction. Indiquez combien vous avez payé pour chaque enfant.`,
+  },
   maxima: {
     en: 'Your cantonal and communal tax may reach a legal maximum (LICom art. 8: 30 % of income, 10 per mille of wealth, or 60 % of net income for both), and the documents don’t say how the cut is computed in detail. The tax is not computed.',
     fr: `Votre impôt cantonal et communal peut atteindre un maximum légal (LICom art. 8${NB}: 30${NB}% du revenu, 10 pour mille de la fortune, ou 60${NB}% du revenu net pour les deux), et les documents ne précisent pas le calcul de la réduction. L’impôt n’est pas calculé.`,
@@ -148,6 +152,14 @@ export const NOTE = {
   drivingDetails: {
     en: 'Travel to work by car or motorbike not counted: give the kilometres one way and the days driven.',
     fr: `Trajets en voiture ou moto non comptés${NB}: indiquez les kilomètres aller et le nombre de jours.`,
+  },
+  savingsAbove410: {
+    en: 'Interest on savings (code 480): more than the income of your accounts and securities (code 410), so only that income is counted. Add the documents of the accounts that paid it, or check the amount.',
+    fr: `Intérêts de capitaux d’épargne (code 480)${NB}: plus que le rendement de vos titres et autres placements (code 410), seul ce rendement est donc compté. Ajoutez les documents des comptes qui les ont versés, ou vérifiez le montant.`,
+  },
+  childcareNoChild: {
+    en: 'Childcare not counted: it is deductible for a child under 14 who lives with you (code 670), and no child you gave is one.',
+    fr: `Frais de garde non comptés${NB}: ils sont déductibles pour un enfant de moins de 14 ans qui vit avec vous (code 670), et aucun des enfants indiqués ne l’est.`,
   },
   childcareWork: {
     en: 'Childcare is deductible only when the parents caring for the child work, train or can’t work; for a married couple, both. It is not counted here.',

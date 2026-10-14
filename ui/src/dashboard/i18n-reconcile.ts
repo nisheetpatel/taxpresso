@@ -76,6 +76,8 @@ const messages = {
     statusNeedsOk: 'Needs your OK',
     statusEstimate: 'Estimate',
     colon: ': ',
+    notAvailableVd:
+      'Taxpresso checks the PDF of Geneva declarations only, for now. For your Vaud return, compare what you typed in VaudTax with the values to type above. You transmit your declaration yourself.',
   },
   fr: {
     title: 'Vérifier avant de transmettre',
@@ -140,6 +142,7 @@ const messages = {
     statusNeedsOk: 'À confirmer',
     statusEstimate: 'Estimation',
     colon: `${NB}: `,
+    notAvailableVd: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration vaudoise, comparez vous-même ce que vous avez saisi dans VaudTax avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
   },
   de: {
     title: 'Vor dem Übermitteln prüfen',
@@ -211,6 +214,8 @@ const messages = {
     statusNeedsOk: 'Braucht dein OK',
     statusEstimate: 'Schätzung',
     colon: ': ',
+    notAvailableVd:
+      'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Waadtländer Steuererklärung vergleiche selbst, was du in VaudTax eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
   },
 } as const;
 
