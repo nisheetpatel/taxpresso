@@ -108,7 +108,7 @@ const fr: GuidesCopy = frenchSpacing({
   metaDescription:
     'Des guides courts sur la déclaration d’impôt à Genève : documents, 3e pilier A, TOU, couple, avis de taxation, confidentialité. Avec les liens officiels.',
   title: 'Guides',
-  lead: 'Des guides courts pour comprendre votre déclaration genevoise. Chacun se termine par les pages officielles, qui font foi.',
+  lead: 'Des guides courts pour comprendre votre déclaration genevoise. Chacun se termine par les pages officielles, qui font foi. Les guides des autres cantons viendront plus tard.',
   basis:
     'D’après le guide fiscal genevois 2025, le dernier paru, les instructions fédérales 2026 et les lois en vigueur. Pages officielles consultées le 13 octobre 2026.',
   disclaimer:
@@ -509,7 +509,7 @@ const en: GuidesCopy = {
   metaDescription:
     'Short guides to the Geneva tax return: documents, pillar 3a, TOU, couples, your assessment, privacy. With links to the official pages.',
   title: 'Guides',
-  lead: 'Short guides to help you understand your Geneva tax return. Each one ends with the official pages, which have the final word.',
+  lead: 'Short guides to help you understand your Geneva tax return. Each one ends with the official pages, which have the final word. Guides for the other cantons come later.',
   basis:
     'Based on the 2025 Geneva tax guide, the latest published, the 2026 federal instructions and the laws in force. Official pages checked on 13 October 2026.',
   disclaimer:
@@ -858,7 +858,7 @@ const de: GuidesCopy = {
   metaDescription:
     'Kurze Ratgeber zur Genfer Steuererklärung: Dokumente, Säule 3a, TOU, als Paar, Veranlagung, Datenschutz. Mit Links zu den offiziellen Seiten.',
   title: 'Ratgeber',
-  lead: 'Kurze Ratgeber, damit du deine Genfer Steuererklärung verstehst. Jeder endet mit den offiziellen Seiten: Sie sind massgebend.',
+  lead: 'Kurze Ratgeber, damit du deine Genfer Steuererklärung verstehst. Jeder endet mit den offiziellen Seiten: Sie sind massgebend. Ratgeber für die anderen Kantone folgen später.',
   basis:
     'Gestützt auf den Genfer Steuerleitfaden 2025, den neusten veröffentlichten, die Anleitung des Bundes 2026 und die geltenden Gesetze. Offizielle Seiten geprüft am 13. Oktober 2026.',
   disclaimer:
@@ -1207,7 +1207,7 @@ const it: GuidesCopy = {
   metaDescription:
     'Brevi guide alla dichiarazione d’imposta di Ginevra: documenti, pilastro 3a, TOU, in coppia, tassazione, privacy. Con i link alle pagine ufficiali.',
   title: 'Guide',
-  lead: 'Brevi guide per capire la tua dichiarazione d’imposta ginevrina. Ognuna finisce con le pagine ufficiali, che fanno fede.',
+  lead: 'Brevi guide per capire la tua dichiarazione d’imposta ginevrina. Ognuna finisce con le pagine ufficiali, che fanno fede. Le guide per gli altri cantoni arriveranno più avanti.',
   basis:
     'In base alla guida fiscale ginevrina 2025, l’ultima pubblicata, alle istruzioni federali 2026 e alle leggi in vigore. Pagine ufficiali verificate il 13 ottobre 2026.',
   disclaimer:
@@ -1558,7 +1558,7 @@ const es: GuidesCopy = {
   metaDescription:
     'Guías breves sobre la declaración de impuestos de Ginebra: documentos, pilar 3a, TOU, en pareja, liquidación, privacidad. Con enlaces a las páginas oficiales.',
   title: 'Guías',
-  lead: 'Guías breves para entender tu declaración de impuestos de Ginebra. Cada una termina con las páginas oficiales, que son las que cuentan.',
+  lead: 'Guías breves para entender tu declaración de impuestos de Ginebra. Cada una termina con las páginas oficiales, que son las que cuentan. Las guías de los demás cantones llegarán más adelante.',
   basis:
     'Basadas en la guía fiscal de Ginebra 2025, la última publicada, las instrucciones federales 2026 y las leyes vigentes. Páginas oficiales consultadas el 13 de octubre de 2026.',
   disclaimer:
@@ -1909,7 +1909,7 @@ const pt: GuidesCopy = {
   metaDescription:
     'Guias curtos sobre a declaração de impostos de Genebra: documentos, pilar 3a, TOU, em casal, liquidação, privacidade. Com ligações para as páginas oficiais.',
   title: 'Guias',
-  lead: 'Guias curtos para perceberes a tua declaração de impostos de Genebra. Cada um termina com as páginas oficiais, que são as que contam.',
+  lead: 'Guias curtos para perceberes a tua declaração de impostos de Genebra. Cada um termina com as páginas oficiais, que são as que contam. Os guias dos outros cantões chegam mais tarde.',
   basis:
     'Com base no guia fiscal de Genebra 2025, o último publicado, nas instruções federais 2026 e nas leis em vigor. Páginas oficiais consultadas a 13 de outubro de 2026.',
   disclaimer:

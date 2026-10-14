@@ -47,6 +47,8 @@ const messages = {
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Zug) for more time to file (Fristerstreckung), online at www.zg.ch/tax with your Pers ID',
     moreTimeLu:
       'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristerstreckung), online with the e-Fristerstreckung at steuern.lu.ch',
+    moreTimeSg:
+      'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristverlängerung), before the deadline, online at www.steuern.sg.ch',
   },
   fr: {
     title: 'Vérification finale',
@@ -83,6 +85,7 @@ const messages = {
     moreTimeBs: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale (Steuerverwaltung Basel-Stadt), en ligne dans le portail eSteuern.BS`,
     moreTimeZg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale de Zoug (Steuerverwaltung), en ligne sur www.zg.ch/tax avec votre Pers ID`,
     moreTimeLu: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) au service des impôts de votre commune (Gemeindesteueramt), en ligne avec l’e-Fristerstreckung sur steuern.lu.ch`,
+    moreTimeSg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), avant l’échéance, en ligne sur www.steuern.sg.ch`,
   },
   de: {
     title: 'Schlusskontrolle',
@@ -128,6 +131,8 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Zug eine Fristerstreckung, online unter www.zg.ch/tax mit deiner Pers ID',
     moreTimeLu:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristerstreckung, online mit der e-Fristerstreckung unter steuern.lu.ch',
+    moreTimeSg:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt vor Ablauf der Frist eine Fristverlängerung, online unter www.steuern.sg.ch',
   },
 } as const;
 

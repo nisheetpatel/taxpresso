@@ -450,6 +450,8 @@ taxpresso/
     rules-lu/           Lucerne's state, communal and church tax and Personalsteuer, and the federal tax
                         as its Ergänzungsblatt derives it from the return (wired into the extension as a
                         preview)
+    rules-sg/           St. Gallen's cantonal, communal and church tax, and the federal tax the tax office
+                        derives from the same return (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
                         worksheet (wired into the extension as a preview)
     optimizer/
@@ -463,6 +465,8 @@ taxpresso/
     filing-zg/          Zug's form K (pages 2 to 4, Kanton and Bund columns) and the values to type
     filing-lu/          the Lucerne return (form B, the securities list's summary, pages 2 to 4) and the
                         optional Ergänzungsblatt Direkte Bundessteuer, and the values to type on them
+    filing-sg/          St. Gallen's Form 4 (per person) and return (pages 2 to 4, one column) and the
+                        values to type
     filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
                         worksheet for the federal tax, to check
   ui/                   Vite app; views reused as MCP Apps resources
@@ -483,6 +487,9 @@ taxpresso/
   data/lu/2026/         Lucerne's questionnaire: the shared questions, its own (commune by name, the
                         family tariff in shared custody, each child's household, age, education away
                         from home and childcare, each adult's and child's confession)
+  data/sg/2026/         St. Gallen's questionnaire: the shared questions, its own (each child's stage,
+                        minor, education costs and scholarships, childcare per child, shared custody,
+                        commune by name, move, church, church area)
   data/vd/2026/         Vaud's questionnaire: the shared questions, its own (commune and its part,
                         household alone with the children, upkeep, rent, household contents,
                         childcare per child, savings interest)

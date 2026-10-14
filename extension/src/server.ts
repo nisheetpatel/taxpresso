@@ -847,7 +847,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'get_form_values',
     {
       title: 'Get the values to type into the declaration',
-      description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label as printed, value as typed, status. No section: sections with progress. A section (${SUPPORTED_CANTONS.map((c) => `"${CANTONS[c].filing.words.example}"`).join(', ')}): its values.`,
+      // The pages of each canton's form are listed in the section's own description: here, with
+      // nine cantons, they would pass the 300 characters a tool's description may have (C6).
+      description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label as printed, value as typed, status. No section: sections with progress. A section (a page of the form): its values.`,
       inputSchema: z.object({
         section: z
           .string()

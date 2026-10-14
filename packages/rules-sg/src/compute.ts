@@ -1,22 +1,27 @@
 // The one entry point: computeReturn(input) gives the lines of the St. Gallen return by code and
-// person, the totals and the cantonal, communal and (on request) church tax, each line explained with
-// its sources. First stage here (household figures to the lines of the return and its Form 4, every
-// cap, floor and excess of the St. Gallen documents, in the order of the return), second stage in
-// ./assess.ts (lines to taxes). The same two stages, with the same names, as packages/rules-bl.
+// person, the totals and the cantonal, communal and (on request) church tax, and the federal tax the
+// tax office derives from the same return (./ifd.ts), each line explained with its sources. First
+// stage here (household figures to the lines of the return and its Form 4, every cap, floor and
+// excess of the St. Gallen documents, in the order of the return, with the limits each applied for
+// the final check), second stage in ./assess.ts (lines to taxes). The same two stages, with the same
+// names, as packages/rules-bl.
 import {
   answered,
   chf,
   donationDeduction,
+  ifdParamsFor,
   medicalDeduction,
   mealsDeduction,
   pillar3a as federalPillar3a,
   roundFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import { assess, communeOf, communeRef, SgInputError, subtotals } from './assess.js';
 import { areaByName, churchRate, type Confession, type SgCommune } from './communes.js';
 import { churchAreaNote, ESTIMATE_TEXT, NOTE } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import {
   buyInRule,
   childcareRule,
@@ -32,6 +37,7 @@ import {
 } from './law.js';
 import { sgParamsFor, type SgTaxYear, type SgYearParams } from './params.js';
 import {
+  INCOME,
   ORDER,
   PERSON_CODES,
   RUBRICS,
@@ -51,6 +57,7 @@ import type {
   Line,
   PersonInput,
   SgEngineInput,
+  SgIccResult,
   SgTaxResult,
   Text,
 } from './types.js';
@@ -58,6 +65,7 @@ import type {
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = '\u00a0';
 const MB8_SOURCE = 'sg-2026-guide-merkblatt-unterjaehrig p. 4';
+const FORM = 'sg-2025-form-steuererklaerung';
 /** Centimes per km as francs: 70 -> "0.70". */
 const perKm = (c: number) => `${Math.floor(c / 100)}.${String(c % 100).padStart(2, '0')}`;
 
@@ -66,8 +74,36 @@ class Notes {
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A limit a cantonal rule applied (SPEC.md 10.0), on `code` for `person`, cited by the constant
+   * that sets it: `given` before the rule, `counted` after it. `rule` names it as the federal
+   * concepts are (packages/rules-ch, ifd/items.ts).
+   */
+  limit(
+    rule: string,
+    p: { source: string },
+    code: string,
+    person: LimitApplied['person'],
+    given: number,
+    limit: number,
+    counted: number,
+    kind: LimitApplied['kind'] = 'cap',
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: 'icc',
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      rule,
+    });
   }
 }
 
@@ -248,6 +284,7 @@ function personItems(P: SgYearParams, p: PersonInput, items: Item[], notes: Note
     if (tv.cost > 0) {
       const max = trTravel.p(A.travel).max;
       const v = Math.min(tv.cost, max);
+      notes.limit('commute', A.travel, PERSON_CODES.travel[id], id, tv.cost, max, v);
       const how =
         v < tv.cost
           ? t(
@@ -268,6 +305,15 @@ function personItems(P: SgYearParams, p: PersonInput, items: Item[], notes: Note
       const days = p.mealDays ?? 0;
       const meals = mealsDeduction(days, canteen, m);
       const [perDay, perYear] = canteen ? [m.halfPerDay, m.halfPerYear] : [m.perDay, m.perYear];
+      notes.limit(
+        'meals',
+        A.meals,
+        canteen ? PERSON_CODES.mealsHalf[id] : PERSON_CODES.meals[id],
+        id,
+        days * perDay,
+        perYear,
+        meals,
+      );
       if (meals > 0) {
         items.push(
           item(
@@ -289,6 +335,18 @@ function personItems(P: SgYearParams, p: PersonInput, items: Item[], notes: Note
     const o = tr.p(A.otherFlat);
     const flat = otherFlat(mainSalary.flatBase, o);
     const actual = p.otherProfessionalCosts ? total(tr, [p.otherProfessionalCosts]) : 0;
+    if (actual) {
+      notes.limit(
+        'professional.flat',
+        A.otherFlat,
+        actual > flat ? PERSON_CODES.otherActual[id] : PERSON_CODES.otherFlat[id],
+        id,
+        actual,
+        flat,
+        Math.max(actual, flat),
+        'choice',
+      );
+    }
     if (flat < o.max && flat > 0) notes.add(notes.unverified, NOTE.otherFlatRounding);
     if (actual > flat) {
       items.push(
@@ -398,6 +456,20 @@ function personItems(P: SgYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limits.push({
+      code: PERSON_CODES.pillar3a[id],
+      person: id,
+      tax: 'icc',
+      kind: l.kind,
+      given: l.given,
+      limit: l.limit,
+      counted: l.counted,
+      source: l.param.source,
+      ...(l.param.estimate ? { estimate: true } : {}),
+      rule: 'pillar3a',
+    });
+  }
   let pillar3a = false;
   if (r3a.deduction && r3a.deduction.amount < 0) {
     pillar3a = true;
@@ -426,6 +498,7 @@ function personItems(P: SgYearParams, p: PersonInput, items: Item[], notes: Note
         notes.add(notes.notCounted, NOTE.trainingFlat2026);
       }
       const amount = flat !== null && paid < flat ? flat : Math.min(paid, tc.max);
+      notes.limit('training', A.training, PERSON_CODES.training[id], id, paid, tc.max, amount);
       items.push(
         item(
           PERSON_CODES.training[id],
@@ -464,6 +537,8 @@ function personItems(P: SgYearParams, p: PersonInput, items: Item[], notes: Note
 
 /** A child as the deductions read it. */
 interface CountedChild {
+  /** Its place in the children given, from 1. */
+  n: number;
   /** Gets the child deduction here (23.1 or 23.2), raises 14, and the wealth deduction if minor. */
   counts: boolean;
   /** Lives with you: Vollsplitting for a single parent, childcare. */
@@ -479,13 +554,14 @@ interface CountedChild {
  */
 function familyOf(
   input: SgEngineInput,
+  given: readonly ChildInput[],
   couple: boolean,
   notes: Notes,
 ): { splitting: boolean; children: CountedChild[]; sources: string[] } {
   const y = input.taxYear;
   const children: CountedChild[] = [];
   const sources = [familySituation(y).source];
-  for (const ch of input.children ?? []) {
+  for (const [i, ch] of given.entries()) {
     const lives = ch.livesWithYou ?? true;
     let counts: boolean;
     if (ch.custody === 'full' || couple) {
@@ -524,6 +600,7 @@ function familyOf(
       notes.add(notes.unsupported, NOTE.childMinor);
     }
     children.push({
+      n: i + 1,
       counts,
       lives,
       ...(ch.stage ? { stage: ch.stage } : {}),
@@ -630,7 +707,8 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
   notes.add(notes.assumptions, NOTE.fullYear);
   notes.add(notes.notCounted, NOTE.fireLevy);
 
-  const fam = familyOf(input, couple, notes);
+  const kids = withHouseholdChildcare(input, couple, P, notes);
+  const fam = familyOf(input, kids, couple, notes);
   const church = churchOf(input, couple, commune, notes);
   const base = { canton: 'SG' as const, taxYear: y, commune: ref, ifd: null };
   const result = (lines: readonly Line[]): SgTaxResult => ({
@@ -647,6 +725,7 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
     notCounted: notes.notCounted,
     unsupported: notes.unsupported,
     unverifiedRules: [],
+    limits: notes.limits,
   });
   // Something every later line rests on is missing or not supported (a question about the family
   // or the church, self-employment): the result says that first.
@@ -710,6 +789,7 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
     const extra = tr.p(A.debtInterestExtra);
     const cap = movableIncome + extra;
     const ded = Math.min(paid, cap);
+    notes.limit('debt_interest', A.debtInterestExtra, '500', 'household', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -754,6 +834,7 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
         notes.add(notes.notCounted, NOTE.savingsInterest);
       }
       const ded = Math.min(net, cap);
+      notes.limit('insurance', A.insurance, '600', 'household', net, cap, ded);
       const capHow = t(
         `${couple ? 'married couple' : 'single taxpayer'} ${chf(couple ? ins.married : ins.other)}${noPension ? ` plus ${chf(couple ? ins.marriedExtra : ins.otherExtra)} (no pension fund or pillar 3a contributions deducted)` : ''}${counted.length ? ` plus ${counted.length} x ${chf(ins.perChild)} for the children` : ''}`,
         `${couple ? 'couple marié' : 'personne seule'} ${chf(couple ? ins.married : ins.other)}${noPension ? ` plus ${chf(couple ? ins.marriedExtra : ins.otherExtra)} (aucune cotisation de prévoyance ni de pilier 3a déduite)` : ''}${counted.length ? ` plus ${counted.length} x ${chf(ins.perChild)} pour les enfants` : ''}`,
@@ -796,7 +877,9 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
       }
       if (ch.input.under14 === undefined) notes.add(notes.assumptions, NOTE.under14);
       notes.add(notes.assumptions, NOTE.childcareMeals);
-      const one = Math.min(total(tr, [ch.input.childcare]), cap);
+      const paid = total(tr, [ch.input.childcare]);
+      const one = Math.min(paid, cap);
+      notes.limit('childcare', A.childcare, '258', `child${ch.n}`, paid, cap, one);
       ded += one;
       parts.push(chf(one));
     }
@@ -823,6 +906,7 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
     const party = tr.p(A.party);
     const max = couple ? party.married : party.other;
     const ded = Math.min(paid, max);
+    notes.limit('party', A.party, '555', 'household', paid, max, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -871,13 +955,67 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
         t('', ''),
       );
   };
+  let medical: SgIccResult['medical'] = null;
   if (hh.medicalCosts) {
+    const costTrace = new Trace();
+    total(costTrace, [hh.medicalCosts]);
     const tr = new Trace();
     const costs = total(tr, [hh.medicalCosts]);
     const nb = netBaseLine();
     tr.from(nb);
     const bp = tr.p(A.medicalThresholdBp);
     const { threshold, deduction } = medicalDeduction(costs, nb.amount, bp);
+    notes.limit(
+      'medical',
+      A.medicalThresholdBp,
+      '240',
+      'household',
+      costs,
+      threshold,
+      deduction,
+      'threshold',
+    );
+    if (costs > 0) {
+      // 21.1 as the return lays it out: the costs (650) and the excess (238), then 240.
+      const r650 = RUBRICS['240'];
+      const excess = new Trace().from(nb);
+      excess.p(A.medicalThresholdBp);
+      medical = {
+        costs: new Trace()
+          .with(costTrace)
+          .src(`${FORM} p. 3 (Ziffer 21.1, 650 Krankheits- und Unfallkosten)`, r650.source)
+          .line(
+            costs,
+            {
+              ...t(
+                'Illness and accident costs you bore (21.1 Krankheits- und Unfallkosten)',
+                'Frais de maladie et d’accident à votre charge (21.1 Krankheits- und Unfallkosten)',
+              ),
+              de: '21.1 Krankheits- und Unfallkosten',
+            },
+            t(
+              `The costs you bore yourself (Form 6): ${chf(costs)}.`,
+              `Les frais restés à votre charge (formulaire 6)${NB}: ${chf(costs)}.`,
+            ),
+          ),
+        threshold: excess
+          .src(`${FORM} p. 3 (Ziffer 21.1, 238 Selbstbehalt 2% des Nettoeinkommens)`)
+          .line(
+            threshold,
+            {
+              ...t(
+                'Excess, 2 % of the Nettoeinkommen (21.1 Selbstbehalt)',
+                'Franchise, 2 % du revenu net (21.1 Selbstbehalt)',
+              ),
+              de: '21.1 abzüglich Selbstbehalt 2% des Nettoeinkommens',
+            },
+            t(
+              `${bp / 100} % of the Nettoeinkommen (20.), ${chf(nb.amount)}: ${chf(threshold)}.`,
+              `${bp / 100}${NB}% du revenu net (20.), ${chf(nb.amount)}${NB}: ${chf(threshold)}.`,
+            ),
+          ),
+      };
+    }
     if (costs > 0 && deduction > 0) {
       items.push(
         item(
@@ -900,6 +1038,10 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
     tr.from(nb);
     const d = tr.p(A.donations);
     const { cap, deduction } = donationDeduction(gifts, nb.amount, d.shareBp, d.min);
+    notes.limit('donations', A.donations, '244', 'household', gifts, d.min, deduction, 'minimum');
+    if (gifts >= d.min) {
+      notes.limit('donations', A.donations, '244', 'household', gifts, cap, deduction);
+    }
     if (gifts > 0 && deduction > 0) {
       items.push(
         item(
@@ -1050,28 +1192,171 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
     splitting: fam.splitting,
     familySources: fam.sources,
     church: church ?? null,
+    medical,
     incomeItems: items,
     wealthItems,
   });
-  const lines = allLines({ icc });
+
+  // The federal tax the tax office derives from the same return (./ifd.ts): the same income lines,
+  // the federal deductions. Who counts the children follows the federal rules (circular 30): in
+  // full, half in shared custody without child support, not for the parent who pays it.
+  const sharedAlone = !couple && kids.some((ch) => ch.custody === 'shared');
+  const support = sharedAlone ? input.childSupport : undefined;
+  const childSources =
+    support === 'receives'
+      ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+      : support === 'pays'
+        ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'none' && input.ifdParentalScale !== undefined
+          ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 13.4.2, 14.4)`]
+          : [];
+  const federalChildren: FederalChild[] = [];
+  for (const ch of kids) {
+    const child = {
+      livesWithYou: ch.livesWithYou ?? true,
+      ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
+      ...(ch.childcare ? { childcare: ch.childcare } : {}),
+    };
+    if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
+      federalChildren.push({ weight: 1, ...child });
+    } else if (input.childSupport === 'none') {
+      federalChildren.push({ weight: 0.5, ...child });
+    }
+  }
+  const earning = (id: 'p1' | 'p2') =>
+    new Set<string>([
+      PERSON_CODES.main[id],
+      PERSON_CODES.side[id],
+      PERSON_CODES.allowances[id],
+      PERSON_CODES.unemployment[id],
+    ]);
+  const federal = federalReturn(
+    {
+      input,
+      couple,
+      incomeItems: items.filter((i) => INCOME.has(i.code)),
+      inFull: items.filter((i) => IN_FULL.has(i.code)),
+      children: federalChildren,
+      childSources,
+      wealthIncome: movableIncome,
+    },
+    people.map((p) => ({
+      input: p,
+      earnings: items.filter((i) => i.person === p.id && earning(p.id).has(i.code)),
+    })),
+  );
+  const ifd = federal.ifd;
+  for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
+  const lines = allLines({ icc, ifd });
   return {
     ...result(lines),
-    unsupported: [],
+    unsupported: [...federal.notes.unsupported],
     icc,
-    total: icc.taxes.total.amount,
-    unverifiedRules: [NOTE.rounding, ...notes.unverified],
+    ifd,
+    total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
+    unverifiedRules: [NOTE.rounding, ...notes.unverified, ...federal.notes.unverified],
+    limits: bothTaxes(notes.limits, federal.notes.limits),
   };
 }
 
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+/**
+ * Deductions in full for both taxes: alimony and child support paid (200, 202), pension fund
+ * buy-ins (218, 219) and the costs of managing securities (220).
+ */
+const IN_FULL = new Set(['200', '202', '218', '219', '220']);
+
+/**
+ * The limits of both taxes, a limit applied alike in each (same line, rule kind and amounts, as
+ * the pillar 3a cap) said once for both: the final check then shows it once (SPEC.md 10.0).
+ */
+function bothTaxes(icc: readonly LimitApplied[], ifd: readonly LimitApplied[]): LimitApplied[] {
+  const out = icc.map((l) => ({ ...l }));
+  for (const f of ifd) {
+    const same = out.find(
+      (l) =>
+        l.tax === 'icc' &&
+        l.code === f.code &&
+        l.person === f.person &&
+        l.kind === f.kind &&
+        l.given === f.given &&
+        l.limit === f.limit &&
+        l.counted === f.counted &&
+        l.rule === f.rule &&
+        Boolean(l.estimate) === Boolean(f.estimate),
+    );
+    if (same) same.tax = 'both';
+    else out.push(f);
+  }
+  return out;
+}
+
+/**
+ * Childcare paid for the household as a whole (the invoices of a crèche, say): the limit is per
+ * child under 14 (StG Art. 45 Abs. 1 lit. h). It is that child's when one child can have it; with
+ * several, any split gives the same when the whole amount is within one child's limit, the federal
+ * one included; otherwise how it splits decides the deduction, and the tax is not computed without
+ * it (fail closed).
+ */
+function withHouseholdChildcare(
+  input: SgEngineInput,
+  couple: boolean,
+  P: SgYearParams,
+  notes: Notes,
+): readonly ChildInput[] {
+  const children = input.children ?? [];
+  const care = input.household?.childcare;
+  if (!care) return children;
+  if (children.some((ch) => ch.childcare)) {
+    throw new SgInputError('Childcare: give it per child or for the household, not both.');
+  }
+  // The children whose childcare counts here: they count for you (./law.ts, sharedCustody), live
+  // with you and are under 14.
+  const countsHere = (ch: ChildInput) =>
+    ch.custody === 'full' ||
+    couple ||
+    input.childSupport === 'receives' ||
+    (input.childSupport === 'none' && input.mainUpkeep === true);
+  const eligible = children
+    .map((ch, i) => ({ ch, i }))
+    .filter(({ ch }) => countsHere(ch) && (ch.livesWithYou ?? true) && ch.under14 !== false);
+  const paid = total(new Trace(), [care]);
+  const within = Math.min(P.amounts.childcare.value, ifdParamsFor(P.taxYear).childcareMax.value);
+  if (eligible.length === 1 || (eligible.length > 1 && paid <= within)) {
+    const at = eligible[0]!.i;
+    return children.map((ch, i) => (i === at ? { ...ch, childcare: care } : ch));
+  }
+  if (eligible.length > 1) notes.add(notes.unsupported, NOTE.childcareSplit);
+  else if (paid > 0) notes.add(notes.notCounted, NOTE.childcareNoChild);
+  return children;
+}
+
 /** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<SgTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+export function allLines(r: Pick<SgTaxResult, 'icc'> & { ifd?: SgTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.totalDeductions,
+        f.netIncomeBase,
+        f.netIncome,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
     x.grossIncome,
     x.totalDeductions,
     x.netIncomeBase,
+    ...(x.medical ? [x.medical.costs, x.medical.threshold] : []),
     x.netIncome,
     x.taxableIncome,
     x.rateIncome,
@@ -1087,6 +1372,7 @@ export function allLines(r: Pick<SgTaxResult, 'icc'>): Line[] {
     x.taxes.communalWealth,
     ...(x.taxes.church ? [x.taxes.church] : []),
     x.taxes.total,
+    ...federal,
   ];
 }
 

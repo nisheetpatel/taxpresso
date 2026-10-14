@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-sg",
+  "version": "0.0.0",
+  "private": true,
+  "description": "St. Gallen's return (Formular 1 and Form 4) map and the values to type on it, in the form's order (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
+    "@taxpresso/rules-sg": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

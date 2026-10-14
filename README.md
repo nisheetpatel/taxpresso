@@ -24,13 +24,13 @@ Early preview for tax year 2026 (returns filed in early 2027).
   - every value in the official form's order, ready to copy into your declaration;
   - your tax assessment checked against your return, with the deadline to object.
 - Coming next: a check of the official PDF before you transmit, a review of what you could have saved last year, Geneva's 2026 rates when the canton publishes them, and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
-- Geneva; and as a preview, Zurich, Bern, Vaud, Basel-Stadt, Basel-Landschaft, Zug and Lucerne. Aargau and St. Gallen come next, then Fribourg and Ticino. The goal is all 26 cantons.
+- Geneva; and as a preview, Zurich, Bern, Vaud, Basel-Stadt, Basel-Landschaft, Zug, Lucerne and St. Gallen. Aargau comes next, then Fribourg and Ticino. The goal is all 26 cantons.
 
 ## Install
 
 1. Download the `.mcpb` file of the [latest release](https://github.com/nisheetpatel/taxpresso/releases/latest), or build it (below).
 2. Double-click it, or drag it onto Claude Desktop's Settings, Extensions page. Click Install.
-3. In a new chat, ask Claude: "Help me with my Geneva taxes."
+3. In a new chat, ask Claude: "Help me with my taxes using Taxpresso."
 
 Your tax folder is `~/Documents/Taxpresso` unless you choose another one at install. The website has a [Get started](https://taxpresso.ch/en/start/) page with every step.
 

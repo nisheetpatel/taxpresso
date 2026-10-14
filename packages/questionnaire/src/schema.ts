@@ -62,6 +62,7 @@ export const OFFICIAL_HOSTS = [
   'bs.ch', // www.bs.ch, media.bs.ch (guides, forms), www.gesetzessammlung.bs.ch (laws)
   'zg.ch', // zg.ch (eTax.zug), cdn.zg.ch (Zug's guides and tables), bgs.zg.ch (laws)
   'lu.ch', // steuern.lu.ch (Lucerne's guides, tables and leaflets), srl.lu.ch (laws), steuerbuch.lu.ch
+  'sg.ch', // www.sg.ch (guide, forms, tables, Steuerbuch, E-Tax SG), www.gesetzessammlung.sg.ch (laws)
   'fr.ch', // www.fr.ch (Fribourg's guide, tariffs, FriTax and tax pages), bdlf.fr.ch (laws)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch

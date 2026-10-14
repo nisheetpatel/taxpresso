@@ -10,6 +10,7 @@ import ch2026 from '../../../data/ch/2026/questions.yaml';
 import fr2026 from '../../../data/fr/2026/questionnaire.yaml';
 import ge2026 from '../../../data/ge/2026/questionnaire.yaml';
 import lu2026 from '../../../data/lu/2026/questionnaire.yaml';
+import sg2026 from '../../../data/sg/2026/questionnaire.yaml';
 import vd2026 from '../../../data/vd/2026/questionnaire.yaml';
 import zg2026 from '../../../data/zg/2026/questionnaire.yaml';
 import zh2026 from '../../../data/zh/2026/questionnaire.yaml';
@@ -70,6 +71,14 @@ export function zgQuestionnaire2026(): QuestionnaireFile {
  */
 export function luQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(lu2026, ch2026);
+}
+
+/**
+ * The St. Gallen questionnaire for tax year 2026, validated. Its wording follows the 2025 guide: the
+ * 2026 guide and forms are not published yet (data/sg/2026/questionnaire.yaml).
+ */
+export function sgQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(sg2026, ch2026);
 }
 
 /**
