@@ -3,7 +3,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { COMMUNE_CENTIMES_2026, COMMUNES_2026 } from '../../packages/rules-ge/src/2026/communes.ts';
-import { BASE_URL, copy, type Lang, LANGS, SOURCE_URL, startPath } from '../src/content.ts';
+import { SUPPORTED_CANTONS } from '../../packages/rules-ch/src/keys/canton.ts';
+import { CANTONS, listOf, NEXT_CANTONS } from '../src/cantons.ts';
+import {
+  BASE_URL,
+  copy,
+  ISSUE_URL,
+  type Lang,
+  LANGS,
+  SOURCE_URL,
+  startPath,
+} from '../src/content.ts';
 import { GENEVA_IDS, geneva, genevaPath } from '../src/geneva.ts';
 import {
   type Citation,
@@ -117,6 +127,57 @@ describe('landing page', () => {
       const css = await readFile(path.join(here, '..', 'src', file), 'utf8');
       for (const re of REMOTE_LOAD) expect(css, file).not.toMatch(re);
     }
+  });
+});
+
+describe('cantons', () => {
+  /** The FAQ answer that links to the canton vote: "Which cantons work?". */
+  const cantonsFaq = (lang: Lang) => {
+    const items = copy[lang].faq.items.filter(([, a]) => a.includes(ISSUE_URL.canton));
+    expect(items, lang).toHaveLength(1);
+    return items[0]!;
+  };
+
+  it('are the cantons the extension supports, the most complete first', () => {
+    expect(CANTONS.map((c) => c.code).sort()).toEqual([...SUPPORTED_CANTONS].sort());
+    expect(CANTONS[0]!.status).toBe('complete');
+    const codes = [...CANTONS, ...NEXT_CANTONS].map((c) => c.code);
+    expect(new Set(codes).size).toBe(codes.length);
+  });
+
+  it('answer "Which cantons work?" with every canton of cantons.ts, in every language', () => {
+    for (const { lang } of LANGS) {
+      const [, answer] = cantonsFaq(lang);
+      const html = render(lang);
+      for (const c of [...CANTONS, ...NEXT_CANTONS]) {
+        expect(answer, `${lang} ${c.code}`).toContain(c.name[lang]);
+        expect(html, `${lang} ${c.code}`).toContain(c.name[lang]);
+      }
+      // The order of cantons.ts: complete, then previews, then next.
+      const at = [...CANTONS, ...NEXT_CANTONS].map((c) => answer.indexOf(c.name[lang]));
+      expect(at, lang).toEqual([...at].sort((a, b) => a - b));
+    }
+  });
+
+  it('are listed the way each language writes a list', () => {
+    const abc = ['A', 'B', 'C'];
+    expect(listOf('en', abc)).toBe('A, B and C');
+    expect(listOf('fr', abc)).toBe('A, B et C');
+    expect(listOf('de', abc)).toBe('A, B und C');
+    expect(listOf('it', abc)).toBe('A, B e C');
+    expect(listOf('es', abc)).toBe('A, B y C');
+    expect(listOf('pt', abc)).toBe('A, B e C');
+    expect(listOf('es', ['Zug', 'Ibiza'])).toBe('Zug e Ibiza');
+    expect(listOf('en', ['Geneva'])).toBe('Geneva');
+    expect(listOf('en', [])).toBe('');
+  });
+
+  it('home and Get started copy leave Geneva’s filing words to the Geneva pages', () => {
+    // Geneva's online service (e-démarches) and its final button (Transmettre) are Geneva's
+    // only: the home and Get started pages speak of your canton's online declaration.
+    for (const { lang } of LANGS)
+      for (const s of strings(copy[lang]))
+        expect(s, `${lang}: ${s}`).not.toMatch(/e-démarches|Transmettre/);
   });
 });
 
