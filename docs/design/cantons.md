@@ -125,7 +125,7 @@ No per-canton folder. One tax year has one canton, so `~/Documents/Taxpresso/<ye
 2. `from-ledger` for any canton (`HouseholdInput`), the registry with Geneva only, and `profile.canton`.
 3. Zurich: `packages/rules-zh` (started: tax years 2025 and 2026, cantonal, communal, church tax opt-in, Personalsteuer), then its questionnaire, `packages/filing-zh` and the German UI.
 4. Bern: reuses the German UI and the Zurich work on German forms.
-5. Vaud: reuses the French UI; first a person opens the communal coefficient tables and the consolidated LI and RDVE in a browser, which the collecting tool could not read (docs/sources/README.md, known conflicts).
+5. Vaud: reuses the French UI. Started: `packages/rules-vd`, the cantonal and communal income and wealth tax for 2025 and 2026 (not wired), its communes generated from the communal tables (.xls) by `scripts/vd-communes.mjs`; Vaud's communes have no BFS number in the official tables, so `Commune.bfs` and the result's commune `bfs` are null (rules-ch's `TaxResult` allows it). Open points and conflicts: `docs/sources/vd/NOTES.md`, "Open points for the rules".
 
 ## Open points for the lead
 
