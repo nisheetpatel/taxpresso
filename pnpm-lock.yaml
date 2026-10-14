@@ -395,6 +395,9 @@ importers:
         specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
+      '@taxpresso/rules-be':
+        specifier: workspace:*
+        version: link:../rules-be
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../rules-ch

@@ -214,7 +214,20 @@ export class QuestionnaireEngine {
         const stored = ledger.get(question.key, person);
         // An answer the key no longer accepts (an option that was replaced) is asked again.
         const def = this.keys[question.key];
-        const fact = stored && def && invalidValue(def, stored.value) ? undefined : stored;
+        // An option offered only where its condition holds (a commune's own parishes) no longer
+        // answers once the condition fails (the commune changed): it is asked again.
+        const hidden =
+          stored !== undefined &&
+          (question.options ?? []).some(
+            (o) =>
+              o.when &&
+              (Array.isArray(stored.value)
+                ? stored.value.includes(o.value)
+                : stored.value === o.value) &&
+              !this.#holds(o.when, person, answers, people()),
+          );
+        const fact =
+          stored && def && (invalidValue(def, stored.value) || hidden) ? undefined : stored;
         // Read from a document and not confirmed yet: a suggestion, not an answer.
         const suggestion = fact?.status === 'extracted' ? fact : undefined;
         const answer = suggestion ? undefined : fact;
