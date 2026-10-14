@@ -8,8 +8,7 @@
 // same result (reconcile_official_pdf, the dashboard's card). Taxpresso never transmits anything:
 // the user does, in the official software, once everything matches.
 import {
-  FORM_2025,
-  FORM_2026,
+  filing as genevaFiling,
   reconcileDeclaration,
   type CheckCell,
   type CheckLine,
@@ -75,8 +74,9 @@ export interface DeclarationCheckView {
 
 export function declarationCheckView(ws: Workspace, lang: Lang): DeclarationCheckView {
   const taxYear = ws.engine.taxYear;
-  const canton = ws.canton().canton;
-  if (canton && !canton.filing.checksPdf) {
+  const { canton, notOffered } = ws.canton();
+  // Another canton's form, or a canton Taxpresso doesn't prepare for this year: no check.
+  if (notOffered || (canton && !canton.filing.checksPdf)) {
     return { taxYear, status: 'not_available', older: 0, warnings: [] };
   }
   const [doc, ...older] = officialDocuments(ws);
@@ -100,7 +100,7 @@ export function declarationCheckView(ws: Workspace, lang: Lang): DeclarationChec
   if (decl.taxYear !== undefined && decl.taxYear !== taxYear) {
     return { ...base, status: 'other_year', printedYear: decl.taxYear };
   }
-  const form = taxYear === 2025 ? FORM_2025 : FORM_2026;
+  const form = genevaFiling.formMap(taxYear);
   const check = reconcileDeclaration({
     form,
     panel: copyPanelView(ws, lang),

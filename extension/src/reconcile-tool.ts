@@ -9,6 +9,7 @@ import {
   declarationCheckView,
 } from './reconcile.js';
 import type { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 const Cell = z.object({
   column: z.string(),
@@ -16,7 +17,9 @@ const Cell = z.object({
   pdf: z.number().int().optional(),
 });
 
-export function registerDeclarationCheckTool(server: McpServer, ws: Workspace): void {
+export function registerDeclarationCheckTool(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'reconcile_official_pdf',
     {
@@ -70,6 +73,7 @@ export function registerDeclarationCheckTool(server: McpServer, ws: Workspace): 
       },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       await declarationCheckReady(ws);
       const { text, structured } = declarationCheckResult(

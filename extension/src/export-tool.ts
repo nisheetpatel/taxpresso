@@ -5,8 +5,11 @@ import { LedgerError, VaultError } from '@taxpresso/ledger';
 import * as z from 'zod/v4';
 import { exportFolder, sizeText } from './export.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
-export function registerExportTool(server: McpServer, ws: Workspace): void {
+export function registerExportTool(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'export_bundle',
     {
@@ -30,6 +33,7 @@ export function registerExportTool(server: McpServer, ws: Workspace): void {
       },
     },
     async () => {
+      const ws = years.current;
       try {
         const done = await exportFolder(ws);
         const text = `Saved a copy of the ${ws.engine.taxYear} folder: ${done.path} (${done.entries} file${done.entries === 1 ? '' : 's'}, ${sizeText(done.bytes)}). It stays on this computer: Taxpresso sent nothing. It holds the user's documents, so they keep it somewhere private, like the folder itself.`;

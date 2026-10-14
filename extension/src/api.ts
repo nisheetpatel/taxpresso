@@ -21,12 +21,15 @@ import {
   PlanningInput,
   planningReady,
   planningView,
+  yearOverView,
 } from './planning.js';
 import type { Slot } from '@taxpresso/questionnaire';
 import { exportFolder, exportView } from './export.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import { finalCheckView } from './final-check.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
+import { CANTONS } from './cantons.js';
+import { TaxYears } from './years.js';
 
 const Answer = z.object({
   id: z.string().max(80),
@@ -38,6 +41,17 @@ const Answer = z.object({
   ]),
 });
 const Id = z.object({ id: z.string().max(80) });
+const Year = z.object({ year: z.number().int().min(2000).max(2100) });
+
+/** The page showed another year than the open one: in the page's language. */
+function yearChanged(shown: number, open: number, lang: Lang): string {
+  return {
+    en: `This page showed ${shown}, but ${open} is open now (it was changed in the chat). Here is ${open}: check, then try again.`,
+    fr: `Cette page montrait ${shown}, mais ${open} est ouverte maintenant (changée dans le chat). Voici ${open}${NBSP}: vérifiez, puis réessayez.`,
+    de: `Diese Seite zeigte ${shown}, aber jetzt ist ${open} offen (im Chat gewechselt). Hier ist ${open}: Prüf es und versuch es nochmals.`,
+    it: `Questa pagina mostrava il ${shown}, ma ora è aperto il ${open} (cambiato nella chat). Ecco il ${open}: controlla, poi riprova.`,
+  }[lang];
+}
 const Plan = z.object({
   person: z.enum(['p1', 'p2']),
   field: z.enum(['gross', 'net', 'pensionFund', 'paid']),
@@ -91,7 +105,12 @@ function suggestedFrom(ws: Workspace, slot: Slot) {
   };
 }
 
-export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
+export function dashboardState(
+  ws: Workspace,
+  lang: Lang,
+  csrf: string,
+  years: TaxYears = TaxYears.of(ws),
+) {
   // Views with English and French content only show English on a German page (./lang.ts).
   const content = contentLang(lang);
   const snap = ws.snapshot();
@@ -104,7 +123,16 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
   const canton = ws.canton();
   return {
     version: ws.config.version,
-    taxYear: ws.config.taxYear,
+    taxYear: ws.taxYear,
+    // The year switch: every year Taxpresso prepares, with its cantons (./years.ts).
+    years: years.list().map((y) => ({
+      year: y.year,
+      open: y.year === ws.taxYear,
+      over: y.over,
+      cantons: y.cantons.map((c) => ({ code: c, name: say(CANTONS[c].name, lang) })),
+    })),
+    // A year that is over: what replaces the plans before 31 December (./planning.ts).
+    yearOver: yearOverView(ws) ?? null,
     // The canton of the return (./cantons.ts): null until the user says where they lived.
     canton: canton.canton
       ? {
@@ -188,18 +216,21 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       optional: r.optional === true,
       ...(who(r.person) ? { who: who(r.person) } : {}),
     })),
-    plan: {
-      inputs: ws.planInput().people.map((p) => ({
-        person: p.person,
-        gross: p.grossCentimes ?? null,
-        net: p.netCentimes ?? null,
-        hasPensionFund: p.hasPensionFund,
-        paid: p.paidCentimes,
-      })),
-      result: ws.plan(),
-    },
+    // The plans before 31 December: none for a year that is over (yearOver says whose they are).
+    plan: ws.yearOver()
+      ? null
+      : {
+          inputs: ws.planInput().people.map((p) => ({
+            person: p.person,
+            gross: p.grossCentimes ?? null,
+            net: p.netCentimes ?? null,
+            hasPensionFund: p.hasPensionFund,
+            paid: p.paidCentimes,
+          })),
+          result: ws.plan(),
+        },
     // Pension fund buy-in, 3a catch-up and TOU (SPEC.md section 8, groups B and C): ./planning.ts.
-    planning: planningView(ws),
+    planning: ws.yearOver() ? null : planningView(ws),
     notSupported: ws.engine.notSupported(snap).map((n) => say(n.what, lang)),
     securities: ws.securities(content) ?? null,
     // The tax from the rules engine (./estimate.ts).
@@ -240,12 +271,30 @@ const parse = <T>(schema: z.ZodType<T>, body: Buffer): T => {
   }
 };
 
-export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiResponse> {
+export function createApi(given: Workspace | TaxYears): (req: ApiRequest) => Promise<ApiResponse> {
+  const years = TaxYears.of(given);
   return async (req) => {
+    // The open year's workspace, taken once for the whole request (./years.ts).
+    let ws = years.current;
     const asked = req.query.get('lang');
     const lang: Lang = isUiLanguage(asked) ? asked : ws.config.uiLanguage;
-    const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf) });
+    const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf, years) });
     try {
+      // A change made on a page that still shows another year (the user switched in the chat
+      // meanwhile) would land in the wrong year: refused, and the page shows the open year.
+      const shown = req.query.get('year');
+      if (
+        req.method === 'POST' &&
+        req.path !== '/year' &&
+        shown !== null &&
+        shown !== String(ws.taxYear)
+      ) {
+        return { status: 409, body: { error: yearChanged(Number(shown), ws.taxYear, lang) } };
+      }
+      if (req.method === 'POST' && req.path === '/year') {
+        const { year } = parse(Year, req.body);
+        ws = await years.open(year, 'dashboard');
+      }
       await ws.ready();
       await planningReady(ws);
       await declarationCheckReady(ws); // reads this year's declaration PDF once, never throws
@@ -369,6 +418,9 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
           await ws.resolveCheck(id, note, 'dashboard');
           return state();
         }
+        case '/year':
+          // Opened above, before reading the year's folder: its state.
+          return state();
         default:
           return { status: 404, body: { error: 'Not found.' } };
       }

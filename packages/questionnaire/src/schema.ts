@@ -178,9 +178,19 @@ export type RequirementDef = z.infer<typeof RequirementDef>;
 
 export const QuestionnaireFile = z
   .object({
+    /**
+     * The tax year the questions are for. A file can serve several years (`taxYears` in the YAML):
+     * it is then read once per year, its texts naming that year ({year}) and citing that year's
+     * documents (docs/design/tax-years.md).
+     */
     taxYear: z.number().int(),
     /** The canton the file is for, in words: "Geneva" in "not a Geneva commune". */
     place: Text.optional(),
+    /**
+     * For a canton Taxpresso doesn't prepare for the year: what the canton question says it is,
+     * with {canton} and {year} (the shared file's).
+     */
+    notOffered: Text.optional(),
     people: z.object({
       p1: Text,
       p2: Text,
@@ -225,9 +235,17 @@ export function resolveShared(raw: unknown, shared: unknown): unknown {
       return { ...def, ...over };
     });
   };
+  // The years the canton's file serves: its own, or the shared file's when it gives none.
+  const years =
+    file.taxYears !== undefined || file.taxYear !== undefined
+      ? { ...pickYears(file) }
+      : { ...pickYears(base) };
   return {
-    taxYear: file.taxYear ?? base.taxYear,
+    ...years,
     ...(file.place ? { place: file.place } : {}),
+    ...((file.notOffered ?? base.notOffered)
+      ? { notOffered: file.notOffered ?? base.notOffered }
+      : {}),
     people: file.people ?? base.people,
     notSupported: file.notSupported ?? base.notSupported,
     questions: take(file.questions, base.questions, 'question'),
@@ -266,16 +284,162 @@ function cantonLists(file: QuestionnaireFile): Record<string, Text> | undefined 
   return { '{cantons}': text('and'), '{cantonsOr}': text('or') };
 }
 
+/** `taxYear`, or `taxYears`, of a raw file: what it says about the years it serves. */
+function pickYears(file: Entry): { taxYear?: unknown; taxYears?: unknown } {
+  return {
+    ...(file.taxYear !== undefined ? { taxYear: file.taxYear } : {}),
+    ...(file.taxYears !== undefined ? { taxYears: file.taxYears } : {}),
+  };
+}
+
+export class QuestionnaireYearError extends Error {}
+
 /**
- * Validates a questionnaire file, names the cantons Taxpresso covers where a text says
- * {cantons} or {cantonsOr}, and applies French typography to every French text. `shared` is the
- * questionnaire every canton shares (data/ch/<year>/questions.yaml), when the file takes from it.
+ * The tax years a questionnaire file serves (`taxYears: [2025, 2026]`, or its one `taxYear`),
+ * with the shared file's when a canton's file gives none. Newest last.
  */
-export function parseQuestionnaire(raw: unknown, shared?: unknown): QuestionnaireFile {
-  const file = QuestionnaireFile.parse(shared === undefined ? raw : resolveShared(raw, shared));
+export function servedYears(raw: unknown, shared?: unknown): number[] {
+  const own = raw && typeof raw === 'object' ? pickYears(raw as Entry) : {};
+  const from =
+    own.taxYear !== undefined || own.taxYears !== undefined
+      ? own
+      : shared && typeof shared === 'object'
+        ? pickYears(shared as Entry)
+        : {};
+  const list = Array.isArray(from.taxYears) ? from.taxYears : [from.taxYear];
+  return list.filter((y): y is number => Number.isInteger(y)).sort((a, b) => a - b);
+}
+
+/** The manifest ids a source names ("ge-2025-guide-declaration-pp p. 8"), by their tax year. */
+const ID_YEAR = /\b[a-z]{2,9}-(\d{4})-[a-z0-9]/g;
+
+/** The tax year of a citation's document; undefined for one without a year (a law, a web page). */
+function citedYear(c: unknown): number | undefined {
+  if (typeof c === 'string') {
+    const years = [...c.matchAll(ID_YEAR)].map((m) => Number(m[1]));
+    return years.length ? Math.max(...years) : undefined;
+  }
+  if (c && typeof c === 'object' && typeof (c as Entry).year === 'number') {
+    return (c as Entry).year as number;
+  }
+  return undefined;
+}
+
+/**
+ * For tax year `year`, the citation that fits among those given (one, or a list): the one whose
+ * document is of the latest year up to `year` (the year's own, or the latest published before it);
+ * one without a year (a law, a web page) when no dated one fits. None fits: undefined, never a
+ * document of a later year. A learnMore's `year` is only for this choice and is dropped.
+ */
+export function citationFor(given: unknown, year: number): unknown {
+  const list = Array.isArray(given) ? given : [given];
+  let best: { c: unknown; y: number } | undefined;
+  let undated: unknown;
+  for (const c of list) {
+    const y = citedYear(c);
+    if (y === undefined) undated ??= c;
+    else if (y <= year && (!best || y > best.y)) best = { c, y };
+  }
+  const chosen = best?.c ?? undated;
+  if (chosen && typeof chosen === 'object') {
+    const rest: Entry = { ...(chosen as Entry) };
+    delete rest.year;
+    return rest;
+  }
+  return chosen;
+}
+
+/**
+ * The questions and documents of a file with the citations of one tax year, and the help or
+ * explanation of that year where a text holds for some years only (a list, each with its `year`).
+ */
+function citationsOf(file: Entry, year: number): Entry {
+  const each = (list: unknown) =>
+    Array.isArray(list)
+      ? list.map((item: Entry) => {
+          if (!item || typeof item !== 'object') return item;
+          const out: Entry = { ...item };
+          for (const field of ['learnMore', 'source', 'help', 'explain']) {
+            if (!(field in out)) continue;
+            const c = citationFor(out[field], year);
+            if (c === undefined) delete out[field];
+            else out[field] = c;
+          }
+          return out;
+        })
+      : list;
+  return { ...file, questions: each(file.questions), requirements: each(file.requirements) };
+}
+
+/** The canton question: its options for cantons not offered this year say so (not supported). */
+function markNotOffered(file: QuestionnaireFile, offered: readonly string[]): void {
+  const q = file.questions.find((x) => x.key === 'profile.canton');
+  const template = file.notOffered;
+  if (!q?.options || !template) return;
+  for (const o of q.options) {
+    if (o.value === 'other' || o.notSupported || offered.includes(o.value)) continue;
+    const name = o.chip ?? o.label;
+    const fill = (lang: 'en' | 'fr' | 'de' | 'it') =>
+      (lang === 'de' || lang === 'it' ? (template[lang] ?? template.en) : template[lang])
+        .replaceAll(
+          '{canton}',
+          lang === 'de' || lang === 'it' ? (name[lang] ?? name.en) : name[lang],
+        )
+        .replaceAll('{year}', String(file.taxYear));
+    o.notSupported = {
+      en: fill('en'),
+      fr: fill('fr'),
+      ...(template.de ? { de: fill('de') } : {}),
+      ...(template.it ? { it: fill('it') } : {}),
+    };
+  }
+}
+
+export interface QuestionnaireOptions {
+  /** The tax year to read the file for; default its latest. */
+  taxYear?: number;
+  /**
+   * The cantons Taxpresso prepares for that year (the canton question's values): the others say
+   * they are not available for the year. Default: every option the file offers.
+   */
+  offered?: readonly string[];
+}
+
+/**
+ * Validates a questionnaire file for one tax year: the citations of that year (citationFor), the
+ * year where a text says {year} ({prevYear}, {nextYear}), the cantons Taxpresso covers where a text
+ * says {cantons} or {cantonsOr}, and French typography in every French text. `shared` is the
+ * questionnaire every canton shares (data/ch/<year>/questions.yaml), when the file takes from it.
+ * A year the file doesn't serve fails (QuestionnaireYearError).
+ */
+export function parseQuestionnaire(
+  raw: unknown,
+  shared?: unknown,
+  options: QuestionnaireOptions = {},
+): QuestionnaireFile {
+  const years = servedYears(raw, shared);
+  const year = options.taxYear ?? years.at(-1);
+  if (year === undefined || !years.includes(year)) {
+    throw new QuestionnaireYearError(
+      `This questionnaire is for ${years.join(' and ') || 'no year'}, not ${year ?? 'no year'}.`,
+    );
+  }
+  const resolved = (shared === undefined ? raw : resolveShared(raw, shared)) as Entry;
+  const rest = citationsOf(resolved, year);
+  delete rest.taxYears;
+  const file = QuestionnaireFile.parse({ ...rest, taxYear: year });
+  if (options.offered) markNotOffered(file, options.offered);
   const lists = cantonLists(file);
+  const yearWords: Record<string, string> = {
+    '{year}': String(year),
+    '{prevYear}': String(year - 1),
+    '{nextYear}': String(year + 1),
+  };
   const fill = (s: string, lang: 'en' | 'fr' | 'de' | 'it') =>
-    lists ? s.replace(/\{cantons(Or)?\}/g, (m) => lists[m]?.[lang] ?? m) : s;
+    (lists ? s.replace(/\{cantons(Or)?\}/g, (m) => lists[m]?.[lang] ?? m) : s).replace(
+      /\{(year|prevYear|nextYear)\}/g,
+      (m) => yearWords[m]!,
+    );
   const fix = (v: unknown): void => {
     if (Array.isArray(v)) return v.forEach(fix);
     if (v && typeof v === 'object') {

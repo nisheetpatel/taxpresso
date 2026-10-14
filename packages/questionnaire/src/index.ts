@@ -16,22 +16,45 @@ import ti2026 from '../../../data/ti/2026/questionnaire.yaml';
 import vd2026 from '../../../data/vd/2026/questionnaire.yaml';
 import zg2026 from '../../../data/zg/2026/questionnaire.yaml';
 import zh2026 from '../../../data/zh/2026/questionnaire.yaml';
-import { parseQuestionnaire, type QuestionnaireFile } from './schema.js';
+import { parseQuestionnaire, servedYears, type QuestionnaireFile } from './schema.js';
 
 export * from './engine.js';
 export * from './schema.js';
 
 /**
- * The questions every canton asks, tax year 2026, validated: what Taxpresso asks before it knows
- * the canton, starting with the canton itself.
+ * The questions every canton asks, validated for one tax year: what Taxpresso asks before it knows
+ * the canton, starting with the canton itself. `offered`: the cantons Taxpresso prepares for that
+ * year; the canton question says the others aren't available for it.
  */
-export function sharedQuestionnaire2026(): QuestionnaireFile {
-  return parseQuestionnaire(ch2026);
+export function sharedQuestionnaire(
+  taxYear: number,
+  offered?: readonly string[],
+): QuestionnaireFile {
+  return parseQuestionnaire(ch2026, undefined, { taxYear, ...(offered ? { offered } : {}) });
 }
+
+/** The tax years the shared questions serve (data/ch/2026/questions.yaml, taxYears). */
+export const SHARED_QUESTIONNAIRE_YEARS: readonly number[] = servedYears(ch2026);
+
+/** The questions every canton asks, tax year 2026, validated. */
+export function sharedQuestionnaire2026(): QuestionnaireFile {
+  return sharedQuestionnaire(2026);
+}
+
+/**
+ * The Geneva questionnaire for one tax year, validated: one file for every year it serves
+ * (data/ge/2026/questionnaire.yaml, taxYears), its texts naming the year and citing its documents.
+ */
+export function geQuestionnaire(taxYear: number): QuestionnaireFile {
+  return parseQuestionnaire(ge2026, ch2026, { taxYear });
+}
+
+/** The tax years the Geneva questionnaire serves. */
+export const GE_QUESTIONNAIRE_YEARS: readonly number[] = servedYears(ge2026, ch2026);
 
 /** The Geneva questionnaire for tax year 2026, validated. */
 export function geQuestionnaire2026(): QuestionnaireFile {
-  return parseQuestionnaire(ge2026, ch2026);
+  return geQuestionnaire(2026);
 }
 
 /** The Zurich questionnaire for tax year 2026, validated. */

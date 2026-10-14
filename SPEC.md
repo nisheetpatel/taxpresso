@@ -24,7 +24,9 @@ Three screens:
 
 Mockups: `docs/design/` (static HTML, open in a browser; README there says what is normative). Treat them as the visual reference, not pixel law. Tokens and status wording: section 11b.
 
-### Scope v1 (tax year 2026)
+### Scope v1 (tax years 2026 and 2025)
+
+Tax year 2026 is the default. Since 14 October 2026 (decided by the owner), Taxpresso also prepares tax year 2025 for Geneva: for someone who has not filed it yet, or who wants to check the 2025 return they filed and its assessment. The user chooses the year in the chat or in the dashboard; each year keeps its own answers, documents and checks (`docs/design/tax-years.md`). A canton is offered for a year only when its rules, form map and questions cover that year; 2025 is Geneva's only so far.
 
 In scope:
 - Geneva residents taxed ordinarily, single or married/registered partners filing jointly, with or without children
@@ -94,7 +96,7 @@ Claude Desktop (user's subscription)
 
 Stack decisions (confirm in spike S3):
 - TypeScript on Node, so the bundle runs on the Node runtime Claude Desktop provides for extensions. Avoid native modules (no per-platform builds): prefer WASM (`zxing-wasm` for PDF417/Code128, `pdfjs-dist` for text + rasterizing, `sql.js` only if we need SQL).
-- Storage v1: a user-visible folder, e.g. `~/Documents/Taxpresso/2026/` containing `documents/` (originals, named by sha256 prefix + original name), `ledger.json`, `decisions.json`, `filing/` (fill plans, official PDFs, receipt). Transparent beats clever: the user can see and back up their tax folder. Recommend OS disk encryption in onboarding. Optional passphrase encryption is v1.1.
+- Storage v1: a user-visible folder with one folder per tax year, e.g. `~/Documents/Taxpresso/2026/` and `~/Documents/Taxpresso/2025/`, and `open-year.json` (the year the user has open, their choice) next to them. Each year's folder contains `documents/` (originals, named by sha256 prefix + original name), `ledger.json`, `decisions.json`, `filing/` (fill plans, official PDFs, receipt). Transparent beats clever: the user can see and back up their tax folder. Recommend OS disk encryption in onboarding. Optional passphrase encryption is v1.1.
 - UI: Vite + React (or Preact), built to static files inside the bundle, served by the extension on `127.0.0.1:<random port>` with a per-session token in the URL. Live updates via SSE from the ledger. The same view components are exposed as MCP Apps `ui://` resources so they render inline where the host supports it; the localhost page is the fallback and must be fully functional on its own.
 - Claude and the UI are two views of one state. Anything done in the UI is visible to Claude via tools, and vice versa.
 
@@ -205,7 +207,7 @@ If nothing is found, use text heuristics (issuer names, titles like "Certificat 
 
 ## 6. Questionnaire
 
-Defined as data in `questionnaire/ge/<year>.yaml`: question id, text keys (i18n), answer type, conditions, effects (profile flags, requirements created). Max about 15 questions for a typical household; every question must change what we ask for or compute, otherwise delete it.
+Defined as data in `questionnaire/ge/<year>.yaml`: question id, text keys (i18n), answer type, conditions, effects (profile flags, requirements created). One file can serve several tax years: its texts say `{year}`, and each citation carries the year of the document it cites, so each year's questions name that year and cite its documents (`docs/design/tax-years.md`). Max about 15 questions for a typical household; every question must change what we ask for or compute, otherwise delete it.
 
 Core questions: household (single / married / partnership; separated during the year?), children and custody, commune at 31.12, moved during the year, employment (employers count, any source tax, permit type if taxed at source), pensions, 3a, pension buy-in, health insurance, childcare, commute and work-from-home pattern, donations, debts/loans, crypto, anything unusual (inheritance, sold assets, foreign income) which routes to "not supported" if needed.
 
@@ -266,7 +268,7 @@ Three groups (matching screen 2):
 
 A. Claim on this return: actual vs flat professional expenses, medical costs above threshold, childcare, donations, insurance premiums, debt interest, documented 3a and LPP buy-ins, withholding-tax recovery via the état des titres.
 
-B. Do before 31 December (planning for the current tax year): remaining 3a room, LPP buy-in capacity (from the pension certificate) with the 3-year lump-sum withdrawal caveat. This is useful from October to December and is the pre-season acquisition hook (phase 1.5).
+B. Do before 31 December (planning for the current tax year): remaining 3a room, LPP buy-in capacity (from the pension certificate) with the 3-year lump-sum withdrawal caveat. This is useful from October to December and is the pre-season acquisition hook (phase 1.5). For a tax year that is over (2025), these plans are the default year's: Taxpresso says so and offers one step back to it, in the chat and in the dashboard.
 
 C. Procedural: TOU for residents taxed at source. Simulate source tax withheld vs ordinary taxation. The request must reach the AFC by 31 March of the following year and cannot be withdrawn even if the result is worse, so show the simulation, the irreversibility and the deadline loudly, and require an explicit decision.
 
@@ -335,7 +337,8 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 
 | Tool | Purpose | RO |
 |---|---|---|
-| `get_status` | Tax year, household, progress, missing items, estimates, next step | yes |
+| `get_status` | Tax year (the open one, and the years offered), household, progress, missing items, estimates, next step | yes |
+| `open_tax_year` | Open the tax year the user wants to prepare or check (2026, or 2025 for Geneva); the dashboard's year switch does the same | no |
 | `open_dashboard` | Start/return the localhost UI URL | yes |
 | `next_questions` | Next unanswered questions (with i18n keys and FR text) | yes |
 | `answer_question` | Store an answer; returns new requirements | no |
@@ -486,7 +489,8 @@ taxpresso/
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
   data/ch/2026/         the questions every canton shares (the canton first), EN, FR, DE, IT
-  data/ge/2025/, data/ge/2026/   questionnaire yaml, keys, i18n
+  data/ge/2026/         Geneva's questionnaire for 2025 and 2026 (taxYears, {year}, citations by year);
+                        data/ge/2025/ and data/ge/2026/ also hold the source-tax tables
   data/zh/2026/         Zurich's questionnaire: the shared questions, its own (commune, church)
   data/be/2026/         Bern's questionnaire: the shared questions, its own (household, church, parish,
                         shared custody, parties, childcare and education per child)

@@ -1,8 +1,9 @@
-# The questions every canton asks, tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data,
-# not code: packages/questionnaire reads it. A canton's file (data/<canton>/2026/questionnaire.yaml)
-# takes a question or a document from here with `use: <id>`, in its own order, and may replace any of
-# its fields: its own explanation, its official page (learnMore), its form's terms. Every key and
-# value must exist in the canton's keys (packages/rules-ch keys/ for the shared ones; a test checks).
+# The questions every canton asks, tax years 2025 and 2026 (SPEC.md section 6; docs/design/cantons.md
+# and tax-years.md). Data, not code: packages/questionnaire reads it once per tax year. A canton's
+# file (data/<canton>/2026/questionnaire.yaml) takes a question or a document from here with
+# `use: <id>`, in its own order, and may replace any of its fields: its own explanation, its
+# official page (learnMore), its form's terms. Every key and value must exist in the canton's keys
+# (packages/rules-ch keys/ for the shared ones; a test checks).
 #
 # Before the canton is known, Taxpresso asks these questions only, starting with the canton. Their
 # official pages are the federal ones (ch-2026-ifd-instructions-personnes-physiques, Form. 2a 2026,
@@ -11,8 +12,23 @@
 # French: write plain spaces before ? ! : ; and the loader makes them non-breaking. German: informal
 # "du", Swiss spelling (ss), the official German term next to its gloss. Texts per person (p1, p2)
 # where the grammar differs; {n} is replaced by the number.
+#
+# One file for every year it serves (taxYears): {year} is the tax year being prepared ({prevYear} the
+# one before). A citation of one year's document carries `year:` (a source names it in its ids): for
+# a tax year, the latest document up to that year is cited, a law or a web page without a year for
+# any year, and none rather than a later year's. The federal instructions are 2026's (Form. 2a 2026);
+# the 2025 ones are not in the library (docs/sources/ch/NOTES.md: only in a ZIP), so a 2025 question
+# shows its canton's own guide, or no official page.
 
-taxYear: 2026
+taxYears: [2025, 2026]
+
+# A canton Taxpresso doesn't prepare for the year (its rules, form or questions don't cover it yet):
+# what the canton question says when the user chooses it (docs/design/tax-years.md).
+notOffered:
+  en: '{canton}: Taxpresso can’t prepare a {year} return there yet'
+  fr: '{canton} : Taxpresso ne peut pas encore y préparer une déclaration {year}'
+  de: '{canton}: Eine Steuererklärung {year} kann Taxpresso dort noch nicht vorbereiten'
+  it: '{canton}: Taxpresso non può ancora prepararvi una dichiarazione {year}'
 
 people:
   p1: { en: 'You', fr: 'Vous', de: 'Du', it: 'Tu' }
@@ -71,15 +87,15 @@ questions:
         de: 'Stimm für den nächsten Kanton ab'
         it: 'Vota il prossimo Cantone'
     text:
-      en: 'Where did you live on 31 December 2026?'
-      fr: 'Où habitiez-vous au 31 décembre 2026 ?'
-      de: 'Wo hast du am 31. Dezember 2026 gewohnt?'
-      it: 'Dove abitavi il 31 dicembre 2026?'
+      en: 'Where did you live on 31 December {year}?'
+      fr: 'Où habitiez-vous au 31 décembre {year} ?'
+      de: 'Wo hast du am 31. Dezember {year} gewohnt?'
+      it: 'Dove abitavi il 31 dicembre {year}?'
     help:
-      en: 'Moved from another canton during 2026? Choose the canton you lived in on 31 December: it taxes the whole year, as if you had lived there since January. Other cantons are coming: vote for yours.'
-      fr: 'Vous avez déménagé d’un autre canton en 2026 ? Choisissez celui où vous habitiez au 31 décembre : il vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. D’autres cantons arrivent : votez pour le vôtre.'
-      de: 'Du bist 2026 aus einem anderen Kanton umgezogen? Wähl den Kanton, in dem du am 31. Dezember gewohnt hast: Er besteuert das ganze Jahr, als hättest du seit Januar dort gewohnt. Weitere Kantone folgen: Stimm für deinen ab.'
-      it: 'Hai traslocato da un altro Cantone nel 2026? Scegli quello in cui abitavi il 31 dicembre: ti tassa per tutto l’anno, come se ci avessi abitato da gennaio. Altri Cantoni sono in arrivo: vota per il tuo.'
+      en: 'Moved from another canton during {year}? Choose the canton you lived in on 31 December: it taxes the whole year, as if you had lived there since January. Other cantons are coming: vote for yours.'
+      fr: 'Vous avez déménagé d’un autre canton en {year} ? Choisissez celui où vous habitiez au 31 décembre : il vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. D’autres cantons arrivent : votez pour le vôtre.'
+      de: 'Du bist {year} aus einem anderen Kanton umgezogen? Wähl den Kanton, in dem du am 31. Dezember gewohnt hast: Er besteuert das ganze Jahr, als hättest du seit Januar dort gewohnt. Weitere Kantone folgen: Stimm für deinen ab.'
+      it: 'Hai traslocato da un altro Cantone nel {year}? Scegli quello in cui abitavi il 31 dicembre: ti tassa per tutto l’anno, come se ci avessi abitato da gennaio. Altri Cantoni sono in arrivo: vota per il tuo.'
     options:
       - value: GE
         label:
@@ -206,6 +222,7 @@ questions:
       de: 'Deine Situation am 31. Dezember entscheidet, ob du allein oder als Paar eine gemeinsame Steuererklärung ausfüllst.'
       it: 'La tua situazione al 31 dicembre decide se dichiari individualmente o in coppia, con un’unica dichiarazione comune.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=1'
       label:
         en: 'Federal tax instructions 2026, p. 1: personal situation, in French'
@@ -213,10 +230,10 @@ questions:
         de: 'Wegleitung direkte Bundessteuer 2026, S. 1: persönliche Verhältnisse, auf Französisch'
         it: 'Istruzioni per l’imposta federale 2026, p. 1: situazione personale, in francese'
     text:
-      en: 'What was your civil status on 31 December 2026?'
-      fr: 'Quel était votre état civil au 31 décembre 2026 ?'
-      de: 'Was war dein Zivilstand am 31. Dezember 2026?'
-      it: 'Qual era il tuo stato civile al 31 dicembre 2026?'
+      en: 'What was your civil status on 31 December {year}?'
+      fr: 'Quel était votre état civil au 31 décembre {year} ?'
+      de: 'Was war dein Zivilstand am 31. Dezember {year}?'
+      it: 'Qual era il tuo stato civile al 31 dicembre {year}?'
     options:
       - {
           value: single,
@@ -260,6 +277,7 @@ questions:
       de: 'Zähl die Kinder, die bei dir leben oder für deren Unterhalt du aufkommst. Unsicher bei einem volljährigen Kind? Frag Claude.'
       it: 'Conta i figli che vivono con te o che mantieni. Hai un dubbio su un figlio maggiorenne? Chiedi a Claude.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=1'
       label:
         en: 'Federal tax instructions 2026, p. 1: children, in French'
@@ -267,10 +285,10 @@ questions:
         de: 'Wegleitung direkte Bundessteuer 2026, S. 1: Kinder, auf Französisch'
         it: 'Istruzioni per l’imposta federale 2026, p. 1: figli, in francese'
     text:
-      en: 'How many children did you support in 2026?'
-      fr: 'Combien d’enfants aviez-vous à charge en 2026 ?'
-      de: 'Für wie viele Kinder bist du 2026 aufgekommen?'
-      it: 'Quanti figli avevi a carico nel 2026?'
+      en: 'How many children did you support in {year}?'
+      fr: 'Combien d’enfants aviez-vous à charge en {year} ?'
+      de: 'Für wie viele Kinder bist du {year} aufgekommen?'
+      it: 'Quanti figli avevi a carico nel {year}?'
     chip:
       zero: { en: 'No children', fr: 'Pas d’enfants', de: 'Keine Kinder', it: 'Nessun figlio' }
       one: { en: '1 child', fr: '1 enfant', de: '1 Kind', it: '1 figlio' }
@@ -287,6 +305,7 @@ questions:
       de: 'Bei wem die Kinder hauptsächlich leben. Bei geteilter Obhut leben sie etwa die Hälfte der Zeit bei jedem Elternteil.'
       it: 'Con chi vivono soprattutto i figli. In custodia alternata vivono circa metà del tempo con ciascun genitore.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=1'
       label:
         en: 'Federal tax instructions 2026, p. 1: children, in French'
@@ -294,10 +313,10 @@ questions:
         de: 'Wegleitung direkte Bundessteuer 2026, S. 1: Kinder, auf Französisch'
         it: 'Istruzioni per l’imposta federale 2026, p. 1: figli, in francese'
     text:
-      en: 'Where did the children live in 2026?'
-      fr: 'Où vivaient les enfants en 2026 ?'
-      de: 'Wo haben die Kinder 2026 gelebt?'
-      it: 'Dove vivevano i figli nel 2026?'
+      en: 'Where did the children live in {year}?'
+      fr: 'Où vivaient les enfants en {year} ?'
+      de: 'Wo haben die Kinder {year} gelebt?'
+      it: 'Dove vivevano i figli nel {year}?'
     options:
       - value: with_household
         label:
@@ -355,10 +374,10 @@ questions:
         de: 'Kreisschreiben ESTV Nr. 30, S. 24: Elterntarif getrennt lebender Eltern, auf Französisch'
         it: 'Circolare federale n. 30, p. 24: la tariffa per i genitori che vivono separati'
     text:
-      en: 'In 2026, did you or the other parent pay child support for the children?'
-      fr: 'En 2026, vous ou l’autre parent avez-vous versé une contribution d’entretien pour les enfants ?'
-      de: 'Hast du oder hat der andere Elternteil 2026 Unterhaltsbeiträge für die Kinder bezahlt?'
-      it: 'Nel 2026 sono stati versati contributi di mantenimento per i figli, da te o dall’altro genitore?'
+      en: 'In {year}, did you or the other parent pay child support for the children?'
+      fr: 'En {year}, vous ou l’autre parent avez-vous versé une contribution d’entretien pour les enfants ?'
+      de: 'Hast du oder hat der andere Elternteil {year} Unterhaltsbeiträge für die Kinder bezahlt?'
+      it: 'Nel {year} sono stati versati contributi di mantenimento per i figli, da te o dall’altro genitore?'
     help:
       en: 'Child support (contribution d’entretien) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
       fr: 'La contribution d’entretien est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
@@ -431,6 +450,7 @@ questions:
       de: 'Was du bezahlt hast, damit jemand deine Kinder betreut, während du arbeitest: Kita, Hort, Tagesstruktur oder Nanny.'
       it: 'Quello che hai pagato perché qualcuno si occupi dei tuoi figli mentre lavori: asilo nido, doposcuola o tata.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=8'
       label:
         en: 'Federal tax instructions 2026, p. 8: childcare costs, in French'
@@ -438,10 +458,10 @@ questions:
         de: 'Wegleitung direkte Bundessteuer 2026, S. 8: Kinderbetreuungskosten, auf Französisch'
         it: 'Istruzioni per l’imposta federale 2026, p. 8: spese di custodia dei figli, in francese'
     text:
-      en: 'Did you pay for childcare in 2026?'
-      fr: 'Avez-vous payé des frais de garde en 2026 ?'
-      de: 'Hast du 2026 für Kinderbetreuung bezahlt?'
-      it: 'Nel 2026 hai pagato per la custodia dei figli?'
+      en: 'Did you pay for childcare in {year}?'
+      fr: 'Avez-vous payé des frais de garde en {year} ?'
+      de: 'Hast du {year} für Kinderbetreuung bezahlt?'
+      it: 'Nel {year} hai pagato per la custodia dei figli?'
     help:
       en: 'Crèche, day care, after-school care or a nanny.'
       fr: 'Crèche, garderie, parascolaire ou nourrice.'
@@ -481,6 +501,7 @@ questions:
       de: 'Taggelder: Geld von der Arbeitslosen-, Kranken- oder Unfallversicherung. Rente: eine regelmässige Zahlung der AHV, der IV oder einer Pensionskasse.'
       it: 'Indennità: i soldi versati dall’assicurazione disoccupazione, malattia o infortuni. Rendita: un versamento regolare dell’AVS, dell’AI o di una cassa pensione.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=3'
       label:
         en: 'Federal tax instructions 2026, p. 3: pensions and benefits, in French'
@@ -489,15 +510,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 3: rendite e indennità, in francese'
     text:
       p1:
-        en: 'What income did you have in 2026?'
-        fr: 'Quels revenus avez-vous eus en 2026 ?'
-        de: 'Welche Einkünfte hattest du 2026?'
-        it: 'Che redditi hai avuto nel 2026?'
+        en: 'What income did you have in {year}?'
+        fr: 'Quels revenus avez-vous eus en {year} ?'
+        de: 'Welche Einkünfte hattest du {year}?'
+        it: 'Che redditi hai avuto nel {year}?'
       p2:
-        en: 'What income did your spouse or partner have in 2026?'
-        fr: 'Quels revenus votre conjoint ou partenaire a-t-il eus en 2026 ?'
-        de: 'Welche Einkünfte hatte dein Partner oder deine Partnerin 2026?'
-        it: 'Che redditi ha avuto il tuo coniuge o partner nel 2026?'
+        en: 'What income did your spouse or partner have in {year}?'
+        fr: 'Quels revenus votre conjoint ou partenaire a-t-il eus en {year} ?'
+        de: 'Welche Einkünfte hatte dein Partner oder deine Partnerin {year}?'
+        it: 'Che redditi ha avuto il tuo coniuge o partner nel {year}?'
     help:
       en: 'Choose all that apply. Interest and dividends come later, with your bank documents.'
       fr: 'Choisissez tout ce qui s’applique. Les intérêts et dividendes viennent plus tard, avec vos documents bancaires.'
@@ -571,6 +592,7 @@ questions:
       de: 'Zähl alle Arbeitgeber des Jahres, auch für kurze Zeit. Jeder gibt dir einen Lohnausweis.'
       it: 'Conta tutti i datori di lavoro per cui hai lavorato durante l’anno, anche per poco tempo. Ognuno ti dà un certificato di salario.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=1'
       label:
         en: 'Federal tax instructions 2026, p. 1: employment income, in French'
@@ -579,15 +601,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 1: reddito da attività dipendente, in francese'
     text:
       p1:
-        en: 'How many employers paid you a salary in 2026?'
-        fr: 'Combien d’employeurs vous ont versé un salaire en 2026 ?'
-        de: 'Wie viele Arbeitgeber haben dir 2026 einen Lohn bezahlt?'
-        it: 'Quanti datori di lavoro ti hanno versato un salario nel 2026?'
+        en: 'How many employers paid you a salary in {year}?'
+        fr: 'Combien d’employeurs vous ont versé un salaire en {year} ?'
+        de: 'Wie viele Arbeitgeber haben dir {year} einen Lohn bezahlt?'
+        it: 'Quanti datori di lavoro ti hanno versato un salario nel {year}?'
       p2:
-        en: 'How many employers paid your spouse or partner a salary in 2026?'
-        fr: 'Combien d’employeurs ont versé un salaire à votre conjoint ou partenaire en 2026 ?'
-        de: 'Wie viele Arbeitgeber haben deinem Partner oder deiner Partnerin 2026 einen Lohn bezahlt?'
-        it: 'Quanti datori di lavoro hanno versato un salario al tuo coniuge o partner nel 2026?'
+        en: 'How many employers paid your spouse or partner a salary in {year}?'
+        fr: 'Combien d’employeurs ont versé un salaire à votre conjoint ou partenaire en {year} ?'
+        de: 'Wie viele Arbeitgeber haben deinem Partner oder deiner Partnerin {year} einen Lohn bezahlt?'
+        it: 'Quanti datori di lavoro hanno versato un salario al tuo coniuge o partner nel {year}?'
     help:
       en: 'Each one gives you a salary certificate (certificat de salaire).'
       fr: 'Chacun vous remet un certificat de salaire.'
@@ -623,15 +645,15 @@ questions:
         it: 'Imposta alla fonte sul reddito da attività lucrativa: domande e risposte federali, in francese'
     text:
       p1:
-        en: 'Was your salary taxed at source in 2026?'
-        fr: 'Votre salaire était-il imposé à la source en 2026 ?'
-        de: 'Wurde dein Lohn 2026 an der Quelle besteuert?'
-        it: 'Nel 2026 il tuo salario era soggetto all’imposta alla fonte?'
+        en: 'Was your salary taxed at source in {year}?'
+        fr: 'Votre salaire était-il imposé à la source en {year} ?'
+        de: 'Wurde dein Lohn {year} an der Quelle besteuert?'
+        it: 'Nel {year} il tuo salario era soggetto all’imposta alla fonte?'
       p2:
-        en: 'Was your spouse or partner’s salary taxed at source in 2026?'
-        fr: 'Le salaire de votre conjoint ou partenaire était-il imposé à la source en 2026 ?'
-        de: 'Wurde der Lohn deines Partners oder deiner Partnerin 2026 an der Quelle besteuert?'
-        it: 'Nel 2026 il salario del tuo coniuge o partner era soggetto all’imposta alla fonte?'
+        en: 'Was your spouse or partner’s salary taxed at source in {year}?'
+        fr: 'Le salaire de votre conjoint ou partenaire était-il imposé à la source en {year} ?'
+        de: 'Wurde der Lohn deines Partners oder deiner Partnerin {year} an der Quelle besteuert?'
+        it: 'Nel {year} il salario del tuo coniuge o partner era soggetto all’imposta alla fonte?'
     help:
       en: 'If so, it shows on the salary certificate.'
       fr: 'Si c’est le cas, cela figure sur le certificat de salaire.'
@@ -658,6 +680,7 @@ questions:
       de: 'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einem jährlichen Höchstbetrag.'
       it: 'Il pilastro 3a (3e pilier A) è un conto previdenziale in una banca o un’assicurazione. Quello che ci versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=7'
       label:
         en: 'Federal tax instructions 2026, p. 7: pillar 3a, in French'
@@ -666,15 +689,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 7: pilastro 3a, in francese'
     text:
       p1:
-        en: 'Did you pay into a pillar 3a account in 2026?'
-        fr: 'Avez-vous versé des cotisations au 3e pilier A en 2026 ?'
-        de: 'Hast du 2026 in die Säule 3a einbezahlt?'
-        it: 'Nel 2026 hai versato contributi nel pilastro 3a?'
+        en: 'Did you pay into a pillar 3a account in {year}?'
+        fr: 'Avez-vous versé des cotisations au 3e pilier A en {year} ?'
+        de: 'Hast du {year} in die Säule 3a einbezahlt?'
+        it: 'Nel {year} hai versato contributi nel pilastro 3a?'
       p2:
-        en: 'Did your spouse or partner pay into a pillar 3a account in 2026?'
-        fr: 'Votre conjoint ou partenaire a-t-il versé des cotisations au 3e pilier A en 2026 ?'
-        de: 'Hat dein Partner oder deine Partnerin 2026 in die Säule 3a einbezahlt?'
-        it: 'Nel 2026 il tuo coniuge o partner ha versato contributi nel pilastro 3a?'
+        en: 'Did your spouse or partner pay into a pillar 3a account in {year}?'
+        fr: 'Votre conjoint ou partenaire a-t-il versé des cotisations au 3e pilier A en {year} ?'
+        de: 'Hat dein Partner oder deine Partnerin {year} in die Säule 3a einbezahlt?'
+        it: 'Nel {year} il tuo coniuge o partner ha versato contributi nel pilastro 3a?'
     help:
       en: 'Your bank or insurer sends an attestation.'
       fr: 'Votre banque ou votre assurance vous envoie une attestation.'
@@ -700,6 +723,7 @@ questions:
       de: 'Deine Pensionskasse (2. Säule, BVG) zieht jeden Monat Beiträge vom Lohn ab. Ein Einkauf ist eine zusätzliche Zahlung, die du freiwillig obendrauf leistest. Die meisten Leute machen nie einen.'
       it: 'La tua cassa pensione (2° pilastro, LPP) trattiene ogni mese dei contributi dal tuo salario. Un riscatto (rachat) è un versamento in più che hai scelto di fare. La maggior parte delle persone non ne fa mai.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=8'
       label:
         en: 'Federal tax instructions 2026, p. 8: other deductions, in French'
@@ -708,15 +732,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 8: altre deduzioni, in francese'
     text:
       p1:
-        en: 'Did you buy into your pension fund (2nd pillar) in 2026?'
-        fr: 'Avez-vous fait un rachat dans votre caisse de pension (2e pilier) en 2026 ?'
-        de: 'Hast du dich 2026 in deine Pensionskasse (2. Säule) eingekauft?'
-        it: 'Nel 2026 hai fatto un riscatto nella tua cassa pensione (2° pilastro)?'
+        en: 'Did you buy into your pension fund (2nd pillar) in {year}?'
+        fr: 'Avez-vous fait un rachat dans votre caisse de pension (2e pilier) en {year} ?'
+        de: 'Hast du dich {year} in deine Pensionskasse (2. Säule) eingekauft?'
+        it: 'Nel {year} hai fatto un riscatto nella tua cassa pensione (2° pilastro)?'
       p2:
-        en: 'Did your spouse or partner buy into their pension fund (2nd pillar) in 2026?'
-        fr: 'Votre conjoint ou partenaire a-t-il fait un rachat dans sa caisse de pension (2e pilier) en 2026 ?'
-        de: 'Hat sich dein Partner oder deine Partnerin 2026 in die Pensionskasse (2. Säule) eingekauft?'
-        it: 'Nel 2026 il tuo coniuge o partner ha fatto un riscatto nella sua cassa pensione (2° pilastro)?'
+        en: 'Did your spouse or partner buy into their pension fund (2nd pillar) in {year}?'
+        fr: 'Votre conjoint ou partenaire a-t-il fait un rachat dans sa caisse de pension (2e pilier) en {year} ?'
+        de: 'Hat sich dein Partner oder deine Partnerin {year} in die Pensionskasse (2. Säule) eingekauft?'
+        it: 'Nel {year} il tuo coniuge o partner ha fatto un riscatto nella sua cassa pensione (2° pilastro)?'
     help:
       en: 'A voluntary payment on top of the usual contributions.'
       fr: 'Un versement volontaire en plus des cotisations habituelles.'
@@ -743,6 +767,7 @@ questions:
       de: 'Der Arbeitsweg kann als Fahrkosten abgezogen werden. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
       it: 'Il tragitto casa-lavoro si può dedurre come spese di trasporto (frais de déplacement). Il mezzo che usi decide come vengono calcolate.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
         en: 'Federal tax instructions 2026, p. 6: travel costs'
@@ -751,15 +776,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 6: spese di trasporto'
     text:
       p1:
-        en: 'How did you mostly get to work in 2026?'
-        fr: 'Comment vous rendiez-vous surtout au travail en 2026 ?'
-        de: 'Wie bist du 2026 meistens zur Arbeit gekommen?'
-        it: 'Come andavi di solito al lavoro nel 2026?'
+        en: 'How did you mostly get to work in {year}?'
+        fr: 'Comment vous rendiez-vous surtout au travail en {year} ?'
+        de: 'Wie bist du {year} meistens zur Arbeit gekommen?'
+        it: 'Come andavi di solito al lavoro nel {year}?'
       p2:
-        en: 'How did your spouse or partner mostly get to work in 2026?'
-        fr: 'Comment votre conjoint ou partenaire se rendait-il surtout au travail en 2026 ?'
-        de: 'Wie ist dein Partner oder deine Partnerin 2026 meistens zur Arbeit gekommen?'
-        it: 'Come andava di solito al lavoro il tuo coniuge o partner nel 2026?'
+        en: 'How did your spouse or partner mostly get to work in {year}?'
+        fr: 'Comment votre conjoint ou partenaire se rendait-il surtout au travail en {year} ?'
+        de: 'Wie ist dein Partner oder deine Partnerin {year} meistens zur Arbeit gekommen?'
+        it: 'Come andava di solito al lavoro il tuo coniuge o partner nel {year}?'
     help:
       en: 'Choose how you went on most work days.'
       fr: 'Choisissez comment vous y alliez la plupart des jours de travail.'
@@ -829,6 +854,7 @@ questions:
       de: 'Du ziehst ab, was du für den Arbeitsweg tatsächlich bezahlt hast, bis zu einem jährlichen Höchstbetrag.'
       it: 'Deduci quello che hai effettivamente pagato per andare al lavoro, fino a un limite annuo.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
         en: 'Federal tax instructions 2026, p. 6: travel costs'
@@ -837,15 +863,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 6: spese di trasporto'
     text:
       p1:
-        en: 'How much did you pay in 2026 for public transport to get to work?'
-        fr: 'Combien avez-vous payé en 2026 de transports publics pour aller au travail ?'
-        de: 'Wie viel hast du 2026 für den öffentlichen Verkehr zur Arbeit bezahlt?'
-        it: 'Quanto hai speso nel 2026 in trasporti pubblici per andare al lavoro?'
+        en: 'How much did you pay in {year} for public transport to get to work?'
+        fr: 'Combien avez-vous payé en {year} de transports publics pour aller au travail ?'
+        de: 'Wie viel hast du {year} für den öffentlichen Verkehr zur Arbeit bezahlt?'
+        it: 'Quanto hai speso nel {year} in trasporti pubblici per andare al lavoro?'
       p2:
-        en: 'How much did your spouse or partner pay in 2026 for public transport to get to work?'
-        fr: 'Combien votre conjoint ou partenaire a-t-il payé en 2026 de transports publics pour aller au travail ?'
-        de: 'Wie viel hat dein Partner oder deine Partnerin 2026 für den öffentlichen Verkehr zur Arbeit bezahlt?'
-        it: 'Quanto ha speso il tuo coniuge o partner nel 2026 in trasporti pubblici per andare al lavoro?'
+        en: 'How much did your spouse or partner pay in {year} for public transport to get to work?'
+        fr: 'Combien votre conjoint ou partenaire a-t-il payé en {year} de transports publics pour aller au travail ?'
+        de: 'Wie viel hat dein Partner oder deine Partnerin {year} für den öffentlichen Verkehr zur Arbeit bezahlt?'
+        it: 'Quanto ha speso il tuo coniuge o partner nel {year} in trasporti pubblici per andare al lavoro?'
     help:
       en: 'Your yearly pass, or your monthly passes and tickets added up, in CHF. Leave out what your employer paid back.'
       fr: 'Votre abonnement annuel, ou vos abonnements mensuels et billets additionnés, en CHF. Sans ce que votre employeur vous a remboursé.'
@@ -864,6 +890,7 @@ questions:
       de: 'Bei der Bundessteuer zieht man als Autofahrerin oder Autofahrer ab, was der öffentliche Verkehr gekostet hätte. Nur wenn du ihn nicht nutzen kannst (keine Linie in der Nähe, eine Behinderung, Arbeitszeiten ohne Verbindung), zählen die Kilometer.'
       it: 'Per l’imposta federale, chi va al lavoro con un veicolo deduce quanto sarebbero costati i trasporti pubblici. I chilometri contano solo se non puoi usarli (nessuna linea vicina, una disabilità, orari di lavoro senza collegamenti).'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
         en: 'Federal tax instructions 2026, p. 6: travel costs'
@@ -919,6 +946,7 @@ questions:
       de: 'Diesen Preis darfst du bei der Bundessteuer für die Fahrt zur Arbeit abziehen, bis zu einem jährlichen Höchstbetrag.'
       it: 'Per l’imposta federale puoi dedurre questo prezzo per il tragitto in veicolo, fino a un limite annuo.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
         en: 'Federal tax instructions 2026, p. 6: travel costs'
@@ -927,15 +955,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 6: spese di trasporto'
     text:
       p1:
-        en: 'What would a public transport pass for that trip have cost for 2026?'
-        fr: 'Combien aurait coûté un abonnement de transports publics pour ce trajet en 2026 ?'
-        de: 'Was hätte ein Abo des öffentlichen Verkehrs für diesen Weg 2026 gekostet?'
-        it: 'Quanto sarebbe costato nel 2026 un abbonamento dei trasporti pubblici per quel tragitto?'
+        en: 'What would a public transport pass for that trip have cost for {year}?'
+        fr: 'Combien aurait coûté un abonnement de transports publics pour ce trajet en {year} ?'
+        de: 'Was hätte ein Abo des öffentlichen Verkehrs für diesen Weg {year} gekostet?'
+        it: 'Quanto sarebbe costato nel {year} un abbonamento dei trasporti pubblici per quel tragitto?'
       p2:
-        en: 'What would a public transport pass for your spouse or partner’s trip have cost for 2026?'
-        fr: 'Combien aurait coûté un abonnement de transports publics pour le trajet de votre conjoint ou partenaire en 2026 ?'
-        de: 'Was hätte ein Abo des öffentlichen Verkehrs für den Weg deines Partners oder deiner Partnerin 2026 gekostet?'
-        it: 'Quanto sarebbe costato nel 2026 un abbonamento dei trasporti pubblici per il tragitto del tuo coniuge o partner?'
+        en: 'What would a public transport pass for your spouse or partner’s trip have cost for {year}?'
+        fr: 'Combien aurait coûté un abonnement de transports publics pour le trajet de votre conjoint ou partenaire en {year} ?'
+        de: 'Was hätte ein Abo des öffentlichen Verkehrs für den Weg deines Partners oder deiner Partnerin {year} gekostet?'
+        it: 'Quanto sarebbe costato nel {year} un abbonamento dei trasporti pubblici per il tragitto del tuo coniuge o partner?'
     help:
       en: 'The cheapest pass covering the trip, for the months worked, in CHF.'
       fr: 'L’abonnement le moins cher couvrant le trajet, pour les mois travaillés, en CHF.'
@@ -956,6 +984,7 @@ questions:
       de: 'Ohne nutzbaren öffentlichen Verkehr zählt die Bundessteuer einen festen Betrag pro Kilometer, einmal hin und zurück pro Tag, bis zu einem jährlichen Höchstbetrag.'
       it: 'Senza trasporti pubblici che puoi usare, l’imposta federale conta un importo fisso per chilometro, un’andata e ritorno al giorno, fino a un limite annuo.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
         en: 'Federal tax instructions 2026, p. 6: travel costs'
@@ -993,6 +1022,7 @@ questions:
       de: 'Die Kilometer zählen für jeden Tag, an dem du zur Arbeit gefahren bist, einmal hin und zurück.'
       it: 'I chilometri contano per ogni giorno in cui hai fatto il tragitto in veicolo, un’andata e ritorno.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
         en: 'Federal tax instructions 2026, p. 6: travel costs'
@@ -1001,15 +1031,15 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 6: spese di trasporto'
     text:
       p1:
-        en: 'On how many days did you drive to work in 2026?'
-        fr: 'Combien de jours avez-vous pris votre véhicule pour aller au travail en 2026 ?'
-        de: 'An wie vielen Tagen bist du 2026 mit dem Fahrzeug zur Arbeit gefahren?'
-        it: 'In quanti giorni del 2026 hai usato il veicolo per andare al lavoro?'
+        en: 'On how many days did you drive to work in {year}?'
+        fr: 'Combien de jours avez-vous pris votre véhicule pour aller au travail en {year} ?'
+        de: 'An wie vielen Tagen bist du {year} mit dem Fahrzeug zur Arbeit gefahren?'
+        it: 'In quanti giorni del {year} hai usato il veicolo per andare al lavoro?'
       p2:
-        en: 'On how many days did your spouse or partner drive to work in 2026?'
-        fr: 'Combien de jours votre conjoint ou partenaire a-t-il pris son véhicule pour aller au travail en 2026 ?'
-        de: 'An wie vielen Tagen ist dein Partner oder deine Partnerin 2026 mit dem Fahrzeug zur Arbeit gefahren?'
-        it: 'In quanti giorni del 2026 il tuo coniuge o partner ha usato il veicolo per andare al lavoro?'
+        en: 'On how many days did your spouse or partner drive to work in {year}?'
+        fr: 'Combien de jours votre conjoint ou partenaire a-t-il pris son véhicule pour aller au travail en {year} ?'
+        de: 'An wie vielen Tagen ist dein Partner oder deine Partnerin {year} mit dem Fahrzeug zur Arbeit gefahren?'
+        it: 'In quanti giorni del {year} il tuo coniuge o partner ha usato il veicolo per andare al lavoro?'
     help:
       en: 'Leave out holidays, sick days and days worked from home.'
       fr: 'Sans les vacances, les jours de maladie et les jours de télétravail.'
@@ -1036,6 +1066,7 @@ questions:
       de: 'Auswärts essen wegen der Arbeit kostet mehr als zu Hause. Es zählt ein fester Betrag pro Tag, bis zu einem jährlichen Höchstbetrag, die Hälfte davon, wenn dein Arbeitgeber einen Teil deiner Mahlzeiten bezahlt (Feld G des Lohnausweises).'
       it: 'Pranzare fuori casa per lavoro costa più che a casa. Conta un importo fisso al giorno, fino a un limite annuo, la metà se il tuo datore di lavoro paga una parte dei tuoi pasti (casella G del certificato di salario).'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
       label:
         en: 'Federal tax instructions 2026, p. 6: meals, in French'
@@ -1044,16 +1075,18 @@ questions:
         it: 'Istruzioni per l’imposta federale 2026, p. 6: pasti, in francese'
     text:
       p1:
-        en: 'On how many work days in 2026 did you have lunch away from home?'
-        fr: 'Combien de jours de travail en 2026 avez-vous pris votre repas de midi hors de chez vous ?'
-        de: 'An wie vielen Arbeitstagen 2026 hast du auswärts zu Mittag gegessen?'
-        it: 'In quanti giorni di lavoro del 2026 hai pranzato fuori casa?'
+        en: 'On how many work days in {year} did you have lunch away from home?'
+        fr: 'Combien de jours de travail en {year} avez-vous pris votre repas de midi hors de chez vous ?'
+        de: 'An wie vielen Arbeitstagen {year} hast du auswärts zu Mittag gegessen?'
+        it: 'In quanti giorni di lavoro del {year} hai pranzato fuori casa?'
       p2:
-        en: 'On how many work days in 2026 did your spouse or partner have lunch away from home?'
-        fr: 'Combien de jours de travail en 2026 votre conjoint ou partenaire a-t-il pris son repas de midi hors de chez lui ?'
-        de: 'An wie vielen Arbeitstagen 2026 hat dein Partner oder deine Partnerin auswärts zu Mittag gegessen?'
-        it: 'In quanti giorni di lavoro del 2026 il tuo coniuge o partner ha pranzato fuori casa?'
+        en: 'On how many work days in {year} did your spouse or partner have lunch away from home?'
+        fr: 'Combien de jours de travail en {year} votre conjoint ou partenaire a-t-il pris son repas de midi hors de chez lui ?'
+        de: 'An wie vielen Arbeitstagen {year} hat dein Partner oder deine Partnerin auswärts zu Mittag gegessen?'
+        it: 'In quanti giorni di lavoro del {year} il tuo coniuge o partner ha pranzato fuori casa?'
+    # The 10 francs: ch-2026-ifd-instructions-personnes-physiques p. 6, so for 2026 only.
     help:
+      year: 2026
       en: 'Count the days your lunch cost you more than 10 francs; 0 if you usually ate at home.'
       fr: 'Comptez les jours où votre repas vous a coûté plus de 10 francs ; 0 si vous mangiez en général à la maison.'
       de: 'Zähl die Tage, an denen dich das Mittagessen mehr als 10 Franken gekostet hat; 0, wenn du meistens zu Hause gegessen hast.'
@@ -1071,6 +1104,7 @@ questions:
       de: 'Alle Banken, bei denen du am 31. Dezember ein Konto, Ersparnisse oder Anlagen hattest, auch die Konten deiner Kinder.'
       it: 'Tutte le banche in cui avevi un conto, risparmi o investimenti al 31 dicembre, compresi i conti dei tuoi figli.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=3'
       label:
         en: 'Federal tax instructions 2026, p. 3: securities and accounts, in French'
@@ -1078,10 +1112,10 @@ questions:
         de: 'Wegleitung direkte Bundessteuer 2026, S. 3: Wertschriften und Guthaben, auf Französisch'
         it: 'Istruzioni per l’imposta federale 2026, p. 3: titoli e conti, in francese'
     text:
-      en: 'With how many banks did you have accounts or securities on 31 December 2026?'
-      fr: 'Dans combien de banques aviez-vous des comptes ou des titres au 31 décembre 2026 ?'
-      de: 'Bei wie vielen Banken hattest du am 31. Dezember 2026 Konten oder Wertschriften?'
-      it: 'In quante banche avevi conti o titoli al 31 dicembre 2026?'
+      en: 'With how many banks did you have accounts or securities on 31 December {year}?'
+      fr: 'Dans combien de banques aviez-vous des comptes ou des titres au 31 décembre {year} ?'
+      de: 'Bei wie vielen Banken hattest du am 31. Dezember {year} Konten oder Wertschriften?'
+      it: 'In quante banche avevi conti o titoli al 31 dicembre {year}?'
     help:
       en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers (Interactive Brokers, DEGIRO). If a bank offers an e-tax statement, ask for it: it has everything in one document.'
       fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers (Interactive Brokers, DEGIRO). Si une banque propose un relevé fiscal électronique, demandez-le : il contient tout en un seul document.'
@@ -1108,10 +1142,10 @@ questions:
         de: 'Kryptowährungen: Arbeitspapier der ESTV, auf Französisch'
         it: 'Criptovalute: il documento di lavoro dell’Amministrazione federale delle contribuzioni, in francese'
     text:
-      en: 'Did you hold cryptocurrencies on 31 December 2026?'
-      fr: 'Déteniez-vous des crypto-monnaies au 31 décembre 2026 ?'
-      de: 'Hattest du am 31. Dezember 2026 Kryptowährungen?'
-      it: 'Avevi criptovalute al 31 dicembre 2026?'
+      en: 'Did you hold cryptocurrencies on 31 December {year}?'
+      fr: 'Déteniez-vous des crypto-monnaies au 31 décembre {year} ?'
+      de: 'Hattest du am 31. Dezember {year} Kryptowährungen?'
+      it: 'Avevi criptovalute al 31 dicembre {year}?'
     chip: { en: 'Crypto', fr: 'Crypto', de: 'Krypto', it: 'Cripto' }
 
   # ch-2026-ifd-instructions-personnes-physiques p. 7 and 9 (interest, alimony, medical costs, gifts)
@@ -1124,6 +1158,7 @@ questions:
       de: 'Jede dieser Ausgaben kann deine Steuer senken, wenn du den Beleg aufbewahrst.'
       it: 'Ognuna di queste spese può ridurre la tua imposta, se ne conservi la prova.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=9'
       label:
         en: 'Federal tax instructions 2026, p. 9: medical costs and donations, in French'
@@ -1131,10 +1166,10 @@ questions:
         de: 'Wegleitung direkte Bundessteuer 2026, S. 9: Krankheitskosten und Zuwendungen, auf Französisch'
         it: 'Istruzioni per l’imposta federale 2026, p. 9: spese di malattia e donazioni, in francese'
     text:
-      en: 'Which of these did you pay in 2026?'
-      fr: 'Lesquels de ces frais avez-vous payés en 2026 ?'
-      de: 'Welche davon hast du 2026 bezahlt?'
-      it: 'Quali di queste spese hai pagato nel 2026?'
+      en: 'Which of these did you pay in {year}?'
+      fr: 'Lesquels de ces frais avez-vous payés en {year} ?'
+      de: 'Welche davon hast du {year} bezahlt?'
+      it: 'Quali di queste spese hai pagato nel {year}?'
     help:
       en: 'Choose all that apply.'
       fr: 'Choisissez tout ce qui s’applique.'
@@ -1207,6 +1242,7 @@ questions:
       de: 'Diese Situationen brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März.'
       it: 'Queste situazioni richiedono verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=4'
       label:
         en: 'Federal tax instructions 2026, p. 4: other income and property, in French'
@@ -1214,10 +1250,10 @@ questions:
         de: 'Wegleitung direkte Bundessteuer 2026, S. 4: übrige Einkünfte und Liegenschaften, auf Französisch'
         it: 'Istruzioni per l’imposta federale 2026, p. 4: altri redditi e immobili, in francese'
     text:
-      en: 'Do any of these apply to you in 2026?'
-      fr: 'Une de ces situations vous concerne-t-elle en 2026 ?'
-      de: 'Trifft 2026 etwas davon auf dich zu?'
-      it: 'Nel 2026 ti riguarda una di queste situazioni?'
+      en: 'Do any of these apply to you in {year}?'
+      fr: 'Une de ces situations vous concerne-t-elle en {year} ?'
+      de: 'Trifft {year} etwas davon auf dich zu?'
+      it: 'Nel {year} ti riguarda una di queste situazioni?'
     none: { en: 'None of these', fr: 'Aucune', de: 'Nichts davon', it: 'Nessuna di queste' }
     options:
       - value: real_estate
@@ -1295,6 +1331,7 @@ requirements:
       de: 'Die jährliche Übersicht über deinen Lohn und die Abzüge, die dir jeder Arbeitgeber gibt, meistens im Januar oder Februar.'
       it: 'Il riepilogo annuale del tuo salario e delle trattenute che ogni datore di lavoro ti dà, di solito a gennaio o febbraio.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=1'
       label:
         en: 'Federal tax instructions 2026, p. 1: employment income, in French'
@@ -1327,6 +1364,7 @@ requirements:
       de: 'Eine jährliche Bescheinigung der Arbeitslosenkasse oder der Versicherung, die dir Taggelder bezahlt hat.'
       it: 'Un’attestazione annuale della cassa disoccupazione o dell’assicurazione che ti ha versato le indennità.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=3'
       label:
         en: 'Federal tax instructions 2026, p. 3: pensions and benefits, in French'
@@ -1359,6 +1397,7 @@ requirements:
       de: 'Eine jährliche Bescheinigung der AHV, der IV oder deiner Pensionskasse über die ausbezahlte Rente.'
       it: 'Un’attestazione annuale dell’AVS, dell’AI o della tua cassa pensione con la rendita che ti è stata versata.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=3'
       label:
         en: 'Federal tax instructions 2026, p. 3: pensions and benefits, in French'
@@ -1391,6 +1430,7 @@ requirements:
       de: 'Eine jährliche Bescheinigung deiner Bank oder Versicherung über deine Einzahlungen in die Säule 3a. Sie kommt meistens im Januar.'
       it: 'Un’attestazione annuale della tua banca o assicurazione con quanto hai versato nel pilastro 3a. Di solito arriva a gennaio.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=7'
       label:
         en: 'Federal tax instructions 2026, p. 7: pillar 3a, in French'
@@ -1423,6 +1463,7 @@ requirements:
       de: 'Nur nötig, wenn du freiwillig zusätzlich in deine Pensionskasse einbezahlt hast. Die Kasse bestätigt es schriftlich. Kein Einkauf? Ändere deine Antwort, dann verschwindet diese Zeile.'
       it: 'Serve solo se hai fatto un versamento volontario in più nella tua cassa pensione. La cassa lo conferma per iscritto. Nessun riscatto? Cambia la tua risposta e questa riga sparisce.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=8'
       label:
         en: 'Federal tax instructions 2026, p. 8: other deductions, in French'
@@ -1454,6 +1495,7 @@ requirements:
       de: 'Die jährliche Prämienbescheinigung deiner Krankenkasse, Grund- und Zusatzversicherung. Eine Familienbescheinigung kann mehrere Personen abdecken.'
       it: 'L’attestazione annuale dei premi pagati alla tua cassa malati, per l’assicurazione di base e complementare. Un’attestazione per tutta la famiglia può valere per più persone.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=8'
       label:
         en: 'Federal tax instructions 2026, p. 8: insurance premiums, in French'
@@ -1486,6 +1528,7 @@ requirements:
       de: 'Der Steuerauszug jeder Bank, mit den Saldi per 31. Dezember. Verlang den eSteuerauszug, wenn deine Bank ihn anbietet. Für einen Broker wie Interactive Brokers oder DEGIRO füg auch seinen Export hinzu (Flex Query XML, oder das CSV des Portfolios und des Kontoauszugs): Taxpresso liest deine Wertschriften daraus.'
       it: 'L’estratto fiscale di ogni banca, con i saldi al 31 dicembre. Chiedi l’estratto fiscale elettronico se la tua banca lo offre. Per un broker come Interactive Brokers o DEGIRO, aggiungi anche il suo export (Flex Query XML, o il CSV del portafoglio e dell’estratto conto): Taxpresso legge da lì i tuoi titoli.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=3'
       label:
         en: 'Federal tax instructions 2026, p. 3: securities and accounts, in French'
@@ -1548,6 +1591,7 @@ requirements:
       de: 'Die Rechnungen oder die Jahresbescheinigung der Kita, des Horts oder der Nanny.'
       it: 'Le fatture o l’attestazione annuale dell’asilo nido, del doposcuola o della tata.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=8'
       label:
         en: 'Federal tax instructions 2026, p. 8: childcare costs, in French'
@@ -1579,6 +1623,7 @@ requirements:
       de: 'Die Abrechnung deiner Krankenkasse über die nicht vergüteten Kosten, plus die Rechnungen, die du ihr nicht geschickt hast.'
       it: 'Il conteggio della tua assicurazione con le spese che non ha rimborsato, più le fatture che non le hai mai mandato.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=9'
       label:
         en: 'Federal tax instructions 2026, p. 9: medical costs, in French'
@@ -1610,6 +1655,7 @@ requirements:
       de: 'Die Belege der Organisationen oder Parteien, denen du gespendet hast.'
       it: 'Le ricevute degli enti o dei partiti politici a cui hai donato.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=9'
       label:
         en: 'Federal tax instructions 2026, p. 9: donations, in French'
@@ -1641,6 +1687,7 @@ requirements:
       de: 'Der Auszug des Kreditgebers über die bezahlten Zinsen im Jahr und die Schuld per 31. Dezember.'
       it: 'L’estratto del creditore con gli interessi pagati nell’anno e quanto dovevi ancora al 31 dicembre.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=7'
       label:
         en: 'Federal tax instructions 2026, p. 7: debt interest, in French'
@@ -1675,6 +1722,7 @@ requirements:
       de: 'Ein Beleg der bezahlten oder erhaltenen Beträge, zum Beispiel Überweisungen oder ein Auszug.'
       it: 'La prova degli importi versati o ricevuti, per esempio bonifici bancari o un estratto.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=7'
       label:
         en: 'Federal tax instructions 2026, p. 7: alimony paid, in French'
@@ -1705,11 +1753,12 @@ requirements:
         it: 'Sentenza di separazione o di divorzio',
       }
     explain:
-      en: 'The court decision or agreement that sets the alimony. Only if it’s new in 2026 or changed.'
-      fr: 'La décision du tribunal ou la convention qui fixe la pension. Seulement si elle est nouvelle en 2026 ou a changé.'
-      de: 'Das Gerichtsurteil oder die Vereinbarung, die den Unterhalt festlegt. Nur wenn es 2026 neu ist oder sich geändert hat.'
-      it: 'La decisione del tribunale o la convenzione che fissa gli alimenti. Solo se è nuova nel 2026 o se è cambiata.'
+      en: 'The court decision or agreement that sets the alimony. Only if it’s new in {year} or changed.'
+      fr: 'La décision du tribunal ou la convention qui fixe la pension. Seulement si elle est nouvelle en {year} ou a changé.'
+      de: 'Das Gerichtsurteil oder die Vereinbarung, die den Unterhalt festlegt. Nur wenn es {year} neu ist oder sich geändert hat.'
+      it: 'La decisione del tribunale o la convenzione che fissa gli alimenti. Solo se è nuova nel {year} o se è cambiata.'
     learnMore:
+      year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=7'
       label:
         en: 'Federal tax instructions 2026, p. 7: alimony paid, in French'
@@ -1718,9 +1767,9 @@ requirements:
         it: 'Istruzioni per l’imposta federale 2026, p. 7: alimenti versati, in francese'
     reason:
       {
-        en: 'Only if it’s new in 2026 or changed.',
-        fr: 'Seulement s’il est nouveau en 2026 ou a changé.',
-        de: 'Nur wenn es 2026 neu ist oder sich geändert hat.',
-        it: 'Solo se è nuova nel 2026 o se è cambiata.',
+        en: 'Only if it’s new in {year} or changed.',
+        fr: 'Seulement s’il est nouveau en {year} ou a changé.',
+        de: 'Nur wenn es {year} neu ist oder sich geändert hat.',
+        it: 'Solo se è nuova nel {year} o se è cambiata.',
       }
     source: 'ch-2026-ifd-instructions-personnes-physiques p. 7'

@@ -9,8 +9,7 @@ import {
   buildCopyPanel,
   ENGINE_RUBRICS_2026,
   enteredValue,
-  FORM_2025,
-  FORM_2026,
+  filing as genevaFiling,
   itemsFromLedger,
   mergeItems,
   type CopyPanel,
@@ -109,6 +108,20 @@ function withDocuments(ws: Workspace, items: FormItem[]): FormItem[] {
 }
 
 function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPanelView['waiting'] } {
+  // A canton Taxpresso covers, but not for this year: no form, nothing to type (fail closed).
+  if (ws.canton().notOffered) {
+    const empty: CopyPanel = {
+      taxYear: ws.taxYear,
+      formYear: ws.taxYear,
+      provisional: false,
+      sections: [],
+      entered: 0,
+      total: 0,
+      pending: 0,
+      unplaced: [],
+    };
+    return { panel: empty, waiting: [] };
+  }
   // A canton whose filing package gives the values to type from its engine (Zurich's,
   // @taxpresso/filing-zh): every value from its result, on its form.
   const filing = ws.canton().canton?.filing;
@@ -132,7 +145,8 @@ function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPane
     people,
     taxYear: ws.engine.taxYear,
   });
-  const form = ws.engine.taxYear === 2025 ? FORM_2025 : FORM_2026;
+  // The form of the year (@taxpresso/filing-ge, FORMS): none for another year (fail closed).
+  const form = genevaFiling.formMap(ws.taxYear);
   const built = buildCopyPanel({
     form,
     items: mergeItems(engineItems(ws), items),
@@ -246,6 +260,12 @@ export interface FormValuesResult {
 
 /** The panel for get_form_values: sections with progress, or one section's values. */
 export function formValues(ws: Workspace, section?: string): FormValuesResult {
+  const notOffered = ws.canton().notOffered;
+  if (notOffered) {
+    throw new WorkspaceError(
+      `Taxpresso can't prepare a ${ws.taxYear} return in ${notOffered.name.en} yet, so there is nothing to type. Suggest ${notOffered.software}, the canton's free software.`,
+    );
+  }
   const { panel: p, waiting } = panel(ws, 'en');
   const couple = ws.snapshot().people.length > 1;
   // Before the canton is known, Geneva's form (the defaults).

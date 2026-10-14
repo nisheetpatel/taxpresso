@@ -126,6 +126,16 @@ function coversYear(periods: { from: string; to: string }[], year: number): bool
   return false;
 }
 
+/**
+ * Where "only payments made in the year count" is written, by tax year (docs/design/tax-years.md):
+ * the year's federal instructions, or for 2025 (whose are not in the library) the 2025 guide,
+ * "les cotisations ou versements effectués en 2025".
+ */
+const PAID_IN_YEAR: Readonly<Record<number, string>> = {
+  2025: 'ge-2025-guide-declaration-pp p. 18',
+  2026: PILLAR3A_2026_FACTS.paidInYearOnly,
+};
+
 export function consistencyChecks({ taxYear, documents, facts }: CheckInput): ConsistencyCheck[] {
   const Y = taxYear;
   const value = (key: string, docId: string, person?: Owner) =>
@@ -160,7 +170,7 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
           en: `Ask your bank or insurer for the ${Y} attestation and add it instead. If you keep this one on purpose, say why in a short note.`,
           fr: `Demandez l’attestation ${Y} à votre banque ou assurance et ajoutez-la à la place. Si vous gardez celle-ci exprès, dites pourquoi en une courte remarque.`,
         },
-        source: PILLAR3A_2026_FACTS.paidInYearOnly,
+        ...(PAID_IN_YEAR[Y] ? { source: PAID_IN_YEAR[Y] } : {}),
       });
       continue;
     }
