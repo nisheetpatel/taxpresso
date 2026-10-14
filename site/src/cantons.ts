@@ -89,6 +89,18 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
       pt: 'São Galo',
     },
   },
+  {
+    code: 'FR',
+    status: 'preview',
+    name: {
+      en: 'Fribourg',
+      fr: 'Fribourg',
+      de: 'Freiburg',
+      it: 'Friburgo',
+      es: 'Friburgo',
+      pt: 'Friburgo',
+    },
+  },
 ];
 
 /** When a canton that doesn't work yet should come: the next ones, then the ones after. */
@@ -106,18 +118,6 @@ export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
       it: 'Argovia',
       es: 'Argovia',
       pt: 'Argóvia',
-    },
-  },
-  {
-    code: 'FR',
-    when: 'then',
-    name: {
-      en: 'Fribourg',
-      fr: 'Fribourg',
-      de: 'Freiburg',
-      it: 'Friburgo',
-      es: 'Friburgo',
-      pt: 'Friburgo',
     },
   },
   {

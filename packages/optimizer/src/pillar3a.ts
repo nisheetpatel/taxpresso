@@ -8,6 +8,7 @@ import {
   estimateSources,
   type HouseholdInput,
   netOf,
+  noTaxOf,
   ordinaryTaxEstimator,
   type PersonInput,
   pct,
@@ -61,7 +62,10 @@ export function pillar3aPlan(h: HouseholdInput): Pillar3aResult {
   });
   const roomCentimes = people.reduce((sum, p) => sum + p.roomCentimes, 0);
   const sources = [PILLAR3A_2026.source, ...estimateSources(h)];
-  const estimator = ordinaryTaxEstimator(h);
+  // The canton's tax can't be computed for the year: the room, no saving, and why.
+  const noTax = noTaxOf(h);
+  if (noTax) assumptions.add(noTax);
+  const estimator = noTax ? undefined : ordinaryTaxEstimator(h);
   if (!estimator) return { people, roomCentimes, assumptions: [...assumptions], sources };
   // The engine says what it assumed for this household.
   assumptions.clear();

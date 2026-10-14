@@ -138,7 +138,29 @@ export const WEALTH_RUBRICS = {
   '7.110': r('7.110', 'Déduction sociale sur la fortune', 'Social deduction on wealth', '39'),
 } as const satisfies Record<string, Rubric>;
 
+/**
+ * Lines of the federal tax that the return doesn't have as such (the guide's chapter XI, "Impôt
+ * fédéral direct (différences entre l’impôt cantonal et fédéral)", p. 47 to 49): the insurance
+ * premiums of 4.110 and 4.120 and the interest on savings of 4.150 together, up to one federal
+ * maximum, and the deduction for married couples (6.150).
+ */
+export const FEDERAL_RUBRICS = {
+  '4.110': r(
+    '4.110',
+    'Primes et cotisations d’assurances et intérêts de capitaux d’épargne (codes 4.110, 4.120 et 4.150, IFD)',
+    'Insurance premiums and interest on savings, federal tax',
+    '48',
+  ),
+  '6.150': r(
+    '6.150',
+    'Déduction pour les époux vivant en ménage commun (IFD)',
+    'Married couple deduction, federal tax',
+    '49',
+  ),
+} as const satisfies Record<string, Rubric>;
+
 export type RubricCode = keyof typeof RUBRICS;
+export type FederalCode = keyof typeof FEDERAL_RUBRICS;
 export type WealthCode = keyof typeof WEALTH_RUBRICS;
 
 export function rubric(code: string): Rubric | undefined {
@@ -147,6 +169,11 @@ export function rubric(code: string): Rubric | undefined {
 
 export function wealthRubric(code: string): Rubric | undefined {
   return (WEALTH_RUBRICS as Record<string, Rubric>)[code];
+}
+
+/** Any line's label and source: the income lines, the wealth lines, then the federal ones. */
+export function anyRubric(code: string): Rubric | undefined {
+  return rubric(code) ?? wealthRubric(code) ?? (FEDERAL_RUBRICS as Record<string, Rubric>)[code];
 }
 
 /** Income lines: the total of the income. */

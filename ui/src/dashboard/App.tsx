@@ -11,7 +11,7 @@ import { DocumentCards } from './DocumentCards';
 import { Estimate } from './Estimate';
 import { ExportCard } from './Export';
 import { FinalCheck } from './FinalCheck';
-import { ck, isMessageKey, type Language, t } from './i18n';
+import { ck, isMessageKey, type Language, type MessageKey, t } from './i18n';
 import { Holdings } from './Holdings';
 import { tp } from './i18n-planning';
 import { LastYear } from './LastYear';
@@ -256,6 +256,9 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
   const { inputs, result } = state.plan;
   const year = state.taxYear;
   const anyMax = result.people.some((p) => p.capIsMaximum);
+  const noTax = result.assumptions
+    .map((a) => `assume.${a}`)
+    .find((k): k is MessageKey => k.endsWith('_no_tax') && isMessageKey(k));
   return (
     <section class="plan" aria-labelledby="plan-title">
       <span class="plan-when">{t(lang, 'planWhen')}</span>
@@ -290,6 +293,9 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
                 })}
               </span>
             </>
+          ) : noTax ? (
+            // The canton's tax can't be computed for the year (its rates are not published).
+            <span class="figure-note">{t(lang, noTax)}</span>
           ) : (
             <span class="figure-note">{t(lang, 'planNeedSalary')}</span>
           )}

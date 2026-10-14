@@ -83,12 +83,12 @@ describe('the canton question', () => {
     expect(saved.isError).toBe(true);
     const other = await call('answer_question', { id: 'canton', value: 'other' });
     expect(text(other)).toMatch(
-      /Not supported yet: A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or St. Gallen/,
+      /Not supported yet: A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Fribourg/,
     );
     const status = structured<Status>(await call('get_status'));
     expect(status.canton).toBeNull();
     expect(status.notSupported).toEqual([
-      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or St. Gallen',
+      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Fribourg',
     ]);
     expect(status.nextStep).toMatch(/their canton's free tax software or a fiduciary/);
     expect(structured<{ computed: boolean }>(await call('compute_tax')).computed).toBe(false);
@@ -181,7 +181,7 @@ describe('the canton question', () => {
     // The answers stay in the ledger; the canton question says it is not covered.
     expect(ws.ledger.get('profile.commune')?.value).toBe('carouge');
     expect(structured<Status>(await call('get_status')).notSupported).toEqual([
-      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or St. Gallen',
+      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Fribourg',
     ]);
     await call('answer_question', { id: 'canton', value: 'GE' });
     expect(structured<Status>(await call('get_status')).progress.questionsAnswered).toBe(4);
@@ -248,6 +248,7 @@ describe('the canton registry', () => {
       'ZG',
       'LU',
       'SG',
+      'FR',
       'other',
     ]);
     expect(r.ledgerKeys['salary.gross']?.type).toBe('money');

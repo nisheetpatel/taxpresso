@@ -1,6 +1,7 @@
 // UI strings in English, French and German (SPEC.md section 1). Second person, plain words (German:
-// the informal "du"), official terms next to their gloss: French for Geneva and Vaud, German for
-// Zurich, Bern, Basel-Landschaft, Basel-Stadt, Zug, Lucerne and St. Gallen.
+// the informal "du"), official terms next to their gloss: French for Geneva, Vaud and Fribourg (a
+// bilingual canton: its French guide is the one in the library), German for Zurich, Bern,
+// Basel-Landschaft, Basel-Stadt, Zug, Lucerne and St. Gallen.
 // Status labels follow SPEC.md section 11b.
 const NB = String.fromCharCode(0xa0);
 
@@ -196,6 +197,14 @@ export const messages = {
     planSavingSplitSg: 'St. Gallen {icc} · federal {ifd}',
     planExplainSg:
       'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
+    'assume.fr_commune_default': 'Commune not answered yet: the city of Fribourg assumed.',
+    'assume.fr_preview':
+      'Fribourg is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    'assume.fr_no_tax':
+      'No saving for Fribourg yet: its communal tax rates for 2026 (coefficients communaux) aren’t published, so Taxpresso doesn’t compute your tax. The saving comes once they are, in a Taxpresso update.',
+    planSavingSplitFr: 'Fribourg {icc} · federal {ifd}',
+    planExplainFr:
+      'Pillar 3a (3e pilier a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
   },
   fr: {
     docTitle: 'Taxpresso · Vos impôts, le temps d’un espresso.',
@@ -379,6 +388,12 @@ export const messages = {
     planSavingSplitSg: 'Saint-Gall {icc} · fédéral {ifd}',
     planExplainSg:
       'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
+    'assume.fr_commune_default': `Commune pas encore indiquée${NB}: la ville de Fribourg par défaut.`,
+    'assume.fr_preview': `Fribourg est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    'assume.fr_no_tax': `Pas encore d’économie pour Fribourg${NB}: ses coefficients d’impôt communaux 2026 ne sont pas publiés, Taxpresso ne calcule donc pas votre impôt. L’économie viendra dès leur publication, avec une mise à jour de Taxpresso.`,
+    planSavingSplitFr: 'Fribourg {icc} · fédéral {ifd}',
+    planExplainFr:
+      'Le pilier 3a (3e pilier a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
   },
   de: {
     docTitle: 'Taxpresso · Deine Steuern, erledigt bei einem Espresso.',
@@ -574,6 +589,14 @@ export const messages = {
     planSavingSplitSg: 'St. Gallen {icc} · Bund {ifd}',
     planExplainSg:
       'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+    'assume.fr_commune_default': 'Gemeinde noch nicht angegeben: Stadt Freiburg angenommen.',
+    'assume.fr_preview':
+      'Freiburg ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    'assume.fr_no_tax':
+      'Noch keine Ersparnis für Freiburg: Seine Gemeindesteuerfüsse 2026 (coefficients communaux) sind nicht veröffentlicht, deshalb berechnet Taxpresso deine Steuer nicht. Die Ersparnis kommt, sobald sie veröffentlicht sind, mit einem Update von Taxpresso.',
+    planSavingSplitFr: 'Freiburg {icc} · Bund {ifd}',
+    planExplainFr:
+      'Die Säule 3a (3e pilier a) ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
   },
 } as const;
 

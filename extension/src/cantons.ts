@@ -12,6 +12,7 @@ import { filing as bernFiling } from '@taxpresso/filing-be';
 import { filing as baselLandFiling } from '@taxpresso/filing-bl';
 import { filing as vaudFiling } from '@taxpresso/filing-vd';
 import { filing as baselFiling } from '@taxpresso/filing-bs';
+import { filing as fribourgFiling } from '@taxpresso/filing-fr';
 import { filing as lucerneFiling } from '@taxpresso/filing-lu';
 import { filing as stGallenFiling } from '@taxpresso/filing-sg';
 import { filing as zugFiling } from '@taxpresso/filing-zg';
@@ -22,6 +23,7 @@ import {
   beQuestionnaire2026,
   blQuestionnaire2026,
   bsQuestionnaire2026,
+  frQuestionnaire2026,
   geQuestionnaire2026,
   luQuestionnaire2026,
   sgQuestionnaire2026,
@@ -145,6 +147,18 @@ import {
   type SgTaxResult,
   type StGallenCantonal,
 } from '@taxpresso/rules-sg';
+import {
+  communeOptions as fribourgCommunes,
+  FR_TERMS,
+  FRIBOURG_READING,
+  frParamsFor,
+  NOTE as FR_NOTE,
+  NOTE_VALUABLES as FR_NOTE_VALUABLES,
+  rules as fribourgRules,
+  view as fribourgView,
+  type FribourgCantonal,
+  type FrTaxResult,
+} from '@taxpresso/rules-fr';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -217,7 +231,11 @@ export interface CantonEntry {
    * How the plans run on the canton's engine (packages/optimizer, CantonPlan), and the commune they
    * assume when none is answered, in words. Absent for Geneva, whose engine the plans run directly.
    */
-  plan?: CantonPlan & { communeName: Text };
+  plan?: CantonPlan & {
+    communeName: Text;
+    /** With `noTax`: why the canton's tax can't be computed for those years, in words. */
+    noTaxText?: Text;
+  };
   /** TOU (taxation ordinaire ultérieure), Geneva's procedure for people taxed at source. */
   tou: boolean;
 }
@@ -591,6 +609,51 @@ const ST_GALLEN: CantonEntry = {
   tou: false,
 };
 
+const FRIBOURG: CantonEntry = {
+  code: 'FR',
+  name: { en: 'Fribourg', fr: 'Fribourg', de: 'Freiburg' },
+  // FriTax, the SCC's free program installed on the computer, the only one that files
+  // electronically (fr-2025-fritax-accueil; fr-na-efiling-ordonnance-631-15 art. 2 al. 2). A desktop
+  // program: no browser filling, the copy panel is the way (@taxpresso/filing-fr).
+  software: 'FriTax',
+  rules: fribourgRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? frQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...fribourgRules.keys(taxYear) }),
+  communes: (taxYear) => fribourgCommunes(taxYear),
+  // The return has codes of its own for cash and gold (3.230) and vehicles (3.510): say they are
+  // together.
+  ...sharedLedger(FRIBOURG_READING, fribourgRules, FR_NOTE_VALUABLES),
+  view: fribourgView,
+  filing: fribourgFiling,
+  terms: FR_TERMS,
+  plan: {
+    computeReturn: (input) =>
+      fribourgRules.computeReturn(input as HouseholdInput<FribourgCantonal>),
+    incomeTax: (r) => fribourgView.incomeTax(r as FrTaxResult),
+    // The city of Fribourg, the capital, by its BFS number.
+    defaultCommune: 2196,
+    communeName: { en: 'City of Fribourg', fr: 'Ville de Fribourg', de: 'Stadt Freiburg' },
+    sources(taxYear) {
+      // The documents a Fribourg household's income tax rests on, for the year.
+      const P = frParamsFor(taxYear);
+      return [
+        P.incomeScale.source,
+        P.coefficients.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'fr_preview', communeDefault: 'fr_commune_default' },
+    // The LICD adopts the federal 3a limits (art. 34 al. 1 let. e), the catch-up included
+    // (packages/rules-fr computes it from 2026).
+    catchUp: { field: 'pillar3aCatchUp' },
+    // Tax year 2026: no communal coefficients published yet, so no tax and no saving (fail closed).
+    noTax: { years: [2026], assumption: 'fr_no_tax' },
+    noTaxText: FR_NOTE.communes2026,
+  },
+  tou: false,
+};
+
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
@@ -601,6 +664,7 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   ZG: ZUG,
   LU: LUCERNE,
   SG: ST_GALLEN,
+  FR: FRIBOURG,
 };
 
 /**
