@@ -1708,10 +1708,11 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       }
       const status = await st.callTool({ name: 'get_status', arguments: {} });
       const told = status.structuredContent.journey.join('\n');
-      assert.match(told, /You are taxed at source\. Without a C permit/);
-      assert.match(told, /Your spouse or partner is taxed at source\./);
-      assert.match(told, /Barème C0N: married, both of you with income/);
-      assert.match(told, /estimated with barème C0N[^[]*\(an estimate\)/);
+      // The same for both, said once; each person's tax withheld apart.
+      assert.match(told, /You’re both taxed at source \(no C permit\)\. Without a C permit/);
+      assert.doesNotMatch(told, /Your spouse or partner is taxed at source\./);
+      assert.match(told, /Your barème is C0N\. Married, both of you with income/);
+      assert.match(told, /Estimated with barème C0N[^[]*\(an estimate\)/);
       const list = await st.callTool({ name: 'list_optimizations', arguments: {} });
       assert.match(list.content[0].text, /attestation of the fund that paid your benefits/);
       assert.doesNotMatch(list.content[0].text, /Only one of the couple/);
@@ -1726,7 +1727,10 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       });
       const body = view.structuredContent.body;
       const fact = body.journey.about.find((f) => f.id === 'source_tax');
-      assert.match(fact.text.fr, /^Vous êtes imposé à la source/);
+      assert.equal(fact.text.fr, 'Vous êtes tous les deux imposés à la source (sans permis C).');
+      assert.match(fact.why.fr, /^Sans permis C/);
+      assert.ok(fact.sources.every((x) => x.title && x.url));
+      assert.ok(!body.chips.some((c) => /Imposé à la source/.test(c)), body.chips.join(', '));
       assert.equal(body.planning.tou.problem, 'benefits_unknown');
       assert.equal(body.planning.sourceTax.people[0].derivedTariff.code, 'C0N');
     } finally {
