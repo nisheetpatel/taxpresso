@@ -839,11 +839,16 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   // The securities list (état des titres) and other wealth: get_holdings, set_holding.
   registerHoldingTools(server, ws);
 
+  // Each canton's example section once (Basel-Landschaft's and Lucerne's are both "S3"): the
+  // description stays within its 300 characters (C6).
+  const sectionExamples = [
+    ...new Set(SUPPORTED_CANTONS.map((c) => `"${CANTONS[c].filing.words.example}"`)),
+  ].join(', ');
   server.registerTool(
     'get_form_values',
     {
       title: 'Get the values to type into the declaration',
-      description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label as printed, value as typed, status. No section: sections with progress. A section (${SUPPORTED_CANTONS.map((c) => `"${CANTONS[c].filing.words.example}"`).join(', ')}): its values.`,
+      description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label as printed, value as typed, status. No section: sections with progress. A section (${sectionExamples}): its values.`,
       inputSchema: z.object({
         section: z
           .string()
