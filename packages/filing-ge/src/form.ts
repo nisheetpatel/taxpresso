@@ -87,6 +87,8 @@ export type RubricFormat = 'money' | 'money_cents' | 'count' | 'percent' | 'date
 export interface Gloss {
   en: string;
   fr: string;
+  /** German, for a canton whose form is in German (Zurich): optional, English otherwise. */
+  de?: string;
 }
 
 /** A field written on each line of a repeating rubric (an employer's name, a creditor). */
@@ -100,12 +102,16 @@ export interface LineField {
   source?: string;
 }
 
-export interface FormRubric {
+/**
+ * A rubric of a form. `Page` is the form's page ids: Geneva's by default; another canton's form
+ * (packages/filing-zh) has its own.
+ */
+export interface FormRubric<Page extends string = FormPageId> {
   /** The rubric code when one is printed (key === code); otherwise a Taxpresso id, e.g. "CS-F". */
   key: string;
   /** The code as printed on the form, e.g. "11.10". Absent for lines the form doesn't number. */
   code?: string;
-  page: FormPageId;
+  page: Page;
   /** The page section it is printed under (FormSection.id). */
   section: string;
   person: FormPerson;
@@ -137,8 +143,8 @@ export interface FormSection {
   gloss: Gloss;
 }
 
-export interface FormPage {
-  id: FormPageId;
+export interface FormPage<Page extends string = FormPageId> {
+  id: Page;
   /** As printed, e.g. "Activité dépendante 2025". */
   title: string;
   gloss: Gloss;
@@ -151,7 +157,7 @@ export interface FormPage {
   source: string;
 }
 
-export interface FormMap {
+export interface FormMap<Page extends string = FormPageId> {
   /** The tax year the declaration is for. */
   taxYear: number;
   /** The year of the official form the map was read from. */
@@ -159,8 +165,8 @@ export interface FormMap {
   /** true while the map reuses an older form because the year's own is not published yet. */
   provisional: boolean;
   note?: Gloss;
-  pages: readonly FormPage[];
-  rubrics: readonly FormRubric[];
+  pages: readonly FormPage<Page>[];
+  rubrics: readonly FormRubric<Page>[];
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -249,7 +255,7 @@ export function formText(
 }
 
 /** "11.10", or "11.10-2" for the second line of a repeating rubric; the key for an uncoded line. */
-export function rubricRef(rubric: FormRubric, line?: number): string {
+export function rubricRef(rubric: FormRubric<string>, line?: number): string {
   const base = rubric.code ?? rubric.key;
   return line !== undefined && rubric.repeats ? `${base}-${line}` : base;
 }

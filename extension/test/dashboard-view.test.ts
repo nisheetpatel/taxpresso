@@ -125,7 +125,7 @@ describe('the dashboard in the conversation', () => {
     await view({
       method: 'POST',
       path: '/answer',
-      body: { id: 'civil_status', value: 'single' },
+      body: { id: 'canton', value: 'GE' },
       csrf,
     });
     const after = await view({ method: 'GET', path: '/state', etag });
@@ -135,20 +135,20 @@ describe('the dashboard in the conversation', () => {
 
   it('saves a change with the CSRF token, as the browser page does, and records it as yours', async () => {
     const { csrf } = await viewState();
-    const body = { id: 'civil_status', value: 'married' };
+    const body = { id: 'canton', value: 'GE' };
     for (const token of [undefined, 'nope']) {
       const refused = await view({ method: 'POST', path: '/answer', body, csrf: token });
       expect(refused.isError).toBe(true);
       expect(refused.structuredContent).toMatchObject({ status: 403 });
       expect(refused.content[0]!.text).toBe('Reload the dashboard and try again.');
     }
-    expect(ws.ledger.get('profile.civil_status')).toBeUndefined();
+    expect(ws.ledger.get('profile.canton')).toBeUndefined();
 
     const saved = await view({ method: 'POST', path: '/answer', body, csrf });
     expect(saved.isError).toBeFalsy();
     const state = saved.structuredContent!.body as DashboardState;
-    expect(state.chips).toEqual(['Married']);
-    expect(ws.ledger.get('profile.civil_status')?.source.via).toBe('dashboard');
+    expect(state.chips).toEqual(['Geneva']);
+    expect(ws.ledger.get('profile.canton')?.source.via).toBe('dashboard');
     expect(state.activity[0]).toMatchObject({ by: 'you', what: 'answer' });
     // The browser page sees exactly the same.
     expect(plain(await viewState())).toEqual(await httpState());
@@ -183,7 +183,7 @@ describe('the dashboard in the conversation', () => {
     const change = {
       method: 'POST',
       path: '/answer',
-      body: { id: 'civil_status', value: 'single' },
+      body: { id: 'canton', value: 'GE' },
       csrf,
     };
     for (const other of ['', 'not-the-key', key.slice(1)]) {
@@ -191,7 +191,7 @@ describe('the dashboard in the conversation', () => {
       expect(res).toMatchObject({ isError: true, structuredContent: { status: 403 } });
       expect(res.content[0]!.text).toMatch(/Only the dashboard shown in the conversation/);
     }
-    expect(ws.ledger.get('profile.civil_status')).toBeUndefined();
+    expect(ws.ledger.get('profile.canton')).toBeUndefined();
     // Without a key at all, the schema refuses the call.
     const bare = (await client.callTool({
       name: 'dashboard_api',

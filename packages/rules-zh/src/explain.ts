@@ -13,6 +13,10 @@ export const ESTIMATE_TEXT: Record<'input-estimate', Text> = {
 };
 
 export const NOTE = {
+  cantonalRate2026: {
+    en: 'The cantonal multiplier (Staatssteuerfuss) for 2026: Taxpresso takes 95 %, as the cantonal parliament set it for 2026 and 2027 (zh-2026-tariff-staatssteuerfuss-2026-2027 p. 1). The canton’s 2026 source tax sheet still prints 98 % (zh-2026-source-tax-grundlagen-parameter p. 1), and no document says why. With 98 %, the cantonal tax (Staatssteuer) would be about 3 % higher.',
+    fr: `Le coefficient cantonal (Staatssteuerfuss) 2026${NB}: Taxpresso retient 95${NB}%, fixé par le parlement cantonal pour 2026 et 2027 (zh-2026-tariff-staatssteuerfuss-2026-2027 p. 1). La fiche 2026 de l’impôt à la source du canton indique encore 98${NB}% (zh-2026-source-tax-grundlagen-parameter p. 1), et aucun document ne dit pourquoi. Avec 98${NB}%, l’impôt cantonal (Staatssteuer) serait plus élevé d’environ 3${NB}%.`,
+  },
   rounding: {
     en: 'Rounding: the official documents Taxpresso has for Zurich don’t say whether the taxable income and wealth are rounded (to CHF 100 or 1,000, for example) before the tariff, or how the tax is rounded. Taxpresso applies the tariff to whole francs and rounds each tax to the centime, so a bill can differ by a few francs.',
     fr: `Arrondis${NB}: les documents officiels dont dispose Taxpresso pour Zurich ne disent pas si le revenu et la fortune imposables sont arrondis (à CHF 100 ou 1’000, par exemple) avant le barème, ni comment l’impôt est arrondi. Taxpresso applique le barème aux francs entiers et arrondit chaque impôt au centime${NB}: un bordereau peut différer de quelques francs.`,

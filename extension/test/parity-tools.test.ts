@@ -32,7 +32,12 @@ afterEach(async () => {
   close = undefined;
 });
 
-async function setUp(answers: [string, unknown][] = [['civil_status', 'single']]) {
+async function setUp(
+  answers: [string, unknown][] = [
+    ['canton', 'GE'],
+    ['civil_status', 'single'],
+  ],
+) {
   const ws = await makeWorkspace();
   const api = createApi(ws);
   const uiDir = await makeUiDir();
@@ -108,6 +113,7 @@ describe('the four tools', () => {
 describe('mark_entered', () => {
   it('ticks the final values of a section, as the dashboard does, and skips the rest', async () => {
     const { ws, call, state } = await setUp([
+      ['canton', 'GE'],
       ['civil_status', 'single'],
       ['children', 0],
       ['commune', 'Meyrin'],
@@ -192,7 +198,10 @@ describe('mark_entered', () => {
   });
 
   it('in a couple, ticks only the taxpayer the user names', async () => {
-    const { ws, call } = await setUp([['civil_status', 'married']]);
+    const { ws, call } = await setUp([
+      ['canton', 'GE'],
+      ['civil_status', 'married'],
+    ]);
     for (const [person, issuer] of [
       ['p1', 'Exemple Horlogerie SA'],
       ['p2', 'Exemple Banque SA'],
@@ -309,6 +318,7 @@ describe('waive_requirement', () => {
 
   it('refuses a required document, as the dashboard does', async () => {
     const { call } = await setUp([
+      ['canton', 'GE'],
       ['civil_status', 'single'],
       ['children', 0],
       ['commune', 'Carouge'],

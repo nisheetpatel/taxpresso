@@ -36,6 +36,11 @@ export function profileSuggestions(d: PriorDeclaration): ProfileSuggestion[] {
   const couple = d.taxpayers.b !== undefined;
   const identity = pageOf('PG1') ?? 1;
 
+  // The canton: Taxpresso reads Geneva's declaration (GeTax, the online declaration), so last
+  // year's return was a Geneva one (docs/design/cantons.md, section 3: the canton is prefilled from
+  // last year's return, never guessed from an address in a document).
+  out.push({ key: 'profile.canton', person: 'household', value: 'GE', page: identity });
+
   // Civil status on 31 December last year.
   if (d.taxpayers.a.civilStatus) {
     out.push({

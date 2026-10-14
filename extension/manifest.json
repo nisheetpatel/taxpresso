@@ -3,8 +3,8 @@
   "name": "taxpresso",
   "display_name": "Taxpresso",
   "version": "0.0.0",
-  "description": "Your taxes, done over an espresso. Prepare your Geneva tax return with Claude; your documents stay on this computer.",
-  "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, reads them with Claude when you ask (you confirm every value), checks them against each other, tells you what is still missing, computes your cantonal, communal and federal tax and explains every figure with its official source, estimates what a pillar 3a payment before 31 December would save you, and later checks your assessment against what you declared.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
+  "description": "Your taxes, done over an espresso. Prepare your Geneva tax return, or your Zurich one as a preview, with Claude; your documents stay on this computer.",
+  "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude, and your Zurich one (Steuererklärung) as a preview. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, reads them with Claude when you ask (you confirm every value), checks them against each other, tells you what is still missing, computes your cantonal, communal and federal tax and explains every figure with its official source, estimates what a pillar 3a payment before 31 December would save you, and later checks your assessment against what you declared.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
   "author": {
     "name": "Taxpresso contributors",
     "email": "hello@taxpresso.ch",
@@ -30,7 +30,7 @@
   "tools": [
     {
       "name": "get_status",
-      "description": "Where your Geneva tax return stands: household, questions answered, documents, what is still missing and the next step."
+      "description": "Where your tax return stands: canton, household, questions answered, documents, what is still missing and the next step."
     },
     {
       "name": "next_questions",
@@ -50,7 +50,7 @@
     },
     {
       "name": "compute_tax",
-      "description": "Your Geneva cantonal, communal and federal tax, computed on this computer, with how each figure is computed and what is still an estimate."
+      "description": "Your cantonal, communal and federal tax (Geneva, or Zurich as a preview), computed on this computer, with how each figure is computed and what is still an estimate."
     },
     {
       "name": "get_last_year",
@@ -133,8 +133,8 @@
   "prompts": [
     {
       "name": "start_geneva_tax_return",
-      "description": "Begin or pick up your Geneva tax return with Taxpresso.",
-      "text": "I want to work on my Geneva tax return with Taxpresso. Check where I am and tell me the next step."
+      "description": "Begin or pick up your Geneva or Zurich tax return with Taxpresso.",
+      "text": "I want to work on my tax return with Taxpresso. Check where I am and tell me the next step."
     }
   ],
   "prompts_generated": false,
@@ -156,7 +156,7 @@
     "ui_language": {
       "type": "string",
       "title": "Dashboard language",
-      "description": "en for English, fr for French. Claude answers in the language you write in.",
+      "description": "en for English, fr for French, de for German (Deutsch). Claude answers in the language you write in.",
       "required": false,
       "default": "en"
     }

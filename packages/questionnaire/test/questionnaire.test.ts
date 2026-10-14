@@ -1,15 +1,22 @@
 import { readFileSync } from 'node:fs';
 import { Ledger, type VaultDocument } from '@taxpresso/ledger';
-import { COMMUNES_2026, KEYS_2026 } from '@taxpresso/rules-ge';
+import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
+import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
   geQuestionnaire2026,
   LearnMore,
   NBSP,
+  parseQuestionnaire,
+  ProjectLink,
   QuestionnaireEngine,
   QuestionnaireError,
+  resolveShared,
+  sharedQuestionnaire2026,
 } from '../src/index.js';
 
+/** Geneva's keys with the canton question every canton shares. */
+const KEYS_2026 = { ...KEYS_CANTON_2026, ...GENEVA_KEYS };
 const engine = () => new QuestionnaireEngine(geQuestionnaire2026(), KEYS_2026, COMMUNES_2026);
 const USER = { method: 'user' } as const;
 
@@ -37,6 +44,7 @@ const doc = (kind: VaultDocument['kind'], person?: VaultDocument['person']): Vau
 });
 
 const SINGLE_EMPLOYEE = {
+  canton: 'GE',
   civil_status: 'single',
   children: 0,
   commune: 'Meyrin',
@@ -65,14 +73,15 @@ describe('Geneva questionnaire 2026', () => {
     expect('fr' in q.text && q.text.fr).toMatch(new RegExp(`2026${NBSP}\\?$`));
   });
 
-  it('asks a single employee 16 questions, then lists what is missing', () => {
+  it('asks a single employee 17 questions, the canton first, then lists what is missing', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     const asked = walk(e, ledger, SINGLE_EMPLOYEE);
     expect(asked).toEqual(Object.keys(SINGLE_EMPLOYEE));
     // About 15 for a typical household (SPEC.md section 6): the commute adds its cost and the
-    // lunches away from home, which the federal travel and meal deductions need.
-    expect(asked.length).toBeLessThanOrEqual(16);
+    // lunches away from home, which the federal travel and meal deductions need, and the canton
+    // comes first.
+    expect(asked.length).toBeLessThanOrEqual(17);
     expect(ledger.get('commute.transit_cost', 'p1')?.value).toBe(125_050);
     const snap = e.snapshot(ledger);
     expect(e.next(snap)).toBeUndefined();
@@ -91,6 +100,7 @@ describe('Geneva questionnaire 2026', () => {
       ['prior_declaration', 'missing', { kinds: ['prior_declaration'], count: 1 }],
     ]);
     expect(e.chips(snap, 'en')).toEqual([
+      'Geneva',
       'Single',
       'No children',
       'Meyrin',
@@ -125,6 +135,7 @@ describe('Geneva questionnaire 2026', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     walk(e, ledger, {
+      canton: 'GE',
       civil_status: 'married',
       children: 1,
       children_custody: 'with_household',
@@ -160,6 +171,7 @@ describe('Geneva questionnaire 2026', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     walk(e, ledger, {
+      canton: 'GE',
       civil_status: 'single',
       children: 2,
       children_custody: 'shared',
@@ -178,6 +190,7 @@ describe('Geneva questionnaire 2026', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     walk(e, ledger, {
+      canton: 'GE',
       civil_status: 'single',
       children: 0,
       commune: 'onex',
@@ -185,12 +198,14 @@ describe('Geneva questionnaire 2026', () => {
       'income_sources:p1': ['self_employment'],
     });
     const what = e.notSupported(e.snapshot(ledger)).map((n) => n.what.en);
-    expect(what).toEqual(['Moving from another canton', 'Self-employment (annexe B)']);
+    // A move from another canton is supported: Geneva taxes the whole year (guide p. 53).
+    expect(what).toEqual(['Self-employment (annexe B)']);
     expect(e.notSupportedMessage('en')).toMatch(/GeTax/);
   });
 
   it('asks about the way to work only what that way needs', () => {
     const START = {
+      canton: 'GE',
       civil_status: 'single',
       children: 0,
       commune: 'Onex',
@@ -243,6 +258,7 @@ describe('Geneva questionnaire 2026', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     walk(e, ledger, {
+      canton: 'GE',
       civil_status: 'single',
       children: 0,
       commune: 'Onex',
@@ -271,7 +287,12 @@ describe('Geneva questionnaire 2026', () => {
     const e = engine();
     const asks = (status: string, custody: string) => {
       const ledger = new Ledger(2026, KEYS_2026);
-      walk(e, ledger, { civil_status: status, children: 1, children_custody: custody });
+      walk(e, ledger, {
+        canton: 'GE',
+        civil_status: status,
+        children: 1,
+        children_custody: custody,
+      });
       return e.next(e.snapshot(ledger))?.id === 'child_support';
     };
     expect(asks('divorced', 'shared')).toBe(true);
@@ -324,9 +345,9 @@ describe('Geneva questionnaire 2026', () => {
   it('asks skipped questions last', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
-    expect(e.next(e.snapshot(ledger), ['civil_status'])?.id).toBe('children');
+    expect(e.next(e.snapshot(ledger), ['canton', 'civil_status'])?.id).toBe('children');
     e.answer(ledger, 'children', 0, USER);
-    expect(e.next(e.snapshot(ledger), ['civil_status'])?.id).toBe('commune');
+    expect(e.next(e.snapshot(ledger), ['canton', 'civil_status'])?.id).toBe('commune');
   });
 
   it('explains every question and every document in both languages', () => {
@@ -408,10 +429,11 @@ describe('Geneva questionnaire 2026', () => {
     const slot = snap.slots.find((s) => s.id === 'civil_status')!;
     expect(slot.value).toBeUndefined();
     expect(slot.suggested).toBe('married');
-    // Not an answer: no partner yet, nothing answered, the question still comes first.
+    // Not an answer: no partner yet, nothing answered, the question still comes (after the canton).
     expect(snap.people).toEqual(['p1']);
     expect(snap.answers.size).toBe(0);
-    expect(e.next(snap)?.id).toBe('civil_status');
+    expect(e.next(snap)?.id).toBe('canton');
+    expect(e.next(snap, ['canton'])?.id).toBe('civil_status');
     expect(e.render(slot, snap, 'en')).toMatchObject({ suggested: 'married' });
     expect(e.render(slot, snap, 'en').value).toBeUndefined();
     expect(e.describe(slot, 'fr', slot.suggested)).toBe('Marié(e)');
@@ -426,5 +448,83 @@ describe('Geneva questionnaire 2026', () => {
       suggested: ['salary'],
     });
     expect(snap.slots.find((s) => s.id === 'income_sources:p2')?.value).toBeUndefined();
+  });
+});
+
+describe('the questions every canton shares', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/manifest.json', import.meta.url), 'utf8'),
+  ) as { entries: { url: string }[] };
+  const official = new Set(manifest.entries.map((e) => e.url));
+
+  it('start with the canton, with the vote for the next one', () => {
+    const file = sharedQuestionnaire2026();
+    const canton = file.questions[0]!;
+    expect(canton).toMatchObject({ id: 'canton', key: 'profile.canton', type: 'choice' });
+    expect(canton.options?.map((o) => o.value)).toEqual(['GE', 'ZH', 'other']);
+    expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
+    expect(canton.link?.url).toBe('https://github.com/nisheetpatel/taxpresso/issues/1');
+    // A move from another canton: the canton of 31 December taxes the whole year (LIFD art. 105).
+    expect(canton.learnMore?.url).toMatch(/fedlex\.admin\.ch\/.+#page=58$/);
+    expect(official).toContain(canton.learnMore!.url.replace(/#page=\d+$/, ''));
+    expect(canton.help?.en).toMatch(/taxes the whole year/);
+    for (const item of [...file.questions, ...file.requirements]) {
+      expect(item.explain?.de, item.id).toBeTruthy();
+      expect(item.learnMore?.label.de, item.id).toBeTruthy();
+    }
+  });
+
+  it('are taken by a canton in its own order, with its own fields over them', () => {
+    const shared = {
+      taxYear: 2026,
+      questions: [{ id: 'a', key: 'k', text: { en: 'A?', fr: 'A ?' } }],
+    };
+    const people = { en: 'B', fr: 'B' };
+    const resolved = resolveShared(
+      {
+        people: { p1: people, p2: people, p2Chip: people },
+        notSupported: { en: 'No', fr: 'Non' },
+        questions: [{ use: 'a', help: { en: 'Help', fr: 'Aide' } }],
+        requirements: [],
+      },
+      shared,
+    ) as { taxYear: number; questions: unknown[] };
+    expect(resolved.taxYear).toBe(2026);
+    expect(resolved.questions).toEqual([
+      { id: 'a', key: 'k', text: { en: 'A?', fr: 'A ?' }, help: { en: 'Help', fr: 'Aide' } },
+    ]);
+    expect(() =>
+      parseQuestionnaire({ questions: [{ use: 'nope' }], requirements: [] }, shared),
+    ).toThrow(/nope is not in the shared questionnaire/);
+    // Geneva's file takes the canton question from the shared file, first.
+    expect(geQuestionnaire2026().questions[0]).toEqual(sharedQuestionnaire2026().questions[0]);
+  });
+
+  it('link only to the project’s own pages besides the official ones', () => {
+    const label = { en: 'Vote', fr: 'Voter' };
+    const ok = (url: string) => ProjectLink.safeParse({ url, label }).success;
+    expect(ok('https://github.com/nisheetpatel/taxpresso/issues/1')).toBe(true);
+    expect(ok('https://github.com/someone/else/issues/1')).toBe(false);
+    expect(ok('https://github.com/nisheetpatel/taxpresso/issues/1?ref=x')).toBe(false);
+    expect(ok('http://github.com/nisheetpatel/taxpresso/issues/1')).toBe(false);
+  });
+
+  it('take an answer from other answers until the user gives it, never one the key refuses', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    e.answer(ledger, 'canton', 'GE', USER);
+    const fresh = new Ledger(2026, KEYS_2026);
+    const snap = e.snapshot(fresh, { 'profile.canton': 'GE' });
+    const slot = snap.slots.find((s) => s.id === 'canton')!;
+    expect(slot).toMatchObject({ value: 'GE', assumed: true });
+    expect(e.next(snap)?.id).toBe('civil_status');
+    expect(e.render(slot, snap, 'en')).toMatchObject({ value: 'GE', assumed: true });
+    // An answer the key doesn't take is not assumed.
+    const refused = e.snapshot(fresh, { 'profile.canton': 'VD' });
+    expect(refused.slots.find((s) => s.id === 'canton')?.value).toBeUndefined();
+    // The user's answer wins.
+    const answered = e.snapshot(ledger, { 'profile.canton': 'ZH' });
+    expect(answered.slots.find((s) => s.id === 'canton')).toMatchObject({ value: 'GE' });
+    expect(answered.slots.find((s) => s.id === 'canton')?.assumed).toBeUndefined();
   });
 });

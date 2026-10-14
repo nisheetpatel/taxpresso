@@ -16,7 +16,8 @@ describe('readConfig', () => {
 
   it('accepts a supported language in any case and ignores others', () => {
     expect(readConfig({ TAXPRESSO_UI_LANGUAGE: 'FR' }).uiLanguage).toBe('fr');
-    expect(readConfig({ TAXPRESSO_UI_LANGUAGE: 'de' }).uiLanguage).toBe('en');
+    expect(readConfig({ TAXPRESSO_UI_LANGUAGE: 'De' }).uiLanguage).toBe('de');
+    expect(readConfig({ TAXPRESSO_UI_LANGUAGE: 'it' }).uiLanguage).toBe('en');
   });
 
   it('shows paths under the home folder with ~', () => {

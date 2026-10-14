@@ -5,10 +5,9 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
-import { geQuestionnaire2026, QuestionnaireEngine } from '@taxpresso/questionnaire';
-import { COMMUNES_2026, KEYS_2026 } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import { createApi, type DashboardState } from '../src/api.js';
+import { CantonRegistry } from '../src/cantons.js';
 import { readConfig } from '../src/config.js';
 import { Dashboard } from '../src/dashboard.js';
 import type { ApiRequest } from '../src/dashboard.js';
@@ -27,6 +26,7 @@ const req = (method: 'GET' | 'POST', p: string, body: unknown = {}): ApiRequest 
 });
 
 const RIBEIRO: [string, unknown][] = [
+  ['canton', 'GE'],
   ['civil_status', 'single'],
   ['children', 1],
   ['children_custody', 'with_household'],
@@ -99,8 +99,7 @@ describe('TOU in the dashboard', () => {
     // Another session on the same folder reads it back.
     const again = new Workspace(
       readConfig({ TAXPRESSO_VAULT_PATH: ws.config.vaultPath }),
-      new QuestionnaireEngine(geQuestionnaire2026(), KEYS_2026, COMMUNES_2026),
-      KEYS_2026,
+      new CantonRegistry(2026),
     );
     await again.ready();
     await planningReady(again);

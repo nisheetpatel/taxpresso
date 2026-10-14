@@ -36,6 +36,7 @@ beforeEach(async () => {
   await server.connect(serverSide);
   client = new Client({ name: 'test', version: '0' });
   await client.connect(clientSide);
+  await call('answer_question', { id: 'canton', value: 'GE' });
   await call('answer_question', { id: 'civil_status', value: 'single' });
 });
 
@@ -229,6 +230,7 @@ describe('proposing values (propose_extraction)', () => {
   });
 
   it('asks whose a per-person value is in a couple', async () => {
+    await call('answer_question', { id: 'canton', value: 'GE' });
     await call('answer_question', { id: 'civil_status', value: 'married' });
     const id = await addCertificate();
     const res = await call('propose_extraction', PROPOSAL(id));

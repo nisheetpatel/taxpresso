@@ -11,6 +11,8 @@ export type EstimateView =
   | { computed: false; missing: string[] }
   | {
       computed: true;
+      /** Set for a Zurich return (extension/src/estimate-zh.ts); Geneva's has none. */
+      canton?: 'ZH';
       taxYear: number;
       total: number | null;
       estimate: boolean;
@@ -31,6 +33,9 @@ export type EstimateView =
       notes: string[];
       /** False when some amount is known only in part: the taxes are then floors. */
       complete: boolean;
+      /** Zurich, a preview: the rules the documents don't spell out, and what was assumed. */
+      unverified?: string[];
+      assumptions?: string[];
       /** This year against last year's declaration, rubric by rubric (comparison only). */
       lastYear: {
         code: string;
@@ -81,6 +86,13 @@ const text = {
     icc: 'cantonal',
     ifd: 'federal',
     foot: 'Computed on this computer by Taxpresso from the official documents. Ask Claude why any figure is what it is.',
+    officialZh: 'Steuern {year}',
+    breakdownZh: 'What the cantonal and communal tax (Staats- und Gemeindesteuern) is made of',
+    taxableZh:
+      'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
+    previewZh: 'Zurich is a preview: what to check',
+    previewZhNote:
+      'Taxpresso computes Zurich from the official documents. A few rules aren’t spelled out in them, and some answers were assumed. Here they are.',
   },
   fr: {
     title: 'Votre estimation',
@@ -106,10 +118,52 @@ const text = {
     icc: 'cantonal',
     ifd: 'fédéral',
     foot: 'Calculé sur cet ordinateur par Taxpresso à partir des documents officiels. Demandez à Claude pourquoi un montant est ce qu’il est.',
+    officialZh: 'Steuern {year}',
+    breakdownZh: 'Ce qui compose l’impôt cantonal et communal (Staats- und Gemeindesteuern)',
+    taxableZh: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
+    previewZh: `Zurich est en avant-première${NB}: ce qu’il faut vérifier`,
+    previewZhNote:
+      'Taxpresso calcule Zurich à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
+  },
+  de: {
+    title: 'Deine Schätzung',
+    official: 'impôts {year}',
+    estimate: 'Schätzung',
+    computed: 'Berechnet',
+    total: 'Total',
+    missing: 'Um deine Steuern zu berechnen, braucht Taxpresso zuerst: {what}.',
+    notComputed: 'Nicht berechnet',
+    breakdown: 'Woraus die Kantons- und Gemeindesteuer besteht',
+    taxable:
+      'Steuerbares Einkommen (revenu imposable): Kanton {icc}, Bund {ifd}. Steuerbares Vermögen (fortune imposable): {wealth}.',
+    items: 'Wichtigste Posten',
+    estimated: 'Was geschätzt ist',
+    needsOk:
+      '{n} Werte aus deinen Dokumenten brauchen noch dein OK: Die Zahlen ändern sich, wenn du sie korrigierst.',
+    needsOkOne:
+      '1 Wert aus deinen Dokumenten braucht noch dein OK: Die Zahlen ändern sich, wenn du ihn korrigierst.',
+    notes: 'Nicht in diesen Zahlen',
+    incomplete: 'Mindestens',
+    lastYearTitle: 'Dieses Jahr und letztes Jahr',
+    lastYearNote:
+      'Die Zahlen des Vorjahres stammen aus deiner letzten Steuererklärung. Sie dienen nur zum Vergleich und ändern die Steuer dieses Jahres nie.',
+    lastYearCol: 'Letztes Jahr',
+    thisYearCol: 'Dieses Jahr',
+    icc: 'Kanton',
+    ifd: 'Bund',
+    foot: 'Von Taxpresso auf diesem Computer aus den offiziellen Dokumenten berechnet. Frag Claude, warum eine Zahl so ist, wie sie ist.',
+    officialZh: 'Steuern {year}',
+    breakdownZh: 'Woraus die Staats- und Gemeindesteuern bestehen',
+    taxableZh:
+      'Steuerbares Einkommen: Staatssteuer {icc}, Bundessteuer {ifd}. Steuerbares Vermögen: {wealth}.',
+    previewZh: 'Zürich ist eine Vorschau: Was du prüfen solltest',
+    previewZhNote:
+      'Taxpresso berechnet Zürich aus den offiziellen Dokumenten. Ein paar Regeln sind darin nicht genau festgelegt, und einige Antworten wurden angenommen. Hier sind sie.',
   },
 } as const;
 
 type Key = keyof (typeof text)['en'];
+const AND: Record<Language, string> = { en: ' and ', fr: ' et ', de: ' und ' };
 const tr = (lang: Language, key: Key, vars: Record<string, string | number> = {}) =>
   text[lang][key].replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
 
@@ -169,19 +223,21 @@ export function Estimate({
           <h2 id="est-title">{tr(lang, 'title')}</h2>
         </div>
         <div class="card est-card">
-          <p class="est-note">
-            {tr(lang, 'missing', { what: view.missing.join(lang === 'fr' ? ' et ' : ' and ') })}
-          </p>
+          <p class="est-note">{tr(lang, 'missing', { what: view.missing.join(AND[lang]) })}</p>
         </div>
       </section>
     );
   }
+  const zh = view.canton === 'ZH';
+  const preview = [...(view.unverified ?? []), ...(view.assumptions ?? [])];
   return (
     <section class="stack" aria-labelledby="est-title">
       <div class="section-head">
         <h2 id="est-title">
           {tr(lang, 'title')}{' '}
-          <span class="est-official">({tr(lang, 'official', { year: view.taxYear })})</span>
+          <span class="est-official">
+            ({tr(lang, zh ? 'officialZh' : 'official', { year: view.taxYear })})
+          </span>
         </h2>
         <span class={`chip ${view.estimate ? 'chip-estimate' : 'chip-computed'}`}>
           {tr(lang, view.estimate ? 'estimate' : 'computed')}
@@ -209,7 +265,7 @@ export function Estimate({
         </ul>
         {view.parts.length ? (
           <details class="est-details">
-            <summary>{tr(lang, 'breakdown')}</summary>
+            <summary>{tr(lang, zh ? 'breakdownZh' : 'breakdown')}</summary>
             <ul class="est-rows">
               {view.parts.map((r) => (
                 <li key={r.id} class="est-row">
@@ -221,7 +277,7 @@ export function Estimate({
           </details>
         ) : null}
         <p class="est-note">
-          {tr(lang, 'taxable', {
+          {tr(lang, zh ? 'taxableZh' : 'taxable', {
             icc: chf(view.taxable.icc, lang),
             ifd: chf(view.taxable.ifd, lang),
             wealth: chf(view.taxable.wealth, lang),
@@ -291,6 +347,17 @@ export function Estimate({
             <summary>{tr(lang, 'notes')}</summary>
             <ul>
               {view.notes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
+        {preview.length ? (
+          <details class="est-details">
+            <summary>{tr(lang, 'previewZh')}</summary>
+            <p class="est-note">{tr(lang, 'previewZhNote')}</p>
+            <ul>
+              {preview.map((n) => (
                 <li key={n}>{n}</li>
               ))}
             </ul>

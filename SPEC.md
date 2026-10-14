@@ -437,19 +437,26 @@ taxpresso/
     rules-ch/           shared by every canton: the federal tax (IFD), pension and 3a limits,
                         withholding tax, shared keys, the canton interface (docs/design/cantons.md)
     rules-ge/           Geneva's cantonal and communal tax: src/<year>/ ... constants with citations
-    rules-zh/           Zurich's cantonal and communal tax (not wired into the extension yet)
+    rules-zh/           Zurich's cantonal, communal and church tax, and the federal tax of its form
+                        (wired into the extension as a preview)
+    rules-be/           Bern's cantonal and communal tax (not wired into the extension yet)
+    rules-vd/           Vaud's cantonal and communal tax (not wired into the extension yet)
     optimizer/
-    filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation
+    filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation; the form shapes
+                        and the copy panel every canton's form uses
+    filing-zh/          the Zurich form map (main form and annexes) and the values to type on it
   ui/                   Vite app; views reused as MCP Apps resources
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
+  data/ch/2026/         the questions every canton shares (the canton first), EN, FR, DE
   data/ge/2025/, data/ge/2026/   questionnaire yaml, keys, i18n
+  data/zh/2026/         Zurich's questionnaire: the shared questions, its own (commune, church)
   test/golden/          households + GeTax expected outputs
   test/fixtures/        sample PDFs (synthetic only, never real data)
   docs/                 privacy policy, support, example prompts
   docs/sources/         official documents per canton (section 7b), README with known conflicts
   docs/design/          screen mockups, design notes (cantons.md)
-  scripts/              fetch-sources.mjs, merge-manifests.mjs
+  scripts/              fetch-sources.mjs, merge-manifests.mjs, <canton>-communes.mjs
 ```
 
 ---

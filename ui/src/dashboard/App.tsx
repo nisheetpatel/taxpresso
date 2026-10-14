@@ -22,10 +22,13 @@ import type { OfficialLink, Question, RequirementView, State, Value } from './ty
 
 const POLL_MS = 2000;
 
+/** The language button cycles English, French, German. */
+const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'en' };
+
 function readLang(): Language | undefined {
   try {
     const v = localStorage.getItem('taxpresso.lang');
-    return v === 'en' || v === 'fr' ? v : undefined;
+    return v === 'en' || v === 'fr' || v === 'de' ? v : undefined;
   } catch {
     return undefined;
   }
@@ -134,7 +137,15 @@ export function App(): JSX.Element {
                         {a.who ? <span class="muted">{a.who} · </span> : null}
                         {a.question}
                       </span>
-                      <span class="answer-a">{a.answer}</span>
+                      <span class="answer-a">
+                        {a.answer}
+                        {a.assumed && state.canton ? (
+                          <span class="muted small-text">
+                            {' '}
+                            {t(L, 'assumedAnswer', { because: state.canton.because.join(', ') })}
+                          </span>
+                        ) : null}
+                      </span>
                       <button
                         type="button"
                         class="ghost small"
@@ -250,7 +261,11 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
       <span class="plan-when">{t(lang, 'planWhen')}</span>
       <h2 id="plan-title">
         {t(lang, 'planTitle')}
-        <Explain text={t(lang, 'planExplain')} topic={t(lang, 'planTopic')} lang={lang} />
+        <Explain
+          text={t(lang, state.canton?.code === 'ZH' ? 'planExplainZh' : 'planExplain')}
+          topic={t(lang, 'planTopic')}
+          lang={lang}
+        />
       </h2>
       <div class="plan-figures">
         <div class="figure">
@@ -269,7 +284,7 @@ function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }
                 {money(Math.round(result.saving.totalCentimes / 1000) * 1000, lang)}
               </strong>
               <span class="figure-note tnum">
-                {t(lang, 'planSavingSplit', {
+                {t(lang, state.canton?.code === 'ZH' ? 'planSavingSplitZh' : 'planSavingSplit', {
                   icc: money(result.saving.cantonalCentimes, lang),
                   ifd: money(result.saving.federalCentimes, lang),
                 })}
@@ -409,7 +424,11 @@ function Header({
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark" dangerouslySetInnerHTML={{ __html: wordmark(true) }} />
-        <span class="pill">{t(lang, 'yearPill', { year: state.taxYear })}</span>
+        <span class="pill">
+          {state.canton
+            ? t(lang, 'yearPill', { year: state.taxYear, canton: state.canton.name })
+            : t(lang, 'yearPillNoCanton', { year: state.taxYear })}
+        </span>
       </div>
       <nav aria-label={t(lang, 'steps')} class="steps">
         {steps.map((label, i) => (
@@ -429,9 +448,9 @@ function Header({
           type="button"
           class="ghost"
           aria-label={t(lang, 'langButton')}
-          onClick={() => onLang(lang === 'en' ? 'fr' : 'en')}
+          onClick={() => onLang(NEXT_LANG[lang])}
         >
-          {lang === 'en' ? 'EN' : 'FR'}
+          {lang.toUpperCase()}
         </button>
         <span class="chip chip-verified">{t(lang, 'localOnly')}</span>
       </div>
@@ -620,6 +639,13 @@ function QuestionCard(p: CardProps) {
           ) : null}
         </h2>
         {q.help ? <p class="muted">{q.help}</p> : null}
+        {q.link ? (
+          <p class="muted small-text">
+            <a href={q.link.url} target="_blank" rel="noopener noreferrer">
+              {q.link.label}
+            </a>
+          </p>
+        ) : null}
         {q.skipped ? <p class="muted small-text">{t(lang, 'skippedNote')}</p> : null}
       </div>
       {q.suggested !== undefined && q.value === undefined ? (

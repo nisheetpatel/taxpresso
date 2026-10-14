@@ -145,12 +145,20 @@ describe('Zurich through the canton interface', () => {
     }
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the cantonal, communal and federal tax of each household', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.icc!.taxes.total.amount).toBeGreaterThan(0);
+      if (r.ifd) expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd.tax.amount);
+      else {
+        // A side job, or shared custody without saying who earns more: not computed, said why.
+        expect(r.total).toBeNull();
+        expect(r.unsupported.map((u) => u.en).join(' ')).toMatch(/^Federal tax not computed/);
+      }
     }
+    expect(rules.computeReturn(household(HOUSEHOLDS[0]!)).ifd?.tax.amount).toBeGreaterThan(0);
+    const parent = { ...household(HOUSEHOLDS[2]!), ifdParentalScale: true };
+    expect(rules.computeReturn(parent).ifd?.scale).toBe('parental');
   });
 
   it('leaves aside the facts only Geneva uses', () => {
@@ -177,7 +185,6 @@ describe('Zurich through the canton interface', () => {
     const p1 = h.people[0]!;
     const refused: HouseholdInput<ZurichCantonal>[] = [
       { ...h, people: [{ ...p1, pillar3aCatchUp: amt(2_000) }] },
-      { ...h, household: { childcare: amt(5_000) } },
       { ...h, movable: [{ owner: 'child0', value: amt(1_000) }] },
       { ...h, commune: 'zurich' },
       { ...h, commune: 9_999 },
@@ -201,15 +208,28 @@ describe('Zurich through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys, Zurich’s own, and what each document gives', () => {
     expect(rules.canton).toBe('ZH');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2026))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.civil_status',
+        'profile.commune',
+        'zh.church',
+        'pillar3a.paid',
+        'bank.balance',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.keys(2026)['profile.commune']?.values).toContain('198-2');
+    expect(rules.documents(2026)[0]).toEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(rules.documents(2026).map((d) => d.kind)).toContain('pillar3a_attestation');
+    expect(rules.documents(2026).map((d) => d.kind)).not.toContain('tax_assessment');
     expect(rules.sourcesIndex).toBe('docs/sources/zh');
   });
 });

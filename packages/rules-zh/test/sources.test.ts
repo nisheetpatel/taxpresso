@@ -1,7 +1,7 @@
 // Every constant cites a document of the sources library that was downloaded and checked
 // (SPEC.md section 13, item 8b): each manifest id in a citation has status "ok" in
 // docs/sources/lock.json and is followed by where to look (page, paragraph or sheet).
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   churchSplit,
@@ -9,7 +9,9 @@ import {
   personalTax,
   RUBRICS,
   tariffRule,
+  ZH_OFFICIAL_DOCUMENTS,
   zhParamsFor,
+  zurichKeys,
   type Cited,
 } from '../src/index.js';
 
@@ -64,5 +66,44 @@ describe('citations', () => {
 
   it('every line of the return', () => {
     for (const [code, r] of Object.entries(RUBRICS)) expectCited(r.source, code);
+  });
+
+  it('Zurich’s own keys and the Zurich terms it gives the shared ones', () => {
+    const keys = zurichKeys(2026);
+    for (const k of ['profile.commune', 'profile.moved', 'zh.church', 'zh.parish']) {
+      expectCited(keys[k]!.source!, k);
+    }
+    for (const [k, def] of Object.entries(keys)) {
+      if (def.source?.startsWith('zh-')) expectCited(def.source, k);
+    }
+  });
+});
+
+describe('the official Zurich documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/zh/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    for (const [id, doc] of Object.entries(ZH_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id);
+      expect(m, id).toBeDefined();
+      expect(doc, id).toEqual({ title: m!.title, url: m!.url, pdf: m!.format === 'pdf' });
+    }
+  });
+
+  it('cover every Zurich document the rules cite', () => {
+    const dir = new URL('../src/', import.meta.url);
+    const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    for (const f of files) {
+      const text = readFileSync(new URL(f, dir), 'utf8');
+      for (const id of text.match(/\bzh-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]\b/g) ?? []) {
+        if (manifest.some((m) => m.id === id)) {
+          expect(Object.keys(ZH_OFFICIAL_DOCUMENTS), `${f}: ${id}`).toContain(id);
+        }
+      }
+    }
   });
 });

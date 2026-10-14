@@ -32,6 +32,7 @@ async function setUp() {
   const ws = await makeWorkspace();
   const api = createApi(ws);
   for (const [id, value] of [
+    ['canton', 'GE'],
     ['civil_status', 'single'],
     ['children', 0],
     ['commune', 'Meyrin'],

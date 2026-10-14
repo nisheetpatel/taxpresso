@@ -32,6 +32,8 @@ const ADD_ELSEWHERE = {
     `To keep your documents out of the chat app, add “${name}” in the dashboard in your browser, or put it in your Taxpresso folder.`,
   fr: (name: string) =>
     `Pour que vos documents ne passent pas par l’application de chat, ajoutez «${NBSP}${name}${NBSP}» dans le tableau de bord de votre navigateur, ou déposez-le dans votre dossier Taxpresso.`,
+  de: (name: string) =>
+    `Damit deine Dokumente nicht über die Chat-App laufen, füge «${name}» im Dashboard in deinem Browser hinzu, oder leg es in deinen Taxpresso-Ordner.`,
 };
 
 /** The key from this view's HTML, or an empty string (the extension then refuses every call). */
@@ -63,7 +65,8 @@ export function mcpTransport(host: ToolCaller, key: string): Transport {
   }
 
   function upload(req: ApiRequest, file: File): never {
-    throw new ApiError(ADD_ELSEWHERE[req.query.lang === 'fr' ? 'fr' : 'en'](file.name));
+    const lang = req.query.lang;
+    throw new ApiError(ADD_ELSEWHERE[lang === 'fr' || lang === 'de' ? lang : 'en'](file.name));
   }
 
   return {

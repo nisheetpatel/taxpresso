@@ -59,6 +59,9 @@ const ASSUMPTION_TEXT: Record<string, string> = {
   net_from_gross: 'Net salary assumed to be 88 % of the gross; the payslip gives the real figure.',
   commune_default: 'Commune unknown: City of Geneva assumed.',
   no_income_for_some: 'No salary given for one person: counted as zero.',
+  zh_commune_default: 'Commune unknown: City of Zurich assumed.',
+  zh_preview:
+    'Zurich is a preview: the rules its documents don’t spell out are applied as in the estimate (compute_tax lists them).',
 };
 
 const QuestionOut = z.object({
@@ -70,6 +73,8 @@ const QuestionOut = z.object({
   explain: z.object({ en: z.string(), fr: z.string() }).optional(),
   /** An official page on the topic, to give the user; label in English. */
   learnMore: z.object({ url: z.string(), label: z.string() }).optional(),
+  /** A page of the Taxpresso project, such as the vote for the next canton; label in English. */
+  link: z.object({ url: z.string(), label: z.string() }).optional(),
   options: z
     .array(
       z.object({ value: z.string(), en: z.string(), fr: z.string(), notSupported: z.boolean() }),
@@ -112,6 +117,7 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
     ...(en.help && fr.help ? { help: { en: en.help, fr: fr.help } } : {}),
     ...(en.explain && fr.explain ? { explain: { en: en.explain, fr: fr.explain } } : {}),
     ...(en.learnMore ? { learnMore: en.learnMore } : {}),
+    ...(en.link ? { link: en.link } : {}),
     ...(en.options && en.type !== 'commune'
       ? {
           options: en.options.map((o, i) => ({
@@ -161,16 +167,16 @@ function toolError(err: unknown) {
   throw err;
 }
 
-function questionText(q: QuestionOut): string {
+function questionText(q: QuestionOut, place = 'Geneva'): string {
   const how =
     q.type === 'yesno'
-      ? 'Answer: yes or no.'
+      ? `Answer: yes or no.${q.options?.some((o) => o.value === 'yes' && o.notSupported) ? ' Yes is not supported yet.' : ''}`
       : q.type === 'number'
         ? `Answer: a whole number from ${q.min} to ${q.max}.`
         : q.type === 'money'
           ? 'Answer: an amount in CHF as the user said it, e.g. 790 or "1\'250.50".'
           : q.type === 'commune'
-            ? 'Answer: the name of the Geneva commune.'
+            ? `Answer: the name of the ${place} commune${place === 'Zurich' ? ' (Uster and Turbenthal: the part too, as listed in the dashboard)' : ''}.`
             : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
                 ?.map((o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`)
                 .join('; ')}`;
@@ -181,6 +187,7 @@ function questionText(q: QuestionOut): string {
     ...(q.help ? [`Help: ${q.help.en}`] : []),
     ...(q.explain ? [`If the user asks what this means: ${q.explain.en}`] : []),
     ...(q.learnMore ? [`Official page (${q.learnMore.label}): ${q.learnMore.url}`] : []),
+    ...(q.link ? [`${q.link.label}: ${q.link.url}`] : []),
     how,
     ...(q.suggested
       ? [
@@ -203,7 +210,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get tax return status',
       description:
-        "Where the user's Geneva tax return stands: household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.",
+        "Where the user's tax return stands (Geneva, or Zurich as a preview): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.",
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -226,7 +233,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get the next questions',
       description:
-        "The next unanswered questions about the user's situation, in French and English with their options. Ask them one at a time in the user's language, then save each answer with answer_question.",
+        "The next unanswered questions about the user's situation, in English and French (German too, for Zurich) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.",
       inputSchema: z.object({
         limit: z.number().int().min(1).max(5).optional().describe('How many questions. Default 1.'),
       }),
@@ -250,7 +257,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
       const text = questions.length
-        ? `${answered} answered, ${open.length} to go.\n\n${questions.map(questionText).join('\n\n')}`
+        ? `${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en)).join('\n\n')}`
         : 'All questions are answered. Call get_status for the next step.';
       return {
         content: [{ type: 'text', text }],
@@ -304,7 +311,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           );
         }
         lines.push(
-          next ? `\nNext question:\n${questionText(next)}` : '\nAll questions are answered.',
+          next
+            ? `\nNext question:\n${questionText(next, ws.engine.file.place?.en)}`
+            : '\nAll questions are answered.',
         );
         return {
           content: [{ type: 'text', text: lines.join('\n') }],
@@ -460,7 +469,10 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       await planningReady(ws);
       const plan = ws.plan();
       const planning = planningView(ws);
-      const lines = [`Before 31 December ${ws.config.taxYear}: pillar 3a (3e pilier A)`];
+      const zh = ws.canton().canton?.code === 'ZH';
+      const lines = [
+        `Before 31 December ${ws.config.taxYear}: pillar 3a (${zh ? 'Säule 3a' : '3e pilier A'})`,
+      ];
       for (const p of plan.people) {
         const cap = p.capIsMaximum
           ? `up to ${chf(p.capCentimes)} (no pension fund: 20 % of earned income)`
@@ -501,7 +513,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Compute the tax',
       description:
-        "The user's Geneva cantonal and communal tax (ICC) and federal tax (IFD) from Taxpresso's rules engine: totals, main items by rubric code, what is an estimate or still needs the user's OK. detail: true explains every line with its official source.",
+        "The user's cantonal, communal and federal tax from Taxpresso's rules engine, for the canton of the year (Geneva: ICC, IFD; Zurich: Staats- und Gemeindesteuern, Bundessteuer): totals, main items by line code, estimates, values needing the user's OK. detail: true explains each line with its source.",
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -826,13 +838,15 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get the values to type into the declaration',
       description:
-        'The values the user types by hand into the official Geneva declaration, in the form\'s order, as in the dashboard\'s copy panel: rubric code, French label, value as typed, status. No section: the sections with progress. A section (e.g. "A1"): its values.',
+        'Values the user types by hand into their canton\'s official declaration, in the form\'s order, as in the dashboard\'s copy panel: line code, official label (Geneva: French; Zurich: German), value as typed, status. No section: sections with progress. A section ("A1", "S2"): its values.',
       inputSchema: z.object({
         section: z
           .string()
           .max(4)
           .optional()
-          .describe('A page of the form, e.g. "PG1", "A1", "C3". Default: the list of sections.'),
+          .describe(
+            'A page of the form, e.g. "PG1", "A1", "C3" (Geneva) or "S2", "BA1", "VP" (Zurich). Default: the list of sections.',
+          ),
       }),
       outputSchema: z.object({
         provisional: z.boolean(),
@@ -920,8 +934,8 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   server.registerPrompt(
     'start_geneva_tax_return',
     {
-      title: 'Start my Geneva tax return',
-      description: 'Begin or pick up your Geneva tax return with Taxpresso.',
+      title: 'Start my tax return',
+      description: 'Begin or pick up your Geneva or Zurich tax return with Taxpresso.',
     },
     () => ({
       messages: [
@@ -929,7 +943,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           role: 'user',
           content: {
             type: 'text',
-            text: `I want to work on my Geneva tax return for ${ws.config.taxYear} with Taxpresso. Check where I am and tell me the next step.`,
+            text: `I want to work on my tax return for ${ws.config.taxYear} with Taxpresso. Check where I am and tell me the next step.`,
           },
         },
       ],

@@ -24,7 +24,12 @@ import {
   type Text,
 } from './schema.js';
 
-export type Lang = 'en' | 'fr';
+export type Lang = 'en' | 'fr' | 'de';
+
+/** A text in the language asked for; English where a text has no German yet. */
+export function say(text: { en: string; fr: string; de?: string | undefined }, lang: Lang): string {
+  return lang === 'de' ? (text.de ?? text.en) : text[lang];
+}
 
 export interface CommuneOption {
   slug: string;
@@ -45,6 +50,11 @@ export interface Slot {
    */
   suggested?: FactValue;
   suggestion?: Fact;
+  /**
+   * Not answered, but taken from the user's other answers (the canton of an existing return, from
+   * its commune): it counts as the answer until the user answers the question themselves.
+   */
+  assumed?: boolean;
 }
 
 export interface Snapshot {
@@ -67,6 +77,8 @@ export interface RenderedQuestion {
   explain?: string;
   /** An official page on the topic, in the user's language. */
   learnMore?: { url: string; label: string };
+  /** A page of the project, such as the vote for the next canton. */
+  link?: { url: string; label: string };
   options?: { value: string; label: string; notSupported: boolean }[];
   none?: string;
   min?: number;
@@ -74,11 +86,17 @@ export interface RenderedQuestion {
   value?: FactValue;
   /** Not an answer yet: a value read from a document, for the user to confirm or change. */
   suggested?: FactValue;
+  /** The value was taken from the user's other answers, not given to this question. */
+  assumed?: boolean;
 }
 
 export class QuestionnaireError extends Error {}
 
-const YES_NO: Record<Lang, [string, string]> = { en: ['Yes', 'No'], fr: ['Oui', 'Non'] };
+const YES_NO: Record<Lang, [string, string]> = {
+  en: ['Yes', 'No'],
+  fr: ['Oui', 'Non'],
+  de: ['Ja', 'Nein'],
+};
 const COUPLE = new Set(['married', 'registered_partnership']);
 const slotKey = (key: string, owner: Owner) => `${key}|${owner}`;
 
@@ -164,7 +182,11 @@ export class QuestionnaireEngine {
     return problems;
   }
 
-  snapshot(ledger: Ledger): Snapshot {
+  /**
+   * The questions that apply, with their answers. `assumed` gives household answers taken from the
+   * user's other answers (by key): each counts until the question is answered.
+   */
+  snapshot(ledger: Ledger, assumed: Readonly<Record<string, FactValue>> = {}): Snapshot {
     const answers = new Map<string, FactValue>();
     const people = (): Person[] =>
       COUPLE.has(String(answers.get(slotKey('profile.civil_status', 'household'))))
@@ -182,14 +204,22 @@ export class QuestionnaireEngine {
         // Read from a document and not confirmed yet: a suggestion, not an answer.
         const suggestion = fact?.status === 'extracted' ? fact : undefined;
         const answer = suggestion ? undefined : fact;
+        const taken =
+          !answer && person === 'household' && assumed[question.key] !== undefined && def
+            ? invalidValue(def, assumed[question.key]!)
+              ? undefined
+              : assumed[question.key]
+            : undefined;
         const slot: Slot = {
           id: question.perPerson ? `${question.id}:${person}` : question.id,
           question,
           person,
           ...(answer ? { value: answer.value, fact: answer } : {}),
+          ...(taken !== undefined ? { value: taken, assumed: true } : {}),
           ...(suggestion ? { suggested: suggestion.value, suggestion } : {}),
         };
         if (answer) answers.set(slotKey(question.key, person), answer.value);
+        else if (taken !== undefined) answers.set(slotKey(question.key, person), taken);
         slots.push(slot);
       }
     }
@@ -272,6 +302,10 @@ export class QuestionnaireEngine {
   notSupported(snapshot: Snapshot): { slotId: string; what: Text }[] {
     const out: { slotId: string; what: Text }[] = [];
     for (const slot of snapshot.slots) {
+      const q = slot.question;
+      if (q.type === 'yesno' && slot.value === true && q.yesNotSupported) {
+        out.push({ slotId: slot.id, what: q.yesNotSupported });
+      }
       for (const option of this.#selected(slot)) {
         if (option.notSupported) out.push({ slotId: slot.id, what: option.notSupported });
       }
@@ -292,18 +326,18 @@ export class QuestionnaireEngine {
         const selected = this.#selected(slot);
         const anyChips = (q.options ?? []).some((o) => o.chip);
         texts = selected.flatMap((o) =>
-          o.chip ? [o.chip[lang]] : anyChips ? [] : [o.label[lang]],
+          o.chip ? [say(o.chip, lang)] : anyChips ? [] : [say(o.label, lang)],
         );
       } else if (q.type === 'yesno') {
-        if (slot.value === true && q.chip && 'en' in q.chip) texts = [q.chip[lang]];
+        if (slot.value === true && q.chip && 'en' in q.chip) texts = [say(q.chip, lang)];
       } else if (q.type === 'number' && q.chip && 'one' in q.chip) {
         const n = Number(slot.value);
         const form = n === 0 ? q.chip.zero : n === 1 ? q.chip.one : q.chip.other;
-        if (form) texts = [form[lang].replace('{n}', String(n))];
+        if (form) texts = [say(form, lang).replace('{n}', String(n))];
       }
       const prefix =
         slot.person === 'p2'
-          ? `${this.file.people.p2Chip[lang]}${lang === 'fr' ? `${NBSP}: ` : ': '}`
+          ? `${say(this.file.people.p2Chip, lang)}${lang === 'fr' ? `${NBSP}: ` : ': '}`
           : '';
       chips.push(...texts.map((t) => prefix + t));
     }
@@ -312,18 +346,19 @@ export class QuestionnaireEngine {
 
   render(slot: Slot, snapshot: Snapshot, lang: Lang): RenderedQuestion {
     const q = slot.question;
-    const text = 'p1' in q.text ? q.text[slot.person === 'p2' ? 'p2' : 'p1'][lang] : q.text[lang];
+    const text =
+      'p1' in q.text ? say(q.text[slot.person === 'p2' ? 'p2' : 'p1'], lang) : say(q.text, lang);
     const options =
       q.type === 'commune'
         ? this.communes.map((c) => ({ value: c.slug, label: c.name, notSupported: false }))
         : q.type === 'yesno'
           ? [
-              { value: 'yes', label: YES_NO[lang][0], notSupported: false },
+              { value: 'yes', label: YES_NO[lang][0], notSupported: !!q.yesNotSupported },
               { value: 'no', label: YES_NO[lang][1], notSupported: false },
             ]
           : q.options?.map((o) => ({
               value: o.value,
-              label: o.label[lang],
+              label: say(o.label, lang),
               notSupported: !!o.notSupported,
             }));
     return {
@@ -333,21 +368,23 @@ export class QuestionnaireEngine {
       ...(q.perPerson &&
       snapshot.people.length > 1 &&
       (slot.person === 'p1' || slot.person === 'p2')
-        ? { who: this.file.people[slot.person][lang] }
+        ? { who: say(this.file.people[slot.person], lang) }
         : {}),
       type: q.type,
       text,
-      ...(q.help ? { help: q.help[lang] } : {}),
-      ...(q.explain ? { explain: q.explain[lang] } : {}),
+      ...(q.help ? { help: say(q.help, lang) } : {}),
+      ...(q.explain ? { explain: say(q.explain, lang) } : {}),
       ...(q.learnMore
-        ? { learnMore: { url: q.learnMore.url, label: q.learnMore.label[lang] } }
+        ? { learnMore: { url: q.learnMore.url, label: say(q.learnMore.label, lang) } }
         : {}),
+      ...(q.link ? { link: { url: q.link.url, label: say(q.link.label, lang) } } : {}),
       ...(options ? { options } : {}),
-      ...(q.none ? { none: q.none[lang] } : {}),
+      ...(q.none ? { none: say(q.none, lang) } : {}),
       ...(q.min !== undefined ? { min: q.min } : {}),
       ...(q.max !== undefined ? { max: q.max } : {}),
       ...(slot.value !== undefined ? { value: slot.value } : {}),
       ...(slot.suggested !== undefined ? { suggested: slot.suggested } : {}),
+      ...(slot.assumed ? { assumed: true } : {}),
     };
   }
 
@@ -359,12 +396,12 @@ export class QuestionnaireEngine {
     if (q.type === 'yesno') return YES_NO[lang][value ? 0 : 1];
     if (q.type === 'number') return String(value);
     if (q.type === 'money') return typeof value === 'number' ? chfText(value) : String(value);
-    const labels = this.#selected(slot, value).map((o) => o.label[lang]);
-    return labels.length ? labels.join(', ') : (q.none?.[lang] ?? '');
+    const labels = this.#selected(slot, value).map((o) => say(o.label, lang));
+    return labels.length ? labels.join(', ') : q.none ? say(q.none, lang) : '';
   }
 
   notSupportedMessage(lang: Lang): string {
-    return this.file.notSupported[lang];
+    return say(this.file.notSupported, lang);
   }
 
   #selected(slot: Slot, value: FactValue | undefined = slot.value) {
@@ -436,7 +473,21 @@ export class QuestionnaireEngine {
         if (typeof raw !== 'string') return bad('expected a commune');
         const f = fold(raw.replace(/^(ville de|commune de|le|la)\s+/i, ''));
         const hit = this.communes.find((c) => c.slug === raw || fold(c.name) === f);
-        return hit?.slug ?? bad(`"${raw}" is not a Geneva commune`);
+        if (hit) return hit.slug;
+        // A commune listed once per part ("Uster, Teil 1 (...)"): its name alone names one part
+        // only when it has one; otherwise the user says which.
+        const parts = this.communes.filter(
+          (c) => c.name.includes(',') && fold(c.name.slice(0, c.name.indexOf(','))) === f,
+        );
+        if (parts.length === 1) return parts[0]!.slug;
+        if (parts.length > 1) {
+          return bad(
+            `"${raw}" has ${parts.length} parts: ${parts.map((c) => c.name).join('; ')}. Say which.`,
+          );
+        }
+        return bad(
+          `"${raw}" is not ${this.file.place ? `a ${this.file.place.en}` : 'one of the'} commune${this.file.place ? '' : 's'}`,
+        );
       }
       case 'yesno': {
         if (typeof raw === 'boolean') return raw;

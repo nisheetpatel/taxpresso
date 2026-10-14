@@ -119,6 +119,7 @@ async function confirmed(
 
 /** The Dupont household's 2026 values, as the user confirmed them in Taxpresso. */
 async function dupont({ pillar3aConfirmed = true, buyIn = true } = {}) {
+  await ws.answer('canton', 'GE', 'chat');
   await ws.answer('civil_status', 'married', 'chat');
   await ws.answer('children', 1, 'chat');
   await ws.answer('commune', 'Vernier', 'chat');

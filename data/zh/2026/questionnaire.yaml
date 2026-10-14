@@ -1,0 +1,761 @@
+# Zurich questionnaire for tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data, not
+# code: packages/questionnaire reads it, and every key and value must exist in Zurich's keys
+# (packages/rules-zh, src/keys.ts; a test checks).
+#
+# The questions every canton asks come from data/ch/2026/questions.yaml (`use: <id>`), in the order
+# of the Zurich return (StA Form. 300, zh-2025-form-steuererklaerung-hauptformular), with Zurich's
+# own explanations and official pages. The questions only Zurich asks are written out here: the
+# commune (with the parts of the communes that have two multipliers), the move, the church tax.
+#
+# Wording and documents follow the Zurich guide for 2025, the latest published for a full year
+# (zh-2025-guide-natuerliche-personen); its index (p. 2) gives the page of each topic. The full-year
+# 2026 guide is not published yet (docs/sources/zh/NOTES.md, Gaps): re-check against it.
+#
+# German: informal "du", Swiss spelling (ss), the official German term next to its gloss. French:
+# write plain spaces before ? ! : ; and the loader makes them non-breaking.
+
+taxYear: 2026
+
+place: { en: 'Zurich', fr: 'Zurich', de: 'Zürich' }
+
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. ZHprivateTax, the canton’s free online return, or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. ZHprivateTax, la déclaration en ligne gratuite du canton, ou une fiduciaire le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. ZHprivateTax, die kostenlose Online-Steuererklärung des Kantons, oder eine Treuhand kann es.'
+
+questions:
+  - use: canton
+
+  # zh-2025-guide-natuerliche-personen p. 4 (Ehegatten, eingetragene Partnerschaft)
+  - use: civil_status
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=4'
+      label:
+        en: 'Zurich tax guide 2025, p. 4: marriage, partnership, separation'
+        fr: 'Guide fiscal zurichois 2025, p. 4 : Mariage, partenariat, séparation'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 4: Heirat, Partnerschaft, Trennung'
+    help:
+      en: 'On the form: Zivilstand.'
+      fr: 'Sur le formulaire : Zivilstand.'
+      de: 'Auf dem Formular: Zivilstand.'
+
+  # zh-2025-guide-natuerliche-personen p. 20 (Kinderabzug, Ziffer 24.1)
+  - use: children
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=20'
+      label:
+        en: 'Zurich tax guide 2025, p. 20: child deduction'
+        fr: 'Guide fiscal zurichois 2025, p. 20 : Déduction pour enfants'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 20: Kinderabzug'
+    help:
+      en: 'On the form: Kinder in Ihrem Haushalt (children in your household).'
+      fr: 'Sur le formulaire : Kinder in Ihrem Haushalt (enfants dans votre ménage).'
+      de: 'Auf dem Formular: Kinder in Ihrem Haushalt.'
+
+  - use: children_custody
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=20'
+      label:
+        en: 'Zurich tax guide 2025, p. 20: child deduction'
+        fr: 'Guide fiscal zurichois 2025, p. 20 : Déduction pour enfants'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 20: Kinderabzug'
+
+  # Parents who share custody without a partner: child support decides who counts the children and
+  # who has the married tariff (Verheiratetentarif), as a rule the parent who mainly supports them
+  # (zh-2026-law-steuergesetz-631-1-stand-2026 § 35 Abs. 2 and 2bis, p. 21;
+  # zh-2026-tariff-weisung-sozialabzuege p. 7 and 8, Rz 52 to 61); for the federal tax,
+  # ch-na-circulaire-30-epoux-famille p. 24.
+  - use: child_support
+    explain:
+      en: 'With shared custody, child support decides who counts the children. The parent who receives it counts them in full; without child support, you each count half, and the married tariff (Verheiratetentarif), a lower rate, goes to the parent who mainly supports the children, as a rule the one who earns more. The federal tax has the same rule for its parental scale.'
+      fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit les compte en entier ; sans contribution, chacun en compte la moitié, et le barème des personnes mariées (Verheiratetentarif), un taux plus bas, revient au parent qui assume l’essentiel de leur entretien, en règle générale celui qui gagne le plus. L’impôt fédéral suit la même règle pour son barème parental.'
+      de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, zählt die Kinder ganz; ohne Unterhaltsbeiträge zählt jeder die Hälfte, und den Verheiratetentarif, einen tieferen Satz, erhält der Elternteil, der hauptsächlich für die Kinder aufkommt, in der Regel wer mehr verdient. Die Bundessteuer hat für ihren Elterntarif dieselbe Regel.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-34-1/ZStB-Nr-34-1%203.pdf#page=7'
+      label:
+        en: 'Zurich directive on social deductions and tariffs 2026, p. 7: separated parents'
+        fr: 'Directive zurichoise sur les déductions sociales et les barèmes 2026, p. 7 : Parents séparés'
+        de: 'Weisung über Sozialabzüge und Steuertarife 2026, S. 7: getrennt lebende Eltern'
+    help:
+      en: 'Child support (Unterhaltsbeiträge) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
+      fr: 'La contribution d’entretien (Unterhaltsbeiträge) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
+      de: 'Unterhaltsbeiträge sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+
+  # zh-2025-guide-natuerliche-personen p. 18 (Abzug für fremdbetreute Kinder, Ziffer 16.6)
+  - use: childcare
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=18'
+      label:
+        en: 'Zurich tax guide 2025, p. 18: childcare costs'
+        fr: 'Guide fiscal zurichois 2025, p. 18 : Frais de garde des enfants'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 18: fremdbetreute Kinder'
+    help:
+      en: 'Crèche, day care, after-school care or a nanny. On the form: Abzug für fremdbetreute Kinder.'
+      fr: 'Crèche, garderie, parascolaire ou nourrice. Sur le formulaire : Abzug für fremdbetreute Kinder.'
+      de: 'Kita, Hort, Tagesstruktur oder Nanny. Auf dem Formular: Abzug für fremdbetreute Kinder.'
+
+  # The commune of 31 December taxes the whole year (StG § 190, zh-2026-law-steuergesetz-631-1-
+  # stand-2026 p. 73). The list is Zurich's 160 communes of 2026 (packages/rules-zh, from
+  # zh-na-communal-steuerfuesse-seit-2012 sheet STFUSS2026); a commune whose parts have different
+  # multipliers (two school districts) is listed once per part, numbered as in the official table.
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own multiplier (Steuerfuss), a percentage of the simple cantonal tax. A few communes have two parts with different multipliers, often two school districts.'
+      fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année. Chaque commune fixe son propre coefficient (Steuerfuss), un pourcentage de l’impôt cantonal simple. Quelques communes ont deux parties avec des coefficients différents, souvent deux arrondissements scolaires.'
+      de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr. Jede Gemeinde legt ihren eigenen Steuerfuss fest, einen Prozentsatz der einfachen Staatssteuer. Einige Gemeinden haben zwei Teile mit verschiedenen Steuerfüssen, oft zwei Schulgemeinden.'
+    learnMore:
+      url: 'https://www.zh.ch/de/steuern-finanzen/steuern/steuerstatistiken/aktuelle-gemeinde-steuerfuesse.html'
+      label:
+        en: 'Current communal multipliers (zh.ch)'
+        fr: 'Coefficients communaux actuels (zh.ch)'
+        de: 'Aktuelle Gemeindesteuerfüsse (zh.ch)'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+    help:
+      en: 'Uster and Turbenthal have two parts (Teil 1 and Teil 2, as the official table numbers them, without naming them): not sure which is yours? Your commune’s tax office (Gemeindesteueramt) knows, and your last tax bill shows the multiplier.'
+      fr: 'Uster et Turbenthal ont deux parties (Teil 1 et Teil 2, numérotées ainsi par le tableau officiel, sans nom) : un doute sur la vôtre ? L’office des impôts de votre commune (Gemeindesteueramt) le sait, et votre dernier bordereau indique le coefficient.'
+      de: 'Uster und Turbenthal haben zwei Teile (Teil 1 und Teil 2, so nummeriert in der offiziellen Tabelle, ohne Namen): Unsicher, welcher deiner ist? Das Gemeindesteueramt weiss es, und deine letzte Steuerrechnung zeigt den Steuerfuss.'
+
+  # zh-2025-guide-natuerliche-personen p. 5 and 6: arriving from another canton, Zurich taxes the
+  # whole year; from abroad, only from the arrival (part-year liability, not covered by rules-zh).
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Zurich taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
+      fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Zurich vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Zürich besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=5'
+      label:
+        en: 'Zurich tax guide 2025, p. 5: arriving in Zurich'
+        fr: 'Guide fiscal zurichois 2025, p. 5 : Arrivée dans le canton de Zurich'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 5: Zuzug in den Kanton Zürich'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+      de: 'Bist du 2026 umgezogen?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - value: within_zurich
+        label:
+          {
+            en: 'Yes, within the canton of Zurich',
+            fr: 'Oui, dans le canton de Zurich',
+            de: 'Ja, innerhalb des Kantons Zürich',
+          }
+        chip: { en: 'Moved in Zurich', fr: 'Déménagé à Zurich', de: 'Umzug im Kanton' }
+      - value: from_other_canton
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            de: 'Ja, aus einem anderen Kanton',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            de: 'Zuzug aus einem anderen Kanton',
+          }
+      - value: from_abroad
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            de: 'Ja, ich bin aus dem Ausland zugezogen',
+          }
+        notSupported:
+          {
+            en: 'Arriving from abroad during the year (Zuzug aus dem Ausland)',
+            fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland)',
+            de: 'Ein Zuzug aus dem Ausland während des Jahres',
+          }
+      - value: leaving_switzerland
+        label:
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+          }
+        notSupported:
+          { en: 'Leaving Switzerland', fr: 'Un départ de Suisse', de: 'Ein Wegzug aus der Schweiz' }
+
+  # Church tax (Kirchensteuer): levied by the parishes of the three recognised churches, a
+  # percentage of the simple cantonal tax; spouses of two churches each owe half (StG § 201 and
+  # § 202, zh-2026-law-steuergesetz-631-1-stand-2026 p. 74). The multipliers per commune:
+  # zh-na-communal-steuerfuesse-seit-2012 sheet STFUSS2026 (columns I to M). Opt-in: Taxpresso adds
+  # it only for a member.
+  - id: church
+    key: zh.church
+    type: choice
+    perPerson: true
+    explain:
+      en: 'Members of the Reformed, Roman Catholic or Christ Catholic church pay church tax (Kirchensteuer), a percentage of the simple cantonal tax set by their parish. Taxpresso adds it only for a member.'
+      fr: 'Les membres de l’Église réformée, catholique romaine ou catholique-chrétienne paient l’impôt ecclésiastique (Kirchensteuer), un pourcentage de l’impôt cantonal simple fixé par leur paroisse. Taxpresso ne l’ajoute que pour un membre.'
+      de: 'Mitglieder der reformierten, der römisch-katholischen oder der christkatholischen Kirche zahlen Kirchensteuer, einen Prozentsatz der einfachen Staatssteuer, den ihre Kirchgemeinde festlegt. Taxpresso rechnet sie nur für Mitglieder dazu.'
+    learnMore:
+      url: 'https://www.notes.zh.ch/appl/zhlex_r.nsf/WebView/A1B72A220CD6E747C1258DC4002A921E/$File/631.1_8.6.97_132.pdf#page=74'
+      label:
+        en: 'Zurich tax law (Steuergesetz), § 201 and § 202: church tax'
+        fr: 'Loi fiscale zurichoise (Steuergesetz), § 201 et § 202 : impôt ecclésiastique'
+        de: 'Steuergesetz, § 201 und § 202: Kirchensteuer'
+    text:
+      p1:
+        en: 'On 31 December 2026, were you a member of one of these churches?'
+        fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces Églises ?'
+        de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+      p2:
+        en: 'On 31 December 2026, was your spouse or partner a member of one of these churches?'
+        fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces Églises ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+    help:
+      en: 'On the form: Konfession. Another religion, or none, pays no church tax.'
+      fr: 'Sur le formulaire : Konfession. Une autre religion, ou aucune, ne paie pas d’impôt ecclésiastique.'
+      de: 'Auf dem Formular: Konfession. Eine andere Religion oder keine zahlt keine Kirchensteuer.'
+    options:
+      - value: reformed
+        label:
+          {
+            en: 'Reformed (evangelisch-reformiert)',
+            fr: 'Réformée (evangelisch-reformiert)',
+            de: 'Evangelisch-reformiert',
+          }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert' }
+      - value: catholic
+        label:
+          {
+            en: 'Roman Catholic (römisch-katholisch)',
+            fr: 'Catholique romaine (römisch-katholisch)',
+            de: 'Römisch-katholisch',
+          }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch' }
+      - value: christ_catholic
+        label:
+          {
+            en: 'Christ Catholic (christkatholisch)',
+            fr: 'Catholique-chrétienne (christkatholisch)',
+            de: 'Christkatholisch',
+          }
+        chip: { en: 'Christ Catholic', fr: 'Catholique-chrétien(ne)', de: 'Christkatholisch' }
+      - value: none
+        label: { en: 'None of these', fr: 'Aucune de ces Églises', de: 'Keine davon' }
+
+  # Wädenswil (293) has two Reformed parishes and Wiesendangen (298) two Catholic ones with
+  # different multipliers in 2026, numbered 1 and 2 without names (zh-na-communal-steuerfuesse-
+  # seit-2012 sheet STFUSS2026, columns I to L). A test keeps this list equal to rules-zh's table.
+  - id: parish
+    key: zh.parish
+    type: choice
+    when:
+      any:
+        - all:
+            - { key: profile.commune, eq: '293' }
+            - { key: zh.church, eq: reformed, anyPerson: true }
+        - all:
+            - { key: profile.commune, eq: '298' }
+            - { key: zh.church, eq: catholic, anyPerson: true }
+    explain:
+      en: 'Your commune has two parishes of your church with different church tax multipliers. The official table numbers them 1 and 2 without naming them.'
+      fr: 'Votre commune compte deux paroisses de votre Église avec des coefficients d’impôt ecclésiastique différents. Le tableau officiel les numérote 1 et 2, sans les nommer.'
+      de: 'Deine Gemeinde hat zwei Kirchgemeinden deiner Kirche mit verschiedenen Kirchensteuerfüssen. Die offizielle Tabelle nummeriert sie mit 1 und 2, ohne sie zu benennen.'
+    learnMore:
+      url: 'https://www.zh.ch/de/steuern-finanzen/steuern/steuerstatistiken/aktuelle-gemeinde-steuerfuesse.html'
+      label:
+        en: 'Current communal multipliers (zh.ch)'
+        fr: 'Coefficients communaux actuels (zh.ch)'
+        de: 'Aktuelle Gemeindesteuerfüsse (zh.ch)'
+    text:
+      en: 'Which parish (Kirchgemeinde) do you belong to?'
+      fr: 'À quelle paroisse (Kirchgemeinde) appartenez-vous ?'
+      de: 'Zu welcher Kirchgemeinde gehörst du?'
+    help:
+      en: 'Not sure? Your parish or your commune’s tax office (Gemeindesteueramt) knows, and your last tax bill shows the multiplier.'
+      fr: 'Un doute ? Votre paroisse ou l’office des impôts de votre commune (Gemeindesteueramt) le sait, et votre dernier bordereau indique le coefficient.'
+      de: 'Unsicher? Deine Kirchgemeinde oder das Gemeindesteueramt weiss es, und deine letzte Steuerrechnung zeigt den Steuerfuss.'
+    options:
+      - value: '1'
+        label:
+          {
+            en: 'Parish 1 of the official table',
+            fr: 'Paroisse 1 du tableau officiel',
+            de: 'Kirchgemeinde 1 der offiziellen Tabelle',
+          }
+      - value: '2'
+        label:
+          {
+            en: 'Parish 2 of the official table',
+            fr: 'Paroisse 2 du tableau officiel',
+            de: 'Kirchgemeinde 2 der offiziellen Tabelle',
+          }
+
+  # zh-2025-guide-natuerliche-personen p. 10 to 12 (Einkünfte)
+  - use: income_sources
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=10'
+      label:
+        en: 'Zurich tax guide 2025, p. 10: income'
+        fr: 'Guide fiscal zurichois 2025, p. 10 : Revenus'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 10: Einkünfte'
+    options:
+      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - value: replacement_income
+        label:
+          en: 'Unemployment, sickness or accident benefits'
+          fr: 'Des indemnités (chômage, maladie, accident)'
+          de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+      - value: pension
+        label:
+          {
+            en: 'A pension (AHV, IV or pension fund)',
+            fr: 'Une rente (AVS, AI ou caisse de pension)',
+            de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+          }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+      - value: alimony
+        label:
+          {
+            en: 'Alimony or child support received',
+            fr: 'Une pension alimentaire reçue',
+            de: 'Erhaltene Unterhaltsbeiträge',
+          }
+        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+      - value: self_employment
+        label:
+          {
+            en: 'Income from self-employment',
+            fr: 'Un revenu d’activité indépendante',
+            de: 'Einkommen aus selbständiger Erwerbstätigkeit',
+          }
+        notSupported:
+          {
+            en: 'Self-employment (Hilfsblatt A)',
+            fr: 'L’activité indépendante (Hilfsblatt A)',
+            de: 'Die selbständige Erwerbstätigkeit (Hilfsblatt A)',
+          }
+
+  # zh-2025-guide-natuerliche-personen p. 10 (Haupterwerb, Lohnausweis)
+  - use: employers
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=10'
+      label:
+        en: 'Zurich tax guide 2025, p. 10: employment income'
+        fr: 'Guide fiscal zurichois 2025, p. 10 : Activité dépendante'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 10: Haupterwerb'
+    help:
+      en: 'Each one gives you a salary certificate (Lohnausweis).'
+      fr: 'Chacun vous remet un certificat de salaire (Lohnausweis).'
+      de: 'Jeder gibt dir einen Lohnausweis.'
+
+  # People taxed at source (Quellensteuer) file an ordinary return only when they ask for it or
+  # must (nachträgliche ordentliche Veranlagung, NOV): zh-2025-guide-natuerliche-personen p. 6;
+  # zh-na-source-tax-nov-antrag. Not covered yet in Zurich.
+  - use: taxed_at_source
+    yesNotSupported:
+      en: 'Tax at source in Zurich (Quellensteuer) and the ordinary assessment that follows it (NOV)'
+      fr: 'L’impôt à la source à Zurich (Quellensteuer) et la taxation ordinaire qui suit (NOV)'
+      de: 'Die Quellensteuer im Kanton Zürich und die nachträgliche ordentliche Veranlagung (NOV)'
+    learnMore:
+      url: 'https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/nachtraegliche-ordentliche-veranlagung-oder-quellensteuerkorrekt.html'
+      label:
+        en: 'Asking for an ordinary assessment after tax at source (zh.ch)'
+        fr: 'Demander une taxation ordinaire après l’impôt à la source (zh.ch)'
+        de: 'Nachträgliche ordentliche Veranlagung beantragen (zh.ch)'
+    help:
+      en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, Ziffer 12).'
+      de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+
+  # zh-2025-guide-natuerliche-personen p. 15 (Beiträge Säule 3a, Ziffer 14); zh-na-deductions-
+  # merkblatt-saeule-3a
+  - use: pillar3a
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-31-1/zstb-nr-31-1.pdf'
+      label:
+        en: 'Zurich tax office leaflet: pillar 3a'
+        fr: 'Notice de l’administration fiscale zurichoise : pilier 3a'
+        de: 'Merkblatt des kantonalen Steueramtes: Säule 3a'
+    help:
+      en: 'Your bank or insurer sends an attestation. On the form: Beiträge an die 3. Säule a.'
+      fr: 'Votre banque ou votre assurance vous envoie une attestation. Sur le formulaire : Beiträge an die 3. Säule a.'
+      de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung. Auf dem Formular: Beiträge an die 3. Säule a.'
+
+  # zh-2025-guide-natuerliche-personen p. 16 (Ziffer 16.1, Beiträge an die AHV, IV und 2. Säule)
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=16'
+      label:
+        en: 'Zurich tax guide 2025, p. 16: contributions and buy-ins'
+        fr: 'Guide fiscal zurichois 2025, p. 16 : Cotisations et rachats'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 16: Beiträge an die 2. Säule'
+    help:
+      en: 'A voluntary payment on top of the usual contributions. On the form: Beiträge an die AHV, IV und 2. Säule.'
+      fr: 'Un versement volontaire en plus des cotisations habituelles. Sur le formulaire : Beiträge an die AHV, IV und 2. Säule.'
+      de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Auf dem Formular: Beiträge an die AHV, IV und 2. Säule.'
+
+  # Travel to work (Fahrkosten) for both taxes, each up to its own cap: zh-2025-guide-natuerliche-
+  # personen p. 13 (Berufsauslagen), zh-2026-deductions-berufsauslagen-631-33 (from 2026);
+  # ch-2026-ifd-instructions-personnes-physiques p. 6. Zurich has no rule on the length of the trip
+  # by public transport, so its question doesn't ask it.
+  - use: commute
+    explain:
+      en: 'Getting to work is deducted as travel costs (Fahrkosten), for the cantonal and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
+      fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrkosten), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
+      de: 'Der Arbeitsweg wird als Fahrkosten abgezogen, bei der Staats- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=13'
+      label:
+        en: 'Zurich tax guide 2025, p. 13: professional costs'
+        fr: 'Guide fiscal zurichois 2025, p. 13 : Frais professionnels'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: Berufsauslagen'
+    help:
+      en: 'Choose how you went on most work days. On the form: Berufsauslagen, Fahrkosten.'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire : Berufsauslagen, Fahrkosten.'
+      de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf dem Formular: Berufsauslagen, Fahrkosten.'
+    options:
+      - value: public_transport
+        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+            de: 'Motorrad oder Roller mit weissem Kontrollschild',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+            de: 'Velo, E-Bike oder Mofa mit gelbem Kontrollschild',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - value: mostly_home
+        label:
+          {
+            en: 'From home, almost every day',
+            fr: 'Depuis chez moi, presque tous les jours',
+            de: 'Von zu Hause, fast jeden Tag',
+          }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+
+  - use: commute_transit_cost
+    explain:
+      en: 'You deduct the public transport you paid to get to work, for the cantonal and the federal tax, each up to its own yearly limit.'
+      fr: 'Vous déduisez les transports publics payés pour aller au travail, pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Du ziehst den bezahlten öffentlichen Verkehr zur Arbeit ab, bei der Staats- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=13'
+      label:
+        en: 'Zurich tax guide 2025, p. 13: travel costs'
+        fr: 'Guide fiscal zurichois 2025, p. 13 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: Fahrkosten'
+
+  - use: commute_transit_usable
+    explain:
+      en: 'A driver deducts what public transport would have cost, for both taxes. Only when you can’t use it (no line nearby, a disability, working hours with no service) do the kilometres count.'
+      fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics, pour les deux impôts. Ce n’est que si vous ne pouvez pas les utiliser (pas de ligne à proximité, un handicap, des horaires sans desserte) que les kilomètres comptent.'
+      de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Nur wenn du ihn nicht nutzen kannst (keine Linie in der Nähe, eine Behinderung, Arbeitszeiten ohne Verbindung), zählen die Kilometer.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=13'
+      label:
+        en: 'Zurich tax guide 2025, p. 13: travel costs'
+        fr: 'Guide fiscal zurichois 2025, p. 13 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: Fahrkosten'
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, I could have used public transport',
+            fr: 'Oui, j’aurais pu prendre les transports publics',
+            de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No, there is no public transport I can use',
+            fr: 'Non, aucun transport public que je puisse utiliser',
+            de: 'Nein, es gibt keinen öffentlichen Verkehr, den ich nutzen kann',
+          }
+
+  - use: commute_transit_equivalent
+    explain:
+      en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
+      fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab, bei beiden Steuern, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=13'
+      label:
+        en: 'Zurich tax guide 2025, p. 13: travel costs'
+        fr: 'Guide fiscal zurichois 2025, p. 13 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: Fahrkosten'
+
+  - use: commute_distance
+    explain:
+      en: 'Without public transport you can use, both taxes count a fixed amount per kilometre, there and back once a day, each up to its own yearly limit.'
+      fr: 'Sans transport public utilisable, les deux impôts comptent un montant fixe par kilomètre, un aller et retour par jour, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Ohne nutzbaren öffentlichen Verkehr zählen beide Steuern einen festen Betrag pro Kilometer, einmal hin und zurück pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=13'
+      label:
+        en: 'Zurich tax guide 2025, p. 13: travel costs'
+        fr: 'Guide fiscal zurichois 2025, p. 13 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: Fahrkosten'
+
+  # The Berufsauslagen form limits the days driven to 240 as a rule (zh-2026-deductions-form-
+  # berufsauslagen p. 1, Ziffer 1.3).
+  - use: commute_drive_days
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2026/est-formulare-uj/360%20Berufsauslagen%20ZH%202026.pdf'
+      label:
+        en: 'Zurich professional costs form 2026 (Berufsauslagen)'
+        fr: 'Formulaire zurichois des frais professionnels 2026 (Berufsauslagen)'
+        de: 'Formular Berufsauslagen 2026'
+    help:
+      en: 'Leave out holidays, sick days and days worked from home. The form counts at most 240 days, as a rule.'
+      fr: 'Sans les vacances, les jours de maladie et les jours de télétravail. Le formulaire compte au plus 240 jours, en règle générale.'
+      de: 'Ohne Ferien, Krankheitstage und Tage im Homeoffice. Das Formular zählt in der Regel höchstens 240 Tage.'
+
+  # Meals away from home (Mehrkosten der Verpflegung), for both taxes: zh-2025-guide-natuerliche-
+  # personen p. 13; zh-2026-deductions-berufsauslagen-631-33 p. 2 (Ziff. I.2).
+  - use: meal_days
+    explain:
+      en: 'Lunch away from home because of work costs more than at home (Mehrkosten der Verpflegung). A fixed amount per day counts for both taxes, each up to its own yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate).'
+      fr: 'Manger à l’extérieur à cause du travail coûte plus cher qu’à la maison (Mehrkosten der Verpflegung). Un montant fixe par jour compte pour les deux impôts, chacun jusqu’à sa propre limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire).'
+      de: 'Auswärts essen wegen der Arbeit kostet mehr als zu Hause (Mehrkosten der Verpflegung). Für beide Steuern zählt ein fester Betrag pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag, die Hälfte davon, wenn dein Arbeitgeber einen Teil deiner Mahlzeiten bezahlt (Feld G des Lohnausweises).'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=13'
+      label:
+        en: 'Zurich tax guide 2025, p. 13: meals'
+        fr: 'Guide fiscal zurichois 2025, p. 13 : Frais de repas'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: Mehrkosten der Verpflegung'
+
+  # zh-2025-guide-natuerliche-personen p. 24 (Wertschriften- und Guthabenverzeichnis, eSteuerauszug)
+  - use: banks
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=24'
+      label:
+        en: 'Zurich tax guide 2025, p. 24: securities and accounts'
+        fr: 'Guide fiscal zurichois 2025, p. 24 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 24: Wertschriften und Guthaben'
+    help:
+      en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers (Interactive Brokers, DEGIRO). If a bank offers an e-tax statement (eSteuerauszug), ask for it: it has everything in one document. On the form: Wertschriften- und Guthabenverzeichnis.'
+      fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers (Interactive Brokers, DEGIRO). Si une banque propose un relevé fiscal électronique (eSteuerauszug), demandez-le : il contient tout en un seul document. Sur le formulaire : Wertschriften- und Guthabenverzeichnis.'
+      de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker (Interactive Brokers, DEGIRO). Bietet eine Bank einen eSteuerauszug an, verlang ihn: Er enthält alles in einem Dokument. Auf dem Formular: Wertschriften- und Guthabenverzeichnis.'
+
+  # zh-2025-guide-natuerliche-personen p. 25; zh-na-other-crypto-zstb-16-5
+  - use: crypto
+    learnMore:
+      url: 'https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-16-5.html'
+      label:
+        en: 'Cryptocurrencies in the Zurich tax book (zh.ch)'
+        fr: 'Les cryptomonnaies dans le Steuerbuch zurichois (zh.ch)'
+        de: 'Steuerliche Behandlung von Kryptowährungen (zh.ch)'
+
+  # zh-2025-guide-natuerliche-personen p. 14 (Schuldzinsen), p. 15 (Unterhaltsbeiträge), p. 19
+  # (Krankheitskosten, gemeinnützige Zuwendungen)
+  - use: payments
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=19'
+      label:
+        en: 'Zurich tax guide 2025, p. 19: medical costs and donations'
+        fr: 'Guide fiscal zurichois 2025, p. 19 : Frais médicaux et dons'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 19: Krankheitskosten und Zuwendungen'
+
+  # What Taxpresso can't prepare for Zurich yet: property (Liegenschaftenverzeichnis, guide p. 28),
+  # inheritances and gifts (p. 7, 23), income from abroad, capital payments (p. 22). ZHprivateTax
+  # is the canton's free online return (zh-na-efiling-steuererklaerung-privatpersonen).
+  - use: special
+    learnMore:
+      url: 'https://www.zh.ch/de/steuern-finanzen/steuern/steuern-natuerliche-personen/steuererklaerung-natuerliche-personen.html'
+      label:
+        en: 'ZHprivateTax, the canton’s free online return (zh.ch)'
+        fr: 'ZHprivateTax, la déclaration en ligne gratuite du canton (zh.ch)'
+        de: 'ZHprivateTax, die kostenlose Online-Steuererklärung des Kantons (zh.ch)'
+    options:
+      - value: real_estate
+        label:
+          {
+            en: 'I own real estate, in Switzerland or abroad',
+            fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
+            de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+          }
+        notSupported:
+          {
+            en: 'Real estate (Liegenschaftenverzeichnis)',
+            fr: 'Les immeubles (Liegenschaftenverzeichnis)',
+            de: 'Liegenschaften (Liegenschaftenverzeichnis)',
+          }
+      - value: inheritance_or_gift
+        label:
+          {
+            en: 'I received an inheritance or a large gift',
+            fr: 'J’ai reçu un héritage ou une donation importante',
+            de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+          }
+        notSupported:
+          {
+            en: 'An inheritance or a gift (Erbschaft, Schenkung)',
+            fr: 'Un héritage ou une donation (Erbschaft, Schenkung)',
+            de: 'Eine Erbschaft oder Schenkung',
+          }
+      - value: foreign_income
+        label:
+          {
+            en: 'I had income from abroad (salary, pension, rent)',
+            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+            de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+          }
+        notSupported:
+          {
+            en: 'Income from abroad',
+            fr: 'Des revenus de l’étranger',
+            de: 'Einkünfte aus dem Ausland',
+          }
+      - value: pension_capital
+        label:
+          {
+            en: 'I withdrew pension capital (2nd or 3rd pillar)',
+            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
+            de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+          }
+        notSupported:
+          {
+            en: 'A pension capital withdrawal (Kapitalleistung)',
+            fr: 'Un retrait de capital de prévoyance (Kapitalleistung)',
+            de: 'Ein Kapitalbezug aus der Vorsorge (Kapitalleistung)',
+          }
+
+# The documents, with the page of the Zurich guide (zh-2025-guide-natuerliche-personen index, p. 2).
+requirements:
+  - use: salary_certificate
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=10'
+      label:
+        en: 'Zurich tax guide 2025, p. 10: employment income'
+        fr: 'Guide fiscal zurichois 2025, p. 10 : Activité dépendante'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 10: Haupterwerb'
+    source: 'zh-2025-guide-natuerliche-personen p. 10'
+
+  - use: replacement_income
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=12'
+      label:
+        en: 'Zurich tax guide 2025, p. 12: daily allowances and unemployment'
+        fr: 'Guide fiscal zurichois 2025, p. 12 : Indemnités journalières et chômage'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 12: Taggelder und Arbeitslosenversicherung'
+    source: 'zh-2025-guide-natuerliche-personen p. 12'
+
+  - use: pension
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=11'
+      label:
+        en: 'Zurich tax guide 2025, p. 11: pensions'
+        fr: 'Guide fiscal zurichois 2025, p. 11 : Rentes'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 11: Renten'
+    source: 'zh-2025-guide-natuerliche-personen p. 11'
+
+  - use: pillar3a
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=15'
+      label:
+        en: 'Zurich tax guide 2025, p. 15: pillar 3a'
+        fr: 'Guide fiscal zurichois 2025, p. 15 : Pilier 3a'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 15: Säule 3a'
+    source: 'zh-2025-guide-natuerliche-personen p. 15'
+
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=16'
+      label:
+        en: 'Zurich tax guide 2025, p. 16: contributions and buy-ins'
+        fr: 'Guide fiscal zurichois 2025, p. 16 : Cotisations et rachats'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 16: Beiträge an die 2. Säule'
+    source: 'zh-2025-guide-natuerliche-personen p. 16'
+
+  - use: health_premiums
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=15'
+      label:
+        en: 'Zurich tax guide 2025, p. 15: insurance premiums'
+        fr: 'Guide fiscal zurichois 2025, p. 15 : Primes d’assurances'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 15: Versicherungsprämien'
+    source: 'zh-2025-guide-natuerliche-personen p. 15'
+
+  - use: banks
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=24'
+      label:
+        en: 'Zurich tax guide 2025, p. 24: securities and accounts'
+        fr: 'Guide fiscal zurichois 2025, p. 24 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 24: Wertschriften und Guthaben'
+    source: 'zh-2025-guide-natuerliche-personen p. 24'
+
+  - use: crypto
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=25'
+      label:
+        en: 'Zurich tax guide 2025, p. 25: cryptocurrencies'
+        fr: 'Guide fiscal zurichois 2025, p. 25 : Cryptomonnaies'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 25: Kryptowährungen'
+    source: 'zh-2025-guide-natuerliche-personen p. 25'
+
+  - use: childcare
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=18'
+      label:
+        en: 'Zurich tax guide 2025, p. 18: childcare costs'
+        fr: 'Guide fiscal zurichois 2025, p. 18 : Frais de garde des enfants'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 18: fremdbetreute Kinder'
+    source: 'zh-2025-guide-natuerliche-personen p. 18'
+
+  - use: medical
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-32-1.pdf'
+      label:
+        en: 'Zurich tax office leaflet: medical and accident costs'
+        fr: 'Notice de l’administration fiscale zurichoise : frais de maladie et d’accident'
+        de: 'Merkblatt des kantonalen Steueramtes: Krankheits- und Unfallkosten'
+    source: 'zh-2025-guide-natuerliche-personen p. 19'
+
+  - use: donations
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=19'
+      label:
+        en: 'Zurich tax guide 2025, p. 19: donations'
+        fr: 'Guide fiscal zurichois 2025, p. 19 : Dons'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 19: gemeinnützige Zuwendungen'
+    source: 'zh-2025-guide-natuerliche-personen p. 19'
+
+  - use: loan_interest
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=14'
+      label:
+        en: 'Zurich tax guide 2025, p. 14: debt interest'
+        fr: 'Guide fiscal zurichois 2025, p. 14 : Intérêts passifs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 14: Schuldzinsen'
+    source: 'zh-2025-guide-natuerliche-personen p. 14'
+
+  - use: alimony
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=15'
+      label:
+        en: 'Zurich tax guide 2025, p. 15: alimony and child support'
+        fr: 'Guide fiscal zurichois 2025, p. 15 : Contributions d’entretien'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 15: Unterhaltsbeiträge'
+    source: 'zh-2025-guide-natuerliche-personen p. 12, p. 15'
+
+  - use: separation_judgment
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=4'
+      label:
+        en: 'Zurich tax guide 2025, p. 4: separation and divorce'
+        fr: 'Guide fiscal zurichois 2025, p. 4 : Séparation et divorce'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 4: Trennung und Scheidung'
+    source: 'zh-2025-guide-natuerliche-personen p. 4'

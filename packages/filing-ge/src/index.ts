@@ -24,6 +24,7 @@ export {
   formPersonOf,
   PART_LABELS,
   type CopyGroup,
+  type CopyLabels,
   type CopyPanel,
   type CopyPanelInput,
   type CopyRow,

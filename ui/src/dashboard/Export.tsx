@@ -31,6 +31,16 @@ const text = {
     saved: `«${NB}{file}${NB}» enregistré dans {folder}${NB}: {n} fichiers.`,
     private: 'Il contient vos documents : gardez-le en lieu sûr, comme le dossier lui-même.',
   },
+  de: {
+    title: 'Eine Kopie deines Ordners',
+    lead: 'Eine ZIP-Datei mit deinen Dokumenten {year} und allem, was Taxpresso für dieses Jahr aufbewahrt, gespeichert in deinem Taxpresso-Ordner auf diesem Computer. Nichts wird irgendwohin gesendet.',
+    button: 'Kopie speichern (ZIP)',
+    saving: 'Kopie wird gespeichert…',
+    savedOne: '«{file}» in {folder} gespeichert: 1 Datei.',
+    saved: '«{file}» in {folder} gespeichert: {n} Dateien.',
+    private:
+      'Sie enthält deine Dokumente: Bewahre sie an einem privaten Ort auf, wie den Ordner selbst.',
+  },
 } as const;
 
 type Key = keyof (typeof text)['en'];

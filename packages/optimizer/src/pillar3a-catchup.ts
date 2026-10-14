@@ -6,7 +6,7 @@ import { PILLAR3A_2025, PILLAR3A_CATCHUP_2026, PILLAR3A_CATCHUP_FACTS } from '@t
 import {
   type Assumption,
   type Deduction,
-  ESTIMATE_SOURCES,
+  estimateSources,
   type HouseholdInput,
   ordinaryTaxEstimator,
   savingOf,
@@ -51,7 +51,11 @@ export interface CatchUpPersonResult {
   catchUpCentimes: number;
 }
 
-export type CatchUpAssumption = Assumption | 'pension_fund_2025_same';
+export type CatchUpAssumption =
+  | Assumption
+  | 'pension_fund_2025_same'
+  /** Zurich: no Zurich document gives the cantonal rule of a catch-up yet, so no saving. */
+  | 'zh_catchup_rule';
 
 export interface CatchUpResult {
   people: CatchUpPersonResult[];
@@ -98,8 +102,12 @@ export function pillar3aCatchUpPlan(
     capInYearCentimes: PILLAR3A_CATCHUP_2026.value.capInYear,
     assumptions: rows.some((r) => r.status !== 'unknown') ? ['pension_fund_2025_same'] : [],
     facts: PILLAR3A_CATCHUP_FACTS,
-    sources: [PILLAR3A_CATCHUP_2026.source, PILLAR3A_2025.source, ...ESTIMATE_SOURCES],
+    sources: [PILLAR3A_CATCHUP_2026.source, PILLAR3A_2025.source, ...estimateSources(h)],
   };
+  // Zurich: the federal rule is known, the cantonal one is in no Zurich document yet (fail closed).
+  if (h.canton === 'ZH' && catchUpCentimes > 0) {
+    return { ...result, assumptions: [...result.assumptions, 'zh_catchup_rule'] };
+  }
   const estimator = catchUpCentimes > 0 ? ordinaryTaxEstimator(h) : undefined;
   if (!estimator) return result;
   // The full 2026 payment first (what was paid plus the room), then the catch-ups on top.

@@ -13,7 +13,7 @@ import {
   summarizeSecurities,
 } from '@taxpresso/intake';
 import type { Fact, FactStatus, Ledger, Vault, VaultDocument } from '@taxpresso/ledger';
-import type { Lang } from '@taxpresso/questionnaire';
+import type { ContentLang as Lang } from './lang.js';
 import type { SecurityKey } from '@taxpresso/rules-ch';
 
 const NAME_MAX = 200;

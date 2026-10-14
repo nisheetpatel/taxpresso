@@ -18,8 +18,9 @@ import {
   type FormColumn,
   type FormItem,
 } from '@taxpresso/filing-ge';
+import { ZH_COPY_LABELS, zurichFormItems, zurichFormMap } from '@taxpresso/filing-zh';
 import type { Line } from '@taxpresso/rules-ch';
-import type { Lang } from '@taxpresso/questionnaire';
+import type { ContentLang as Lang } from './lang.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
 /** Rubrics the engine computes, by the column they fill (@taxpresso/filing-ge, cited there). */
@@ -96,7 +97,32 @@ export interface CopyPanelView extends Omit<CopyPanel, 'sections'> {
   waiting: { label: string; filename?: string }[];
 }
 
+/** The documents each value was read from, through the facts behind it. */
+function withDocuments(ws: Workspace, items: FormItem[]): FormItem[] {
+  const docOf = new Map(ws.countedFacts().map((f) => [f.id, f.source.docId]));
+  return items.map((i) => {
+    const documents = [
+      ...new Set((i.source?.facts ?? []).map((id) => docOf.get(id)).filter((d) => d !== undefined)),
+    ];
+    return documents.length ? { ...i, source: { ...i.source, documents } } : i;
+  });
+}
+
 function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPanelView['waiting'] } {
+  // Zurich: every value from Zurich's engine (@taxpresso/filing-zh), on the Zurich form.
+  const estimate = ws.canton().canton?.code === 'ZH' ? ws.estimate() : undefined;
+  if (estimate?.canton === 'ZH') {
+    return {
+      panel: buildCopyPanel({
+        form: zurichFormMap(ws.engine.taxYear),
+        items: estimate.result ? withDocuments(ws, zurichFormItems(estimate.result)) : [],
+        lang,
+        entered: (id) => ws.formEntered(id),
+        labels: ZH_COPY_LABELS,
+      }),
+      waiting: [],
+    };
+  }
   const people = ws.snapshot().people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2');
   const { items, unplaced } = itemsFromLedger({
     facts: ws.countedFacts(),
@@ -220,6 +246,7 @@ export interface FormValuesResult {
 export function formValues(ws: Workspace, section?: string): FormValuesResult {
   const { panel: p, waiting } = panel(ws, 'en');
   const couple = ws.snapshot().people.length > 1;
+  const zh = ws.canton().canton?.code === 'ZH';
   const sections = p.sections.map((s) => ({
     page: s.page,
     title: s.title,
@@ -228,7 +255,7 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
     pending: s.pending,
   }));
   const head = [
-    `Values to type into the official declaration, in the form's order (dashboard: "Fill in your declaration"). Amounts in whole francs, no separators, as the form asks; imputations with centimes.${p.provisional ? ` ${p.note ?? ''}` : ''}`,
+    `Values to type into the official declaration, in the form's order (dashboard: "Fill in your declaration"). Amounts in whole francs, no separators, as the form asks${zh ? ' (CHF ohne Rappen)' : '; imputations with centimes'}.${p.provisional ? ` ${p.note ?? ''}` : ''}`,
     `Entered: ${p.entered} of ${p.total}${p.pending ? `; ${p.pending} not final yet (need the user's OK or are estimates)` : ''}.`,
   ];
   if (waiting.length) {
@@ -236,9 +263,16 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
       `Waiting for what they are: ${waiting.map((w) => `${w.label}${w.filename ? ` (${w.filename})` : ''}`).join('; ')}.`,
     );
   }
+  if (zh) {
+    head.push(
+      'Zurich: type them in ZHprivateTax, the canton’s free software, or on the paper form. The Berufsauslagen and Versicherungsprämien forms come first: their totals carry to page 3. The securities list (Wertschriftenverzeichnis) is not laid out yet: 150 and 400 are its totals.',
+    );
+  }
   if (couple) {
     head.push(
-      'Contribuable A is you (p1), B your partner (p2). If the form prints them the other way round, swap A and B.',
+      zh
+        ? 'Person 1 is you (p1), Person 2 your spouse or partner (p2), as on the Zurich form.'
+        : 'Contribuable A is you (p1), B your partner (p2). If the form prints them the other way round, swap A and B.',
     );
   }
   const structured: FormValuesResult['structured'] = {
@@ -262,7 +296,7 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
         ...head,
         'Sections:',
         ...lines,
-        'Call again with section (e.g. "A1") for its values.',
+        `Call again with section (e.g. "${zh ? 'S2' : 'A1'}") for its values.`,
       ].join('\n'),
       structured,
     };

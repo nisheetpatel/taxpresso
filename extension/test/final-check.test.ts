@@ -87,6 +87,7 @@ async function confirmed(
 
 /** The Duponts of Vernier: two salaries, pillar 3a for both, Jean's attestation not confirmed. */
 async function dupont() {
+  await ws.answer('canton', 'GE', 'chat');
   await ws.answer('civil_status', 'married', 'chat');
   await ws.answer('children', 1, 'chat');
   await ws.answer('commune', 'Vernier', 'chat');
@@ -191,6 +192,7 @@ describe('final check', () => {
   });
 
   it('lists a rough salary as an estimate until the salary certificate comes', async () => {
+    await ws.answer('canton', 'GE', 'chat');
     await ws.answer('civil_status', 'single', 'chat');
     await ws.answer('children', 0, 'chat');
     await ws.answer('commune', 'Meyrin', 'chat');

@@ -9,6 +9,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
+import { UI_LANGUAGES } from './config.js';
 import type { ApiResponse, Dashboard } from './dashboard.js';
 import type { Workspace } from './workspace.js';
 
@@ -38,7 +39,7 @@ const NO_DOCUMENTS =
 
 const Query = z
   .object({
-    lang: z.enum(['en', 'fr']).optional(),
+    lang: z.enum(UI_LANGUAGES).optional(),
     id: z.string().max(240).optional(),
     kind: z.string().max(80).optional(),
     person: z.string().max(20).optional(),

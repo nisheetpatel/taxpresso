@@ -8,6 +8,8 @@ const NB = String.fromCharCode(0xa0);
 const messages = {
   en: {
     title: 'Check before you transmit',
+    notAvailable:
+      'Taxpresso checks the PDF of Geneva declarations only, for now. For your Zurich return, compare what you typed in ZHprivateTax with the values to type above. You transmit your declaration yourself.',
     lead: 'When you have typed everything, download the PDF of your declaration from GeTax or the online declaration (e-démarches) and add it here. Taxpresso reads it on this computer and compares each amount with what you had to type, in whole francs. It keeps no name or number from it.',
     add: 'Add the PDF of your declaration',
     addAgain: 'Add the new PDF',
@@ -69,6 +71,7 @@ const messages = {
   },
   fr: {
     title: 'Vérifier avant de transmettre',
+    notAvailable: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration zurichoise, comparez vous-même ce que vous avez saisi dans ZHprivateTax avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     lead: 'Quand vous avez tout saisi, téléchargez le PDF de votre déclaration depuis GeTax ou la déclaration en ligne (e-démarches) et ajoutez-le ici. Taxpresso le lit sur cet ordinateur et compare chaque montant avec ce que vous deviez saisir, en francs entiers. Il n’en garde aucun nom ni numéro.',
     add: 'Ajouter le PDF de votre déclaration',
     addAgain: 'Ajouter le nouveau PDF',
@@ -124,6 +127,69 @@ const messages = {
     statusNeedsOk: 'À confirmer',
     statusEstimate: 'Estimation',
     colon: `${NB}: `,
+  },
+  de: {
+    title: 'Vor dem Übermitteln prüfen',
+    notAvailable:
+      'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Zürcher Steuererklärung vergleiche selbst, was du in ZHprivateTax eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
+    lead: 'Wenn du alles eingetragen hast, lade das PDF deiner Steuererklärung aus GeTax oder der Online-Steuererklärung (e-démarches) herunter und füge es hier hinzu. Taxpresso liest es auf diesem Computer und vergleicht jeden Betrag mit dem, was du eintragen solltest, in ganzen Franken. Es behält keinen Namen und keine Nummer daraus.',
+    add: 'PDF deiner Steuererklärung hinzufügen',
+    addAgain: 'Das neue PDF hinzufügen',
+    reading: '{name} wird gelesen…',
+    pending: 'Taxpresso liest dein PDF.',
+    checkedAgainst: 'Geprüft mit «{file}»',
+    printedBy: 'gedruckt von {software}',
+    olderOne: 'Nur das neueste PDF zählt (1 früheres).',
+    older: 'Nur das neueste PDF zählt ({n} frühere).',
+    summary: '{n} verglichen · {match} stimmen · {fix} zu korrigieren',
+    unreadable:
+      'Taxpresso kann «{file}» nicht als Genfer Steuererklärung lesen. Es braucht das von GeTax oder der Online-Steuererklärung gedruckte PDF, mit Text, keinen Scan und kein Foto. Lade es dort nochmals herunter und füge es hinzu.',
+    otherYear:
+      '«{file}» ist deine Steuererklärung {printed}, nicht die von {year}. Füge das PDF deiner Steuererklärung {year} hinzu.',
+    clear:
+      'Alles, was Taxpresso verglichen hat, stimmt. Du kannst deine Steuererklärung selbst übermitteln, in GeTax oder der Online-Steuererklärung.',
+    toFixLead:
+      'Korrigiere diese in GeTax oder der Online-Steuererklärung, lade dann das PDF nochmals herunter und füge es hier hinzu: Taxpresso prüft es erneut.',
+    notFinalOne:
+      '1 verglichener Wert ist in Taxpresso noch nicht definitiv (Braucht dein OK oder Schätzung). Kläre ihn zuerst, oben.',
+    notFinal:
+      '{n} verglichene Werte sind in Taxpresso noch nicht definitiv (Braucht dein OK oder Schätzung). Kläre sie zuerst, oben.',
+    fix: 'Korrigieren',
+    differs: 'Anderer Betrag',
+    pdfOnly: 'Nur in deinem PDF',
+    taxpressoOnly: 'Fehlt in deinem PDF',
+    matches: 'Stimmt',
+    inPdf: 'In deinem PDF',
+    toType: 'Einzutragen',
+    nothing: 'nichts',
+    unknownCode: 'Taxpresso füllt diese Zeile nicht aus: Prüfe sie anhand deiner Dokumente.',
+    pdfPage: 'Seite {page} des PDFs',
+    showMatches: 'Die {n} übereinstimmenden Werte zeigen',
+    computedTitle: 'Zeilen, die das Formular ausrechnet ({n})',
+    computedLead:
+      'Totale, übertragene Totale und Beträge, die eine Regel ausrechnet. Taxpresso prüft, ob die Totale aufgehen; sie zählen nie als Differenzen.',
+    addsUp: 'Geht auf',
+    sameAs: 'Gleich wie auf {page}',
+    off: 'Geht nicht auf: Die Zeilen oben ergeben {amount}',
+    offFrom: 'Nicht gleich wie auf {page}: {amount}',
+    shown: 'Vom Formular ausgerechnet',
+    computed: 'Berechnet',
+    byEyeTitle: 'Prüfe diese selbst',
+    byEyeTick: 'Ein Feld zum Ankreuzen',
+    byEyeText: 'Text: {value}',
+    byEyeTextNoValue: 'Text',
+    byEyeColumns: 'Taxpresso kann die Beträge auf dieser Zeile nicht auseinanderhalten',
+    notCompared:
+      'Namen, Adressen und das Wertschriftenverzeichnis (état des titres, annexe F) werden nicht verglichen: Prüfe sie selbst.',
+    warnings: 'Mit Warnungen gelesen: {list}',
+    transmitTitle: 'Du bist dran: übermitteln',
+    transmit1: 'Korrigiere jede Differenz in GeTax oder der Online-Steuererklärung.',
+    transmit2: 'Lade das PDF nochmals herunter und füge es hier hinzu, bis alles stimmt.',
+    transmit3:
+      'Drück selbst auf Transmettre (übermitteln). Weder Taxpresso noch Claude übermitteln je deine Steuererklärung.',
+    statusNeedsOk: 'Braucht dein OK',
+    statusEstimate: 'Schätzung',
+    colon: ': ',
   },
 } as const;
 

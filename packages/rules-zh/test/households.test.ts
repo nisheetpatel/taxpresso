@@ -59,14 +59,28 @@ describe('H1: single, Zürich, 2026, employed, public transport', () => {
     expect(r.icc?.taxes.communal.amount).toBe(chf(3_512.12));
     expect(r.icc?.taxes.church).toBeNull();
     expect(r.icc?.taxes.personalTax.amount).toBe(chf(24));
-    expect(r.total).toBe(chf(6_339.91));
+    expect(r.icc?.taxes.total.amount).toBe(chf(6_339.91));
     expect(r.commune).toEqual({ bfs: 261, name: 'Zürich', rate: 119 });
     expect(r.unsupported).toEqual([]);
-    expect(r.unverifiedRules).toEqual([NOTE.rounding]);
+    // 2026: the cantonal multiplier the documents disagree on, and the rounding they don't give.
+    expect(r.unverifiedRules).toEqual([NOTE.cantonalRate2026, NOTE.rounding]);
+  });
+
+  it('federal tax, the Bundessteuer column', () => {
+    // The same income lines: 199 = 79,040. Berufsauslagen at the federal caps: pass 800, meals
+    // 200 x 15 = 3,000, 3 % = 2,365: 6,165. 3a 7,258. Insurance: single with a pension fund, the
+    // federal 1,800. 299 = 15,223; 310 = 350 = 390 = 63,817.
+    expect(r.ifd?.grossIncome.amount).toBe(chf(79_040));
+    expect(r.ifd?.items.find((i) => i.code === '220')?.amount).toBe(chf(-6_165));
+    expect(r.ifd?.items.find((i) => i.code === '270')?.amount).toBe(chf(-1_800));
+    expect(r.ifd?.taxableIncome.amount).toBe(chf(63_817));
+    expect(r.ifd?.scale).toBe('single');
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
   });
 
   it('every line cites its sources', () => {
     for (const i of r.icc!.items) expect(i.sources.length, i.code).toBeGreaterThan(0);
+    for (const i of r.ifd!.items) expect(i.sources.length, i.code).toBeGreaterThan(0);
     expect(r.icc?.taxes.cantonal.sources).toContain(
       'zh-2026-tariff-staatssteuerfuss-2026-2027 p. 1',
     );
@@ -149,7 +163,7 @@ describe('H2: married, two earners, two children, Winterthur, 2025, church tax',
     expect(r.icc?.taxes.communal.amount).toBe(chf(2_940.1));
     expect(r.icc?.taxes.church?.amount).toBe(chf(352.81));
     expect(r.icc?.taxes.personalTax.amount).toBe(chf(48));
-    expect(r.total).toBe(chf(5_645.95));
+    expect(r.icc?.taxes.total.amount).toBe(chf(5_645.95));
   });
 });
 
@@ -193,7 +207,7 @@ describe('H3: single parent, Uster (part 2), 2026, childcare above the limit', (
     expect(r.icc?.taxes.simple.amount).toBe(chf(304.1));
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(288.9));
     expect(r.icc?.taxes.communal.amount).toBe(chf(334.51));
-    expect(r.total).toBe(chf(647.41));
+    expect(r.icc?.taxes.total.amount).toBe(chf(647.41));
     expect(r.commune.rate).toBe(110);
   });
 
@@ -242,7 +256,7 @@ describe('H4: retired couple, Küsnacht, 2025, wealth in the third step', () => 
     expect(r.icc?.taxes.simpleWealth.amount).toBe(chf(1_124));
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(4_920.63));
     expect(r.icc?.taxes.communal.amount).toBe(chf(3_665.37));
-    expect(r.total).toBe(chf(8_634));
+    expect(r.icc?.taxes.total.amount).toBe(chf(8_634));
     expect(r.assumptions).toContainEqual(NOTE.pensions100);
   });
 });
@@ -300,7 +314,7 @@ describe('H5: single, high income, side job, debts, Zürich, 2026, catholic', ()
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(25_530.21));
     expect(r.icc?.taxes.communal.amount).toBe(chf(31_979.94));
     expect(r.icc?.taxes.church?.amount).toBe(chf(2_687.39));
-    expect(r.total).toBe(chf(60_221.54));
+    expect(r.icc?.taxes.total.amount).toBe(chf(60_221.54));
   });
 });
 

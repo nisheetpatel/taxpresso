@@ -1,5 +1,6 @@
 // UI strings for the pension fund buy-in, the 3a catch-up and the TOU card (SPEC.md section 8,
-// groups B and C). Second person, plain words, official French terms next to their gloss.
+// groups B and C). Second person, plain words, official terms next to their gloss (French in
+// Geneva, German in Zurich).
 import { isMessageKey, t, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -110,6 +111,16 @@ const messages = {
     estimate: 'Estimate',
     'assume.pension_fund_2025_same':
       'We assume you had the same pension fund situation in 2025 as now.',
+    splitZh: 'Zurich {icc} · federal {ifd}',
+    lppOfficialZh: 'Einkauf in die Pensionskasse',
+    lppAttestationZh:
+      'Your fund confirms the payment with a certificate (Bescheinigung): keep it for your return.',
+    cuOfficialZh: 'Einkauf in die Säule 3a',
+    cuRuleIncomeZh: 'You must have had earned income subject to AHV in 2025.',
+    'assume.zh_catchup_rule':
+      'No saving for Zurich: no Zurich document Taxpresso has gives the cantonal rule of a 3a catch-up yet. The federal rules above hold.',
+    touGenevaOnly:
+      'TOU is Geneva’s procedure. For Zurich, Taxpresso doesn’t support taxation at source and its NOV (nachträgliche ordentliche Veranlagung) yet.',
   },
   fr: {
     when: 'Avant le 31 décembre',
@@ -205,6 +216,133 @@ const messages = {
     estimate: 'Estimation',
     'assume.pension_fund_2025_same':
       'Nous supposons que votre situation de caisse de pension était la même en 2025 qu’aujourd’hui.',
+    splitZh: 'Zurich {icc} · fédéral {ifd}',
+    lppOfficialZh: 'Einkauf in die Pensionskasse',
+    lppAttestationZh: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: gardez-la pour votre déclaration.`,
+    cuOfficialZh: 'Einkauf in die Säule 3a',
+    cuRuleIncomeZh: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
+    'assume.zh_catchup_rule': `Pas d’économie pour Zurich${NB}: aucun document zurichois dont dispose Taxpresso ne fixe encore la règle cantonale du rattrapage. Les règles fédérales ci-dessus s’appliquent.`,
+    touGenevaOnly: `La TOU est une procédure genevoise. Pour Zurich, Taxpresso ne prend pas encore en charge l’imposition à la source ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
+  },
+  de: {
+    when: 'Vor dem 31. Dezember',
+    saving: 'Steuern, die du sparst, etwa',
+    split: 'Genf {icc} · Bund {ifd}',
+    onlyWithTou:
+      'Du bist quellenbesteuert: Das senkt deine Steuern nur mit einer nachträglichen ordentlichen Veranlagung (TOU, taxation ordinaire ultérieure).',
+    how: 'So wird es berechnet',
+    sources: 'Quellen',
+    yes: 'Ja',
+    no: 'Nein',
+    lppTitle: 'Kauf dich in deine Pensionskasse ein',
+    lppOfficial: 'rachat 2e pilier (LPP)',
+    lppLead:
+      'Eine zusätzliche Einzahlung in deine Pensionskasse wird von deinem steuerbaren Einkommen abgezogen, im Jahr, in dem du sie zahlst.',
+    lppCapacity: 'Was deine Kasse erlaubt',
+    lppCapacityHint: 'Auf deinem Vorsorgeausweis',
+    lppAmount: 'Betrag, an den du denkst',
+    lppOver: 'Mehr, als deine Kasse erlaubt ({cap}): Sie würde es nicht annehmen.',
+    lppNoAmount: 'Gib einen Betrag ein, um die Ersparnis zu sehen',
+    lppNoSalary: 'Gib in der Karte zur Säule 3a einen ungefähren Lohn an, um es zu sehen',
+    lppCapacityUnknown: 'Schau auf deinem Vorsorgeausweis, wie viel du einkaufen kannst.',
+    lppThreeYears:
+      'Während 3 Jahren nach einem Einkauf kannst du dieses Geld nicht als Kapital beziehen, zum Beispiel bei der Pensionierung oder für ein Eigenheim. Sonst wird der Abzug rückgängig gemacht.',
+    lppPaidInYear: 'Es zählt für {year} nur, wenn deine Kasse es im Jahr {year} erhält.',
+    lppHome:
+      'Wenn du Geld für ein Eigenheim bezogen hast, musst du es vor einem Einkauf zurückzahlen.',
+    lppAttestation:
+      'Deine Kasse bestätigt die Zahlung auf dem Formular 21EDP: Bewahre es für deine Steuererklärung auf.',
+    cuTitle: 'Hol 2025 in deiner Säule 3a nach',
+    cuOfficial: 'rachat 3e pilier A',
+    cuLead:
+      'Neu 2026: Wenn du 2025 weniger als das Maximum in die Säule 3a eingezahlt hast, kannst du die Lücke jetzt nachholen, zusätzlich zur Einzahlung dieses Jahres.',
+    cuPaid2025: '2025 in die Säule 3a eingezahlt',
+    cuPaid2025Hint: 'Auf deiner Bescheinigung Säule 3a 2025',
+    cuUnknown: 'Gib ein, was du 2025 eingezahlt hast, um zu sehen, ob es eine Lücke gibt.',
+    cuNoGap: 'Du hast 2025 das Maximum eingezahlt: nichts nachzuholen.',
+    cuPossible: 'Du kannst {amount} nachholen.',
+    cuPossibleMax:
+      'Du kannst bis zu {amount} nachholen: Ohne Pensionskasse lag deine Grenze 2025 bei 20 % deines Erwerbseinkommens 2025.',
+    cuFirst: 'Zahl zuerst die Säule 3a dieses Jahres voll ein, dann den Nachkauf.',
+    cuRuleGaps: 'Nur Lücken ab 2025 können nachgeholt werden, höchstens {cap} pro Jahr.',
+    cuRuleIncome: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    cuRuleOnce:
+      'Ein Nachkauf pro verpasstes Jahr, und keiner mehr, sobald du dein 3a-Geld für die Pensionierung bezogen hast.',
+    cuRuleAsk:
+      'Frag deine 3a-Bank oder -Versicherung schriftlich an: Du gibst an, welches Jahr du nachholst und wie viel.',
+    touWhen: 'Zuerst entscheiden',
+    touTitle: 'Ordentlich statt an der Quelle besteuert werden?',
+    touOfficial: 'taxation ordinaire ultérieure (TOU)',
+    touLead:
+      'Ohne sie ist die von deinem Lohn abgezogene Steuer definitiv: Deine Säule 3a, Einkäufe in die Pensionskasse und Kinderbetreuungskosten senken sie nicht. Mit ihr füllst du eine normale Steuererklärung aus, und die schon abgezogene Steuer wird angerechnet.',
+    touDeadline: 'Beantragen bis {date}',
+    touDeadlinePassed: 'Die Frist ({date}) ist abgelaufen',
+    touWithheld: 'An der Quelle abgezogen',
+    touOrdinary: 'Ordentliche Besteuerung, etwa',
+    touDifference: 'Differenz für dich',
+    touBack: '≈ {amount} zurück',
+    touMore: '≈ {amount} mehr',
+    touSame: 'Etwa gleich',
+    'from.certificate': 'aus deinem Lohnausweis',
+    'from.stated': 'deine Zahl',
+    'from.tariff': 'geschätzt mit Tarif {tariff}',
+    touNeedWithheld:
+      'Wie viel Steuer wurde dieses Jahr an der Quelle abgezogen? Es steht auf deinen Lohnabrechnungen, dann in Feld 12 deines Lohnausweises.',
+    touWithheldLabel: 'An der Quelle abgezogene Steuer für das Jahr',
+    touTariffLabel: 'Oder dein Tarif (barème) von einer Lohnabrechnung',
+    touTariffNone: 'Wählen',
+    touNeedSalary: 'Gib in der Karte zur Säule 3a einen ungefähren Lohn an, um zu vergleichen.',
+    touMixed:
+      'Nur eine Person von euch ist quellenbesteuert. Taxpresso kann diesen Fall nicht vergleichen: Frag das Steueramt (AFC).',
+    touCompulsoryYes: 'Die TOU ist für dich obligatorisch: Melde sie bis {date} an.',
+    touCompulsoryCheck:
+      'Die TOU könnte für dich obligatorisch sein. Frag das Steueramt (AFC), bevor du entscheidest.',
+    touCompulsoryUnknown: 'Zwei Fragen entscheiden, ob die TOU für dich obligatorisch ist:',
+    'reason.gross': 'Ein Bruttolohn von {amount} oder mehr im Jahr',
+    'reason.other_income':
+      'Andere Einkünfte ohne Quellensteuer von {amount} oder mehr im Jahr: Zinsen, Dividenden, erhaltene Unterhaltsbeiträge, Mieten…',
+    'reason.taxable_wealth':
+      'Steuerbares Vermögen (fortune imposable) am 31. Dezember: mehr als {single} für eine Einzelperson, {couple} für ein Paar oder Alleinerziehende, plus {child} pro Kind',
+    'reason.previous_tou': 'Du wurdest schon früher ordentlich besteuert (TOU)',
+    'reason.spouse_without_activity':
+      'Ein Ehepartner ohne Arbeit oder Leistungen: Die Webseite des Kantons nennt diesen Fall, seine Weisungen 2026 nicht',
+    touIrrevocable:
+      'Nicht rückgängig zu machen. Sobald du den Antrag abschickst, kannst du ihn nicht zurückziehen, auch wenn das Ergebnis schlechter ist. Er gilt dann jedes Jahr, solange du quellenbesteuert bist, auch für deinen Ehepartner.',
+    touUnderstand: 'Ich verstehe: Ein abgeschickter TOU-Antrag kann nicht zurückgezogen werden.',
+    touRequest: 'Ja, ich beantrage die TOU',
+    touDecline: 'Nicht dieses Jahr',
+    touChosenRequest: 'Deine Wahl: TOU beantragen ({date}).',
+    touChosenDecline:
+      'Deine Wahl: keine TOU dieses Jahr ({date}). Die an der Quelle abgezogene Steuer bleibt definitiv.',
+    touChange: 'Meine Wahl ändern',
+    touNextRequest:
+      'Als Nächstes: Schick das Formular DRIS/TOU bis {date} aus deinem Steuerbereich bei e-démarches. Taxpresso schickt es nicht für dich.',
+    touNextCompulsory:
+      'Melde sie bis {date} mit dem Formular DRIS/TOU aus deinem Steuerbereich bei e-démarches an.',
+    touNeedComparison: 'Du kannst deine Wahl hier festhalten, sobald der Vergleich angezeigt wird.',
+    'assume.income_tax_only':
+      'Die ordentliche Steuer ist hier nur die Einkommenssteuer (Kanton, Gemeinde und Bund). Die Vermögenssteuer ist nicht gezählt: Mit steuerbarem Vermögen ist die TOU ohnehin obligatorisch.',
+    'assume.withheld_from_tariff':
+      'Die an der Quelle abgezogene Steuer ist aus deinem Tarif und deinem Bruttojahreslohn geschätzt. Dein Lohnausweis (Feld 12) zeigt die genaue Zahl.',
+    'assume.tariff_c_correction':
+      'Wenn ihr beide arbeitet (Tarif C), kann das Steueramt die Quellensteuer anhand beider tatsächlicher Einkommen korrigieren.',
+    'assume.values_to_confirm':
+      'Einige Zahlen stammen aus Dokumenten, die du noch nicht bestätigt hast.',
+    'assume.ordinary_may_be_lower':
+      'Die ordentliche Steuer zählt vorerst nur Pauschalabzüge: keine Genfer Familienabzüge, Krankenkassenprämien oder Kinderbetreuung. Deine tatsächliche ordentliche Steuer ist wohl tiefer, die TOU könnte also besser sein als gezeigt.',
+    estimate: 'Schätzung',
+    'assume.pension_fund_2025_same':
+      'Wir nehmen an, dass deine Situation bei der Pensionskasse 2025 dieselbe war wie heute.',
+    splitZh: 'Zürich {icc} · Bund {ifd}',
+    lppOfficialZh: 'Einkauf in die Pensionskasse',
+    lppAttestationZh:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Bewahre sie für deine Steuererklärung auf.',
+    cuOfficialZh: 'Einkauf in die Säule 3a',
+    cuRuleIncomeZh: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    'assume.zh_catchup_rule':
+      'Keine Ersparnis für Zürich: Kein Zürcher Dokument, das Taxpresso hat, legt die Regel für den Nachkauf in der Staatssteuer schon fest. Die Bundesregeln oben gelten.',
+    touGenevaOnly:
+      'Die TOU ist ein Genfer Verfahren. Für Zürich unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
   },
 } as const;
 
@@ -231,7 +369,7 @@ export function assumption(lang: Language, id: string): string {
  */
 export function day(iso: string, lang: Language): string {
   const isDay = /^\d{4}-\d{2}-\d{2}$/.test(iso);
-  return new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CH' : 'en-GB', {
+  return new Intl.DateTimeFormat({ en: 'en-GB', fr: 'fr-CH', de: 'de-CH' }[lang], {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

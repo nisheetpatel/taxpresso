@@ -1,9 +1,12 @@
 // Movable wealth the user tells Taxpresso about without a document (or before it arrives): bank
 // and postal accounts, crypto, loans to others, life insurance (pillar 3b), cash and valuables,
 // private debts. One instance per item, a stable id the user or Claude chooses ("ubs-savings").
-// Values from documents use the document keys instead (document-keys-wealth.ts).
+// Values from documents use the document keys instead (./wealth-documents.ts).
+// The same in every canton: each canton puts them on its own form. The terms and their sources
+// below are those of the first canton, Geneva (its état des titres: packages/rules-ge,
+// 2026/etat-des-titres.ts).
 //
-// Where each kind goes on the official form (ge-2025-declaration-specimen, 2025 form, the latest
+// Where each kind goes on the Geneva form (ge-2025-declaration-specimen, 2025 form, the latest
 // published; ge-2025-guide-declaration-pp for the rules):
 //   bank_account    état des titres, comptes bancaires et postaux (F2, p. 22; guide p. 40)
 //   crypto          état des titres; the guide says "sous Compte bancaire ou postal" (guide p. 40),

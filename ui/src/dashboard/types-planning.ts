@@ -95,6 +95,8 @@ export interface PlanningState {
   tou: TouPlan;
   /** Taxed at source without TOU: 3a and buy-ins lower the tax only with TOU. */
   needsTou: boolean;
+  /** Zurich: TOU is Geneva's, and taxation at source is not supported there yet. */
+  touGenevaOnly?: true;
 }
 
 export type PlanningField =

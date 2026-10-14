@@ -228,8 +228,7 @@ describe('broker exports in the vault', () => {
     // A fresh workspace on the same folder, as after a restart of Claude Desktop.
     const restarted = new Workspace(
       readConfig({ TAXPRESSO_VAULT_PATH: path.dirname(ws.vault.dir) }),
-      ws.engine,
-      ws.keys,
+      ws.cantons,
     );
     await restarted.ready();
     expect(restarted.securities('en')?.rows).toHaveLength(3);

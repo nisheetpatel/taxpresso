@@ -8,7 +8,7 @@ declare const __TAXPRESSO_VERSION__: string | undefined;
 /** The tax year this release prepares (SPEC.md section 1). Product scope, not a tax constant. */
 export const CURRENT_TAX_YEAR = 2026;
 
-export const UI_LANGUAGES = ['en', 'fr'] as const;
+export const UI_LANGUAGES = ['en', 'fr', 'de'] as const;
 export type UiLanguage = (typeof UI_LANGUAGES)[number];
 
 export interface Config {

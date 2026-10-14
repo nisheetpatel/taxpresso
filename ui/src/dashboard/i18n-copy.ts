@@ -1,5 +1,6 @@
-// UI strings for the copy panel (SPEC.md 10.5). Second person, plain words, the official French
-// label always next to its gloss. Status labels follow SPEC.md section 11b.
+// UI strings for the copy panel (SPEC.md 10.5). Second person, plain words, the official label
+// (French in Geneva, German in Zurich) always next to its gloss. Status labels follow SPEC.md
+// section 11b.
 import type { Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -33,6 +34,10 @@ const messages = {
     column: 'Column {list}',
     columns: 'Columns {list}',
     split: 'For the whole household: on the form, split it into {parts}, as on your document.',
+    leadZh:
+      'Type each value into ZHprivateTax or the paper form, page by page in the form’s order: first the Berufsauslagen and Versicherungsprämien forms, whose totals carry to page 3. Amounts are whole francs (CHF ohne Rappen), without separators. Tick each value once it is in.',
+    coupleZh:
+      'On the Zurich form, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -61,6 +66,42 @@ const messages = {
     column: 'Colonne {list}',
     columns: 'Colonnes {list}',
     split: `Pour tout le ménage${NB}: sur le formulaire, répartissez-le entre {parts}, comme sur votre document.`,
+    leadZh: `Recopiez chaque valeur dans ZHprivateTax ou le formulaire papier, page par page dans l’ordre du formulaire${NB}: d’abord les formulaires Berufsauslagen et Versicherungsprämien, dont les totaux sont reportés en page 3. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    coupleZh: `Sur le formulaire zurichois, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+  },
+  de: {
+    title: 'Fülle deine Steuererklärung aus',
+    lead: 'Tippe jeden Wert in die offizielle Steuererklärung (e-démarches oder GeTax), Seite für Seite in der Reihenfolge des Formulars. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen, wie das Formular es verlangt. Hake jeden Wert ab, sobald er drin ist.',
+    progress: '{n} von {total} eingetragen',
+    pending: '{n} noch nicht definitiv',
+    couple:
+      'Auf dem Formular ist contribuable A die links gedruckte Person, B die andere. Hier ist A {a} und B {b}: Wenn dein Formular sie umgekehrt hat, tausche die Werte von A und B.',
+    waiting: 'Noch nicht auf dem Formular, sag, was es ist: {list}',
+    copy: 'Kopieren',
+    copied: 'Kopiert',
+    copyFailed: 'Kopiere das: {value}',
+    copyLabel: '{label} kopieren',
+    entered: 'Eingetragen',
+    tick: 'Dieses Feld ankreuzen',
+    rounded: 'Aus {amount}, auf den Franken gerundet',
+    confirmFirst: 'Prüfe es zuerst, unter «Was Claude in deinen Dokumenten gelesen hat».',
+    estimateFirst: 'Eine Schätzung: Kläre sie, bevor du sie einträgst.',
+    formWorksOut: 'Das Formular rechnet das aus: Prüfe, ob es diesen Betrag zeigt.',
+    from: 'Gelesen in {files}',
+    statusNeedsOk: 'Braucht dein OK',
+    statusConfirmed: 'Von dir bestätigt',
+    statusVerified: 'Geprüft',
+    statusEstimate: 'Schätzung',
+    statusComputed: 'Berechnet',
+    pageLabel: 'Seite {page} des Formulars',
+    column: 'Spalte {list}',
+    columns: 'Spalten {list}',
+    split:
+      'Für den ganzen Haushalt: Teile es auf dem Formular auf {parts} auf, wie auf deinem Dokument.',
+    leadZh:
+      'Tippe jeden Wert in ZHprivateTax oder ins Papierformular, Seite für Seite in der Reihenfolge des Formulars: zuerst die Formulare Berufsauslagen und Versicherungsprämien, deren Totale auf Seite 3 übertragen werden. Beträge in ganzen Franken (CHF ohne Rappen), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    coupleZh:
+      'Auf dem Zürcher Formular ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
 } as const;
 

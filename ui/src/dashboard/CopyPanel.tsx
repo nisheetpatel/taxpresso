@@ -190,6 +190,7 @@ export function CopyPanel({ state, lang, act }: { state: State; lang: Language; 
   const panel = state.copyPanel;
   if (!panel || (panel.sections.length === 0 && panel.waiting.length === 0)) return null;
   const person = (id: string) => inSentence(state.people.find((p) => p.id === id)?.label ?? id);
+  const zh = state.canton?.code === 'ZH';
   return (
     <section aria-labelledby="cp-title" class="stack">
       <div class="section-head">
@@ -200,11 +201,11 @@ export function CopyPanel({ state, lang, act }: { state: State; lang: Language; 
           </span>
         ) : null}
       </div>
-      <p class="muted cp-lead">{tc(lang, 'lead')}</p>
+      <p class="muted cp-lead">{tc(lang, zh ? 'leadZh' : 'lead')}</p>
       {panel.provisional && panel.note ? <p class="banner banner-estimate">{panel.note}</p> : null}
       {panel.couple ? (
         <p class="muted small-text cp-lead">
-          {tc(lang, 'couple', { a: person('p1'), b: person('p2') })}
+          {tc(lang, zh ? 'coupleZh' : 'couple', { a: person('p1'), b: person('p2') })}
         </p>
       ) : null}
       {panel.waiting.length ? (

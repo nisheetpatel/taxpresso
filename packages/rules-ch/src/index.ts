@@ -46,6 +46,14 @@ export {
   type RuleLimit,
   type RuleResult,
 } from './core/items.js';
+// The ledger read into the household input, the part every canton shares.
+export {
+  amountOf,
+  factsOfYear,
+  householdFromFacts,
+  type CantonReading,
+  type HouseholdReading,
+} from './core/from-ledger.js';
 // The federal direct tax (IFD): the constants of each year, the federal deductions keyed by
 // concept, and the tax on a taxable income.
 export {
@@ -153,3 +161,33 @@ export {
 } from './keys/salary-certificate.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from './keys/securities.js';
 export { KEYS_ECH0196_2026, type Ech0196Key } from './keys/ech0196.js';
+// Movable wealth the user describes, and the documents behind it (bank, tax statement, crypto, life
+// insurance): the same in every canton.
+export {
+  KEYS_WEALTH_2026,
+  OWNERS,
+  WEALTH_KINDS,
+  type LineOwner,
+  type WealthKey,
+  type WealthKind,
+} from './keys/wealth.js';
+export { DOCUMENT_FIELDS_WEALTH_2026, DOCUMENT_KEYS_WEALTH_2026 } from './keys/wealth-documents.js';
+// The attestations every canton asks for (3a, buy-ins, premiums, medical costs, childcare, gifts,
+// loans, benefits, pensions) and the note that settles a "Check this" item.
+export {
+  ATTESTATION_FIELDS_2026,
+  KEY_CHECK_NOTE_2026,
+  KEYS_ATTESTATIONS_2026,
+  type AttestationKey,
+} from './keys/attestations.js';
+// The household's answers and planning figures every canton asks for.
+export { KEYS_HOUSEHOLD_2026, type HouseholdKey } from './keys/household.js';
+// The canton of the tax year: the first question (docs/design/cantons.md, section 3).
+export {
+  CANTON_ANSWERS,
+  isSupportedCanton,
+  KEYS_CANTON_2026,
+  SUPPORTED_CANTONS,
+  type CantonAnswer,
+  type SupportedCanton,
+} from './keys/canton.js';

@@ -128,7 +128,7 @@ export function FinalCheck({ state, lang }: { state: State; lang: Language }): J
           {view.moreTime ? (
             <p class="small-text fc-more-time">
               <a href={view.moreTime} target="_blank" rel="noopener noreferrer">
-                {tf(lang, 'moreTime')}
+                {tf(lang, state.canton?.code === 'ZH' ? 'moreTimeZh' : 'moreTime')}
               </a>{' '}
               {tf(lang, 'moreTimeAfter')}
             </p>
