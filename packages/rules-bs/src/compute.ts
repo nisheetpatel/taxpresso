@@ -1,8 +1,9 @@
 // The one entry point: computeReturn(input) gives the lines of the Basel-Stadt return by code and
-// person, the totals and the cantonal and communal tax, each line explained with its sources. First
-// stage here (household figures to the lines of the return, every cap, flat amount and threshold of
-// the Basel-Stadt documents, in the order of the form), second stage in ./assess.ts (lines to
-// taxes). The same two stages, with the same names, as packages/rules-vd, rules-zh and rules-be.
+// person, the totals and the cantonal and communal tax, each line explained with its sources, and
+// the federal tax of the Bund column (./ifd.ts). First stage here (household figures to the lines
+// of the return, every cap, flat amount and threshold of the Basel-Stadt documents, in the order of
+// the form, with the limits each rule applied), second stage in ./assess.ts (lines to taxes). The
+// same two stages, with the same names, as packages/rules-vd, rules-zh and rules-be.
 import {
   answered,
   chf,
@@ -10,9 +11,11 @@ import {
   roundFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import { assess, BsInputError, BsUnsupported, communeOf, communeRef, subtotals } from './assess.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import {
   childRule,
   exemptGoods,
@@ -24,6 +27,8 @@ import {
 } from './law.js';
 import { bsParamsFor, type BsYearParams } from './params.js';
 import {
+  FORM_B,
+  INCOME,
   PERSON_CODES,
   RUBRICS,
   WEALTH_RUBRICS,
@@ -41,8 +46,10 @@ import {
 import type {
   BsEngineInput,
   BsTaxResult,
+  ChildInput,
   EmploymentInput,
   Item,
+  ItemPart,
   ItemPerson,
   Line,
   PersonInput,
@@ -57,8 +64,37 @@ class Notes {
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A cap, threshold, minimum or choice a cantonal rule applied (SPEC.md 10.0), on `code` for
+   * `person`, cited by the constant `p` that sets it: `given` before the rule, `counted` after it.
+   * `rule` names it as the federal concepts are (packages/rules-ch, ifd/items.ts).
+   */
+  limit(
+    rule: string,
+    p: { source: string; estimate?: string | undefined },
+    kind: LimitApplied['kind'],
+    code: string,
+    person: ItemPerson,
+    given: number,
+    limit: number,
+    counted: number,
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: 'icc',
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      ...(p.estimate ? { estimate: true } : {}),
+      rule,
+    });
   }
 }
 
@@ -82,6 +118,10 @@ function total(tr: Trace, amounts: readonly (Amount | undefined)[]): number {
 
 const given = (value: number) =>
   t(`As given: ${chf(value)}.`, `Tel que donné${NB}: ${chf(value)}.`);
+
+/** The item with the form B lines that make up its amount, when there are some. */
+const withParts = (i: Item, parts: readonly ItemPart[]): Item =>
+  parts.length ? { ...i, parts } : i;
 
 interface Salary {
   /** Box 11: box 8 less boxes 9 and 10, to the franc. */
@@ -216,6 +256,10 @@ function personItems(P: BsYearParams, p: PersonInput, items: Item[], notes: Note
     const tv = travel(P, p, employments, tr, notes);
     const travelMax = tr.p(A.commuteMax);
     const travelCost = Math.min(tv.cost, travelMax);
+    const code = codes('professional');
+    if (tv.cost > 0) {
+      notes.limit('commute', A.commuteMax, 'cap', code, p.id, tv.cost, travelMax, travelCost);
+    }
     let meals = 0;
     let mealsHow = t('', '');
     if (p.commuteMode?.by === 'home') notes.add(notes.assumptions, NOTE.workFromHome);
@@ -230,6 +274,16 @@ function personItems(P: BsYearParams, p: PersonInput, items: Item[], notes: Note
         ? [m.reducedPerDay, m.reducedPerYear]
         : [m.perDay, m.perYear];
       meals = mealsCost(days, perDay, perYear, m.maxDays);
+      notes.limit(
+        'meals',
+        A.meals,
+        'cap',
+        code,
+        p.id,
+        Math.min(days, m.maxDays) * perDay,
+        perYear,
+        meals,
+      );
       mealsHow = t(
         ` + lunch ${Math.min(days, m.maxDays)} days x ${chf(perDay)}, at most ${chf(perYear)}: ${chf(meals)}`,
         ` + repas ${Math.min(days, m.maxDays)} jours x ${chf(perDay)}, au plus ${chf(perYear)}${NB}: ${chf(meals)}`,
@@ -244,6 +298,31 @@ function personItems(P: BsYearParams, p: PersonInput, items: Item[], notes: Note
     const chosen = Math.max(flat ?? 0, actual);
     const value = Math.min(chosen, earned);
     const useFlat = flat !== undefined && flat >= actual;
+    if (flat !== undefined && actual > 0) {
+      notes.limit(
+        'professional.other',
+        A.professionalFlat,
+        'choice',
+        code,
+        p.id,
+        actual,
+        flat,
+        chosen,
+      );
+    }
+    // Form B, Kanton column: the flat amount (500/520) or the actual costs (503, 504, 514), whose
+    // total carries to 519/539; none when the total is cut to the earned income.
+    const B = FORM_B[p.id];
+    const parts: ItemPart[] =
+      value < chosen
+        ? []
+        : useFlat
+          ? [{ code: B.flat, amount: value }]
+          : [
+              ...(travelCost ? [{ code: B.travel, amount: travelCost }] : []),
+              ...(meals ? [{ code: B.meals, amount: meals }] : []),
+              ...(other ? [{ code: B.other, amount: other }] : []),
+            ];
     if (useFlat) notes.add(notes.assumptions, NOTE.fullYear);
     else notes.add(notes.assumptions, NOTE.actualCosts);
     const flatText =
@@ -268,20 +347,23 @@ function personItems(P: BsYearParams, p: PersonInput, items: Item[], notes: Note
         : t('', '');
     if (value > 0) {
       items.push(
-        item(
-          codes('professional'),
-          p.id,
-          tr,
-          -value,
-          useFlat
-            ? t(
-                `The higher of the ${flatText.en} and the ${actualText.en}: the flat amount${capText.en}: ${chf(value)}.`,
-                `Le plus élevé du ${flatText.fr} et des ${actualText.fr}${NB}: le forfait${capText.fr}${NB}: ${chf(value)}.`,
-              )
-            : t(
-                `${flat === undefined ? 'The' : `Higher than the ${flatText.en}, the`} ${actualText.en}${capText.en}: ${chf(value)}.`,
-                `${flat === undefined ? 'Les' : `Plus élevés que le ${flatText.fr}, les`} ${actualText.fr}${capText.fr}${NB}: ${chf(value)}.`,
-              ),
+        withParts(
+          item(
+            code,
+            p.id,
+            tr,
+            -value,
+            useFlat
+              ? t(
+                  `The higher of the ${flatText.en} and the ${actualText.en}: the flat amount${capText.en}: ${chf(value)}.`,
+                  `Le plus élevé du ${flatText.fr} et des ${actualText.fr}${NB}: le forfait${capText.fr}${NB}: ${chf(value)}.`,
+                )
+              : t(
+                  `${flat === undefined ? 'The' : `Higher than the ${flatText.en}, the`} ${actualText.en}${capText.en}: ${chf(value)}.`,
+                  `${flat === undefined ? 'Les' : `Plus élevés que le ${flatText.fr}, les`} ${actualText.fr}${capText.fr}${NB}: ${chf(value)}.`,
+                ),
+          ),
+          parts,
         ),
       );
     }
@@ -323,6 +405,9 @@ function personItems(P: BsYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limit('pillar3a', l.param, l.kind, codes('pillar3a'), p.id, l.given, l.limit, l.counted);
+  }
   if (r3a.deduction && r3a.deduction.amount < 0) {
     contributions += -r3a.deduction.amount;
     items.push(
@@ -347,6 +432,9 @@ function personItems(P: BsYearParams, p: PersonInput, items: Item[], notes: Note
     trainingPaid = total(tr, [p.trainingCosts]);
     const cap = tr.p(A.training);
     const ded = Math.min(trainingPaid, cap);
+    if (trainingPaid > 0) {
+      notes.limit('training', A.training, 'cap', codes('training'), p.id, trainingPaid, cap, ded);
+    }
     if (ded > 0) {
       items.push(
         item(
@@ -507,6 +595,7 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     notCounted,
     unsupported: notes.unsupported,
     unverifiedRules: [],
+    limits: notes.limits,
     ...rest,
   });
   if (notes.unsupported.length) {
@@ -618,6 +707,7 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     const extra = tr.p(A.debtInterestExtra);
     const cap = grossYield + extra;
     const ded = Math.min(paid, cap);
+    notes.limit('debt_interest', A.debtInterestExtra, 'cap', '550', 'household', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -637,7 +727,11 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
   householdGiven('561', [hh.childSupportPaid], -1);
 
   // Childcare (670): per child under 14 living with you, at most the limit; married, both work.
-  const withCare = (input.children ?? []).filter((ch) => Boolean(ch.childcare));
+  // Given for the household as a whole, it counts where every split between the children gives the
+  // same deduction: one child, or a total within the smallest limit of a child (the limit is per
+  // child, form F; bs-2025-guide-wegleitung p. 36); otherwise the split decides, and is asked.
+  const careChildren = childcareOf(input, A.childcare.value, notes);
+  const withCare = careChildren.filter((ch) => Boolean(ch.childcare));
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)
@@ -647,11 +741,15 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
       const tr = new Trace();
       const cap = tr.p(A.childcare);
       let ded = 0;
+      let paidAll = 0;
+      let capAll = 0;
       const parts: string[] = [];
       for (const ch of withCare) {
         if (ch.under14 === false || ch.livesWithYou === false) continue;
         if (ch.under14 === undefined) notes.add(notes.assumptions, NOTE.under14);
         const paid = total(tr, [ch.childcare]);
+        paidAll += paid;
+        capAll += cap;
         if (ch.custody === 'shared' && input.childSupport === 'pays') {
           notes.add(notes.unsupported, NOTE.childcareNotCounted);
           continue;
@@ -663,6 +761,9 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
         const one = Math.min(paid, cap);
         ded += one;
         parts.push(chf(one));
+      }
+      if (paidAll > 0) {
+        notes.limit('childcare', A.childcare, 'cap', '670', 'household', paidAll, capAll, ded);
       }
       if (ded > 0) {
         items.push(
@@ -687,6 +788,7 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     const paid = total(tr, [hh.politicalParty]);
     const max = tr.p(A.party);
     const ded = Math.min(paid, max);
+    if (paid > 0) notes.limit('party', A.party, 'cap', '680', 'household', paid, max, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -710,6 +812,16 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     const tr = new Trace();
     const costs = total(tr, [hh.medicalCosts]);
     const m = illnessDeduction(costs, net, tr.p(A.medicalThresholdBp));
+    notes.limit(
+      'medical',
+      A.medicalThresholdBp,
+      'threshold',
+      '725',
+      'household',
+      costs,
+      m.threshold,
+      m.deduction,
+    );
     if (m.deduction > 0) {
       items.push(
         item(
@@ -729,6 +841,19 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     const tr = new Trace();
     const gifts = total(tr, [hh.donations]);
     const d = donationDeduction(gifts, net, tr.p(A.donations));
+    notes.limit(
+      'donations',
+      A.donations,
+      'minimum',
+      '732',
+      'household',
+      gifts,
+      A.donations.value.min,
+      d.deduction,
+    );
+    if (gifts >= A.donations.value.min) {
+      notes.limit('donations', A.donations, 'cap', '732', 'household', gifts, d.cap, d.deduction);
+    }
     if (d.deduction > 0) {
       items.push(
         item(
@@ -881,15 +1006,7 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
       );
     }
   }
-  const allLines: Line[] = [...items, ...wealthItems];
-  const base = {
-    estimates: [...new Set(allLines.flatMap((l) => l.estimates ?? []))]
-      .filter((id): id is keyof typeof ESTIMATE_TEXT => id in ESTIMATE_TEXT)
-      .map((id) => ({ id, what: ESTIMATE_TEXT[id] })),
-    needsOk: allLines.filter((l) => l.needsOk).length,
-    complete: !allLines.some((l) => l.incomplete),
-    incomplete: allLines.filter((l) => l.incomplete).map((l) => l.label),
-  };
+  const base = summary([...items, ...wealthItems]);
   if (notes.unsupported.length) return unsupportedResult(notes.assumptions, notes.notCounted, base);
 
   // In the form's order, person 1 before person 2 (the sort is stable).
@@ -911,18 +1028,72 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     const unverified = [NOTE.rounding, ...notes.unverified];
     if (icc.taxes.wealthReduction.amount !== 0 && ref.rate !== 0)
       unverified.push(NOTE.reductionThenCommune);
+
+    // The federal tax, the Bund column (./ifd.ts): the same income lines, the federal deductions.
+    // Who counts the children follows the same child support rule (circular 30).
+    const children = input.children ?? [];
+    const shared = !couple && children.some((ch) => ch.custody === 'shared');
+    const support = shared ? input.childSupport : undefined;
+    const federalChildSources =
+      support === 'receives'
+        ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'pays'
+          ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+          : support === 'none' && input.ifdParentalScale !== undefined
+            ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 13.4.2, 14.4)`]
+            : [];
+    const perChild = children.some((ch) => ch.childcare);
+    const federalChildren: FederalChild[] = [];
+    for (const ch of children) {
+      const weight =
+        ch.custody === 'full' || input.childSupport === 'receives'
+          ? 1
+          : input.childSupport === 'none'
+            ? 0.5
+            : 0;
+      if (!weight) continue;
+      federalChildren.push({
+        weight,
+        livesWithYou: ch.livesWithYou ?? true,
+        ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
+        ...(ch.childcare ? { childcare: ch.childcare } : {}),
+      });
+    }
+    const federal = federalReturn(
+      {
+        input,
+        couple,
+        incomeItems: items.filter((i) => INCOME.has(i.code)),
+        inFull: items.filter((i) => IN_FULL.has(i.code)),
+        children: federalChildren,
+        ...(!perChild && hh.childcare ? { householdChildcare: hh.childcare } : {}),
+        childSources: federalChildSources,
+        wealthIncome: grossYield,
+      },
+      people.map((p) => ({
+        input: p,
+        salaries: items.filter(
+          (i) =>
+            i.person === p.id &&
+            (i.code === PERSON_CODES.main[p.id] || i.code === PERSON_CODES.side[p.id]),
+        ),
+      })),
+    );
+    const ifd = federal.ifd;
+    for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
     return {
       canton: 'BS',
       taxYear: input.taxYear,
       commune: ref,
       icc,
-      ifd: null,
-      total: icc.taxes.total.amount,
-      ...base,
+      ifd,
+      total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
+      ...summary([...items, ...wealthItems, ...(ifd?.items ?? [])], allLines({ icc, ifd })),
       assumptions: notes.assumptions,
       notCounted: notes.notCounted,
-      unsupported: [],
-      unverifiedRules: unverified,
+      unsupported: [...federal.notes.unsupported],
+      unverifiedRules: [...unverified, ...federal.notes.unverified],
+      limits: bothTaxes(notes.limits, federal.notes.limits),
     };
   } catch (e) {
     if (!(e instanceof BsUnsupported)) throw e;
@@ -931,9 +1102,109 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
   }
 }
 
-/** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<BsTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+/** Deductions in full in both columns: buy-ins paid directly, alimony and child support paid. */
+const IN_FULL = new Set(['560', '561', '610', '615']);
+
+/**
+ * What a result says of the lines it rests on: the estimates, how many items still need the user's
+ * OK (each line and person once, in either column), whether some amount is known only in part.
+ */
+function summary(items: readonly Item[], lines: readonly Line[] = items) {
+  const seen = new Set<string>();
+  const needsOk = items.filter((i) => {
+    const key = `${i.code}|${i.person}`;
+    if (!i.needsOk || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).length;
+  return {
+    estimates: [...new Set(lines.flatMap((l) => l.estimates ?? []))]
+      .filter((id): id is keyof typeof ESTIMATE_TEXT => id in ESTIMATE_TEXT)
+      .map((id) => ({ id, what: ESTIMATE_TEXT[id] })),
+    needsOk,
+    complete: !lines.some((l) => l.incomplete),
+    incomplete: lines
+      .filter((l) => l.incomplete)
+      .map((l) => l.label)
+      .filter((x, i, all) => all.findIndex((y) => y.en === x.en) === i),
+  };
+}
+
+/**
+ * The limits of both taxes, a limit applied alike in each (same line, rule kind and amounts, as
+ * the pillar 3a cap) said once for both: the final check then shows it once (SPEC.md 10.0).
+ */
+function bothTaxes(icc: readonly LimitApplied[], ifd: readonly LimitApplied[]): LimitApplied[] {
+  const out = icc.map((l) => ({ ...l }));
+  for (const f of ifd) {
+    const same = out.find(
+      (l) =>
+        l.tax === 'icc' &&
+        l.code === f.code &&
+        l.person === f.person &&
+        l.kind === f.kind &&
+        l.given === f.given &&
+        l.limit === f.limit &&
+        l.counted === f.counted &&
+        l.rule === f.rule &&
+        Boolean(l.estimate) === Boolean(f.estimate),
+    );
+    if (same) same.tax = 'both';
+    else out.push(f);
+  }
+  return out;
+}
+
+/**
+ * The children with the childcare paid for each (670, form F): as given per child, or the
+ * household's total on one child where every split gives the same deduction: one child under 14,
+ * or a total within the smallest limit of a child (the limit; half of it for a child shared half
+ * and half without child support; none for a child who counts for the other parent). Otherwise how
+ * it splits decides the deduction: not computed until it is given per child.
+ */
+function childcareOf(input: BsEngineInput, cap: number, notes: Notes): readonly ChildInput[] {
+  const children = input.children ?? [];
+  const paid = input.household?.childcare;
+  if (!paid || paid.value <= 0 || children.some((ch) => ch.childcare)) return children;
+  const young = children.filter((ch) => ch.under14 !== false && ch.livesWithYou !== false);
+  if (!young.length) {
+    notes.add(notes.notCounted, NOTE.childcareNoChild);
+    return children;
+  }
+  const limitOf = (ch: ChildInput) =>
+    ch.custody === 'full' || input.childSupport === 'receives'
+      ? cap
+      : input.childSupport === 'none'
+        ? cap / 2
+        : 0;
+  if (young.length > 1 && paid.value > Math.min(...young.map(limitOf))) {
+    notes.add(notes.unsupported, NOTE.childcareSplit);
+    return children;
+  }
+  const first = young[0];
+  return children.map((ch) => (ch === first ? { ...ch, childcare: paid } : ch));
+}
+
+/** Every computed line of a result, both columns, for checks and for the explanation tree. */
+export function allLines(r: Pick<BsTaxResult, 'icc'> & { ifd?: BsTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.totalDeductions,
+        f.subtotal709,
+        f.netIncome,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
@@ -953,6 +1224,7 @@ export function allLines(r: Pick<BsTaxResult, 'icc'>): Line[] {
     x.taxes.cantonalWealth,
     x.taxes.communalWealth,
     x.taxes.total,
+    ...federal,
   ];
 }
 

@@ -83,7 +83,7 @@ describe('StG § 51: the wealth tax of a low income', () => {
     expect(r.icc?.taxes.wealthReduction.amount).toBe(chf(-50.65));
     expect(r.icc?.taxes.cantonalWealth.amount).toBe(chf(8.45));
     expect(r.icc?.taxes.communalWealth.amount).toBe(chf(7.75));
-    expect(r.total).toBe(chf(16.2));
+    expect(r.icc?.taxes.total.amount).toBe(chf(16.2));
     expect(r.unverifiedRules).toContainEqual(NOTE.reductionThenCommune);
   });
 });

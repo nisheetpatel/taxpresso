@@ -3,7 +3,15 @@
 // concept is the same, so one ledger mapping can feed every canton (docs/design/cantons.md,
 // section 2). Items carry the code of the line on the Basel-Stadt return (./rubrics.ts), deductions
 // negative, income and assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { BsTaxYear } from './params.js';
 
 export type {
@@ -11,6 +19,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -97,7 +106,7 @@ export interface ChildInput {
   under14?: boolean;
   /** Under 18 at the end of the year, for the wealth allowance per minor child (892). */
   minor?: boolean;
-  /** 670: childcare paid for this child. */
+  /** 670: childcare paid for this child (form F asks it per child; the limit is per child). */
   childcare?: Amount;
 }
 
@@ -115,6 +124,11 @@ export interface BsEngineInput {
    */
   childSupport?: 'receives' | 'pays' | 'none';
   /**
+   * The federal parental scale of a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). The federal tax only.
+   */
+  ifdParentalScale?: boolean;
+  /**
    * The return asks single parents (Hauptformular page 1, section 3): "Leben Sie in einer
    * Konkubinatspartnerschaft mit gemeinsamen / nicht gemeinsamen Kindern?"
    */
@@ -128,6 +142,21 @@ export interface BsEngineInput {
   /** Member of a recognised church: the church tax is not in this calculation. */
   church?: boolean;
   household?: {
+    /**
+     * 670: childcare paid for the household as a whole, when not given per child: it counts where
+     * every split between the children gives the same deduction (the limit is per child).
+     */
+    childcare?: Amount;
+    /**
+     * 630 to 632, federal tax only: health and accident insurance premiums paid, the subsidy
+     * received, life insurance premiums and savings interest. The cantonal deduction is a flat
+     * amount whatever was paid (StG § 32 al. 1 lit. g); the federal one is what was paid, capped.
+     */
+    healthPremiums?: Amount;
+    accidentPremiums?: Amount;
+    healthSubsidy?: Amount;
+    lifeInsurancePremiums?: Amount;
+    savingsInterest?: Amount;
     /** 271: child support received for minor children. */
     childSupportReceived?: Amount;
     /** 280: other taxable income, as given. */
@@ -168,6 +197,17 @@ export interface Item extends Line {
   /** The line's code on the Basel-Stadt return (./rubrics.ts). */
   code: string;
   person: ItemPerson;
+  /**
+   * The lines of form B (Berufskosten) that make up a person's professional costs (519/539), in the
+   * column of the item's tax: what you type on the form, which carries its total to the main form.
+   */
+  parts?: readonly ItemPart[];
+}
+
+/** A line of an annex form: its code as printed and its amount in centimes (whole francs). */
+export interface ItemPart {
+  code: string;
+  amount: number;
 }
 
 /** Just the amount of an item, as an assessment or a filled-in return shows it. */
@@ -226,17 +266,29 @@ export interface BsIccResult {
   };
 }
 
+/**
+ * The federal direct tax (direkte Bundessteuer), the Bund column of the Basel-Stadt return (main
+ * form p. 2 and 3, from 369 down to 799): the same income lines, the federal deductions on the
+ * Basel-Stadt lines (./ifd.ts).
+ */
+export interface BsIfdResult extends IfdResult {
+  items: Item[];
+  /** 699, Total der Abzüge, Bund (negative). */
+  totalDeductions: Line;
+  /** 709, Nettoeinkommen, Bund: the base of the illness costs and donations. */
+  subtotal709: Line;
+  /** 739, Reineinkommen, Bund: after the illness costs and donations (IfdResult's netIncome). */
+  netIncome: Line;
+}
+
 export interface BsTaxResult {
   canton: 'BS';
   taxYear: BsTaxYear;
   commune: CommuneRef;
   icc: BsIccResult | null;
-  /**
-   * The federal tax is packages/rules-ch's; Basel-Stadt's result shows it once the federal column
-   * of the Basel-Stadt form is mapped (docs/design/cantons.md, section 6).
-   */
-  ifd: null;
-  /** The cantonal and communal tax, when computed. */
+  /** The federal tax of the Bund column (./ifd.ts), when the cantonal tax is computed. */
+  ifd: BsIfdResult | null;
+  /** The cantonal and communal tax plus the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -246,4 +298,6 @@ export interface BsTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or choice a rule applied, in both taxes (SPEC.md 10.0). */
+  limits: LimitApplied[];
 }

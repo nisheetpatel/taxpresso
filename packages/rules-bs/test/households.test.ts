@@ -89,9 +89,11 @@ describe('H1: single, Basel, 2025, employed, savings and securities', () => {
     expect(x.wealthTariffTax.amount).toBe(chf(247.5));
     expect(x.wealthReduction.amount).toBe(0);
     expect(x.cantonalWealth.amount).toBe(chf(247.5));
-    expect(r.total).toBe(chf(9_487.5));
+    expect(r.icc?.taxes.total.amount).toBe(chf(9_487.5));
     expect(r.commune).toEqual({ bfs: null, name: 'Basel', rate: 0 });
-    expect(r.ifd).toBeNull();
+    // The federal tax of the Bund column is computed too (test/federal.test.ts).
+    expect(r.ifd).not.toBeNull();
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.estimates).toEqual([]);
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
     expect(r.assumptions).toContainEqual(NOTE.fullYear);
@@ -206,7 +208,7 @@ describe('H2: married, two earners, two children, Riehen, 2026', () => {
     expect(x.wealthTariffTax.amount).toBe(chf(900));
     expect(x.cantonalWealth.amount).toBe(chf(450));
     expect(x.communalWealth.amount).toBe(chf(414));
-    expect(r.total).toBe(chf(10_465.2));
+    expect(r.icc?.taxes.total.amount).toBe(chf(10_465.2));
     expect(r.commune).toEqual({ bfs: null, name: 'Riehen', rate: 4_000 });
     expect(x.communalIncome.sources.join(' ')).toContain('bs-2026-communal-ansaetze-abzuege p. 1');
   });
@@ -279,7 +281,7 @@ describe('H3: single parent, one child, Basel, 2025, driving to work', () => {
   it('taxes', () => {
     expect(r.icc?.taxes.incomeTariffTax.amount).toBe(chf(1_365));
     expect(r.icc?.taxes.wealthTariffTax.amount).toBe(0);
-    expect(r.total).toBe(chf(1_365));
+    expect(r.icc?.taxes.total.amount).toBe(chf(1_365));
     expect(r.assumptions).toContainEqual(NOTE.actualCosts);
     expect(r.assumptions).toContainEqual(NOTE.securitiesMean);
     expect(r.notCounted).toContainEqual(NOTE.church);
@@ -350,7 +352,7 @@ describe('H4: widowed retiree with wealth, Bettingen, 2025', () => {
     expect(x.wealthReduction.amount).toBe(0);
     expect(x.cantonalWealth.amount).toBe(chf(806.25));
     expect(x.communalWealth.amount).toBe(chf(588.55));
-    expect(r.total).toBe(chf(5_621.05));
+    expect(r.icc?.taxes.total.amount).toBe(chf(5_621.05));
     expect(r.commune).toEqual({ bfs: null, name: 'Bettingen', rate: 3_750 });
     expect(r.assumptions).toContainEqual(NOTE.pensions);
   });
@@ -370,6 +372,7 @@ describe('H5: shared custody without child support, Basel, 2026', () => {
     commune: 'Basel',
     civilStatus: 'divorced',
     childSupport: 'none',
+    ifdParentalScale: true,
     mainUpkeep: true,
     cohabiting: false,
     church: false,
@@ -405,7 +408,7 @@ describe('H5: shared custody without child support, Basel, 2026', () => {
 
   it('taxes', () => {
     expect(r.icc?.taxes.incomeTariffTax.amount).toBe(chf(2_667));
-    expect(r.total).toBe(chf(2_667));
+    expect(r.icc?.taxes.total.amount).toBe(chf(2_667));
     expect(r.assumptions).toContainEqual(NOTE.sharedHalf);
     expect(r.estimates.map((e) => e.id)).toEqual(['bs-2026-provisional']);
   });
@@ -432,6 +435,7 @@ describe('H5: shared custody without child support, Basel, 2026', () => {
       commune: 'Basel',
       civilStatus: 'divorced',
       childSupport: 'none',
+      ifdParentalScale: false,
       mainUpkeep: false,
       cohabiting: false,
       church: false,
