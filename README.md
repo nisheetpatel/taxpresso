@@ -30,7 +30,7 @@ Early preview for tax year 2026 (returns filed in early 2027).
 
 1. Download the `.mcpb` file of the [latest release](https://github.com/nisheetpatel/taxpresso/releases/latest), or build it (below).
 2. Double-click it, or drag it onto Claude Desktop's Settings, Extensions page. Click Install.
-3. In a new chat, ask Claude: "Help me with my Geneva taxes."
+3. In a new chat, ask Claude: "Help me with my taxes using Taxpresso."
 
 Your tax folder is `~/Documents/Taxpresso` unless you choose another one at install. The website has a [Get started](https://taxpresso.ch/en/start/) page with every step.
 
