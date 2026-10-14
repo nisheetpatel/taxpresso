@@ -13,6 +13,7 @@ import { filing as baselLandFiling } from '@taxpresso/filing-bl';
 import { filing as vaudFiling } from '@taxpresso/filing-vd';
 import { filing as baselFiling } from '@taxpresso/filing-bs';
 import { filing as lucerneFiling } from '@taxpresso/filing-lu';
+import { filing as stGallenFiling } from '@taxpresso/filing-sg';
 import { filing as zugFiling } from '@taxpresso/filing-zg';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
@@ -23,6 +24,7 @@ import {
   bsQuestionnaire2026,
   geQuestionnaire2026,
   luQuestionnaire2026,
+  sgQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
   vdQuestionnaire2026,
@@ -132,6 +134,17 @@ import {
   type LucerneCantonal,
   type LuTaxResult,
 } from '@taxpresso/rules-lu';
+import {
+  communeOptions as stGallenCommunes,
+  NOTE_VALUABLES as SG_NOTE_VALUABLES,
+  rules as stGallenRules,
+  SG_TERMS,
+  sgParamsFor,
+  ST_GALLEN_READING,
+  view as stGallenView,
+  type SgTaxResult,
+  type StGallenCantonal,
+} from '@taxpresso/rules-sg';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -536,6 +549,48 @@ const LUCERNE: CantonEntry = {
   tou: false,
 };
 
+const ST_GALLEN: CantonEntry = {
+  code: 'SG',
+  name: { en: 'St. Gallen', fr: 'Saint-Gall', de: 'St. Gallen' },
+  // E-Tax SG, the canton's online return, in the browser with the cantonal E-Login on AGOV
+  // (sg-na-efiling-etax-sg; sg-2025-efiling-faltblatt-etax).
+  software: 'E-Tax SG',
+  rules: stGallenRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? sgQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...stGallenRules.keys(taxYear) }),
+  communes: (taxYear) => stGallenCommunes(taxYear),
+  // The return has lines of its own for cash and gold (30.2) and vehicles (30.4): say they are
+  // together.
+  ...sharedLedger(ST_GALLEN_READING, stGallenRules, SG_NOTE_VALUABLES),
+  view: stGallenView,
+  filing: stGallenFiling,
+  terms: SG_TERMS,
+  plan: {
+    computeReturn: (input) =>
+      stGallenRules.computeReturn(input as HouseholdInput<StGallenCantonal>),
+    incomeTax: (r) => stGallenView.incomeTax(r as SgTaxResult),
+    // The city of St. Gallen, the capital, by its name (the canton's table has no BFS numbers).
+    defaultCommune: 'St. Gallen',
+    communeName: { en: 'City of St. Gallen', fr: 'Ville de Saint-Gall', de: 'Stadt St. Gallen' },
+    sources(taxYear) {
+      // The documents a St. Gallen household's income tax rests on, for the year.
+      const P = sgParamsFor(taxYear);
+      return [
+        P.income.source,
+        P.multiplier.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'sg_preview', communeDefault: 'sg_commune_default' },
+    // St. Gallen follows the federal limits for pillar 3a (StG Art. 45 Abs. 1 lit. e), and its
+    // catch-up is deductible from the 2026 return (sg-2026-guide-merkblatt-unterjaehrig p. 4, 13.1
+    // Nachträgliche Einkäufe Säule 3a).
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
@@ -545,6 +600,7 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   BS: BASEL,
   ZG: ZUG,
   LU: LUCERNE,
+  SG: ST_GALLEN,
 };
 
 /**

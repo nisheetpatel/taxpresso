@@ -77,6 +77,18 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
       pt: 'Lucerna',
     },
   },
+  {
+    code: 'SG',
+    status: 'preview',
+    name: {
+      en: 'St. Gallen',
+      fr: 'Saint-Gall',
+      de: 'St. Gallen',
+      it: 'San Gallo',
+      es: 'San Galo',
+      pt: 'São Galo',
+    },
+  },
 ];
 
 /** When a canton that doesn't work yet should come: the next ones, then the ones after. */
@@ -94,18 +106,6 @@ export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
       it: 'Argovia',
       es: 'Argovia',
       pt: 'Argóvia',
-    },
-  },
-  {
-    code: 'SG',
-    when: 'next',
-    name: {
-      en: 'St. Gallen',
-      fr: 'Saint-Gall',
-      de: 'St. Gallen',
-      it: 'San Gallo',
-      es: 'San Galo',
-      pt: 'São Galo',
     },
   },
   {

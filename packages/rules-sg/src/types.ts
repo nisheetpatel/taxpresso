@@ -3,7 +3,15 @@
 // the same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items
 // carry the code of the line on the St. Gallen return or its Form 4 (./rubrics.ts), deductions
 // negative, income and assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { Confession } from './communes.js';
 import type { SgTaxYear } from './params.js';
 
@@ -12,6 +20,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -127,11 +136,22 @@ export interface SgEngineInput {
   /** Shared custody without child support: whether you mainly bear the children's upkeep. */
   mainUpkeep?: boolean;
   /**
+   * The federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). Unknown, the federal tax is not
+   * computed.
+   */
+  ifdParentalScale?: boolean;
+  /**
    * Opt-in church tax: each adult's church, and the church area (Kirchgemeinde) where the commune's
    * areas levy different rates.
    */
   church?: { p1?: Confession; p2?: Confession; area?: string };
   household?: {
+    /**
+     * 16.2: childcare by third parties paid for the household as a whole (the invoices of a crèche,
+     * say), when not given per child: it counts where it can be told apart per child (./compute.ts).
+     */
+    childcare?: Amount;
     /** 6.1: child support received for minor children. */
     childSupportReceived?: Amount;
     /** 6.3: other taxable income, as given. */
@@ -221,6 +241,11 @@ export interface SgIccResult {
   totalDeductions: Line;
   /** 234 (20.), Nettoeinkommen: the base of the illness costs' excess and the donations' cap. */
   netIncomeBase: Line;
+  /**
+   * 21.1 as the return lays it out: the illness and accident costs you bore (650) and the excess of
+   * 2 % of the Nettoeinkommen (238); 240 (the deduction) is among the items. Null without such costs.
+   */
+  medical: { costs: Line; threshold: Line } | null;
   /** 248 (22.), Reineinkommen: after every deduction except the social deductions. */
   netIncome: Line;
   /** 268 (24.), steuerbares Einkommen. */
@@ -256,18 +281,34 @@ export interface SgIccResult {
   };
 }
 
+/**
+ * The federal direct tax (direkte Bundessteuer) the tax office derives from the same return
+ * (./ifd.ts): the return's income lines, the federal deductions on the same lines (Merkblatt 32),
+ * the total of the deductions (18.), the Nettoeinkommen (20.), the Reineinkommen (22.), and the
+ * taxable income (24.) after the federal social deductions, which have no line of their own on the
+ * return (`23.1-23.3`, one amount per child; `Ehepaare`, the married couple deduction).
+ */
+export interface SgIfdResult extends IfdResult {
+  items: Item[];
+  /** 18., Total der Abzüge, federal amounts. */
+  totalDeductions: Line;
+  /** 20., Nettoeinkommen, federal: the base of the shares of 21.1 and 21.3. */
+  netIncomeBase: Line;
+}
+
 export interface SgTaxResult {
   canton: 'SG';
   taxYear: SgTaxYear;
   commune: CommuneRef;
   icc: SgIccResult | null;
   /**
-   * The federal tax is packages/rules-ch's. St. Gallen's return has no federal column: the tax
-   * office derives the federal tax from the same return (sg-2025-guide-wegleitung p. 49), so the
-   * result leaves it to the wiring step.
+   * The federal tax (packages/rules-ch's rules): St. Gallen's return has one column and the tax
+   * office derives the federal tax from it (sg-2025-guide-wegleitung p. 49; the differences in
+   * sg-2025-guide-merkblatt-dbst), so ./ifd.ts computes it on the return's own lines; null when not
+   * computed.
    */
-  ifd: null;
-  /** The cantonal, communal (and church, when asked for) tax, when computed. */
+  ifd: SgIfdResult | null;
+  /** The cantonal, communal (and church, when asked for) tax and the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -277,4 +318,6 @@ export interface SgTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes. */
+  limits: LimitApplied[];
 }

@@ -170,6 +170,14 @@ const messages = {
       'No saving for Lucerne: no Lucerne document Taxpresso has gives the cantonal rule of a 3a catch-up yet. The federal rules above hold.',
     touGenevaOnlyLu:
       'TOU is Geneva’s procedure. For Lucerne, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
+    splitSg: 'St. Gallen {icc} · federal {ifd}',
+    lppOfficialSg: 'Säule 2 (BVG) inkl. Einkaufsbeiträge',
+    lppAttestationSg:
+      'Your fund confirms the payment with a certificate (Bescheinigung): attach it to your return.',
+    cuOfficialSg: 'Nachträgliche Einkäufe Säule 3a',
+    cuRuleIncomeSg: 'You must have had earned income subject to AHV in 2025.',
+    touGenevaOnlySg:
+      'TOU is Geneva’s procedure. For St. Gallen, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
   },
   fr: {
     when: 'Avant le 31 décembre',
@@ -308,6 +316,12 @@ const messages = {
     cuRuleIncomeLu: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
     'assume.lu_catchup_rule': `Pas d’économie pour Lucerne${NB}: aucun document lucernois dont dispose Taxpresso ne fixe encore la règle cantonale du rattrapage. Les règles fédérales ci-dessus s’appliquent.`,
     touGenevaOnlyLu: `La TOU est une procédure genevoise. Pour Lucerne, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
+    splitSg: 'Saint-Gall {icc} · fédéral {ifd}',
+    lppOfficialSg: 'Säule 2 (BVG) inkl. Einkaufsbeiträge',
+    lppAttestationSg: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: joignez-la à votre déclaration.`,
+    cuOfficialSg: 'Nachträgliche Einkäufe Säule 3a',
+    cuRuleIncomeSg: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
+    touGenevaOnlySg: `La TOU est une procédure genevoise. Pour Saint-Gall, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
   },
   de: {
     when: 'Vor dem 31. Dezember',
@@ -477,6 +491,14 @@ const messages = {
       'Keine Ersparnis für Luzern: Kein Luzerner Dokument, das Taxpresso hat, legt die Regel für den Nachkauf in der Staatssteuer schon fest. Die Bundesregeln oben gelten.',
     touGenevaOnlyLu:
       'Die TOU ist ein Genfer Verfahren. Für Luzern unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
+    splitSg: 'St. Gallen {icc} · Bund {ifd}',
+    lppOfficialSg: 'Säule 2 (BVG) inkl. Einkaufsbeiträge',
+    lppAttestationSg:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Leg sie deiner Steuererklärung bei.',
+    cuOfficialSg: 'Nachträgliche Einkäufe Säule 3a',
+    cuRuleIncomeSg: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    touGenevaOnlySg:
+      'Die TOU ist ein Genfer Verfahren. Für St. Gallen unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
   },
 } as const;
 

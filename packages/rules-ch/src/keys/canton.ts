@@ -3,8 +3,9 @@
 // canton during it: for the federal tax ch-na-law-lifd art. 105 al. 1 (p. 58); for the cantonal and
 // communal tax, ge-2025-guide-declaration-pp p. 53, zh-2025-guide-natuerliche-personen p. 5 and 6,
 // be-2025-wegleitung-np-de p. 10 (Seite 1), bl-2026-wegleitung p. 3 and 4, vd-2025-guide p. 6,
-// bs-2025-guide-wegleitung p. 8, zg-2025-guide-wegleitung p. 24 (Zuzug aus einem anderen Kanton) and
-// lu-2025-guide-wegleitung p. 8 (Zuzug in den Kanton Luzern).
+// bs-2025-guide-wegleitung p. 8, zg-2025-guide-wegleitung p. 24 (Zuzug aus einem anderen Kanton),
+// lu-2025-guide-wegleitung p. 8 (Zuzug in den Kanton Luzern) and sg-2025-guide-wegleitung p. 11
+// (Zuzug aus einem anderen Kanton).
 import type { KeyRegistry } from '@taxpresso/ledger';
 import type { CantonCode } from '../canton.js';
 
@@ -18,6 +19,7 @@ export const SUPPORTED_CANTONS = [
   'BS',
   'ZG',
   'LU',
+  'SG',
 ] as const satisfies readonly CantonCode[];
 export type SupportedCanton = (typeof SUPPORTED_CANTONS)[number];
 
@@ -32,7 +34,7 @@ export const KEYS_CANTON_2026 = {
     perPerson: false,
     label: { en: 'Canton on 31 December', fr: 'Canton au 31 décembre' },
     source:
-      'ch-na-law-lifd art. 105 al. 1 (p. 58); ge-2025-guide-declaration-pp p. 53; zh-2025-guide-natuerliche-personen p. 5 and 6; be-2025-wegleitung-np-de p. 10 (Seite 1); bl-2026-wegleitung p. 3 and 4; vd-2025-guide p. 6; bs-2025-guide-wegleitung p. 8 (Zuzug aus einem anderen Kanton); zg-2025-guide-wegleitung p. 24; lu-2025-guide-wegleitung p. 8',
+      'ch-na-law-lifd art. 105 al. 1 (p. 58); ge-2025-guide-declaration-pp p. 53; zh-2025-guide-natuerliche-personen p. 5 and 6; be-2025-wegleitung-np-de p. 10 (Seite 1); bl-2026-wegleitung p. 3 and 4; vd-2025-guide p. 6; bs-2025-guide-wegleitung p. 8 (Zuzug aus einem anderen Kanton); zg-2025-guide-wegleitung p. 24; lu-2025-guide-wegleitung p. 8; sg-2025-guide-wegleitung p. 11 (Zuzug aus einem anderen Kanton)',
   },
 } as const satisfies KeyRegistry;
 

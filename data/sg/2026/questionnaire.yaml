@@ -1,0 +1,1319 @@
+# St. Gallen questionnaire for tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data, not
+# code: packages/questionnaire reads it, and every key and value must exist in St. Gallen's keys
+# (packages/rules-sg, src/keys.ts; a test checks).
+#
+# The questions every canton asks come from data/ch/2026/questions.yaml (`use: <id>`), in the order
+# of St. Gallen's return (Formular 1, sg-2025-form-steuererklaerung: page 1 personal details and
+# children, page 2 income, page 3 deductions with Formular 4, page 4 wealth), with St. Gallen's own
+# explanations and official pages. The questions only St. Gallen asks are written out here, as
+# packages/rules-sg reads them (StGallenCantonal): who mainly bears the upkeep of children in shared
+# custody without child support, each child's stage (not yet of school age, or in school or
+# training) and, for a child in school or training, whether a minor, its education costs and its
+# scholarships, the childcare paid for each child (the limit is per child), the commune and the
+# move, each adult's church, and the church area where the commune's areas levy different rates.
+# The child questions stay together after the children, as page 1 lists them.
+#
+# Wording and documents follow the St. Gallen guide for 2025 (sg-2025-guide-wegleitung): the 2026
+# guide is not published yet (docs/sources/sg/NOTES.md, Gaps), so the questions say "2026" and link
+# the 2025 guide, whose line numbers the return keeps until it appears. "p." is the page of the PDF
+# file, as in the links, and the guide prints the same page numbers. The return and the guide are in
+# German: the questions give the German term next to the gloss.
+#
+# German: informal "du", Swiss spelling (ss), the official German term next to its gloss. French:
+# write plain spaces before ? ! : ; and the loader makes them non-breaking.
+
+taxYear: 2026
+
+place: { en: 'St. Gallen', fr: 'Saint-Gall', de: 'St. Gallen' }
+
+people:
+  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p2:
+    {
+      en: 'Your spouse or partner',
+      fr: 'Votre conjoint ou partenaire',
+      de: 'Dein Partner oder deine Partnerin',
+    }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+
+# E-Tax SG is the canton's online return, a web app started at steuern.sg.ch/etaxnp
+# (docs/sources/sg/NOTES.md, Filing channels; sg-na-efiling-etax-sg; sg-2025-guide-wegleitung p. 5
+# and 10). No document of the library says it is free, so the text doesn't.
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. E-Tax SG, the canton’s online return (steuern.sg.ch/etaxnp), or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. E-Tax SG, la déclaration en ligne du canton (steuern.sg.ch/etaxnp), ou une fiduciaire le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. E-Tax SG, die Online-Steuererklärung des Kantons (steuern.sg.ch/etaxnp), oder eine Treuhand kann es.'
+
+questions:
+  - use: canton
+
+  # sg-2025-guide-wegleitung p. 12 (Heirat, Trennung oder Scheidung: the situation of the whole
+  # year) and p. 8 (spouses and registered partners are taxed together, on one return both sign).
+  - use: civil_status
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=12'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 12: marriage, separation or divorce'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 12 : Mariage, séparation ou divorce'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 12: Heirat, Trennung oder Scheidung'
+    help:
+      en: 'A registered partnership files like a married couple, on one return that both of you sign.'
+      fr: 'Un partenariat enregistré déclare comme un couple marié, sur une seule déclaration que vous signez tous les deux.'
+      de: 'Eine eingetragene Partnerschaft reicht wie ein Ehepaar eine gemeinsame Steuererklärung ein, die ihr beide unterschreibt.'
+
+  # sg-2025-guide-wegleitung p. 13 (Kinder, für deren Unterhalt Sie zur Hauptsache aufkommen: page 1
+  # of Formular 1 lists them, each Im Vorschulalter or In Schule oder Ausbildung) and p. 31 (23.1 and
+  # 23.2: minors in your parental care or custody, and adult children in training).
+  - use: children
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=13'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 13: children'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 13 : Enfants'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: Kinder'
+    help:
+      en: 'Children whose upkeep you mainly bear (zur Hauptsache aufkommen): minors, and adult children still in school or training. Page 1 of the return (Formular 1) lists them.'
+      fr: 'Les enfants dont vous assumez l’essentiel de l’entretien (zur Hauptsache aufkommen) : les mineurs, et les enfants majeurs encore à l’école ou en formation. La page 1 de la déclaration (Formular 1) les liste.'
+      de: 'Kinder, für deren Unterhalt du zur Hauptsache aufkommst: Minderjährige und volljährige Kinder, die noch in Schule oder Ausbildung sind. Seite 1 der Steuererklärung (Formular 1) listet sie auf.'
+
+  # Parents taxed apart: the child deduction goes to one parent only and is never split
+  # (sg-na-deductions-kinderabzug p. 5, Ziff. 2.3).
+  - use: children_custody
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-29-52-stg/048_1.pdf#page=5'
+      label:
+        en: 'St. Gallen Steuerbuch, StB 48 Nr. 1 Kinderabzug (child deduction), p. 5: parents taxed apart'
+        fr: 'Manuel fiscal de Saint-Gall (Steuerbuch), StB 48 Nr. 1 Kinderabzug (déduction pour enfant), p. 5 : Parents taxés séparément'
+        de: 'Steuerbuch, StB 48 Nr. 1 Kinderabzug, S. 5: nicht gemeinsam besteuerte Eltern'
+    help:
+      en: 'Parents taxed apart: St. Gallen gives the child deduction (Kinderabzug) to one of you only, never half each.'
+      fr: 'Parents taxés séparément : Saint-Gall n’accorde la déduction pour enfant (Kinderabzug) qu’à l’un de vous, jamais la moitié à chacun.'
+      de: 'Getrennt besteuerte Eltern: St. Gallen gibt den Kinderabzug nur einem von euch, nie je die Hälfte.'
+
+  # Parents taxed apart with joint custody: for the cantonal tax, the parent who receives child
+  # support counts the children, and the one who pays deducts it (12.2) and has no child deduction;
+  # without child support, the parent who mainly bears their upkeep (sg-2026-law-steuergesetz
+  # Art. 48 Abs. 1 lit. a, p. 26; sg-na-deductions-kinderabzug p. 5 to 7, Ziff. 2.3.1 and 2.3.3;
+  # sg-2025-guide-wegleitung p. 26 and 31); for the federal tax, half the child deduction each
+  # without child support, the parental scale to the one who earns more
+  # (ch-na-circulaire-30-epoux-famille p. 24).
+  - use: child_support
+    explain:
+      en: 'With shared custody, child support decides who counts the children. The parent who receives it counts them, and the one who pays it deducts it instead (12.2); without child support, St. Gallen counts them for the parent who mainly bears their upkeep, and the federal tax gives each parent half the child deduction and the parental scale (Elterntarif), a lower rate, to the one who earns more.'
+      fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit les compte, et celui qui la verse la déduit à la place (12.2) ; sans contribution, Saint-Gall les compte pour le parent qui assume l’essentiel de leur entretien, et l’impôt fédéral donne à chacun la moitié de la déduction pour enfant et le barème parental (Elterntarif), un taux plus bas, à celui qui gagne le plus.'
+      de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, zählt die Kinder, und wer sie bezahlt, zieht sie stattdessen ab (12.2); ohne Unterhaltsbeiträge zählt St. Gallen sie für den Elternteil, der zur Hauptsache für ihren Unterhalt aufkommt, und die Bundessteuer gibt jedem den halben Kinderabzug und den Elterntarif, einen tieferen Satz, dem, der mehr verdient.'
+    learnMore:
+      url: 'https://www.gesetzessammlung.sg.ch/api/de/versions/3822/pdf_file#page=26'
+      label:
+        en: 'St. Gallen tax law (Steuergesetz) 2026, Art. 48, p. 26: child deduction of parents taxed apart'
+        fr: 'Loi fiscale de Saint-Gall (Steuergesetz) 2026, art. 48, p. 26 : Déduction pour enfant des parents taxés séparément'
+        de: 'Steuergesetz, Stand 2026, Art. 48, S. 26: Kinderabzug nicht gemeinsam besteuerter Eltern'
+    help:
+      en: 'Child support (Unterhaltsbeiträge, Alimente) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
+      fr: 'La contribution d’entretien (Unterhaltsbeiträge, Alimente) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
+      de: 'Unterhaltsbeiträge (Alimente) sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+
+  # Without child support, the child deduction goes to the parent who mainly bears the upkeep; with
+  # equal shares the canton presumes the parent with the lower net income (Reineinkommen)
+  # (sg-na-deductions-kinderabzug p. 6 and 7, Ziff. 2.3.3, after BGE 141 II 338;
+  # sg-2026-law-steuergesetz Art. 48 Abs. 1 lit. a, p. 26). The childcare deduction follows the
+  # child deduction (sg-na-deductions-kinderbetreuungskosten p. 2), and a single parent living with
+  # children they mainly support has Vollsplitting (sg-2025-guide-wegleitung p. 50). packages/rules-sg
+  # asks rather than guess (NOTE.mainUpkeep).
+  - id: main_upkeep
+    key: sg.main_upkeep
+    type: yesno
+    when:
+      all:
+        - { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+        - { key: profile.children_custody, in: [shared] }
+        - { key: profile.child_support, in: [none_i_earn_more, none_other_earns_more, none_unsure] }
+    explain:
+      en: 'With shared custody and no child support, St. Gallen counts the children for the parent who mainly bears their upkeep (zur Hauptsache für den Unterhalt aufkommen): that parent gets the child deduction (Kinderabzug), the childcare deduction and Vollsplitting, the lower rate for single parents. When you both bear the upkeep equally, the canton presumes it is the parent with the lower net income (Reineinkommen).'
+      fr: 'En garde partagée sans contribution d’entretien, Saint-Gall compte les enfants pour le parent qui assume l’essentiel de leur entretien (zur Hauptsache für den Unterhalt aufkommen) : ce parent a la déduction pour enfant (Kinderabzug), la déduction des frais de garde et le Vollsplitting, le taux plus bas des familles monoparentales. Si vous assumez l’entretien à parts égales, le canton présume que c’est le parent au revenu net le plus bas (Reineinkommen).'
+      de: 'Bei geteilter Obhut ohne Unterhaltsbeiträge zählt St. Gallen die Kinder für den Elternteil, der zur Hauptsache für ihren Unterhalt aufkommt: Er erhält den Kinderabzug, den Abzug für die Kinderbetreuungskosten und das Vollsplitting, den tieferen Satz für Einelternfamilien. Tragt ihr den Unterhalt zu gleichen Teilen, gilt vermutungsweise der Elternteil mit dem tieferen Reineinkommen.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-29-52-stg/048_1.pdf#page=6'
+      label:
+        en: 'St. Gallen Steuerbuch, StB 48 Nr. 1 Kinderabzug (child deduction), p. 6: parents taxed apart without child support'
+        fr: 'Manuel fiscal de Saint-Gall (Steuerbuch), StB 48 Nr. 1 Kinderabzug (déduction pour enfant), p. 6 : Parents taxés séparément sans contribution d’entretien'
+        de: 'Steuerbuch, StB 48 Nr. 1 Kinderabzug, S. 6: keine Unterhaltsbeiträge zwischen getrennt besteuerten Eltern'
+    text:
+      en: 'In 2026, did you mainly bear the children’s upkeep (Unterhalt zur Hauptsache)?'
+      fr: 'En 2026, assumiez-vous l’essentiel de l’entretien des enfants (Unterhalt zur Hauptsache) ?'
+      de: 'Bist du 2026 zur Hauptsache für den Unterhalt der Kinder aufgekommen?'
+    help:
+      en: 'Upkeep means food, housing, clothing, care and education. If you share it equally, answer yes only if your net income (Reineinkommen) was the lower one. Not sure? Your last assessment (Veranlagung) shows whether you got the child deduction.'
+      fr: 'L’entretien comprend la nourriture, le logement, les vêtements, la garde et la formation. Si vous le partagez à parts égales, répondez oui seulement si votre revenu net (Reineinkommen) était le plus bas. Un doute ? Votre dernière taxation (Veranlagung) indique si vous avez eu la déduction pour enfant.'
+      de: 'Zum Unterhalt gehören Essen, Wohnen, Kleidung, Betreuung und Ausbildung. Teilt ihr ihn zu gleichen Teilen, antworte nur mit Ja, wenn dein Reineinkommen das tiefere war. Unsicher? Deine letzte Veranlagung zeigt, ob du den Kinderabzug erhalten hast.'
+    chip: { en: 'Bears the upkeep', fr: 'Assume l’entretien', de: 'Bestreitet den Unterhalt' }
+
+  # The child deduction is smaller for a child not yet of school age (23.1) than for a child in
+  # school or training, an adult child in training too (23.2), on 31 December
+  # (sg-2026-law-steuergesetz Art. 48 Abs. 1 lit. a Ziff. 1 and 2, p. 25; Abs. 2, p. 26). A child
+  # becomes of school age on the 1 August after its fourth birthday, with kindergarten
+  # (sg-na-deductions-kinderabzug p. 2, Ziff. 2.1.2; sg-2025-guide-wegleitung p. 13 and 31).
+  - id: child_stage
+    key: sg.child_stage
+    type: choice
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+    explain:
+      en: 'St. Gallen’s child deduction (Kinderabzug) is smaller for a child not yet of school age (23.1) than for a child in school or training (23.2). A child becomes of school age on the 1 August after its fourth birthday, when kindergarten starts: kindergarten counts as school. An adult child counts only while still in school or training.'
+      fr: 'La déduction pour enfant de Saint-Gall (Kinderabzug) est plus petite pour un enfant pas encore en âge scolaire (23.1) que pour un enfant à l’école ou en formation (23.2). Un enfant atteint l’âge scolaire le 1er août qui suit son quatrième anniversaire, à l’entrée à l’école enfantine : l’école enfantine compte comme école. Un enfant majeur ne compte que s’il est encore à l’école ou en formation.'
+      de: 'Der Kinderabzug ist in St. Gallen für ein Kind im Vorschulalter (23.1) kleiner als für ein Kind in Schule oder Ausbildung (23.2). Ein Kind wird am 1. August nach seinem vierten Geburtstag schulpflichtig, mit dem Eintritt in den Kindergarten: Der Kindergarten zählt als Schule. Ein volljähriges Kind zählt nur, solange es noch in Schule oder Ausbildung ist.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=31'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 31: child deductions'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 31 : Déductions pour enfants'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 31: Sozialabzüge, Kinderabzug'
+    text:
+      en: 'On 31 December 2026, was child {n} in school or training, or not yet of school age?'
+      fr: 'Au 31 décembre 2026, l’enfant {n} était-il à l’école ou en formation, ou pas encore en âge scolaire ?'
+      de: 'War Kind {n} am 31. Dezember 2026 in Schule oder Ausbildung oder noch im Vorschulalter?'
+    help:
+      en: 'Kindergarten counts as school. On page 1 of the return: Im Vorschulalter, or In Schule oder Ausbildung. Number your children the same way in every answer, for example from the oldest.'
+      fr: 'L’école enfantine compte comme école. En page 1 de la déclaration : Im Vorschulalter (en âge préscolaire), ou In Schule oder Ausbildung (à l’école ou en formation). Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Der Kindergarten zählt als Schule. Auf Seite 1 der Steuererklärung: Im Vorschulalter oder In Schule oder Ausbildung. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+    options:
+      - value: preschool
+        label:
+          {
+            en: 'Not yet of school age (Vorschulalter)',
+            fr: 'Pas encore en âge scolaire (Vorschulalter)',
+            de: 'Im Vorschulalter',
+          }
+        chip: { en: 'Preschool child', fr: 'Enfant d’âge préscolaire', de: 'Kind im Vorschulalter' }
+      - value: school
+        label:
+          {
+            en: 'In school or training, kindergarten included (Schule oder Ausbildung)',
+            fr: 'À l’école ou en formation, école enfantine comprise (Schule oder Ausbildung)',
+            de: 'In Schule oder Ausbildung, Kindergarten inbegriffen',
+          }
+        chip:
+          { en: 'Child in school or training', fr: 'Enfant en formation', de: 'Kind in Ausbildung' }
+
+  # sg-2025-guide-wegleitung p. 34 (36.3: tax-free wealth for each minor child in your parental care
+  # or custody); sg-2026-law-steuergesetz Art. 64 Abs. 1 (p. 29). A child not yet of school age is a
+  # minor: asked only for a child in school or training.
+  - id: child_minor
+    key: sg.child_minor
+    type: yesno
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+        - { key: sg.child_stage, in: [school] }
+    explain:
+      en: 'For each minor child, part of your wealth is tax-free (Abzug für jedes minderjährige Kind, 36.3). An adult child in training still gives the child deduction.'
+      fr: 'Pour chaque enfant mineur, une partie de votre fortune est exonérée (Abzug für jedes minderjährige Kind, 36.3). Un enfant majeur en formation donne quand même droit à la déduction pour enfant.'
+      de: 'Für jedes minderjährige Kind ist ein Teil deines Vermögens steuerfrei (Abzug für jedes minderjährige Kind, 36.3). Ein volljähriges Kind in Ausbildung gibt trotzdem den Kinderabzug.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=34'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 34: social deductions on wealth'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 34 : Déductions sociales sur la fortune'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 34: Sozialabzüge beim Vermögen'
+    text:
+      en: 'Was child {n} a minor (under 18) on 31 December 2026?'
+      fr: 'L’enfant {n} était-il mineur (moins de 18 ans) au 31 décembre 2026 ?'
+      de: 'War Kind {n} am 31. Dezember 2026 minderjährig (unter 18)?'
+    help:
+      en: 'Number your children the same way in every answer, for example from the oldest.'
+      fr: 'Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # 23.3, Ausbildungskosten für Kinder in Schule oder Ausbildung: for each child in school or
+  # training, the costs you bear yourself above an excess, up to a limit per child, less the state
+  # scholarships (sg-2026-law-steuergesetz Art. 48 Abs. 1 lit. a Ziff. 3, p. 26; Formular 10,
+  # sg-na-form-ausbildungs-kinderbetreuungskosten p. 1; sg-2025-guide-wegleitung p. 29 and 31 on what
+  # counts; the invoice date decides the year, sg-na-deductions-kinderabzug p. 10, Ziff. 3.5).
+  - id: child_education
+    key: sg.child_education
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+        - { key: sg.child_stage, in: [school] }
+    explain:
+      en: 'For each child in school or training, St. Gallen also deducts the education costs you paid yourself (Ausbildungskosten, 23.3, Formular 10), above an excess (Selbstbehalt) and up to a limit per child, less state scholarships. Tuition fees, books and course notes count, and so do the extra costs of meals away from home and public transport to the place of training.'
+      fr: 'Pour chaque enfant à l’école ou en formation, Saint-Gall déduit aussi les frais de formation que vous avez payés vous-même (Ausbildungskosten, 23.3, Formular 10), au-delà d’une part à votre charge (Selbstbehalt) et jusqu’à une limite par enfant, moins les bourses de l’État. Les écolages, les livres et les supports de cours comptent, de même que les frais supplémentaires de repas à l’extérieur et les transports publics jusqu’au lieu de formation.'
+      de: 'Für jedes Kind in Schule oder Ausbildung zieht St. Gallen auch die Ausbildungskosten ab, die du selbst bezahlt hast (23.3, Formular 10), über einem Selbstbehalt und bis zu einem Höchstbetrag pro Kind, abzüglich der staatlichen Stipendien. Es zählen Schul- und Semestergebühren, Bücher und Skripte, die Mehrkosten der auswärtigen Verpflegung und der öffentliche Verkehr zum Ausbildungsort.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=31'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 31: child deductions and education costs'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 31 : Déductions pour enfants et frais de formation'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 31: Kinderabzug und Ausbildungskosten'
+    text:
+      en: 'How much did you pay in 2026 for child {n}’s education (Ausbildungskosten)?'
+      fr: 'Combien avez-vous payé en 2026 pour la formation de l’enfant {n} (Ausbildungskosten) ?'
+      de: 'Wie viel hast du 2026 für die Ausbildung von Kind {n} bezahlt (Ausbildungskosten)?'
+    help:
+      en: 'In CHF, the costs invoiced in 2026 before any scholarship; 0 if none. For an apprentice, half the costs of the apprenticeship count. Number your children the same way in every answer, for example from the oldest.'
+      fr: 'En CHF, les frais facturés en 2026 avant toute bourse ; 0 s’il n’y en a pas. Pour un apprenti, la moitié des frais de l’apprentissage compte. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, die 2026 in Rechnung gestellten Kosten vor allfälligen Stipendien; 0, wenn keine. Bei einer Lehre zählt die Hälfte der Kosten. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # State scholarships (Stipendien) reduce the education costs (sg-2026-law-steuergesetz Art. 48
+  # Abs. 1 lit. a, p. 26; Formular 10, Abzüglich Stipendien, sg-na-form-ausbildungs-
+  # kinderbetreuungskosten p. 1); only state scholarships received or granted for the year, not
+  # private ones or repayable study loans (sg-na-deductions-kinderabzug p. 9, Ziff. 3.4). Asked only
+  # when the child's education costs are above 0.
+  - id: child_scholarships
+    key: sg.child_scholarships
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+        - { key: sg.child_stage, in: [school] }
+        - { key: sg.child_education, gt: 0 }
+    explain:
+      en: 'State scholarships (Stipendien) for a child reduce the education costs you deduct for that child. Private scholarships and study loans you must pay back don’t count.'
+      fr: 'Les bourses d’études de l’État (Stipendien) pour un enfant réduisent les frais de formation que vous déduisez pour cet enfant. Les bourses privées et les prêts d’études à rembourser ne comptent pas.'
+      de: 'Staatliche Stipendien für ein Kind verringern die Ausbildungskosten, die du für dieses Kind abziehst. Private Stipendien und rückzahlbare Studiendarlehen zählen nicht.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-29-52-stg/048_1.pdf#page=9'
+      label:
+        en: 'St. Gallen Steuerbuch, StB 48 Nr. 1 Kinderabzug (child deduction), p. 9: scholarships'
+        fr: 'Manuel fiscal de Saint-Gall (Steuerbuch), StB 48 Nr. 1 Kinderabzug (déduction pour enfant), p. 9 : Bourses (Stipendien)'
+        de: 'Steuerbuch, StB 48 Nr. 1 Kinderabzug, S. 9: Stipendien'
+    text:
+      en: 'How much in state scholarships (Stipendien) did you or child {n} receive for 2026?'
+      fr: 'Combien de bourses d’études de l’État (Stipendien) avez-vous reçues, vous ou l’enfant {n}, pour 2026 ?'
+      de: 'Wie viel staatliche Stipendien hast du oder hat Kind {n} für 2026 erhalten?'
+    help:
+      en: 'In CHF, received or granted for 2026; 0 if none. On Formular 10: Abzüglich Stipendien.'
+      fr: 'En CHF, reçues ou accordées pour 2026 ; 0 s’il n’y en a pas. Sur le formulaire 10 : Abzüglich Stipendien (moins les bourses).'
+      de: 'In CHF, für 2026 erhalten oder zugesprochen; 0, wenn keine. Auf dem Formular 10: Abzüglich Stipendien.'
+
+  # sg-2025-guide-wegleitung p. 28 (16.2, Kinderbetreuungskosten bei Drittbetreuung: children under
+  # 14 living with you, while you work, train or cannot work; meals don't count; Formular 10); for a
+  # couple, both (sg-na-deductions-kinderbetreuungskosten p. 1); lunch clubs and homework help don't
+  # count (p. 2).
+  - use: childcare
+    explain:
+      en: 'What you paid so someone else looks after a child under 14 while you work, train or can’t work; for a couple, while both of you do. Meals, lunch clubs (Mittagstisch) and homework help don’t count.'
+      fr: 'Ce que vous avez payé pour faire garder un enfant de moins de 14 ans pendant que vous travaillez, êtes en formation ou ne pouvez pas travailler ; pour un couple, cela vaut pour vous deux. Les repas, les tables de midi (Mittagstisch) et l’aide aux devoirs ne comptent pas.'
+      de: 'Was du bezahlt hast, damit jemand anderes ein Kind unter 14 betreut, während du arbeitest, in Ausbildung bist oder nicht erwerbsfähig bist; bei einem Paar gilt das für euch beide. Verpflegung, Mittagstisch und Aufgabenhilfe zählen nicht.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=28'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 28: childcare by others'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 28 : Frais de garde par des tiers'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 28: Kinderbetreuungskosten bei Drittbetreuung'
+    help:
+      en: 'A day mother (Tagesmutter), a crèche (Kita), day care (Hort) or a nanny. On the return: 16.2, Kinderbetreuungskosten bei Drittbetreuung (Formular 10, with the name and address of whoever looked after the child).'
+      fr: 'Une maman de jour (Tagesmutter), une crèche (Kita), une garderie (Hort) ou une nourrice. Sur la déclaration : 16.2, Kinderbetreuungskosten bei Drittbetreuung (formulaire 10, frais de garde par des tiers, avec le nom et l’adresse de la personne qui a gardé l’enfant).'
+      de: 'Eine Tagesmutter, eine Kita, ein Hort oder eine Nanny. Auf der Steuererklärung: 16.2, Kinderbetreuungskosten bei Drittbetreuung (Formular 10, mit Name und Adresse der betreuenden Person).'
+
+  # The limit is per child under 14 (sg-2026-law-steuergesetz Art. 45 Abs. 1 lit. h, p. 24;
+  # sg-2025-guide-wegleitung p. 28), and Formular 10 lists the childcare child by child
+  # (sg-na-form-ausbildungs-kinderbetreuungskosten p. 2): with several children, how the invoices'
+  # total splits can decide the deduction, so it is asked per child.
+  - id: child_care
+    key: sg.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+    explain:
+      en: 'St. Gallen’s limit on childcare is per child (16.2), and Formular 10 lists the costs child by child, so the split between your children can change the deduction. Your invoices give the total.'
+      fr: 'La limite de Saint-Gall pour les frais de garde est par enfant (16.2), et le formulaire 10 liste les frais enfant par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
+      de: 'Der Höchstbetrag für die Kinderbetreuungskosten gilt in St. Gallen pro Kind (16.2), und das Formular 10 listet die Kosten Kind für Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=28'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 28: childcare by others'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 28 : Frais de garde par des tiers'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 28: Kinderbetreuungskosten bei Drittbetreuung'
+    text:
+      en: 'How much of the childcare you paid in 2026 was for child {n}?'
+      fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
+      de: 'Wie viel der 2026 bezahlten Kinderbetreuungskosten war für Kind {n}?'
+    help:
+      en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
+      fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # The commune of 31 December taxes the whole year: between communes, the law applies the federal
+  # rules between cantons (sg-2026-law-steuergesetz Art. 233 Abs. 1, p. 90), and the canton where
+  # you lived at the end of the year taxes the whole year (sg-2025-guide-wegleitung p. 11). The list
+  # is St. Gallen's 75 political communes by name (packages/rules-sg, from
+  # sg-2026-communal-steuerfuesse; the table has no BFS numbers). Each sets its Steuerfuss of the
+  # einfache Steuer (Art. 5 and 6 Abs. 2 lit. b, p. 2).
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'The commune you lived in on 31 December taxes your whole year. Each political commune (politische Gemeinde) sets its own Steuerfuss, a percentage of the simple tax (einfache Steuer), on top of the canton’s.'
+      fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année. Chaque commune politique (politische Gemeinde) fixe son propre coefficient (Steuerfuss), un pourcentage de l’impôt simple (einfache Steuer), en plus de celui du canton.'
+      de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr. Jede politische Gemeinde legt ihren eigenen Steuerfuss fest, einen Prozentsatz der einfachen Steuer, zusätzlich zu jenem des Kantons.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/tarife-und-steuerfuesse/steuerfuesse-st-gallische-gemeinden/Steuerf%C3%BCsse%202026%20f%C3%BCr%20Versand.pdf'
+      label:
+        en: 'Steuerfüsse of the St. Gallen communes, 2026'
+        fr: 'Coefficients (Steuerfüsse) des communes saint-galloises, 2026'
+        de: 'Steuerfüsse der Gemeinden des Kantons St. Gallen im Jahr 2026'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+    help:
+      en: 'The official name, such as St. Gallen, Rapperswil-Jona or Wil.'
+      fr: 'Le nom officiel, par exemple St. Gallen, Rapperswil-Jona ou Wil.'
+      de: 'Der offizielle Name, zum Beispiel St. Gallen, Rapperswil-Jona oder Wil.'
+
+  # Who files in St. Gallen: everyone living in the canton on 31 December (sg-2025-guide-wegleitung
+  # p. 5); arriving from another canton, St. Gallen taxes the whole year (p. 11, Zuzug aus einem
+  # anderen Kanton); arriving from abroad or leaving for abroad means a return for part of the year
+  # (p. 11, Zuzug aus dem Ausland, Wegzug ins Ausland): not covered by rules-sg. A move within the
+  # canton: the commune of 31 December (sg-2026-law-steuergesetz Art. 233 Abs. 1, p. 90).
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: St. Gallen taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
+      fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Saint-Gall vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: St. Gallen besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=11'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 11: arriving and leaving during the year'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 11 : Arrivée et départ en cours d’année'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 11: Beginn und Beendigung der Steuerpflicht'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+      de: 'Bist du 2026 umgezogen?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - value: within_sg
+        label:
+          {
+            en: 'Yes, within the canton of St. Gallen',
+            fr: 'Oui, dans le canton de Saint-Gall',
+            de: 'Ja, innerhalb des Kantons St. Gallen',
+          }
+        chip: { en: 'Moved in the canton', fr: 'Déménagé dans le canton', de: 'Umzug im Kanton' }
+      - value: from_other_canton
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            de: 'Ja, aus einem anderen Kanton',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            de: 'Zuzug aus einem anderen Kanton',
+          }
+      - value: from_abroad
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            de: 'Ja, ich bin aus dem Ausland zugezogen',
+          }
+        notSupported:
+          {
+            en: 'Arriving from abroad during the year (Zuzug aus dem Ausland)',
+            fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland)',
+            de: 'Ein Zuzug aus dem Ausland während des Jahres',
+          }
+      - value: leaving_switzerland
+        label:
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+          }
+        notSupported:
+          {
+            en: 'Leaving Switzerland (Wegzug ins Ausland)',
+            fr: 'Un départ de Suisse (Wegzug ins Ausland)',
+            de: 'Ein Wegzug ins Ausland',
+          }
+
+  # Church tax (Kirchensteuer): members pay it to their Kirchgemeinde or the Jewish community
+  # (sg-na-law-steuerverordnung Art. 1 Abs. 1, p. 1; sg-2026-law-steuergesetz Art. 3, p. 2); in a
+  # mixed marriage, half to each spouse's church (Art. 2 Abs. 1). The Catholic and Evangelical rates
+  # are set per church area and the Christ Catholic rate is one for the canton
+  # (sg-2026-communal-steuerfuesse, Bemerkungen); the Jewish community's rate is not in the table,
+  # so that option is not supported (packages/rules-sg fails closed). Page 1 of Formular 1 asks each
+  # adult's Konfession. Opt-in: Taxpresso adds the church tax only for a member.
+  - id: church
+    key: sg.church
+    type: choice
+    perPerson: true
+    explain:
+      en: 'Members of a recognised religious community (Religionsgemeinschaft) pay church tax (Kirchensteuer): a Steuerfuss of the simple tax (einfache Steuer), set by the Catholic or the Evangelical Reformed Kirchgemeinde where they live, or one rate for the whole canton for the Christ Catholic church. In a mixed marriage, each spouse’s church gets half. Taxpresso adds it only for a member.'
+      fr: 'Les membres d’une communauté religieuse reconnue (Religionsgemeinschaft) paient l’impôt ecclésiastique (Kirchensteuer) : un coefficient (Steuerfuss) de l’impôt simple (einfache Steuer), fixé par la paroisse (Kirchgemeinde) catholique ou évangélique réformée de leur domicile, ou un taux unique pour tout le canton pour l’Église catholique chrétienne. Dans un mariage mixte, l’Église de chaque conjoint en reçoit la moitié. Taxpresso ne l’ajoute que pour un membre.'
+      de: 'Mitglieder einer anerkannten Religionsgemeinschaft zahlen Kirchensteuer: einen Steuerfuss der einfachen Steuer, den die katholische oder die evangelisch-reformierte Kirchgemeinde ihres Wohnorts festlegt, oder für die christkatholische Kirche einen Satz für den ganzen Kanton. In einer gemischten Ehe erhält die Kirche jedes Ehegatten die Hälfte. Taxpresso rechnet sie nur für Mitglieder dazu.'
+    learnMore:
+      url: 'https://www.gesetzessammlung.sg.ch/api/de/versions/3565/pdf_file#page=1'
+      label:
+        en: 'St. Gallen tax ordinance (Steuerverordnung), Art. 1 and 2, p. 1: religious communities'
+        fr: 'Ordonnance fiscale de Saint-Gall (Steuerverordnung), art. 1 et 2, p. 1 : Communautés religieuses'
+        de: 'Steuerverordnung, Art. 1 und 2, S. 1: anerkannte Religionsgemeinschaften'
+    text:
+      p1:
+        en: 'On 31 December 2026, were you a member of one of these religious communities?'
+        fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces communautés religieuses ?'
+        de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Religionsgemeinschaften?'
+      p2:
+        en: 'On 31 December 2026, was your spouse or partner a member of one of these religious communities?'
+        fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces communautés religieuses ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Religionsgemeinschaften?'
+    help:
+      en: 'Your Konfession, as on page 1 of the return (Formular 1). Another religion, or none, pays no church tax; leaving a church ends it from your valid declaration of leaving (Austrittserklärung).'
+      fr: 'Votre confession (Konfession), comme en page 1 de la déclaration (Formular 1). Une autre religion, ou aucune, ne paie pas d’impôt ecclésiastique ; quitter une Église y met fin dès la déclaration de sortie valable (Austrittserklärung).'
+      de: 'Deine Konfession, wie auf Seite 1 der Steuererklärung (Formular 1). Eine andere Religion oder keine zahlt keine Kirchensteuer; ein Kirchenaustritt beendet sie ab der rechtsgültigen Austrittserklärung.'
+    options:
+      - value: catholic
+        label:
+          {
+            en: 'Roman Catholic (katholisch)',
+            fr: 'Catholique romaine (katholisch)',
+            de: 'Katholisch',
+          }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch' }
+      - value: reformed
+        label:
+          {
+            en: 'Evangelical Reformed (evangelisch-reformiert)',
+            fr: 'Évangélique réformée (evangelisch-reformiert)',
+            de: 'Evangelisch-reformiert',
+          }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert' }
+      - value: christ_catholic
+        label:
+          {
+            en: 'Christ Catholic (christkatholisch)',
+            fr: 'Catholique chrétienne (christkatholisch)',
+            de: 'Christkatholisch',
+          }
+        chip: { en: 'Christ Catholic', fr: 'Catholique chrétien(ne)', de: 'Christkatholisch' }
+      - value: jewish
+        label:
+          {
+            en: 'The Jewish community (Jüdische Gemeinde)',
+            fr: 'La communauté juive (Jüdische Gemeinde)',
+            de: 'Jüdische Gemeinde',
+          }
+        chip: { en: 'Jewish community', fr: 'Communauté juive', de: 'Jüdische Gemeinde' }
+        notSupported:
+          {
+            en: 'The tax of the Jewish community (Jüdische Gemeinde)',
+            fr: 'L’impôt de la communauté juive (Jüdische Gemeinde)',
+            de: 'Die Steuer der Jüdischen Gemeinde',
+          }
+      - value: none
+        label: { en: 'None of these', fr: 'Aucune de ces communautés', de: 'Keine davon' }
+
+  # In 20 communes in 2026 the church areas (Kirchgemeinden) levy different Catholic or Evangelical
+  # rates, or carry different footnotes (sg-2026-communal-steuerfuesse, one row per area). Asked only
+  # there, and only of a member of a church whose rate differs between the areas; each option is
+  # offered only in its own commune. Generated once from packages/rules-sg (areaOptions(2026)); a
+  # test keeps this list and the condition equal to it. The names are the table's.
+  - id: church_area
+    key: sg.church_area
+    type: choice
+    when:
+      any:
+        - all:
+            - { key: profile.commune, in: ['st-gallen', 'niederhelfenschwil', 'waldkirch'] }
+            - { key: sg.church, in: [reformed], anyPerson: true }
+        - all:
+            - {
+                key: profile.commune,
+                in:
+                  [
+                    'au',
+                    'berneck',
+                    'balgach',
+                    'vilters-wangs',
+                    'mels',
+                    'amden',
+                    'gommiswald',
+                    'wildhaus-alt-st-johann',
+                    'wattwil',
+                    'neckertal',
+                    'mosnang',
+                    'oberuzwil',
+                    'gossau',
+                    'gaiserwald',
+                  ],
+              }
+            - { key: sg.church, in: [catholic], anyPerson: true }
+        - all:
+            - { key: profile.commune, in: ['altstatten', 'oberriet', 'oberburen'] }
+            - { key: sg.church, in: [catholic, reformed], anyPerson: true }
+    explain:
+      en: 'Your commune has church areas (Kirchgemeinden) that levy different church tax rates for your church. Choose the area you lived in on 31 December. The names are those of the canton’s table.'
+      fr: 'Votre commune a des paroisses (Kirchgemeinden) qui prélèvent des taux d’impôt ecclésiastique différents pour votre Église. Choisissez celle où vous habitiez au 31 décembre. Les noms sont ceux du tableau du canton.'
+      de: 'Deine Gemeinde hat Kirchgemeinden, die für deine Kirche verschiedene Kirchensteuerfüsse erheben. Wähl die Kirchgemeinde, in der du am 31. Dezember gewohnt hast. Die Namen sind die der Tabelle des Kantons.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/tarife-und-steuerfuesse/steuerfuesse-st-gallische-gemeinden/Steuerf%C3%BCsse%202026%20f%C3%BCr%20Versand.pdf'
+      label:
+        en: 'Steuerfüsse of the St. Gallen communes and church areas, 2026'
+        fr: 'Coefficients (Steuerfüsse) des communes et paroisses saint-galloises, 2026'
+        de: 'Steuerfüsse der Gemeinden und Kirchgemeinden des Kantons St. Gallen im Jahr 2026'
+    text:
+      en: 'Which church area (Kirchgemeinde) of your commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle paroisse (Kirchgemeinde) de votre commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Kirchgemeinde deiner Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+    help:
+      en: 'Not sure? Your Kirchgemeinde or your commune’s tax office (Gemeindesteueramt) knows.'
+      fr: 'Un doute ? Votre paroisse (Kirchgemeinde) ou le service des impôts de votre commune (Gemeindesteueramt) le sait.'
+      de: 'Unsicher? Deine Kirchgemeinde oder das Gemeindesteueramt weiss es.'
+    options:
+      - value: 'st-gallen:St. Gallen Centrum (C)'
+        label:
+          {
+            en: 'St. Gallen: St. Gallen Centrum (C)',
+            fr: 'St. Gallen : St. Gallen Centrum (C)',
+            de: 'St. Gallen: St. Gallen Centrum (C)',
+          }
+        when: { key: profile.commune, eq: 'st-gallen' }
+      - value: 'st-gallen:St. Gallen Tablat (O)'
+        label:
+          {
+            en: 'St. Gallen: St. Gallen Tablat (O)',
+            fr: 'St. Gallen : St. Gallen Tablat (O)',
+            de: 'St. Gallen: St. Gallen Tablat (O)',
+          }
+        when: { key: profile.commune, eq: 'st-gallen' }
+      - value: 'st-gallen:St. Gallen Straubenzell (W)'
+        label:
+          {
+            en: 'St. Gallen: St. Gallen Straubenzell (W)',
+            fr: 'St. Gallen : St. Gallen Straubenzell (W)',
+            de: 'St. Gallen: St. Gallen Straubenzell (W)',
+          }
+        when: { key: profile.commune, eq: 'st-gallen' }
+      - value: 'au:Au'
+        label: { en: 'Au: Au', fr: 'Au : Au', de: 'Au: Au' }
+        when: { key: profile.commune, eq: 'au' }
+      - value: 'au:Heerbrugg'
+        label: { en: 'Au: Heerbrugg', fr: 'Au : Heerbrugg', de: 'Au: Heerbrugg' }
+        when: { key: profile.commune, eq: 'au' }
+      - value: 'berneck:Berneck'
+        label: { en: 'Berneck: Berneck', fr: 'Berneck : Berneck', de: 'Berneck: Berneck' }
+        when: { key: profile.commune, eq: 'berneck' }
+      - value: 'berneck:Heerbrugg'
+        label: { en: 'Berneck: Heerbrugg', fr: 'Berneck : Heerbrugg', de: 'Berneck: Heerbrugg' }
+        when: { key: profile.commune, eq: 'berneck' }
+      - value: 'balgach:Balgach'
+        label: { en: 'Balgach: Balgach', fr: 'Balgach : Balgach', de: 'Balgach: Balgach' }
+        when: { key: profile.commune, eq: 'balgach' }
+      - value: 'balgach:Heerbrugg'
+        label: { en: 'Balgach: Heerbrugg', fr: 'Balgach : Heerbrugg', de: 'Balgach: Heerbrugg' }
+        when: { key: profile.commune, eq: 'balgach' }
+      - value: 'altstatten:Altstätten'
+        label:
+          {
+            en: 'Altstätten: Altstätten',
+            fr: 'Altstätten : Altstätten',
+            de: 'Altstätten: Altstätten',
+          }
+        when: { key: profile.commune, eq: 'altstatten' }
+      - value: 'altstatten:Lüchingen'
+        label:
+          { en: 'Altstätten: Lüchingen', fr: 'Altstätten : Lüchingen', de: 'Altstätten: Lüchingen' }
+        when: { key: profile.commune, eq: 'altstatten' }
+      - value: 'altstatten:Lienz'
+        label: { en: 'Altstätten: Lienz', fr: 'Altstätten : Lienz', de: 'Altstätten: Lienz' }
+        when: { key: profile.commune, eq: 'altstatten' }
+      - value: 'oberriet:Oberriet'
+        label: { en: 'Oberriet: Oberriet', fr: 'Oberriet : Oberriet', de: 'Oberriet: Oberriet' }
+        when: { key: profile.commune, eq: 'oberriet' }
+      - value: 'oberriet:Kriessern'
+        label: { en: 'Oberriet: Kriessern', fr: 'Oberriet : Kriessern', de: 'Oberriet: Kriessern' }
+        when: { key: profile.commune, eq: 'oberriet' }
+      - value: 'oberriet:Montlingen'
+        label:
+          { en: 'Oberriet: Montlingen', fr: 'Oberriet : Montlingen', de: 'Oberriet: Montlingen' }
+        when: { key: profile.commune, eq: 'oberriet' }
+      - value: 'oberriet:Kobelwald'
+        label: { en: 'Oberriet: Kobelwald', fr: 'Oberriet : Kobelwald', de: 'Oberriet: Kobelwald' }
+        when: { key: profile.commune, eq: 'oberriet' }
+      - value: 'vilters-wangs:Vilters'
+        label:
+          {
+            en: 'Vilters-Wangs: Vilters',
+            fr: 'Vilters-Wangs : Vilters',
+            de: 'Vilters-Wangs: Vilters',
+          }
+        when: { key: profile.commune, eq: 'vilters-wangs' }
+      - value: 'vilters-wangs:Wangs'
+        label:
+          { en: 'Vilters-Wangs: Wangs', fr: 'Vilters-Wangs : Wangs', de: 'Vilters-Wangs: Wangs' }
+        when: { key: profile.commune, eq: 'vilters-wangs' }
+      - value: 'mels:Mels'
+        label: { en: 'Mels: Mels', fr: 'Mels : Mels', de: 'Mels: Mels' }
+        when: { key: profile.commune, eq: 'mels' }
+      - value: 'mels:Weisstannen'
+        label: { en: 'Mels: Weisstannen', fr: 'Mels : Weisstannen', de: 'Mels: Weisstannen' }
+        when: { key: profile.commune, eq: 'mels' }
+      - value: 'amden:Amden'
+        label: { en: 'Amden: Amden', fr: 'Amden : Amden', de: 'Amden: Amden' }
+        when: { key: profile.commune, eq: 'amden' }
+      - value: 'amden:Fli (Weesen)'
+        label: { en: 'Amden: Fli (Weesen)', fr: 'Amden : Fli (Weesen)', de: 'Amden: Fli (Weesen)' }
+        when: { key: profile.commune, eq: 'amden' }
+      - value: 'gommiswald:Gommiswald'
+        label:
+          {
+            en: 'Gommiswald: Gommiswald',
+            fr: 'Gommiswald : Gommiswald',
+            de: 'Gommiswald: Gommiswald',
+          }
+        when: { key: profile.commune, eq: 'gommiswald' }
+      - value: 'gommiswald:Ricken'
+        label: { en: 'Gommiswald: Ricken', fr: 'Gommiswald : Ricken', de: 'Gommiswald: Ricken' }
+        when: { key: profile.commune, eq: 'gommiswald' }
+      - value: 'gommiswald:Gebertingen'
+        label:
+          {
+            en: 'Gommiswald: Gebertingen',
+            fr: 'Gommiswald : Gebertingen',
+            de: 'Gommiswald: Gebertingen',
+          }
+        when: { key: profile.commune, eq: 'gommiswald' }
+      - value: 'wildhaus-alt-st-johann:Alt St. Johann'
+        label:
+          {
+            en: 'Wildhaus-Alt St. Johann: Alt St. Johann',
+            fr: 'Wildhaus-Alt St. Johann : Alt St. Johann',
+            de: 'Wildhaus-Alt St. Johann: Alt St. Johann',
+          }
+        when: { key: profile.commune, eq: 'wildhaus-alt-st-johann' }
+      - value: 'wildhaus-alt-st-johann:Wildhaus'
+        label:
+          {
+            en: 'Wildhaus-Alt St. Johann: Wildhaus',
+            fr: 'Wildhaus-Alt St. Johann : Wildhaus',
+            de: 'Wildhaus-Alt St. Johann: Wildhaus',
+          }
+        when: { key: profile.commune, eq: 'wildhaus-alt-st-johann' }
+      - value: 'wattwil:Wattwil'
+        label: { en: 'Wattwil: Wattwil', fr: 'Wattwil : Wattwil', de: 'Wattwil: Wattwil' }
+        when: { key: profile.commune, eq: 'wattwil' }
+      - value: 'wattwil:Ricken'
+        label: { en: 'Wattwil: Ricken', fr: 'Wattwil : Ricken', de: 'Wattwil: Ricken' }
+        when: { key: profile.commune, eq: 'wattwil' }
+      - value: 'wattwil:Krinau'
+        label: { en: 'Wattwil: Krinau', fr: 'Wattwil : Krinau', de: 'Wattwil: Krinau' }
+        when: { key: profile.commune, eq: 'wattwil' }
+      - value: 'neckertal:St. Peterzell'
+        label:
+          {
+            en: 'Neckertal: St. Peterzell',
+            fr: 'Neckertal : St. Peterzell',
+            de: 'Neckertal: St. Peterzell',
+          }
+        when: { key: profile.commune, eq: 'neckertal' }
+      - value: 'neckertal:Brunnadern'
+        label:
+          { en: 'Neckertal: Brunnadern', fr: 'Neckertal : Brunnadern', de: 'Neckertal: Brunnadern' }
+        when: { key: profile.commune, eq: 'neckertal' }
+      - value: 'neckertal:Mogelsberg-Necker'
+        label:
+          {
+            en: 'Neckertal: Mogelsberg-Necker',
+            fr: 'Neckertal : Mogelsberg-Necker',
+            de: 'Neckertal: Mogelsberg-Necker',
+          }
+        when: { key: profile.commune, eq: 'neckertal' }
+      - value: 'neckertal:Oberhelfenschwil'
+        label:
+          {
+            en: 'Neckertal: Oberhelfenschwil',
+            fr: 'Neckertal : Oberhelfenschwil',
+            de: 'Neckertal: Oberhelfenschwil',
+          }
+        when: { key: profile.commune, eq: 'neckertal' }
+      - value: 'neckertal:Hemberg'
+        label: { en: 'Neckertal: Hemberg', fr: 'Neckertal : Hemberg', de: 'Neckertal: Hemberg' }
+        when: { key: profile.commune, eq: 'neckertal' }
+      - value: 'mosnang:Mosnang'
+        label: { en: 'Mosnang: Mosnang', fr: 'Mosnang : Mosnang', de: 'Mosnang: Mosnang' }
+        when: { key: profile.commune, eq: 'mosnang' }
+      - value: 'mosnang:Libingen'
+        label: { en: 'Mosnang: Libingen', fr: 'Mosnang : Libingen', de: 'Mosnang: Libingen' }
+        when: { key: profile.commune, eq: 'mosnang' }
+      - value: 'mosnang:Mühlrüti'
+        label: { en: 'Mosnang: Mühlrüti', fr: 'Mosnang : Mühlrüti', de: 'Mosnang: Mühlrüti' }
+        when: { key: profile.commune, eq: 'mosnang' }
+      - value: 'oberuzwil:Oberuzwil'
+        label:
+          { en: 'Oberuzwil: Oberuzwil', fr: 'Oberuzwil : Oberuzwil', de: 'Oberuzwil: Oberuzwil' }
+        when: { key: profile.commune, eq: 'oberuzwil' }
+      - value: 'oberuzwil:Niederglatt'
+        label:
+          {
+            en: 'Oberuzwil: Niederglatt',
+            fr: 'Oberuzwil : Niederglatt',
+            de: 'Oberuzwil: Niederglatt',
+          }
+        when: { key: profile.commune, eq: 'oberuzwil' }
+      - value: 'oberburen:Oberbüren'
+        label:
+          { en: 'Oberbüren: Oberbüren', fr: 'Oberbüren : Oberbüren', de: 'Oberbüren: Oberbüren' }
+        when: { key: profile.commune, eq: 'oberburen' }
+      - value: 'oberburen:Niederwil'
+        label:
+          { en: 'Oberbüren: Niederwil', fr: 'Oberbüren : Niederwil', de: 'Oberbüren: Niederwil' }
+        when: { key: profile.commune, eq: 'oberburen' }
+      - value: 'oberburen:Sonnental'
+        label:
+          { en: 'Oberbüren: Sonnental', fr: 'Oberbüren : Sonnental', de: 'Oberbüren: Sonnental' }
+        when: { key: profile.commune, eq: 'oberburen' }
+      - value: 'niederhelfenschwil:Niederhelfenschwil'
+        label:
+          {
+            en: 'Niederhelfenschwil: Niederhelfenschwil',
+            fr: 'Niederhelfenschwil : Niederhelfenschwil',
+            de: 'Niederhelfenschwil: Niederhelfenschwil',
+          }
+        when: { key: profile.commune, eq: 'niederhelfenschwil' }
+      - value: 'niederhelfenschwil:Lenggenwil'
+        label:
+          {
+            en: 'Niederhelfenschwil: Lenggenwil',
+            fr: 'Niederhelfenschwil : Lenggenwil',
+            de: 'Niederhelfenschwil: Lenggenwil',
+          }
+        when: { key: profile.commune, eq: 'niederhelfenschwil' }
+      - value: 'gossau:Gossau'
+        label: { en: 'Gossau: Gossau', fr: 'Gossau : Gossau', de: 'Gossau: Gossau' }
+        when: { key: profile.commune, eq: 'gossau' }
+      - value: 'gossau:Arnegg (Andwil)'
+        label:
+          {
+            en: 'Gossau: Arnegg (Andwil)',
+            fr: 'Gossau : Arnegg (Andwil)',
+            de: 'Gossau: Arnegg (Andwil)',
+          }
+        when: { key: profile.commune, eq: 'gossau' }
+      - value: 'waldkirch:Waldkirch'
+        label:
+          { en: 'Waldkirch: Waldkirch', fr: 'Waldkirch : Waldkirch', de: 'Waldkirch: Waldkirch' }
+        when: { key: profile.commune, eq: 'waldkirch' }
+      - value: 'waldkirch:Bernhardzell'
+        label:
+          {
+            en: 'Waldkirch: Bernhardzell',
+            fr: 'Waldkirch : Bernhardzell',
+            de: 'Waldkirch: Bernhardzell',
+          }
+        when: { key: profile.commune, eq: 'waldkirch' }
+      - value: 'gaiserwald:Engelburg'
+        label:
+          { en: 'Gaiserwald: Engelburg', fr: 'Gaiserwald : Engelburg', de: 'Gaiserwald: Engelburg' }
+        when: { key: profile.commune, eq: 'gaiserwald' }
+      - value: 'gaiserwald:Abtwil'
+        label: { en: 'Gaiserwald: Abtwil', fr: 'Gaiserwald : Abtwil', de: 'Gaiserwald: Abtwil' }
+        when: { key: profile.commune, eq: 'gaiserwald' }
+
+  # sg-2025-guide-wegleitung p. 14 (Einkommen: income from employment, one salary certificate per
+  # employer) to p. 21 (6.1 alimony received); pensions and allowances p. 18 and 19 (3.1 to 3.4).
+  - use: income_sources
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=14'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 14: income'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 14 : Revenu'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 14: Einkommen'
+    options:
+      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - value: replacement_income
+        label:
+          en: 'Unemployment, sickness or accident benefits'
+          fr: 'Des indemnités (chômage, maladie, accident)'
+          de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+      - value: pension
+        label:
+          {
+            en: 'A pension (AHV, IV or pension fund)',
+            fr: 'Une rente (AVS, AI ou caisse de pension)',
+            de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+          }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+      - value: alimony
+        label:
+          {
+            en: 'Alimony or child support received',
+            fr: 'Une pension alimentaire reçue',
+            de: 'Erhaltene Unterhaltsbeiträge',
+          }
+        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+      - value: self_employment
+        label:
+          {
+            en: 'Income from self-employment',
+            fr: 'Un revenu d’activité indépendante',
+            de: 'Einkommen aus selbständiger Erwerbstätigkeit',
+          }
+        notSupported:
+          {
+            en: 'Self-employment (selbständige Erwerbstätigkeit, 2.1 and 2.2)',
+            fr: 'L’activité indépendante (selbständige Erwerbstätigkeit, 2.1 et 2.2)',
+            de: 'Die selbständige Erwerbstätigkeit (2.1 und 2.2)',
+          }
+
+  # sg-2025-guide-wegleitung p. 14 (one salary certificate per employer) and p. 15 (1.1 and 1.2: the
+  # net salary of the main job and of a side job for another employer).
+  - use: employers
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=14'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 14: employment income'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 14 : Revenu d’une activité dépendante'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 14: Einkünfte aus unselbständiger Erwerbstätigkeit'
+    help:
+      en: 'Each one gives you a salary certificate (Lohnausweis). On the return: 1.1 Haupterwerb, and 1.2 Nebenerwerb for a side job.'
+      fr: 'Chacun vous remet un certificat de salaire (Lohnausweis). Sur la déclaration : 1.1 Haupterwerb (activité principale), et 1.2 Nebenerwerb (activité accessoire) pour un emploi secondaire.'
+      de: 'Jeder gibt dir einen Lohnausweis. Auf der Steuererklärung: 1.1 Haupterwerb, und 1.2 Nebenerwerb für eine Nebenbeschäftigung.'
+
+  # People taxed at source (Quellensteuer) file an ordinary return only when it is mandatory, or when
+  # they ask for it by 31 March of the next year (nachträgliche ordentliche Veranlagung, NOV):
+  # sg-na-source-tax-faq; sg-na-source-tax-nov-antrag-ansaessige. Not covered by rules-sg.
+  - use: taxed_at_source
+    yesNotSupported:
+      en: 'Tax at source in St. Gallen (Quellensteuer) and the ordinary assessment that follows it (nachträgliche ordentliche Veranlagung, NOV)'
+      fr: 'L’impôt à la source à Saint-Gall (Quellensteuer) et la taxation ordinaire ultérieure qui suit (nachträgliche ordentliche Veranlagung, NOV)'
+      de: 'Die Quellensteuer im Kanton St. Gallen und die nachträgliche ordentliche Veranlagung (NOV)'
+    learnMore:
+      url: 'https://www.sg.ch/steuern-finanzen/steuern/steuerarten/quellensteuer/haeufig-gestellte-fragen.html'
+      label:
+        en: 'Tax at source in St. Gallen: frequently asked questions (Quellensteuer: Häufig gestellte Fragen)'
+        fr: 'Impôt à la source à Saint-Gall : questions fréquentes (Quellensteuer: Häufig gestellte Fragen)'
+        de: 'Quellensteuer: Häufig gestellte Fragen (Kanton St. Gallen)'
+    help:
+      en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, Ziffer 12).'
+      de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+
+  # Travel to work (Formular 4, 1. Fahrkosten zwischen Wohn- und Arbeitsstätte, sg-2025-form-
+  # berufskosten p. 1; sg-2025-guide-wegleitung p. 23), each tax up to its own yearly limit
+  # (sg-na-deductions-fahrt-arbeitsort p. 3 and 4; ch-2026-ifd-instructions-personnes-physiques
+  # p. 6). No "over 2 hours a day" choice: only Geneva's meal rule needs it.
+  - use: commute
+    explain:
+      en: 'Getting to work is deducted as travel costs (Fahrkosten), for the cantonal and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
+      fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrkosten), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
+      de: 'Der Arbeitsweg wird als Fahrkosten abgezogen, bei der Kantons- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=23'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 23: travel to work'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 23 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Fahrkosten zwischen Wohn- und Arbeitsort'
+    help:
+      en: 'Choose how you went on most work days. On Formular 4 (Berufskosten): 1. Fahrkosten zwischen Wohn- und Arbeitsstätte.'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire 4 (Berufskosten, frais professionnels) : 1. Fahrkosten zwischen Wohn- und Arbeitsstätte (frais de déplacement).'
+      de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf dem Formular 4 (Berufskosten): 1. Fahrkosten zwischen Wohn- und Arbeitsstätte.'
+    options:
+      - value: public_transport
+        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+            de: 'Motorrad oder Roller mit weissem Kontrollschild',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+            de: 'Velo, E-Bike oder Motorfahrrad mit gelbem Kontrollschild',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - value: mostly_home
+        label:
+          {
+            en: 'From home, almost every day',
+            fr: 'Depuis chez moi, presque tous les jours',
+            de: 'Von zu Hause, fast jeden Tag',
+          }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+
+  # sg-2025-guide-wegleitung p. 23 (1.1, public transport: the actual costs).
+  - use: commute_transit_cost
+    explain:
+      en: 'You deduct what public transport to work actually cost you (Öffentliche Verkehrsmittel), for the cantonal and the federal tax, each up to its own yearly limit.'
+      fr: 'Vous déduisez ce que les transports publics pour aller au travail vous ont réellement coûté (Öffentliche Verkehrsmittel), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Du ziehst ab, was dich der öffentliche Verkehr zur Arbeit tatsächlich gekostet hat (Öffentliche Verkehrsmittel), bei der Kantons- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=23'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 23: travel to work'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 23 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Fahrkosten zwischen Wohn- und Arbeitsort'
+
+  # St. Gallen counts public transport as necessary; a driver without a reason deducts what public
+  # transport would have cost (sg-na-deductions-fahrt-arbeitsort p. 1, Ziff. 2.1). A car or a
+  # motorbike counts in begründeten Fällen: the reasons Formular 4 lists (sg-2025-form-berufskosten
+  # p. 1, 1.3 Begründung), as the Steuerbuch explains them (sg-na-deductions-fahrt-arbeitsort p. 1
+  # and 2, Ziff. 2.2.2; sg-2025-guide-wegleitung p. 23).
+  - use: commute_transit_usable
+    explain:
+      en: 'St. Gallen counts public transport as the cost of getting to work, so a driver deducts what public transport would have cost, for both taxes. The kilometres count only with a reason (in begründeten Fällen): no public transport for the trip, over 60 minutes a day saved by driving, the vehicle used constantly at your employer’s request, or public transport not reasonable because of illness or infirmity (with a doctor’s certificate).'
+      fr: 'Saint-Gall compte les transports publics comme le coût du trajet au travail : un conducteur déduit donc ce qu’auraient coûté les transports publics, pour les deux impôts. Les kilomètres ne comptent qu’avec une raison (in begründeten Fällen) : pas de transport public pour ce trajet, plus de 60 minutes gagnées par jour en véhicule, le véhicule utilisé en permanence à la demande de l’employeur, ou les transports publics impossibles à cause d’une maladie ou d’une infirmité (avec un certificat médical).'
+      de: 'St. Gallen anerkennt den öffentlichen Verkehr als Kosten des Arbeitswegs: Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Die Kilometer zählen nur in begründeten Fällen: kein öffentliches Verkehrsmittel für diesen Weg, eine Einsparung von über 60 Minuten pro Tag, die ständige Benützung des Fahrzeugs auf Verlangen des Arbeitgebers, oder der öffentliche Verkehr wegen Krankheit oder Gebrechlichkeit unzumutbar (mit Arztzeugnis).'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/steuerbuch/art-29-52-stg/039_3.pdf#page=1'
+      label:
+        en: 'St. Gallen Steuerbuch, StB 39 Nr. 3 Fahrt zum Arbeitsort (travel to work), p. 1: car or motorbike'
+        fr: 'Manuel fiscal de Saint-Gall (Steuerbuch), StB 39 Nr. 3 Fahrt zum Arbeitsort (trajet au travail), p. 1 : Voiture ou moto'
+        de: 'Steuerbuch, StB 39 Nr. 3 Fahrt zum Arbeitsort, S. 1: Privatauto und Motorrad'
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, I could have used public transport',
+            fr: 'Oui, j’aurais pu prendre les transports publics',
+            de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No, one of those reasons applies',
+            fr: 'Non, l’une de ces raisons s’applique',
+            de: 'Nein, einer dieser Gründe trifft zu',
+          }
+
+  - use: commute_transit_equivalent
+    explain:
+      en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
+      fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab, bei beiden Steuern, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=23'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 23: travel to work'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 23 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Fahrkosten zwischen Wohn- und Arbeitsort'
+
+  # sg-2025-guide-wegleitung p. 23 (1.3, a rate per kilometre driven, usually at most 220 working
+  # days a year; Formular 4, 1.3 Motorfahrzeug, sg-2025-form-berufskosten p. 1).
+  - use: commute_distance
+    explain:
+      en: 'With one of those reasons, both taxes count a fixed amount per kilometre (Motorfahrzeug), there and back once a day, each up to its own yearly limit.'
+      fr: 'Avec l’une de ces raisons, les deux impôts comptent un montant fixe par kilomètre (Motorfahrzeug, véhicule à moteur), un aller et retour par jour, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Mit einem dieser Gründe zählen beide Steuern einen festen Betrag pro Kilometer (Motorfahrzeug), einmal hin und zurück pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=23'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 23: travel by car or motorbike'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 23 : Trajets en véhicule à moteur'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Benützung eines Motorfahrzeuges'
+
+  - use: commute_drive_days
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=23'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 23: travel by car or motorbike'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 23 : Trajets en véhicule à moteur'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Benützung eines Motorfahrzeuges'
+    help:
+      en: 'The days you actually drove to work; leave out holidays, sick days and days worked from home (Homeoffice). St. Gallen usually counts at most 220 a year, more only with proof.'
+      fr: 'Les jours où vous êtes effectivement allé au travail en véhicule ; sans les vacances, les jours de maladie et les jours de télétravail (Homeoffice). Saint-Gall compte en général au plus 220 jours par an, davantage seulement sur preuve.'
+      de: 'Die Tage, an denen du effektiv zur Arbeit gefahren bist; ohne Ferien, Krankheitstage und Tage im Homeoffice. St. Gallen rechnet in der Regel mit höchstens 220 Arbeitstagen im Jahr, mit mehr nur gegen Nachweis.'
+
+  # Meals away from home (Formular 4, 2. Mehrkosten für Verpflegung: lunch break too short to go
+  # home; half with box G), for both taxes: sg-2025-guide-wegleitung p. 24; none on days worked from
+  # home (p. 23, margin).
+  - use: meal_days
+    explain:
+      en: 'Lunch away from home costs more than at home when your break is too short to go home (Mehrkosten für Verpflegung, Formular 4). A fixed amount per day counts for both taxes, up to a yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate).'
+      fr: 'Manger à l’extérieur coûte plus cher qu’à la maison quand votre pause est trop courte pour rentrer (Mehrkosten für Verpflegung, formulaire 4). Un montant fixe par jour compte pour les deux impôts, jusqu’à une limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire).'
+      de: 'Auswärts essen kostet mehr als zu Hause, wenn die Arbeitspause für die Heimkehr zu kurz ist (Mehrkosten für Verpflegung, Formular 4). Für beide Steuern zählt ein fester Betrag pro Tag, bis zu einem jährlichen Höchstbetrag, die Hälfte davon, wenn dein Arbeitgeber einen Teil deiner Mahlzeiten bezahlt (Feld G des Lohnausweises).'
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=24'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 24: meals'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 24 : Frais de repas'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 24: Mehrkosten für Verpflegung'
+    help:
+      en: 'Count the work days your lunch break was too short to go home; leave out days worked from home. 0 if you usually ate at home.'
+      fr: 'Comptez les jours de travail où votre pause de midi était trop courte pour rentrer ; sans les jours de télétravail. 0 si vous mangiez en général à la maison.'
+      de: 'Zähl die Arbeitstage, an denen die Mittagspause für die Heimkehr zu kurz war; ohne Tage im Homeoffice. 0, wenn du meistens zu Hause gegessen hast.'
+
+  # sg-2025-guide-wegleitung p. 26 (13.1 Säule 3a: only the contributions paid in the year, with the
+  # attestation; the catch-up from 2026, sg-2026-guide-merkblatt-unterjaehrig p. 4).
+  - use: pillar3a
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=26'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 26: pillar 3a'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 26 : Pilier 3a'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 26: Säule 3a'
+    help:
+      en: 'Your bank or insurer sends an attestation (Bescheinigung): attach it to your return. On the return: 13.1 Säule 3a.'
+      fr: 'Votre banque ou votre assurance vous envoie une attestation (Bescheinigung) : joignez-la à votre déclaration. Sur la déclaration : 13.1 Säule 3a (pilier 3a).'
+      de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung: Leg sie der Steuererklärung bei. Auf der Steuererklärung: 13.1 Säule 3a.'
+
+  # sg-2025-guide-wegleitung p. 26 (13.2: only what the net salary doesn't already account for;
+  # attach the fund's attestation and the buy-in calculation).
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=26'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 26: pension fund buy-ins'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 26 : Rachats au 2e pilier'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 26: Säule 2 (BVG) inkl. Einkaufsbeiträge'
+    help:
+      en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On the return: 13.2 Säule 2 (BVG) inkl. Einkaufsbeiträge.'
+      fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas. Sur la déclaration : 13.2 Säule 2 (BVG) inkl. Einkaufsbeiträge (2e pilier, rachats compris).'
+      de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. Auf der Steuererklärung: 13.2 Säule 2 (BVG) inkl. Einkaufsbeiträge.'
+
+  # sg-2025-guide-wegleitung p. 29 (21.1, Krankheits- und Unfallkosten), p. 30 (21.3, Freiwillige
+  # Zuwendungen), p. 28 (16.3, Parteispenden), p. 25 and 26 (11. Schuldzinsen, 12. Unterhaltsbeiträge).
+  - use: payments
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=29'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 29: deductions from net income'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 29 : Déductions du revenu net'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 29: Abzüge vom Nettoeinkommen'
+
+  # sg-2025-guide-wegleitung p. 35 (Formular 2, Wertschriften- und Guthabenverzeichnis, which
+  # everyone fills in, p. 6) and p. 36 (the banks' tax statements, enclosed or sent by eFiling).
+  - use: banks
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=35'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 35: securities and accounts'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 35 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 35: Wertschriften- und Guthabenverzeichnis'
+    help:
+      en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers. On the return: Wertschriften- und Guthabenverzeichnis (Formular 2), which everyone fills in.'
+      fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers. Sur la déclaration : Wertschriften- und Guthabenverzeichnis (formulaire 2, état des titres et avoirs), que chacun remplit.'
+      de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker. Auf der Steuererklärung: Wertschriften- und Guthabenverzeichnis (Formular 2), das alle ausfüllen.'
+
+  # sg-2025-guide-wegleitung p. 35 (Kryptowährungen go in the Wertschriften- und
+  # Guthabenverzeichnis, Formular 2).
+  - use: crypto
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=35'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 35: cryptocurrencies in the securities list'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 35 : Cryptomonnaies dans l’état des titres'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 35: Kryptowährungen im Wertschriftenverzeichnis'
+    help:
+      en: 'They go in the securities list (Wertschriften- und Guthabenverzeichnis, Formular 2) with your other assets.'
+      fr: 'Elles figurent dans l’état des titres (Wertschriften- und Guthabenverzeichnis, formulaire 2) avec vos autres avoirs.'
+      de: 'Sie gehören ins Wertschriften- und Guthabenverzeichnis (Formular 2), zu deinen übrigen Vermögenswerten.'
+
+  # What Taxpresso can't prepare for St. Gallen yet: property (5, 15, 31, Formular 7), inheritances
+  # and gifts, income from abroad, capital benefits (taxed apart, 40.). E-Tax SG is the canton's
+  # online return (sg-na-efiling-etax-sg).
+  - use: special
+    learnMore:
+      url: 'https://www.sg.ch/steuern-finanzen/steuern/elektronische-steuererklaerung/etaxnp.html'
+      label:
+        en: 'E-Tax SG, the canton’s online return (sg.ch)'
+        fr: 'E-Tax SG, la déclaration en ligne du canton (sg.ch)'
+        de: 'E-Tax SG, die Online-Steuererklärung des Kantons (sg.ch)'
+    options:
+      - value: real_estate
+        label:
+          {
+            en: 'I own real estate, in Switzerland or abroad',
+            fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
+            de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+          }
+        notSupported:
+          {
+            en: 'Real estate (Liegenschaften, Formular 7)',
+            fr: 'Les immeubles (Liegenschaften, formulaire 7)',
+            de: 'Liegenschaften (Formular 7)',
+          }
+      - value: inheritance_or_gift
+        label:
+          {
+            en: 'I received an inheritance or a large gift',
+            fr: 'J’ai reçu un héritage ou une donation importante',
+            de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+          }
+        notSupported:
+          {
+            en: 'An inheritance or a gift (Erbschaft, Schenkung)',
+            fr: 'Un héritage ou une donation (Erbschaft, Schenkung)',
+            de: 'Eine Erbschaft oder Schenkung',
+          }
+      - value: foreign_income
+        label:
+          {
+            en: 'I had income from abroad (salary, pension, rent)',
+            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+            de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+          }
+        notSupported:
+          {
+            en: 'Income from abroad',
+            fr: 'Des revenus de l’étranger',
+            de: 'Einkünfte aus dem Ausland',
+          }
+      - value: pension_capital
+        label:
+          {
+            en: 'I withdrew pension capital (2nd or 3rd pillar)',
+            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
+            de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+          }
+        notSupported:
+          {
+            en: 'A pension capital withdrawal (Kapitalleistungen aus Vorsorge, 40.)',
+            fr: 'Un retrait de capital de prévoyance (Kapitalleistungen aus Vorsorge, 40.)',
+            de: 'Ein Kapitalbezug aus der Vorsorge (Kapitalleistungen aus Vorsorge, 40.)',
+          }
+
+# The documents, with the page of the St. Gallen guide for 2025 (sg-2025-guide-wegleitung p. 7 lists
+# what to gather; each line says what to attach).
+requirements:
+  - use: salary_certificate
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=14'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 14: employment income'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 14 : Revenu d’une activité dépendante'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 14: Einkünfte aus unselbständiger Erwerbstätigkeit'
+    source: 'sg-2025-guide-wegleitung p. 7, p. 14'
+
+  - use: replacement_income
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=19'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 19: allowances and unemployment benefits'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 19 : Indemnités et chômage'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 19: Taggelder und Erwerbsausfallentschädigungen'
+    source: 'sg-2025-guide-wegleitung p. 19'
+
+  - use: pension
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=18'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 18: pensions'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 18 : Rentes'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 18: Renten und Pensionen'
+    source: 'sg-2025-guide-wegleitung p. 18'
+
+  - use: pillar3a
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=26'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 26: pillar 3a'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 26 : Pilier 3a'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 26: Säule 3a'
+    source: 'sg-2025-guide-wegleitung p. 26'
+
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=26'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 26: pension fund buy-ins'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 26 : Rachats au 2e pilier'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 26: Säule 2 (BVG) inkl. Einkaufsbeiträge'
+    source: 'sg-2025-guide-wegleitung p. 7, p. 26'
+
+  - use: health_premiums
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=27'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 27: insurance premiums and savings interest'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 27 : Primes d’assurances et intérêts d’épargne'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 27: Versicherungsprämien und Sparzinsen'
+    source: 'sg-2025-guide-wegleitung p. 27'
+
+  - use: banks
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=35'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 35: securities and accounts'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 35 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 35: Wertschriften- und Guthabenverzeichnis'
+    source: 'sg-2025-guide-wegleitung p. 7, p. 35, p. 36'
+
+  - use: crypto
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=35'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 35: cryptocurrencies in the securities list'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 35 : Cryptomonnaies dans l’état des titres'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 35: Kryptowährungen im Wertschriftenverzeichnis'
+    source: 'sg-2025-guide-wegleitung p. 35'
+
+  - use: childcare
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=28'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 28: childcare by others'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 28 : Frais de garde par des tiers'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 28: Kinderbetreuungskosten bei Drittbetreuung'
+    source: 'sg-2025-guide-wegleitung p. 28'
+
+  - use: medical
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=29'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 29: illness and accident costs'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 29 : Frais de maladie et d’accident'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 29: Krankheits- und Unfallkosten'
+    source: 'sg-2025-guide-wegleitung p. 7, p. 29'
+
+  - use: donations
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=30'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 30: donations'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 30 : Dons'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 30: Freiwillige Zuwendungen'
+    source: 'sg-2025-guide-wegleitung p. 7, p. 28, p. 30'
+
+  - use: loan_interest
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=25'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 25: debt interest'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 25 : Intérêts passifs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 25: Schuldzinsen'
+    source: 'sg-2025-guide-wegleitung p. 25, p. 34'
+
+  - use: alimony
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=26'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 26: alimony and child support'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 26 : Contributions d’entretien'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 26: Unterhaltsbeiträge'
+    source: 'sg-2025-guide-wegleitung p. 21, p. 26'
+
+  - use: separation_judgment
+    learnMore:
+      url: 'https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/2025-hs/Wegleitung_NP_2025.pdf#page=26'
+      label:
+        en: 'St. Gallen tax guide 2025, p. 26: alimony and child support'
+        fr: 'Guide fiscal de Saint-Gall 2025, p. 26 : Contributions d’entretien'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 26: Unterhaltsbeiträge'
+    source: 'sg-2025-guide-wegleitung p. 12, p. 26'

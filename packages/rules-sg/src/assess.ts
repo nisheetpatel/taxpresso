@@ -71,6 +71,8 @@ export interface SgAssessInput {
   familySources?: readonly string[];
   /** The church tax's shares, or null: not asked for or no member. */
   church?: readonly ChurchShare[] | null;
+  /** 21.1 as the return lays it out (650, 238), from ./compute.ts; null or absent without costs. */
+  medical?: SgIccResult['medical'];
   incomeItems: readonly (Item | ItemAmount)[];
   wealthItems: readonly (Item | ItemAmount)[];
 }
@@ -444,6 +446,7 @@ export function assess(input: SgAssessInput): SgIccResult {
     grossIncome,
     totalDeductions,
     netIncomeBase,
+    medical: input.medical ?? null,
     netIncome,
     taxableIncome,
     splitting: input.splitting,
