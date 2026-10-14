@@ -93,6 +93,48 @@ questions:
       fr: 'Crèche, garderie, parascolaire ou nourrice. Sur le formulaire officiel : frais de garde.'
       it: 'Asilo nido, doposcuola o tata. Sul modulo ufficiale: frais de garde.'
 
+  # The childcare maximum is per child, for both taxes (ge-2025-guide-declaration-pp p. 30: "pour
+  # chaque enfant ... jusqu'à concurrence de", 26'320 for 59.10 and 25'800 for 59.12;
+  # ch-2026-ifd-instructions-personnes-physiques p. 8, ch-2025-ifd-instructions-personnes-physiques
+  # p. 8: "25 800 fr. par enfant"). Invoices for the household (childcare.costs) above the smaller
+  # maximum, 25'800 in 2025 and 2026 (2,580,000 centimes), with several children: how they split
+  # decides the deduction, so it is asked per child, and only then (packages/rules-ge, the engine's
+  # NOTE.childcareSplit; a test keeps this amount equal to the engine's).
+  - id: child_care
+    key: ge.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+        - { key: childcare.costs, gt: 2580000 }
+    explain:
+      en: 'Your childcare invoices come to more than one child’s maximum, and the maximum is per child, so how they split between your children changes the deduction. Until Taxpresso knows it, the tax is not computed.'
+      fr: 'Vos factures de frais de garde dépassent le maximum d’un enfant, et le maximum est par enfant : leur répartition entre vos enfants change la déduction. Tant que Taxpresso ne la connaît pas, l’impôt n’est pas calculé.'
+      de: 'Deine Rechnungen für die Kinderbetreuung übersteigen den Höchstbetrag für ein Kind, und der Höchstbetrag gilt pro Kind: Die Aufteilung auf deine Kinder ändert den Abzug. Solange Taxpresso sie nicht kennt, wird die Steuer nicht berechnet.'
+      it: 'Le tue fatture per la custodia dei figli superano il massimo per un figlio, e il massimo vale per ogni figlio: la ripartizione tra i tuoi figli cambia la deduzione. Finché Taxpresso non la conosce, l’imposta non è calcolata.'
+    # ge-2025-guide-declaration-pp p. 30
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=30'
+      label:
+        en: 'Geneva tax guide 2025, p. 30: childcare costs'
+        fr: 'Guide fiscal 2025, p. 30 : Frais de garde des enfants'
+        de: 'Genfer Wegleitung 2025, S. 30: Kinderbetreuungskosten, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 30: spese di custodia dei figli'
+    text:
+      en: 'How much of the childcare you paid in {year} was for child {n}?'
+      fr: 'Combien des frais de garde payés en {year} étaient pour l’enfant {n} ?'
+      de: 'Wie viel der {year} bezahlten Kinderbetreuungskosten war für Kind {n}?'
+      it: 'Quanto delle spese di custodia che hai pagato nel {year} era per il figlio {n}?'
+    help:
+      en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the eldest. On the official form: frais de garde, per child.'
+      fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune. Sur le formulaire officiel : frais de garde, par enfant.'
+      de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an. Auf dem offiziellen Formular: frais de garde, pro Kind.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande. Sul modulo ufficiale: frais de garde, per figlio.'
+
   - id: commune
     key: profile.commune
     type: commune

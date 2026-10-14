@@ -116,7 +116,7 @@ function household(): Shared {
       const under14 = maybe(0.3) ? maybe(0.7) : undefined;
       return {
         custody: shared && maybe(0.8) ? 'shared' : 'full',
-        ...(maybe(0.4) ? { childcare: amt(500, 25_000) } : {}),
+        ...(maybe(0.4) ? { childcare: amt(500, 40_000) } : {}),
         ...(under14 !== undefined ? { under14 } : {}),
       };
     }),
@@ -550,5 +550,45 @@ describe('childcare of a child of 14 or more', () => {
     expect(ded(r.ifd!.items, '4.380')).toBe(chf(8_000));
     expect(r.notCounted).toContainEqual(NOTE.childcareNotCounted);
     expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
+  });
+});
+
+describe('childcare of one child above the maximum, next to another under it', () => {
+  it('caps each child’s costs, then adds them up, as Geneva’s engine', () => {
+    // Two children under 14, childcare of 30,000 and 5,000: each child's costs count at most the
+    // maximum, then they are added up: cantonal 12,000 + 5,000 = 17,000 (4.380, at most 12,000
+    // per child, LICD art. 34 al. 3); federal 25,800 + 5,000 = 30,800 (Form. 2a 2025 p. 8, "25 800
+    // fr. par enfant"), as Geneva's federal tax now takes it (it used to take 35,000 within twice
+    // the maximum).
+    const h: Shared = {
+      taxYear: 2025,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(30_000) } },
+        { custody: 'full', under14: true, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = fribourg.computeReturn({
+      ...h,
+      commune: 'Fribourg',
+      cantonal: {
+        church: { p1: 'none', p2: 'none' },
+        children: [
+          { age: 'child', under14: true },
+          { age: 'child', under14: true },
+        ],
+      },
+    });
+    const ge = geneva.computeReturn({ ...h, commune: 'geneve' }).ifd!;
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '4.380')).toBe(chf(17_000));
+    expect(ded(r.ifd!.items, '4.380')).toBe(chf(30_800));
+    expect(ded(ge.items, '59.12')).toBe(chf(30_800));
   });
 });

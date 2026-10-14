@@ -291,9 +291,28 @@ export function engineInputFromFacts(
     });
   }
 
+  // Childcare paid for each child, asked when the invoices for the household need splitting
+  // (data/ge/2026/questionnaire.yaml, ge.child_care): it takes the place of the household's total.
+  const kids = input.children ?? [];
+  const care = kids.map((_, i) =>
+    amountOf(counted.filter((f) => f.key === 'ge.child_care' && f.person === `child${i + 1}`)),
+  );
+  const perChild = kids.length > 1 && care.some((a) => (a?.value ?? 0) > 0);
+  const household = perChild
+    ? Object.fromEntries(Object.entries(input.household ?? {}).filter(([k]) => k !== 'childcare'))
+    : input.household;
+
   return {
     input: {
       ...input,
+      ...(perChild
+        ? {
+            children: kids.map((ch, i) =>
+              (care[i]?.value ?? 0) > 0 ? { ...ch, childcare: care[i]! } : ch,
+            ),
+          }
+        : {}),
+      ...(household ? { household } : {}),
       people: self.people,
       taxYear: input.taxYear as EngineInput['taxYear'],
       commune: input.commune as CommuneSlug,

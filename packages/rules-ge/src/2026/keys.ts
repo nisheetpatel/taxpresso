@@ -101,6 +101,16 @@ export const KEYS_2026 = {
   // (ge-2025-guide-declaration-pp p. 45 and 46).
   'profile.child_support': H['profile.child_support'],
   'profile.childcare': H['profile.childcare'],
+  // Childcare paid for each child: asked only when the invoices for the household pass one child's
+  // maximum and there are several children, since the maximum is per child and the split then
+  // decides the deduction (ge-2025-guide-declaration-pp p. 30, 59.10 and 59.12).
+  'ge.child_care': {
+    type: 'money',
+    perPerson: true,
+    label: { en: 'Childcare paid for this child', fr: 'Frais de garde payés pour cet enfant' },
+    official: 'frais de garde des enfants',
+    source: 'ge-2025-guide-declaration-pp p. 30 (59.10, 59.12)',
+  },
   'profile.banks': H['profile.banks'],
   'profile.crypto': H['profile.crypto'],
   'profile.payments': H['profile.payments'],
