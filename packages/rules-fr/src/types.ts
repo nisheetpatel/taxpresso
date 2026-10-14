@@ -3,7 +3,15 @@
 // the same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items
 // carry the code of the line on the Fribourg return (./rubrics.ts), deductions negative, income and
 // assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { Church } from './communes.js';
 import type { FrTaxYear } from './params.js';
 
@@ -12,6 +20,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -120,11 +129,21 @@ export interface FrEngineInput {
    */
   childSupport?: 'receives' | 'pays' | 'none';
   /**
+   * The federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). The cantonal tax doesn't read it.
+   */
+  ifdParentalScale?: boolean;
+  /**
    * Opt-in church tax (impôt ecclésiastique): each adult's church, and the parish when the
    * commune's parishes of that church have different coefficients.
    */
   church?: { p1?: Confession; p2?: Confession; parish?: string };
   household?: {
+    /**
+     * 4.380: childcare paid for the household as a whole (the invoices of a crèche, say), when not
+     * given per child: it counts where it can be told apart per child (./compute.ts).
+     */
+    childcare?: Amount;
     /** 4.110: health insurance premium subsidy received, taken off the flat amount. */
     healthSubsidy?: Amount;
     /** 4.120: life, pure-risk, daily-allowance and life annuity insurance premiums. */
@@ -188,10 +207,10 @@ export interface CommuneRef {
 }
 
 /**
- * The cantonal, communal and church tax (impôt cantonal, communal et paroissial), named `icc` as in
- * every canton.
+ * The lines of the return down to the taxable income and wealth (7.910): what is typed on the
+ * return, the same whether or not the taxes can be computed.
  */
-export interface FrIccResult {
+export interface FrReturnLines {
   items: Item[];
   /** The income lines added up. */
   grossIncome: Line;
@@ -203,12 +222,6 @@ export interface FrIccResult {
   socialIncome: Line;
   /** 7.910, revenu imposable: less 7.110, in whole CHF 100. */
   taxableIncome: Line;
-  /** Married couple or single parent living with their children: the rate of half the income. */
-  family: boolean;
-  /** The income the rate is read at. */
-  rateIncome: Line;
-  /** The rate applied, in ten-thousandths of a percent (4.5420 % -> 45_420). */
-  rate: number;
   wealth: {
     items: Item[];
     /** The assets added up. */
@@ -218,6 +231,19 @@ export interface FrIccResult {
     /** 7.910, fortune imposable: less the social deduction, in whole CHF 1,000. */
     taxableWealth: Line;
   };
+}
+
+/**
+ * The cantonal, communal and church tax (impôt cantonal, communal et paroissial), named `icc` as in
+ * every canton: the lines of the return and the taxes on them.
+ */
+export interface FrIccResult extends FrReturnLines {
+  /** Married couple or single parent living with their children: the rate of half the income. */
+  family: boolean;
+  /** The income the rate is read at. */
+  rateIncome: Line;
+  /** The rate applied, in ten-thousandths of a percent (4.5420 % -> 45_420). */
+  rate: number;
   taxes: {
     /** Impôt cantonal de base (100 %) on income. */
     incomeBase: Line;
@@ -236,17 +262,32 @@ export interface FrIccResult {
   };
 }
 
+/**
+ * The federal direct tax (impôt fédéral direct) as the tax office derives it from the return: the
+ * return has no federal part, the authority takes its lines with the differences the guide lists
+ * (fr-2025-guide-instructions-generales p. 46 to 48, chapter XI), ./ifd.ts. `items` are the lines
+ * of the federal column, each on the return's code: the cantonal amount where the guide lists no
+ * difference, the federal one (packages/rules-ch) where it does.
+ */
+export interface FrIfdResult extends IfdResult {
+  items: Item[];
+  /** 4.910 for the federal tax: the base of the medical costs (5.110) and the donations (5.120). */
+  incomeAfterDeductions: Line;
+}
+
 export interface FrTaxResult {
   canton: 'FR';
   taxYear: FrTaxYear;
   commune: CommuneRef;
   icc: FrIccResult | null;
+  /** The federal tax the tax office derives from the return (./ifd.ts), or null. */
+  ifd: FrIfdResult | null;
   /**
-   * The federal tax is packages/rules-ch's; Fribourg's result shows it once the federal part of the
-   * Fribourg return is mapped (docs/design/cantons.md, section 6).
+   * The lines of the return, whenever they can be computed: also when the taxes can't be (2026,
+   * whose communal coefficients are not published), so the values to type still show.
    */
-  ifd: null;
-  /** The cantonal, communal (and church, when asked for) tax, when computed. */
+  form: FrReturnLines | null;
+  /** The cantonal, communal (and church, when asked for) tax and the federal tax, when both are. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -256,4 +297,6 @@ export interface FrTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes. */
+  limits: LimitApplied[];
 }

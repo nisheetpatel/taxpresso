@@ -32,8 +32,9 @@ export const NOTE = {
   },
   // Why the tax is not computed (unsupported).
   communes2026: {
-    en: 'Tax year 2026: the communal tax coefficients for 2026 are not published in the documents Taxpresso has (the canton’s table stops at 2025). The tax is not computed.',
-    fr: `Année fiscale 2026${NB}: les coefficients d’impôt communaux 2026 ne sont pas publiés dans les documents dont dispose Taxpresso (le tableau du canton s’arrête à 2025). L’impôt n’est pas calculé.`,
+    en: 'Tax year 2026: Fribourg’s communal tax rates for 2026 (coefficients communaux) aren’t published yet, so Taxpresso doesn’t estimate your tax: your estimate comes once they are, in a Taxpresso update (node scripts/fr-communes.mjs adds them). Taxpresso never guesses a rate. Your questions, your documents and the values to type on your return don’t need them and work already.',
+    fr: `Année fiscale 2026${NB}: les coefficients d’impôt communaux 2026 de Fribourg ne sont pas encore publiés, Taxpresso n’estime donc pas votre impôt${NB}: votre estimation viendra dès leur publication, avec une mise à jour de Taxpresso (node scripts/fr-communes.mjs les ajoute). Taxpresso ne devine jamais un coefficient. Vos questions, vos documents et les valeurs à saisir dans votre déclaration n’en ont pas besoin et fonctionnent déjà.`,
+    de: 'Steuerjahr 2026: Die Gemeindesteuerfüsse 2026 von Freiburg (coefficients communaux, Gemeindesteuerkoeffizienten) sind noch nicht veröffentlicht, deshalb schätzt Taxpresso deine Steuer nicht: Deine Schätzung kommt, sobald sie veröffentlicht sind, mit einem Update von Taxpresso (node scripts/fr-communes.mjs fügt sie hinzu). Taxpresso rät nie einen Steuerfuss. Deine Fragen, deine Dokumente und die Werte für deine Steuererklärung brauchen sie nicht und funktionieren schon.',
   },
   selfEmployed: {
     en: 'Self-employment (activité indépendante, codes 1.210 and 1.220) is not supported yet: the tax is not computed.',
@@ -164,6 +165,18 @@ export const NOTE = {
   donationsMin: {
     en: 'Donations: under CHF 100 in the year, nothing is deductible.',
     fr: `Dons${NB}: en dessous de CHF 100 dans l’année, rien n’est déductible.`,
+  },
+  savingsAbove: {
+    en: 'Interest on savings (code 4.150): the deduction is never more than the income of the accounts and securities (code 3.210); the interest you gave is above it, so only that income counts.',
+    fr: `Intérêts de capitaux d’épargne (code 4.150)${NB}: la déduction ne dépasse jamais le rendement des titres et placements (code 3.210)${NB}; les intérêts indiqués le dépassent, seul ce rendement compte donc.`,
+  },
+  childcareNotCounted: {
+    en: 'Childcare (frais de garde, code 4.380) counts only for a child under 14 living with you: the costs you gave for another child are not counted.',
+    fr: `Les frais de garde (code 4.380) ne comptent que pour un enfant de moins de 14 ans vivant avec vous${NB}: les frais indiqués pour un autre enfant ne sont pas comptés.`,
+  },
+  childcareSplit: {
+    en: 'Childcare (frais de garde, code 4.380) not computed: the limit is per child under 14 living with you (LICD art. 34 al. 3). The costs you gave for the household are above one child’s limit, so how they split between your children decides the deduction. Taxpresso doesn’t compute the tax until it knows what was paid for each child.',
+    fr: `Frais de garde (code 4.380) non calculés${NB}: la limite est par enfant de moins de 14 ans vivant avec vous (LICD art. 34 al. 3). Les frais indiqués pour le ménage dépassent la limite d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Taxpresso ne calcule pas l’impôt avant de savoir ce qui a été payé pour chaque enfant.`,
   },
   savingsNoIncome: {
     en: 'Interest on savings (code 4.150): only deductible when the accounts and securities have an income; none was given.',
