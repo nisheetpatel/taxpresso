@@ -193,6 +193,10 @@ export const NOTE = {
     en: 'Childcare by others (Kinderdrittbetreuungskostenabzug, 253) not computed: the limit is per child, and for a child under 15 the deduction for your own care (Eigenbetreuungsabzug, 404) applies when it is higher (StG § 30 Abs. 1 Bst. l, § 33 Abs. 2bis). The costs you gave for the household are too high for every split to give the same, so how they split between your children decides the deduction. Taxpresso doesn’t compute the tax until it knows what was paid for each child.',
     fr: `Frais de garde par des tiers (Kinderdrittbetreuungskostenabzug, 253) non calculés${NB}: la limite est par enfant, et pour un enfant de moins de 15 ans la déduction pour la garde par les parents (Eigenbetreuungsabzug, 404) s’applique quand elle est plus élevée (StG § 30 al. 1 let. l, § 33 al. 2bis). Les frais indiqués pour le ménage sont trop élevés pour que toute répartition donne le même résultat${NB}: leur répartition entre vos enfants décide la déduction. Taxpresso ne calcule pas l’impôt avant de savoir ce qui a été payé pour chaque enfant.`,
   },
+  childcareAge: {
+    en: 'Childcare by others (Kinderdrittbetreuungskostenabzug, 253): not counted for a child aged 15 or more on 31 December; the deduction is for children under 14.',
+    fr: `Frais de garde par des tiers (Kinderdrittbetreuungskostenabzug, 253)${NB}: non comptés pour un enfant de 15 ans ou plus au 31 décembre${NB}; la déduction vaut pour les enfants de moins de 14 ans.`,
+  },
   childcareNoChild: {
     en: 'Childcare by others (Kinderdrittbetreuungskostenabzug, 253): not counted, no child under 14 living with you was given.',
     fr: `Frais de garde par des tiers (Kinderdrittbetreuungskostenabzug, 253)${NB}: non comptés, aucun enfant de moins de 14 ans vivant avec vous n’est indiqué.`,

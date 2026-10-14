@@ -584,11 +584,13 @@ function familyOf(
       }
     }
     // Ages: under 14 (childcare), under 15 (own care or the extra child deduction), a minor.
-    let under14 = ch.under14;
+    // A child with childcare is taken as under 14, unless it was 15 or more (then it is not).
+    let under14 = ch.under14 ?? (ch.under15 === false ? false : undefined);
     if (under14 === undefined && ch.childcare) {
       under14 = true;
       notes.add(notes.assumptions, NOTE.under14);
     }
+    if (ch.childcare && under14 === false) notes.add(notes.notCounted, NOTE.childcareAge);
     const under15 = ch.under15 ?? (under14 ? true : undefined);
     const minor = ch.minor ?? (under15 ? true : undefined);
     if ((under14 && ch.under15 === false) || (under15 && ch.minor === false)) {
@@ -1272,7 +1274,12 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
   for (const ch of children) {
     const child = {
       livesWithYou: ch.livesWithYou ?? true,
-      ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
+      // A child 15 or more on 31 December is not under 14 (childcare).
+      ...(ch.under14 !== undefined
+        ? { under14: ch.under14 }
+        : ch.under15 === false
+          ? { under14: false }
+          : {}),
       ...(ch.childcare ? { childcare: ch.childcare } : {}),
     };
     if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
@@ -1371,7 +1378,7 @@ function withHouseholdChildcare(
   }
   const eligible = children
     .map((ch, i) => ({ ch, i }))
-    .filter(({ ch }) => (ch.livesWithYou ?? true) && ch.under14 !== false);
+    .filter(({ ch }) => (ch.livesWithYou ?? true) && ch.under14 !== false && ch.under15 !== false);
   const paid = total(new Trace(), [care]);
   if (eligible.length === 1 || (eligible.length > 1 && paid < P.amounts.ownCare.value)) {
     const at = eligible[0]!.i;

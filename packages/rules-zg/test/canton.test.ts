@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import {
   communesFor,
   computeReturn,
+  NOTE,
   rules,
   ZgInputError,
   type ZgEngineInput,
@@ -337,6 +338,24 @@ describe('Zug through the canton interface', () => {
     });
     expect(under.icc?.items.find((i) => i.code === '253')).toBeUndefined();
     expect(under.icc?.items.find((i) => i.code === '404')?.amount).toBe(-chf(24_400));
+    // A child aged 15 or more can't have it: the younger child's, whatever its order.
+    const older = rules.computeReturn({
+      ...two,
+      children: [{ custody: 'full' as const }, { custody: 'full' as const }],
+      household: { ...h.household, childcare: amt(20_000) },
+      cantonal: { children: [{ under15: false, minor: true }, { under15: true }] },
+    });
+    expect(older.icc?.items.find((i) => i.code === '253')?.amount).toBe(-chf(20_000));
+    expect(older.ifd?.items.find((i) => i.code === '253')?.amount).toBe(-chf(20_000));
+    // Childcare given for a child aged 15 or more: not counted, and said so (no contradiction).
+    const only = rules.computeReturn({
+      ...h,
+      children: [{ custody: 'full' as const, childcare: amt(5_000) }],
+      cantonal: { children: [{ under15: false, minor: true }] },
+    });
+    expect(only.icc?.items.find((i) => i.code === '253')).toBeUndefined();
+    expect(only.ifd?.items.find((i) => i.code === '253')).toBeUndefined();
+    expect(only.notCounted).toContainEqual(NOTE.childcareAge);
   });
 
   it('refuses a fact Zug does not read, a commune by number and an unknown commune', () => {

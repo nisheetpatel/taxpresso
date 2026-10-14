@@ -443,6 +443,8 @@ taxpresso/
                         summary (wired into the extension as a preview)
     rules-bl/           Basel-Landschaft's state, communal and church tax, and the federal tax of its
                         Bundessteuer column (wired into the extension as a preview)
+    rules-zg/           Zug's cantonal, communal, church and Bürgergemeinde tax, and the federal tax of
+                        form K's Bund column (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax (not wired into the extension yet)
     optimizer/
     filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation; the form shapes
@@ -450,6 +452,7 @@ taxpresso/
     filing-zh/          the Zurich form map (main form and annexes) and the values to type on it
     filing-be/          the Bern forms and TaxMe's summaries, and the values to type on them
     filing-bl/          the Basel-Landschaft return (pages 2 to 4, two columns) and the values to type
+    filing-zg/          Zug's form K (pages 2 to 4, Kanton and Bund columns) and the values to type
   ui/                   Vite app; views reused as MCP Apps resources
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
@@ -460,6 +463,8 @@ taxpresso/
                         shared custody, parties, childcare and education per child)
   data/bl/2026/         Basel-Landschaft's questionnaire: the shared questions, its own (commune by name,
                         church, shared custody, each child's income and childcare, kind of pension)
+  data/zg/2026/         Zug's questionnaire: the shared questions, its own (commune by name, children's
+                        ages and childcare, shared custody, rent, parish, Bürgergemeinde)
   test/golden/          households + GeTax expected outputs
   test/fixtures/        sample PDFs (synthetic only, never real data)
   docs/                 privacy policy, support, example prompts
