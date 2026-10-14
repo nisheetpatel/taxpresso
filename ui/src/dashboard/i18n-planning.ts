@@ -50,7 +50,7 @@ export const messages = {
       'One catch-up per missed year, and none once you’ve taken your 3a money for retirement.',
     cuRuleAsk:
       'Ask your 3a bank or insurer in writing: you say which year you’re making up, and how much.',
-    touWhen: 'Decide first',
+    touWhen: 'Your choice',
     touTitle: 'Ask to be taxed ordinarily instead of at source?',
     touOfficial: 'taxation ordinaire ultérieure (TOU)',
     touLead:
@@ -99,6 +99,9 @@ export const messages = {
     touNextCompulsory:
       'Announce it with the DRIS/TOU form from your e-démarches tax space by {date}.',
     touNeedComparison: 'You can record your choice here once the comparison is shown.',
+    touNotKnown: 'Not known yet',
+    touWithheldLater:
+      'Taxpresso shows the tax taken at source once it knows your salary, from your salary certificate or from what you tell Claude.',
     'assume.income_tax_only':
       'The ordinary tax here is income tax only (cantonal, communal and federal). Wealth tax isn’t counted: with taxable wealth, TOU is compulsory anyway.',
     'assume.withheld_from_tariff':
@@ -236,7 +239,7 @@ export const messages = {
     cuRuleOnce:
       'Un seul rattrapage par année manquée, et aucun une fois votre 3e pilier A retiré pour la retraite.',
     cuRuleAsk: `Demandez-le par écrit à votre banque ou assurance 3e pilier A${NB}: vous indiquez l’année rattrapée et le montant.`,
-    touWhen: 'À décider d’abord',
+    touWhen: 'Votre choix',
     touTitle: `Demander une taxation ordinaire au lieu de l’impôt à la source${NB}?`,
     touOfficial: 'taxation ordinaire ultérieure (TOU)',
     touLead: `Sans elle, l’impôt retenu sur votre salaire est définitif${NB}: votre 3e pilier A, vos rachats 2e pilier et vos frais de garde ne le diminuent pas. Avec elle, vous remplissez une déclaration normale et l’impôt déjà retenu est imputé.`,
@@ -278,6 +281,9 @@ export const messages = {
     touNextCompulsory:
       'Annoncez-la avec le formulaire DRIS/TOU depuis votre espace fiscal e-démarches d’ici au {date}.',
     touNeedComparison: 'Vous pourrez enregistrer votre choix ici une fois la comparaison affichée.',
+    touNotKnown: 'Pas encore connu',
+    touWithheldLater:
+      'Taxpresso affiche l’impôt retenu à la source dès qu’il connaît votre salaire, par votre certificat de salaire ou ce que vous dites à Claude.',
     'assume.income_tax_only': `L’impôt ordinaire est ici l’impôt sur le revenu seul (cantonal, communal et fédéral). L’impôt sur la fortune n’est pas compté${NB}: avec une fortune imposable, la TOU est de toute façon obligatoire.`,
     'assume.withheld_from_tariff':
       'L’impôt retenu à la source est estimé avec votre barème et votre salaire brut annuel. Votre certificat de salaire (chiffre 12) indique le vrai montant.',
@@ -399,7 +405,7 @@ export const messages = {
       'Ein Nachkauf pro verpasstes Jahr, und keiner mehr, sobald du dein 3a-Geld für die Pensionierung bezogen hast.',
     cuRuleAsk:
       'Frag deine 3a-Bank oder -Versicherung schriftlich an: Du gibst an, welches Jahr du nachholst und wie viel.',
-    touWhen: 'Zuerst entscheiden',
+    touWhen: 'Deine Wahl',
     touTitle: 'Ordentlich statt an der Quelle besteuert werden?',
     touOfficial: 'taxation ordinaire ultérieure (TOU)',
     touLead:
@@ -449,6 +455,9 @@ export const messages = {
     touNextCompulsory:
       'Melde sie bis {date} mit dem Formular DRIS/TOU aus deinem Steuerbereich bei e-démarches an.',
     touNeedComparison: 'Du kannst deine Wahl hier festhalten, sobald der Vergleich angezeigt wird.',
+    touNotKnown: 'Noch nicht bekannt',
+    touWithheldLater:
+      'Taxpresso zeigt die Quellensteuer, sobald es deinen Lohn kennt: aus deinem Lohnausweis oder aus dem, was du Claude sagst.',
     'assume.income_tax_only':
       'Die ordentliche Steuer ist hier nur die Einkommenssteuer (Kanton, Gemeinde und Bund). Die Vermögenssteuer ist nicht gezählt: Mit steuerbarem Vermögen ist die TOU ohnehin obligatorisch.',
     'assume.withheld_from_tariff':
@@ -592,7 +601,7 @@ export const messages = {
       'Un solo riscatto per ogni anno mancato, e nessuno dopo che hai prelevato i soldi del tuo pilastro 3a per il pensionamento.',
     cuRuleAsk:
       'Chiedilo per iscritto alla tua banca o assicurazione del pilastro 3a: indichi quale anno recuperi e quanto.',
-    touWhen: 'Da decidere prima',
+    touWhen: 'La tua scelta',
     touTitle: 'Chiedere una tassazione ordinaria invece dell’imposta alla fonte?',
     touOfficial: 'taxation ordinaire ultérieure (TOU)',
     touLead:
@@ -643,6 +652,9 @@ export const messages = {
     touNextCompulsory:
       'Annunciala con il modulo DRIS/TOU dal tuo spazio fiscale e-démarches entro il {date}.',
     touNeedComparison: 'Potrai registrare qui la tua scelta quando sarà visibile il confronto.',
+    touNotKnown: 'Non ancora noto',
+    touWithheldLater:
+      'Taxpresso mostra l’imposta trattenuta alla fonte quando conosce il tuo salario, dal tuo certificato di salario o da quello che dici a Claude.',
     'assume.income_tax_only':
       'Qui l’imposta ordinaria è solo l’imposta sul reddito (cantonale, comunale e federale). L’imposta sulla sostanza non è conteggiata: con una sostanza imponibile, la TOU è comunque obbligatoria.',
     'assume.withheld_from_tariff':
@@ -760,6 +772,25 @@ export function assumption(lang: Language, id: string): string {
   const own = `assume.${id}`;
   if (own in messages.en) return tp(lang, own as PlanningMessageKey);
   return isMessageKey(own) ? t(lang, own) : id;
+}
+
+/**
+ * The assumptions that have words, each once: an id with no text is left out rather than shown as
+ * a code, and an empty one never makes an empty bullet.
+ */
+export function assumptionList(lang: Language, ids: readonly string[]): string[] {
+  const out: string[] = [];
+  for (const id of ids) {
+    const own = `assume.${id}`;
+    const text =
+      own in messages.en
+        ? tp(lang, own as PlanningMessageKey)
+        : isMessageKey(own)
+          ? t(lang, own)
+          : '';
+    if (text.trim() && !out.includes(text)) out.push(text);
+  }
+  return out;
 }
 
 /**

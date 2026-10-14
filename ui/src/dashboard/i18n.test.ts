@@ -9,6 +9,7 @@ import { messages as copy } from './i18n-copy';
 import { messages as docs } from './i18n-docs';
 import { messages as finalCheck } from './i18n-final-check';
 import { messages as holdings } from './i18n-holdings';
+import { messages as journey } from './i18n-journey';
 import { messages as planning } from './i18n-planning';
 import { messages as reconcile } from './i18n-reconcile';
 import { messages as review } from './i18n-review';
@@ -22,6 +23,7 @@ const TABLES: Record<string, Table> = {
   docs,
   finalCheck,
   holdings,
+  journey,
   planning,
   reconcile,
   review,
