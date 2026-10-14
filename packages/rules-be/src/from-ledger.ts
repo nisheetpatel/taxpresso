@@ -82,8 +82,16 @@ export const BERN_READING: CantonLedgerReading<BernCantonal> = {
       if (a && a.value > 0) party[p.id] = a;
     }
     if (party.p1 || party.p2) out.politicalParty = party;
-    // Education away from home or extra education costs, per child, in the order of the children.
+    // Childcare split per child, when there are several children (the limit is per child).
     const children = input.children ?? [];
+    if (children.length > 1) {
+      const care = children.map((_, i) => {
+        const a = amount('be.child_care', `child${i + 1}`);
+        return a && a.value > 0 ? a : undefined;
+      });
+      if (care.some(Boolean)) out.childcare = care;
+    }
+    // Education away from home or extra education costs, per child, in the order of the children.
     if (children.length && answer('be.education') === true) {
       const education = children.map((_, i) => {
         const a = amount('be.child_education', `child${i + 1}`);

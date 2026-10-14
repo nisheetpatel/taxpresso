@@ -107,7 +107,7 @@ export interface ChildInput {
 
 export interface BeEngineInput {
   taxYear: BeTaxYear;
-  /** Commune of residence on 31 December, by its BFS number (StG Art. 67 Abs. 3). */
+  /** Commune of residence on 31 December, by its BFS number (StG Art. 165 Abs. 1 and 4). */
   commune: number;
   /** Registered partners are 'married' (be-2025-wegleitung-np-de p. 21). */
   civilStatus: 'single' | 'married' | 'separated' | 'divorced' | 'widowed';
@@ -175,6 +175,11 @@ export interface BeEngineInput {
     bankFees?: Amount;
     /** 2.25: other taxable income, as given. */
     otherIncome?: Amount;
+    /**
+     * 2.1: childcare paid for the household as a whole, when not given per child (the limit is
+     * per child: see compute.ts).
+     */
+    childcare?: Amount;
     /** 4.1: cash, gold and other precious metals. */
     cash?: Amount;
     /** 4.2: life and annuity insurance, tax value. */

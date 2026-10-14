@@ -217,7 +217,12 @@ describe('Bern through the canton interface', () => {
   it('refuses a fact Bern does not read, and a commune given by name', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<BernCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      // Childcare both per child and for the household.
+      {
+        ...h,
+        children: [{ custody: 'full', childcare: amt(1_000) }],
+        household: { childcare: amt(5_000) },
+      },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, cantonal: { ...h.cantonal, childEducation: [amt(1_000)] } },
       { ...h, commune: 'bern' },
@@ -225,6 +230,40 @@ describe('Bern through the canton interface', () => {
     ];
     for (const x of refused) expect(() => rules.computeReturn(x)).toThrow(BeInputError);
     expect(() => rules.computeReturn({ ...h, taxYear: 2024 })).toThrow(/not supported/);
+  });
+
+  it('takes childcare paid for the household where one child’s limit settles it', () => {
+    const h = household(HOUSEHOLDS[0]!);
+    const child = { custody: 'full' as const, under14: true };
+    const one = rules.computeReturn({
+      ...h,
+      children: [child],
+      household: { ...h.household, childcare: amt(5_000) },
+    });
+    expect(one.icc?.items.find((i) => i.code === '2.1-betreuung')?.amount).toBe(-500_000);
+    // Two children, within one child's limit: whatever the split, all of it counts.
+    const small = rules.computeReturn({
+      ...h,
+      children: [child, child],
+      household: { ...h.household, childcare: amt(2_000) },
+    });
+    expect(small.icc?.items.find((i) => i.code === '2.1-betreuung')?.amount).toBe(-200_000);
+    // Two children, above one child's limit: the split decides, so not computed.
+    const big = rules.computeReturn({
+      ...h,
+      children: [child, child],
+      household: { ...h.household, childcare: amt(60_000) },
+    });
+    expect(big.icc).toBeNull();
+    expect(big.unsupported.map((n) => n.en).join(' ')).toMatch(/limit is per child/);
+    // Split per child (the questionnaire's child_care): it replaces the household's total.
+    const split = rules.computeReturn({
+      ...h,
+      children: [child, child],
+      household: { ...h.household, childcare: amt(60_000) },
+      cantonal: { ...h.cantonal, childcare: [amt(5_000), amt(3_000)] },
+    });
+    expect(split.icc?.items.find((i) => i.code === '2.1-betreuung')?.amount).toBe(-800_000);
   });
 
   it('lists the communes by BFS number with their Steueranlagen, cited', () => {

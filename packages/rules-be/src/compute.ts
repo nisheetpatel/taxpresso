@@ -683,6 +683,26 @@ export function computeReturn(input: BeEngineInput): BeTaxResult {
     }
   }
 
+  // Childcare paid for the household as a whole (the invoices of a crèche, say): form 2.1 asks it
+  // per child, and the limit is per child. It is that child's when one child can have it, or when
+  // the whole amount is within any child's limit; otherwise how it splits decides the deduction,
+  // and it is not computed without it (fail closed).
+  if (hh.childcare) {
+    if (counted.some((ch) => ch.childcare)) {
+      throw new BeInputError('Childcare: give it per child or for the household, not both.');
+    }
+    const eligible = counted.filter((ch) => ch.livesWithYou && ch.under14 !== false);
+    const paid = total(new Trace(), [hh.childcare]);
+    const cap = A.childcareMax.value * Math.min(...eligible.map((ch) => ch.weight), 1);
+    if (eligible.length === 1 || (eligible.length > 1 && paid <= cap)) {
+      eligible[0]!.childcare = hh.childcare;
+    } else if (eligible.length > 1) {
+      notes.add(notes.unsupported, NOTE.childcareSplit);
+    } else if (paid > 0) {
+      notes.add(notes.notCounted, NOTE.childcareNoChild);
+    }
+  }
+
   // Childcare (form 2.1; StG Art. 38 Abs. 1 lit. l): both spouses, or the parent, must work.
   const withCare = counted.filter((ch) => ch.childcare && ch.livesWithYou);
   if (withCare.length) {

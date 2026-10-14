@@ -96,8 +96,8 @@ const H = KEYS_HOUSEHOLD_2026;
 const ATTESTATION_TERMS: Record<string, [string, string]> = {
   'pillar3a.paid': ['Beiträge an die Säule 3a', guide(192)],
   'lpp.buyin': ['Beiträge an die 2. Säule (Einkauf)', guide(190)],
-  'health.premiums': ['Versicherungsprämien', guide(171)],
-  'health.subsidy': ['Prämienverbilligung', guide(171)],
+  'health.premiums': ['Versicherungsprämien', guide(195)],
+  'health.subsidy': ['Prämienverbilligung', guide(195)],
   'medical.costs': ['Krankheits- und Unfallkosten', guide(204)],
   'childcare.costs': ['Kinderdrittbetreuungskosten', guide(14)],
   'donation.amount': ['Vergabungen', guide(199)],
@@ -130,7 +130,7 @@ function bernOwn(taxYear: number): KeyRegistry {
         de: 'Wohngemeinde am 31. Dezember',
       },
       official: 'Gemeinde',
-      source: `${TABLE} sheet Daten Gde (STJ ${taxYear}); ${law} Art. 67 Abs. 3`,
+      source: `${TABLE} sheet Daten Gde (STJ ${taxYear}); ${law} Art. 165 Abs. 1 and 4 (p. 89)`,
     }),
     'profile.moved': choice({
       values: ['no', 'within_bern', 'from_other_canton', 'from_abroad', 'leaving_switzerland'],
@@ -196,6 +196,17 @@ function bernOwn(taxYear: number): KeyRegistry {
       official: 'Mitgliederbeiträge und Zuwendungen an politische Parteien',
       source: `${FORM} p. 4 (4.4); ${guide(198)}`,
     },
+    'be.child_care': {
+      type: 'money',
+      perPerson: true,
+      label: {
+        en: 'Childcare paid for this child',
+        fr: 'Frais de garde payés pour cet enfant',
+        de: 'Für dieses Kind bezahlte Kinderdrittbetreuungskosten',
+      },
+      official: 'Bezahlte Kinderdrittbetreuungskosten',
+      source: `${FORM} p. 2 (2.1); ${guide(14)}`,
+    },
     'be.education': {
       type: 'boolean',
       perPerson: false,
@@ -205,7 +216,7 @@ function bernOwn(taxYear: number): KeyRegistry {
         de: 'Auswärtige oder zusätzliche Ausbildungskosten für ein Kind',
       },
       official: 'Auswärtige bzw. zusätzliche Ausbildungskosten',
-      source: `${FORM} p. 2 (2.1); ${guide(14)}`,
+      source: `${FORM} p. 2 (2.1); ${guide(16)}`,
     },
     'be.child_education': {
       type: 'money',

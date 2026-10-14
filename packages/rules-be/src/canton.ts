@@ -33,6 +33,11 @@ export interface BernCantonal extends Pick<
   politicalParty?: { p1?: Amount; p2?: Amount };
   /** Education away from home or extra education costs, by child, in the order of `children`. */
   childEducation?: readonly (Amount | undefined)[];
+  /**
+   * Childcare paid, by child, in the order of `children` (form 2.1 asks it per child, the limit is
+   * per child): replaces childcare given for the household as a whole.
+   */
+  childcare?: readonly (Amount | undefined)[];
 }
 
 function refuse(what: string): never {
@@ -65,18 +70,23 @@ export function bernInput(input: HouseholdInput<BernCantonal>): BeEngineInput {
   if (typeof input.commune !== 'number') {
     throw new BeInputError(`Bern communes are given by their BFS number, not ${input.commune}.`);
   }
-  if (input.household?.childcare) {
-    refuse('Childcare for the household (household.childcare; give it per child)');
-  }
   const c = input.cantonal ?? {};
   const education = c.childEducation ?? [];
   if (education.length > (input.children?.length ?? 0)) {
     refuse('Education costs for a child not in children (cantonal.childEducation)');
   }
+  const care = c.childcare ?? [];
+  if (care.length > (input.children?.length ?? 0)) {
+    refuse('Childcare for a child not in children (cantonal.childcare)');
+  }
   const children: ChildInput[] | undefined = input.children?.map((ch, i) => ({
     ...without(ch, ['age']),
+    ...(care[i] ? { childcare: care[i] } : {}),
     ...(education[i] ? { education: education[i] } : {}),
   }));
+  // Childcare split per child replaces the household's total.
+  const household =
+    input.household && c.childcare ? without(input.household, ['childcare']) : input.household;
   const movable = input.movable?.map((m) => {
     const owner: string = m.owner;
     if (!isOwner(owner)) refuse(`Accounts or securities of ${owner} (movable[].owner)`);
@@ -94,7 +104,7 @@ export function bernInput(input: HouseholdInput<BernCantonal>): BeEngineInput {
     ...(c.marriedTariff !== undefined ? { marriedTariff: c.marriedTariff } : {}),
     ...(c.sharedChildWealth !== undefined ? { sharedChildWealth: c.sharedChildWealth } : {}),
     ...(c.church ? { church: c.church } : {}),
-    ...(input.household ? { household: without(input.household, ['childcare']) } : {}),
+    ...(household ? { household } : {}),
     ...(movable ? { movable } : {}),
   };
 }

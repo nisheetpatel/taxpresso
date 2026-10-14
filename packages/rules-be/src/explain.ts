@@ -124,6 +124,14 @@ export const NOTE = {
     en: 'Pillar 3a: what you paid above the limit is not deductible.',
     fr: `Pilier 3a${NB}: ce que vous avez versé au-delà du plafond n’est pas déductible.`,
   },
+  childcareSplit: {
+    en: 'Childcare (Kinderdrittbetreuungskosten) not computed: the limit is per child (StG Art. 38 Abs. 1 lit. l), and the costs you gave for the household are above one child’s limit, so how they split between your children decides the deduction. Taxpresso doesn’t compute the tax until it knows what was paid for each child.',
+    fr: `Frais de garde (Kinderdrittbetreuungskosten) non calculés${NB}: la limite est par enfant (LI art. 38 al. 1 let. l), et les frais indiqués pour le ménage dépassent la limite d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Taxpresso ne calcule pas l’impôt avant de savoir ce qui a été payé pour chaque enfant.`,
+  },
+  childcareNoChild: {
+    en: 'Childcare (Kinderdrittbetreuungskosten): not counted, no child under 14 living with you was given.',
+    fr: `Frais de garde (Kinderdrittbetreuungskosten)${NB}: non comptés, aucun enfant de moins de 14 ans vivant avec vous n’est indiqué.`,
+  },
   childcareWork: {
     en: 'Childcare (Kinderdrittbetreuung) is deductible only when the parents caring for the child work, train or can’t work; for a married couple, both. It is not counted here.',
     fr: `Les frais de garde (Kinderdrittbetreuung) ne sont déductibles que si les parents qui s’occupent de l’enfant travaillent, se forment ou sont incapables de travailler${NB}; pour un couple marié, les deux. Ils ne sont pas comptés ici.`,
