@@ -92,6 +92,10 @@ export const NOTE = {
     en: 'Childcare for a child in shared custody: you paid more than half the limit of CHF 26,000, and the documents don’t say whether each parent has the whole limit or half of it. The tax is not computed.',
     fr: `Frais de garde pour un enfant en garde partagée${NB}: vous avez payé plus de la moitié de la limite de CHF 26’000, et les documents ne disent pas si chaque parent a la limite entière ou la moitié. L’impôt n’est pas calculé.`,
   },
+  childcareSplit: {
+    en: 'Childcare for several children (code 670): the limit is per child (form F), and with your total how it splits between the children changes the deduction. Give the childcare paid for each child: until then the tax is not computed.',
+    fr: `Frais de garde pour plusieurs enfants (code 670)${NB}: la limite est par enfant (formulaire F), et avec votre total la répartition entre les enfants change la déduction. Indiquez les frais de garde payés pour chaque enfant${NB}: d’ici là, l’impôt n’est pas calculé.`,
+  },
   childcareNotCounted: {
     en: 'Childcare for a child who counts for the other parent (you pay child support): the documents don’t say whether you may deduct it. The tax is not computed.',
     fr: `Frais de garde pour un enfant qui compte pour l’autre parent (vous versez la contribution d’entretien)${NB}: les documents ne disent pas si vous pouvez les déduire. L’impôt n’est pas calculé.`,
@@ -165,6 +169,10 @@ export const NOTE = {
   drivingDetails: {
     en: 'Travel to work by car or motorbike not counted: give the kilometres one way and the days driven.',
     fr: `Trajets en voiture ou moto non comptés${NB}: indiquez les kilomètres aller et le nombre de jours.`,
+  },
+  childcareNoChild: {
+    en: 'Childcare is deductible for children under 14 who live with you (code 670): with none, it is not counted.',
+    fr: `Les frais de garde sont déductibles pour les enfants de moins de 14 ans qui vivent avec vous (code 670)${NB}: sans enfant de ce genre, ils ne sont pas comptés.`,
   },
   childcareWork: {
     en: 'Childcare is deductible only when the parents caring for the child work, train or can’t work; for a married couple, both. It is not counted here.',

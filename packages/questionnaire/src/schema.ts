@@ -59,6 +59,7 @@ export const OFFICIAL_HOSTS = [
   'bl.ch', // statistik.bl.ch (communal and church tax rates), bl.clex.ch (laws)
   'bl-api.webcloud7.ch', // the file host of baselland.ch: Basel-Landschaft's guides and forms
   'vd.ch', // www.vd.ch (guide, forms, tables), prestations.vd.ch (BLV, VaudTax)
+  'bs.ch', // www.bs.ch, media.bs.ch (guides, forms), www.gesetzessammlung.bs.ch (laws)
   'zg.ch', // zg.ch (eTax.zug), cdn.zg.ch (Zug's guides and tables), bgs.zg.ch (laws)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
@@ -228,17 +229,55 @@ export function resolveShared(raw: unknown, shared: unknown): unknown {
   };
 }
 
+/** The words that join the last two names of a list, by language. */
+const JOIN = {
+  and: { en: 'and', fr: 'et', de: 'und' },
+  or: { en: 'or', fr: 'ou', de: 'oder' },
+} as const;
+
 /**
- * Validates a questionnaire file and applies French typography to every French text. `shared` is
- * the questionnaire every canton shares (data/ch/<year>/questions.yaml), when the file takes from it.
+ * The cantons Taxpresso prepares returns for, in words, from the canton question's own options
+ * (those it supports, by their short name): "{cantons}" is "Geneva, Zurich and Bern", "{cantonsOr}"
+ * "Geneva, Zurich or Bern". The options are the canton keys' values (SUPPORTED_CANTONS, a test
+ * checks), so a canton added there is named everywhere without editing any sentence.
+ */
+function cantonLists(file: QuestionnaireFile): Record<string, Text> | undefined {
+  const q = file.questions.find((x) => x.key === 'profile.canton');
+  if (!q?.options) return undefined;
+  const names = q.options.filter((o) => !o.notSupported).map((o) => o.chip ?? o.label);
+  const list = (lang: 'en' | 'fr' | 'de', join: keyof typeof JOIN) => {
+    const words = names.map((n) => (lang === 'de' ? (n.de ?? n.en) : n[lang]));
+    return words.length > 1
+      ? `${words.slice(0, -1).join(', ')} ${JOIN[join][lang]} ${words.at(-1)}`
+      : words.join('');
+  };
+  const text = (join: keyof typeof JOIN): Text => ({
+    en: list('en', join),
+    fr: list('fr', join),
+    de: list('de', join),
+  });
+  return { '{cantons}': text('and'), '{cantonsOr}': text('or') };
+}
+
+/**
+ * Validates a questionnaire file, names the cantons Taxpresso covers where a text says
+ * {cantons} or {cantonsOr}, and applies French typography to every French text. `shared` is the
+ * questionnaire every canton shares (data/ch/<year>/questions.yaml), when the file takes from it.
  */
 export function parseQuestionnaire(raw: unknown, shared?: unknown): QuestionnaireFile {
   const file = QuestionnaireFile.parse(shared === undefined ? raw : resolveShared(raw, shared));
+  const lists = cantonLists(file);
+  const fill = (s: string, lang: 'en' | 'fr' | 'de') =>
+    lists ? s.replace(/\{cantons(Or)?\}/g, (m) => lists[m]?.[lang] ?? m) : s;
   const fix = (v: unknown): void => {
     if (Array.isArray(v)) return v.forEach(fix);
     if (v && typeof v === 'object') {
       const o = v as Record<string, unknown>;
-      if (typeof o.fr === 'string' && typeof o.en === 'string') o.fr = frenchSpacing(o.fr);
+      if (typeof o.fr === 'string' && typeof o.en === 'string') {
+        o.en = fill(o.en, 'en');
+        o.fr = frenchSpacing(fill(o.fr, 'fr'));
+        if (typeof o.de === 'string') o.de = fill(o.de, 'de');
+      }
       Object.values(o).forEach(fix);
     }
   };

@@ -52,7 +52,7 @@ export interface CantonPlan {
   incomeTax(r: SharedResult): TaxEstimate | undefined;
   /**
    * The commune assumed when none is answered, as the canton's engine takes it: its BFS number, or
-   * its name or slug where the canton's tables carry none (Basel-Landschaft, Vaud).
+   * its name or slug where the canton's tables carry none (Basel-Landschaft, Vaud, Basel-Stadt).
    */
   defaultCommune: number | string;
   /** The documents the canton's income tax rests on, for the year. */

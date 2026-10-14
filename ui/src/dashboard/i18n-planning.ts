@@ -144,6 +144,14 @@ const messages = {
     cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
     touGenevaOnlyVd:
       'Taxpresso’s TOU comparison follows Geneva’s rules. For Vaud, Taxpresso doesn’t support taxation at source (impôt à la source) and its TOU (taxation ordinaire ultérieure) yet.',
+    splitBs: 'Basel-Stadt {icc} · federal {ifd}',
+    lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
+    lppAttestationBs:
+      'Your fund confirms the payment with a certificate (Bescheinigung): keep it for your return.',
+    cuOfficialBs: 'zusätzlicher Einkauf in die Säule 3a',
+    cuRuleIncomeBs: 'You must have had earned income subject to AHV in 2025.',
+    touGenevaOnlyBs:
+      'TOU is Geneva’s procedure. For Basel-Stadt, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
     splitZg: 'Zug {icc} · federal {ifd}',
     lppOfficialZg: 'Beiträge an die 2. Säule (Einkaufsbeiträge)',
     lppAttestationZg:
@@ -271,6 +279,12 @@ const messages = {
     lppAttestationVd: `Votre caisse confirme le versement par une attestation officielle de rachat${NB}: gardez-la pour votre déclaration.`,
     cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
     touGenevaOnlyVd: `La comparaison TOU de Taxpresso suit les règles genevoises. Pour Vaud, Taxpresso ne prend pas encore en charge l’impôt à la source ni sa taxation ordinaire ultérieure (TOU).`,
+    splitBs: 'Bâle-Ville {icc} · fédéral {ifd}',
+    lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
+    lppAttestationBs: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: gardez-la pour votre déclaration.`,
+    cuOfficialBs: 'zusätzlicher Einkauf in die Säule 3a',
+    cuRuleIncomeBs: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
+    touGenevaOnlyBs: `La TOU est une procédure genevoise. Pour Bâle-Ville, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
     splitZg: 'Zoug {icc} · fédéral {ifd}',
     lppOfficialZg: 'Beiträge an die 2. Säule (Einkaufsbeiträge)',
     lppAttestationZg: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: joignez-la à votre déclaration.`,
@@ -420,6 +434,14 @@ const messages = {
     cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
     touGenevaOnlyVd:
       'Der TOU-Vergleich von Taxpresso folgt den Genfer Regeln. Für die Waadt unterstützt Taxpresso die Quellensteuer (impôt à la source) und ihre nachträgliche ordentliche Veranlagung (TOU, taxation ordinaire ultérieure) noch nicht.',
+    splitBs: 'Basel-Stadt {icc} · Bund {ifd}',
+    lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
+    lppAttestationBs:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Bewahre sie für deine Steuererklärung auf.',
+    cuOfficialBs: 'zusätzlicher Einkauf in die Säule 3a',
+    cuRuleIncomeBs: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    touGenevaOnlyBs:
+      'Die TOU ist ein Genfer Verfahren. Für Basel-Stadt unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
     splitZg: 'Zug {icc} · Bund {ifd}',
     lppOfficialZg: 'Beiträge an die 2. Säule (Einkaufsbeiträge)',
     lppAttestationZg:

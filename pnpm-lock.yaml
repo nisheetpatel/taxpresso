@@ -226,6 +226,9 @@ importers:
       '@taxpresso/filing-bl':
         specifier: workspace:*
         version: link:../packages/filing-bl
+      '@taxpresso/filing-bs':
+        specifier: workspace:*
+        version: link:../packages/filing-bs
       '@taxpresso/filing-ge':
         specifier: workspace:*
         version: link:../packages/filing-ge
@@ -256,6 +259,9 @@ importers:
       '@taxpresso/rules-bl':
         specifier: workspace:*
         version: link:../packages/rules-bl
+      '@taxpresso/rules-bs':
+        specifier: workspace:*
+        version: link:../packages/rules-bs
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../packages/rules-ch
@@ -330,6 +336,28 @@ importers:
       '@taxpresso/rules-bl':
         specifier: workspace:*
         version: link:../rules-bl
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/filing-bs:
+    dependencies:
+      '@taxpresso/filing-ge':
+        specifier: workspace:*
+        version: link:../filing-ge
+      '@taxpresso/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      '@taxpresso/rules-bs':
+        specifier: workspace:*
+        version: link:../rules-bs
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../rules-ch
@@ -491,6 +519,9 @@ importers:
       '@taxpresso/rules-bl':
         specifier: workspace:*
         version: link:../rules-bl
+      '@taxpresso/rules-bs':
+        specifier: workspace:*
+        version: link:../rules-bs
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../rules-ch
@@ -581,10 +612,19 @@ importers:
 
   packages/rules-bs:
     dependencies:
+      '@taxpresso/ledger':
+        specifier: workspace:*
+        version: link:../ledger
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../rules-ch
     devDependencies:
+      '@taxpresso/rules-ge':
+        specifier: workspace:*
+        version: link:../rules-ge
+      '@taxpresso/rules-zh':
+        specifier: workspace:*
+        version: link:../rules-zh
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.1
