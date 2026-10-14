@@ -23,8 +23,6 @@ interface Topic {
 export interface GenevaCopy {
   htmlTitle: string;
   metaDescription: string;
-  /** The footer link. */
-  link: string;
   title: string;
   lead: string;
   open: string;
@@ -72,9 +70,8 @@ const fr: GenevaCopy = frenchSpacing({
   htmlTitle: 'Repères fiscaux genevois {year} : taux, plafonds et délais · Taxpresso',
   metaDescription:
     'Les chiffres de l’impôt genevois {year}, chacun avec sa source officielle : centimes additionnels communaux, plafonds du 3e pilier A, délais et déductions.',
-  link: 'Repères genevois',
   title: 'Repères fiscaux genevois',
-  lead: 'Les chiffres qui comptent pour votre déclaration genevoise, chacun avec sa source officielle. Les repères des autres cantons viendront plus tard.',
+  lead: 'Les chiffres qui comptent pour votre déclaration genevoise, chacun avec sa source officielle.',
   open: 'Voir les chiffres',
   year: 'Année fiscale {year}',
   check: 'Vérifiez la source officielle avant de vous fier à un chiffre : c’est elle qui fait foi.',
@@ -201,9 +198,8 @@ const en: GenevaCopy = {
   htmlTitle: 'Geneva tax reference {year}: rates, limits and deadlines · Taxpresso',
   metaDescription:
     'Geneva tax figures for {year}, each with its official source: communal tax rates, pillar 3a limits, deadlines and deductions.',
-  link: 'Geneva tax figures',
   title: 'Geneva tax reference',
-  lead: 'The figures that matter for your Geneva tax return, each with its official source. Pages for the other cantons come later.',
+  lead: 'The figures that matter for your Geneva tax return, each with its official source.',
   open: 'See the figures',
   year: 'Tax year {year}',
   check: 'Check the official source before you rely on a figure: it has the final word.',
@@ -332,9 +328,8 @@ const de: GenevaCopy = {
   htmlTitle: 'Genfer Steuerzahlen {year}: Sätze, Obergrenzen und Fristen · Taxpresso',
   metaDescription:
     'Die Genfer Steuerzahlen {year}, jede mit ihrer offiziellen Quelle: Gemeindezuschläge, Obergrenzen der Säule 3a, Fristen und Abzüge.',
-  link: 'Genfer Steuerzahlen',
   title: 'Genfer Steuerzahlen',
-  lead: 'Die Zahlen, die für deine Genfer Steuererklärung zählen, jede mit ihrer offiziellen Quelle. Seiten für die anderen Kantone folgen später.',
+  lead: 'Die Zahlen, die für deine Genfer Steuererklärung zählen, jede mit ihrer offiziellen Quelle.',
   open: 'Zu den Zahlen',
   year: 'Steuerjahr {year}',
   check: 'Prüf die offizielle Quelle, bevor du dich auf eine Zahl verlässt: Sie ist massgebend.',
@@ -465,9 +460,8 @@ const it: GenevaCopy = {
   htmlTitle: 'Cifre fiscali di Ginevra {year}: aliquote, limiti e scadenze · Taxpresso',
   metaDescription:
     'Le cifre dell’imposta ginevrina {year}, ognuna con la sua fonte ufficiale: centesimi addizionali comunali, limiti del pilastro 3a, scadenze e deduzioni.',
-  link: 'Cifre fiscali di Ginevra',
   title: 'Cifre fiscali di Ginevra',
-  lead: 'Le cifre che contano per la tua dichiarazione ginevrina, ognuna con la sua fonte ufficiale. Le pagine per gli altri cantoni arriveranno più avanti.',
+  lead: 'Le cifre che contano per la tua dichiarazione ginevrina, ognuna con la sua fonte ufficiale.',
   open: 'Vedi le cifre',
   year: 'Anno fiscale {year}',
   check: 'Controlla la fonte ufficiale prima di fidarti di una cifra: è lei che fa fede.',
@@ -597,9 +591,8 @@ const es: GenevaCopy = {
   htmlTitle: 'Cifras fiscales de Ginebra {year}: tipos, límites y plazos · Taxpresso',
   metaDescription:
     'Las cifras del impuesto de Ginebra {year}, cada una con su fuente oficial: recargos municipales, límites del pilar 3a, plazos y deducciones.',
-  link: 'Cifras de Ginebra',
   title: 'Cifras fiscales de Ginebra',
-  lead: 'Las cifras que cuentan para tu declaración de Ginebra, cada una con su fuente oficial. Las páginas de los demás cantones llegarán más adelante.',
+  lead: 'Las cifras que cuentan para tu declaración de Ginebra, cada una con su fuente oficial.',
   open: 'Ver las cifras',
   year: 'Año fiscal {year}',
   check: 'Comprueba la fuente oficial antes de fiarte de una cifra: es la que cuenta.',
@@ -729,9 +722,8 @@ const pt: GenevaCopy = {
   htmlTitle: 'Números fiscais de Genebra {year}: taxas, limites e prazos · Taxpresso',
   metaDescription:
     'Os números do imposto de Genebra {year}, cada um com a sua fonte oficial: adicionais comunais, limites do pilar 3a, prazos e deduções.',
-  link: 'Números de Genebra',
   title: 'Números fiscais de Genebra',
-  lead: 'Os números que contam para a tua declaração de Genebra, cada um com a sua fonte oficial. As páginas dos outros cantões chegam mais tarde.',
+  lead: 'Os números que contam para a tua declaração de Genebra, cada um com a sua fonte oficial.',
   open: 'Ver os números',
   year: 'Ano fiscal {year}',
   check: 'Verifica a fonte oficial antes de confiares num número: é ela que conta.',

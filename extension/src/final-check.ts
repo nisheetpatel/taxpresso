@@ -121,6 +121,7 @@ const g = (en: string, fr: string, term: string): Text => ({
   en: `${en} (${term})`,
   fr: `${fr} (${term})`,
   de: term,
+  it: term,
 });
 
 /**
@@ -147,11 +148,13 @@ export function cantonCheckWords(canton: CantonEntry, terms: CantonTerms): Final
       en: `Taxpresso can’t prepare this part. ${sw}, the canton’s free software, or a fiduciary can.`,
       fr: `Taxpresso ne peut pas préparer cette partie. ${sw}, le logiciel gratuit du canton, ou une fiduciaire le peuvent.`,
       de: `Taxpresso kann diesen Teil nicht vorbereiten. ${sw}, die kostenlose Software des Kantons, oder ein Treuhandbüro können das.`,
+      it: `Taxpresso non può preparare questa parte. ${sw}, il programma gratuito del Cantone, o una fiduciaria possono farlo.`,
     },
     limitEstimate: {
       en: ' This limit is an estimate until its amount for the year is published.',
       fr: ` Cette limite est une estimation jusqu’à la publication de son montant pour l’année.`,
       de: ' Diese Grenze ist geschätzt, bis ihr Betrag für das Jahr veröffentlicht ist.',
+      it: ' Questo limite è una stima finché il suo importo per l’anno non è pubblicato.',
     },
     documents: terms.documents,
   };

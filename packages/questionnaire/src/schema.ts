@@ -5,11 +5,12 @@
 import { DOCUMENT_KINDS } from '@taxpresso/ledger';
 import * as z from 'zod/v4';
 
-/** Plain words in English and French; German where the canton's file gives it (Zurich). */
+/** Plain words in English and French; German and Italian where the file gives them. */
 export const Text = z.object({
   en: z.string().min(1),
   fr: z.string().min(1),
   de: z.string().min(1).optional(),
+  it: z.string().min(1).optional(),
 });
 export type Text = z.infer<typeof Text>;
 
@@ -63,6 +64,8 @@ export const OFFICIAL_HOSTS = [
   'zg.ch', // zg.ch (eTax.zug), cdn.zg.ch (Zug's guides and tables), bgs.zg.ch (laws)
   'lu.ch', // steuern.lu.ch (Lucerne's guides, tables and leaflets), srl.lu.ch (laws), steuerbuch.lu.ch
   'sg.ch', // www.sg.ch (guide, forms, tables, Steuerbuch, E-Tax SG), www.gesetzessammlung.sg.ch (laws)
+  'fr.ch', // www.fr.ch (Fribourg's guide, tariffs, FriTax and tax pages), bdlf.fr.ch (laws)
+  'ti.ch', // www4.ti.ch (instructions, forms, multipliers, eTax PF), m3.ti.ch (laws), m4.ti.ch
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
 ] as const;
@@ -251,8 +254,8 @@ export function resolveShared(raw: unknown, shared: unknown): unknown {
 
 /** The words that join the last two names of a list, by language. */
 const JOIN = {
-  and: { en: 'and', fr: 'et', de: 'und' },
-  or: { en: 'or', fr: 'ou', de: 'oder' },
+  and: { en: 'and', fr: 'et', de: 'und', it: 'e' },
+  or: { en: 'or', fr: 'ou', de: 'oder', it: 'o' },
 } as const;
 
 /**
@@ -265,8 +268,8 @@ function cantonLists(file: QuestionnaireFile): Record<string, Text> | undefined 
   const q = file.questions.find((x) => x.key === 'profile.canton');
   if (!q?.options) return undefined;
   const names = q.options.filter((o) => !o.notSupported).map((o) => o.chip ?? o.label);
-  const list = (lang: 'en' | 'fr' | 'de', join: keyof typeof JOIN) => {
-    const words = names.map((n) => (lang === 'de' ? (n.de ?? n.en) : n[lang]));
+  const list = (lang: 'en' | 'fr' | 'de' | 'it', join: keyof typeof JOIN) => {
+    const words = names.map((n) => (lang === 'de' || lang === 'it' ? (n[lang] ?? n.en) : n[lang]));
     return words.length > 1
       ? `${words.slice(0, -1).join(', ')} ${JOIN[join][lang]} ${words.at(-1)}`
       : words.join('');
@@ -275,6 +278,7 @@ function cantonLists(file: QuestionnaireFile): Record<string, Text> | undefined 
     en: list('en', join),
     fr: list('fr', join),
     de: list('de', join),
+    it: list('it', join),
   });
   return { '{cantons}': text('and'), '{cantonsOr}': text('or') };
 }
@@ -374,11 +378,19 @@ function markNotOffered(file: QuestionnaireFile, offered: readonly string[]): vo
   for (const o of q.options) {
     if (o.value === 'other' || o.notSupported || offered.includes(o.value)) continue;
     const name = o.chip ?? o.label;
-    const fill = (lang: 'en' | 'fr' | 'de') =>
-      (lang === 'de' ? (template.de ?? template.en) : template[lang])
-        .replaceAll('{canton}', lang === 'de' ? (name.de ?? name.en) : name[lang])
+    const fill = (lang: 'en' | 'fr' | 'de' | 'it') =>
+      (lang === 'de' || lang === 'it' ? (template[lang] ?? template.en) : template[lang])
+        .replaceAll(
+          '{canton}',
+          lang === 'de' || lang === 'it' ? (name[lang] ?? name.en) : name[lang],
+        )
         .replaceAll('{year}', String(file.taxYear));
-    o.notSupported = { en: fill('en'), fr: fill('fr'), ...(template.de ? { de: fill('de') } : {}) };
+    o.notSupported = {
+      en: fill('en'),
+      fr: fill('fr'),
+      ...(template.de ? { de: fill('de') } : {}),
+      ...(template.it ? { it: fill('it') } : {}),
+    };
   }
 }
 
@@ -422,7 +434,7 @@ export function parseQuestionnaire(
     '{prevYear}': String(year - 1),
     '{nextYear}': String(year + 1),
   };
-  const fill = (s: string, lang: 'en' | 'fr' | 'de') =>
+  const fill = (s: string, lang: 'en' | 'fr' | 'de' | 'it') =>
     (lists ? s.replace(/\{cantons(Or)?\}/g, (m) => lists[m]?.[lang] ?? m) : s).replace(
       /\{(year|prevYear|nextYear)\}/g,
       (m) => yearWords[m]!,
@@ -435,6 +447,7 @@ export function parseQuestionnaire(
         o.en = fill(o.en, 'en');
         o.fr = frenchSpacing(fill(o.fr, 'fr'));
         if (typeof o.de === 'string') o.de = fill(o.de, 'de');
+        if (typeof o.it === 'string') o.it = fill(o.it, 'it');
       }
       Object.values(o).forEach(fix);
     }

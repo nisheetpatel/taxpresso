@@ -16,7 +16,7 @@ export interface LppPlan {
   }[];
   amountCentimes: number;
   saving?: Estimate;
-  problem?: 'over_capacity' | 'no_income';
+  problem?: 'over_capacity' | 'no_income' | 'no_tax';
   capacityUnknown: boolean;
   assumptions: string[];
   facts: Record<string, string>;

@@ -447,7 +447,9 @@ function LppCard({ state, lang, act }: Props) {
         <Saving saving={lpp.saving} lang={lang} canton={canton} />
       ) : (
         <p class="pl-hint">
-          {tp(lang, lpp.problem === 'no_income' ? 'lppNoSalary' : 'lppNoAmount')}
+          {lpp.problem === 'no_tax'
+            ? lpp.assumptions.map((a) => assumption(lang, a)).join(' ')
+            : tp(lang, lpp.problem === 'no_income' ? 'lppNoSalary' : 'lppNoAmount')}
         </p>
       )}
       {lpp.capacityUnknown && !over ? (

@@ -50,7 +50,7 @@ export interface IncomeTax {
 /**
  * A canton's result in words and lines. `R` is the canton's own result; `Icc` its cantonal part.
  * Texts for Claude are English with the official terms of the canton's form in parentheses; texts
- * for the dashboard are `Text` (English, French, German where the canton gives it).
+ * for the dashboard are `Text` (English, French, German or Italian where the canton gives it).
  */
 export interface ResultView<R extends TaxResult = TaxResult> {
   canton: CantonCode;
@@ -61,6 +61,11 @@ export interface ResultView<R extends TaxResult = TaxResult> {
   preview: boolean;
   /** The canton's content has German texts (its form is German); otherwise English on a German page. */
   german: boolean;
+  /**
+   * The canton's content has Italian texts (its form is Italian, Ticino); otherwise English on an
+   * Italian page. Absent: false.
+   */
+  italian?: boolean;
 
   // ---- compute_tax, for Claude --------------------------------------------------------------
   /** Where the return is: "commune geneve", "canton of Zurich, commune Winterthur (BFS 230, ...)". */

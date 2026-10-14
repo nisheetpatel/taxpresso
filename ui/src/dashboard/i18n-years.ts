@@ -57,6 +57,24 @@ const messages = {
     touDeclined: 'Du hast festgehalten, dass du dieses Jahr keine TOU beantragst.',
     sources: 'Quellen',
   },
+  it: {
+    label: 'Anno fiscale',
+    only: '{year} (solo {cantons})',
+    overWhen: 'Il {year} è finito',
+    overTitle: 'Pilastro 3a e riscatti: pianificali nel {plans}',
+    overLead:
+      'I versamenti nel pilastro 3a (3e pilier A) e i riscatti nella cassa pensione (rachat 2e pilier) contano nell’anno in cui li fai: niente di ciò che versi ora riduce la tua imposta {year}. La tua dichiarazione {year} riprende ciò che hai versato nel {year}, dalle tue attestazioni. Il margine 3a, un riscatto e il recupero 3a (rachat 3a) sono nei tuoi piani {plans}.',
+    catchUp:
+      'Hai versato meno del massimo nel pilastro 3a nel {year}? Puoi recuperare la differenza nel {plans}, a certe condizioni: i tuoi piani {plans} mostrano quanto.',
+    openPlans: 'Apri il {plans} e i suoi piani',
+    tou: 'Tassato alla fonte nel {year}? Una domanda di tassazione ordinaria ulteriore (TOU, taxation ordinaire ultérieure) doveva arrivare all’amministrazione fiscale entro il {deadline}.',
+    touPassed: 'Questa data è passata.',
+    touOrdinary:
+      'Se l’hai chiesta in tempo, la tua dichiarazione {year} è ordinaria, e Taxpresso la prepara.',
+    touRequested: 'Hai registrato di aver chiesto la TOU.',
+    touDeclined: 'Hai registrato di non chiedere la TOU quest’anno.',
+    sources: 'Fonti',
+  },
 } as const;
 
 export type YearsMessageKey = keyof (typeof messages)['en'];

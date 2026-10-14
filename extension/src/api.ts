@@ -2,6 +2,7 @@
 // the chat with Claude is the same thing (SPEC.md section 6).
 import { DOCUMENT_KINDS, LedgerError, VaultError } from '@taxpresso/ledger';
 import { NBSP, QuestionnaireError } from '@taxpresso/questionnaire';
+import { isUiLanguage } from './config.js';
 import { contentLang, say, type UiLang as Lang } from './lang.js';
 import * as z from 'zod/v4';
 import { copyPanelView, setRowEntered } from './copy-panel.js';
@@ -48,6 +49,7 @@ function yearChanged(shown: number, open: number, lang: Lang): string {
     en: `This page showed ${shown}, but ${open} is open now (it was changed in the chat). Here is ${open}: check, then try again.`,
     fr: `Cette page montrait ${shown}, mais ${open} est ouverte maintenant (changée dans le chat). Voici ${open}${NBSP}: vérifiez, puis réessayez.`,
     de: `Diese Seite zeigte ${shown}, aber jetzt ist ${open} offen (im Chat gewechselt). Hier ist ${open}: Prüf es und versuch es nochmals.`,
+    it: `Questa pagina mostrava il ${shown}, ma ora è aperto il ${open} (cambiato nella chat). Ecco il ${open}: controlla, poi riprova.`,
   }[lang];
 }
 const Plan = z.object({
@@ -275,8 +277,7 @@ export function createApi(given: Workspace | TaxYears): (req: ApiRequest) => Pro
     // The open year's workspace, taken once for the whole request (./years.ts).
     let ws = years.current;
     const asked = req.query.get('lang');
-    const lang: Lang =
-      asked === 'fr' || asked === 'en' || asked === 'de' ? asked : ws.config.uiLanguage;
+    const lang: Lang = isUiLanguage(asked) ? asked : ws.config.uiLanguage;
     const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf, years) });
     try {
       // A change made on a page that still shows another year (the user switched in the chat

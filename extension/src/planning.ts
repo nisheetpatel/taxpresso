@@ -498,6 +498,7 @@ export function cantonAssumptionText(a: string): string | undefined {
     if (a === c.plan.assumptions.preview) {
       return `${c.name.en} is a preview: the rules its documents don’t spell out are applied as in the estimate (compute_tax lists them).`;
     }
+    if (a === c.plan.noTax?.assumption && c.plan.noTaxText) return c.plan.noTaxText.en;
   }
   return undefined;
 }
@@ -529,6 +530,8 @@ function lppText(lpp: LppBuyInResult, year: number, canton: CantonEntry | undefi
   }
   if (lpp.problem === 'over_capacity') {
     lines.push('No saving shown: an amount is above what the fund allows.');
+  } else if (lpp.problem === 'no_tax') {
+    lines.push(`No saving shown: ${canton?.plan?.noTaxText?.en ?? lpp.assumptions.join(' ')}`);
   } else if (lpp.saving) {
     lines.push(
       `Estimated saving: about ${about(lpp.saving.totalCentimes)} (cantonal and communal ${chf(lpp.saving.cantonalCentimes)}, federal ${chf(lpp.saving.federalCentimes)}), on top of the 3a already paid. Say it is an estimate.`,
@@ -563,6 +566,10 @@ function catchUpText(cu: CatchUpResult, year: number, canton: CantonEntry | unde
     lines.push(
       `No saving shown for ${canton.name.en}: no ${canton.name.en} document Taxpresso has gives the cantonal rule of a 3a catch-up yet. The federal rules below hold.`,
     );
+  }
+  const noTax = canton?.plan?.noTax;
+  if (canton && noTax && cu.assumptions.includes(noTax.assumption)) {
+    lines.push(`No saving shown: ${canton.plan?.noTaxText?.en ?? noTax.assumption}`);
   }
   if (cu.saving) {
     lines.push(

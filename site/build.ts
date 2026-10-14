@@ -6,12 +6,16 @@
 
 import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { createRequire, register } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ICON_SVG } from '../ui/src/shared/logo.ts';
 import { BASE_URL, LANGS } from './src/content.ts';
-import { builtPages, PAGES, robots, sitemap } from './src/pages.ts';
+
+// The canton pages read the rules packages, whose files import each other as "./file.js": this
+// hook finds the ".ts" file instead (resolve-ts.mjs). Registered before the pages are loaded.
+register('./resolve-ts.mjs', import.meta.url);
+const { builtPages, PAGES, robots, sitemap } = await import('./src/pages.ts');
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(root, 'dist');

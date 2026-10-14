@@ -2,7 +2,7 @@
 // year, its citations are that year's documents (or the latest published before it), and a canton
 // Taxpresso doesn't prepare for the year says so.
 import { readFileSync } from 'node:fs';
-import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
+import { KEYS_CANTON_2026, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
@@ -177,15 +177,14 @@ describe('a canton not offered for the year', () => {
       en: 'Zurich: Taxpresso can’t prepare a 2025 return there yet',
       fr: `Zurich${NBSP}: Taxpresso ne peut pas encore y préparer une déclaration 2025`,
       de: 'Zürich: Eine Steuererklärung 2025 kann Taxpresso dort noch nicht vorbereiten',
+      it: 'Zurigo: Taxpresso non può ancora prepararvi una dichiarazione 2025',
     });
     expect(canton.options!.find((o) => o.value === 'GE')!.notSupported).toBeUndefined();
     expect(canton.explain?.en).toMatch(/prepares returns for Geneva so far\.$/);
   });
 
   it('changes nothing for a year every canton has', () => {
-    expect(
-      sharedQuestionnaire(2026, ['GE', 'ZH', 'BE', 'BL', 'VD', 'BS', 'ZG', 'LU', 'SG']),
-    ).toEqual(sharedQuestionnaire2026());
+    expect(sharedQuestionnaire(2026, SUPPORTED_CANTONS)).toEqual(sharedQuestionnaire2026());
   });
 
   it('a file of one year (a canton without taxYears) serves only that year', () => {

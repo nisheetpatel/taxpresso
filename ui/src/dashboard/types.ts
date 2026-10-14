@@ -113,7 +113,7 @@ export interface State extends DocumentsState {
   yearOver: YearOverView | null;
   /** The canton of the return, once the user said where they lived on 31 December. */
   canton: {
-    code: 'GE' | 'ZH' | 'BE' | 'BL' | 'VD' | 'BS' | 'ZG' | 'LU' | 'SG';
+    code: 'GE' | 'ZH' | 'BE' | 'BL' | 'VD' | 'BS' | 'ZG' | 'LU' | 'SG' | 'FR' | 'TI';
     name: string;
     from: 'answer' | 'earlier_answers' | 'none';
     because: string[];

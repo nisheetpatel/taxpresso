@@ -11,7 +11,7 @@ import { DocumentCards } from './DocumentCards';
 import { Estimate } from './Estimate';
 import { ExportCard } from './Export';
 import { FinalCheck } from './FinalCheck';
-import { ck, isMessageKey, type Language, t } from './i18n';
+import { ck, isMessageKey, type Language, type MessageKey, t } from './i18n';
 import { Holdings } from './Holdings';
 import { tp } from './i18n-planning';
 import { LastYear } from './LastYear';
@@ -31,13 +31,13 @@ import {
 
 const POLL_MS = 2000;
 
-/** The language button cycles English, French, German. */
-const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'en' };
+/** The language button cycles English, French, German, Italian. */
+const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'it', it: 'en' };
 
 function readLang(): Language | undefined {
   try {
     const v = localStorage.getItem('taxpresso.lang');
-    return v === 'en' || v === 'fr' || v === 'de' ? v : undefined;
+    return v === 'en' || v === 'fr' || v === 'de' || v === 'it' ? v : undefined;
   } catch {
     return undefined;
   }
@@ -280,6 +280,9 @@ function Plan3a({ state, lang, act }: { state: PlannedState; lang: Language; act
   const { inputs, result } = state.plan;
   const year = state.taxYear;
   const anyMax = result.people.some((p) => p.capIsMaximum);
+  const noTax = result.assumptions
+    .map((a) => `assume.${a}`)
+    .find((k): k is MessageKey => k.endsWith('_no_tax') && isMessageKey(k));
   return (
     <section class="plan" aria-labelledby="plan-title">
       <span class="plan-when">{t(lang, 'planWhen')}</span>
@@ -314,6 +317,9 @@ function Plan3a({ state, lang, act }: { state: PlannedState; lang: Language; act
                 })}
               </span>
             </>
+          ) : noTax ? (
+            // The canton's tax can't be computed for the year (its rates are not published).
+            <span class="figure-note">{t(lang, noTax)}</span>
           ) : (
             <span class="figure-note">{t(lang, 'planNeedSalary')}</span>
           )}

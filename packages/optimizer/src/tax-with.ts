@@ -64,6 +64,18 @@ export interface CantonPlan {
    * gives its cantonal rule, the assumption that says so (no saving is shown: fail closed).
    */
   catchUp: { field: 'pillar3a' | 'pillar3aCatchUp'; unknownRule?: Assumption };
+  /**
+   * The years whose tax the canton's engine can't compute for anyone, and the assumption that says
+   * why (Fribourg 2026: its communal coefficients are not published): no saving is shown (fail
+   * closed), the room and the facts still are.
+   */
+  noTax?: { years: readonly number[]; assumption: Assumption };
+}
+
+/** The canton's assumption when its tax can't be computed for the plans' year, if so. */
+export function noTaxOf(h: HouseholdInput): Assumption | undefined {
+  const n = h.other?.plan.noTax;
+  return n && n.years.includes(h.taxYear ?? 2026) ? n.assumption : undefined;
 }
 
 /** What a household of another canton's plans read besides the salaries (Workspace.planInput). */
@@ -108,7 +120,9 @@ export type Assumption =
   /** A preview canton: the rules its documents don't spell out, as in the estimate. */
   | `${CantonPrefix}_preview`
   /** No document of the canton gives the cantonal rule of a 3a catch-up yet: no saving. */
-  | `${CantonPrefix}_catchup_rule`;
+  | `${CantonPrefix}_catchup_rule`
+  /** The canton's tax can't be computed for the year (its rates are not published): no saving. */
+  | `${CantonPrefix}_no_tax`;
 
 /** What a deduction is, for the engine's rubric codes (31.40/41.40, 31.30/41.30 in the guide). */
 export type DeductionKind = 'pillar3a' | 'pillar3a_catchup' | 'lpp_buyin';

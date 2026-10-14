@@ -17,9 +17,9 @@ import { contentLang, say, type UiLang } from './lang.js';
 import type { Workspace } from './workspace.js';
 
 const WHO: Record<string, Text> = {
-  p1: { en: 'you', fr: 'vous', de: 'du' },
-  p2: { en: 'your spouse', fr: 'votre conjoint', de: 'dein Partner' },
-  household: { en: 'household', fr: 'ménage', de: 'Haushalt' },
+  p1: { en: 'you', fr: 'vous', de: 'du', it: 'tu' },
+  p2: { en: 'your spouse', fr: 'votre conjoint', de: 'dein Partner', it: 'il tuo coniuge' },
+  household: { en: 'household', fr: 'ménage', de: 'Haushalt', it: 'economia domestica' },
 };
 
 /** The largest items first, at most `n`, shown in the order of the form. */
@@ -218,8 +218,10 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
 /** "Your estimate" in the dashboard, in the UI language. */
 export function estimateView(ws: Workspace, lang: UiLang) {
   const { e, view, result: r } = current(ws);
-  // A canton without German content shows English on a German page (./lang.ts).
-  const l: UiLang = view?.german ? lang : contentLang(lang);
+  // A canton without German (or Italian) content shows English on a German (or Italian) page
+  // (./lang.ts).
+  const own = (lang === 'de' && view?.german) || (lang === 'it' && view?.italian);
+  const l: UiLang = own ? lang : contentLang(lang);
   if (!r || !view) return { computed: false as const, missing: e.missing.map((m) => say(m, l)) };
   const icc = r.icc;
   const ifd = r.ifd;

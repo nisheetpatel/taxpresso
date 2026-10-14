@@ -5,7 +5,7 @@ import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
-const messages = {
+export const messages = {
   en: {
     title: 'Check before you transmit',
     notAvailable:
@@ -24,6 +24,8 @@ const messages = {
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your Lucerne return, compare what you typed in eSteuern.LU with the values to type above. You transmit your declaration yourself.',
     notAvailableSg:
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your St. Gallen return, compare what you typed in E-Tax SG with the values to type above. You transmit your declaration yourself.',
+    notAvailableFr:
+      'Taxpresso checks the PDF of Geneva declarations only, for now. For your Fribourg return, compare what you typed in FriTax with the values to type above. You transmit your declaration yourself.',
     lead: 'When you have typed everything, download the PDF of your declaration from GeTax or the online declaration (e-démarches) and add it here. Taxpresso reads it on this computer and compares each amount with what you had to type, in whole francs. It keeps no name or number from it.',
     add: 'Add the PDF of your declaration',
     addAgain: 'Add the new PDF',
@@ -84,6 +86,8 @@ const messages = {
     colon: ': ',
     notAvailableVd:
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your Vaud return, compare what you typed in VaudTax with the values to type above. You transmit your declaration yourself.',
+    notAvailableTi:
+      'Taxpresso checks the PDF of Geneva declarations only, for now. For your Ticino return, compare what you typed in eTax PF with the values to type above. You transmit your declaration yourself.',
   },
   fr: {
     title: 'Vérifier avant de transmettre',
@@ -96,6 +100,8 @@ const messages = {
     notAvailableZg: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration zougoise, comparez vous-même ce que vous avez saisi dans eTax.zug avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     notAvailableLu: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration lucernoise, comparez vous-même ce que vous avez saisi dans eSteuern.LU avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     notAvailableSg: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration saint-galloise, comparez vous-même ce que vous avez saisi dans E-Tax SG avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
+    notAvailableFr:
+      'Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration fribourgeoise, comparez vous-même ce que vous avez saisi dans FriTax avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.',
     lead: 'Quand vous avez tout saisi, téléchargez le PDF de votre déclaration depuis GeTax ou la déclaration en ligne (e-démarches) et ajoutez-le ici. Taxpresso le lit sur cet ordinateur et compare chaque montant avec ce que vous deviez saisir, en francs entiers. Il n’en garde aucun nom ni numéro.',
     add: 'Ajouter le PDF de votre déclaration',
     addAgain: 'Ajouter le nouveau PDF',
@@ -152,6 +158,8 @@ const messages = {
     statusEstimate: 'Estimation',
     colon: `${NB}: `,
     notAvailableVd: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration vaudoise, comparez vous-même ce que vous avez saisi dans VaudTax avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
+    notAvailableTi:
+      'Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration tessinoise, comparez vous-même ce que vous avez saisi dans eTax PF avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.',
   },
   de: {
     title: 'Vor dem Übermitteln prüfen',
@@ -171,6 +179,8 @@ const messages = {
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Luzerner Steuererklärung vergleiche selbst, was du in eSteuern.LU eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
     notAvailableSg:
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine St. Galler Steuererklärung vergleiche selbst, was du in E-Tax SG eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
+    notAvailableFr:
+      'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Freiburger Steuererklärung vergleiche selbst, was du in FriTax eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
     lead: 'Wenn du alles eingetragen hast, lade das PDF deiner Steuererklärung aus GeTax oder der Online-Steuererklärung (e-démarches) herunter und füge es hier hinzu. Taxpresso liest es auf diesem Computer und vergleicht jeden Betrag mit dem, was du eintragen solltest, in ganzen Franken. Es behält keinen Namen und keine Nummer daraus.',
     add: 'PDF deiner Steuererklärung hinzufügen',
     addAgain: 'Das neue PDF hinzufügen',
@@ -231,6 +241,91 @@ const messages = {
     colon: ': ',
     notAvailableVd:
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Waadtländer Steuererklärung vergleiche selbst, was du in VaudTax eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
+    notAvailableTi:
+      'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Tessiner Steuererklärung vergleiche selbst, was du in eTax PF eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
+  },
+  it: {
+    title: 'Controlla prima di trasmettere',
+    notAvailable:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Confronta quello che hai inserito nel software del tuo Cantone con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableZh:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Zurigo, confronta quello che hai inserito in ZHprivateTax con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableBe:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Berna, confronta quello che hai inserito in TaxMe-Online con i valori da inserire qui sopra, e i riepiloghi di TaxMe (Zusammenzug) con le ultime due sezioni. La tua dichiarazione la trasmetti tu.',
+    notAvailableBl:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Basilea Campagna, confronta quello che hai inserito in E-Tax BL con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableBs:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Basilea Città, confronta quello che hai inserito in BalTax Online con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableZg:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Zugo, confronta quello che hai inserito in eTax.zug con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableLu:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Lucerna, confronta quello che hai inserito in eSteuern.LU con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableSg:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di San Gallo, confronta quello che hai inserito in E-Tax SG con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableFr:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Friburgo, confronta quello che hai inserito in FriTax con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    lead: 'Quando hai inserito tutto, scarica il PDF della tua dichiarazione da GeTax o dalla dichiarazione online (e-démarches) e aggiungilo qui. Taxpresso lo legge su questo computer e confronta ogni importo con quello che dovevi inserire, in franchi interi. Non ne conserva nessun nome e nessun numero.',
+    add: 'Aggiungi il PDF della tua dichiarazione',
+    addAgain: 'Aggiungi il nuovo PDF',
+    reading: 'Lettura di {name}…',
+    pending: 'Taxpresso sta leggendo il tuo PDF.',
+    checkedAgainst: 'Confrontato con “{file}”',
+    printedBy: 'stampato da {software}',
+    olderOne: 'Conta solo il PDF più recente (1 precedente).',
+    older: 'Conta solo il PDF più recente ({n} precedenti).',
+    summary: '{n} confrontati · {match} corrispondono · {fix} da correggere',
+    unreadable:
+      'Taxpresso non riesce a leggere “{file}” come una dichiarazione ginevrina. Gli serve il PDF stampato da GeTax o dalla dichiarazione online, con il suo testo, non una scansione né una foto. Scaricalo di nuovo da lì e aggiungilo.',
+    otherYear:
+      '“{file}” è la tua dichiarazione {printed}, non quella del {year}. Aggiungi il PDF della tua dichiarazione {year}.',
+    clear:
+      'Tutto quello che Taxpresso ha confrontato corrisponde. Puoi trasmettere tu la tua dichiarazione, in GeTax o nella dichiarazione online.',
+    toFixLead:
+      'Correggi questi valori in GeTax o nella dichiarazione online, poi scarica di nuovo il PDF e aggiungilo qui: Taxpresso lo ricontrolla.',
+    notFinalOne:
+      '1 valore confrontato non è ancora definitivo in Taxpresso (Da confermare o Stima). Sistemalo prima, qui sopra.',
+    notFinal:
+      '{n} valori confrontati non sono ancora definitivi in Taxpresso (Da confermare o Stima). Sistemali prima, qui sopra.',
+    fix: 'Da correggere',
+    differs: 'Importo diverso',
+    pdfOnly: 'Solo nel tuo PDF',
+    taxpressoOnly: 'Manca nel tuo PDF',
+    matches: 'Corrisponde',
+    inPdf: 'Nel tuo PDF',
+    toType: 'Da inserire',
+    nothing: 'niente',
+    unknownCode: 'Taxpresso non compila questa riga: controllala sui tuoi documenti.',
+    pdfPage: 'pagina {page} del PDF',
+    showMatches: 'Mostra i {n} valori che corrispondono',
+    computedTitle: 'Righe calcolate dal modulo ({n})',
+    computedLead:
+      'Totali, riporti e importi calcolati secondo una regola. Taxpresso controlla che i totali tornino: non contano mai come differenze.',
+    addsUp: 'Il totale torna',
+    sameAs: 'Uguale a quello di {page}',
+    off: 'Non torna: le righe qui sopra danno {amount}',
+    offFrom: 'Diverso da quello di {page}: {amount}',
+    shown: 'Calcolato dal modulo',
+    computed: 'Calcolato',
+    byEyeTitle: 'Controllali tu',
+    byEyeTick: 'Una casella da spuntare',
+    byEyeText: 'Testo: {value}',
+    byEyeTextNoValue: 'Testo',
+    byEyeColumns: 'Taxpresso non riesce a distinguere gli importi su questa riga',
+    notCompared:
+      'Nomi, indirizzi e l’elenco dei titoli (état des titres, annexe F) non vengono confrontati: controllali tu.',
+    warnings: 'Letto con avvisi: {list}',
+    transmitTitle: 'Tocca a te: trasmetti',
+    transmit1: 'Correggi ogni differenza in GeTax o nella dichiarazione online.',
+    transmit2: 'Scarica di nuovo il PDF e aggiungilo qui, finché tutto corrisponde.',
+    transmit3:
+      'Premi tu Transmettre (trasmetti). Né Taxpresso né Claude trasmettono mai la tua dichiarazione.',
+    statusNeedsOk: 'Da confermare',
+    statusEstimate: 'Stima',
+    colon: ': ',
+    notAvailableVd:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Vaud, confronta quello che hai inserito in VaudTax con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
+    notAvailableTi:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione ticinese, confronta ciò che hai inserito in eTax PF con i valori da inserire qui sopra. Trasmetti tu la tua dichiarazione.',
   },
 } as const;
 
