@@ -1,8 +1,9 @@
 // The one entry point: computeReturn(input) gives the lines of Zug's form K by code and person, the
 // totals and the cantonal and communal tax (with the church and Bürgergemeinde tax when asked for),
-// each line explained with its sources. First stage here (household figures to the lines of the
-// form, every cap, floor and table of the Zug documents, in the order of the form's codes), second
-// stage in ./assess.ts (lines to taxes). The same two stages, with the same names, as
+// and the federal tax of form K's Bund column (./ifd.ts), each line explained with its sources.
+// First stage here (household figures to the lines of the form, every cap, floor and table of the
+// Zug documents, in the order of the form's codes, with the limits each applied for the final
+// check), second stage in ./assess.ts (lines to taxes). The same two stages, with the same names, as
 // packages/rules-bl, rules-be and rules-fr.
 import {
   answered,
@@ -13,6 +14,7 @@ import {
   shareFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import {
   assess,
@@ -25,6 +27,7 @@ import {
 } from './assess.js';
 import { foldName } from './communes.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import {
   childcareRule,
   childRule,
@@ -46,6 +49,7 @@ import {
 } from './law.js';
 import { zgParamsFor, type ZgTaxYear, type ZgYearParams } from './params.js';
 import {
+  INCOME,
   PERSON_CODES,
   RUBRICS,
   WEALTH_RUBRICS,
@@ -81,8 +85,36 @@ class Notes {
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A limit a cantonal rule applied (SPEC.md 10.0), on `code` for `person`, cited by the constant
+   * that sets it: `given` before the rule, `counted` after it. `rule` names it as the federal
+   * concepts are (packages/rules-ch, ifd/items.ts).
+   */
+  limit(
+    rule: string,
+    p: { source: string },
+    code: string,
+    person: LimitApplied['person'],
+    given: number,
+    limit: number,
+    counted: number,
+    kind: LimitApplied['kind'] = 'cap',
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: 'icc',
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      rule,
+    });
   }
 }
 
@@ -264,6 +296,7 @@ function personItems(P: ZgYearParams, p: PersonInput, items: Item[], notes: Note
     if (tv.cost > 0) {
       const max = tr.p(A.travel).max;
       const v = Math.min(tv.cost, max);
+      notes.limit('commute', A.travel, PERSON_CODES.professional[id], id, tv.cost, max, v);
       professional += v;
       parts.push(
         v < tv.cost
@@ -283,6 +316,15 @@ function personItems(P: ZgYearParams, p: PersonInput, items: Item[], notes: Note
       const days = p.mealDays ?? 0;
       const meals = mealsDeduction(days, canteen, m);
       const [perDay, perYear] = canteen ? [m.halfPerDay, m.halfPerYear] : [m.perDay, m.perYear];
+      notes.limit(
+        'meals',
+        A.meals,
+        PERSON_CODES.professional[id],
+        id,
+        days * perDay,
+        perYear,
+        meals,
+      );
       professional += meals;
       parts.push(
         t(
@@ -294,6 +336,18 @@ function personItems(P: ZgYearParams, p: PersonInput, items: Item[], notes: Note
     const ff = tr.p(A.otherFlat);
     const flat = flatShare(mainSalary.net, ff);
     const actual = p.otherProfessionalCosts ? total(tr, [p.otherProfessionalCosts]) : 0;
+    if (actual) {
+      notes.limit(
+        'professional.flat',
+        A.otherFlat,
+        PERSON_CODES.professional[id],
+        id,
+        actual,
+        flat,
+        Math.max(actual, flat),
+        'choice',
+      );
+    }
     notes.add(notes.assumptions, NOTE.fullYear);
     if (actual > flat) {
       professional += actual;
@@ -382,6 +436,20 @@ function personItems(P: ZgYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limits.push({
+      code: PERSON_CODES.pillar3a[id],
+      person: id,
+      tax: 'icc',
+      kind: l.kind,
+      given: l.given,
+      limit: l.limit,
+      counted: l.counted,
+      source: l.param.source,
+      ...(l.param.estimate ? { estimate: true } : {}),
+      rule: 'pillar3a',
+    });
+  }
   let pillar = 0;
   const pillarTr = new Trace();
   if (r3a.deduction && r3a.deduction.amount < 0) {
@@ -405,6 +473,7 @@ function personItems(P: ZgYearParams, p: PersonInput, items: Item[], notes: Note
     const paid = total(tr, [p.trainingCosts]);
     const cap = tr.p(A.training);
     const v = Math.min(paid, cap);
+    notes.limit('training', A.training, PERSON_CODES.training[id], id, paid, cap, v);
     if (v > 0) {
       trained = true;
       items.push(
@@ -452,6 +521,8 @@ function personItems(P: ZgYearParams, p: PersonInput, items: Item[], notes: Note
 
 /** A child as the deductions read it. */
 interface CountedChild {
+  /** Its place in the children given, from 1. */
+  n: number;
   /** Gets the child deduction here (403), and so the tax-free wealth (673) when a minor. */
   counts: boolean;
   livesWithYou: boolean;
@@ -470,6 +541,7 @@ interface CountedChild {
  */
 function familyOf(
   input: ZgEngineInput,
+  given: readonly ChildInput[],
   couple: boolean,
   notes: Notes,
 ): { children: CountedChild[]; large: boolean; sources: string[] } {
@@ -531,6 +603,7 @@ function familyOf(
       return null;
     }
     return {
+      n: i + 1,
       counts,
       livesWithYou: lives,
       insuranceHalves,
@@ -540,7 +613,7 @@ function familyOf(
       ...(ch.childcare ? { childcare: ch.childcare } : {}),
     };
   };
-  (input.children ?? []).forEach((ch, i) => {
+  given.forEach((ch, i) => {
     const c = each(ch, i);
     if (c) children.push(c);
   });
@@ -650,7 +723,8 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
   if (input.movable?.length) notes.add(notes.assumptions, NOTE.listedSecurities);
   notes.add(notes.notCounted, NOTE.dependents);
 
-  const fam = familyOf(input, couple, notes);
+  const children = withHouseholdChildcare(input, P, notes);
+  const fam = familyOf(input, children, couple, notes);
   const church = churchOf(input, P, couple, notes);
   const citizens = citizensOf(input, P, couple, notes);
   const result = (lines: readonly Line[]): ZgTaxResult => ({
@@ -670,6 +744,7 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
     notCounted: notes.notCounted,
     unsupported: notes.unsupported,
     unverifiedRules: [],
+    limits: notes.limits,
   });
   // Something every later line rests on is missing or not supported (a question about the family,
   // the church or the Bürgergemeinde, self-employment): the result says that first.
@@ -737,6 +812,7 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
     const extra = tr.p(A.debtInterestExtra);
     const cap = movableIncome + extra;
     const ded = Math.min(paid, cap);
+    notes.limit('debt_interest', A.debtInterestExtra, '205', 'household', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -782,6 +858,7 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
       const forChildren = (halves * ins.perChild) / 2;
       const cap = base + forChildren;
       const ded = Math.min(paid, cap);
+      notes.limit('insurance', A.insurance, '230', 'household', paid, cap, ded);
       if (ded > 0) {
         const who = couple
           ? t('married couple', 'couple marié')
@@ -825,6 +902,7 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
     const paid = total(tr, [hh.politicalParty]);
     const max = tr.p(A.party);
     const ded = Math.min(paid, max);
+    notes.limit('party', A.party, '252', 'household', paid, max, ded);
     if (couple && paid > max) notes.add(notes.unverified, NOTE.partyCouple);
     if (ded > 0) {
       items.push(
@@ -864,7 +942,9 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
     let care = 0;
     if (ch.childcare && ch.under14 && working) {
       const cap = careTr.p(A.childcare);
-      care = Math.min(total(careTr, [ch.childcare]), cap);
+      const paid = total(careTr, [ch.childcare]);
+      care = Math.min(paid, cap);
+      notes.limit('childcare', A.childcare, '253', `child${ch.n}`, paid, cap, care);
     }
     if (ch.under15 && care < A.ownCare.value) {
       if (care > 0) notes.add(notes.assumptions, NOTE.ownCareInstead);
@@ -923,6 +1003,16 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
     const bp = tr.p(A.medicalThresholdBp);
     const threshold = shareFranc(base287, bp);
     const ded = Math.max(0, costs - threshold);
+    notes.limit(
+      'medical',
+      A.medicalThresholdBp,
+      '295',
+      'household',
+      costs,
+      threshold,
+      ded,
+      'threshold',
+    );
     if (ded > 0) {
       items.push(
         item(
@@ -944,6 +1034,10 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
     const d = tr.p(A.donations);
     const cap = shareFranc(base287, d.shareBp);
     const ded = gifts < d.min ? 0 : Math.min(gifts, cap);
+    notes.limit('donations', A.donations, '296', 'household', gifts, d.min, ded, 'minimum');
+    if (gifts >= d.min) {
+      notes.limit('donations', A.donations, '296', 'household', gifts, cap, ded);
+    }
     if (ded > 0) {
       items.push(
         item(
@@ -1160,19 +1254,152 @@ export function computeReturn(input: ZgEngineInput): ZgTaxResult {
     incomeItems: items,
     wealthItems,
   });
-  const lines = allLines({ icc });
+
+  // The federal tax, the Bund column (./ifd.ts): the same income lines, the federal deductions.
+  // Who counts the children follows the federal rules (circular 30): in full, half in shared
+  // custody without child support, not for the parent who pays it.
+  const sharedAlone = !couple && children.some((ch) => ch.custody === 'shared');
+  const support = sharedAlone ? input.childSupport : undefined;
+  const childSources =
+    support === 'receives'
+      ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+      : support === 'pays'
+        ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'none' && input.ifdParentalScale !== undefined
+          ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 13.4.2, 14.4)`]
+          : [];
+  const federalChildren: FederalChild[] = [];
+  for (const ch of children) {
+    const child = {
+      livesWithYou: ch.livesWithYou ?? true,
+      ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
+      ...(ch.childcare ? { childcare: ch.childcare } : {}),
+    };
+    if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
+      federalChildren.push({ weight: 1, ...child });
+    } else if (input.childSupport === 'none') {
+      federalChildren.push({ weight: 0.5, ...child });
+    }
+  }
+  const earning = (id: 'p1' | 'p2') =>
+    new Set<string>([
+      PERSON_CODES.main[id],
+      PERSON_CODES.side[id],
+      PERSON_CODES.allowances[id],
+      PERSON_CODES.unemployment[id],
+    ]);
+  const federal = federalReturn(
+    {
+      input,
+      couple,
+      incomeItems: items.filter((i) => INCOME.has(i.code)),
+      inFull: items.filter((i) => IN_FULL.has(i.code)),
+      children: federalChildren,
+      childSources,
+      wealthIncome: movableIncome,
+    },
+    people.map((p) => ({
+      input: p,
+      earnings: items.filter((i) => i.person === p.id && earning(p.id).has(i.code)),
+    })),
+  );
+  const ifd = federal.ifd;
+  for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
+  const lines = allLines({ icc, ifd });
   return {
     ...result(lines),
-    unsupported: [],
+    unsupported: [...federal.notes.unsupported],
     icc,
-    total: icc.taxes.total.amount,
-    unverifiedRules: [NOTE.rounding, ...notes.unverified],
+    ifd,
+    total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
+    unverifiedRules: [NOTE.rounding, ...notes.unverified, ...federal.notes.unverified],
+    limits: bothTaxes(notes.limits, federal.notes.limits),
   };
 }
 
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+/**
+ * Deductions in full in both columns: alimony (210), child support (211), buy-ins paid directly
+ * (250/251) and the costs of managing securities (255).
+ */
+const IN_FULL = new Set(['210', '211', '250', '251', '255']);
+
+/**
+ * The limits of both taxes, a limit applied alike in each (same line, rule kind and amounts, as
+ * the pillar 3a cap) said once for both: the final check then shows it once (SPEC.md 10.0).
+ */
+function bothTaxes(icc: readonly LimitApplied[], ifd: readonly LimitApplied[]): LimitApplied[] {
+  const out = icc.map((l) => ({ ...l }));
+  for (const f of ifd) {
+    const same = out.find(
+      (l) =>
+        l.tax === 'icc' &&
+        l.code === f.code &&
+        l.person === f.person &&
+        l.kind === f.kind &&
+        l.given === f.given &&
+        l.limit === f.limit &&
+        l.counted === f.counted &&
+        l.rule === f.rule &&
+        Boolean(l.estimate) === Boolean(f.estimate),
+    );
+    if (same) same.tax = 'both';
+    else out.push(f);
+  }
+  return out;
+}
+
+/**
+ * Childcare paid for the household as a whole (the invoices of a crèche, say): the limit is per
+ * child, and a child under 15 has the deduction for its parents' own care (404) when that is higher
+ * (StG § 30 Abs. 1 Bst. l, § 33 Abs. 2bis). It is that child's when one child can have it; with
+ * several, any split gives the same when the whole amount is under the own care deduction (every
+ * child then has its own care); otherwise how it splits decides the deduction, and the tax is not
+ * computed without it (fail closed).
+ */
+function withHouseholdChildcare(
+  input: ZgEngineInput,
+  P: ZgYearParams,
+  notes: Notes,
+): readonly ChildInput[] {
+  const children = input.children ?? [];
+  const care = input.household?.childcare;
+  if (!care) return children;
+  if (children.some((ch) => ch.childcare)) {
+    throw new ZgInputError('Childcare: give it per child or for the household, not both.');
+  }
+  const eligible = children
+    .map((ch, i) => ({ ch, i }))
+    .filter(({ ch }) => (ch.livesWithYou ?? true) && ch.under14 !== false);
+  const paid = total(new Trace(), [care]);
+  if (eligible.length === 1 || (eligible.length > 1 && paid < P.amounts.ownCare.value)) {
+    const at = eligible[0]!.i;
+    return children.map((ch, i) => (i === at ? { ...ch, childcare: care } : ch));
+  }
+  if (eligible.length > 1) notes.add(notes.unsupported, NOTE.childcareSplit);
+  else if (paid > 0) notes.add(notes.notCounted, NOTE.childcareNoChild);
+  return children;
+}
+
 /** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<ZgTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+export function allLines(r: Pick<ZgTaxResult, 'icc'> & { ifd?: ZgTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.totalDeductions,
+        f.subtotal,
+        f.netIncome,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
@@ -1193,6 +1420,7 @@ export function allLines(r: Pick<ZgTaxResult, 'icc'>): Line[] {
     ...(x.taxes.church ? [x.taxes.church] : []),
     ...(x.taxes.citizens ? [x.taxes.citizens] : []),
     x.taxes.total,
+    ...federal,
   ];
 }
 

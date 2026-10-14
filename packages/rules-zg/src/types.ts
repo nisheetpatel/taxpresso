@@ -3,7 +3,15 @@
 // same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items
 // carry the code of the line on Zug's main form K (./rubrics.ts), deductions negative, income and
 // assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { ZgTaxYear } from './params.js';
 
 export type {
@@ -11,6 +19,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -118,6 +127,12 @@ export interface ZgEngineInput {
   childSupport?: 'receives' | 'pays' | 'none';
   /** Shared custody without child support: whether you have the larger share of the children's care. */
   mainCare?: boolean;
+  /**
+   * The federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). Unknown, the federal tax is not
+   * computed.
+   */
+  ifdParentalScale?: boolean;
   /** 407: the year's net rent (without service charges) of the home you live in, in Zug. */
   rent?: Amount;
   /** Opt-in church tax (Kirchensteuer): each adult's church. */
@@ -128,6 +143,11 @@ export interface ZgEngineInput {
    */
   citizenOf?: { p1?: string | null; p2?: string | null };
   household?: {
+    /**
+     * 253: childcare by others paid for the household as a whole (the invoices of a crèche, say),
+     * when not given per child: it counts where it can be told apart per child (./compute.ts).
+     */
+    childcare?: Amount;
     /** 230: health insurance premiums paid (less any subsidy given in healthSubsidy). */
     healthPremiums?: Amount;
     /** 230: private accident and loss-of-earnings premiums. */
@@ -235,17 +255,30 @@ export interface ZgIccResult {
   };
 }
 
+/**
+ * The federal direct tax (direkte Bundessteuer) of form K's Bund column (./ifd.ts): the same income
+ * lines, the federal deductions on the same codes, the total of the deductions (280), the subtotal
+ * 287, the net income 299 and the taxable income 490.
+ */
+export interface ZgIfdResult extends IfdResult {
+  items: Item[];
+  /** 280, Total Abzüge, Bund. */
+  totalDeductions: Line;
+  /** 287, Zwischentotal, Bund: the base of the shares of 295 and 296. */
+  subtotal: Line;
+}
+
 export interface ZgTaxResult {
   canton: 'ZG';
   taxYear: ZgTaxYear;
   commune: CommuneRef;
   icc: ZgIccResult | null;
+  /** The federal tax of the Bund column (./ifd.ts, packages/rules-ch's rules), or null. */
+  ifd: ZgIfdResult | null;
   /**
-   * The federal tax is packages/rules-ch's; Zug's result shows it once the federal column of form
-   * K is mapped (docs/design/cantons.md, section 6).
+   * The cantonal and communal tax (and church and Bürgergemeinde tax, when asked for) and the
+   * federal tax, when both are computed.
    */
-  ifd: null;
-  /** The cantonal and communal tax (and church and Bürgergemeinde tax, when asked for). */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -255,4 +288,6 @@ export interface ZgTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes. */
+  limits: LimitApplied[];
 }

@@ -1,7 +1,12 @@
 // Zug through the canton interface (packages/rules-ch, canton.ts): computeReturn gives exactly what
 // the engine gives for the same household, a fact that would change Zug's tax and that its engine
 // does not read is refused, and the communes are the official table's. Synthetic only.
-import { SALARY_CERTIFICATE_FIELDS_2026, type HouseholdInput } from '@taxpresso/rules-ch';
+import {
+  ATTESTATION_FIELDS_2026,
+  DOCUMENT_FIELDS_WEALTH_2026,
+  SALARY_CERTIFICATE_FIELDS_2026,
+  type HouseholdInput,
+} from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   communesFor,
@@ -165,6 +170,7 @@ const HOUSEHOLDS: ZgEngineInput[] = [
     civilStatus: 'divorced',
     childSupport: 'none',
     mainCare: true,
+    ifdParentalScale: true,
     rent: amt(26_000),
     people: [
       {
@@ -264,22 +270,22 @@ describe('Zug through the canton interface', () => {
     expect(computed).toBeLessThan(all.length);
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the cantonal and communal tax of each household and the federal tax of its column', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
       expect(r.unsupported).toEqual([]);
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
       expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
     }
   });
 
-  it('leaves aside the facts that do not change Zug’s tax', () => {
+  it('leaves aside the facts that change neither tax', () => {
     const e = HOUSEHOLDS[0]!;
     const h = household(e);
     const p1 = h.people[0]!;
     const other: HouseholdInput<ZugCantonal> = {
       ...h,
-      ifdParentalScale: true,
       people: [
         {
           ...p1,
@@ -293,10 +299,50 @@ describe('Zug through the canton interface', () => {
     expect(rules.computeReturn(other)).toEqual(computeReturn(e));
   });
 
+  it('takes childcare given for the household where it can be told apart per child', () => {
+    const e = HOUSEHOLDS[2]!; // one child under 14
+    const h = household(e);
+    const one = { ...h, children: [{ custody: 'full' as const, under14: true }] };
+    const r = rules.computeReturn({ ...one, household: { ...h.household, childcare: amt(8_000) } });
+    expect(r).toEqual(computeReturn(e));
+    // Two children under 14 and more than the own care deduction: the split decides, not computed.
+    const two = {
+      ...h,
+      children: [
+        { custody: 'full' as const, under14: true },
+        { custody: 'full' as const, under14: true },
+      ],
+      cantonal: { children: [{ under15: true }, { under15: true }] },
+    };
+    const split = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(20_000) },
+    });
+    expect(split.icc).toBeNull();
+    expect(split.unsupported.map((x) => x.en).join(' ')).toMatch(/limit is per child/);
+    // Split per child (the questionnaire's zg.child_care), it is computed: 20,000 for one child
+    // (more than own care), own care for the other.
+    const each = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(20_000) },
+      cantonal: { ...two.cantonal, childcare: [amt(20_000), undefined] },
+    });
+    const code = (c: string) => each.icc?.items.find((i) => i.code === c)?.amount;
+    expect(code('253')).toBe(-chf(20_000));
+    expect(code('404')).toBe(-chf(12_200));
+    // Under the own care deduction, any split gives own care for both: computed.
+    const under = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(12_000) },
+    });
+    expect(under.icc?.items.find((i) => i.code === '253')).toBeUndefined();
+    expect(under.icc?.items.find((i) => i.code === '404')?.amount).toBe(-chf(24_400));
+  });
+
   it('refuses a fact Zug does not read, a commune by number and an unknown commune', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<ZugCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      { ...h, cantonal: { childcare: [amt(1_000)] } },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, commune: 1711 },
       { ...h, commune: 'Luzern' },
@@ -325,15 +371,33 @@ describe('Zug through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys, its own and what each kind of document gives', () => {
     expect(rules.canton).toBe('ZG');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2025))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'zg.child_under15',
+        'zg.child_minor',
+        'zg.main_care',
+        'zg.rent',
+        'zg.church',
+        'zg.citizen_of',
+        'zg.child_care',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.keys(2026)['profile.commune']?.values).toHaveLength(11);
+    expect(rules.keys(2026)['zg.citizen_of']?.values).toHaveLength(12);
+    expect(rules.documents(2026)).toEqual(
+      Object.entries({
+        salary_certificate: SALARY_CERTIFICATE_FIELDS_2026,
+        ...ATTESTATION_FIELDS_2026,
+        ...DOCUMENT_FIELDS_WEALTH_2026,
+      }).map(([kind, keys]) => ({ kind, keys })),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/zg');
   });
 });

@@ -5,16 +5,20 @@
 // Several Zug documents cover more than one year (the tariff sheets and the table of amounts print
 // one page per year; the Steuerbuch states each year's amount): a 2025 constant that cites one of
 // them cites its 2025 page or a Steuerbuch chapter, and a 2026 constant cites no 2025 document.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { ifdParamsFor } from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   ASSESS_RULES,
   COMPUTE_RULES,
   ESTIMATE_TEXT,
+  FEDERAL_NOTE,
   NOTE,
   RUBRICS,
   WEALTH_RUBRICS,
+  ZG_OFFICIAL_DOCUMENTS,
+  ZG_TERMS,
+  zgKeys,
   zgParamsFor,
   type Cited,
 } from '../src/index.js';
@@ -106,12 +110,50 @@ describe('citations', () => {
     expect(a.travel.value.bikePerYear).toBe(f.commuteBike.value);
   });
 
+  it('every key Zug defines, and the page to ask for more time', () => {
+    for (const year of [2025, 2026] as const) {
+      for (const [key, def] of Object.entries(zgKeys(year))) {
+        if (key.startsWith('zg.') || key === 'profile.commune' || key === 'profile.moved') {
+          expectCited(def.source ?? '', `${year} key ${key}`);
+        }
+      }
+    }
+    expectCited(ZG_TERMS.moreTimeSource, 'more time');
+  });
+
   it('the texts shown to the user have no en or em dash (CLAUDE.md, user-facing copy)', () => {
-    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT })) {
+    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT, ...FEDERAL_NOTE })) {
       expect(`${text.en} ${text.fr}`, name).not.toMatch(/[–—]/);
     }
     for (const year of [2025, 2026] as const) {
       for (const [name, c] of constants(year)) expect(c.source, name).not.toMatch(/[–—]/);
+    }
+  });
+});
+
+describe('the official Zug documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/zg/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    expect(Object.keys(ZG_OFFICIAL_DOCUMENTS).sort()).toEqual(manifest.map((m) => m.id).sort());
+    for (const [id, doc] of Object.entries(ZG_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id)!;
+      expect(doc, id).toEqual({ title: m.title, url: m.url, pdf: m.format === 'pdf' });
+    }
+  });
+
+  it('cover every Zug document the rules cite', () => {
+    const dir = new URL('../src/', import.meta.url);
+    const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    for (const f of files) {
+      const text = readFileSync(new URL(f, dir), 'utf8');
+      for (const id of text.match(/\bzg-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]\b/g) ?? []) {
+        expect(Object.keys(ZG_OFFICIAL_DOCUMENTS), `${f}: ${id}`).toContain(id);
+      }
     }
   });
 });
