@@ -5,8 +5,11 @@ import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import { lastYearLines, lastYearText } from './prior.js';
 import type { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
-export function registerLastYearTool(server: McpServer, ws: Workspace): void {
+export function registerLastYearTool(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'get_last_year',
     {
@@ -42,6 +45,7 @@ export function registerLastYearTool(server: McpServer, ws: Workspace): void {
       },
     },
     async ({ all }) => {
+      const ws = years.current;
       await ws.ready();
       const view = ws.lastYear('en');
       if (!view) {

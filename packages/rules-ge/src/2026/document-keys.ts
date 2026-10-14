@@ -173,6 +173,18 @@ export const DOCUMENT_KEYS_2026 = {
     // The tax is for the year the capital was received (acquis).
     source: 'ch-na-law-lifd art. 38 al. 1bis (p. 32); ge-na-law-lipp art. 45 al. 1',
   },
+  // Why it was paid, as the attestation says: the reasons the law allows a lump sum
+  // (ch-na-law-opp3 art. 3; ch-na-law-lpp art. 30c). Leaving Switzerland is taxed at source
+  // (ge-2026-source-directives p. 39) and another reason may go elsewhere (98.75): not computed.
+  'capital.reason': {
+    type: 'enum',
+    values: ['retirement', 'home', 'self_employment', 'leaving', 'other'],
+    perPerson: true,
+    multiple: true,
+    label: { en: 'Why it was paid', fr: 'Motif du versement' },
+    official: 'motif du versement',
+    source: 'ch-na-law-opp3 art. 3 (p. 2 and 3); ch-na-law-lpp art. 30c (p. 16)',
+  },
 
   // Bank statements, tax statements, crypto and life insurance: ./document-keys-wealth.ts.
   ...DOCUMENT_KEYS_WEALTH_2026,
@@ -210,8 +222,8 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
     'assessment.debt_interest',
   ],
   ...DOCUMENT_FIELDS_WEALTH_2026,
-  lpp_capital_attestation: ['capital.amount', 'capital.date'],
-  pillar3a_capital_attestation: ['capital.amount', 'capital.date'],
+  lpp_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
+  pillar3a_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
 };
 
 /** The keys a document of this kind can give, or none. */

@@ -178,7 +178,8 @@ export const view: ResultView<TaxResult> = {
     ];
   },
   lastYear: compareWithLastYear,
-  // The tax on pension capital (98.12): a tax of its own, apart from the return's total.
+  // The tax on pension capital (98.12): a tax of its own, apart from the return's total. Its rows
+  // stand with the return's own, so each says it is not in the total.
   capital(r) {
     const c = r.capital;
     if (!c) return undefined;
@@ -187,8 +188,8 @@ export const view: ResultView<TaxResult> = {
       rows.push({
         id: 'capital.icc',
         label: {
-          en: 'Cantonal and communal tax on it (ICC)',
-          fr: 'Impôt cantonal et communal (ICC)',
+          en: 'Pension capital, cantonal and communal tax (not in the total)',
+          fr: 'Prestations en capital, impôt cantonal et communal (non compris dans le total)',
         },
         line: c.icc.tax,
       });
@@ -196,7 +197,10 @@ export const view: ResultView<TaxResult> = {
     if (c.ifd) {
       rows.push({
         id: 'capital.ifd',
-        label: { en: 'Federal direct tax on it (IFD)', fr: 'Impôt fédéral direct (IFD)' },
+        label: {
+          en: 'Pension capital, federal direct tax (not in the total)',
+          fr: 'Prestations en capital, impôt fédéral direct (non compris dans le total)',
+        },
         line: c.ifd.tax,
       });
     }

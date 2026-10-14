@@ -249,6 +249,19 @@ export function professionalCosts(
 }
 
 /**
+ * The bike note of each tax year, citing that year's document (docs/design/tax-years.md): the 2026
+ * federal instructions; for 2025, whose instructions are not in the library, the 2025 Geneva guide
+ * that gives the flat amount, and no rule on reducing it.
+ */
+const BIKE_FLAT_NOTE: Readonly<Record<number, Text>> = {
+  2025: {
+    en: 'Bike or moped: the federal flat amount (ge-2025-guide-declaration-pp p. 20) is counted in full: no 2025 document Taxpresso has says how to reduce it for part of a year or part-time work.',
+    fr: `Vélo ou cyclomoteur${NB}: le forfait fédéral (guide 2025 p. 20) est compté en entier${NB}: aucun document 2025 dont Taxpresso dispose ne dit comment le réduire pour une partie de l’année ou un temps partiel.`,
+  },
+  2026: IFD_NOTE.bikeFlat,
+};
+
+/**
  * Travel to work (LIFD art. 26 al. 1 let. a): the cost before the caps (commuteBase), at most the
  * federal maximum. `costs` is the trace commuteBase read into.
  */
@@ -257,9 +270,15 @@ export function commuteCosts(
   p: Pick<PersonInput, 'commuteCost' | 'commuteMode'>,
   way: CommuteBase,
   costs: Trace,
+  /** The tax year, for the note's source (BIKE_FLAT_NOTE); without it, the 2026 instructions'. */
+  taxYear?: number,
 ): RuleResult<'commute'> {
   const out = none<'commute'>();
-  if (p.commuteMode?.by === 'bike' && !p.commuteCost) out.unverified.push(IFD_NOTE.bikeFlat);
+  if (p.commuteMode?.by === 'bike' && !p.commuteCost) {
+    out.unverified.push(
+      (taxYear !== undefined ? BIKE_FLAT_NOTE[taxYear] : undefined) ?? IFD_NOTE.bikeFlat,
+    );
+  }
   const tr = new Trace().with(costs).src(...costs.sources);
   const v = Math.min(way.cost, tr.p(F.commuteMax));
   out.limits.push({

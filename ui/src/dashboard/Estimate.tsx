@@ -28,24 +28,6 @@ export type EstimateView =
         estimate: boolean;
         needsOk: boolean;
       }[];
-      /**
-       * The tax on lump sums from the 2nd pillar and pillar 3a (prestations en capital, 98.12): a
-       * tax of its own, not in the total. Present only when the household received some.
-       */
-      capital?: {
-        amount: Row;
-        rows: Row[];
-        total: Row | null;
-        items: {
-          code: string;
-          label: string;
-          who: string;
-          amount: number;
-          how: string;
-          estimate: boolean;
-          needsOk: boolean;
-        }[];
-      };
       estimates: string[];
       needsOk: number;
       notes: string[];
@@ -145,10 +127,6 @@ export const text = {
     preview: '{canton} is a preview: what to check',
     previewNote:
       'Taxpresso computes {canton} from the official documents. A few rules aren’t spelled out in them, and some answers were assumed. Here they are.',
-    capitalTitle: 'Tax on your pension capital',
-    capitalNote:
-      'A lump sum from your pension fund or pillar 3a is taxed apart, at a fifth of the usual rate: a tax of its own, not in the total above.',
-    capitalNotComputed: 'Not computed: see “Not in these figures” below for why.',
     officialTi: 'imposte {year}',
     breakdownTi: 'What the cantonal and communal tax (imposta cantonale e comunale) is made of',
     taxableTi:
@@ -210,9 +188,6 @@ export const text = {
     preview: `{canton} est en avant-première${NB}: ce qu’il faut vérifier`,
     previewNote:
       'Taxpresso calcule {canton} à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
-    capitalTitle: 'Impôt sur votre capital de prévoyance',
-    capitalNote: `Un capital de votre caisse de pension ou du 3e pilier A est imposé à part, au cinquième du taux habituel${NB}: un impôt distinct, pas compris dans le total ci-dessus.`,
-    capitalNotComputed: `Non calculé${NB}: voyez pourquoi sous «${NB}Pas compris dans ces chiffres${NB}» plus bas.`,
     officialTi: 'imposte {year}',
     breakdownTi: 'Ce qui compose les impôts cantonal et communal (imposta cantonale e comunale)',
     taxableTi: `Revenu imposable (reddito imponibile)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (sostanza imponibile)${NB}: {wealth}.`,
@@ -279,10 +254,6 @@ export const text = {
     preview: '{canton} ist eine Vorschau: Was du prüfen solltest',
     previewNote:
       'Taxpresso berechnet {canton} aus den offiziellen Dokumenten. Ein paar Regeln sind darin nicht genau festgelegt, und einige Antworten wurden angenommen. Hier sind sie.',
-    capitalTitle: 'Steuer auf deinem Vorsorgekapital',
-    capitalNote:
-      'Kapital aus deiner Pensionskasse oder der Säule 3a wird separat besteuert, zu einem Fünftel des üblichen Satzes: eine eigene Steuer, nicht im Total oben.',
-    capitalNotComputed: 'Nicht berechnet: Warum, steht unten unter «Nicht in diesen Zahlen».',
     officialTi: 'imposte {year}',
     breakdownTi: 'Woraus die Kantons- und Gemeindesteuer (imposta cantonale e comunale) besteht',
     taxableTi:
@@ -356,11 +327,6 @@ export const text = {
     preview: '{canton} in anteprima: cosa controllare',
     previewNote:
       'Taxpresso calcola le imposte del Cantone {canton} a partire dai documenti ufficiali. Alcune regole non vi sono precisate, e alcune risposte sono state presunte. Eccole.',
-    capitalTitle: 'Imposta sul tuo capitale di previdenza',
-    capitalNote:
-      'Un capitale della tua cassa pensione o del pilastro 3a è tassato a parte, a un quinto dell’aliquota abituale: un’imposta a sé, non compresa nel totale qui sopra.',
-    capitalNotComputed:
-      'Non calcolata: il motivo è indicato più sotto, in «Non compreso in queste cifre».',
     officialTi: 'imposte {year}',
     breakdownTi: 'Di cosa si compone l’imposta cantonale e comunale',
     taxableTi:
@@ -411,51 +377,6 @@ function Flags({
       {estimate ? <span class="chip chip-estimate">{tr(lang, 'estimate')}</span> : null}
       {needsOk ? <span class="chip chip-needs-ok">{t(lang, 'statusNeedsOk')}</span> : null}
     </>
-  );
-}
-
-/** The tax on pension capital: the amount, each tax and the two together, apart from the total. */
-function Capital({
-  capital,
-  lang,
-}: {
-  capital: NonNullable<Extract<EstimateView, { computed: true }>['capital']>;
-  lang: Language;
-}) {
-  const line = (r: Row, strong = false) => (
-    <li key={r.id} class="est-row">
-      <span class="est-label">{strong ? <strong>{r.label}</strong> : r.label}</span>
-      <span class="est-amount">
-        <span class="tnum">{chf(r.amount, lang)}</span>
-        <Flags estimate={r.estimate} needsOk={r.needsOk} lang={lang} />
-      </span>
-    </li>
-  );
-  return (
-    <div class="est-capital">
-      <h3 class="est-subtitle">{tr(lang, 'capitalTitle')}</h3>
-      <p class="est-note">{tr(lang, 'capitalNote')}</p>
-      <ul class="est-rows">
-        {line(capital.amount)}
-        {capital.items.length > 1
-          ? capital.items.map((i) => (
-              <li key={`${i.code}-${i.who}-${i.amount}`} class="est-item" title={i.how}>
-                <span class="est-label">
-                  <span class="tnum est-code">{i.code}</span> {i.label}
-                  {i.who ? <span class="muted"> · {i.who}</span> : null}
-                </span>
-                <span class="est-amount">
-                  <span class="tnum">{chf(i.amount, lang)}</span>
-                  <Flags estimate={i.estimate} needsOk={i.needsOk} lang={lang} />
-                </span>
-              </li>
-            ))
-          : null}
-        {capital.rows.map((r) => line(r))}
-        {capital.total ? line(capital.total, true) : null}
-      </ul>
-      {capital.rows.length ? null : <p class="est-note">{tr(lang, 'capitalNotComputed')}</p>}
-    </div>
   );
 }
 
@@ -528,7 +449,6 @@ export function Estimate({
             </ul>
           </details>
         ) : null}
-        {view.capital ? <Capital capital={view.capital} lang={lang} /> : null}
         <p class="est-note">
           {tr(lang, own('taxable'), {
             icc: chf(view.taxable.icc, lang),

@@ -44,7 +44,7 @@ export interface YearComparisonRow {
 export interface CapitalView {
   /** The lump sums of the year added up, with the official term of the form's line. */
   amount: ViewRow;
-  /** One row per tax computed: cantonal and communal, federal. */
+  /** One row per tax computed (cantonal and communal, federal), shown with the return's rows. */
   rows: ViewRow[];
   /** Both taxes together, when both are computed. */
   total: ViewRow | null;

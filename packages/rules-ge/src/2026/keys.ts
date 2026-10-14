@@ -73,7 +73,8 @@ export const KEYS_2026 = {
   'profile.special': H['profile.special'],
   // A lump sum from the 2nd pillar (pension fund, vested benefits) or pillar 3a, taxed apart at a
   // fifth of the scale (ge-na-law-lipp art. 45; ch-na-law-lifd art. 38, p. 32), declared at 98.12
-  // (ge-2025-guide-declaration-pp p. 13): who received which (../engine/capital.ts).
+  // (ge-2025-guide-declaration-pp p. 13): who received which (../engine/capital.ts). The amount, the
+  // date and the reason are read on the attestation (./document-keys.ts).
   'profile.pension_capital': {
     type: 'enum_list',
     values: ['pillar2', 'pillar3a'],
@@ -81,16 +82,6 @@ export const KEYS_2026 = {
     label: { en: 'Pension capital received', fr: 'Prestations en capital reçues' },
     official: 'prestations en capital du 2e et 3e pilier A',
     source: 'ge-2025-guide-declaration-pp p. 13; ch-na-law-lifd art. 22 al. 1 (p. 17)',
-  },
-  // Why: the reasons the law allows a lump sum (ch-na-law-opp3 art. 3; ch-na-law-lpp art. 30c and
-  // 83a). Leaving Switzerland and the other reasons are not supported (taxed at source, or a
-  // different rubric): ge-2026-source-directives p. 11 and 39; ge-2025-declaration-specimen p. 2.
-  'profile.pension_capital_reason': {
-    type: 'enum_list',
-    values: ['retirement', 'home', 'self_employment', 'leaving', 'other'],
-    perPerson: true,
-    label: { en: 'Why the pension capital was paid', fr: 'Motif du versement en capital' },
-    source: 'ch-na-law-opp3 art. 3 (p. 2 and 3); ch-na-law-lpp art. 30c (p. 16)',
   },
   // Planning inputs for "before 31 December" (SPEC.md section 8, group B). Rough figures the user
   // gives for an estimate; never filed.

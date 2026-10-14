@@ -186,7 +186,7 @@ describe('citations of rules-ch', () => {
         lines.push(...l.sources);
       }
       // The federal tax on pension capital (art. 38 LIFD).
-      const capital = ifdCapitalTax(F, taxable, 'married');
+      const capital = ifdCapitalTax(F, taxable, 'married', year);
       if ('unsupported' in capital) throw new Error('not computed');
       const c = capital.tax;
       for (const l of [c.scaleIncome, c.scaleTax, c.tax]) lines.push(...l.sources);

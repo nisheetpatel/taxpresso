@@ -89,11 +89,18 @@ const CAPITAL_KINDS: Partial<Record<DocumentKind, CapitalBenefitInput['pillar']>
 };
 
 const NB = '\u00a0';
+const REASONS: readonly CapitalReason[] = [
+  'retirement',
+  'home',
+  'self_employment',
+  'leaving',
+  'other',
+];
 
 /**
- * The household's lump sums of the year, one per attestation (capital.amount, capital.date), with
- * the answers that decide whether Taxpresso can tax them: why each person's was paid, a salary taxed
- * at source, an arrival from abroad. Undefined when there is none.
+ * The household's lump sums of the year, one per attestation (capital.amount, capital.date,
+ * capital.reason), with the answers that decide whether Taxpresso can tax them: a salary taxed at
+ * source, an arrival from abroad. Undefined when there is none.
  */
 export function capitalFromFacts(
   taxYear: number,
@@ -119,15 +126,20 @@ export function capitalFromFacts(
       if (!pillar || !person) continue;
       const amount = amountOf(own.filter((f) => owner(f.person) === person));
       if (!amount) continue;
-      const date = year.find(
-        (f) => f.key === 'capital.date' && f.instance === instance && owner(f.person) === person,
-      )?.value;
+      const read = (key: string) =>
+        year.find((f) => f.key === key && f.instance === instance && owner(f.person) === person)
+          ?.value;
+      const date = read('capital.date');
+      const reason = read('capital.reason');
       benefits.push({
         ...(instance ? { id: instance } : {}),
         person,
         pillar,
         amount,
         ...(typeof date === 'string' ? { date } : {}),
+        ...(typeof reason === 'string' && REASONS.includes(reason as CapitalReason)
+          ? { reason: reason as CapitalReason }
+          : {}),
       });
     }
   }
@@ -145,15 +157,9 @@ export function capitalFromFacts(
     });
   }
   if (!benefits.length) return undefined;
-  const reasons: Partial<Record<EnginePerson, readonly CapitalReason[]>> = {};
-  for (const p of people) {
-    const v = answer('profile.pension_capital_reason', p);
-    if (Array.isArray(v) && v.length) reasons[p] = v as CapitalReason[];
-  }
   const atSource = people.filter((p) => answer('profile.taxed_at_source', p) === true);
   return {
     benefits,
-    reasons,
     ...(atSource.length ? { atSource } : {}),
     ...(answer('profile.moved', 'household') === 'from_abroad' ? { arrivedFromAbroad: true } : {}),
   };

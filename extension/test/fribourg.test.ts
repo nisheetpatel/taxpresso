@@ -334,7 +334,7 @@ describe('a Fribourg return, tax year 2026: no communal coefficients yet', () =>
       confirmed: false,
     });
     expect(texts(decided)).toMatch(/TOU is Geneva’s procedure\. For Fribourg/);
-    const plan = (await state('fr')).plan;
+    const plan = (await state('fr')).plan!;
     expect(plan.result.saving).toBeUndefined();
     expect(plan.result.assumptions).toContain('fr_no_tax');
   });

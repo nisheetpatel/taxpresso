@@ -24,6 +24,7 @@ import { ENUM_LABELS } from './extraction.js';
 import { holdings } from './holdings.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import type { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = String.fromCharCode(0xa0);
@@ -489,7 +490,9 @@ const Item = z.looseObject({
   sources: z.array(Source),
 });
 
-export function registerFinalCheckTool(server: McpServer, ws: Workspace): void {
+export function registerFinalCheckTool(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'final_check',
     {
@@ -517,6 +520,7 @@ export function registerFinalCheckTool(server: McpServer, ws: Workspace): void {
       },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       await declarationCheckReady(ws);
       const view = finalCheckView(ws, 'en');

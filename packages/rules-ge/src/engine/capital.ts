@@ -9,10 +9,13 @@
 // the base (ge-na-law-lcp art. 293 let. A, art. 295A al. 2).
 // Federal (ch-na-law-lifd art. 38): packages/rules-ch, ifd/capital.ts.
 //
-// Fails closed (not computed, with the reason): a reason not answered or not supported (leaving
-// Switzerland, taxed at source: ge-2026-source-directives p. 39; another reason: another rubric,
-// 98.75, or no tax); a person whose salary is taxed at source (the directives tax some lump sums at
-// source and others in the declaration, p. 11); a household that arrived from abroad in the year.
+// Fails closed (not computed, with the reason): an attestation that gives a reason Taxpresso can't
+// tax yet (leaving Switzerland, taxed at source: ge-2025-source-directives and
+// ge-2026-source-directives p. 39; another reason: another rubric, 98.75, or no tax); a person whose
+// salary is taxed at source (the directives tax some lump sums at source and others in the
+// declaration, p. 11); a household that arrived from abroad in the year. A reason not read is an
+// assumption, said: you live in Geneva on 31 December, so not leaving Switzerland, and the other
+// reasons the law allows (retirement, a home, self-employment) are taxed the same way.
 // A lump sum dated another year belongs to that year's tax (art. 38 al. 1bis LIFD).
 import {
   bracketTax,
@@ -265,16 +268,18 @@ export function capitalIcc(
   };
 }
 
-const REASON: Record<'leaving' | 'other', Text> = {
-  leaving: t(
-    'Tax on pension capital not computed: a lump sum paid on leaving Switzerland is taxed at source (ge-2026-source-directives p. 39). Taxpresso doesn’t support it yet.',
-    `Impôt sur les prestations en capital non calculé${NB}: un capital versé lors d’un départ de Suisse est imposé à la source (directives 2026 p. 39). Taxpresso ne le prend pas encore en charge.`,
-  ),
-  other: t(
-    'Tax on pension capital not computed: a lump sum paid for another reason (disability, a death, a divorce, a transfer) may go on another rubric (98.75) or not be taxed. Taxpresso doesn’t support it yet.',
-    `Impôt sur les prestations en capital non calculé${NB}: un capital versé pour un autre motif (invalidité, décès, divorce, transfert) peut relever d’une autre rubrique (98.75) ou ne pas être imposé. Taxpresso ne le prend pas encore en charge.`,
-  ),
-};
+/** Why Taxpresso doesn't compute it, for a reason it can't tax yet. */
+function reasonText(r: 'leaving' | 'other', year: number): Text {
+  return r === 'leaving'
+    ? t(
+        `Tax on pension capital not computed: a lump sum paid on leaving Switzerland is taxed at source (ge-${year}-source-directives p. 39). Taxpresso doesn’t support it yet.`,
+        `Impôt sur les prestations en capital non calculé${NB}: un capital versé lors d’un départ de Suisse est imposé à la source (directives ${year} p. 39). Taxpresso ne le prend pas encore en charge.`,
+      )
+    : t(
+        'Tax on pension capital not computed: a lump sum paid for another reason (disability, a death, a divorce, a transfer) may go on another rubric (98.75) or not be taxed. Taxpresso doesn’t support it yet.',
+        `Impôt sur les prestations en capital non calculé${NB}: un capital versé pour un autre motif (invalidité, décès, divorce, transfert) peut relever d’une autre rubrique (98.75) ou ne pas être imposé. Taxpresso ne le prend pas encore en charge.`,
+      );
+}
 
 /**
  * The separate tax on the household's lump sums of the year. `splitting` and `ifdScale` are the
@@ -361,23 +366,28 @@ export function capitalTax(
 
   // What Taxpresso can't tax yet: then neither tax is computed.
   const blocked: Text[] = [];
-  for (const person of new Set(counted.map((b) => b.person))) {
-    const reasons = input?.reasons?.[person];
-    const who = couple ? t(` (${WHO[person].en})`, ` (${WHO[person].fr})`) : t('', '');
-    if (!reasons?.length) {
-      blocked.push(
-        t(
-          `Tax on pension capital not computed until you say why the lump sum was paid${who.en}.`,
-          `Impôt sur les prestations en capital non calculé tant que le motif du versement n’est pas indiqué${who.fr}.`,
-        ),
-      );
+  for (const b of counted) {
+    if (b.reason === 'leaving' || b.reason === 'other') {
+      const text = reasonText(b.reason, ctx.taxYear);
+      if (!blocked.some((x) => x.en === text.en)) blocked.push(text);
     }
-    for (const r of reasons ?? []) if (r === 'leaving' || r === 'other') blocked.push(REASON[r]);
+  }
+  if (counted.some((b) => !b.reason)) {
+    add(
+      notes.assumptions,
+      t(
+        'Pension capital: the reason for the payment (motif du versement) is not read on its attestation. Taxpresso counts it as paid for retirement, a home or self-employment, taxed the same way, since you live in Geneva on 31 December. If it was paid because you left Switzerland, or for another reason, say so: its tax is then not computed.',
+        `Prestations en capital${NB}: le motif du versement n’est pas lu sur l’attestation. Taxpresso le compte comme versé pour la retraite, un logement ou une activité indépendante, imposés de la même façon, puisque vous habitez Genève au 31 décembre. S’il a été versé pour un départ de Suisse ou pour un autre motif, dites-le${NB}: son impôt n’est alors pas calculé.`,
+      ),
+    );
+  }
+  for (const person of new Set(counted.map((b) => b.person))) {
+    const who = couple ? t(` (${WHO[person].en})`, ` (${WHO[person].fr})`) : t('', '');
     if (input?.atSource?.includes(person)) {
       blocked.push(
         t(
-          `Tax on pension capital not computed: your salary is taxed at source${who.en}, and the source-tax directives tax some lump sums at source and others in the declaration (ge-2026-source-directives p. 11). Taxpresso doesn’t support it yet.`,
-          `Impôt sur les prestations en capital non calculé${NB}: votre salaire est imposé à la source${who.fr}, et les directives imposent certains capitaux à la source, d’autres dans la déclaration (directives 2026 p. 11). Taxpresso ne le prend pas encore en charge.`,
+          `Tax on pension capital not computed: your salary is taxed at source${who.en}, and the source-tax directives tax some lump sums at source and others in the declaration (ge-${ctx.taxYear}-source-directives p. 11). Taxpresso doesn’t support it yet.`,
+          `Impôt sur les prestations en capital non calculé${NB}: votre salaire est imposé à la source${who.fr}, et les directives imposent certains capitaux à la source, d’autres dans la déclaration (directives ${ctx.taxYear} p. 11). Taxpresso ne le prend pas encore en charge.`,
         ),
       );
     }
@@ -425,7 +435,7 @@ export function capitalTax(
       ),
     );
   } else {
-    const r = ifdCapitalTax(P.ifd, amountLine, ctx.ifdScale);
+    const r = ifdCapitalTax(P.ifd, amountLine, ctx.ifdScale, ctx.taxYear);
     if ('unsupported' in r) add(notes.unsupported, r.unsupported);
     else {
       ifd = r.tax;

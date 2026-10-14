@@ -28,7 +28,9 @@ const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = ' ';
 const LAW = 'ch-na-law-lifd art. 38 al. 1 and 2 (p. 32)';
 const SPOUSES = 'ch-na-law-lifd art. 9 al. 1 (p. 5)';
-const INSTRUCTIONS = 'ch-2026-ifd-instructions-personnes-physiques p. 4 and 9';
+/** The federal instructions, published for 2026 only: a 2025 line cites the law alone. */
+const INSTRUCTIONS = (taxYear: number) =>
+  taxYear >= 2026 ? ['ch-2026-ifd-instructions-personnes-physiques p. 4 and 9'] : [];
 
 /** What the federal documents don't spell out about the tax on pension capital. */
 export const IFD_CAPITAL_NOTE = {
@@ -44,13 +46,14 @@ export const IFD_CAPITAL_NOTE = {
 
 /**
  * The federal tax on `amount`, every lump sum of the year added up, on `scale` (the household's:
- * the married scale for a couple and a parent living with the children). Undefined when it can't be
- * computed: then `unsupported` says why.
+ * the married scale for a couple and a parent living with the children), for `taxYear` (`F`'s).
+ * Undefined when it can't be computed: then `unsupported` says why.
  */
 export function ifdCapitalTax(
   F: IfdParams,
   amount: Line,
   scale: IfdScale,
+  taxYear: number,
 ): { tax: IfdCapitalTax; unverified: Text[] } | { unsupported: Text } {
   const inTrace = new Trace().from(amount).src(LAW, SPOUSES);
   const rounding = inTrace.p(F.rounding);
@@ -63,7 +66,7 @@ export function ifdCapitalTax(
       `Toutes les prestations en capital de l’année additionnées, ${chf(amount.amount)}, sans la fraction inférieure à CHF 100${NB}: ${chf(scaleIncome)}.`,
     ),
   );
-  const stTrace = new Trace().from(scaleIncomeLine).src(LAW, INSTRUCTIONS);
+  const stTrace = new Trace().from(scaleIncomeLine).src(LAW, ...INSTRUCTIONS(taxYear));
   const steps = stTrace.p(scale === 'single' ? F.singleScale : F.marriedScale);
   const raw = federalScaleTax(steps, scaleIncome);
   const scaleName =

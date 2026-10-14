@@ -8,6 +8,7 @@ import {
   blQuestionnaire2026,
   bsQuestionnaire2026,
   frQuestionnaire2026,
+  geQuestionnaire,
   geQuestionnaire2026,
   luQuestionnaire2026,
   sgQuestionnaire2026,
@@ -476,18 +477,13 @@ describe('pension capital (prestations en capital, 98.12)', () => {
     special: ['pension_capital'],
     'pension_capital:p1': ['pillar2', 'pillar3a'],
     'pension_capital:p2': [],
-    'pension_capital_reason:p1': ['retirement', 'home'],
   };
 
-  it('asks who received which, and why only those who did, in Geneva', () => {
+  it('asks only who received which, in Geneva: the rest is on the attestation', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     const asked = walk(e, ledger, COUPLE);
-    expect(asked.slice(-3)).toEqual([
-      'pension_capital:p1',
-      'pension_capital:p2',
-      'pension_capital_reason:p1',
-    ]);
+    expect(asked.slice(-3)).toEqual(['special', 'pension_capital:p1', 'pension_capital:p2']);
     const snap = e.snapshot(ledger);
     expect(e.next(snap)).toBeUndefined();
     expect(e.notSupported(snap)).toEqual([]);
@@ -524,14 +520,18 @@ describe('pension capital (prestations en capital, 98.12)', () => {
     );
   });
 
-  it('says what it can’t prepare: leaving Switzerland, another reason', () => {
-    const e = engine();
-    const ledger = new Ledger(2026, KEYS_2026);
-    walk(e, ledger, { ...COUPLE, 'pension_capital_reason:p1': ['leaving', 'other'] });
-    expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.en)).toEqual([
-      'A lump sum paid on leaving Switzerland (taxed at source)',
-      'A lump sum paid for another reason (disability, a death, a divorce, a transfer)',
-    ]);
+  it('cites 2025 documents only for the 2025 return', () => {
+    const e = new QuestionnaireEngine(geQuestionnaire(2025), KEYS_2026, COMMUNES_2026);
+    const ledger = new Ledger(2025, KEYS_2026);
+    walk(e, ledger, COUPLE);
+    const reqs = e.requirements(e.snapshot(ledger), []);
+    const capital = reqs.filter((r) => r.id.includes('capital'));
+    expect(capital.map((r) => r.id)).toEqual(['lpp_capital:p1', 'pillar3a_capital:p1']);
+    for (const r of capital) {
+      expect(r.source).toBe(
+        'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ge-2025-guide-declaration-pp p. 13',
+      );
+    }
   });
 
   it('stays not supported in every other canton', () => {

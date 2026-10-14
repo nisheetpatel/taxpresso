@@ -95,7 +95,7 @@ export interface WealthItemInput {
   source: string;
 }
 
-/** Why a lump sum was paid (profile.pension_capital_reason; ch-na-law-opp3 art. 3). */
+/** Why a lump sum was paid, as its attestation says (capital.reason; ch-na-law-opp3 art. 3). */
 export type CapitalReason = 'retirement' | 'home' | 'self_employment' | 'leaving' | 'other';
 
 /**
@@ -110,13 +110,13 @@ export interface CapitalBenefitInput {
   amount: Amount;
   /** The date it was paid, YYYY-MM-DD: it counts for that year (ch-na-law-lifd art. 38 al. 1bis). */
   date?: string;
+  /** Why it was paid (motif du versement), when read on the attestation. */
+  reason?: CapitalReason;
 }
 
 /** The household's lump sums of the year and what decides whether Taxpresso can tax them. */
 export interface CapitalInput {
   benefits: readonly CapitalBenefitInput[];
-  /** Why they were paid, per person, as answered. A person without an answer: not computed. */
-  reasons?: Partial<Record<EnginePerson, readonly CapitalReason[]>>;
   /** The people whose salary is taxed at source: not supported (ge-2026-source-directives p. 11). */
   atSource?: readonly EnginePerson[];
   /** The household arrived from abroad during the year: not supported. */

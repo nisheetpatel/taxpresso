@@ -6,6 +6,7 @@
 // with `detail`.
 import {
   chf,
+  type CapitalTax,
   type CapitalView,
   type Item,
   type Line,
@@ -79,14 +80,19 @@ function lastYearText(x: YearComparisonRow): string {
 }
 
 /** The tax on pension capital, for Claude: the amount, each tax, and that it is apart. */
-function capitalText(c: CapitalView, items: readonly Item[]): string {
-  const each = items
+function capitalText(c: CapitalView, capital: CapitalTax): string {
+  const each = capital.items
     .map(
       (i) =>
         `${i.code} (${WHO[i.person]?.en ?? i.person}) ${chf(i.amount)}${i.needsOk ? " [needs the user's OK]" : ''}`,
     )
     .join('; ');
-  const taxes = c.rows.map((row) => `${row.label.en} ${chf(row.line.amount)}`).join(', ');
+  const taxes = [
+    capital.icc ? `cantonal and communal ${chf(capital.icc.tax.amount)}` : '',
+    capital.ifd ? `federal ${chf(capital.ifd.tax.amount)}` : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
   return `${c.amount.label.en}: ${chf(c.amount.line.amount)} (${each}). A tax of its own, apart from the tax on income, at a fifth of the scale, never in the total${taxes ? `: ${taxes}` : ': not computed (see "Not computed")'}${c.total ? `; together ${chf(c.total.line.amount)}` : ''}.`;
 }
 
@@ -107,7 +113,7 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     return {
       text,
       structured: {
-        taxYear: ws.config.taxYear,
+        taxYear: ws.taxYear,
         ...tag,
         computed: false,
         missing: en(missing),
@@ -129,7 +135,7 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   }
   if (r.total !== null) say.push(`Total: ${chf(r.total)}.`);
   const capital = view.capital?.(r);
-  if (capital && r.capital) say.push(capitalText(capital, r.capital.items));
+  if (capital && r.capital) say.push(capitalText(capital, r.capital));
   const items = icc ? mainItems(icc.items, 8) : [];
   if (items.length) {
     say.push(
@@ -276,14 +282,17 @@ export function estimateView(ws: Workspace, lang: UiLang) {
     taxYear: r.taxYear,
     total: r.total,
     estimate: r.estimates.length > 0,
-    rows: view.rows(r).map(row),
+    // The tax on pension capital, a tax of its own: its rows follow, each saying it is not in the
+    // total (only when there is one).
+    rows: [...view.rows(r), ...(capital?.rows ?? [])].map(row),
     parts: view.parts(r).map(row),
     taxable: {
       icc: icc?.taxableIncome.amount ?? null,
       ifd: ifd?.taxableIncome.amount ?? null,
       wealth: icc?.wealth.taxableWealth.amount ?? null,
     },
-    items: (icc ? mainItems(icc.items, 8) : []).map((i) => ({
+    // The form's main lines, then each lump sum of pension capital (98.12).
+    items: [...(icc ? mainItems(icc.items, 8) : []), ...(r.capital?.items ?? [])].map((i) => ({
       code: i.code,
       label: say(i.label, l),
       who: i.person !== 'household' && couple ? say(WHO[i.person] ?? WHO.household!, l) : '',
@@ -292,25 +301,6 @@ export function estimateView(ws: Workspace, lang: UiLang) {
       estimate: Boolean(i.estimates?.length),
       needsOk: Boolean(i.needsOk),
     })),
-    // The tax on pension capital: a tax of its own, apart from the total (only when there is one).
-    ...(capital && r.capital
-      ? {
-          capital: {
-            amount: row(capital.amount),
-            rows: capital.rows.map(row),
-            total: capital.total ? row(capital.total) : null,
-            items: r.capital.items.map((i) => ({
-              code: i.code,
-              label: say(i.label, l),
-              who: couple ? say(WHO[i.person] ?? WHO.household!, l) : '',
-              amount: i.amount,
-              how: say(i.how, l),
-              estimate: Boolean(i.estimates?.length),
-              needsOk: Boolean(i.needsOk),
-            })),
-          },
-        }
-      : {}),
     estimates: r.estimates.map((x) => say(x.what, l)),
     needsOk: r.needsOk,
     notes: [...r.unsupported, ...r.incomplete, ...r.notCounted].map((n) => say(n, l)),

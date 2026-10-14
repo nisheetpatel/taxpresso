@@ -513,8 +513,9 @@ function capitalItems(input: FinalCheckInput): FinalCheckItem[] {
       'Declare the amount at 98.12 and attach each attestation.',
       'Déclarez le montant au 98.12 et joignez chaque attestation.',
     ),
+    // The federal instructions exist for 2026 only (docs/design/tax-years.md).
     sources: links(
-      'ge-2025-guide-declaration-pp p. 13; ge-na-law-lipp art. 45; ch-na-law-lifd art. 38 (p. 32); ch-2026-ifd-instructions-personnes-physiques p. 9',
+      `ge-2025-guide-declaration-pp p. 13; ge-na-law-lipp art. 45; ch-na-law-lifd art. 38 (p. 32)${input.taxYear >= 2026 ? '; ch-2026-ifd-instructions-personnes-physiques p. 9' : ''}`,
     ),
   });
   if (c.secondPillar) {

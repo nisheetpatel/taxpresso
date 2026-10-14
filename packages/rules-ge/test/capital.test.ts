@@ -83,8 +83,8 @@ describe('the AFC capital tariff 2025 (ge-2025-source-capital-icc-tariff)', () =
 describe('the federal tax on pension capital (ch-na-law-lifd art. 38)', () => {
   it('is a fifth of the Form. 58c tax, rounded down to 5 centimes', () => {
     // Form. 58c 2026 prints 2'684.35 (single) and 1'816.00 (married) at 100'000.
-    const single = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(100_000)), 'single');
-    const married = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(100_000)), 'married');
+    const single = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(100_000)), 'single', 2026);
+    const married = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(100_000)), 'married', 2026);
     if ('unsupported' in single || 'unsupported' in married) throw new Error('not computed');
     expect(single.tax.scaleTax.amount).toBe(chf(2_684.35));
     expect(single.tax.tax.amount).toBe(chf(536.85)); // 536.87 down to 5 centimes
@@ -92,23 +92,23 @@ describe('the federal tax on pension capital (ch-na-law-lifd art. 38)', () => {
     expect(married.tax.tax.amount).toBe(chf(363.2));
   });
   it('takes the married scale for a single parent, without the reduction per child', () => {
-    const r = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(120_000)), 'parental');
+    const r = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(120_000)), 'parental', 2026);
     if ('unsupported' in r) throw new Error('not computed');
     // 2'251.00 at 108'700 + 113 x 6.00 = 2'929.00; a fifth: 585.80.
     expect(r.tax.tax.amount).toBe(chf(585.8));
   });
   it('drops the fraction under CHF 100 of the amount (Form. 58c note 1)', () => {
-    const a = ifdCapitalTax(paramsFor(2025).ifd, amount(chf(85_099.95)), 'single');
-    const b = ifdCapitalTax(paramsFor(2025).ifd, amount(chf(85_000)), 'single');
+    const a = ifdCapitalTax(paramsFor(2025).ifd, amount(chf(85_099.95)), 'single', 2025);
+    const b = ifdCapitalTax(paramsFor(2025).ifd, amount(chf(85_000)), 'single', 2025);
     if ('unsupported' in a || 'unsupported' in b) throw new Error('not computed');
     expect(a.tax.tax.amount).toBe(b.tax.tax.amount);
   });
   it('is not computed between 0 and CHF 25: the documents leave the minimum open', () => {
     // 25'000 single, 2026: 75.46 by the scale, a fifth is 15.05.
-    const r = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(25_000)), 'single');
+    const r = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(25_000)), 'single', 2026);
     expect('unsupported' in r).toBe(true);
     // Under 15'200 the scale gives nothing: no tax, computed.
-    const zero = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(15_000)), 'single');
+    const zero = ifdCapitalTax(paramsFor(2026).ifd, amount(chf(15_000)), 'single', 2026);
     if ('unsupported' in zero) throw new Error('not computed');
     expect(zero.tax.tax.amount).toBe(0);
   });
@@ -131,9 +131,9 @@ const favreCapital = (year: number): CapitalInput => ({
       pillar: 'pillar3a',
       amount: { value: chf(85_000) },
       date: `${year}-06-30`,
+      reason: 'retirement',
     },
   ],
-  reasons: { p1: ['retirement'] },
 });
 const morel = (year: 2025 | 2026, capital?: CapitalInput): EngineInput => ({
   taxYear: year,
@@ -162,9 +162,9 @@ const morelCapital = (year: number): CapitalInput => ({
       pillar: 'pillar2',
       amount: { value: chf(120_000) },
       date: `${year}-03-15`,
+      reason: 'home',
     },
   ],
-  reasons: { p1: ['home'] },
 });
 const rochat = (year: 2025 | 2026, capital?: CapitalInput): EngineInput => ({
   taxYear: year,
@@ -184,6 +184,7 @@ const rochatCapital = (year: number): CapitalInput => ({
       pillar: 'pillar2',
       amount: { value: chf(300_000) },
       date: `${year}-09-30`,
+      reason: 'retirement',
     },
     {
       id: 'rochat-3a',
@@ -191,9 +192,9 @@ const rochatCapital = (year: number): CapitalInput => ({
       pillar: 'pillar3a',
       amount: { value: chf(60_000) },
       date: `${year}-11-15`,
+      reason: 'retirement',
     },
   ],
-  reasons: { p1: ['retirement'], p2: ['retirement'] },
 });
 
 interface Expected {
@@ -387,6 +388,23 @@ describe('three households, hand-checked', () => {
   });
 });
 
+describe('the 2025 return cites 2025 documents only (docs/design/tax-years.md)', () => {
+  it('has no 2026 document in its capital lines or notes', () => {
+    for (const r of [
+      computeReturn(favre(2025, favreCapital(2025))),
+      computeReturn(morel(2025, morelCapital(2025))),
+      computeReturn(rochat(2025, rochatCapital(2025))),
+    ]) {
+      const lines = capitalLines(r.capital!);
+      expect(lines.length).toBe(r.capital!.items.length + 14);
+      const sources = lines.flatMap((l) => l.sources);
+      expect(sources.join('\n')).not.toMatch(/2026/);
+      const notes = [...r.unverifiedRules, ...r.assumptions, ...r.unsupported, ...r.notCounted];
+      expect(notes.map((n) => n.en).join('\n')).not.toMatch(/2026/);
+    }
+  });
+});
+
 describe('what is counted, and what fails closed', () => {
   const base = (capital: CapitalInput) => computeReturn(favre(2026, capital));
   const one = (over: Partial<CapitalInput['benefits'][number]> = {}) => ({
@@ -394,20 +412,20 @@ describe('what is counted, and what fails closed', () => {
     pillar: 'pillar3a' as const,
     amount: { value: chf(40_000) },
     date: '2026-05-02',
+    reason: 'retirement' as const,
     ...over,
   });
 
   it('adds up several lump sums of one person', () => {
     const two = base({
       benefits: [one(), one({ amount: { value: chf(45_000) } })],
-      reasons: { p1: ['retirement'] },
     });
     expect(two.capital!.amount.amount).toBe(chf(85_000));
     expect(two.capital!.icc!.tax.amount).toBe(chf(2_752.8));
   });
 
   it('leaves out a lump sum paid another year (LIFD art. 38 al. 1bis)', () => {
-    const r = base({ benefits: [one({ date: '2025-12-31' })], reasons: { p1: ['retirement'] } });
+    const r = base({ benefits: [one({ date: '2025-12-31' })] });
     expect(r).not.toHaveProperty('capital');
     expect(r.notCounted.some((n) => n.en.includes('2025-12-31'))).toBe(true);
   });
@@ -415,10 +433,7 @@ describe('what is counted, and what fails closed', () => {
   it('counts an attestation without a date for the year, and says so', () => {
     const undated = { ...one() } as Partial<ReturnType<typeof one>>;
     delete undated.date;
-    const r = base({
-      benefits: [undated as CapitalInput['benefits'][number]],
-      reasons: { p1: ['retirement'] },
-    });
+    const r = base({ benefits: [undated as CapitalInput['benefits'][number]] });
     expect(r.capital!.icc).not.toBeNull();
     expect(r.assumptions.some((n) => n.en.includes('without its date'))).toBe(true);
   });
@@ -431,18 +446,34 @@ describe('what is counted, and what fails closed', () => {
     // The income tax is still computed.
     expect(r.icc).not.toBeNull();
   };
-  it('is not computed without a reason', () => blocked(base({ benefits: [one()] })));
-  it('is not computed on leaving Switzerland (taxed at source)', () =>
-    blocked(base({ benefits: [one()], reasons: { p1: ['leaving'] } })));
+  it('computes it when the attestation gives no reason, and says what it assumed', () => {
+    const noReason = { ...one() } as Partial<ReturnType<typeof one>>;
+    delete noReason.reason;
+    const r = base({ benefits: [noReason as CapitalInput['benefits'][number]] });
+    expect(r.capital!.icc!.tax.amount).toBe(base({ benefits: [one()] }).capital!.icc!.tax.amount);
+    expect(r.assumptions.some((n) => n.en.includes('motif du versement'))).toBe(true);
+    expect(base({ benefits: [one()] }).assumptions.some((n) => n.en.includes('motif'))).toBe(false);
+  });
+  it('is not computed on leaving Switzerland (taxed at source)', () => {
+    const r = base({ benefits: [one({ reason: 'leaving' })] });
+    blocked(r);
+    expect(r.unsupported.some((n) => n.en.includes('ge-2026-source-directives p. 39'))).toBe(true);
+    const r25 = computeReturn(
+      favre(2025, { benefits: [one({ reason: 'leaving', date: '2025-05-02' })] }),
+    );
+    expect(r25.unsupported.some((n) => n.en.includes('ge-2025-source-directives p. 39'))).toBe(
+      true,
+    );
+  });
   it('is not computed for another reason (98.75, or no tax)', () =>
-    blocked(base({ benefits: [one()], reasons: { p1: ['retirement', 'other'] } })));
+    blocked(base({ benefits: [one(), one({ reason: 'other' })] })));
   it('is not computed for someone taxed at source', () =>
-    blocked(base({ benefits: [one()], reasons: { p1: ['retirement'] }, atSource: ['p1'] })));
+    blocked(base({ benefits: [one()], atSource: ['p1'] })));
   it('is not computed in the year of an arrival from abroad', () =>
-    blocked(base({ benefits: [one()], reasons: { p1: ['retirement'] }, arrivedFromAbroad: true })));
+    blocked(base({ benefits: [one()], arrivedFromAbroad: true })));
 
   it('computes a withdrawal to start self-employment like the others (the law taxes it alike)', () => {
-    const r = base({ benefits: [one()], reasons: { p1: ['self_employment'] } });
+    const r = base({ benefits: [one({ reason: 'self_employment' })] });
     expect(r.capital!.icc).not.toBeNull();
   });
 
@@ -486,9 +517,7 @@ describe('what is counted, and what fails closed', () => {
   });
 
   it('refuses a lump sum of someone not in the household', () => {
-    expect(() => base({ benefits: [one({ person: 'p2' })], reasons: {} })).toThrow(
-      /not in the household/,
-    );
+    expect(() => base({ benefits: [one({ person: 'p2' })] })).toThrow(/not in the household/);
   });
 });
 
@@ -544,15 +573,10 @@ describe('a seeded fuzz of households with lump sums', () => {
         ...(R() < 0.9
           ? { date: `${R() < 0.9 ? year : year - 1}-0${int(1, 9)}-1${int(0, 9)}` }
           : {}),
+        ...(R() < 0.9
+          ? { reason: pick(['retirement', 'home', 'self_employment', 'leaving', 'other'] as const) }
+          : {}),
       }));
-      const reasons = Object.fromEntries(
-        (couple ? ['p1', 'p2'] : ['p1']).map((p) => [
-          p,
-          R() < 0.9
-            ? [pick(['retirement', 'home', 'self_employment', 'leaving', 'other'] as const)]
-            : [],
-        ]),
-      );
       const input: EngineInput = {
         taxYear: year,
         commune: pick(communes),
@@ -567,7 +591,6 @@ describe('a seeded fuzz of households with lump sums', () => {
           : {}),
         capital: {
           benefits,
-          reasons,
           ...(R() < 0.05 ? { atSource: ['p1' as const] } : {}),
           ...(R() < 0.05 ? { arrivedFromAbroad: true } : {}),
         },

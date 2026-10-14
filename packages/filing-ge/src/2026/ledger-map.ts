@@ -189,6 +189,7 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'replacement.paid_to_employer': 'Says whether the benefit is already in the salary (box 7).',
   'pension.type': 'Says which rubric the pension goes to (17.10, 13.20 or 13.40).',
   'capital.date': `Decides the year the lump sum is taxed (ch-na-law-lifd art. 38 al. 1bis); the form asks for the amount only (98.12, ${SPEC} p. 2).`,
+  'capital.reason': `Decides whether Taxpresso can tax the lump sum (leaving Switzerland is taxed at source); the form asks for the amount only (98.12, ${SPEC} p. 2).`,
   'assessment.tax': 'The tax office’s assessment is checked, never typed into the declaration.',
   'assessment.notification_date': 'The tax office’s assessment is checked, never typed.',
   'assessment.taxable_income': 'The tax office’s assessment is checked, never typed.',

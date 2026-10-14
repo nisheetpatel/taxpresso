@@ -6,11 +6,10 @@ import { fileURLToPath } from 'node:url';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { setBarcodeWasmPath } from '@taxpresso/intake';
 import { createApi } from './api.js';
-import { CantonRegistry } from './cantons.js';
 import { readConfig } from './config.js';
 import { Dashboard } from './dashboard.js';
 import { createTaxpressoServer } from './server.js';
-import { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 // stdout is the MCP channel. Anything a library prints there by habit goes to stderr instead.
 for (const level of ['log', 'info', 'debug'] as const) console[level] = console.error.bind(console);
@@ -19,14 +18,15 @@ const config = readConfig();
 // The barcode reader's WebAssembly ships next to this bundle (extension/scripts/build.mjs) and is
 // read from disk: never located or downloaded.
 setBarcodeWasmPath(path.join(path.dirname(fileURLToPath(import.meta.url)), 'zxing_reader.wasm'));
-// One registry of the cantons (./cantons.ts): the canton of the year is the user's first answer.
-const workspace = new Workspace(config, new CantonRegistry(config.taxYear));
+// The tax years and the one the user has open (./years.ts): each year its own folder and workspace,
+// whose canton is the user's first answer (./cantons.ts).
+const years = new TaxYears(config);
 const dashboard = new Dashboard({
   dir: path.join(config.uiDir, 'dashboard'),
-  api: createApi(workspace),
+  api: createApi(years),
 });
 
-const handle = serveStdio(() => createTaxpressoServer({ workspace, dashboard }), {
+const handle = serveStdio(() => createTaxpressoServer({ years, dashboard }), {
   onerror: (err) => console.error('[taxpresso]', err.message),
 });
 

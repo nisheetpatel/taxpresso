@@ -1,17 +1,30 @@
-import { SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
+import { SUPPORTED_CANTONS, type SupportedCanton } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
 import { CANTONS, cantonNames } from './cantons.js';
-import { UI_LANGUAGES } from './config.js';
+import { CURRENT_TAX_YEAR, UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
 import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import type { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 export const StatusSchema = z.object({
   product: z.literal('Taxpresso'),
   version: z.string(),
-  taxYear: z.number().int(),
+  taxYear: z.number().int().describe('The open tax year: everything here is about this year.'),
+  years: z
+    .array(
+      z.object({
+        year: z.number().int(),
+        open: z.boolean(),
+        over: z.boolean(),
+        cantons: z.array(z.string()),
+      }),
+    )
+    .describe(
+      'Every tax year Taxpresso prepares, with its cantons; open_tax_year switches. over: 31 December of that year has passed.',
+    ),
   canton: z
     .enum(SUPPORTED_CANTONS)
     .nullable()
@@ -50,6 +63,10 @@ export const StatusSchema = z.object({
       .int()
       .describe("Values read from documents that still need the user's OK."),
   }),
+  yearNote: z
+    .string()
+    .optional()
+    .describe('The Taxpresso folder had a year open that this version does not prepare.'),
   missing: z.array(z.string()).describe('Documents still needed, with whose they are.'),
   optional: z
     .array(
@@ -96,8 +113,9 @@ const WHO: Record<string, string> = { p1: 'you', p2: 'your spouse or partner' };
 
 export function buildStatus(
   ws: Workspace,
-  opts: { dashboardRunning: boolean; detail?: boolean; execPath?: string },
+  opts: { dashboardRunning: boolean; detail?: boolean; execPath?: string; years?: TaxYears },
 ): Status {
+  const years = opts.years ?? TaxYears.of(ws);
   const snap = ws.snapshot();
   const answered = snap.slots.filter((s) => s.value !== undefined).length;
   const open = snap.slots.length - answered;
@@ -121,8 +139,10 @@ export function buildStatus(
     }));
   const notSupported = ws.engine.notSupported(snap).map((n) => n.what.en);
   const canton = ws.canton();
-  const software = canton.canton
-    ? `${canton.canton.software} (the canton's free software)`
+  // A canton Taxpresso covers, but not for this year, still has its own software to name.
+  const known = canton.canton ?? canton.notOffered;
+  const software = known
+    ? `${known.software} (the canton's free software)`
     : "their canton's free tax software";
   const documents = ws.activeDocuments();
   const toIdentify = documents.filter((d) => !d.kind).length;
@@ -191,7 +211,17 @@ export function buildStatus(
   const status: Status = {
     product: 'Taxpresso',
     version: ws.config.version,
-    taxYear: ws.config.taxYear,
+    taxYear: ws.taxYear,
+    years: years.list().map((y) => ({
+      year: y.year,
+      // The year of this workspace is the one the answer is about.
+      open: y.year === ws.taxYear,
+      over: y.over,
+      cantons: y.cantons,
+    })),
+    ...(years.dropped !== undefined
+      ? { yearNote: yearDroppedText(years.dropped, ws.taxYear) }
+      : {}),
     canton: canton.canton?.code ?? null,
     cantonFrom: canton.from,
     cantonBecause: canton.because.map((b) => b.en),
@@ -239,11 +269,32 @@ export function cantonList(lang: 'en' | 'fr' | 'de' | 'it' = 'en'): string {
   return cantonNames(SUPPORTED_CANTONS, 'and', lang);
 }
 
+/** Why another year opened than the one kept in the folder. */
+const yearDroppedText = (dropped: number, open: number) =>
+  `The Taxpresso folder had ${dropped} open, which this version doesn't prepare: ${open} is open instead.`;
+
+/** "Tax year 2026 is open; also 2025 (Geneva only): switch with open_tax_year when the user asks." */
+function yearsLine(s: Status): string {
+  const all = Object.keys(CANTONS).length;
+  const others = s.years
+    .filter((y) => y.year !== s.taxYear)
+    .map((y) =>
+      y.cantons.length < all
+        ? `${y.year} (${cantonNames(y.cantons as SupportedCanton[], 'and')} only)`
+        : String(y.year),
+    );
+  const over = s.years.find((y) => y.year === s.taxYear)?.over;
+  return `Tax year ${s.taxYear} is open${over ? ` (it is over: the plans before 31 December are ${CURRENT_TAX_YEAR}'s)` : ''}${others.length ? `; also ${others.join(' and ')}: switch with open_tax_year when the user asks` : ''}.`;
+}
+
 /** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */
 export function statusText(s: Status): string {
   const canton = s.canton ? CANTONS[s.canton].name.en : undefined;
+  const over = s.years.find((y) => y.year === s.taxYear)?.over === true;
   const lines = [
     `Taxpresso ${s.version}, tax year ${s.taxYear}, ${canton ?? 'canton not known yet'}`,
+    yearsLine(s),
+    ...(s.yearNote ? [s.yearNote] : []),
     ...(s.cantonFrom === 'earlier_answers' && canton
       ? [
           `Canton: ${canton}, taken from the user's earlier answers (${s.cantonBecause.join('; ')}). Taxpresso now asks for the canton first; if it is wrong, the user answers the canton question.`,
@@ -270,7 +321,9 @@ export function statusText(s: Status): string {
   lines.push(
     `Folder: ${s.vault.path}${s.vault.exists ? '' : ' (created with the first answer or document)'}`,
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,
-    'The tax so far: compute_tax. Savings to look at now: list_optimizations (before 31 December: pillar 3a, pension fund buy-in, 3a catch-up; TOU for people taxed at source).',
+    over
+      ? `The tax so far: compute_tax. ${s.taxYear} is over: for 3a or a buy-in, list_optimizations says which year's plans apply and how to switch.`
+      : 'The tax so far: compute_tax. Savings to look at now: list_optimizations (before 31 December: pillar 3a, pension fund buy-in, 3a catch-up; TOU for people taxed at source).',
     `Next step: ${s.nextStep}`,
   );
   if (s.runtime) {
