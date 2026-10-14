@@ -582,7 +582,10 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
       const parts: string[] = [];
       for (const ch of withCare) {
         const under14 = ch.under14 ?? (ch.band ? ch.band === 'under14' : undefined);
-        if (under14 === false) continue;
+        if (under14 === false) {
+          notes.add(notes.notCounted, NOTE.childcareOver14);
+          continue;
+        }
         if (under14 === undefined) notes.add(notes.assumptions, NOTE.under14);
         const halfShared = !couple && ch.custody === 'shared';
         if (halfShared) notes.add(notes.assumptions, NOTE.sharedChildcare);

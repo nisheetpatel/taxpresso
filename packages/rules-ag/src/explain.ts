@@ -116,6 +116,10 @@ export const NOTE = {
     en: 'Childcare: the limit per child is for a full year of work or training; for part of the year it is cut in proportion (Wegleitung 2025, 15.0). Taxpresso takes a full year.',
     fr: `Frais de garde${NB}: le plafond par enfant vaut pour une année entière d’activité ou de formation${NB}; pour une partie de l’année, il est réduit en proportion (Wegleitung 2025, 15.0). Taxpresso compte une année entière.`,
   },
+  childcareOver14: {
+    en: 'Childcare is deductible for children under 14 only; for a child who turned 14 during the year, the costs up to the end of the birthday month count in proportion (Merkblatt Kinderbetreuungskosten, 3.4). It is not counted here.',
+    fr: `Les frais de garde ne sont déductibles que pour les enfants de moins de 14 ans${NB}; pour un enfant qui a eu 14 ans dans l’année, les frais jusqu’à la fin du mois de son anniversaire comptent en proportion (Merkblatt Kinderbetreuungskosten, 3.4). Ils ne sont pas comptés ici.`,
+  },
   under14: {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,

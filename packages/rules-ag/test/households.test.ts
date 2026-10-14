@@ -211,6 +211,19 @@ describe('H2: married, two earners, two children, Baden, 2025, Reformed church t
     expect(unknown.icc).toBeNull();
     expect(unknown.unsupported).toEqual([NOTE.parish]);
   });
+
+  it('childcare for the child of 15 is not counted, and the result says so', () => {
+    const older = computeReturn({
+      ...input,
+      children: [
+        { custody: 'full', band: 'under14', childcare: amt(12_000) },
+        { custody: 'full', band: 'under18', childcare: amt(3_000) },
+      ],
+    });
+    expect(find(older, '15.0')).toBe(chf(-12_000));
+    expect(older.notCounted).toContainEqual(NOTE.childcareOver14);
+    expect(older.total).toBe(r.total);
+  });
 });
 
 describe('H3: single parent, Wettingen, 2026, one child under 14, child support received', () => {
