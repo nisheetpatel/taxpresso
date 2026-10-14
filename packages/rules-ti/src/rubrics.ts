@@ -6,6 +6,13 @@
 // Some lines have a row for each spouse under one number (1.1, 3.1 to 3.5); others have a number
 // for each (9.1 and 9.2, 11.1 and 11.2, 15.3 and 15.4). The 2026 return is not published yet
 // (docs/sources/ti/NOTES.md, Gaps): its amounts go on the 2025 lines.
+//
+// The return has no federal column: the authority derives the federal tax from it (./ifd.ts). The
+// professional costs of Modulo 4 (ti-2025-form-modulo-4, the taxpayer on its front, the spouse on
+// its back with the codes 50 higher) carry the field number printed at the right of each line: the
+// cantonal parts of 9.1 and 9.2 (MODULO4) and the federal amounts on the same lines. One federal
+// deduction has no line of its own: the married couple deduction, which the canton's table of
+// deductions lists among the other deductions (FEDERAL_RUBRICS).
 import type { Text } from '@taxpresso/rules-ch';
 
 const FORM = 'ti-2025-form-modulo-1-de';
@@ -16,8 +23,18 @@ export interface Rubric {
   source: string;
 }
 
+/** The official Italian term as a label: its first letter in capitals. */
+const cap = (it: string) => `${it[0]!.toUpperCase()}${it.slice(1)}`;
+
+/** A line's label: the gloss with the Italian term, and the Italian term alone in Italian. */
+const label = (it: string, en: string, fr: string): Text => ({
+  en: `${en} (${it})`,
+  fr: `${fr} (${it})`,
+  it: cap(it),
+});
+
 const r = (it: string, en: string, fr: string, page: 2 | 3 | 4, guide: number): Rubric => ({
-  label: { en: `${en} (${it})`, fr: `${fr} (${it})` },
+  label: label(it, en, fr),
   source: `${FORM} p. ${page} (form page ${page}); ${GUIDE} p. ${guide}`,
 });
 
@@ -247,11 +264,134 @@ export const WEALTH_RUBRICS = {
   ),
 } as const satisfies Record<string, Rubric>;
 
+const M4 = 'ti-2025-form-modulo-4';
+
+/**
+ * Modulo 4, Spese professionali, one line maker per person: the taxpayer's on the front (p. 1), the
+ * spouse's on the back (p. 2), whose field numbers are 50 higher.
+ */
+function m4(code: number, cifra: string, it: string, en: string, fr: string, guide: number) {
+  const one = (n: 0 | 1): [string, Rubric] => [
+    String(code + n * 50),
+    {
+      label: {
+        ...label(
+          `${cifra} ${it}`,
+          `${en}, ${n ? 'spouse' : 'taxpayer'}`,
+          `${fr}, ${n ? 'conjoint' : 'contribuable'}`,
+        ),
+        it: `${cifra} ${cap(it)}`,
+      },
+      source: `${M4} p. ${n + 1} (cifra ${cifra}, ${code + n * 50}); ${GUIDE} p. ${guide}`,
+    },
+  ];
+  return [one(0), one(1)];
+}
+
+/**
+ * Modulo 4's lines Taxpresso fills: travel by public transport (2.1), by car or motorbike (2.2), by
+ * bike or moped (2.3), meals (3.1), the flat amount for other costs (5.1) or the actual costs (5.2),
+ * a side job's flat amount (6.1), and the total (7), which goes to 9.1 or 9.2 of the return.
+ */
+export const MODULO4 = Object.fromEntries([
+  ...m4(
+    400,
+    '2.1',
+    'abbonamento del mezzo pubblico di trasporto',
+    'Public transport to work',
+    'Transports publics',
+    23,
+  ),
+  ...m4(402, '2.2', 'veicolo privato', 'Car or motorbike to work', 'Voiture ou moto', 23),
+  ...m4(
+    404,
+    '2.3',
+    'bicicletta, ciclomotore o motoleggera',
+    'Bike or moped to work',
+    'Vélo ou cyclomoteur',
+    23,
+  ),
+  ...m4(
+    408,
+    '3.1',
+    'pasto principale fuori casa',
+    'Meals away from home',
+    'Repas hors du domicile',
+    24,
+  ),
+  ...m4(
+    420,
+    '5.1',
+    'altre spese professionali, forfait',
+    'Other professional costs, flat amount',
+    'Autres frais professionnels, forfait',
+    24,
+  ),
+  ...m4(
+    422,
+    '5.2',
+    'altre spese professionali, spese effettive',
+    'Other professional costs, actual costs',
+    'Autres frais professionnels, frais effectifs',
+    24,
+  ),
+  ...m4(
+    432,
+    '6.1',
+    'attività accessoria dipendente, forfait',
+    'Side job, flat amount',
+    'Activité accessoire, forfait',
+    25,
+  ),
+  ...m4(
+    438,
+    '7',
+    'totale delle spese professionali',
+    'Total professional costs',
+    'Total des frais professionnels',
+    23,
+  ),
+]) as Readonly<Record<string, Rubric>>;
+
+/** Modulo 4's lines of each person, by what they are: the person's own field numbers. */
+export const MODULO4_CODES = {
+  transit: { p1: '400', p2: '450' },
+  vehicle: { p1: '402', p2: '452' },
+  bike: { p1: '404', p2: '454' },
+  meals: { p1: '408', p2: '458' },
+  otherFlat: { p1: '420', p2: '470' },
+  otherActual: { p1: '422', p2: '472' },
+  sideFlat: { p1: '432', p2: '482' },
+  total: { p1: '438', p2: '488' },
+} as const satisfies Record<string, { p1: string; p2: string }>;
+
+/**
+ * The federal deduction that has no line of its own: the married couple deduction, which the
+ * canton's table of deductions lists among the other deductions (15), for the federal tax only
+ * ("Dal reddito dei coniugi/partner registrati", ti-2025-deductions-table p. 1).
+ */
+export const FEDERAL_RUBRICS = {
+  coniugi: {
+    label: {
+      en: 'Married couple deduction, federal tax only (dal reddito dei coniugi/partner registrati)',
+      fr: 'Déduction pour couple marié, impôt fédéral seulement (dal reddito dei coniugi/partner registrati)',
+      it: 'Deduzione dal reddito dei coniugi/partner registrati, solo imposta federale diretta',
+    },
+    source:
+      'ti-2025-deductions-table p. 1 (15, Dal reddito dei coniugi/partner registrati, imposta federale); ch-2026-ifd-instructions-personnes-physiques p. 9 (Chiffre 23)',
+  },
+} as const satisfies Record<string, Rubric>;
+
 export type RubricCode = keyof typeof RUBRICS;
 export type WealthCode = keyof typeof WEALTH_RUBRICS;
 
 export function rubric(code: string): Rubric | undefined {
   return (RUBRICS as Record<string, Rubric>)[code];
+}
+
+/** A line of the federal tax: the return's, Modulo 4's, or the federal-only one. */
+export function federalRubric(code: string): Rubric | undefined {
+  return (FEDERAL_RUBRICS as Record<string, Rubric>)[code] ?? MODULO4[code] ?? rubric(code);
 }
 
 export function wealthRubric(code: string): Rubric | undefined {
@@ -307,3 +447,17 @@ export const EXEMPTION = new Set<string>(['27']);
 export const ASSETS = new Set<string>(['29.1', '29.2', '29.3', '29.4', '29.5']);
 export const DEBTS = new Set<string>(['33.1']);
 export const WEALTH_SOCIAL = new Set<string>(['35.1', '35.2']);
+
+/** Modulo 4's lines but its totals: a person's professional costs, line by line. */
+export const MODULO4_LINES = new Set<string>(
+  Object.keys(MODULO4).filter((c) => c !== '438' && c !== '488'),
+);
+/**
+ * The federal deductions 9 to 15.5 (their total is 16): the return's, with Modulo 4's lines in
+ * place of 9.1 and 9.2, and the married couple deduction (15).
+ */
+export const FEDERAL_DEDUCTIONS = new Set<string>([
+  ...[...DEDUCTIONS].filter((c) => c !== '9.1' && c !== '9.2'),
+  ...MODULO4_LINES,
+  'coniugi',
+]);

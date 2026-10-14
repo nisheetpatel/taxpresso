@@ -800,10 +800,31 @@ importers:
 
   packages/rules-ti:
     dependencies:
+      '@taxpresso/ledger':
+        specifier: workspace:*
+        version: link:../ledger
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../rules-ch
     devDependencies:
+      '@taxpresso/rules-be':
+        specifier: workspace:*
+        version: link:../rules-be
+      '@taxpresso/rules-bl':
+        specifier: workspace:*
+        version: link:../rules-bl
+      '@taxpresso/rules-ge':
+        specifier: workspace:*
+        version: link:../rules-ge
+      '@taxpresso/rules-sg':
+        specifier: workspace:*
+        version: link:../rules-sg
+      '@taxpresso/rules-zg':
+        specifier: workspace:*
+        version: link:../rules-zg
+      '@taxpresso/rules-zh':
+        specifier: workspace:*
+        version: link:../rules-zh
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.1
