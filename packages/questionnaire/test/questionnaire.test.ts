@@ -461,7 +461,7 @@ describe('the questions every canton shares', () => {
     const file = sharedQuestionnaire2026();
     const canton = file.questions[0]!;
     expect(canton).toMatchObject({ id: 'canton', key: 'profile.canton', type: 'choice' });
-    expect(canton.options?.map((o) => o.value)).toEqual(['GE', 'ZH', 'BE', 'BL', 'other']);
+    expect(canton.options?.map((o) => o.value)).toEqual(['GE', 'ZH', 'BE', 'BL', 'ZG', 'other']);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
     expect(canton.link?.url).toBe('https://github.com/nisheetpatel/taxpresso/issues/1');
     // A move from another canton: the canton of 31 December taxes the whole year (LIFD art. 105).

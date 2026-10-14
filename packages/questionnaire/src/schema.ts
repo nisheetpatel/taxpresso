@@ -58,6 +58,7 @@ export const OFFICIAL_HOSTS = [
   'baselland.ch', // www.baselland.ch, kanton.baselland.ch (Steuerbuch)
   'bl.ch', // statistik.bl.ch (communal and church tax rates), bl.clex.ch (laws)
   'bl-api.webcloud7.ch', // the file host of baselland.ch: Basel-Landschaft's guides and forms
+  'zg.ch', // zg.ch (eTax.zug), cdn.zg.ch (Zug's guides and tables), bgs.zg.ch (laws)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
 ] as const;

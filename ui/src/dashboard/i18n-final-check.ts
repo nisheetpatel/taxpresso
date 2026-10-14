@@ -39,6 +39,8 @@ const messages = {
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Bern) for more time to file (Fristverlängerung), online in TaxMe',
     moreTimeBl:
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung Basel-Landschaft) for more time to file (Fristerstreckung), online at www.steuern.bl.ch',
+    moreTimeZg:
+      'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Zug) for more time to file (Fristerstreckung), online at www.zg.ch/tax with your Pers ID',
   },
   fr: {
     title: 'Vérification finale',
@@ -71,6 +73,7 @@ const messages = {
     moreTimeZh: `Un document n’arrivera pas à temps${NB}? Demandez un délai (Fristerstreckung) à l’administration fiscale (kantonales Steueramt)`,
     moreTimeBe: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) à l’Intendance des impôts du canton de Berne, en ligne dans TaxMe`,
     moreTimeBl: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale de Bâle-Campagne (Steuerverwaltung), en ligne sur www.steuern.bl.ch`,
+    moreTimeZg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale de Zoug (Steuerverwaltung), en ligne sur www.zg.ch/tax avec votre Pers ID`,
   },
   de: {
     title: 'Schlusskontrolle',
@@ -108,6 +111,8 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Bern eine Fristverlängerung, online in TaxMe',
     moreTimeBl:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung Basel-Landschaft eine Fristerstreckung, online unter www.steuern.bl.ch',
+    moreTimeZg:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Zug eine Fristerstreckung, online unter www.zg.ch/tax mit deiner Pers ID',
   },
 } as const;
 

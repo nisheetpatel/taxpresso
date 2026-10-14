@@ -46,6 +46,10 @@ const messages = {
       'Type each value into E-Tax BL or the paper form, page by page in the form’s order: page 2 the income, page 3 the deductions in two columns, Staatssteuer and Bundessteuer, page 4 the wealth. Amounts are whole francs (CHF ohne Rappen), without separators. Tick each value once it is in.',
     coupleBl:
       'On the Basel-Landschaft return, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
+    leadZg:
+      'Type each value into eTax.zug or the paper form K, page by page in the form’s order: page 2 the income, page 3 the deductions, each in two columns, Kanton and Bund, page 4 the wealth. Amounts are whole francs (keine Rappenbeträge), without separators. Tick each value once it is in.',
+    coupleZg:
+      'On Zug’s form K, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -80,6 +84,8 @@ const messages = {
     coupleBe: `Sur le formulaire bernois, la colonne Mann est {a} et la colonne Frau est {b}, partenaires enregistrés compris. Si votre formulaire les inverse, inversez les valeurs.`,
     leadBl: `Recopiez chaque valeur dans E-Tax BL ou le formulaire papier, page par page dans l’ordre du formulaire${NB}: page 2 les revenus, page 3 les déductions en deux colonnes, Staatssteuer et Bundessteuer, page 4 la fortune. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. Cochez chaque valeur une fois saisie.`,
     coupleBl: `Sur la déclaration de Bâle-Campagne, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadZg: `Recopiez chaque valeur dans eTax.zug ou le formulaire K papier, page par page dans l’ordre du formulaire${NB}: page 2 les revenus, page 3 les déductions, chacune en deux colonnes, Kanton et Bund, page 4 la fortune. Les montants sont en francs entiers (keine Rappenbeträge), sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    coupleZg: `Sur le formulaire K de Zoug, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
     title: 'Fülle deine Steuererklärung aus',
@@ -122,6 +128,10 @@ const messages = {
       'Tippe jeden Wert in E-Tax BL oder ins Papierformular, Seite für Seite in der Reihenfolge der Steuererklärung: Seite 2 die Einkünfte, Seite 3 die Abzüge in zwei Spalten, Staatssteuer und Bundessteuer, Seite 4 das Vermögen. Beträge in ganzen Franken (CHF ohne Rappen), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
     coupleBl:
       'Auf der Steuererklärung von Basel-Landschaft ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadZg:
+      'Tippe jeden Wert in eTax.zug oder ins Papierformular K, Seite für Seite in der Reihenfolge des Formulars: Seite 2 die Einkünfte, Seite 3 die Abzüge, je in zwei Spalten, Kanton und Bund, Seite 4 das Vermögen. Beträge in ganzen Franken (keine Rappenbeträge), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    coupleZg:
+      'Auf dem Formular K von Zug ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
 } as const;
 

@@ -7,6 +7,7 @@ import be2026 from '../../../data/be/2026/questionnaire.yaml';
 import bl2026 from '../../../data/bl/2026/questionnaire.yaml';
 import ch2026 from '../../../data/ch/2026/questions.yaml';
 import ge2026 from '../../../data/ge/2026/questionnaire.yaml';
+import zg2026 from '../../../data/zg/2026/questionnaire.yaml';
 import zh2026 from '../../../data/zh/2026/questionnaire.yaml';
 import { parseQuestionnaire, type QuestionnaireFile } from './schema.js';
 
@@ -39,4 +40,9 @@ export function beQuestionnaire2026(): QuestionnaireFile {
 /** The Basel-Landschaft questionnaire for tax year 2026, validated. */
 export function blQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(bl2026, ch2026);
+}
+
+/** The Zug questionnaire for tax year 2026, validated. */
+export function zgQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(zg2026, ch2026);
 }

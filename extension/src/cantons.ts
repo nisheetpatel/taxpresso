@@ -10,6 +10,7 @@ import {
 } from '@taxpresso/filing-ge';
 import { filing as bernFiling } from '@taxpresso/filing-be';
 import { filing as baselLandFiling } from '@taxpresso/filing-bl';
+import { filing as zugFiling } from '@taxpresso/filing-zg';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
@@ -19,6 +20,7 @@ import {
   geQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
+  zgQuestionnaire2026,
   zhQuestionnaire2026,
   type QuestionnaireFile,
 } from '@taxpresso/questionnaire';
@@ -80,6 +82,17 @@ import {
   type BaselLandCantonal,
   type BlTaxResult,
 } from '@taxpresso/rules-bl';
+import {
+  communeOptions as zugCommunes,
+  NOTE_VALUABLES as ZG_NOTE_VALUABLES,
+  rules as zugRules,
+  view as zugView,
+  ZG_TERMS,
+  zgParamsFor,
+  ZUG_READING,
+  type ZgTaxResult,
+  type ZugCantonal,
+} from '@taxpresso/rules-zg';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -332,11 +345,50 @@ const BASEL_LAND: CantonEntry = {
   tou: false,
 };
 
+const ZUG: CantonEntry = {
+  code: 'ZG',
+  name: { en: 'Zug', fr: 'Zoug', de: 'Zug' },
+  // eTax.zug, the canton's online return, in the browser with an AGOV login (zg-na-efiling-etax-zug).
+  software: 'eTax.zug',
+  rules: zugRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? zgQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zugRules.keys(taxYear) }),
+  communes: (taxYear) => zugCommunes(taxYear),
+  // Form K has lines of its own for cash and gold (601) and vehicles (604): say they are together.
+  ...sharedLedger(ZUG_READING, zugRules, ZG_NOTE_VALUABLES),
+  view: zugView,
+  filing: zugFiling,
+  terms: ZG_TERMS,
+  plan: {
+    computeReturn: (input) => zugRules.computeReturn(input as HouseholdInput<ZugCantonal>),
+    incomeTax: (r) => zugView.incomeTax(r as ZgTaxResult),
+    // The town of Zug, the capital, by its name (the canton's table has no BFS numbers).
+    defaultCommune: 'Zug',
+    communeName: { en: 'Zug', fr: 'Zoug', de: 'Zug' },
+    sources(taxYear) {
+      // The documents a Zug household's income tax rests on, for the year.
+      const P = zgParamsFor(taxYear);
+      return [
+        P.income.source,
+        P.canton.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'zg_preview', communeDefault: 'zg_commune_default' },
+    // Zug follows the federal rules for pillar 3a (StG § 30 Abs. 1 Bst. e), so the 3a catch-up from
+    // 2026 too (zg-2025-guide-wegleitung p. 36, Hinweis: nachträglicher Einkauf in die Säule 3a).
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
   BE: BERN,
   BL: BASEL_LAND,
+  ZG: ZUG,
 };
 
 /**

@@ -16,6 +16,8 @@ const messages = {
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your Bern return, compare what you typed in TaxMe-Online with the values to type above, and TaxMe’s summaries (Zusammenzug) with the last two sections. You transmit your declaration yourself.',
     notAvailableBl:
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your Basel-Landschaft return, compare what you typed in E-Tax BL with the values to type above. You transmit your declaration yourself.',
+    notAvailableZg:
+      'Taxpresso checks the PDF of Geneva declarations only, for now. For your Zug return, compare what you typed in eTax.zug with the values to type above. You transmit your declaration yourself.',
     lead: 'When you have typed everything, download the PDF of your declaration from GeTax or the online declaration (e-démarches) and add it here. Taxpresso reads it on this computer and compares each amount with what you had to type, in whole francs. It keeps no name or number from it.',
     add: 'Add the PDF of your declaration',
     addAgain: 'Add the new PDF',
@@ -82,6 +84,7 @@ const messages = {
     notAvailableZh: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration zurichoise, comparez vous-même ce que vous avez saisi dans ZHprivateTax avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     notAvailableBe: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration bernoise, comparez vous-même ce que vous avez saisi dans TaxMe-Online avec les valeurs à saisir ci-dessus, et les récapitulatifs de TaxMe (Zusammenzug) avec les deux dernières sections. Vous transmettez votre déclaration vous-même.`,
     notAvailableBl: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration de Bâle-Campagne, comparez vous-même ce que vous avez saisi dans E-Tax BL avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
+    notAvailableZg: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration zougoise, comparez vous-même ce que vous avez saisi dans eTax.zug avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     lead: 'Quand vous avez tout saisi, téléchargez le PDF de votre déclaration depuis GeTax ou la déclaration en ligne (e-démarches) et ajoutez-le ici. Taxpresso le lit sur cet ordinateur et compare chaque montant avec ce que vous deviez saisir, en francs entiers. Il n’en garde aucun nom ni numéro.',
     add: 'Ajouter le PDF de votre déclaration',
     addAgain: 'Ajouter le nouveau PDF',
@@ -148,6 +151,8 @@ const messages = {
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Berner Steuererklärung vergleiche selbst, was du in TaxMe-Online eingetragen hast, mit den Werten zum Eintragen oben, und die Zusammenzüge von TaxMe mit den letzten beiden Abschnitten. Du übermittelst deine Steuererklärung selbst.',
     notAvailableBl:
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Steuererklärung von Basel-Landschaft vergleiche selbst, was du in E-Tax BL eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
+    notAvailableZg:
+      'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Zuger Steuererklärung vergleiche selbst, was du in eTax.zug eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
     lead: 'Wenn du alles eingetragen hast, lade das PDF deiner Steuererklärung aus GeTax oder der Online-Steuererklärung (e-démarches) herunter und füge es hier hinzu. Taxpresso liest es auf diesem Computer und vergleicht jeden Betrag mit dem, was du eintragen solltest, in ganzen Franken. Es behält keinen Namen und keine Nummer daraus.',
     add: 'PDF deiner Steuererklärung hinzufügen',
     addAgain: 'Das neue PDF hinzufügen',
