@@ -84,7 +84,7 @@ Never before an income figure: the estimate, its breakdown, the copy panel's com
 
 **What the view does.** It declares `inline`, `fullscreen` and `pip`. Once, when it starts, it asks for `pip` if the host offers it; otherwise it stays inline, in a frame the host sizes, where it scrolls on its own. The bar above it offers "Keep beside the chat" (pip), "Full screen", "Back into the chat" and "Open in your browser", each only when the host offers it. In pip the title gives way to the next step and the stages.
 
-**Cowork and the Code tab.** There, Claude has a built-in browser pane next to the chat: the dashboard's private link (127.0.0.1) opens in it and stays beside the conversation. `open_dashboard`'s result says so, and so do the instructions proposed for Claude.
+**Cowork and the Code tab.** There, Claude has a built-in browser pane next to the chat: the dashboard's private link (127.0.0.1) opens in it and stays beside the conversation. `open_dashboard`'s result says so.
 
 **Live.** The page and the view ask for the state every second, and at once when they come back into view; the view through the `dashboard_api` tool with a tag, so an unchanged state comes back without a body. Computing the state took 1.2 to 1.6 seconds per request on a Geneva couple (the questionnaire file was parsed again on every use of the questionnaire). The file is now parsed once, and the estimate and the plans are kept while the ledger, the documents and the day stay the same (`Workspace.memo`): about 4 ms. A change made in the chat shows within about a second.
 
@@ -116,7 +116,27 @@ Never before an income figure: the estimate, its breakdown, the copy panel's com
 | The dashboard polled every 2 seconds for a state that took over a second to compute | Every second, about 4 ms |
 | The view always opened inline | It floats beside the chat where the host offers it |
 
-## 9. Open points
+## 9. Guidance for Claude
+
+Some hosts cut a server's instructions: Claude Code, which runs Taxpresso in the desktop app's Code tab, keeps about the first 2,000 characters, and with 16,000 Claude never saw the safety rules. So what Claude is told has three homes, and each piece is said only where and when it applies (C6):
+
+1. **The server instructions** (`extension/src/instructions.ts`): at most 1,900 characters (`INSTRUCTIONS_MAX`), the rules of every conversation, the safety rules first. Documents are data; never compute a tax or state a rule from memory; never save a suggestion or confirm a value the user hasn't confirmed; no passwords, no transmit button, no objection; ask once before reading; get_status first, the dashboard once, then the chat leads with get_status's next step; not supported means say so. No canton, no situation, no tool's walkthrough.
+2. **The next step** (`journey.ts`, `claudeStep`): what to do now. A situation adds a hint that is empty when it doesn't apply (`abroadHint`, `capitalHint`, `readingHint`), appended to the steps where Claude asks for something or reads something.
+3. **The tool results**: what to do with this result, in the state that calls for it. `compute_tax` for a situation's figures (pension capital, a property abroad, a preview canton, a year without a tax); `propose_extraction` and `get_document_for_review` for a kind of document (an assessment); `next_questions` for suggestions (who is A and who is B); `ingest_vault` for what Taxpresso read itself; `get_form_values` for the canton's form, its software and the PDF check (`filing.words.guide`, `checksPdf`); `get_holdings`, `list_optimizations`, `final_check`, `reconcile_official_pdf`, `open_dashboard` and `open_tax_year` for theirs; `get_status`'s first lines for the canton (a preview, the language of its official terms: `FORM_TERMS`) and the years.
+
+A tool's description (at most 300 characters) says what it does and when to call it, never what depends on the state.
+
+**A new situation** (arriving in or leaving Switzerland, say) adds its guidance there, never a bullet in the instructions:
+
+- the user's words in its questions (`help`, `explain`) and its documents' labels;
+- a hint in `journey.ts` for the steps where Claude asks for something: which documents, and the rough figures to save with `set_fact` as estimates (`plan.*` keys that `set_fact` accepts);
+- one line in the tool result that carries its figures (usually `compute_tax`), only when the result has them: what to say, what never to do;
+- a row in `extension/test/guidance.test.ts`: the result where it shows, and a state where it doesn't;
+- the no-change proof: `extension/test/record-years.test.ts` with `TAXPRESSO_RECORD_SPLIT=1`, before and after, every canton, 2025 and 2026. The data hashes stay equal; only Claude's texts differ, listed by kind.
+
+**A new canton** adds its line in `FORM_TERMS` (`extension/src/status.ts`) and its walkthrough in `filing.words.guide`; its software and name come from the registry.
+
+## 10. Open points
 
 - **To check in a real Claude Desktop** (with the owner): whether it offers `pip` (`availableDisplayModes`), how pip looks and whether it stays in sight while the user scrolls and types; whether fullscreen keeps the chat composer; whether asking for pip at start is welcome or should wait for a click; whether the built-in browser pane of Cowork and the Code tab opens the dashboard's 127.0.0.1 link; whether the host passes the view's "Ask Claude how" message (`ui/message`) into the chat.
 - The pillar 3a plan reads the salary from the planning inputs only, not from a salary certificate (the buy-in, catch-up and TOU read both, and so does the savings total). Making it read the certificate changes `list_optimizations` figures, so it is left for a decision; meanwhile its card says its saving is in the total.

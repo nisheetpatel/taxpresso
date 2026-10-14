@@ -144,5 +144,5 @@ export function abroadHint(ws: Workspace): string {
   if (!ownsPropertyAbroad(ws)) return '';
   const r = ws.estimate().result as TaxResult | null;
   if (r?.abroad?.wealth.length) return '';
-  return ' For their property abroad, until its documents are in, ask roughly what it is worth and, if it is let, the rent of the year, each with its currency, and save them with set_fact (plan.abroad_value, plan.abroad_rent, for example "250000 EUR"): Taxpresso converts them at the official rate, as estimates.';
+  return ' Their property abroad’s figures come from its documents, read like any other, each amount as printed with its currency: the country’s tax notice or the deed of purchase, the management account of a property let, and the loan statement. Until they are in, ask roughly what it is worth and, if it is let, the rent of the year, each with its currency, and save them with set_fact (plan.abroad_value, plan.abroad_rent, for example "250000 EUR"): Taxpresso converts them at the official rate, as estimates.';
 }

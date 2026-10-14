@@ -128,7 +128,7 @@ Adding a canton now takes, besides its rules package (section 5):
 2. `data/<c>/<year>/questionnaire.yaml` (shared questions by `use:`, its own written out) and its export in `packages/questionnaire`, with the test that keeps it in step with its keys.
 3. `packages/filing-<c>` exporting `filing: CantonFiling` (form map, values to type, column headings, words).
 4. Its code in `SUPPORTED_CANTONS` and the canton question's options (`data/ch/<year>/questions.yaml`), and one `CantonEntry` in `extension/src/cantons.ts` (names, software, `sharedLedger(reading, rules)`, view, filing, terms, plan, `tou: false`, and `years`: the tax years its rules, form map and questions all cover, `[2026]` for a canton whose questions are 2026's; `docs/design/tax-years.md`).
-5. Its texts: the dashboard's per-canton keys (`...Be` next to `...Zh`) and its assumption ids, the server instructions, README and the site's FAQ line. The tool descriptions, the start prompt and status name the cantons from the registry (`extension/src/cantons.ts`, `cantonNames`), so a new canton changes them without a word written there; the extension's manifest still names them.
+5. Its texts: the dashboard's per-canton keys (`...Be` next to `...Zh`) and its assumption ids, the language of its official terms (`FORM_TERMS` in `extension/src/status.ts`), how to type the values in its software (`filing.words.guide`), README and the site's FAQ line. The server instructions name no canton (docs/design/simple.md, "Guidance for Claude"). The tool descriptions, the start prompt and status name the cantons from the registry (`extension/src/cantons.ts`, `cantonNames`), so a new canton changes them without a word written there; the extension's manifest still names them.
 6. Tests: households end to end through the tools and the dashboard, and one in `test/offline/run.mjs`.
 
 ### As built: Bern (a preview, on the generic canton)
@@ -267,7 +267,7 @@ No per-canton folder. One tax year has one canton, so `~/Documents/Taxpresso/<ye
 2. `packages/rules-<c>`: `src/<year>/` cited constants that throw for an unknown year; `src/<year>/communes.ts` generated from the official table by `scripts/<c>-communes.mjs` (with `--check`); `computeReturn` to `TaxResult`; tests on the official worked examples, 4 to 6 synthetic households with hand derivations, and a test that every citation is an `ok` entry of `docs/sources/lock.json`.
 3. `data/<c>/<year>/questionnaire.yaml` and `src/<year>/keys.ts`, with the test that keeps them in step (as for Geneva).
 4. `packages/filing-<c>`: the form map from the official specimen (codes, labels, pages, cited), the copy panel order, the reconciliation parser for the canton's official PDF.
-5. Extension: register the canton in `extension/src/cantons.ts`; server instructions and the "not supported" texts name the canton's own free software (ZHprivateTax, TaxMe-Online in Bern, VaudTax); bundle the canton's source passages (SPEC.md 7b).
+5. Extension: register the canton in `extension/src/cantons.ts`; the "not supported" texts and get_form_values name the canton's own free software (ZHprivateTax, TaxMe-Online in Bern, VaudTax) from the registry and its `filing.words.guide`; bundle the canton's source passages (SPEC.md 7b).
 6. UI: German strings for Zurich and Bern (SPEC.md section 1 already plans German); official terms in the canton's language next to the gloss.
 7. [HUMAN] Golden households entered in the canton's official software, matched to the franc; the canton's field-map capture.
 
