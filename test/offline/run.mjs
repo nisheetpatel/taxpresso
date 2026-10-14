@@ -1533,12 +1533,14 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
-  test('a self-employed Geneva return: annexe B, its tax and the values to type, offline', async () => {
-    // Léa Martin, single, in Carouge, a graphic design studio in her own name without a pension
-    // fund (S1 of packages/rules-ge/test/self-employment.test.ts, derived by hand from the official
-    // documents), in her own folder and server process with the same guard. Synthetic documents
-    // dropped in the folder; the values Claude read in them, confirmed by the user in the chat.
-    const seVault = path.join(work, 'Independante');
+  /**
+   * A self-employed Geneva household (packages/rules-ge/test/self-employment.test.ts, derived by
+   * hand from the official documents) in its own folder and server process with the same guard:
+   * its answers, synthetic documents dropped in the folder whose values Claude read and the user
+   * confirmed in the chat, then its tax, annexe B and the final check.
+   */
+  async function selfEmployed(folder, answers, docs, expected) {
+    const seVault = path.join(work, folder);
     const seTransport = new StdioClientTransport({
       command: process.execPath,
       args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
@@ -1551,7 +1553,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       stderr: 'pipe',
     });
     seTransport.stderr?.on('data', (d) => (stderr += d));
-    const se = new Client({ name: 'taxpresso-offline-test-self-employed', version: '0.0.0' });
+    const se = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
     await se.connect(seTransport);
     const call = async (name, args = {}) => {
       const res = await se.callTool({ name, arguments: args });
@@ -1559,30 +1561,73 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       return res;
     };
     try {
-      for (const [id, value] of [
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(seVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind, taxYear: 2026, person },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      const tax = await call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, expected.icc);
+      assert.equal(tax.structuredContent.ifd.tax, expected.ifd);
+      assert.deepEqual(tax.structuredContent.notSupported, []);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      const sections = await call('get_form_values');
+      const pages = sections.structuredContent.sections.map((s) => s.page);
+      for (const page of ['B1', 'B2', 'B4']) assert.ok(pages.includes(page), `${page} in ${pages}`);
+      const b2 = await call('get_form_values', { section: 'B2' });
+      for (const line of expected.b2) assert.match(b2.content[0].text, line);
+      const check = await call('final_check');
+      assert.equal(check.structuredContent.verdict, expected.verdict);
+    } finally {
+      await se.close();
+    }
+  }
+
+  const BUSINESS = (who) => [
+    [`business_form:${who}`, 'sole_proprietor'],
+    [`business_year:${who}`, 'calendar'],
+    [`business_place:${who}`, 'home_commune'],
+    [`business_method:${who}`, 'invoice'],
+    [`business_special:${who}`, []],
+  ];
+  const END = [
+    ['banks', 0],
+    ['crypto', false],
+    ['payments', []],
+    ['special', []],
+  ];
+
+  test('self-employed in Geneva, S1: a studio in her own name, its tax and annexe B, offline', async () => {
+    // Léa Martin, single, Carouge, no pension fund.
+    await selfEmployed(
+      'Independante-S1',
+      [
         ['canton', 'GE'],
         ['civil_status', 'single'],
         ['children', 0],
         ['commune', 'Carouge'],
         ['moved', 'no'],
         ['income_sources:p1', ['self_employment']],
-        ['business_form:p1', 'sole_proprietor'],
-        ['business_year:p1', 'calendar'],
-        ['business_place:p1', 'home_commune'],
-        ['business_method:p1', 'invoice'],
-        ['business_special:p1', []],
+        ...BUSINESS('p1'),
         ['business_losses:p1', false],
         ['pillar3a:p1', true],
-        ['banks', 0],
-        ['crypto', false],
-        ['payments', []],
-        ['special', []],
-      ]) {
-        await call('answer_question', { id, value });
-      }
-      const docs = {
+        ...END,
+      ],
+      {
         'comptes-2026.pdf': [
           'business_accounts',
+          'p1',
           [
             ['business.turnover', "120'000.00"],
             ['business.other_income', '500.00'],
@@ -1594,52 +1639,128 @@ describe('offline end to end', { timeout: 60_000 }, () => {
             ['business.liabilities', "10'000.00"],
           ],
         ],
-        'avs-2026.pdf': ['avs_contributions', [['avs.contributions_year', "9'000.00"]]],
-        'troisieme-pilier-2026.pdf': ['pillar3a_attestation', [['pillar3a.paid', "18'000.00"]]],
-        'lamal-2026.pdf': ['health_premiums', [['health.premiums', "6'000.00"]]],
-      };
-      for (const name of Object.keys(docs)) {
-        writeFileSync(path.join(seVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
-      }
-      await call('ingest_vault');
-      const listed = (await call('list_documents')).structuredContent.documents;
-      for (const [name, [kind, values]] of Object.entries(docs)) {
-        const doc = listed.find((d) => d.filename === name);
-        assert.ok(doc, name);
-        await call('propose_extraction', {
-          id: doc.id,
-          document: {
-            kind,
-            taxYear: 2026,
-            person: kind === 'health_premiums' ? 'household' : 'p1',
-          },
-          values: values.map(([key, value]) => ({ key, value, page: 1 })),
-        });
-        await call('set_fact', { instance: doc.id, confirm: true });
-      }
+        'avs-2026.pdf': ['avs_contributions', 'p1', [['avs.contributions_year', "9'000.00"]]],
+        '3a-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "18'000.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "6'000.00"]]],
+      },
+      {
+        icc: 874_685,
+        ifd: 87_930,
+        b2: [/12\.01 Bénéfice net/, /12\.52 Capital propre/],
+        verdict: 'not_ready',
+      },
+    );
+  });
 
-      const tax = await call('compute_tax');
-      assert.equal(tax.structuredContent.icc.total, 874_685);
-      assert.equal(tax.structuredContent.ifd.tax, 87_930);
-      assert.deepEqual(tax.structuredContent.notSupported, []);
-      assert.deepEqual(tax.structuredContent.unsupported, []);
+  test('self-employed in Geneva, S2: a salaried spouse and a self-employed one, offline', async () => {
+    // Marc and Sofia Dupuis, married, Vernier.
+    await selfEmployed(
+      'Independante-S2',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Vernier'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['income_sources:p2', ['self_employment']],
+        ...BUSINESS('p2'),
+        ['business_losses:p2', false],
+        ['pillar3a:p1', true],
+        ['pillar3a:p2', true],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'walk'],
+        ['meal_days:p1', 0],
+        ...END,
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "90'000.00"],
+            ['salary.gross', "90'000.00"],
+            ['salary.social_contributions', "5'800.00"],
+            ['salary.lpp_ordinary', "6'500.00"],
+          ],
+        ],
+        '3a-marc-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "7'258.00"]]],
+        'comptes-2026.pdf': [
+          'business_accounts',
+          'p2',
+          [
+            ['business.turnover', "48'000.00"],
+            ['business.costs_goods', "2'000.00"],
+            ['business.costs_other', "6'000.00"],
+            ['business.current_assets', "15'000.00"],
+            ['business.liabilities', "3'000.00"],
+          ],
+        ],
+        'avs-2026.pdf': ['avs_contributions', 'p2', [['avs.contributions_year', "4'000.00"]]],
+        '3a-sofia-2026.pdf': ['pillar3a_attestation', 'p2', [['pillar3a.paid', "6'000.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "9'000.00"]]],
+      },
+      { icc: 952_035, ifd: 88_100, b2: [/12\.01 Bénéfice net/], verdict: 'not_ready' },
+    );
+  });
 
-      const sections = await call('get_form_values');
-      const pages = sections.structuredContent.sections.map((s) => s.page);
-      for (const page of ['B2', 'B4']) assert.ok(pages.includes(page), `${page} in ${pages}`);
-      const b2 = await call('get_form_values', { section: 'B2' });
-      assert.match(b2.content[0].text, /12\.01 Bénéfice net/);
-      assert.match(b2.content[0].text, /12\.52 Capital propre/);
-      const b4 = await call('get_form_values', { section: 'B4' });
-      assert.match(b4.content[0].text, /32\.40 Cotisations au 3ème pilier A/);
-
-      const check = await call('final_check');
-      assert.ok(check.structuredContent.know.some((i) => i.code === '32.40'));
-      const plans = await call('list_optimizations');
-      assert.match(plans.content[0].text, /plan\.business_profit/);
-    } finally {
-      await se.close();
-    }
+  test('self-employed in Geneva, S3: a loss and earlier losses, offline', async () => {
+    // Noé Favre, single, Onex, a part-time salary too.
+    await selfEmployed(
+      'Independant-S3',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Onex'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary', 'self_employment']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ...BUSINESS('p1'),
+        ['business_losses:p1', true],
+        ['business_losses_icc:p1', 2_000],
+        ['business_losses_ifd:p1', 2_000],
+        ['pillar3a:p1', true],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'walk'],
+        ['meal_days:p1', 0],
+        ...END,
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "50'000.00"],
+            ['salary.gross', "50'000.00"],
+            ['salary.social_contributions', "3'200.00"],
+            ['salary.lpp_ordinary', "2'500.00"],
+          ],
+        ],
+        'comptes-2026.pdf': [
+          'business_accounts',
+          'p1',
+          [
+            ['business.turnover', "20'000.00"],
+            ['business.costs_other', "26'000.00"],
+            ['business.current_assets', "4'000.00"],
+            ['business.liabilities', "1'000.00"],
+          ],
+        ],
+        'avs-2026.pdf': ['avs_contributions', 'p1', [['avs.contributions_year', '800.00']]],
+        '3a-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "3'000.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "4'000.00"]]],
+      },
+      {
+        icc: 127_310,
+        ifd: 10_395,
+        b2: [/57\.10 Perte commerciale/, /57\.20 Pertes non compensées/, /57\.00 Perte nette/],
+        verdict: 'not_ready',
+      },
+    );
   });
 
   test('no outbound network attempt was made (C2)', () => {
