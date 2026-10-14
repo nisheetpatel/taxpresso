@@ -4787,6 +4787,22 @@
       "notes": "Fixed 2026-10-13: was the baselland.ch listing page (HTTP 403 to scripts); now the direct PDF on bl-api.webcloud7.ch, the canton CMS file host. 48 pages, inner print code 2 W 2025 250730. Covers employed, self-employed and non-working persons. Deductions (Abzüge vom Einkommen) pp. 25 to 39, tacit 2-month extension p. 9, child deduction from the tax amount p. 37, crypto p. 47. No filing date printed; the date on the return or activation letter governs."
     },
     {
+      "id": "bl-na-law-steuerfussdekret-331-2",
+      "canton": "BL",
+      "doc_type": "law",
+      "title": "Dekret über den Steuerfuss (Steuerfussdekret BL), SGS 331.2 (Stand 1. Januar 2026)",
+      "tax_year": null,
+      "language": "de",
+      "url": "https://bl.clex.ch/api/de/versions/4401/pdf_file",
+      "format": "pdf",
+      "publisher": "Kanton Basel-Landschaft (Bereinigte Gesetzessammlung, bl.clex.ch)",
+      "published": null,
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The cantonal income tax multiplier (kantonaler Einkommenssteuerfuss, StG § 19bis) of each tax year, in percent of the normal state tax on income.",
+      "notes": "Added 2026-10-14 for packages/rules-bl. 4 pages, version 4401, Stand 1 January 2026, current per the bl.clex.ch API (https://bl.clex.ch/api/de/texts_of_law/331.2, decision 11 December 2025). § 17: 100 % for tax year 2025 (GS 2024.081); § 18: 100 % for tax year 2026. One paragraph per year since 2009, all 100 %."
+    },
+    {
       "id": "bl-na-steuergesetz-331",
       "canton": "BL",
       "doc_type": "law",

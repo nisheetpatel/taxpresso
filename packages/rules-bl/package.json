@@ -1,0 +1,21 @@
+{
+  "name": "@taxpresso/rules-bl",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deterministic Basel-Landschaft state, communal and church income and wealth tax (Staats-, Gemeinde- und Kirchensteuer), every constant cited (SPEC.md section 7). Not wired into the extension yet (docs/design/cantons.md).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@taxpresso/rules-ch": "workspace:*"
+  }
+}
