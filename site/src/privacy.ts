@@ -67,7 +67,7 @@ const fr: PrivacyCopy = frenchSpacing({
     {
       h: 'Quand vous transmettez',
       p: [
-        'Pour transmettre, Claude remplit la déclaration en ligne officielle dans un navigateur, sur le site de l’administration fiscale genevoise (e-démarches). Ce que Claude y voit fait partie de votre conversation. Vous vous connectez vous-même et vous appuyez vous-même sur Transmettre : Claude ne tape jamais vos mots de passe. Ce que vous transmettez va à l’Administration fiscale cantonale (AFC), comme pour toute déclaration.',
+        'Pour transmettre, Claude remplit dans un navigateur la déclaration en ligne officielle de votre canton, sur le site de son administration fiscale (à Genève, e-démarches). Ce que Claude y voit fait partie de votre conversation. Vous vous connectez vous-même et vous transmettez vous-même : Claude ne tape jamais vos mots de passe. Ce que vous transmettez va à l’administration fiscale de votre canton (à Genève, l’Administration fiscale cantonale, AFC), comme pour toute déclaration.',
       ],
     },
     {
@@ -135,7 +135,7 @@ const en: PrivacyCopy = {
     {
       h: 'When you file',
       p: [
-        'To file, Claude fills in the official online declaration in a browser, on the Geneva tax office’s own site (e-démarches). What Claude sees there is part of your conversation. You sign in yourself and you press Transmettre yourself: Claude never types your passwords. What you transmit goes to the cantonal tax office (AFC), as with any return.',
+        'To file, Claude fills in your canton’s official online declaration in a browser, on its tax office’s own site (in Geneva, e-démarches). What Claude sees there is part of your conversation. You sign in yourself and you submit it yourself: Claude never types your passwords. What you submit goes to your canton’s tax office (in Geneva, the AFC), as with any return.',
       ],
     },
     {
@@ -203,7 +203,7 @@ const de: PrivacyCopy = {
     {
       h: 'Wenn du einreichst',
       p: [
-        'Zum Einreichen füllt Claude die offizielle Online-Steuererklärung in einem Browser aus, auf der Website der Genfer Steuerverwaltung (e-démarches). Was Claude dort sieht, gehört zu deiner Unterhaltung. Du meldest dich selbst an und klickst selbst auf Transmettre: Claude tippt nie deine Passwörter. Was du übermittelst, geht an die kantonale Steuerverwaltung (AFC), wie bei jeder Steuererklärung.',
+        'Zum Einreichen füllt Claude die offizielle Online-Steuererklärung deines Kantons in einem Browser aus, auf der Website seiner Steuerverwaltung (in Genf: e-démarches). Was Claude dort sieht, gehört zu deiner Unterhaltung. Du meldest dich selbst an und reichst selbst ein: Claude tippt nie deine Passwörter. Was du übermittelst, geht an die Steuerverwaltung deines Kantons (in Genf: die AFC), wie bei jeder Steuererklärung.',
       ],
     },
     {
@@ -271,7 +271,7 @@ const it: PrivacyCopy = {
     {
       h: 'Quando invii la dichiarazione',
       p: [
-        'Per inviarla, Claude compila la dichiarazione online ufficiale in un browser, sul sito dell’amministrazione fiscale ginevrina (e-démarches). Ciò che Claude vede lì fa parte della tua conversazione. Accedi tu e premi tu Transmettre: Claude non digita mai le tue password. Ciò che trasmetti va all’Amministrazione fiscale cantonale (AFC), come per ogni dichiarazione.',
+        'Per inviarla, Claude compila in un browser la dichiarazione online ufficiale del tuo cantone, sul sito della sua amministrazione fiscale (a Ginevra, e-démarches). Ciò che Claude vede lì fa parte della tua conversazione. Accedi tu e la invii tu: Claude non digita mai le tue password. Ciò che trasmetti va all’amministrazione fiscale del tuo cantone (a Ginevra, l’AFC), come per ogni dichiarazione.',
       ],
     },
     {
@@ -339,7 +339,7 @@ const es: PrivacyCopy = {
     {
       h: 'Cuando presentas la declaración',
       p: [
-        'Para presentarla, Claude rellena la declaración online oficial en un navegador, en el sitio de la administración fiscal de Ginebra (e-démarches). Lo que Claude ve ahí forma parte de tu conversación. Inicias sesión tú y pulsas tú Transmettre: Claude nunca escribe tus contraseñas. Lo que transmites va a la Administración fiscal cantonal (AFC), como cualquier declaración.',
+        'Para presentarla, Claude rellena en un navegador la declaración online oficial de tu cantón, en el sitio de su administración fiscal (en Ginebra, e-démarches). Lo que Claude ve ahí forma parte de tu conversación. Inicias sesión tú y la envías tú: Claude nunca escribe tus contraseñas. Lo que envías va a la administración fiscal de tu cantón (en Ginebra, la AFC), como cualquier declaración.',
       ],
     },
     {
@@ -407,7 +407,7 @@ const pt: PrivacyCopy = {
     {
       h: 'Quando envias a declaração',
       p: [
-        'Para a enviar, o Claude preenche a declaração online oficial num navegador, no site da administração fiscal de Genebra (e-démarches). O que o Claude vê lá faz parte da tua conversa. És tu quem inicia sessão e quem clica em Transmettre: o Claude nunca escreve as tuas palavras-passe. O que transmites vai para a Administração Fiscal Cantonal (AFC), como qualquer declaração.',
+        'Para a enviar, o Claude preenche num navegador a declaração online oficial do teu cantão, no site da sua administração fiscal (em Genebra, e-démarches). O que o Claude vê lá faz parte da tua conversa. És tu quem inicia sessão e quem a envia: o Claude nunca escreve as tuas palavras-passe. O que envias vai para a administração fiscal do teu cantão (em Genebra, a AFC), como qualquer declaração.',
       ],
     },
     {
