@@ -918,6 +918,89 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Vaud return: its questions, its tax and the values to type, offline', async () => {
+    // A fourth household in its own folder, in its own server process with the same guard: Léa
+    // Modèle, single, in Lausanne, on foot to work (2026's flat amounts for public transport are not
+    // published yet), with the synthetic salary certificate read from its barcode.
+    const vdVault = path.join(work, 'Vaud');
+    const vdTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: vdVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    vdTransport.stderr?.on('data', (d) => (stderr += d));
+    const vd = new Client({ name: 'taxpresso-offline-test-vd', version: '0.0.0' });
+    await vd.connect(vdTransport);
+    try {
+      const answers = [
+        ['canton', 'VD'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Lausanne'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'walk'],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+        ['rent', 10000],
+        ['contents_high', false],
+      ];
+      for (const [id, value] of answers) {
+        const res = await vd.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await vd.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'VD');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(vdVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await vd.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await vd.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'VD');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'Lausanne');
+      assert.ok(tax.structuredContent.icc.total > 0, tax.content[0].text);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /impôt cantonal et communal/);
+
+      const sections = await vd.callTool({ name: 'get_form_values', arguments: {} });
+      assert.ok(sections.structuredContent.sections.length > 0);
+      const first = sections.structuredContent.sections[0].page;
+      const values = await vd.callTool({ name: 'get_form_values', arguments: { section: first } });
+      assert.ok(!values.isError, values.content?.[0]?.text);
+
+      const check = await vd.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await vd.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await vd.close();
+    }
+  });
+
   test('no outbound network attempt was made (C2)', () => {
     const attempts = existsSync(guardLog) ? readFileSync(guardLog, 'utf8').trim() : '';
     assert.equal(attempts, '', `outbound attempts:\n${attempts}`);

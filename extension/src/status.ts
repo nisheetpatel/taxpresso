@@ -234,13 +234,74 @@ export function buildStatus(
   return status;
 }
 
-/** The cantons Taxpresso prepares returns for, in words: "Geneva, Zurich and Bern". */
-export function cantonList(lang: 'en' | 'fr' | 'de' = 'en'): string {
-  const names = SUPPORTED_CANTONS.map((c) => CANTONS[c].name[lang]);
-  const and = { en: 'and', fr: 'et', de: 'und' }[lang];
+/** Names in words: "Geneva, Zurich and Bern", or with `or`, "Geneva, Zurich or Bern". */
+function inWords(names: readonly string[], word: string): string {
   return names.length > 1
-    ? `${names.slice(0, -1).join(', ')} ${and} ${names.at(-1)}`
+    ? `${names.slice(0, -1).join(', ')} ${word} ${names.at(-1)}`
     : names.join('');
+}
+
+/** The cantons Taxpresso prepares returns for, in words: "Geneva, Zurich, Bern and Vaud". */
+export function cantonList(lang: 'en' | 'fr' | 'de' = 'en'): string {
+  const and = { en: 'and', fr: 'et', de: 'und' }[lang];
+  return inWords(
+    SUPPORTED_CANTONS.map((c) => CANTONS[c].name[lang]),
+    and,
+  );
+}
+
+// The cantons as the tool descriptions name them, from the registry (./cantons.ts): a new canton
+// changes them without a word written here.
+const entries = () => SUPPORTED_CANTONS.map((c) => CANTONS[c]);
+
+/** "Geneva, or Zurich, Bern and Vaud as a preview". */
+export function cantonsWithPreviews(): string {
+  const full = entries().filter((c) => !c.view.preview);
+  const previews = entries().filter((c) => c.view.preview);
+  const names = (list: typeof full) =>
+    inWords(
+      list.map((c) => c.name.en),
+      'and',
+    );
+  return previews.length ? `${names(full)}, or ${names(previews)} as a preview` : names(full);
+}
+
+/** "Geneva, Zurich, Bern or Vaud". */
+export function cantonChoice(): string {
+  return inWords(
+    entries().map((c) => c.name.en),
+    'or',
+  );
+}
+
+/** The cantons whose questions and estimate have German texts (their form is German). */
+export function germanCantons(): string {
+  return inWords(
+    entries()
+      .filter((c) => c.view.german)
+      .map((c) => c.name.en),
+    'and',
+  );
+}
+
+/** The language of each canton's official labels: "Geneva and Vaud: French; Zurich and Bern: German". */
+export function formLanguages(): string {
+  const of = (german: boolean) =>
+    inWords(
+      entries()
+        .filter((c) => c.view.german === german)
+        .map((c) => c.name.en),
+      'and',
+    );
+  return [`${of(false)}: French`, ...(germanCantons() ? [`${of(true)}: German`] : [])].join('; ');
+}
+
+/** A page of each canton's form, for the examples: '"A1" (Geneva), "S2" (Zurich) or "F2" (Bern)'. */
+export function formPageExamples(): string {
+  return inWords(
+    entries().map((c) => `"${c.filing.words.example}" (${c.name.en})`),
+    'or',
+  );
 }
 
 /** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */

@@ -1,5 +1,5 @@
 // UI strings for the copy panel (SPEC.md 10.5). Second person, plain words, the official label
-// (French in Geneva, German in Zurich) always next to its gloss. Status labels follow SPEC.md
+// (French in Geneva and Vaud, German in Zurich and Bern) always next to its gloss. Status labels follow SPEC.md
 // section 11b.
 import { cantonKey, type Language } from './i18n';
 
@@ -42,6 +42,10 @@ const messages = {
       'Type each value into TaxMe-Online or the paper form, form by form in the form’s order. Amounts are whole francs, without separators. TaxMe works out the limits and two summaries (Zusammenzug): check them against the last two sections. Tick each value once it is in.',
     coupleBe:
       'On the Bern form, the column Mann is {a} and the column Frau is {b}, registered partners included. If your form has them the other way round, swap the values.',
+    leadVd:
+      'Type each value into VaudTax or the paper form, page by page in the form’s order. Amounts are whole francs, without centimes or separators. The last section, the federal tax (impôt fédéral direct), is only to check: VaudTax works it out. Tick each value once it is in.',
+    coupleVd:
+      'On the Vaud form, contribuable 1 is {a} and contribuable 2 is {b}. If your form has them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -74,6 +78,8 @@ const messages = {
     coupleZh: `Sur le formulaire zurichois, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
     leadBe: `Recopiez chaque valeur dans TaxMe-Online ou le formulaire papier, formule par formule dans l’ordre du formulaire. Les montants sont en francs entiers, sans séparateurs. TaxMe calcule les limites et deux récapitulatifs (Zusammenzug)${NB}: comparez-les avec les deux dernières sections. Cochez chaque valeur une fois saisie.`,
     coupleBe: `Sur le formulaire bernois, la colonne Mann est {a} et la colonne Frau est {b}, partenaires enregistrés compris. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadVd: `Recopiez chaque valeur dans VaudTax ou le formulaire papier, page par page dans l’ordre du formulaire. Les montants sont en francs entiers, sans centimes ni séparateurs. La dernière section, l’impôt fédéral direct, est seulement à vérifier${NB}: VaudTax le calcule. Cochez chaque valeur une fois saisie.`,
+    coupleVd: `Sur le formulaire vaudois, le contribuable 1 est {a} et le contribuable 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
     title: 'Fülle deine Steuererklärung aus',
@@ -112,6 +118,10 @@ const messages = {
       'Tippe jeden Wert in TaxMe-Online oder ins Papierformular, Formular für Formular in der Reihenfolge der Steuererklärung. Beträge in ganzen Franken, ohne Trennzeichen. TaxMe rechnet die Höchstbeträge und zwei Zusammenzüge aus: Vergleiche sie mit den letzten beiden Abschnitten. Hake jeden Wert ab, sobald er drin ist.',
     coupleBe:
       'Auf dem Berner Formular ist die Spalte Mann {a} und die Spalte Frau {b}, auch bei eingetragenen Partnerschaften. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadVd:
+      'Tippe jeden Wert in VaudTax oder ins Papierformular, Seite für Seite in der Reihenfolge des Formulars. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Der letzte Abschnitt, die direkte Bundessteuer (impôt fédéral direct), ist nur zum Prüfen: VaudTax rechnet sie aus. Hake jeden Wert ab, sobald er drin ist.',
+    coupleVd:
+      'Auf dem Waadtländer Formular ist contribuable 1 {a} und contribuable 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
 } as const;
 

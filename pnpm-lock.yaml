@@ -226,6 +226,9 @@ importers:
       '@taxpresso/filing-ge':
         specifier: workspace:*
         version: link:../packages/filing-ge
+      '@taxpresso/filing-vd':
+        specifier: workspace:*
+        version: link:../packages/filing-vd
       '@taxpresso/filing-zh':
         specifier: workspace:*
         version: link:../packages/filing-zh
@@ -250,6 +253,9 @@ importers:
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../packages/rules-ge
+      '@taxpresso/rules-vd':
+        specifier: workspace:*
+        version: link:../packages/rules-vd
       '@taxpresso/rules-zh':
         specifier: workspace:*
         version: link:../packages/rules-zh
@@ -432,6 +438,9 @@ importers:
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../rules-ge
+      '@taxpresso/rules-vd':
+        specifier: workspace:*
+        version: link:../rules-vd
       '@taxpresso/rules-zh':
         specifier: workspace:*
         version: link:../rules-zh
@@ -473,9 +482,6 @@ importers:
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../rules-ge
-      '@taxpresso/rules-vd':
-        specifier: workspace:*
-        version: link:../rules-vd
       '@taxpresso/rules-zh':
         specifier: workspace:*
         version: link:../rules-zh

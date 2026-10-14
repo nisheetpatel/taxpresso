@@ -9,6 +9,7 @@ import {
   type FormMap,
 } from '@taxpresso/filing-ge';
 import { filing as bernFiling } from '@taxpresso/filing-be';
+import { filing as vaudFiling } from '@taxpresso/filing-vd';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
@@ -17,6 +18,7 @@ import {
   geQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
+  vdQuestionnaire2026,
   zhQuestionnaire2026,
   type QuestionnaireFile,
 } from '@taxpresso/questionnaire';
@@ -67,6 +69,17 @@ import {
   type BernCantonal,
   type BeTaxResult,
 } from '@taxpresso/rules-be';
+import {
+  communeOptions as vaudCommunes,
+  NOTE_VALUABLES as VAUD_VALUABLES,
+  rules as vaudRules,
+  VAUD_READING,
+  vdParamsFor,
+  view as vaudView,
+  VD_TERMS,
+  type VaudCantonal,
+  type VdTaxResult,
+} from '@taxpresso/rules-vd';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -282,10 +295,49 @@ const BERN: CantonEntry = {
   tou: false,
 };
 
+const VAUD: CantonEntry = {
+  code: 'VD',
+  name: { en: 'Vaud', fr: 'Vaud', de: 'Waadt' },
+  software: 'VaudTax',
+  rules: vaudRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? vdQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...vaudRules.keys(taxYear) }),
+  communes: (taxYear) => vaudCommunes(taxYear),
+  // The return has its own lines for cash and gold (420) and vehicles (430): the note says so.
+  ...sharedLedger(VAUD_READING, vaudRules, VAUD_VALUABLES),
+  view: vaudView,
+  filing: vaudFiling,
+  terms: VD_TERMS,
+  plan: {
+    computeReturn: (input) => vaudRules.computeReturn(input as HouseholdInput<VaudCantonal>),
+    incomeTax: (r) => vaudView.incomeTax(r as VdTaxResult),
+    // Lausanne, by its slug (the official tables carry no federal number).
+    defaultCommune: 'lausanne',
+    communeName: { en: 'Lausanne', fr: 'Lausanne', de: 'Lausanne' },
+    sources(taxYear) {
+      // The documents a Vaud household's income tax rests on, for the year.
+      const P = vdParamsFor(taxYear);
+      return [
+        P.incomeScale.source,
+        P.cantonalCoefficient.source,
+        P.lrippReductionBp.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'vd_preview', communeDefault: 'vd_commune_default' },
+    // The 3a limits of the federal law, the cantonal law's own (vd-2026-law-li art. 37 al. 1
+    // lit. e: "dans les limites autorisées par la loi fédérale"), the catch-up included.
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
   BE: BERN,
+  VD: VAUD,
 };
 
 /** The canton of the year being prepared, and how Taxpresso knows it. */

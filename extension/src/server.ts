@@ -31,7 +31,16 @@ import { registerReviewTool } from './last-year-review.js';
 import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
-import { buildStatus, StatusSchema, statusText } from './status.js';
+import {
+  buildStatus,
+  cantonChoice,
+  cantonsWithPreviews,
+  formLanguages,
+  formPageExamples,
+  germanCantons,
+  StatusSchema,
+  statusText,
+} from './status.js';
 import { PILLAR3A_2026_FACTS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
 import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
@@ -214,8 +223,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'get_status',
     {
       title: 'Get tax return status',
-      description:
-        "Where the user's tax return stands (Geneva, or Zurich and Bern as a preview): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.",
+      description: `Where the user's tax return stands (${cantonsWithPreviews()}): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.`,
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -237,8 +245,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'next_questions',
     {
       title: 'Get the next questions',
-      description:
-        "The next unanswered questions about the user's situation, in English and French (German too, for Zurich and Bern) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.",
+      description: `The next unanswered questions about the user's situation, in English and French (German too, for ${germanCantons()}) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.`,
       inputSchema: z.object({
         limit: z.number().int().min(1).max(5).optional().describe('How many questions. Default 1.'),
       }),
@@ -520,7 +527,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Compute the tax',
       description:
-        "The user's cantonal, communal and federal tax from the rules engine, for the year's canton (Geneva: ICC, IFD; Zurich: Staats- und Gemeindesteuern; Bern: Kantons- und Gemeindesteuern): totals, main items by line code, estimates, values to confirm. detail: true explains each line with its source.",
+        "The user's cantonal, communal and federal tax from the rules engine, for the year's canton, in the official terms of its form (Geneva: ICC, IFD): totals, main items by line code, estimates, values to confirm. detail: true explains each line with its source.",
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -844,15 +851,14 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'get_form_values',
     {
       title: 'Get the values to type into the declaration',
-      description:
-        'Values the user types by hand into their canton\'s official declaration, in the form\'s order, as in the dashboard\'s copy panel: line code, official label (Geneva: French; Zurich and Bern: German), value as typed, status. No section: sections with progress. A section ("A1", "S2", "F2"): its values.',
+      description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label (${formLanguages()}), value as typed, status. No section: sections with progress. A section: its values.`,
       inputSchema: z.object({
         section: z
           .string()
           .max(4)
           .optional()
           .describe(
-            'A page of the form, e.g. "PG1", "A1", "C3" (Geneva), "S2", "BA1", "VP" (Zurich) or "F2", "F6", "ZK" (Bern). Default: the list of sections.',
+            `A page of the form, e.g. ${formPageExamples()}. Default: the list of sections.`,
           ),
       }),
       outputSchema: z.object({
@@ -942,7 +948,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'start_geneva_tax_return',
     {
       title: 'Start my tax return',
-      description: 'Begin or pick up your Geneva, Zurich or Bern tax return with Taxpresso.',
+      description: `Begin or pick up your ${cantonChoice()} tax return with Taxpresso.`,
     },
     () => ({
       messages: [
