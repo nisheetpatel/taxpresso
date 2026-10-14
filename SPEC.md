@@ -434,18 +434,21 @@ taxpresso/
     ledger/
     intake/             pdf, barcodes (pdf417, code128), parsers per document kind
     questionnaire/
-    rules-ge/           src/<year>/ ... constants with citations
+    rules-ch/           shared by every canton: the federal tax (IFD), pension and 3a limits,
+                        withholding tax, shared keys, the canton interface (docs/design/cantons.md)
+    rules-ge/           Geneva's cantonal and communal tax: src/<year>/ ... constants with citations
+    rules-zh/           Zurich's cantonal and communal tax (not wired into the extension yet)
     optimizer/
     filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation
   ui/                   Vite app; views reused as MCP Apps resources
-  site/                 static landing page (FR, EN, DE), no JavaScript, no cookies, fonts bundled
+  site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
   data/ge/2025/, data/ge/2026/   questionnaire yaml, keys, i18n
   test/golden/          households + GeTax expected outputs
   test/fixtures/        sample PDFs (synthetic only, never real data)
   docs/                 privacy policy, support, example prompts
   docs/sources/         official documents per canton (section 7b), README with known conflicts
-  docs/design/          screen mockups
+  docs/design/          screen mockups, design notes (cantons.md)
   scripts/              fetch-sources.mjs, merge-manifests.mjs
 ```
 
