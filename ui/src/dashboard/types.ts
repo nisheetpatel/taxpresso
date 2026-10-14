@@ -4,7 +4,7 @@ import type { EstimateView } from './Estimate';
 import type { LastYearView } from './LastYear';
 import type { ReviewView } from './Review';
 import type { CopyPanelState } from './types-copy';
-import type { FinalCheckState } from './types-final-check';
+import type { FinalCheckSource as OfficialSource, FinalCheckState } from './types-final-check';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
 import type { PlanningState } from './types-planning';
@@ -120,16 +120,19 @@ export interface Journey {
   stage: StageId;
   stages: { id: StageId; status: string; vars: JourneyVars }[];
   /**
-   * Facts that need no decision, shown as sentences in "About you". A tax-at-source fact
-   * (source_tax) carries its sentence in every language, where it comes from, and whether it is
-   * an estimate.
+   * Facts that need no decision, each one short sentence in "About you", said once for both of a
+   * couple where it is the same. A fact worded by the extension (source_tax, abroad, part_year)
+   * carries its sentence in every language; any fact may carry why it holds (behind "Why?"),
+   * its sources (behind "Sources": title, where in it, link), and whether it is an estimate.
    */
   about: {
     id: string;
     who?: 'p1' | 'p2' | 'both';
     vars: JourneyVars;
     text?: { en: string; fr: string; de?: string; it?: string };
+    why?: { en: string; fr: string; de?: string; it?: string };
     source?: string;
+    sources?: OfficialSource[];
     estimate?: true;
   }[];
   /** At least one income or wealth figure: only then is there a tax to show. */

@@ -7,7 +7,8 @@ import './final-check.css';
 import type { Language } from './i18n';
 import { fck, type FinalCheckMessageKey, tf } from './i18n-final-check';
 import type { State } from './types';
-import type { FinalCheckItemState, FinalCheckSource } from './types-final-check';
+import { SourcesLine } from './Sources';
+import type { FinalCheckItemState } from './types-final-check';
 
 const CHIP: Record<NonNullable<FinalCheckItemState['status']>, string> = {
   needs_ok: 'chip-needs-ok',
@@ -34,33 +35,6 @@ const SHOWN = new Set([
   'official_pdf',
   'optional_document',
 ]);
-
-function Sources({ sources, lang }: { sources: FinalCheckSource[]; lang: Language }) {
-  if (!sources.length) return null;
-  return (
-    <p class="fc-sources small-text">
-      <span class="muted">
-        {tf(lang, sources.length > 1 ? 'sources' : 'source')}
-        {tf(lang, 'colon')}
-      </span>
-      {sources.map((s, i) => {
-        const label = `${s.title ?? s.id}, ${s.where}`;
-        return (
-          <span key={`${s.id}:${s.where}`}>
-            {i ? '; ' : ''}
-            {s.url ? (
-              <a href={s.url} target="_blank" rel="noopener noreferrer" lang="fr">
-                {label}
-              </a>
-            ) : (
-              <span lang="fr">{label}</span>
-            )}
-          </span>
-        );
-      })}
-    </p>
-  );
-}
 
 function Item({ item, lang }: { item: FinalCheckItemState; lang: Language }) {
   const position = item.limit ? POSITION[item.limit.position] : undefined;
@@ -93,7 +67,7 @@ function Item({ item, lang }: { item: FinalCheckItemState; lang: Language }) {
           {item.todo}
         </p>
       ) : null}
-      <Sources sources={item.sources} lang={lang} />
+      <SourcesLine sources={item.sources} lang={lang} />
     </li>
   );
 }

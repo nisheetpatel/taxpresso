@@ -12,7 +12,7 @@ The point of Taxpresso is that people chat, say a few things, and Taxpresso and 
 4. **Stages, in order, one open.** About you, Your documents, Your tax, Ways to save, File. Only the active stage is open; the others are one line each, with their status. Any of them opens with one click, and every detail stays one or two clicks away: simpler never means less.
 5. **Never ask what Taxpresso can read, derive or estimate.** No technical input is a visible field: not the tariff (barème), the tax withheld, salaries, 3a paid or the buy-in capacity. They come from documents, from answers, or from Claude asking in plain words. Each card keeps a collapsed "Change the figures" for corrections, writing the same planning inputs (`plan.*`) as `set_fact`.
 6. **Nothing from nothing.** No CHF 0.00 estimate, no breakdown of nothing, no copy panel line computed without an income, no empty list or empty bullet. A stage with nothing to show says what will make it appear.
-7. **Facts are sentences, choices are cards.** A fact that needs no decision is a sentence in "About you" ("You're both taxed at source and already in TOU: you file an ordinary declaration"). A "Decide" card appears only when there is a real choice.
+7. **Facts are sentences, choices are cards.** A fact that needs no decision is one short sentence in "About you" ("You're both taxed at source and already in TOU: you file an ordinary declaration"), said once for both of a couple when it is the same for both ("You're both taxed at source (no C permit).", "Your barème is C1N."); what is each person's own, such as the tax withheld from their own documents, stays apart. Why it holds is behind a "Why?" closed by default, and the official sources behind a "Sources" closed inside it, by their titles as published and the place cited, each linked (the final check's way). A "Decide" card appears only when there is a real choice.
 8. **Estimate rather than stop.** When a figure is missing but can be estimated from official sources, Taxpresso estimates it and flags it "Estimate" (SPEC.md section 9). Deriving the source-tax answers (who is taxed at source, the tariff from the household, the tax withheld from documents or the official tables) is separate work; the dashboard shows whatever it derives, with where it comes from.
 9. **Parity.** Everything works in the chat and in the dashboard, and both write the same record (SPEC.md section 6).
 
@@ -22,7 +22,7 @@ Each stage is derived on every read, never stored (`extension/src/journey.ts`, t
 
 | Stage | Its line when closed | Open by default when | What is inside |
 |---|---|---|---|
-| 1. About you | "N questions left", "Done", "Nothing yet" | the next step is a question, or nothing is known yet | Fact sentences, the answers as chips with "Edit answers", the question card (with a suggestion read from a document, if any) |
+| 1. About you | "N questions left", "Done", "Nothing yet" | the next step is a question, or nothing is known yet | The facts, one short sentence each with "Why?" and "Sources" folded, the answers as chips (without those a fact just above says, such as "Taxed at source") with "Edit answers", the question card (with a suggestion read from a document, if any) |
 | 2. Your documents | "N to read", "N values to check", "Missing: salary certificate, …", "After 31 December 2026: …", "All here" | the next step is about a document | What Claude read (values to confirm, one tap each or "All OK"), "Check this" when there is something, what is still missing (each with "Upload"), what is here, one drop zone, securities and accounts |
 | 3. Your tax | "About CHF X" with "Estimate", or "Appears once Taxpresso knows an income" | the next step is an income | The estimate, only with at least one income or wealth figure; before that, what makes it appear and a collapsed "Add it here"; last year's figures to compare |
 | 4. Ways to save | "You could save about CHF X before 31 December", "Decide on TOU by …", "Ask Claude how to lower your tax" | the next step is a saving or the TOU choice | The one-line total with "Ask Claude how", the TOU "Decide" card (only with a real choice), then pillar 3a, pension fund buy-in, 3a catch-up and last year's review, each collapsed with its figure on its line and its own "Change the figures" |
@@ -115,6 +115,7 @@ Never before an income figure: the estimate, its breakdown, the copy panel's com
 | `get_status` ended with the next step after twenty lines | The year, then the next step and the stages |
 | The dashboard polled every 2 seconds for a state that took over a second to compute | Every second, about 4 ms |
 | The view always opened inline | It floats beside the chat where the host offers it |
+| "About you" repeated each fact for each partner, each a paragraph followed by its manifest ids | One short sentence per fact, once for both where it is the same; why and the sources (titles, linked) one click away; `get_status`'s "Facts:" line merged the same way |
 
 ## 9. Guidance for Claude
 
@@ -137,6 +138,8 @@ A tool's description (at most 300 characters) says what it does and when to call
 **A new canton** adds its line in `FORM_TERMS` (`extension/src/status.ts`) and its walkthrough in `filing.words.guide`; its software and name come from the registry.
 
 When the instructions went from 16,000 characters to 1,500 (October 2026), the proof against main recorded 17,028 records for 2026 and 14,463 for 2025 (Dupont, Ribeiro and 20 seeded households in each of the 12 cantons): the data was identical, and only Claude's texts differed, each kind of difference as intended. The same change made `set_fact` accept a property abroad's rough figures (`plan.abroad_value`, `plan.abroad_rent`), which its next step already asked for.
+
+When the facts of "About you" became short (October 2026), the proof against main (bfd07e4) ran with `TAXPRESSO_RECORD_FACTS=1` as well, which keeps `get_status`'s fact ids and "Facts:" line, and a dashboard state's facts and answer chips, apart from the data: 17,041 records for 2026 and 14,504 for 2025 (Dupont, Ribeiro and 20 seeded households in each of the 12 cantons). The data was identical, Claude's texts differed only in the "Facts:" line, and the facts and chips differed only as intended: shorter sentences with why apart, sources with their titles and links, why and sources for TOU in place, and the chips a fact just above says left out.
 
 ## 10. Open points
 
