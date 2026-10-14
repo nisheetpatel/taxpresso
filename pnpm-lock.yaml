@@ -459,10 +459,25 @@ importers:
 
   packages/rules-ag:
     dependencies:
+      '@taxpresso/ledger':
+        specifier: workspace:*
+        version: link:../ledger
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../rules-ch
     devDependencies:
+      '@taxpresso/rules-be':
+        specifier: workspace:*
+        version: link:../rules-be
+      '@taxpresso/rules-bl':
+        specifier: workspace:*
+        version: link:../rules-bl
+      '@taxpresso/rules-ge':
+        specifier: workspace:*
+        version: link:../rules-ge
+      '@taxpresso/rules-zh':
+        specifier: workspace:*
+        version: link:../rules-zh
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.1
