@@ -177,6 +177,10 @@ export const FEDERAL_NOTE = {
     'Federal tax not computed: a child who does not live with you is not supported yet for the federal tax.',
     `Impôt fédéral non calculé${NB}: un enfant qui ne vit pas avec vous n’est pas encore pris en charge pour l’impôt fédéral.`,
   ),
+  insurance: t(
+    'Insurance premiums, federal tax (14): the Aargau return deducts a flat amount and asks for no premium attestation; the guide says the tax office puts the federal deduction in its place without saying from what. Taxpresso counts the premiums you gave, up to the federal maximum: without your attestation, the federal tax shown is higher than it will be.',
+    `Primes d’assurance, impôt fédéral (14)${NB}: la déclaration argovienne déduit un forfait et ne demande pas d’attestation de primes${NB}; le guide dit que l’administration met la déduction fédérale à sa place sans dire d’après quoi. Taxpresso compte les primes indiquées, jusqu’au maximum fédéral${NB}: sans votre attestation, l’impôt fédéral affiché est plus élevé qu’il ne sera.`,
+  ),
 } as const satisfies Record<string, Text>;
 
 interface FederalPerson {
@@ -490,6 +494,7 @@ export function federalReturn(
     inputs: [hTrace, lifeTrace, subTrace],
   });
   apply(notes, insurance, 'household');
+  add(notes.unverified, FEDERAL_NOTE.insurance);
   if (insurance.deduction) items.push(deductionItem(insurance.deduction, 'household'));
 
   // Buy-ins paid directly (13.1), alimony and child support paid (12.1, 12.2) and the costs of

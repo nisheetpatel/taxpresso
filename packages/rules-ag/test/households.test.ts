@@ -5,7 +5,14 @@
 // 12,000: 116; 16,200: 242; 20,500: 414; 25,700: 674; 33,100: 1,118; 41,700: 1,720; 51,300: 2,488;
 // 63,100: 3,491; 74,800: 4,544.
 import { describe, expect, it } from 'vitest';
-import { allLines, AgInputError, computeReturn, NOTE, type AgEngineInput } from '../src/index.js';
+import {
+  allLines,
+  AgInputError,
+  computeReturn,
+  FEDERAL_NOTE,
+  NOTE,
+  type AgEngineInput,
+} from '../src/index.js';
 
 const chf = (francs: number) => Math.round(francs * 100);
 const amt = (francs: number) => ({ value: chf(francs) });
@@ -80,7 +87,8 @@ describe('H1: single, Aarau, 2026, employed, public transport, Roman Catholic', 
     expect(r.ifd?.tax.amount).toBeGreaterThan(0);
     expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.unsupported).toEqual([]);
-    expect(r.unverifiedRules).toEqual([NOTE.rounding]);
+    // The federal insurance deduction rests on the premiums given (./federal.test.ts).
+    expect(r.unverifiedRules).toEqual([NOTE.rounding, FEDERAL_NOTE.insurance]);
     expect(r.notCounted).toContainEqual(NOTE.fireLevy);
     expect(r.assumptions).toContainEqual(NOTE.insuranceFlat);
   });
@@ -195,7 +203,12 @@ describe('H2: married, two earners, two children, Baden, 2025, Reformed church t
     expect(r.icc?.taxes.communal.amount).toBe(chf(2_256.8));
     expect(r.icc?.taxes.church?.amount).toBe(chf(441.5));
     expect(r.icc?.taxes.total.amount).toBe(chf(5_421.1));
-    expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.medicalRounding, NOTE.medicalOrder]);
+    expect(r.unverifiedRules).toEqual([
+      NOTE.rounding,
+      NOTE.medicalRounding,
+      NOTE.medicalOrder,
+      FEDERAL_NOTE.insurance,
+    ]);
     expect(r.assumptions).toContainEqual(NOTE.childrenChurch);
   });
 

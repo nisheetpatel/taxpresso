@@ -332,6 +332,8 @@ describe('the federal tax of an Aargau household', () => {
       r.limits.filter((l) => l.code === '13.2' && l.person === 'p2').map((l) => l.tax),
     ).toEqual(['both']);
     expect(r.limits.every((l) => l.rule)).toBe(true);
+    // The return asks for no premiums: how the tax office knows them is not said.
+    expect(r.unverifiedRules).toContainEqual(FEDERAL_NOTE.insurance);
     // Its totals: the income less the deductions, then the medical costs and donations, then the
     // social deductions, in whole francs.
     const t = federalTotals(r.ifd!.items);
