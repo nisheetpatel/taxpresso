@@ -35,6 +35,7 @@ import {
   type RuleResult,
 } from '@taxpresso/rules-ch';
 import { assess, incomeTotals, type Assessment } from './assess.js';
+import { capitalTax } from './capital.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
 import { avsDeduction, lifeInsuranceCap } from './rules.js';
 import { paramsFor, type YearParams } from './params.js';
@@ -531,6 +532,13 @@ export function computeReturn(input: EngineInput): TaxResult {
   }
   if (!(input.commune in P.communes.centimes.value)) {
     throw new EngineInputError(`Unknown commune ${input.commune}`);
+  }
+  for (const b of input.capital?.benefits ?? []) {
+    if (!people.some((p) => p.id === b.person)) {
+      throw new EngineInputError(
+        `A lump sum (capital.benefits) for ${b.person}, not in the household`,
+      );
+    }
   }
   // A parent without a partner sharing custody: child support decides whose the children are for
   // the deductions, the splitting and the federal scale (circular 30, ch. 14.4 and 14.5; guide p. 45
@@ -1126,8 +1134,30 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (result.icc.taxes.personalTax.amount === 0) notes.add(notes.unverified, NOTE.personalTax);
   if (result.shieldMayApply) notes.add(notes.unsupported, NOTE.shield);
 
-  const icc_ = result.shieldMayApply ? null : result.icc;
-  const ifd_ = ifdUnsupported ? null : result.ifd;
+  // Lump sums from the 2nd pillar and pillar 3a: a tax of their own (./capital.ts), with the
+  // return's splitting and federal scale (LIPP art. 45 al. 3, LIFD art. 38 al. 2).
+  const outcome = capitalTax(P, input.capital, {
+    taxYear: input.taxYear,
+    commune: input.commune,
+    people: people.map((p) => p.id),
+    splitting,
+    ifdScale: ifdUnsupported ? undefined : ifdScale,
+  });
+  for (const x of outcome.notes.unsupported) notes.add(notes.unsupported, x);
+  for (const x of outcome.notes.notCounted) notes.add(notes.notCounted, x);
+  for (const x of outcome.notes.assumptions) notes.add(notes.assumptions, x);
+  for (const x of outcome.notes.unverified) notes.add(notes.unverified, x);
+  // A buy-in and a lump sum from the 2nd pillar in the same year: the buy-in's benefits can't be
+  // paid as capital for three years, and its deduction may be taken back (ch-na-law-lpp art. 79b
+  // al. 3, p. 66; ge-2025-guide-declaration-pp p. 18). How much is not known: fail closed.
+  const buyInConflict = outcome.secondPillar.some((p) =>
+    icc.some((i) => i.code === codeFor('31.30', p) && i.amount < 0),
+  );
+  if (buyInConflict) notes.add(notes.unsupported, NOTE.capitalBuyIn);
+
+  const icc_ = result.shieldMayApply || buyInConflict ? null : result.icc;
+  const ifd_ = ifdUnsupported || buyInConflict ? null : result.ifd;
+  const capital = outcome.capital;
   const partial = (input.wealthItems ?? []).filter((w) => !w.complete);
   const incomplete = partial.map((w) =>
     t(
@@ -1143,19 +1173,23 @@ export function computeReturn(input: EngineInput): TaxResult {
       ),
     );
   }
-  const lines = allLines({ icc: icc_, ifd: ifd_ });
+  const lines = allLines({ icc: icc_, ifd: ifd_, ...(capital ? { capital } : {}) });
   return {
     taxYear: input.taxYear,
     commune: input.commune,
     icc: icc_,
     ifd: ifd_,
     total: icc_ && ifd_ ? icc_.taxes.total.amount + ifd_.tax.amount : null,
-    estimates: estimateNotes(icc_, ifd_),
+    ...(capital ? { capital } : {}),
+    estimates: estimateNotes(icc_, ifd_, capital),
     complete: !lines.some((l) => l.incomplete) && !incomplete.length,
     incomplete,
-    needsOk: [...(icc_?.items ?? []), ...(ifd_?.items ?? []), ...(icc_?.wealth.items ?? [])].filter(
-      (i) => i.needsOk,
-    ).length,
+    needsOk: [
+      ...(icc_?.items ?? []),
+      ...(ifd_?.items ?? []),
+      ...(icc_?.wealth.items ?? []),
+      ...(capital?.items ?? []),
+    ].filter((i) => i.needsOk).length,
     assumptions: notes.assumptions,
     notCounted: notes.notCounted,
     unsupported: notes.unsupported,
@@ -1164,8 +1198,8 @@ export function computeReturn(input: EngineInput): TaxResult {
   };
 }
 
-/** Every line of a result, items first. */
-export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
+/** Every line of a result, items first; the tax on pension capital last. */
+export function allLines(r: Pick<TaxResult, 'icc' | 'ifd' | 'capital'>): (Line | Item)[] {
   const out: (Line | Item)[] = [];
   if (r.icc) {
     const i = r.icc;
@@ -1222,6 +1256,29 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
       f.tax,
     );
   }
+  if (r.capital) out.push(...capitalLines(r.capital));
+  return out;
+}
+
+/** The lines of the tax on pension capital, items first. */
+export function capitalLines(c: NonNullable<TaxResult['capital']>): (Line | Item)[] {
+  const out: (Line | Item)[] = [...c.items, c.amount];
+  if (c.icc) {
+    const x = c.icc;
+    out.push(
+      x.rateIncome,
+      x.scaleTax,
+      x.base,
+      x.cantonalCentimes,
+      x.reduction12,
+      x.homeCare,
+      x.cantonal,
+      x.communal,
+      x.tax,
+    );
+  }
+  if (c.ifd) out.push(c.ifd.scaleIncome, c.ifd.scaleTax, c.ifd.tax);
+  if (c.total) out.push(c.total);
   return out;
 }
 
@@ -1246,11 +1303,15 @@ const WHOSE: Record<string, Text> = {
   p2: { en: 'B', fr: 'B' },
 };
 
-function estimateNotes(icc: TaxResult['icc'], ifd: TaxResult['ifd']): EstimateNote[] {
+function estimateNotes(
+  icc: TaxResult['icc'],
+  ifd: TaxResult['ifd'],
+  capital?: TaxResult['capital'],
+): EstimateNote[] {
   const notes = new Map<string, EstimateNote>();
   // One note for the figures the user gave as estimates, naming each rubric once.
   const given = new Map<string, Text>();
-  for (const line of allLines({ icc, ifd })) {
+  for (const line of allLines({ icc, ifd, ...(capital ? { capital } : {}) })) {
     for (const e of line.estimates ?? []) {
       if (e === 'input-estimate') {
         if ('code' in line && rubric(line.code) && !DERIVED.has(line.code)) {

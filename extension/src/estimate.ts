@@ -6,6 +6,7 @@
 // with `detail`.
 import {
   chf,
+  type CapitalView,
   type Item,
   type Line,
   type ResultView,
@@ -77,6 +78,18 @@ function lastYearText(x: YearComparisonRow): string {
   return `${x.code} ${x.official} (${PERSON[x.person].en}): ${cols}${x.lastYearNeedsOk ? ' [last year read, not checked by the user]' : ''}${x.thisYearProvisional ? ' [this year not final]' : ''}`;
 }
 
+/** The tax on pension capital, for Claude: the amount, each tax, and that it is apart. */
+function capitalText(c: CapitalView, items: readonly Item[]): string {
+  const each = items
+    .map(
+      (i) =>
+        `${i.code} (${WHO[i.person]?.en ?? i.person}) ${chf(i.amount)}${i.needsOk ? " [needs the user's OK]" : ''}`,
+    )
+    .join('; ');
+  const taxes = c.rows.map((row) => `${row.label.en} ${chf(row.line.amount)}`).join(', ');
+  return `${c.amount.label.en}: ${chf(c.amount.line.amount)} (${each}). A tax of its own, apart from the tax on income, at a fifth of the scale, never in the total${taxes ? `: ${taxes}` : ': not computed (see "Not computed")'}${c.total ? `; together ${chf(c.total.line.amount)}` : ''}.`;
+}
+
 /** The canton's result and its view, or why there is none. */
 function current(ws: Workspace) {
   const e = ws.estimate();
@@ -115,6 +128,8 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     );
   }
   if (r.total !== null) say.push(`Total: ${chf(r.total)}.`);
+  const capital = view.capital?.(r);
+  if (capital && r.capital) say.push(capitalText(capital, r.capital.items));
   const items = icc ? mainItems(icc.items, 8) : [];
   if (items.length) {
     say.push(
@@ -166,6 +181,21 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     unsupported: en(r.unsupported),
     notSupported,
     unverifiedRules: en(r.unverifiedRules),
+    ...(capital && r.capital
+      ? {
+          capital: {
+            amount: capital.amount.line.amount,
+            items: r.capital.items.map((i) => ({
+              code: i.code,
+              person: i.person,
+              amount: i.amount,
+            })),
+            icc: r.capital.icc?.tax.amount ?? null,
+            ifd: r.capital.ifd?.tax.amount ?? null,
+            total: capital.total?.line.amount ?? null,
+          },
+        }
+      : {}),
     complete: r.complete,
     ...(r.incomplete.length ? { incomplete: en(r.incomplete) } : {}),
     ...(lastYear.length
@@ -196,7 +226,13 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     const all = [
       ...(icc ? [...icc.items, ...wealth] : []),
       ...(ifd ? ifd.items.map((i) => ({ ...i, code: `${view.ifdCode} ${i.code}` })) : []),
+      ...(r.capital?.items ?? []),
     ];
+    if (r.capital) {
+      (structured.detail as Record<string, unknown>).capitalItems = r.capital.items.map((i) =>
+        itemOut(view, i),
+      );
+    }
     say.push(
       `Detail, each item with how it was computed and its source${view.detailNote}:`,
       ...all.map(
@@ -231,6 +267,7 @@ export function estimateView(ws: Workspace, lang: UiLang) {
     needsOk: Boolean(line.needsOk),
   });
   const couple = ws.snapshot().people.length > 1;
+  const capital = view.capital?.(r);
   return {
     computed: true as const,
     ...(view.preview ? { canton: view.canton } : {}),
@@ -253,6 +290,25 @@ export function estimateView(ws: Workspace, lang: UiLang) {
       estimate: Boolean(i.estimates?.length),
       needsOk: Boolean(i.needsOk),
     })),
+    // The tax on pension capital: a tax of its own, apart from the total (only when there is one).
+    ...(capital && r.capital
+      ? {
+          capital: {
+            amount: row(capital.amount),
+            rows: capital.rows.map(row),
+            total: capital.total ? row(capital.total) : null,
+            items: r.capital.items.map((i) => ({
+              code: i.code,
+              label: say(i.label, l),
+              who: couple ? say(WHO[i.person] ?? WHO.household!, l) : '',
+              amount: i.amount,
+              how: say(i.how, l),
+              estimate: Boolean(i.estimates?.length),
+              needsOk: Boolean(i.needsOk),
+            })),
+          },
+        }
+      : {}),
     estimates: r.estimates.map((x) => say(x.what, l)),
     needsOk: r.needsOk,
     notes: [...r.unsupported, ...r.incomplete, ...r.notCounted].map((n) => say(n, l)),

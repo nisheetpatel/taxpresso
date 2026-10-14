@@ -5,8 +5,11 @@
 // are in packages/rules-ch (core/types.ts); Geneva's input is the household input without the facts
 // only Zurich reads, plus the splitting and the état des titres.
 import type {
+  Amount,
   CantonalResult,
+  CapitalTax,
   CivilStatus,
+  EnginePerson,
   ChildInput as HouseholdChild,
   EmploymentInput as HouseholdEmployment,
   HouseholdAmounts,
@@ -26,6 +29,7 @@ import type { TaxYear } from './params.js';
 
 export type {
   Amount,
+  CapitalTax,
   CommuteMode,
   EnginePerson,
   EstimateNote,
@@ -91,6 +95,34 @@ export interface WealthItemInput {
   source: string;
 }
 
+/** Why a lump sum was paid (profile.pension_capital_reason; ch-na-law-opp3 art. 3). */
+export type CapitalReason = 'retirement' | 'home' | 'self_employment' | 'leaving' | 'other';
+
+/**
+ * A lump sum from the 2nd pillar (pension fund, vested benefits) or pillar 3a (prestation en
+ * capital, 98.12), one per attestation: taxed apart (ge-na-law-lipp art. 45; ch-na-law-lifd art. 38).
+ */
+export interface CapitalBenefitInput {
+  /** Usually the attestation's document id. */
+  id?: string;
+  person: EnginePerson;
+  pillar: 'pillar2' | 'pillar3a';
+  amount: Amount;
+  /** The date it was paid, YYYY-MM-DD: it counts for that year (ch-na-law-lifd art. 38 al. 1bis). */
+  date?: string;
+}
+
+/** The household's lump sums of the year and what decides whether Taxpresso can tax them. */
+export interface CapitalInput {
+  benefits: readonly CapitalBenefitInput[];
+  /** Why they were paid, per person, as answered. A person without an answer: not computed. */
+  reasons?: Partial<Record<EnginePerson, readonly CapitalReason[]>>;
+  /** The people whose salary is taxed at source: not supported (ge-2026-source-directives p. 11). */
+  atSource?: readonly EnginePerson[];
+  /** The household arrived from abroad during the year: not supported. */
+  arrivedFromAbroad?: boolean;
+}
+
 export interface EngineInput {
   taxYear: TaxYear;
   /** Commune of residence on 31 December. */
@@ -124,6 +156,30 @@ export interface EngineInput {
    * 56.20, 56.30, credits F1.IA and F1.IES). When given, it is the only source of these amounts.
    */
   wealthItems?: readonly WealthItemInput[];
+  /** Lump sums from the 2nd pillar and pillar 3a, taxed apart (./capital.ts). */
+  capital?: CapitalInput;
+}
+
+/**
+ * The cantonal and communal tax on pension capital (ge-na-law-lipp art. 45): the scale at the rate
+ * of the whole amount (with the splitting of art. 41 al. 2 to 4), a fifth of it, then the cantonal
+ * centimes, the 12 % reduction, the home care centime and the commune's centimes, as on income.
+ */
+export interface CapitalIcc {
+  splitting: IccSplitting;
+  /** The amount the rate is read at: all of it, or 50 % or 55.56 % of it with splitting. */
+  rateIncome: Line;
+  /** The scale's base tax on the whole amount, at that rate. */
+  scaleTax: Line;
+  /** A fifth of it: the base tax on the capital (art. 45 al. 2). */
+  base: Line;
+  cantonalCentimes: Line;
+  reduction12: Line;
+  homeCare: Line;
+  cantonal: Line;
+  /** The commune of residence's centimes on the base. */
+  communal: Line;
+  tax: Line;
 }
 
 export interface CommunalShare {
@@ -204,8 +260,10 @@ export interface TaxResult extends SharedTaxResult<IccResult> {
   taxYear: TaxYear;
   commune: CommuneSlug;
   ifd: IfdResult | null;
-  /** ICC (cantonal and communal) plus IFD, when both are computed. */
+  /** ICC (cantonal and communal) plus IFD, when both are computed; not the tax on pension capital. */
   total: number | null;
+  /** The separate tax on pension capital (98.12), when the household received some (./capital.ts). */
+  capital?: CapitalTax<CapitalIcc>;
   /** Every cap, threshold, minimum and flat-or-actual choice applied, in the order computed. */
   limits: LimitApplied[];
 }

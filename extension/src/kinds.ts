@@ -88,4 +88,16 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string; de: str
     fr: 'Déclaration de cette année (PDF à vérifier)',
     de: 'Steuererklärung dieses Jahres (PDF zum Prüfen)',
   },
+  // ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (the institution's attestation, a copy for you);
+  // ge-2025-guide-declaration-pp p. 13: "Prestations en capital du 2e et 3e pilier A" (98.12).
+  lpp_capital_attestation: {
+    en: 'Pension capital attestation, 2nd pillar',
+    fr: 'Attestation de prestation en capital du 2e pilier',
+    de: 'Bescheinigung Kapitalleistung 2. Säule',
+  },
+  pillar3a_capital_attestation: {
+    en: 'Pension capital attestation, pillar 3a',
+    fr: 'Attestation de prestation en capital du 3e pilier A',
+    de: 'Bescheinigung Kapitalleistung Säule 3a',
+  },
 };

@@ -27,6 +27,7 @@ import { WorkspaceError, type Workspace } from './workspace.js';
 const ENGINE_RUBRICS = {
   icc: new Set<string>(ENGINE_RUBRICS_2026.icc),
   ifd: new Set<string>(ENGINE_RUBRICS_2026.ifd),
+  info: new Set<string>(ENGINE_RUBRICS_2026.info),
 };
 
 /** The engine's values for the rubrics it computes (SPEC.md section 7), as form items. */
@@ -79,6 +80,10 @@ export function engineItems(ws: Workspace): FormItem[] {
     add('95.00', 'household', ifd.totalIncome, 'ifd');
     add('99.00', 'household', ifd.taxableIncome, 'ifd');
   }
+  // The lump sums from the 2nd pillar and pillar 3a counted for the year (98.12, one amount for
+  // the household: the spouses' add up in its box).
+  for (const i of r.capital?.items ?? [])
+    if (ENGINE_RUBRICS.info.has(i.code)) add(i.code, i.person, i, 'amount');
   return out;
 }
 

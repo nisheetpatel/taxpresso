@@ -60,6 +60,32 @@ function lines(r: TaxResult): ViewLine[] {
       ['ifd.tax', f.tax],
     );
   }
+  if (r.capital) {
+    const c = r.capital;
+    out.push(['capital.amount', c.amount]);
+    if (c.icc) {
+      const x = c.icc;
+      out.push(
+        ['capital.rateIncome', x.rateIncome],
+        ['capital.scaleTax', x.scaleTax],
+        ['capital.base', x.base],
+        ['capital.cantonalCentimes', x.cantonalCentimes],
+        ['capital.reduction12', x.reduction12],
+        ['capital.homeCare', x.homeCare],
+        ['capital.cantonal', x.cantonal],
+        ['capital.communal', x.communal],
+        ['capital.icc', x.tax],
+      );
+    }
+    if (c.ifd) {
+      out.push(
+        ['capital.ifd.scaleIncome', c.ifd.scaleIncome],
+        ['capital.ifd.scaleTax', c.ifd.scaleTax],
+        ['capital.ifd', c.ifd.tax],
+      );
+    }
+    if (c.total) out.push(['capital.total', c.total]);
+  }
   return out.map(([id, line]) => ({ id, line }));
 }
 
@@ -102,7 +128,7 @@ export const view: ResultView<TaxResult> = {
   detailNote: '',
   lines,
   detailLines:
-    /incomeBase|Cantonal|Reduction|HomeCare|Supplementary|privileged|personalTax|total|scaleTax|childReduction|ifd\.tax$/,
+    /incomeBase|Cantonal|Reduction|HomeCare|Supplementary|privileged|personalTax|total|scaleTax|childReduction|ifd\.tax$|^capital\./,
   wealthItems: (icc) => [...icc.wealth.items, icc.wealth.socialDeduction],
   rows(r) {
     const out: ViewRow[] = [];
@@ -152,6 +178,50 @@ export const view: ResultView<TaxResult> = {
     ];
   },
   lastYear: compareWithLastYear,
+  // The tax on pension capital (98.12): a tax of its own, apart from the return's total.
+  capital(r) {
+    const c = r.capital;
+    if (!c) return undefined;
+    const rows: ViewRow[] = [];
+    if (c.icc) {
+      rows.push({
+        id: 'capital.icc',
+        label: {
+          en: 'Cantonal and communal tax on it (ICC)',
+          fr: 'Impôt cantonal et communal (ICC)',
+        },
+        line: c.icc.tax,
+      });
+    }
+    if (c.ifd) {
+      rows.push({
+        id: 'capital.ifd',
+        label: { en: 'Federal direct tax on it (IFD)', fr: 'Impôt fédéral direct (IFD)' },
+        line: c.ifd.tax,
+      });
+    }
+    return {
+      amount: {
+        id: 'capital.amount',
+        label: {
+          en: 'Pension capital of the year (prestations en capital du 2e et 3e pilier A, 98.12)',
+          fr: 'Prestations en capital du 2e et 3e pilier A (98.12)',
+        },
+        line: c.amount,
+      },
+      rows,
+      total: c.total
+        ? {
+            id: 'capital.total',
+            label: {
+              en: 'Tax on pension capital, taxed apart',
+              fr: 'Impôt sur les prestations en capital, imposées à part',
+            },
+            line: c.total,
+          }
+        : null,
+    };
+  },
   allLines,
   // The income tax: cantonal (base, centimes, 12 % reduction, home care) plus communal, and federal;
   // the wealth tax and the taxe personnelle don't change with a deduction.

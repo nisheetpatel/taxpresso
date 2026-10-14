@@ -40,6 +40,16 @@ export interface YearComparisonRow {
   thisYearProvisional: boolean;
 }
 
+/** The tax on pension capital, as the views show it. */
+export interface CapitalView {
+  /** The lump sums of the year added up, with the official term of the form's line. */
+  amount: ViewRow;
+  /** One row per tax computed: cantonal and communal, federal. */
+  rows: ViewRow[];
+  /** Both taxes together, when both are computed. */
+  total: ViewRow | null;
+}
+
 /** The income tax a deduction changes, in centimes: what the plans compare with and without. */
 export interface IncomeTax {
   cantonalCentimes: number;
@@ -95,6 +105,12 @@ export interface ResultView<R extends TaxResult = TaxResult> {
   parts(r: R): ViewRow[];
   /** This year against last year's declaration, when the canton reads it (comparison only). */
   lastYear?(r: R, facts: readonly Fact[]): YearComparisonRow[];
+  /**
+   * The separate tax on lump sums from the 2nd pillar and pillar 3a (TaxResult.capital), when the
+   * canton computes it and the household received some: the amount taxed, one row per tax, and
+   * the two together. A tax of its own, never in the result's total.
+   */
+  capital?(r: R): CapitalView | undefined;
 
   // ---- The final check and the plans ----------------------------------------------------------
   /** Every computed line, for the facts the result rests on. */

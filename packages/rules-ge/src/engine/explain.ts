@@ -76,6 +76,14 @@ export const NOTE = {
     en: 'Taxe personnelle: not due when you have no taxable wealth and a taxable income under the law’s limit (LCP art. 377); the law says "revenu", read here as the taxable income.',
     fr: `Taxe personnelle${NB}: pas due sans fortune imposable et avec un revenu imposable sous la limite de la loi (LCP art. 377)${NB}; la loi dit «${NB}revenu${NB}», lu ici comme le revenu imposable.`,
   },
+  capitalBuyIn: {
+    en: 'Tax on your income not computed: you bought into your pension fund and took a lump sum from the 2nd pillar in the same year. The tax office may take back the buy-in’s deduction (rachat, 31.30; LPP art. 79b al. 3; guide p. 18), and the documents don’t say how much. The tax on the lump sum itself is computed. GeTax or the AFC can tell you more.',
+    fr: `Impôt sur votre revenu non calculé${NB}: vous avez fait un rachat dans votre caisse de pension et reçu un capital du 2e pilier la même année. L’administration peut supprimer la déduction du rachat (31.30${NB}; LPP art. 79b al. 3${NB}; guide p. 18), et les documents ne disent pas de combien. L’impôt sur le capital lui-même est calculé. GeTax ou l’AFC peuvent vous en dire plus.`,
+  },
+  capitalRounding: {
+    en: 'Tax on pension capital, cantonal and communal: a fifth of the scale’s tax and each line after it are rounded to the nearest 5 centimes, and the commune of residence taxes the whole base. The AFC’s capital tariffs give the same rates to the hundredth of a percent (ge-2025-source-capital-icc-tariff); they don’t spell out the rounding of each line.',
+    fr: `Impôt cantonal et communal sur les prestations en capital${NB}: le cinquième de l’impôt du barème et chaque ligne qui suit sont arrondis aux 5 centimes les plus proches, et la commune de domicile impose toute la base. Les barèmes de l’AFC pour les prestations en capital donnent les mêmes taux au centième de pour cent (ge-2025-source-capital-icc-tariff)${NB}; ils ne précisent pas l’arrondi de chaque ligne.`,
+  },
   halfFranc: {
     en: 'Life insurance limit (52.15): half as much again gives a half franc, rounded down.',
     fr: `Limite assurance-vie (52.15)${NB}: l’augmentation de moitié donne un demi-franc, arrondi vers le bas.`,

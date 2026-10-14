@@ -150,7 +150,15 @@ export {
   type AssessmentView,
   type ObjectionDeadline,
 } from './2026/assessment.js';
-export { computeReturn, allLines, EngineInputError } from './engine/compute.js';
+export { computeReturn, allLines, capitalLines, EngineInputError } from './engine/compute.js';
+// The separate tax on lump sums from the 2nd pillar and pillar 3a (prestations en capital, 98.12).
+export { capitalIcc, capitalTax, type CapitalOutcome } from './engine/capital.js';
+export {
+  CAPITAL_ADDED_UP,
+  CAPITAL_CENTIMES,
+  CAPITAL_COMMUNE,
+  CAPITAL_FIFTH,
+} from './law/capital.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {
@@ -166,7 +174,7 @@ export { pillar3aCapWithoutFund } from '@taxpresso/rules-ch';
 export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
 export { bracketTax, federalScaleTax, chf } from '@taxpresso/rules-ch';
 export type * from './engine/types.js';
-export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
+export { capitalFromFacts, engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';
 export {
   finalCheck,
