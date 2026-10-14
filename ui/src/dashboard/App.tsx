@@ -751,6 +751,20 @@ function QuestionCard(p: CardProps) {
         />
       </div>
     );
+  } else if (q.type === 'date') {
+    // A day of the tax year, as the browser's own date picker gives it (YYYY-MM-DD).
+    control = (
+      <input
+        class="tnum date"
+        type="date"
+        min={q.minDate}
+        max={q.maxDate}
+        value={typeof draft === 'string' ? draft : ''}
+        aria-labelledby="q-title"
+        onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
+        onKeyDown={(e) => e.key === 'Enter' && submit()}
+      />
+    );
   } else if (q.type === 'commune') {
     control = (
       <select

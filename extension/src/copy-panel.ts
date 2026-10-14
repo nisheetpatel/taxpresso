@@ -51,6 +51,7 @@ export function engineItems(ws: Workspace): FormItem[] {
     column?: FormColumn,
     amount = l.amount,
     signed = false,
+    extra: Pick<FormItem, 'gloss' | 'noCheck'> = {},
   ) =>
     out.push({
       code,
@@ -59,9 +60,29 @@ export function engineItems(ws: Workspace): FormItem[] {
       amount: signed ? amount : Math.abs(amount),
       status: status(l),
       source: { ...(l.facts ? { facts: l.facts } : {}), rule: l.sources.join('; ') },
+      ...extra,
     });
   const icc = r.icc;
   const ifd = r.ifd;
+  // A year of arrival or departure: 95.00 is the net income for the rate, a full year's (the form's
+  // "le cas échéant, revenu net pour le taux"), 97.00 the part not taxed here, 99.00 the period's.
+  // How the form computes those two for part of a year isn't documented: never compared with the
+  // official PDF (noCheck).
+  const part = r.partYear;
+  const rateGloss = {
+    gloss: {
+      en: 'Net income for the rate: your income converted to a full year (revenu net pour le taux)',
+      fr: 'Revenu net pour le taux\u00a0: votre revenu converti sur une année entière',
+    },
+    noCheck: true,
+  };
+  const notTaxedGloss = {
+    gloss: {
+      en: 'The part of a full year’s income not taxed here: the time you didn’t live in Switzerland',
+      fr: 'La part du revenu annuel non imposable ici\u00a0: la période où vous ne viviez pas en Suisse',
+    },
+    noCheck: true,
+  };
   for (const i of icc?.items ?? [])
     if (ENGINE_RUBRICS.icc.has(i.code)) add(i.code, i.person, i, 'icc');
   for (const i of ifd?.items ?? [])
@@ -79,7 +100,12 @@ export function engineItems(ws: Workspace): FormItem[] {
         insurance.reduce((s, i) => s + i.amount, 0),
       );
     }
-    add('95.00', 'household', icc.totalIncome, 'icc', icc.totalIncome.amount, true);
+    if (part?.icc) {
+      add('95.00', 'household', part.icc.rateTotal, 'icc', undefined, true, rateGloss);
+      add('97.00', 'household', part.icc.notTaxed, 'icc', undefined, false, notTaxedGloss);
+    } else {
+      add('95.00', 'household', icc.totalIncome, 'icc', icc.totalIncome.amount, true);
+    }
     // With a property abroad, the share of the income not taxed in Geneva (97.00).
     if (icc.exemptIncome) add('97.00', 'household', icc.exemptIncome, 'icc');
     add('99.00', 'household', icc.taxableIncome, 'icc', icc.taxableIncome.amount, true);
@@ -101,7 +127,12 @@ export function engineItems(ws: Workspace): FormItem[] {
   if (ifd) {
     const insurance = ifd.items.find((i) => i.code === '52.00');
     if (insurance) add('52.00', 'household', insurance, 'ifd');
-    add('95.00', 'household', ifd.totalIncome, 'ifd', ifd.totalIncome.amount, true);
+    if (part?.ifd) {
+      add('95.00', 'household', part.ifd.rateTotal, 'ifd', undefined, true, rateGloss);
+      add('97.00', 'household', part.ifd.notTaxed, 'ifd', undefined, false, notTaxedGloss);
+    } else {
+      add('95.00', 'household', ifd.totalIncome, 'ifd', ifd.totalIncome.amount, true);
+    }
     if (ifd.exemptIncome) add('97.00', 'household', ifd.exemptIncome, 'ifd');
     add('99.00', 'household', ifd.taxableIncome, 'ifd', ifd.taxableIncome.amount, true);
   }

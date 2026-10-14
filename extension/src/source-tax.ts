@@ -9,7 +9,7 @@
 // The same facts feed the TOU comparison (./planning.ts), get_status, list_optimizations and the
 // dashboard. Everything is derived on every read, never stored.
 import type { Fact, FactValue } from '@taxpresso/ledger';
-import type { Text } from '@taxpresso/rules-ch';
+import { partYear as liability, type PartYear, type Text } from '@taxpresso/rules-ch';
 import {
   deriveTariffs,
   type DerivedTariff,
@@ -18,6 +18,7 @@ import {
   SOURCE_TAX_SUBJECT,
   sourceTax,
   SourceTaxError,
+  touThresholds,
   type TariffAssumption,
   type TariffOpen,
 } from '@taxpresso/rules-ge';
@@ -107,7 +108,46 @@ export interface SourceTax {
   credited: boolean;
   /** Arrived from abroad in the year: the CHF 120,000 counts the salary over a whole year. */
   partYear: boolean;
+  /**
+   * A year of arrival or departure whose day is known (the same for a couple): the period of tax
+   * liability, the salary converted to a year for the CHF 120,000 and for the rate of the tax
+   * withheld (ge-<year>-source-directives p. 51 and ch. 4.2.5 and 4.2.10).
+   */
+  period?: PartYear;
 }
+
+/**
+ * The period of tax liability of a year of arrival or departure in Geneva, from the answers: the
+ * same day for everyone in the household, or undefined (not known, or different days).
+ */
+function periodOf(
+  answer: (key: string, owner: string) => FactValue | undefined,
+  people: readonly Who[],
+  taxYear: number,
+): PartYear | undefined {
+  const moved = answer('profile.moved', 'household');
+  const kind =
+    moved === 'from_abroad' ? 'arrival' : moved === 'leaving_switzerland' ? 'departure' : undefined;
+  if (!kind) return undefined;
+  const key = kind === 'arrival' ? 'profile.arrival_date' : 'profile.departure_date';
+  const days = people.map((p) => answer(key, p));
+  const day = days[0];
+  if (typeof day !== 'string' || days.some((d) => d !== day)) return undefined;
+  try {
+    return liability(taxYear, kind, day);
+  } catch {
+    return undefined;
+  }
+}
+
+/** Salary certificate boxes 3 to 7: pay that isn't monthly salary, never converted to a year. */
+const NON_PERIODIC = [
+  'salary.non_periodic',
+  'salary.capital',
+  'salary.participations',
+  'salary.board_fees',
+  'salary.other_benefits',
+];
 
 /** A value read from this year's documents, summed per person. */
 function fromDocuments(
@@ -214,7 +254,12 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
   } catch {
     // A year without directives: no barème rather than another year's.
   }
-  const partYear = answer('profile.moved', 'household') === 'from_abroad';
+  // Arrived from abroad or leaving: the CHF 120,000 counts a year's salary (decided below once
+  // the day is known).
+  const partYear = ['from_abroad', 'leaving_switzerland'].includes(
+    String(answer('profile.moved', 'household')),
+  );
+  const period = periodOf(answer, people, taxYear);
 
   const out: SourceTaxPerson[] = base.map((p) => {
     const sources = p.incomeSources ?? [];
@@ -262,6 +307,24 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
     // Benefits documented only as paid through the employer are in the salary already.
     const benefitsKnown = !hasBenefits || anyBenefits !== undefined;
     const atLeast = (salaryGross?.centimes ?? 0) + (benefitAmount?.centimes ?? 0);
+    // A year of arrival or departure with its day: the CHF 120,000 counts the periodic salary
+    // converted to a year, x 360 / days, without the non-periodic pay (bonus, gratification,
+    // primes): ge-<year>-source-directives p. 51 (2025: p. 50), ch. 8.2.1; 30 days a month, p. 21
+    // (2025: p. 20), ch. 4.2.9. Whether that pay is then added unconverted, the directives don't
+    // say: decided only when both readings agree. Benefits: not spelled out, so not decided.
+    const oneOff =
+      salaryGross?.from === 'certificate'
+        ? NON_PERIODIC.reduce((sum, k) => sum + (fromDocuments(ws, k, p.person)?.centimes ?? 0), 0)
+        : 0;
+    const yearOf = (c: number) => Math.round((c * 360) / period!.days);
+    const converted =
+      period && !hasBenefits && salaryGross
+        ? {
+            without: yearOf(salaryGross.centimes - oneOff),
+            with: yearOf(salaryGross.centimes - oneOff) + oneOff,
+          }
+        : undefined;
+    const limit = touThresholds(taxYear).gross.value;
     const person: SourceTaxPerson = {
       ...p,
       ...(derivedTariff ? { derivedTariff } : {}),
@@ -278,8 +341,11 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
           }
         : {}),
       benefitsDocumented: hasBenefits && anyBenefits !== undefined,
-      ...(salaryKnown && benefitsKnown && !partYear ? { grossCentimes: atLeast } : {}),
-      grossAtLeastCentimes: atLeast,
+      ...(salaryKnown && benefitsKnown && !partYear && !period ? { grossCentimes: atLeast } : {}),
+      ...(converted && (converted.with < limit || converted.with === converted.without)
+        ? { grossCentimes: converted.with }
+        : {}),
+      grossAtLeastCentimes: converted ? converted.without : atLeast,
       missing: [],
       unconfirmed,
     };
@@ -326,8 +392,15 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
       else if (!tariff) person.missing.push('tariff');
       else {
         try {
-          const t = sourceTax(taxYear, tariff, salaryGross.centimes, 'year');
-          salaryPart = t.taxCentimes;
+          // A part year: the employer takes the rate of the salary converted to a year (directives
+          // ch. 4.2.5 and 4.2.10) and applies it to the salary paid.
+          const annual = period
+            ? Math.round((salaryGross.centimes * 360) / period.days)
+            : undefined;
+          const t = sourceTax(taxYear, tariff, annual ?? salaryGross.centimes, 'year');
+          salaryPart = annual
+            ? Math.round((salaryGross.centimes * t.rateBp) / 10_000)
+            : t.taxCentimes;
           estimatedWith = t.tariff;
         } catch (err) {
           if (!(err instanceof SourceTaxError)) throw err;
@@ -345,7 +418,14 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
         ...(estimatedWith ? { tariff: estimatedWith } : {}),
         estimate: estimatedWith !== undefined,
         sources: estimatedWith
-          ? [year?.tables ?? '', year?.readable ?? '', year?.annualModel ?? ''].filter(Boolean)
+          ? [
+              year?.tables ?? '',
+              year?.readable ?? '',
+              year?.annualModel ?? '',
+              period
+                ? `ge-${taxYear}-source-directives ${taxYear === 2025 ? 'p. 16 and 21' : 'p. 16 and 22'} (ch. 4.2.5, 4.2.10)`
+                : '',
+            ].filter(Boolean)
           : docSources,
       };
     }
@@ -357,7 +437,8 @@ export function sourceTaxOf(ws: Workspace): SourceTax | undefined {
     people: out,
     any: out.some((p) => p.atSource === true),
     credited: out.some((p) => p.creditedCentimes !== undefined),
-    partYear,
+    partYear: partYear || period !== undefined,
+    ...(period ? { period } : {}),
   };
 }
 

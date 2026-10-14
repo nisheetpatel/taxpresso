@@ -18,6 +18,7 @@ export type FinalCheckKind =
   | 'limit'
   | 'capital'
   | 'abroad'
+  | 'part_year'
   | 'best_figure'
   | 'holding_check'
   | 'not_counted'

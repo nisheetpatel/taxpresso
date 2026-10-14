@@ -98,6 +98,9 @@ const QuestionOut = z.object({
     .optional(),
   min: z.number().optional(),
   max: z.number().optional(),
+  /** A date question: the first and last day it takes, YYYY-MM-DD. */
+  minDate: z.string().optional(),
+  maxDate: z.string().optional(),
   suggested: z
     .object({
       value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
@@ -146,6 +149,7 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
       : {}),
     ...(en.min !== undefined ? { min: en.min } : {}),
     ...(en.max !== undefined ? { max: en.max } : {}),
+    ...(en.minDate ? { minDate: en.minDate, maxDate: en.maxDate } : {}),
     ...(slot.suggested !== undefined
       ? {
           suggested: {
@@ -201,9 +205,13 @@ function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
           ? 'Answer: an amount in CHF as the user said it, e.g. 790 or "1\'250.50".'
           : q.type === 'commune'
             ? `Answer: the name of the ${place} commune${hint}.`
-            : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
-                ?.map((o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`)
-                .join('; ')}`;
+            : q.type === 'date'
+              ? `Answer: the day, YYYY-MM-DD, in ${q.minDate?.slice(0, 4) ?? 'the tax year'}; from the user's words or a document they have (an arrival attestation, a permit, a salary certificate's period), never guessed.`
+              : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
+                  ?.map(
+                    (o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`,
+                  )
+                  .join('; ')}`;
   const who = q.person === 'p2' ? ` (about ${WHO.p2})` : '';
   return [
     `[${q.id}]${who} ${q.text.fr}`,
