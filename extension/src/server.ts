@@ -39,7 +39,7 @@ import { PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
 import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
 import { registerYearTool } from './year-tool.js';
-import { TaxYears } from './years.js';
+import { DEFAULT_TAX_YEAR, TaxYears } from './years.js';
 
 // MCP Apps: the dashboard in the conversation, and the tool it talks through (./dashboard-view.ts).
 export { DASHBOARD_VIEW_URI, MCP_APP_MIME_TYPE } from './dashboard-view.js';
@@ -178,6 +178,13 @@ function toolError(err: unknown) {
   throw err;
 }
 
+/**
+ * "Tax year 2025: " before what a question or an answer says, when the open year is not the default
+ * one: the user may have switched in the dashboard (docs/design/tax-years.md).
+ */
+const yearOf = (ws: Workspace) =>
+  ws.taxYear === DEFAULT_TAX_YEAR ? '' : `Tax year ${ws.taxYear}: `;
+
 /** `place`: the canton's name; `hint`: how its communes are named, when that needs saying. */
 function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
   const how =
@@ -272,7 +279,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
       const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
       const text = questions.length
-        ? `${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}`
+        ? `${yearOf(ws)}${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}`
         : 'All questions are answered. Call get_status for the next step.';
       return {
         content: [{ type: 'text', text }],
@@ -319,7 +326,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
           .map((n) => n.what.en);
         const nextSlot = ws.next();
         const next = nextSlot ? questionOut(ws, nextSlot) : undefined;
-        const lines = [`Saved: ${saved}.`];
+        const lines = [`${yearOf(ws)}Saved: ${saved}.`];
         if (newlyMissing.length) lines.push(`Documents now needed: ${newlyMissing.join('; ')}.`);
         if (notSupported.length) {
           lines.push(

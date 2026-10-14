@@ -260,8 +260,14 @@ describe('a Geneva return for 2025, in the chat and the dashboard', () => {
       /Tax year 2025 is open \(it is over: the plans before 31 December are 2026's\); also 2026/,
     );
 
+    // Questions and answers name the year when it is not the default one.
+    const first = text(await call('next_questions'));
+    expect(first).toMatch(/^Tax year 2025: 0 answered/);
+    expect(first).toMatch(/EN: Where did you live on 31 December 2025\?/);
+    expect(text(await call('answer_question', { id: 'canton', value: 'GE' }))).toMatch(
+      /^Tax year 2025: Saved: Canton of Geneva\./,
+    );
     const asked = await answerAll();
-    expect(asked[0]).toBe('Where did you live on 31 December 2025?');
     expect(asked).toContain('Did you move in 2025?');
     expect(asked.join('\n')).not.toMatch(/2026/);
 
