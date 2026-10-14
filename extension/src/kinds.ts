@@ -144,4 +144,18 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string; de: str
       de: 'Bescheinigung Kapitalleistung Säule 3a',
       it: 'Attestazione di prestazione in capitale, pilastro 3a',
     },
+    // ge-2025-guide-independants p. 6 and 25: the accounts or simple records of a self-employed person.
+    business_accounts: {
+      en: 'Business accounts or records',
+      fr: 'Comptes commerciaux ou relevés',
+      de: 'Geschäftsabschluss oder Aufzeichnungen',
+      it: 'Conti dell’attività o registrazioni',
+    },
+    // ge-2025-guide-independants p. 25: "un relevé des cotisations sociales ou des acomptes".
+    avs_contributions: {
+      en: 'AVS contributions statement',
+      fr: 'Relevé des cotisations AVS',
+      de: 'AHV-Beitragsabrechnung',
+      it: 'Conteggio dei contributi AVS',
+    },
   };

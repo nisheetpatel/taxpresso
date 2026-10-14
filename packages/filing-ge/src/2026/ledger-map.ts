@@ -15,6 +15,7 @@ import { weakestStatus, type FormColumn, type FormItem } from '../form.js';
 
 const SPEC = 'ge-2025-declaration-specimen';
 const GUIDE = 'ge-2025-guide-declaration-pp';
+const INDEP = 'ge-2025-guide-independants';
 
 export interface LedgerRoute {
   /** The ledger key (packages/rules-ge/src/2026/keys.ts). */
@@ -93,6 +94,31 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
     to: perPerson('31.40', '41.40'),
     source: `${SPEC} p. 5 and 6; ${GUIDE} p. 18`,
   },
+  // Annexe B: the lines of the business's accounts and the owner's AVS contributions, as the form
+  // names them; the same codes for taxpayers A and B, one sheet each (B2 p. 8, B4 p. 10).
+  ...(
+    [
+      ['business.turnover', '12.08', 12],
+      ['business.benefits', '12.09', 12],
+      ['business.financial_income', '12.15', 12],
+      ['business.other_income', '12.16', 13],
+      ['business.costs_goods', '12.21', 13],
+      ['business.costs_staff', '12.22', 13],
+      ['business.depreciation', '12.23', 14],
+      ['business.provisions', '12.24', 14],
+      ['business.interest', '12.41', 14],
+      ['business.costs_other', '12.42', 15],
+      ['business.current_assets', '12.48', 17],
+      ['business.fixed_assets', '12.49', 17],
+      ['business.liabilities', '57.50', 17],
+      ['avs.contributions_year', '32.10', 22],
+      ['avs.contributions_earlier', '32.11', 22],
+    ] as const
+  ).map(([key, code, page]): LedgerRoute => ({
+    key,
+    to: perPerson(code, code),
+    source: `${SPEC} p. ${code.startsWith('32') ? 10 : 8}; ${INDEP} p. ${page}`,
+  })),
   // Annexe C1: pensions, by their kind.
   {
     key: 'pension.amount',
@@ -153,14 +179,38 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
  * cantonal 31.60 and 31.70 are there only when the actual costs beat the flat deduction (p. 22).
  */
 export const ENGINE_RUBRICS_2026 = {
-  icc: ['31.50', '41.50', '31.60', '41.60', '31.70', '41.70', '31.95', '41.95', '61.25', '61.30'],
-  ifd: ['31.20', '41.20', '31.60', '41.60', '31.71', '41.71', '31.90', '41.90', '59.20', '61.20'],
+  icc: [
+    '31.50',
+    '41.50',
+    '31.60',
+    '41.60',
+    '31.70',
+    '41.70',
+    '31.95',
+    '41.95',
+    '32.95',
+    '61.25',
+    '61.30',
+  ],
+  ifd: [
+    '31.20',
+    '41.20',
+    '31.60',
+    '41.60',
+    '31.71',
+    '41.71',
+    '31.90',
+    '41.90',
+    '32.90',
+    '59.20',
+    '61.20',
+  ],
   /**
    * The lump sums from the 2nd pillar and pillar 3a the engine counts for the year (98.12, PG2 p. 2;
    * guide p. 13): one paid another year belongs to that year's tax (ch-na-law-lifd art. 38 al. 1bis).
    */
   info: ['98.12'],
-  source: `${SPEC} p. 2, 3, 5 and 6; ${GUIDE} p. 13, 15, 16, 19 to 22 and 31`,
+  source: `${SPEC} p. 2, 3, 5, 6 and 10; ${GUIDE} p. 13, 15, 16, 19 to 22 and 31; ${INDEP} p. 23 and 24`,
 } as const;
 
 const FROM_ENGINE = (rubrics: string) =>
@@ -237,6 +287,11 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'tax_statement.withholding_swiss': ETAT('F4', 24),
   'tax_statement.foreign_tax_credit': ETAT('F4', 24),
   'tax_statement.fees': ETAT('F4', 24),
+  // Annexe B1: the business's name and year come with the sheet the engine makes for a business
+  // (the extension places them on B1, ${SPEC} p. 7), never on their own.
+  'business.name': `Goes to B1 with the business's sheet (${SPEC} p. 7): the name of the business.`,
+  'business.period_from': `Goes to B1 with the business's sheet (${SPEC} p. 7): the business year.`,
+  'business.period_to': `Goes to B1 with the business's sheet (${SPEC} p. 7): the business year.`,
   'life_insurance.surrender_value': `Goes to 16.70 (C3) through the securities list's other wealth (${SPEC} p. 13); the dashboard's securities card shows it until the engine places it.`,
   'life_insurance.premiums': `Goes to 52.11 (C3) through the securities list's other wealth (${SPEC} p. 13); the dashboard's securities card shows it until the engine places it.`,
 };

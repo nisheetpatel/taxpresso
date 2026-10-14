@@ -91,6 +91,8 @@ const LineOwnerChange = z.object({
 });
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
+/** Kinds only Geneva reads so far: self-employment, the simple case (SPEC.md section 1). */
+const GENEVA_ONLY: ReadonlySet<string> = new Set(['business_accounts', 'avs_contributions']);
 
 /** Where a question's suggestion comes from: last year's declaration, its year and page. */
 function suggestedFrom(ws: Workspace, slot: Slot) {
@@ -202,7 +204,9 @@ export function dashboardState(
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
     })),
-    kinds: KIND_ORDER.map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
+    kinds: KIND_ORDER.filter((k) => canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)).map(
+      (k) => ({ value: k, label: say(KIND_LABELS[k], lang) }),
+    ),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
     // 10.5 second view, 10.8): ./document-views.ts.
     cards: documentCards(ws, content),

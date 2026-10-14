@@ -320,6 +320,60 @@ describe('checking the official PDF against the values to type', () => {
   });
 });
 
+describe('annexe B in the PDF: one sheet per self-employed taxpayer, the same codes for both', () => {
+  // The reader can't tell whose a sheet is (its codes are the same for A and B, and the ticked box
+  // is not kept): it gives the lines to the household. Taxpresso gives them to the person whose
+  // sheet the copy panel has, or, with two, by the order and the amounts that match.
+  const sheet = (person: 'p1' | 'p2', turnover: number, avs: number) => [
+    item('12.08', person, chf(turnover)),
+    item('32.10', person, chf(avs)),
+    item('12.17', person, chf(turnover), { status: 'computed' }),
+  ];
+  const printedSheet = (turnover: number, avs: number, occurrence: number, page = 8) => [
+    at('B2', '12.08', 'household', { amounts: [chf(turnover), chf(turnover)] }, page, occurrence),
+    at('B2', '12.17', 'household', { amounts: [chf(turnover), chf(turnover)] }, page, occurrence),
+    at('B4', '32.10', 'household', { amounts: [chf(avs), chf(avs)] }, page + 2, occurrence),
+  ];
+
+  it('gives the sheet to the only self-employed taxpayer, here B', () => {
+    const c = check(sheet('p2', 48_000, 4_000), printedSheet(48_000, 4_000, 1));
+    expect(c.counts).toMatchObject({ match: 2, toFix: 0, computedOff: 0 });
+    expect(lineOf(c, 'B2', '12.08')).toMatchObject({ person: 'B', outcome: 'match' });
+    expect(lineOf(c, 'B4', '32.10')).toMatchObject({ person: 'B', outcome: 'match' });
+    expect(c.sections.find((s) => s.page === 'B2')!.computed).toMatchObject([
+      { ref: '12.17', check: 'adds_up' },
+    ]);
+  });
+
+  it('with two sheets, finds whose is whose by the amounts, whatever their order', () => {
+    const items = [...sheet('p1', 95_000, 9_000), ...sheet('p2', 48_000, 4_000)];
+    // B's sheet printed first.
+    const c = check(items, [
+      ...printedSheet(48_000, 4_000, 1),
+      ...printedSheet(95_000, 9_000, 2, 12),
+    ]);
+    expect(c.counts).toMatchObject({ match: 4, toFix: 0 });
+    const b2 = c.sections.find((s) => s.page === 'B2')!.lines;
+    expect(b2.map((l) => [l.person, l.cells[0]!.pdf])).toEqual([
+      ['A', 95_000],
+      ['B', 48_000],
+    ]);
+  });
+
+  it('still shows a real difference on a sheet', () => {
+    const c = check(sheet('p1', 95_000, 9_000), printedSheet(95_000, 9_500, 1));
+    expect(lineOf(c, 'B4', '32.10')).toMatchObject({
+      person: 'A',
+      outcome: 'differs',
+      cells: [
+        { column: 'icc', taxpresso: 9_000, pdf: 9_500 },
+        { column: 'ifd', taxpresso: 9_000, pdf: 9_500 },
+      ],
+    });
+    expect(c.counts.toFix).toBe(1);
+  });
+});
+
 describe('the lump sums from the 2nd pillar and pillar 3a (98.12)', () => {
   it('compares the one amount of the household with the PDF, both spouses’ together', () => {
     // Printed under the ICC column of PG2's information (ge-2025-declaration-specimen p. 2).

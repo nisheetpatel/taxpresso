@@ -77,6 +77,49 @@ export interface EmploymentInput {
   side?: boolean;
 }
 
+/**
+ * The year of a sole proprietorship (raison individuelle), as its accounts or simple records give
+ * it: each line of the profit and loss account and of the balance sheet, the owner's own AVS/AI/APG
+ * contributions and the losses of earlier years (../business/self-employment.ts reads it).
+ */
+export interface BusinessInput {
+  /** Turnover: fees, sales, operating income (chiffre d'affaires brut). */
+  turnover?: Amount;
+  /** Benefits received for lost earnings (indemnités pour pertes de gains). */
+  benefits?: Amount;
+  /** Income of the business's own money and investments (produits financiers). */
+  financialIncome?: Amount;
+  /** Other income of the business (autres produits). */
+  otherIncome?: Amount;
+  /** Materials, goods and services bought (charges de matières, de marchandises et de services). */
+  costsGoods?: Amount;
+  /** Staff costs, the owner's own pay excluded (charges du personnel). */
+  costsStaff?: Amount;
+  /** Depreciation (amortissements). */
+  depreciation?: Amount;
+  /** Provisions (provisions). */
+  provisions?: Amount;
+  /** Interest on business debts (intérêts de dettes). */
+  interest?: Amount;
+  /** Overheads and other operating costs (frais généraux et autres charges d'exploitation). */
+  costsOther?: Amount;
+  /** Balance sheet at the end of the business year: current assets (actifs circulants). */
+  currentAssets?: Amount;
+  /** Fixed assets (actifs immobilisés). */
+  fixedAssets?: Amount;
+  /** Business debts and provisions (passifs commerciaux). */
+  liabilities?: Amount;
+  /** The owner's own AVS/AI/APG contributions for the business year (acomptes). */
+  avsYear?: Amount;
+  /** The owner's further contributions paid in the year after final decisions for earlier years. */
+  avsEarlier?: Amount;
+  /**
+   * Losses of the seven previous business years not deducted yet, as the last assessment shows
+   * them, for the cantonal and for the federal tax.
+   */
+  priorLosses?: { cantonal?: Amount; federal?: Amount };
+}
+
 export interface PersonInput {
   id: EnginePerson;
   employments?: readonly EmploymentInput[];
@@ -89,6 +132,12 @@ export interface PersonInput {
   unemploymentBenefits?: Amount;
   /** Net income from self-employment, as given (accounts not computed here). */
   selfEmploymentProfit?: Amount;
+  /**
+   * Geneva: one sole proprietorship's year, line by line from its accounts or simple records, with
+   * the owner's own AVS/AI/APG contributions and earlier losses (../business/self-employment.ts).
+   * The other cantons don't read it: their engines fail closed on self-employment.
+   */
+  business?: BusinessInput;
   /** AVS/AI pensions. */
   pensionAvs?: Amount;
   /** Pensions from a pension fund. */

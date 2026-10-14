@@ -79,6 +79,11 @@ export const DOCUMENT_KINDS = [
   // (ge-2025-guide-declaration-pp p. 13).
   'lpp_capital_attestation',
   'pillar3a_capital_attestation',
+  // Self-employment (ge-2025-guide-independants p. 6 and 25): the business's signed accounts (bilan
+  // et compte de résultat) or simple records (relevé des recettes et dépenses, état des actifs et
+  // passifs), and the AVS compensation fund's statement of the owner's contributions.
+  'business_accounts',
+  'avs_contributions',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 

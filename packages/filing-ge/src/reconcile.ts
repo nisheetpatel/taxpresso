@@ -324,13 +324,65 @@ function cellsEqual(e: Expected, values: Values | undefined): boolean {
   return [...e.cells].every(([c, v]) => values.cols[c] === v);
 }
 
+/** Annexe B's pages: the same codes for both taxpayers, one sheet each (specimen p. 7 to 10). */
+const isAnnexB = (form: string) => /^B[1-4]$/.test(form);
+
+/**
+ * Whose each printed line of annexe B is. Its codes don't say (12.xx, 32.xx, 57.xx for A and B
+ * alike), and the reader keeps no ticked box: with one self-employed taxpayer in the copy panel,
+ * every sheet is theirs; with two, the first sheet of each code is A's and the second B's, unless
+ * the amounts match the other way round better.
+ */
+function annexBPersons(
+  printed: readonly PrintedLine[],
+  panel: ReconcileInput['panel'],
+  form: FormMap,
+): PrintedLine[] {
+  const rows = panel.sections
+    .filter((s) => isAnnexB(s.page))
+    .flatMap((s) => s.groups.flatMap((g) => g.rows.map((r) => ({ page: s.page, row: r }))));
+  const people = [...new Set(rows.map((r) => r.row.person))].filter(
+    (p): p is 'A' | 'B' => p === 'A' || p === 'B',
+  );
+  // A page the PDF doesn't name, with a code only annexe B has.
+  const onlyB = (code: string) => {
+    const pages = form.rubrics.filter((r) => r.key === code).map((r) => r.page);
+    return pages.length > 0 && pages.every(isAnnexB);
+  };
+  const onB = (l: PrintedLine) =>
+    l.person === 'household' &&
+    (isAnnexB(l.form) || (!form.pages.some((p) => p.id === l.form) && onlyB(l.code)));
+  if (!printed.some(onB) || people.length === 0) return [...printed];
+  if (people.length === 1) {
+    return printed.map((l) => (onB(l) ? { ...l, person: people[0]! } : l));
+  }
+  // Two sheets: score both orders by the amounts that match, A first when it's a tie.
+  const expected = (person: 'A' | 'B', code: string) =>
+    rows
+      .filter((r) => r.row.person === person && r.row.code === code)
+      .map((r) => roundToFranc(r.row.centimes ?? 0));
+  const score = (first: 'A' | 'B') =>
+    printed.filter(onB).filter((l) => {
+      const who = l.occurrence === 1 ? first : first === 'A' ? 'B' : 'A';
+      const amounts = [l.icc, l.ifd, ...(l.amounts ?? [])].filter((v) => v !== undefined);
+      const want = expected(who, l.code);
+      return amounts.some((v) => want.includes(roundToFranc(v)));
+    }).length;
+  const first = score('B') > score('A') ? 'B' : 'A';
+  const second = first === 'A' ? 'B' : 'A';
+  return printed.map((l) =>
+    onB(l) ? { ...l, person: l.occurrence === 1 ? first : second, occurrence: 1 } : l,
+  );
+}
+
 /** Checks the printed declaration against the copy panel. */
 export function reconcileDeclaration({
   form,
   panel,
-  printed,
+  printed: printedLines,
   lang,
 }: ReconcileInput): DeclarationCheck {
+  const printed = annexBPersons(printedLines, panel, form);
   const rubricIndex = new Map(form.rubrics.map((r, i) => [r, i]));
   const findRubric = (page: string, key: string, person: FormPerson) =>
     form.rubrics.find((r) => r.page === page && r.key === key && r.person === person) ??

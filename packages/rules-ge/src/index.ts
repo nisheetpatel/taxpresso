@@ -159,6 +159,14 @@ export {
   CAPITAL_COMMUNE,
   CAPITAL_FIFTH,
 } from './law/capital.js';
+// Self-employment, the simple case (annexe B): its keys and the notes its lines carry.
+export {
+  BUSINESS_FIELDS_2026,
+  KEYS_BUSINESS_DOCUMENTS_2026,
+  KEYS_BUSINESS_PROFILE_2026,
+  type BusinessDocumentKey,
+} from './2026/business-keys.js';
+export { BUSINESS_NOTE } from './engine/business.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {

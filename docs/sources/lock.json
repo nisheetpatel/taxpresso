@@ -5793,6 +5793,26 @@
     "retrieved_at": "2026-10-14T03:31:45.972Z",
     "status": "ok"
   },
+  "ch-2025-ifd-instructions-personnes-physiques": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf",
+    "file": "ch/files/ch-2025-ifd-instructions-personnes-physiques.pdf",
+    "bytes": 510337,
+    "sha256": "d2946db6c15f78a4db2cc09efdbafe66366f437992d1805a9853e71a923ed336",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:12:48.163Z",
+    "status": "ok"
+  },
+  "ge-2025-guide-independants": {
+    "url": "https://www.ge.ch/document/44809/annexe/file/751631",
+    "final_url": "https://www.ge.ch/document/44809/annexe/file/751631",
+    "file": "ge/files/ge-2025-guide-independants.pdf",
+    "bytes": 775829,
+    "sha256": "c3dd11bc31b6b72bc1bdeccea23f617bd75b8e9fe02f3c03f059a11dc71c3579",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:12:48.225Z",
+    "status": "ok"
+  },
   "ge-na-law-ldirpp": {
     "url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",
     "final_url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",

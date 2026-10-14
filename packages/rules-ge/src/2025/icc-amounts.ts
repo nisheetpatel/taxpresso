@@ -42,6 +42,7 @@ export interface IccAmounts {
   }>;
   avsDeduction: Cited<{ couple: readonly DecreasingRow[]; other: readonly DecreasingRow[] }>;
   wealthSocial: Cited<{ single: number; couple: number; perCharge: number }>;
+  businessWealth: Cited<{ shareBp: number; max: number }>;
 }
 
 export const ICC_2025: IccAmounts = {
@@ -154,5 +155,13 @@ export const ICC_2025: IccAmounts = {
   wealthSocial: {
     value: { single: 8_763_200, couple: 17_526_400, perCharge: 4_381_600 },
     source: `${GUIDE} p. 16 (51.50)`,
+  },
+  /**
+   * 51.60: deduction on the business wealth invested by a self-employed person: half of it, at most
+   * 533,042 (LIPP art. 58 al. 2 gives 500,000 before indexing). Each spouse with a business has it.
+   */
+  businessWealth: {
+    value: { shareBp: 5000, max: 53_304_200 },
+    source: `${GUIDE} p. 16 (51.60); ge-2025-guide-independants p. 17 and 18 (51.60); ge-na-law-lipp art. 58 al. 2`,
   },
 };

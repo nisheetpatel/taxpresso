@@ -200,17 +200,40 @@ describe('Geneva questionnaire 2026', () => {
   it('flags situations Taxpresso does not support yet', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
-    walk(e, ledger, {
+    const asked = walk(e, ledger, {
       canton: 'GE',
       civil_status: 'single',
       children: 0,
       commune: 'onex',
       moved: 'from_other_canton',
       'income_sources:p1': ['self_employment'],
+      'business_form:p1': 'sole_proprietor',
+      'business_year:p1': 'calendar',
+      'business_place:p1': 'home_commune',
+      'business_method:p1': 'cash',
+      'business_special:p1': [],
+      'business_losses:p1': false,
     });
+    // Self-employment, the simple case, is supported (SPEC.md section 1): its questions are asked.
+    // A move from another canton is supported too: Geneva taxes the whole year (guide p. 53).
+    expect(asked.filter((id) => id.startsWith('business_'))).toEqual([
+      'business_form:p1',
+      'business_year:p1',
+      'business_place:p1',
+      'business_method:p1',
+      'business_special:p1',
+      'business_losses:p1',
+    ]);
+    expect(e.notSupported(e.snapshot(ledger))).toEqual([]);
+    // Beyond the simple case, said plainly.
+    e.answer(ledger, 'business_form:p1', 'partnership', USER);
+    e.answer(ledger, 'business_special:p1', ['real_estate', 'vat'], USER);
     const what = e.notSupported(e.snapshot(ledger)).map((n) => n.what.en);
-    // A move from another canton is supported: Geneva taxes the whole year (guide p. 53).
-    expect(what).toEqual(['Self-employment (annexe B)']);
+    expect(what).toEqual([
+      'A partnership (société de personnes)',
+      'Business real estate',
+      'VAT (TVA)',
+    ]);
     expect(e.notSupportedMessage('en')).toMatch(/GeTax/);
   });
 

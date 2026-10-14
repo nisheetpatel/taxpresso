@@ -33,7 +33,13 @@ import {
   type ConsistencyCheck,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import type { SupportedCanton, TaxResult as SharedTaxResult, Text } from '@taxpresso/rules-ch';
+import {
+  businessYear,
+  type PersonInput as SharedPerson,
+  type SupportedCanton,
+  type TaxResult as SharedTaxResult,
+  type Text,
+} from '@taxpresso/rules-ch';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import type { CantonEntry, CantonRegistry, CantonState, LedgerContext } from './cantons.js';
 import { CURRENT_TAX_YEAR, displayPath, type Config } from './config.js';
@@ -165,7 +171,23 @@ export const PLAN_KEYS = [
   'plan.source_tax_tariff',
   'plan.tou_other_income',
   'plan.tou_taxable_wealth',
+  // Geneva: a self-employed person's expected profit for the year, for the 3a room.
+  'plan.business_profit',
 ] as const;
+
+/**
+ * A self-employed person's profit after their own AVS contributions, from the year's accounts when
+ * they are read (Geneva, annexe B): what the 3a room without a pension fund is a share of.
+ */
+function profitOf(
+  people: readonly SharedPerson[] | undefined,
+  person: 'p1' | 'p2',
+): number | undefined {
+  const business = people?.find((p) => p.id === person)?.business;
+  if (!business) return undefined;
+  const year = businessYear(business);
+  return year.hasAccounts ? year.earned.amount : undefined;
+}
 export type PlanKey = (typeof PLAN_KEYS)[number];
 
 export class Workspace {
@@ -595,12 +617,23 @@ export class Workspace {
         const person = p as 'p1' | 'p2';
         const gross = money('plan.gross_salary', person);
         const net = money('plan.net_salary', person);
+        // Self-employed (Geneva, annexe B): the year's expected profit counts for the 3a room.
+        const sources = snap.answers.get(`profile.income_sources|${person}`);
+        const self = Array.isArray(sources) && sources.includes('self_employment');
+        const salaried = Array.isArray(sources) && sources.includes('salary');
+        // The year's accounts once they are read, or else the profit the user gave in the chat.
+        const business = self
+          ? (profitOf(known?.people, person) ?? money('plan.business_profit', person))
+          : undefined;
+        const fund = this.ledger.get('plan.has_pension_fund', person)?.value;
         return {
           person,
           ...(gross !== undefined ? { grossCentimes: gross } : {}),
           ...(net !== undefined ? { netCentimes: net } : {}),
-          // Most employees have one; the user can say otherwise.
-          hasPensionFund: this.ledger.get('plan.has_pension_fund', person)?.value !== false,
+          ...(business !== undefined ? { businessCentimes: business } : {}),
+          // Most employees have one, the self-employed without a salary usually not; the user can
+          // say otherwise.
+          hasPensionFund: self && !salaried ? fund === true : fund !== false,
           paidCentimes: money('plan.pillar3a_paid', person) ?? 0,
         };
       }),
@@ -681,7 +714,8 @@ export class Workspace {
       // The plans before 31 December and TOU can't be acted on for a year that is over.
       if (this.yearOver()) throw new WorkspaceError(yearOverPlans(this.taxYear));
       const def = this.keys[key];
-      // TOU and taxation at source are Geneva's: another canton's keys don't have them.
+      // TOU, taxation at source and a business's profit are Geneva's: another canton's keys don't
+      // have them.
       if (!def) throw new WorkspaceError(`Not a planning value in this canton: ${key}`);
       const owner: Owner = def.perPerson ? (person as 'p1' | 'p2') : 'household';
       if (def.perPerson && !this.snapshot().people.includes(person as 'p1' | 'p2')) {

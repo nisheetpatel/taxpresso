@@ -5,6 +5,7 @@
 //   child, p. 3 the scales of art. 36 LIFD for 2025;
 // - ch-2025-ifd-tarif-personnes-physiques (Form. 58c 2025): footnote 1 (fractions under CHF 100
 //   dropped) and footnote 2 (tax rounded down to 5 centimes);
+// - ch-2025-ifd-instructions-personnes-physiques (Form. 2a 2025): p. 7 the pillar 3a limits;
 // - ge-2025-guide-declaration-pp: the flat amounts the circular leaves unchanged (p. 11, p. 19);
 // - ch-na-law-lifd: the rules (art. 26, 33, 33a, 35, 36).
 import type { Cited, FederalStep } from '../core/cited.js';
@@ -132,10 +133,14 @@ export const IFD_2025: IfdAmounts = {
     value: { shareBp: 5000, min: 860_000, max: 1_410_000 },
     source: `${CIRCULAR} p. 2 (art. 33 al. 2)`,
   },
-  /** 31.40: pillar 3a, the same federal limits as for the cantonal tax. */
+  /**
+   * 31.40: pillar 3a, the same federal limits as for the cantonal tax: 7,258 with a pension fund;
+   * without, 20 % of the income of every activity, at most 36,288 (the federal instructions for 2025,
+   * chiffre 13; the Geneva guide prints the same amounts).
+   */
   pillar3a: {
     value: { withFund: 725_800, withoutFundMax: 3_628_800, withoutFundShareBp: 2000 },
-    source: `${GUIDE} p. 11, p. 18 (31.40)`,
+    source: 'ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)',
   },
   /**
    * 52.00: insurance premiums and savings interest. Spouses 3,700 (5,550 when neither pays into the

@@ -320,6 +320,16 @@ interface StepContext {
   then: () => NextId;
 }
 
+/** Someone in a Geneva household works for themselves (annexe B, the simple case). */
+function selfEmployedInGeneva(ws: Workspace): boolean {
+  if (ws.canton().canton?.code !== 'GE') return false;
+  const answers = ws.snapshot().answers;
+  return (['p1', 'p2'] as const).some((p) => {
+    const sources = answers.get(`profile.income_sources|${p}`);
+    return Array.isArray(sources) && sources.includes('self_employment');
+  });
+}
+
 /** Claude's instruction for each next step: short, in English (C6). */
 function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): string {
   const software = c.canton
@@ -356,7 +366,7 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
     case 'documents':
       return 'Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.';
     case 'income':
-      return 'There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate. Then call compute_tax.';
+      return `There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate.${selfEmployedInGeneva(ws) ? " For a business of their own, ask roughly what profit (bénéfice net) it makes this year, after their own AVS contributions, and save it with set_fact (plan.business_profit); or they add the business's accounts." : ''} Then call compute_tax.`;
     case 'save': {
       const then = c.then() === 'later' ? 'their documents come after 31 December' : 'file';
       const what = c.savings

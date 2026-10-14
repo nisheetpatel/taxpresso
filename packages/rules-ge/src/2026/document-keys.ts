@@ -16,6 +16,7 @@ import {
   KEYS_SALARY_CERTIFICATE_2026,
   SALARY_CERTIFICATE_FIELDS_2026,
 } from '@taxpresso/rules-ch';
+import { BUSINESS_FIELDS_2026, KEYS_BUSINESS_DOCUMENTS_2026 } from './business-keys.js';
 
 const GE_GUIDE = 'ge-2025-guide-declaration-pp';
 /** Up to CHF 100 million, in centimes. A sanity bound, not a tax constant. */
@@ -191,6 +192,9 @@ export const DOCUMENT_KEYS_2026 = {
 
   // A short note from the user that settles a "Check this" item (SPEC.md section 5.8): rules-ch.
   ...KEY_CHECK_NOTE_2026,
+
+  // Self-employment: the business's accounts and the AVS statements (./business-keys.ts).
+  ...KEYS_BUSINESS_DOCUMENTS_2026,
 } as const satisfies KeyRegistry;
 
 export type DocumentKey2026 = keyof typeof DOCUMENT_KEYS_2026;
@@ -224,6 +228,7 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
   ...DOCUMENT_FIELDS_WEALTH_2026,
   lpp_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
   pillar3a_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
+  ...BUSINESS_FIELDS_2026,
 };
 
 /** The keys a document of this kind can give, or none. */

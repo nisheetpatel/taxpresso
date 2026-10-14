@@ -26,6 +26,7 @@ import {
   politicalParty,
   professionalCosts,
   roundFranc,
+  SELF_EMPLOYMENT_FEDERAL,
   Trace,
   trainingCosts,
   twoEarner,
@@ -35,6 +36,12 @@ import {
   type RuleResult,
 } from '@taxpresso/rules-ch';
 import { assess, incomeTotals, type Assessment } from './assess.js';
+import {
+  BUSINESS_NOTE,
+  businessItems,
+  type BusinessItems,
+  type BusinessNotes,
+} from './business.js';
 import { capitalTax } from './capital.js';
 import { ESTIMATE_TEXT, ICC_COMMUTE_PRICING, NOTE } from './explain.js';
 import { avsDeduction, lifeInsuranceCap } from './rules.js';
@@ -42,6 +49,7 @@ import { paramsFor, type YearParams } from './params.js';
 import { codeFor, rubric, RUBRICS, type RubricCode } from './rubrics.js';
 import type {
   Amount,
+  BusinessSheet,
   ChildInput,
   EngineInput,
   EnginePerson,
@@ -118,6 +126,15 @@ class Notes {
       this.limit(l.param, l.kind, [rubricCode, person, tax], l.given, l.limit, l.counted);
     }
   }
+  /** The notes of a business (./business.ts). */
+  business(): BusinessNotes {
+    return {
+      assumption: (x) => this.add(this.assumptions, x),
+      notCounted: (x) => this.add(this.notCounted, x),
+      unverified: (x) => this.add(this.unverified, x),
+      limit: (p, kind, at, given, limit, counted) => this.limit(p, kind, at, given, limit, counted),
+    };
+  }
 }
 
 /**
@@ -187,6 +204,10 @@ interface PersonFigures {
   earnedIfd: number;
   earns: boolean;
   contributes: boolean;
+  /** A salary or benefits replacing it (annexe A): the person's deductions go on A1 or A2. */
+  annexA: boolean;
+  /** Self-employment from the accounts (annexe B), when the person has a business. */
+  business?: BusinessItems;
 }
 
 /** Items of one person, the same rubrics as the annexe A of the form (guide p. 17 to 21). */
@@ -247,6 +268,17 @@ function personItems(
     'Net self-employment income, as given',
     'Revenu net de l’activité indépendante, tel que donné',
   );
+  // Self-employment from the accounts, annexe B (./business.ts): the result (12.01 or 57.10),
+  // earlier losses (57.20) and the owner's AVS/AI/APG contributions (32.10, 32.11).
+  let business: BusinessItems | undefined;
+  if (p.business) {
+    if (p.selfEmploymentProfit) {
+      throw new EngineInputError(`${p.id}: a business or a self-employment profit, not both`);
+    }
+    business = businessItems(P, p.id, p.business, notes.business());
+    icc.push(...business.icc);
+    ifd.push(...business.ifd);
+  }
   simple(
     '17.10',
     p.pensionAvs,
@@ -329,10 +361,22 @@ function personItems(
     self,
     earnedFrom: [gTrace, sTrace],
     cantonalLaw: ['ge-na-law-lipp art. 31 let. c'],
+    // The business result less the owner's AVS contributions (ge-2025-guide-independants p. 23).
+    ...(business
+      ? {
+          business: {
+            earned: business.earned,
+            known: business.year.hasAccounts,
+            trace: business.year.earned.trace,
+            instructions: SELF_EMPLOYMENT_FEDERAL[P.taxYear].instructions,
+          },
+        }
+      : {}),
   });
   const paid = p3a.paid;
   // A self-employed person without salary declares it on the annexe B (32.40, specimen p. 10).
-  const code3a: RubricCode = gross + replacement === 0 && self > 0 ? '32.40' : '31.40';
+  const code3a: RubricCode =
+    gross + replacement === 0 && (self > 0 || business !== undefined) ? '32.40' : '31.40';
   notes.apply(p3a, p.id, 'both', code3a);
   if (p3a.deduction) both(deductionItem(p3a.deduction, p.id, code3a));
 
@@ -496,11 +540,14 @@ function personItems(
 
   const own = (list: Item[], from: number) =>
     list.slice(from).filter((i) => i.person === p.id && !i.code.startsWith('59'));
+  // The earned income of each activity after its deductions: salary less 31.10 to 31.63, the
+  // business result (12.01, or the loss 57.10) less 32.10 to 32.40 (ge-2025-guide-independants
+  // p. 23; ge-2025-guide-declaration-pp p. 21).
   const earned = (list: Item[], from: number) =>
     own(list, from).reduce(
       (s, i) =>
         s +
-        (['11.10', '21.10', '11.50', '21.50', '12.01', '22.01'].includes(i.code) ||
+        (['11.10', '21.10', '11.50', '21.50', '12.01', '22.01', '57.10'].includes(i.code) ||
         i.code[0] === '3' ||
         i.code[0] === '4'
           ? i.amount
@@ -514,8 +561,11 @@ function personItems(
     pensionFund,
     earnedIcc: earned(icc, start.icc),
     earnedIfd: earned(ifd, start.ifd),
-    earns: gross + replacement + self > 0,
+    // A business is an activity, also in a year with a loss (childcare, two earners).
+    earns: gross + replacement + self > 0 || business !== undefined,
     contributes: hasFund || pensionFund > 0 || buyIn > 0 || paid > 0,
+    annexA: annexA > 0,
+    ...(business ? { business } : {}),
   };
 }
 
@@ -589,7 +639,8 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (m.income) o.incomes.push(m.income);
     owners.set(m.owner, o);
   }
-  const wealthItems: Item[] = [];
+  // The business wealth first, as on PG4 (12.00 actifs commerciaux, 57.00 passifs, 51.60).
+  const wealthItems: Item[] = figures.flatMap((f) => f.business?.wealth ?? []);
   let wealthIncome = 0;
   for (const [owner, o] of owners) {
     const inc = total(o.income, o.incomes);
@@ -714,8 +765,10 @@ export function computeReturn(input: EngineInput): TaxResult {
     notes.add(notes.unverified, NOTE.subsidyIfd);
   }
 
-  // Two earners (31.90 IFD, 31.95 ICC): the spouse who earns less.
+  // Two earners (31.90 IFD, 31.95 ICC): the spouse who earns less. Self-employed without a salary,
+  // on annexe B instead (32.90, 32.95: ge-2025-guide-independants p. 23 and 24).
   const [a, b] = figures;
+  const onB = (f: PersonFigures) => f.business !== undefined && !f.annexA;
   if (couple && a && b && a.earns && b.earns) {
     const lowIcc = a.earnedIcc <= b.earnedIcc ? a : b;
     if (lowIcc.earnedIcc > 0) {
@@ -724,7 +777,7 @@ export function computeReturn(input: EngineInput): TaxResult {
       const v = Math.min(tr.p(I.twoEarner), lowIcc.earnedIcc);
       icc.push(
         item(
-          '31.95',
+          onB(lowIcc) ? '32.95' : '31.95',
           lowIcc.id,
           tr,
           -v,
@@ -739,7 +792,9 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (lowIfd.earnedIfd > 0) {
       const lower = ifd.filter((i) => i.person === lowIfd.id);
       const federal = twoEarner(F, lowIfd.earnedIfd, lower);
-      if (federal.deduction) ifd.push(deductionItem(federal.deduction, lowIfd.id));
+      if (federal.deduction) {
+        ifd.push(deductionItem(federal.deduction, lowIfd.id, onB(lowIfd) ? '32.90' : undefined));
+      }
     }
   }
 
@@ -1134,6 +1189,40 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (result.icc.taxes.personalTax.amount === 0) notes.add(notes.unverified, NOTE.personalTax);
   if (result.shieldMayApply) notes.add(notes.unsupported, NOTE.shield);
 
+  // Annexe B: each sheet's total 32.00 (32.10 to 32.95 of the person), and a year below zero.
+  const sheets: BusinessSheet[] = figures.flatMap((f) => (f.business ? [f.business.sheet] : []));
+  for (const s of sheets) {
+    for (const [list, sheetList, tax] of [
+      [icc, s.icc, 'ICC'],
+      [ifd, s.ifd, 'IFD'],
+    ] as const) {
+      const lines = list.filter((i) => i.person === s.person && i.code.startsWith('32.'));
+      if (!lines.length) continue;
+      const v = lines.reduce((sum, i) => sum + i.amount, 0);
+      sheetList.push(
+        item(
+          '32.00',
+          s.person,
+          new Trace().from(...lines),
+          v,
+          t(
+            `${lines.map((i) => i.code).join(' + ')}, ${tax}: ${chf(-v)}, to PG3 32.00.`,
+            `${lines.map((i) => i.code).join(' + ')}, ${tax}${NB}: ${chf(-v)}, à reporter en PG3 32.00.`,
+          ),
+        ),
+      );
+    }
+  }
+  const losses = figures.some(
+    (f) => f.business && (f.business.loss || f.business.year.priorLosses.cantonal.amount > 0),
+  );
+  if (losses && result.icc.subtotal9220.amount < 0) {
+    notes.add(notes.notCounted, BUSINESS_NOTE.lossCarried);
+  }
+  // Self-employment beyond the simple case (the answers say so): no tax at all (fail closed).
+  for (const u of input.unsupported ?? []) notes.add(notes.unsupported, u);
+  const failClosed = (input.unsupported ?? []).length > 0;
+
   // Lump sums from the 2nd pillar and pillar 3a: a tax of their own (./capital.ts), with the
   // return's splitting and federal scale (LIPP art. 45 al. 3, LIFD art. 38 al. 2).
   const outcome = capitalTax(P, input.capital, {
@@ -1155,8 +1244,8 @@ export function computeReturn(input: EngineInput): TaxResult {
   );
   if (buyInConflict) notes.add(notes.unsupported, NOTE.capitalBuyIn);
 
-  const icc_ = result.shieldMayApply || buyInConflict ? null : result.icc;
-  const ifd_ = ifdUnsupported || buyInConflict ? null : result.ifd;
+  const icc_ = result.shieldMayApply || buyInConflict || failClosed ? null : result.icc;
+  const ifd_ = ifdUnsupported || buyInConflict || failClosed ? null : result.ifd;
   const capital = outcome.capital;
   const partial = (input.wealthItems ?? []).filter((w) => !w.complete);
   const incomplete = partial.map((w) =>
@@ -1195,6 +1284,7 @@ export function computeReturn(input: EngineInput): TaxResult {
     unsupported: notes.unsupported,
     unverifiedRules: notes.unverified,
     limits: notes.limits,
+    ...(sheets.length && !failClosed ? { business: sheets } : {}),
   };
 }
 

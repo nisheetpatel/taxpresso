@@ -153,11 +153,20 @@ describe('MCP surface', () => {
     await call('answer_question', { id: 'children', value: 0 });
     await call('answer_question', { id: 'commune', value: 'Onex' });
     await call('answer_question', { id: 'moved', value: 'no' });
+    // Self-employment, the simple case, is supported (SPEC.md section 1); a partnership is not.
     const self = await call('answer_question', {
       id: 'income_sources:p1',
       value: ['self_employment'],
     });
-    expect(text(self)).toMatch(/Not supported yet: Self-employment \(annexe B\)\. .*GeTax/);
+    expect(text(self)).not.toMatch(/Not supported yet/);
+    expect(text(self)).toMatch(/\[business_form:p1\]/);
+    const partners = await call('answer_question', {
+      id: 'business_form:p1',
+      value: 'partnership',
+    });
+    expect(text(partners)).toMatch(
+      /Not supported yet: A partnership \(société de personnes\)\. .*GeTax/,
+    );
     expect(structured<{ nextStep: string }>(await call('get_status')).nextStep).toMatch(
       /can't prepare this yet/,
     );

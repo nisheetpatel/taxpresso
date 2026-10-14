@@ -34,6 +34,12 @@ export interface PersonInput {
   grossCentimes?: number;
   /** Net salary (salary certificate box 11). Wins over the gross when both are given. */
   netCentimes?: number;
+  /**
+   * Geneva: the year's expected profit of a self-employed person's business, after their own AVS
+   * contributions (plan.business_profit; ge-2025-guide-independants p. 23). Part of the earned
+   * income the 3a limit without a pension fund is a share of.
+   */
+  businessCentimes?: number;
   hasPensionFund: boolean;
   paidCentimes: number;
 }
@@ -171,6 +177,13 @@ export function netOf(p: PersonInput): number | undefined {
   return undefined;
 }
 
+/** What a person earns from every activity: the salary after contributions and the business's profit. */
+export function earnedOf(p: PersonInput): number | undefined {
+  const net = netOf(p);
+  if (net === undefined && p.businessCentimes === undefined) return undefined;
+  return (net ?? 0) + (p.businessCentimes ?? 0);
+}
+
 /** The engine's input for the household, before the plans' deductions. */
 function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInput {
   const kids = h.custody === 'elsewhere' ? 0 : h.children;
@@ -187,6 +200,10 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
         hasPensionFund: p.hasPensionFund,
         ...(net !== undefined
           ? { employments: [{ gross: { value: net, status: 'estimate' } }] }
+          : {}),
+        // The business's expected profit, as one figure (12.01).
+        ...(p.businessCentimes !== undefined
+          ? { selfEmploymentProfit: { value: p.businessCentimes, status: 'estimate' } }
           : {}),
       };
     }),
@@ -251,7 +268,8 @@ function incomeTax(r: TaxResult): TaxEstimate | undefined {
 export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (h.other) return cantonEstimator(h, h.other);
   const nets = h.people.map(netOf);
-  if (nets.every((n) => n === undefined)) return undefined;
+  const earned = h.people.map(earnedOf);
+  if (earned.every((n) => n === undefined)) return undefined;
   const base = engineInput(h, nets);
   const first = incomeTax(computeReturn(base));
   if (!first) return undefined;
@@ -260,7 +278,7 @@ export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (!Object.keys(h.known?.household ?? {}).length) assumptions.push('flat_deductions_only');
   if (h.people.some((p) => p.netCentimes === undefined && p.grossCentimes !== undefined))
     assumptions.push('net_from_gross');
-  if (nets.some((n) => n === undefined)) assumptions.push('no_income_for_some');
+  if (earned.some((n) => n === undefined)) assumptions.push('no_income_for_some');
   if (!h.commune) assumptions.push('commune_default');
   return {
     assumptions,

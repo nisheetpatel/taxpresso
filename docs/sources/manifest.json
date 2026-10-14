@@ -195,6 +195,22 @@
       "notes": "Cover label GUIDE; file guide-pp-2025_1.pdf, about 60 pages. Web page: https://www.ge.ch/document/guide-fiscal-2025-particuliers"
     },
     {
+      "id": "ge-2025-guide-independants",
+      "canton": "GE",
+      "doc_type": "guide",
+      "title": "Guide déclaration 2025 Indépendants, impôt cantonal et communal (ICC), impôt fédéral direct (IFD)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/44809/annexe/file/751631",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-09-08",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The guide for the self-employed the main guide refers to (ge-2025-guide-declaration-pp p. 23): annexe B code by code (B1 to B4), the accounts or simple records to attach, the AVS/AI/APG contributions of the self-employed (32.10, 32.11), pillar 3a without a pension fund (32.40), losses of the seven previous years (57.20), the business wealth and its deduction (12.50, 57.50, 51.60).",
+      "notes": "36 pages, file guide-independants-2025.pdf. Landing page: https://www.ge.ch/document/guide-fiscal-2025-independants (published 8 September 2026). PDF page n is printed page n. Annexe B: p. 10 to 24; documents to attach: p. 25; the simplified declaration: p. 26 to 28. Added by the self-employment agent on 14 October 2026."
+    },
+    {
       "id": "ge-na-law-lcacant",
       "canton": "GE",
       "doc_type": "law",
@@ -8849,6 +8865,22 @@
       "priority": "core",
       "why_needed": "Official 2026 guide to the federal individual return, including pillar 3a limits and professional expense methods",
       "notes": "Printed as Instructions 2026 concernant la déclaration des personnes physiques, form 605.040.11.1f. Contains the 2026 federal tariff schedules."
+    },
+    {
+      "id": "ch-2025-ifd-instructions-personnes-physiques",
+      "canton": "CH",
+      "doc_type": "guide",
+      "title": "2a - Instructions 2025 concernant la déclaration des personnes physiques (Formulaire 2)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf",
+      "format": "pdf",
+      "publisher": "AFC (ESTV)",
+      "published": null,
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "Official 2025 guide to the federal individual return: the 2025 pillar 3a limits (p. 7, chiffre 13: 7258 with a pension fund; without, 20 % of the earned income of all activities, at most 36 288; no deduction when the activity makes a loss), self-employment income (p. 2, chiffre 2), losses of the seven previous business years 2018 to 2024 (p. 3) and the two-earner deduction (p. 8, chiffre 16).",
+      "notes": "Printed as Formule 2a 605.040.11.1f (Période fiscale 2025), 10 pages. The 2025 counterpart of ch-2026-ifd-instructions-personnes-physiques. Added by the self-employment agent on 14 October 2026."
     },
     {
       "id": "ch-2025-oiis-dff-annexe",

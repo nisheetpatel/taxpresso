@@ -50,8 +50,8 @@ Checked 2026-10-13. Amounts and rates are left out on purpose: read them from th
 ## Gaps
 - LIFD (RS 642.11): added 2026-10-13 as ch-na-law-lifd, the consolidated PDF (état le 1er janvier 2026) from the Fedlex filestore, which downloads without a browser (https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf)
 - LHID (RS 642.14), OIS (RS 642.118.2) and the DFF professional-expense ordinance: consolidated texts not verified; the same Fedlex filestore pattern should work for them (https://www.fedlex.admin.ch)
-- Pillar 3a 2025 cap: no official 2025 confirmation yet (see BSV entry above)
-- 2025 individual declaration form and instructions: only in a 44.5 MB ZIP, not opened (https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct)
+- Pillar 3a 2025 cap: the 2025 federal instructions give it (ch-2025-ifd-instructions-personnes-physiques p. 7, chiffre 13), added 2026-10-14 by the self-employment agent; the Geneva 2025 guide gives the same amounts (ge-2025-guide-declaration-pp p. 18)
+- 2025 individual declaration form: only in a 44.5 MB ZIP, not opened (https://www.estv.admin.ch/fr/formulaires-et-instructions-impot-federal-direct). The 2025 instructions (Form. 2a 2025) are also a direct PDF, added 2026-10-14 as ch-2025-ifd-instructions-personnes-physiques (https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf)
 - 2026 declaration form 2 (02-2026-fr.pdf): listed by ESTV but the fetch returned a server error, so excluded
 - Base source-tax circular 45 itself: not found, only its FAQ (https://www.estv.admin.ch/fr/impot-a-la-source)
 - Pension buy-in and lump-sum three-year rule circular: not found on the ESTV circulars page (https://www.estv.admin.ch/fr/lettres-circulaires-impot-federal-direct). The rule itself is in the law: LPP art. 79b al. 3, added 2026-10-13 as ch-na-law-lpp (Fedlex filestore PDF, état le 1er janvier 2025, the latest consolidation Fedlex lists).
