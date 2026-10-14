@@ -3,6 +3,7 @@
 // The *.yaml module type must reach every package that imports this one, hence a reference.
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./yaml.d.ts" />
+import ag2026 from '../../../data/ag/2026/questionnaire.yaml';
 import be2026 from '../../../data/be/2026/questionnaire.yaml';
 import bl2026 from '../../../data/bl/2026/questionnaire.yaml';
 import ch2026 from '../../../data/ch/2026/questions.yaml';
@@ -39,4 +40,9 @@ export function beQuestionnaire2026(): QuestionnaireFile {
 /** The Basel-Landschaft questionnaire for tax year 2026, validated. */
 export function blQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(bl2026, ch2026);
+}
+
+/** The Aargau questionnaire for tax year 2026, validated. */
+export function agQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(ag2026, ch2026);
 }

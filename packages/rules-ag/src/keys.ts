@@ -156,7 +156,7 @@ function agOwn(taxYear: number): KeyRegistry {
       values: ['no', 'within_ag', 'from_other_canton', 'from_abroad', 'leaving_switzerland'],
       perPerson: false,
       label: { en: 'Moves in the year', fr: 'Déménagements dans l’année', de: 'Umzüge im Jahr' },
-      source: `${GUIDE} p. 5 (unterjährige Steuerpflicht) and p. 7 (Wer füllt eine Steuererklärung aus?)`,
+      source: `${GUIDE} p. 5 (unterjährige Steuerpflicht), p. 7 (Wer füllt eine Steuererklärung aus?) and p. 8 (Wohnsitzverlegung)`,
     }),
     'ag.church': choice({
       values: ['reformed', 'catholic', 'christ_catholic', 'none'],

@@ -38,7 +38,8 @@ export const AG_TERMS: CantonTerms = {
   priceList: 'Kursliste',
   pillar3a: 'Säule 3a',
   pensionBuyIn: 'Einkäufe Säule 2',
-  pillar3aCatchUp: 'Einkauf in die Säule 3a',
+  // The canton's leaflet as the guide names it (ag-2025-guide-wegleitung p. 26, 13.1).
+  pillar3aCatchUp: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
   sourceTax: 'Quellensteuer',
   sourceTaxAssessment: 'NOV (nachträgliche ordentliche Veranlagung)',
   /** The official Aargau documents, for the links of each rule cited. */
