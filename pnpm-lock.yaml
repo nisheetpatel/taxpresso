@@ -352,11 +352,27 @@ importers:
         specifier: ^2.9.1
         version: 2.9.1
 
+  packages/rules-ch:
+    dependencies:
+      '@taxpresso/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/rules-ge:
     dependencies:
       '@taxpresso/ledger':
         specifier: workspace:*
         version: link:../ledger
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

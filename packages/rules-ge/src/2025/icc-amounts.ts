@@ -5,7 +5,7 @@
 // - ge-2025-guide-declaration-pp (the 2025 guide): the amounts indexed for 2025, p. 11 (summary)
 //   and the page of each rubric. LIPP (ge-na-law-lipp) states the rules with their base amounts,
 //   which the Conseil d'Etat indexes every year (LIPP art. 67): the guide gives the 2025 figures.
-import type { Cited } from './icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { MealAmounts, Pillar3aAmounts } from './ifd.js';
 
 const GUIDE = 'ge-2025-guide-declaration-pp';

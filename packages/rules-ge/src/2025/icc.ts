@@ -2,11 +2,7 @@
 // Source: ge-2025-icc-tariff-pdf (Barèmes 2025), p. 2 (income scale, splitting), p. 3 and 4
 // (worked examples and the cantonal and communal surcharges). The 2026 scale is published in
 // January 2027; until then this is the latest official scale.
-
-export interface Cited<T> {
-  value: T;
-  source: string;
-}
+import type { Cited } from '@taxpresso/rules-ch';
 
 /** [upper bound of the bracket in CHF, rate in hundredths of a percent]. p. 2. */
 export const ICC_2025_INCOME_SCALE: Cited<readonly (readonly [number, number])[]> = {

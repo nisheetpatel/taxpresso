@@ -12,7 +12,7 @@
 // official link (../law/official-documents.ts).
 import type { ConsistencyCheck, Text } from '../2026/checks.js';
 import { officialLinks, type OfficialLink } from '../law/official-documents.js';
-import { chf } from './calc.js';
+import { chf } from '@taxpresso/rules-ch';
 import { ESTIMATE_TEXT } from './explain.js';
 import { rubric } from './rubrics.js';
 import type { EstimateReason, LimitApplied, TaxResult } from './types.js';

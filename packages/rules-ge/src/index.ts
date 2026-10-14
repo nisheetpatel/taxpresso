@@ -7,9 +7,9 @@ export {
   iccTotalIncomeTax2025,
   ICC_2025_INCOME_SCALE,
   ICC_2025_PROFESSIONAL_FLAT,
-  type Cited,
   type IccSplitting,
 } from './2025/icc.js';
+export type { Cited } from '@taxpresso/rules-ch';
 export {
   COMMUNE_CENTIMES_2026,
   COMMUNES_2026,
@@ -158,9 +158,9 @@ export {
 } from './engine/assess.js';
 export { paramsFor, isTaxYear, TAX_YEARS, type TaxYear, type YearParams } from './engine/params.js';
 export { RUBRICS, rubric, codeFor, type RubricCode } from './engine/rubrics.js';
-export { pillar3aCapWithoutFund } from './engine/rules.js';
+export { pillar3aCapWithoutFund } from '@taxpresso/rules-ch';
 export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
-export { bracketTax, federalScaleTax, chf } from './engine/calc.js';
+export { bracketTax, federalScaleTax, chf } from '@taxpresso/rules-ch';
 export type * from './engine/types.js';
 export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';

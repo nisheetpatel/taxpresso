@@ -5,19 +5,20 @@
 // ./assess.ts (items to taxes).
 import type { IccSplitting } from '../2025/icc.js';
 import type { CommuneSlug } from '../2026/communes.js';
-import { assess, incomeTotals, type Assessment } from './assess.js';
-import { chf, roundFranc, Trace } from './calc.js';
-import { ESTIMATE_TEXT, NOTE } from './explain.js';
 import {
-  avsDeduction,
+  chf,
   donationDeduction,
   flatProfessional,
-  lifeInsuranceCap,
   mealsDeduction,
   medicalDeduction,
   pillar3aCapWithoutFund,
+  roundFranc,
+  Trace,
   twoEarnerFederal,
-} from './rules.js';
+} from '@taxpresso/rules-ch';
+import { assess, incomeTotals, type Assessment } from './assess.js';
+import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { avsDeduction, lifeInsuranceCap } from './rules.js';
 import type { MealAmounts } from '../2025/ifd.js';
 import type { Param } from './param.js';
 import { paramsFor, type YearParams } from './params.js';

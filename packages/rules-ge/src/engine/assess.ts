@@ -30,7 +30,7 @@ import {
   roundFranc,
   share5,
   Trace,
-} from './calc.js';
+} from '@taxpresso/rules-ch';
 import { paramsFor, type TaxYear, type YearParams } from './params.js';
 import { AFTER_9220, AFTER_9240, isIncomeCode, rubric, SOCIAL } from './rubrics.js';
 import type {

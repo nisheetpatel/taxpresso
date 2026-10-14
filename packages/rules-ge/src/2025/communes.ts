@@ -3,7 +3,7 @@
 // Source: ge-2025-communal-centimes-pdf p. 1 (AFC table for 2020 to 2025, column 2025). The rule
 // that uses them: ge-na-law-lcp art. 295A (the commune of residence taxes the privileged share of
 // the base tax at its own rate; the rest goes to the communes where the income is earned).
-import type { Cited } from './icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { CommuneSlug } from '../2026/communes.js';
 
 /** Communal centimes in hundredths (45.49 -> 4549), applied to the base tax. */

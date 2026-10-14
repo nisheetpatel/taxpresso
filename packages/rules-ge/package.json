@@ -16,6 +16,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@taxpresso/ledger": "workspace:*"
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*"
   }
 }

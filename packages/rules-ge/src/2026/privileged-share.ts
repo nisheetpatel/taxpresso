@@ -3,7 +3,7 @@
 // commune where the income is earned (ge-na-law-lcp art. 295A al. 2 and 3).
 // Source: ge-2026-part-privilegiee-communique p. 11 (Conseil d'Etat, 15 October 2025, "Fixation de
 // la part privilégiée de chaque commune pour 2026").
-import type { Cited } from '../2025/icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { CommuneSlug } from './communes.js';
 
 export const PRIVILEGED_SHARE_2026: Cited<Readonly<Record<CommuneSlug, number>>> = {

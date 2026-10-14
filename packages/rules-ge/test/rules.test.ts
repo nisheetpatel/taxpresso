@@ -4,15 +4,14 @@ import { describe, expect, it } from 'vitest';
 import { ICC_2025 } from '../src/2025/icc-amounts.js';
 import { IFD_2025 } from '../src/2025/ifd.js';
 import {
-  avsDeduction,
   donationDeduction,
   flatProfessional,
-  lifeInsuranceCap,
   mealsDeduction,
   medicalDeduction,
   pillar3aCapWithoutFund,
   twoEarnerFederal,
-} from '../src/engine/rules.js';
+} from '@taxpresso/rules-ch';
+import { avsDeduction, lifeInsuranceCap } from '../src/engine/rules.js';
 import { computeReturn, type EngineInput } from '../src/index.js';
 
 const chf = (francs: number) => Math.round(francs * 100);

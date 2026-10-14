@@ -37,7 +37,7 @@ import {
   type ItemPerson,
   type Line,
 } from '../src/index.js';
-import { chf } from '../src/engine/calc.js';
+import { chf } from '@taxpresso/rules-ch';
 
 const dir = process.env.TAXPRESSO_PRIVATE_GOLDEN;
 const usable = (() => {

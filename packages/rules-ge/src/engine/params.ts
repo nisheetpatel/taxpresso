@@ -7,7 +7,8 @@
 // communal centimes (ArCA-2026) and privileged shares (Conseil d'Etat, 15 October 2025) published;
 // Geneva scales and amounts are published in January 2027, so until then the 2025 values are used
 // and flagged as estimates. The LCP amounts are in the law itself (consolidated 1 January 2026).
-import { ICC_2025_INCOME_SCALE, type Cited } from '../2025/icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
+import { ICC_2025_INCOME_SCALE } from '../2025/icc.js';
 import { ICC_2025, type IccAmounts } from '../2025/icc-amounts.js';
 import { ICC_2025_WEALTH_SCALE, ICC_2025_WEALTH_SUPPLEMENTARY_SCALE } from '../2025/icc-wealth.js';
 import { IFD_2025, IFD_2025_MARRIED, IFD_2025_SINGLE, type IfdAmounts } from '../2025/ifd.js';

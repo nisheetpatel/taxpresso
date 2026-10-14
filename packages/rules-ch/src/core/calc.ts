@@ -1,6 +1,7 @@
 // Exact integer arithmetic on centimes, the official rounding rules, the two kinds of scale, and
-// the trace that collects, for each figure, the sources, estimates and facts it rests on.
-import type { BracketScale, EstimateReason, FederalStep, Param } from './param.js';
+// the trace that collects, for each figure, the sources, estimates and facts it rests on. Every
+// canton's engine and the federal tax use these.
+import type { BracketScale, FederalStep, Param } from './cited.js';
 import type { Amount, Line, Text } from './types.js';
 
 /** num / den to the nearest multiple of `step` centimes, halves up. num >= 0, den > 0. */
@@ -12,7 +13,14 @@ export function roundTo(num: number, den: number, step: number): number {
 /** Nearest 5 centimes: the precision of every amount in the Geneva tariff (ge-2025-icc-tariff-pdf). */
 export const round5 = (num: number, den = 1) => roundTo(num, den, 5);
 
-/** Nearest franc: deductions computed as a share (guide p. 19: 65,033 x 3 % is taken as 1,951). */
+/** Nearest centime. */
+export const roundCentime = (num: number, den = 1) => roundTo(num, den, 1);
+
+/**
+ * Nearest franc: deductions computed as a share (ge-2025-guide-declaration-pp p. 19: 65,033 x 3 %
+ * is taken as 1,951; zh-2026-guide-unterjaehrig p. 37: 13,600 : 360 x 150 = 5,666.67 is printed
+ * 5,667).
+ */
 export const roundFranc = (num: number, den = 1) => roundTo(num, den, 100);
 
 /** Whole francs, centimes dropped: incomes on the form are in francs (guide p. 9). */
@@ -67,6 +75,9 @@ export function percent(bp: number, lang: 'en' | 'fr'): string {
   const s = String(bp / 100);
   return `${lang === 'fr' ? s.replace('.', ',') : s}\u00a0%`;
 }
+
+/** A multiplier in percent: 95 -> "95 %". */
+export const pct = (percent: number) => `${String(percent)}\u00a0%`;
 
 /**
  * What one figure rests on. `p` reads a constant (and records its source and, for a later year,
@@ -139,5 +150,3 @@ export class Trace {
     };
   }
 }
-
-export type { EstimateReason };

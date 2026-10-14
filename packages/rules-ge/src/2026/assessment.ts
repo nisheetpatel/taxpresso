@@ -13,7 +13,7 @@
 // shown is never later than the real deadline: it can only be earlier, by the holiday. The deadline
 // printed on the assessment always wins.
 import type { Fact, VaultDocument } from '@taxpresso/ledger';
-import type { Cited } from '../2025/icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { Text } from './checks.js';
 
 export type AssessedTax = 'icc' | 'ifd';
