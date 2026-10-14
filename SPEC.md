@@ -359,7 +359,7 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 
 Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions.
 
-`manifest.json` user_config: `vault_path` (directory, default `~/Documents/Taxpresso`), `ui_language` (`en` or `fr`; mcpb has no enum type). There is no license key (section 12).
+`manifest.json` user_config: `vault_path` (directory, default `~/Documents/Taxpresso`), `ui_language` (`en`, `fr`, `de` or `it`; mcpb has no enum type). There is no license key (section 12).
 
 ---
 
@@ -450,6 +450,8 @@ taxpresso/
     rules-lu/           Lucerne's state, communal and church tax and Personalsteuer, and the federal tax
                         as its Ergänzungsblatt derives it from the return (wired into the extension as a
                         preview)
+    rules-ti/           Ticino's cantonal and communal tax and personal tax, and the federal tax the
+                        authority derives from the same return (wired into the extension as a preview)
     rules-sg/           St. Gallen's cantonal, communal and church tax, and the federal tax the tax office
                         derives from the same return (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
@@ -465,6 +467,8 @@ taxpresso/
     filing-zg/          Zug's form K (pages 2 to 4, Kanton and Bund columns) and the values to type
     filing-lu/          the Lucerne return (form B, the securities list's summary, pages 2 to 4) and the
                         optional Ergänzungsblatt Direkte Bundessteuer, and the values to type on them
+    filing-ti/          Ticino's Modulo 4 (per person), Moduli 6 and 5 and Modulo 1 (pages 2 to 4, one
+                        column) and the values to type
     filing-sg/          St. Gallen's Form 4 (per person) and return (pages 2 to 4, one column) and the
                         values to type
     filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
@@ -472,7 +476,7 @@ taxpresso/
   ui/                   Vite app; views reused as MCP Apps resources
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
-  data/ch/2026/         the questions every canton shares (the canton first), EN, FR, DE
+  data/ch/2026/         the questions every canton shares (the canton first), EN, FR, DE, IT
   data/ge/2025/, data/ge/2026/   questionnaire yaml, keys, i18n
   data/zh/2026/         Zurich's questionnaire: the shared questions, its own (commune, church)
   data/be/2026/         Bern's questionnaire: the shared questions, its own (household, church, parish,
@@ -487,6 +491,9 @@ taxpresso/
   data/lu/2026/         Lucerne's questionnaire: the shared questions, its own (commune by name, the
                         family tariff in shared custody, each child's household, age, education away
                         from home and childcare, each adult's and child's confession)
+  data/ti/2026/         Ticino's questionnaire: the shared questions, its own (a change of civil status in
+                        the year, each child a minor, childcare per child, commune by name, move, work
+                        rate, the whole year worked and the months), in IT, EN, FR, DE
   data/sg/2026/         St. Gallen's questionnaire: the shared questions, its own (each child's stage,
                         minor, education costs and scholarships, childcare per child, shared custody,
                         commune by name, move, church, church area)
