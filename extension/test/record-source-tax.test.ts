@@ -11,9 +11,15 @@
 // answer to either question follows from it, so a household taxed at source in one version is in
 // the other too, and one that isn't, isn't.
 //
+// Small on disk: during the questions only the questions answered are recorded; after them, each
+// record is a sha256 of its normalized content, without what counts or lists the questions
+// answered (questionFlow below). Compare the two files line by line. TAXPRESSO_RECORD_FULL=1 keeps
+// whole records instead, to see a difference.
+//
 // Skipped unless TAXPRESSO_RECORD_ST names the output file (it takes a few minutes):
 //
-//   TAXPRESSO_RECORD_ST=/tmp/before.jsonl TAXPRESSO_RECORD_N=8 pnpm vitest run extension/test/record-source-tax.test.ts
+//   TAXPRESSO_RECORD_ST=/tmp/before.jsonl TAXPRESSO_RECORD_N=4 pnpm exec vitest run extension/test/record-source-tax.test.ts
+import { createHash } from 'node:crypto';
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
@@ -62,6 +68,40 @@ function normalize(value: unknown, root: string): string {
       'Taxpresso-$1-export-<DAY>.zip',
     )
     .replace(/"etag":"[^"]*"/g, '"etag":"<ETAG>"');
+}
+
+const FULL = process.env.TAXPRESSO_RECORD_FULL === '1';
+/** The questions the permit question replaced: "taxed at source?" before, the permit after. */
+const SWAPPED = /^(taxed_at_source|residence|employer_in_switzerland):p[12]$/;
+
+/**
+ * A result without what counts or lists the questions answered (one question replaced another,
+ * and a couple answers the permit once where it answered "taxed at source?" twice): the progress
+ * counts, the answers listed, the activity log, the number answered on the "About you" line.
+ */
+function questionFlow(result: unknown): unknown {
+  const r = JSON.parse(JSON.stringify(result ?? null)) as Record<string, unknown> | null;
+  if (!r || typeof r !== 'object') return r;
+  const structured = r.structured as Record<string, unknown> | undefined;
+  if (structured?.progress && typeof structured.progress === 'object') {
+    const p = structured.progress as Record<string, unknown>;
+    delete p.questionsAnswered;
+    delete p.questionsOpen;
+  }
+  for (const c of (r.content as { text?: string }[] | undefined) ?? []) {
+    if (typeof c.text === 'string') {
+      c.text = c.text.replace(/\nQuestions: \d+ answered, \d+ to go/, '\nQuestions: <n>');
+    }
+  }
+  const body = r.body as Record<string, unknown> | undefined;
+  if (body && typeof body === 'object' && 'answers' in body) {
+    delete body.progress;
+    delete body.activity;
+    body.answers = (body.answers as { id: string }[]).filter((a) => !SWAPPED.test(a.id));
+    const journey = body.journey as { stages?: { id: string; vars: unknown }[] } | undefined;
+    for (const st of journey?.stages ?? []) if (st.id === 'about') st.vars = {};
+  }
+  return r;
 }
 
 interface Household {
@@ -134,12 +174,27 @@ async function run(h: Household): Promise<void> {
   const d = (label: string) => draw(h.seed, label);
   const pick = <T>(label: string, xs: readonly T[]): T => xs[Math.floor(d(label) * xs.length)]!;
   let phase = 'questions';
-  const record = (kind: string, name: string, args: unknown, result: unknown) =>
-    appendFileSync(
-      OUT!,
-      normalize({ h: h.id, phase, kind, name, args, result }, root) + '\n',
-      'utf8',
-    );
+  const record = (kind: string, name: string, args: unknown, result: unknown) => {
+    if (FULL) {
+      appendFileSync(OUT!, normalize({ h: h.id, phase, kind, name, args, result }, root) + '\n');
+      return;
+    }
+    if (kind === 'drawn') {
+      appendFileSync(OUT!, JSON.stringify({ h: h.id, drawn: result }) + '\n');
+      return;
+    }
+    // During the questions: only which question was answered (the flow differs by design).
+    if (phase === 'questions') {
+      const id = (args as { id?: string } | null)?.id;
+      if ((name === 'answer_question' || name === 'POST /answer') && id) {
+        appendFileSync(OUT!, JSON.stringify({ h: h.id, phase, answered: id }) + '\n');
+      }
+      return;
+    }
+    const content = normalize({ args, result: questionFlow(result) }, root);
+    const sha = createHash('sha256').update(content).digest('hex').slice(0, 16);
+    appendFileSync(OUT!, JSON.stringify({ h: h.id, phase, kind, name, sha }) + '\n');
+  };
   const call = async (name: string, args: Record<string, unknown> = {}) => {
     let result: unknown;
     try {
