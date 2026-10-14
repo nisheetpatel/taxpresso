@@ -132,6 +132,27 @@ async function retired(h: Household, special: string[], more: [string, unknown][
   ]);
 }
 
+/**
+ * A Swiss person with a salary in Geneva, single, in Carouge; `moved` as the move question, and its
+ * day when it is a part year (an arrival on 1 April, a departure on 30 September).
+ */
+async function worker(h: Household, moved: 'no' | 'from_abroad' | 'leaving_switzerland') {
+  await h.answer([
+    ['canton', 'GE'],
+    ['civil_status', 'single'],
+    ['children', 0],
+    ['commune', 'Carouge'],
+    ['moved', moved],
+    ...(moved === 'from_abroad'
+      ? ([['arrival_date:p1', '2026-04-01']] as [string, unknown][])
+      : moved === 'leaving_switzerland'
+        ? ([['departure_date:p1', '2026-09-30']] as [string, unknown][])
+        : []),
+    ['income_sources:p1', ['salary']],
+    ['residence:p1', 'swiss'],
+  ]);
+}
+
 /** A home in France, the household's own, used by it, no loan. */
 const HOME_ABROAD: [string, unknown][] = [
   ['abroad_property', 'own_use'],
@@ -630,6 +651,102 @@ const ROWS: Row[] = [
         ['pension.type', 'avs_ai'],
       ]);
       return (await h.call('get_form_values')).text;
+    },
+  },
+  // --- A year of arrival from abroad or of departure abroad (Geneva)
+  {
+    guidance: 'next_questions: the day of an arrival is a date of the year, never guessed',
+    pattern: /Answer: the day, YYYY-MM-DD, in 2026; from the user's words or a document/,
+    when: async () => {
+      const h = await household();
+      await h.answer([
+        ['canton', 'GE'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Carouge'],
+        ['moved', 'from_abroad'],
+      ]);
+      return (await h.call('next_questions')).text;
+    },
+    whenNot: async () => {
+      const h = await household();
+      await h.answer([['canton', 'GE']]);
+      return (await h.call('next_questions')).text;
+    },
+  },
+  {
+    guidance: 'get_status: an arrival’s figures are from the day of arrival, never a full year’s',
+    pattern:
+      /They arrived from abroad this year: every figure is from the day they arrived[\s\S]*plan\.gross_salary/,
+    when: async () => {
+      const h = await household();
+      await worker(h, 'from_abroad');
+      await h.finish();
+      return h.status();
+    },
+    whenNot: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.finish();
+      return h.status();
+    },
+  },
+  {
+    guidance: 'get_status: a departure’s figures are to the day of departure',
+    pattern:
+      /They leave Switzerland this year: every figure is from 1 January to the day they leave/,
+    when: async () => {
+      const h = await household();
+      await worker(h, 'leaving_switzerland');
+      await h.finish();
+      return h.status();
+    },
+    whenNot: async () => {
+      const h = await household();
+      await worker(h, 'from_abroad');
+      await h.finish();
+      return h.status();
+    },
+  },
+  {
+    guidance: 'compute_tax: the income of the period at a full year’s rate, never a year’s tax',
+    pattern:
+      /A year of arrival from abroad: the taxes are on the income of 2026-04-01 to 2026-12-31[\s\S]*never present a full year's tax/,
+    when: async () => {
+      const h = await household();
+      await worker(h, 'from_abroad');
+      await h.finish();
+      await h.document('salary_certificate', 'p1', [
+        ['salary.gross', "60'000.00"],
+        ['salary.social_contributions', "3'840.00"],
+      ]);
+      return (await h.call('compute_tax')).text;
+    },
+    whenNot: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.finish();
+      await h.document('salary_certificate', 'p1', [
+        ['salary.gross', "60'000.00"],
+        ['salary.social_contributions', "3'840.00"],
+      ]);
+      return (await h.call('compute_tax')).text;
+    },
+  },
+  {
+    guidance: 'list_optimizations: the year’s 3a maximum and the buy-in limit of an arrival',
+    pattern: /pillar 3a maximum is the whole year's[\s\S]*ch-na-law-lpp art\. 79b al\. 2/,
+    when: async () => {
+      const h = await household();
+      await worker(h, 'from_abroad');
+      await h.finish();
+      return (await h.call('list_optimizations')).text;
+    },
+    whenNot: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.finish();
+      return (await h.call('list_optimizations')).text;
     },
   },
   ...(

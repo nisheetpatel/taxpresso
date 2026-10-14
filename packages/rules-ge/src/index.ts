@@ -202,6 +202,10 @@ export {
   type AbroadDocumentKey,
 } from './2026/abroad-keys.js';
 export { ABROAD_CODES, ABROAD_NOTE, ABROAD_UNSUPPORTED } from './engine/abroad.js';
+// A year of arrival from abroad or of departure abroad: the income of the period at a full year's
+// rate (./engine/part-year.ts), the day read from the answers (./engine/from-ledger.ts).
+export { partYearNotes, partYearRules } from './engine/part-year.js';
+export { periodFromFacts } from './engine/from-ledger.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {

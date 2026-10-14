@@ -455,3 +455,38 @@ describe('the lump sums from the 2nd pillar and pillar 3a (98.12)', () => {
     });
   });
 });
+
+describe('a year of arrival or departure: the lines for the rate', () => {
+  // packages/rules-ge/test/part-year.test.ts, Lena Brandt: 95.00 is the net income for the rate (a
+  // full year's), 97.00 the rest, 99.00 the income of her months here. How the form computes 95.00
+  // and 97.00 for part of a year isn't documented, so they are shown, never compared (noCheck);
+  // 99.00 is.
+  const items = [
+    item('95.00', 'household', chf(69_986), { column: 'icc', noCheck: true }),
+    item('97.00', 'household', chf(19_764), { column: 'icc', noCheck: true }),
+    item('99.00', 'household', chf(50_222), { column: 'icc' }),
+    item('95.00', 'household', chf(72_913), { column: 'ifd', noCheck: true }),
+    item('97.00', 'household', chf(20_043), { column: 'ifd', noCheck: true }),
+    item('99.00', 'household', chf(52_870), { column: 'ifd' }),
+  ];
+  const computed = (c: ReturnType<typeof check>, ref: string) =>
+    c.sections.find((s) => s.page === 'PG3')!.computed.find((l) => l.ref === ref);
+
+  it('shows 95.00 and 97.00 whatever the PDF prints, and checks 99.00', () => {
+    const c = check(items, [
+      // A PDF that prints the period's net income in 95.00 and nothing in 97.00.
+      at('PG3', '95.00', 'household', { icc: chf(50_222), ifd: chf(52_870) }, 3),
+      at('PG3', '99.00', 'household', { icc: chf(50_222), ifd: chf(52_870) }, 3),
+    ]);
+    expect(computed(c, '95.00')).toMatchObject({ check: 'shown' });
+    expect(computed(c, '99.00')).toMatchObject({ check: 'adds_up' });
+    expect(c.counts).toMatchObject({ toFix: 0, computedOff: 0 });
+  });
+
+  it('still says when 99.00, the income taxed, differs', () => {
+    const c = check(items, [
+      at('PG3', '99.00', 'household', { icc: chf(60_000), ifd: chf(52_870) }, 3),
+    ]);
+    expect(computed(c, '99.00')).toMatchObject({ check: 'off' });
+  });
+});

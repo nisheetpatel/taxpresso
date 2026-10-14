@@ -223,7 +223,8 @@ export function yearInput(input: EngineInput, py: PartYear): EngineInput {
     ...(p.mealDays !== undefined ? { mealDays: Math.round((p.mealDays * 360) / py.days) } : {}),
   });
   const hh = input.household;
-  const { period: _period, ...rest } = input;
+  const rest: EngineInput = { ...input };
+  delete rest.period;
   return {
     ...rest,
     people: input.people.map(person),
