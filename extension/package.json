@@ -1,6 +1,6 @@
 {
   "name": "@taxpresso/extension",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "The Taxpresso Claude Desktop extension: local MCP server, localhost dashboard, .mcpb packaging.",
   "license": "AGPL-3.0-or-later",
@@ -18,6 +18,7 @@
     "@taxpresso/filing-bs": "workspace:*",
     "@taxpresso/filing-ge": "workspace:*",
     "@taxpresso/filing-lu": "workspace:*",
+    "@taxpresso/filing-sg": "workspace:*",
     "@taxpresso/filing-vd": "workspace:*",
     "@taxpresso/filing-zg": "workspace:*",
     "@taxpresso/filing-zh": "workspace:*",
@@ -32,6 +33,7 @@
     "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",
     "@taxpresso/rules-lu": "workspace:*",
+    "@taxpresso/rules-sg": "workspace:*",
     "@taxpresso/rules-vd": "workspace:*",
     "@taxpresso/rules-zg": "workspace:*",
     "@taxpresso/rules-zh": "workspace:*",

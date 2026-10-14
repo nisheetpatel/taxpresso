@@ -4,7 +4,9 @@
 // professional costs (sg-2025-form-berufskosten: page 1 for person 1, page 2 for person 2), explained
 // under the same Ziffern in the 2025 guide (sg-2025-guide-wegleitung). No 2026 return is published
 // yet (docs/sources/sg/NOTES.md, Gaps): the 2025 codes stand for both years. The return has one
-// column: the federal tax is derived from it by the tax office (guide p. 49).
+// column: the federal tax is derived from it by the tax office (guide p. 49), on the same lines with
+// the federal amounts (Merkblatt 32, sg-2025-guide-merkblatt-dbst p. 1), and two federal social
+// deductions that have no line on the return (FEDERAL_RUBRICS; ./ifd.ts).
 import type { Text } from '@taxpresso/rules-ch';
 
 const FORM = 'sg-2025-form-steuererklaerung';
@@ -442,8 +444,42 @@ export const WEALTH_RUBRICS = {
   ),
 } as const satisfies Record<string, Rubric>;
 
+/**
+ * The federal social deductions, which the return has no line for: the tax office applies them
+ * (sg-2025-guide-wegleitung p. 49). Merkblatt 32 lists them next to the return's Ziffern: the child
+ * deductions 23.1 to 23.3, one federal amount per child, and the married couple deduction
+ * (sg-2025-guide-merkblatt-dbst p. 1); the federal instructions take both after the net income
+ * (ch-2026-ifd-instructions-personnes-physiques p. 9, Chiffre 23).
+ */
+export const FEDERAL_RUBRICS = {
+  '23.1-23.3': {
+    label: {
+      en: 'Child deduction, federal tax, one amount per child (23.1 to 23.3 Kinderabzüge)',
+      fr: 'Déduction pour enfant, impôt fédéral, un montant par enfant (23.1 à 23.3 Kinderabzüge)',
+      de: '23.1 bis 23.3 Kinderabzüge, direkte Bundessteuer (pro Kind einheitlich)',
+    },
+    source:
+      'sg-2025-guide-merkblatt-dbst p. 1 (Kinderabzüge 23.1 bis 23.3, gemäss Bundessteuerrecht: pro Kind einheitlich); ch-2026-ifd-instructions-personnes-physiques p. 9 (Chiffre 23)',
+  },
+  Ehepaare: {
+    label: {
+      en: 'Married couple deduction, federal tax only (Ehepaare)',
+      fr: 'Déduction pour couple marié, impôt fédéral seulement (Ehepaare)',
+      de: 'Abzug für Ehepaare, nur direkte Bundessteuer',
+    },
+    source:
+      'sg-2025-guide-merkblatt-dbst p. 1 (Ehepaare in rechtlich und tatsächlich ungetrennter Ehe); ch-2026-ifd-instructions-personnes-physiques p. 9 (Chiffre 23)',
+  },
+} as const satisfies Record<string, Rubric>;
+
 export type RubricCode = keyof typeof RUBRICS;
+export type FederalCode = keyof typeof FEDERAL_RUBRICS;
 export type WealthCode = keyof typeof WEALTH_RUBRICS;
+
+/** A line of the federal tax: its own where the return has none, else the return's. */
+export function federalRubric(code: string): Rubric | undefined {
+  return (FEDERAL_RUBRICS as Record<string, Rubric>)[code] ?? rubric(code);
+}
 
 export function rubric(code: string): Rubric | undefined {
   return (RUBRICS as Record<string, Rubric>)[code];
@@ -542,6 +578,8 @@ export const DEDUCTIONS = new Set<string>(ORDER.slice(16, 42));
 export const NET_DEDUCTIONS = new Set<string>(['240', '244']);
 /** Social deductions (Sozialabzüge), 23.1 to 23.3: 248 less them is the taxable income, 268. */
 export const SOCIAL = new Set<string>(['252', '254', '256']);
+/** The federal social deductions: the Reineinkommen (22.) less them is the federal taxable income. */
+export const FEDERAL_SOCIAL = new Set<string>(['23.1-23.3', 'Ehepaare']);
 /** Wealth: assets, debts, then the social deductions. */
 export const ASSETS = new Set<string>(['300', '302', '304', '306', '310']);
 export const DEBTS = new Set<string>(['504']);

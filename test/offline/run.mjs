@@ -1359,6 +1359,96 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a St. Gallen return: its questions, its tax and the values to type, offline', async () => {
+    // Another household in its own folder, in its own server process with the same guard: Nina
+    // Brunner, single, in the city of St. Gallen, Evangelical Reformed in the Tablat church area,
+    // with the synthetic salary certificate read from its barcode.
+    const sgVault = path.join(work, 'StGallen');
+    const sgTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: sgVault,
+        TAXPRESSO_UI_LANGUAGE: 'de',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    sgTransport.stderr?.on('data', (d) => (stderr += d));
+    const sg = new Client({ name: 'taxpresso-offline-test-sg', version: '0.0.0' });
+    await sg.connect(sgTransport);
+    try {
+      const answers = [
+        ['canton', 'SG'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'St. Gallen'],
+        ['moved', 'no'],
+        ['church:p1', 'reformed'],
+        ['church_area', 'st-gallen:St. Gallen Tablat (O)'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 800],
+        ['meal_days:p1', 0],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['payments', []],
+        ['banks', 0],
+        ['crypto', false],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await sg.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await sg.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'SG');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(sgVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await sg.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await sg.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'SG');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'St. Gallen');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.ok(tax.structuredContent.icc.church > 0);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /Kantons-, Gemeinde- und Kirchensteuer/);
+
+      const sections = await sg.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['F4-1', 'S2', 'S3'],
+      );
+      const form4 = await sg.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'F4-1' },
+      });
+      assert.match(form4.content[0].text, /- 438 6\. Total der Berufskosten/);
+
+      const check = await sg.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await sg.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await sg.close();
+    }
+  });
+
   test('an Aargau return: its questions, its tax and the values to type, offline', async () => {
     // Another household in its own folder, in its own server process with the same guard: Lea
     // Huber, single, in Aarau, with the synthetic salary certificate read from its barcode.

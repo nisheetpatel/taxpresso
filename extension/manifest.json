@@ -3,8 +3,8 @@
   "name": "taxpresso",
   "display_name": "Taxpresso",
   "version": "0.0.0",
-  "description": "Your taxes, done over an espresso. Prepare your Geneva tax return, or your Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or Aargau one as a preview, with Claude; your documents stay on this computer.",
-  "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude, and your Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or Aargau one (Steuererklärung, déclaration d'impôt) as a preview. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, reads them with Claude when you ask (you confirm every value), checks them against each other, tells you what is still missing, computes your cantonal, communal and federal tax and explains every figure with its official source, estimates what a pillar 3a payment before 31 December would save you, and later checks your assessment against what you declared.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
+  "description": "Your taxes, done over an espresso. Prepare your Geneva tax return, or your Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Aargau one as a preview, with Claude; your documents stay on this computer.",
+  "long_description": "Taxpresso helps you prepare your Geneva tax return (déclaration d'impôt) with Claude, and your Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Aargau one (Steuererklärung, déclaration d'impôt) as a preview. It runs entirely on your computer: it makes no network requests, and your documents never leave your Taxpresso folder unless you ask Claude to read one.\n\nThis preview asks the questions that matter for your return, in the chat or in its dashboard, keeps your documents in your Taxpresso folder, reads them with Claude when you ask (you confirm every value), checks them against each other, tells you what is still missing, computes your cantonal, communal and federal tax and explains every figure with its official source, estimates what a pillar 3a payment before 31 December would save you, and later checks your assessment against what you declared.\n\nTaxpresso is free and open source (GNU AGPL-3.0-or-later).",
   "author": {
     "name": "Taxpresso contributors",
     "email": "hello@taxpresso.ch",
@@ -50,7 +50,7 @@
     },
     {
       "name": "compute_tax",
-      "description": "Your cantonal, communal and federal tax (Geneva, or Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne and Aargau as a preview), computed on this computer, with how each figure is computed and what is still an estimate."
+      "description": "Your cantonal, communal and federal tax (Geneva, or Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen and Aargau as a preview), computed on this computer, with how each figure is computed and what is still an estimate."
     },
     {
       "name": "get_last_year",
@@ -133,7 +133,7 @@
   "prompts": [
     {
       "name": "start_geneva_tax_return",
-      "description": "Begin or pick up your Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or Aargau tax return with Taxpresso.",
+      "description": "Begin or pick up your Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Aargau tax return with Taxpresso.",
       "text": "I want to work on my tax return with Taxpresso. Check where I am and tell me the next step."
     }
   ],

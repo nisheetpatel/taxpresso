@@ -1,12 +1,19 @@
 // St. Gallen through the canton interface (packages/rules-ch, canton.ts): computeReturn gives
-// exactly what the engine gives for the same household, a fact that would change St. Gallen's tax
-// and that its engine does not read is refused, and the communes are the official table's.
-// Synthetic only.
-import { SALARY_CERTIFICATE_FIELDS_2026, type HouseholdInput } from '@taxpresso/rules-ch';
+// exactly what the engine gives for the same household, childcare given for the household counts
+// where it can be told apart per child, a fact that would change St. Gallen's tax and that its
+// engine does not read is refused, and the communes are the official table's. Synthetic only.
+import {
+  ATTESTATION_FIELDS_2026,
+  DOCUMENT_FIELDS_WEALTH_2026,
+  SALARY_CERTIFICATE_FIELDS_2026,
+  type HouseholdInput,
+} from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   communesFor,
   computeReturn,
+  FEDERAL_NOTE,
+  NOTE,
   rules,
   SgInputError,
   type SgEngineInput,
@@ -189,6 +196,7 @@ const HOUSEHOLDS: SgEngineInput[] = [
     civilStatus: 'divorced',
     childSupport: 'none',
     mainUpkeep: true,
+    ifdParentalScale: false,
     church: { p1: 'catholic' },
     people: [
       {
@@ -279,13 +287,73 @@ describe('St. Gallen through the canton interface', () => {
     expect(computed).toBeLessThan(all.length);
   });
 
-  it('computes the cantonal and communal tax of each household; no federal column', () => {
+  it('computes the cantonal, communal and federal tax of each household', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
+      expect(r.icc).not.toBeNull();
+      // A child who does not live with you is not supported yet for the federal tax (fail closed).
+      if (e.children?.some((c) => c.livesWithYou === false)) {
+        expect(r.unsupported).toEqual([FEDERAL_NOTE.elsewhere]);
+        expect(r.ifd).toBeNull();
+        expect(r.total).toBeNull();
+        continue;
+      }
       expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     }
+  });
+
+  it('takes childcare given for the household where it can be told apart per child', () => {
+    const e = HOUSEHOLDS[0]!;
+    const h = household(e);
+    const kid = { custody: 'full' as const, under14: true };
+    const one: HouseholdInput<StGallenCantonal> = {
+      ...h,
+      children: [kid],
+      cantonal: { ...h.cantonal, children: [{ stage: 'preschool' }] },
+    };
+    // One child under 14: its childcare, as if given for it.
+    const r = rules.computeReturn({ ...one, household: { ...h.household, childcare: amt(8_000) } });
+    expect(r).toEqual(
+      rules.computeReturn({ ...one, children: [{ ...kid, childcare: amt(8_000) }] }),
+    );
+    expect(r.icc?.items.find((i) => i.code === '258')?.amount).toBe(-chf(8_000));
+    expect(r.ifd?.items.find((i) => i.code === '258')?.amount).toBe(-chf(8_000));
+    // Two children under 14, within one child's limit (the federal one too): any split gives the
+    // same, computed.
+    const two: HouseholdInput<StGallenCantonal> = {
+      ...h,
+      children: [kid, kid],
+      cantonal: { ...h.cantonal, children: [{ stage: 'preschool' }, { stage: 'preschool' }] },
+    };
+    const within = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(20_000) },
+    });
+    expect(within.icc?.items.find((i) => i.code === '258')?.amount).toBe(-chf(20_000));
+    // Above it, the split decides: not computed until it is given per child.
+    const split = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(40_000) },
+    });
+    expect(split.icc).toBeNull();
+    expect(split.unsupported).toEqual([NOTE.childcareSplit]);
+    const each = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(40_000) },
+      cantonal: { ...two.cantonal, childcare: [amt(30_000), amt(10_000)] },
+    });
+    // The cantonal limit per child, 2025 (sg-2025-law-steuergesetz Art. 45 Abs. 1 lit. h).
+    expect(e.taxYear).toBe(2025);
+    expect(each.icc?.items.find((i) => i.code === '258')?.amount).toBe(-chf(26_700 + 10_000));
+    // No child who can have it: not counted, and said so.
+    const none = rules.computeReturn({
+      ...h,
+      household: { ...h.household, childcare: amt(5_000) },
+    });
+    expect(none.notCounted).toContainEqual(NOTE.childcareNoChild);
+    expect(none.icc?.items.find((i) => i.code === '258')).toBeUndefined();
   });
 
   it('leaves aside the facts that do not change St. Gallen’s tax', () => {
@@ -311,7 +379,13 @@ describe('St. Gallen through the canton interface', () => {
   it('refuses a fact St. Gallen does not read, a commune by number and an unknown commune', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<StGallenCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      { ...h, cantonal: { ...h.cantonal, childcare: [amt(1_000)] } },
+      {
+        ...h,
+        children: [{ custody: 'full', childcare: amt(1_000) }],
+        cantonal: { ...h.cantonal, children: [{ stage: 'preschool' }] },
+        household: { childcare: amt(5_000) },
+      },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, commune: 3203 },
       { ...h, commune: 'Zürich' },
@@ -348,9 +422,17 @@ describe('St. Gallen through the canton interface', () => {
     expect(Object.keys(rules.keys(2025))).toEqual(
       expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.documents(2026)).toEqual(
+      Object.entries({
+        salary_certificate: SALARY_CERTIFICATE_FIELDS_2026,
+        ...ATTESTATION_FIELDS_2026,
+        ...DOCUMENT_FIELDS_WEALTH_2026,
+      }).map(([kind, keys]) => ({ kind, keys })),
+    );
+    // The questionnaire's keys: the shared ones and St. Gallen's own.
+    expect(Object.keys(rules.keys(2026))).toEqual(
+      expect.arrayContaining(['profile.commune', 'sg.child_stage', 'sg.church', 'sg.church_area']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/sg');
   });
 });

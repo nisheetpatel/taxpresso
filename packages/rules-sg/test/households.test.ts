@@ -103,9 +103,11 @@ describe('H1: single, St. Gallen, 2025, employed, securities, Evangelical Reform
         share: 100,
       },
     ]);
-    expect(r.total).toBe(chf(9_962.95));
+    expect(r.icc!.taxes.total.amount).toBe(chf(9_962.95));
+    // With the federal tax the tax office derives from the same return (./ifd.ts).
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.commune).toEqual({ bfs: null, name: 'St. Gallen', rate: 13_800 });
-    expect(r.ifd).toBeNull();
+    expect(r.ifd).not.toBeNull();
     expect(r.estimates).toEqual([]);
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
     expect(r.assumptions).toContainEqual(NOTE.wholeYear);
@@ -249,7 +251,9 @@ describe('H2: married, two earners, two children, Rapperswil-Jona, 2026, Catholi
     expect(x.cantonalWealth.amount).toBe(chf(53.55));
     expect(x.communalWealth.amount).toBe(chf(37.75));
     expect(x.church?.amount).toBe(chf(721.05));
-    expect(r.total).toBe(chf(7_514.1));
+    expect(r.icc!.taxes.total.amount).toBe(chf(7_514.1));
+    // With the federal tax the tax office derives from the same return (./ifd.ts).
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
   });
 
   it('a mixed marriage: half to each spouse’s church (StV Art. 2 Abs. 1)', () => {
@@ -328,7 +332,9 @@ describe('H3: single parent, Wil, 2025, child support received', () => {
     expect(x.communalIncome.amount).toBe(chf(1_548.8));
     expect(x.simpleWealth.amount).toBe(0);
     expect(x.church).toBeNull();
-    expect(r.total).toBe(chf(2_962.95));
+    expect(r.icc!.taxes.total.amount).toBe(chf(2_962.95));
+    // With the federal tax the tax office derives from the same return (./ifd.ts).
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.notCounted).toContainEqual(NOTE.churchNotAsked);
     expect(r.icc?.rateIncome.sources.join(' ')).toContain(
       'sg-2025-law-steuergesetz Art. 50 Abs. 3 and 4',
@@ -385,7 +391,9 @@ describe('H4: retiree with wealth, Gossau, 2026, Catholic', () => {
     expect(x.cantonalWealth.amount).toBe(chf(2_159.85));
     expect(x.communalWealth.amount).toBe(chf(2_386.1));
     expect(x.church?.amount).toBe(chf(1_269));
-    expect(r.total).toBe(chf(15_291.45));
+    expect(r.icc!.taxes.total.amount).toBe(chf(15_291.45));
+    // With the federal tax the tax office derives from the same return (./ifd.ts).
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.pensions);
     expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.insuranceExtra]);
   });
@@ -425,6 +433,8 @@ describe('H5: shared custody, Rorschach, 2025, no child support, Catholic', () =
     civilStatus: 'divorced',
     childSupport: 'none',
     mainUpkeep: true,
+    // For the federal tax: the other parent earns more (no parental scale here).
+    ifdParentalScale: false,
     church: { p1: 'catholic' },
     people: [
       {
@@ -456,7 +466,9 @@ describe('H5: shared custody, Rorschach, 2025, no child support, Catholic', () =
     expect(x.cantonalIncome.amount).toBe(chf(58.8));
     expect(x.communalIncome.amount).toBe(chf(72.25));
     expect(x.church?.amount).toBe(chf(12.3));
-    expect(r.total).toBe(chf(143.35));
+    expect(r.icc!.taxes.total.amount).toBe(chf(143.35));
+    // With the federal tax the tax office derives from the same return (./ifd.ts).
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.mainUpkeepYes);
   });
 

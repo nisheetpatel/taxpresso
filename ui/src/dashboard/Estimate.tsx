@@ -110,13 +110,18 @@ const text = {
     taxableZg:
       'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Gesamtvermögen): {wealth}.',
     officialLu: 'Steuern {year}',
-    officialAg: 'Steuern {year}',
     breakdownLu:
       'What the state and communal tax (Staats- und Gemeindesteuern) is made of, with the church tax and the Personalsteuer',
-    breakdownAg:
-      'What the cantonal, communal and church tax (Kantons-, Gemeinde- und Kirchensteuern) is made of',
     taxableLu:
       'Taxable income (steuerbares Einkommen): state tax {icc}, federal tax {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
+    officialSg: 'Steuern {year}',
+    officialAg: 'Steuern {year}',
+    breakdownSg:
+      'What the cantonal, communal and church tax (Kantons-, Gemeinde- und Kirchensteuer) is made of',
+    breakdownAg:
+      'What the cantonal, communal and church tax (Kantons-, Gemeinde- und Kirchensteuern) is made of',
+    taxableSg:
+      'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
     taxableAg:
       'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
     preview: '{canton} is a preview: what to check',
@@ -166,12 +171,16 @@ const text = {
       'Ce qui compose les impôts cantonal et communal (Kantons- und Gemeindesteuern), avec l’impôt ecclésiastique et de la bourgeoisie',
     taxableZg: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Gesamtvermögen)${NB}: {wealth}.`,
     officialLu: 'Steuern {year}',
-    officialAg: 'Steuern {year}',
     breakdownLu:
       'Ce qui compose les impôts cantonal et communal (Staats- und Gemeindesteuern), avec l’impôt ecclésiastique et la Personalsteuer',
+    taxableLu: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
+    officialSg: 'Steuern {year}',
+    officialAg: 'Steuern {year}',
+    breakdownSg:
+      'Ce qui compose les impôts cantonal, communal et ecclésiastique (Kantons-, Gemeinde- und Kirchensteuer)',
     breakdownAg:
       'Ce qui compose les impôts cantonal, communal et ecclésiastique (Kantons-, Gemeinde- und Kirchensteuern)',
-    taxableLu: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
+    taxableSg: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
     taxableAg: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
     preview: `{canton} est en avant-première${NB}: ce qu’il faut vérifier`,
     previewNote:
@@ -225,11 +234,14 @@ const text = {
     taxableZg:
       'Steuerbares Einkommen: Kanton {icc}, Bund {ifd}. Steuerbares Gesamtvermögen: {wealth}.',
     officialLu: 'Steuern {year}',
-    officialAg: 'Steuern {year}',
     breakdownLu: 'Woraus die Staats- und Gemeindesteuern bestehen, mit Kirchen- und Personalsteuer',
-    breakdownAg: 'Woraus die Kantons-, Gemeinde- und Kirchensteuern bestehen',
     taxableLu:
       'Steuerbares Einkommen: Staatssteuer {icc}, Bundessteuer {ifd}. Steuerbares Vermögen: {wealth}.',
+    officialSg: 'Steuern {year}',
+    officialAg: 'Steuern {year}',
+    breakdownSg: 'Woraus die Kantons-, Gemeinde- und Kirchensteuer besteht',
+    breakdownAg: 'Woraus die Kantons-, Gemeinde- und Kirchensteuern bestehen',
+    taxableSg: 'Steuerbares Einkommen: Kanton {icc}, Bund {ifd}. Steuerbares Vermögen: {wealth}.',
     taxableAg:
       'Steuerbares Einkommen: Kantons- und Gemeindesteuern {icc}, direkte Bundessteuer {ifd}. Steuerbares Vermögen: {wealth}.',
     preview: '{canton} ist eine Vorschau: Was du prüfen solltest',

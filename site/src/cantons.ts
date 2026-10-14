@@ -78,6 +78,18 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
     },
   },
   {
+    code: 'SG',
+    status: 'preview',
+    name: {
+      en: 'St. Gallen',
+      fr: 'Saint-Gall',
+      de: 'St. Gallen',
+      it: 'San Gallo',
+      es: 'San Galo',
+      pt: 'São Galo',
+    },
+  },
+  {
     code: 'AG',
     status: 'preview',
     name: {
@@ -96,18 +108,6 @@ export type CantonWhen = 'next' | 'then';
 
 /** The cantons coming next, in order. Not in the extension yet. */
 export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
-  {
-    code: 'SG',
-    when: 'next',
-    name: {
-      en: 'St. Gallen',
-      fr: 'Saint-Gall',
-      de: 'St. Gallen',
-      it: 'San Gallo',
-      es: 'San Galo',
-      pt: 'São Galo',
-    },
-  },
   {
     code: 'FR',
     when: 'then',
