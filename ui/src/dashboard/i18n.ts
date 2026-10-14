@@ -1,6 +1,6 @@
 // UI strings in English, French and German (SPEC.md section 1). Second person, plain words (German:
 // the informal "du"), official terms next to their gloss: French for Geneva and Vaud, German for
-// Zurich, Bern, Basel-Landschaft, Basel-Stadt and Zug.
+// Zurich, Bern, Basel-Landschaft, Basel-Stadt, Zug and Lucerne.
 // Status labels follow SPEC.md section 11b.
 const NB = String.fromCharCode(0xa0);
 
@@ -184,6 +184,12 @@ export const messages = {
     planSavingSplitZg: 'Zug {icc} · federal {ifd}',
     planExplainZg:
       'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
+    'assume.lu_commune_default': 'Commune not answered yet: the city of Lucerne assumed.',
+    'assume.lu_preview':
+      'Lucerne is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    planSavingSplitLu: 'Lucerne {icc} · federal {ifd}',
+    planExplainLu:
+      'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
   },
   fr: {
     docTitle: 'Taxpresso · Vos impôts, le temps d’un espresso.',
@@ -356,6 +362,11 @@ export const messages = {
     'assume.zg_preview': `Zoug est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
     planSavingSplitZg: 'Zoug {icc} · fédéral {ifd}',
     planExplainZg:
+      'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
+    'assume.lu_commune_default': `Commune pas encore indiquée${NB}: la ville de Lucerne par défaut.`,
+    'assume.lu_preview': `Lucerne est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    planSavingSplitLu: 'Lucerne {icc} · fédéral {ifd}',
+    planExplainLu:
       'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
   },
   de: {
@@ -539,6 +550,12 @@ export const messages = {
       'Zug ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
     planSavingSplitZg: 'Zug {icc} · Bund {ifd}',
     planExplainZg:
+      'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+    'assume.lu_commune_default': 'Gemeinde noch nicht angegeben: Stadt Luzern angenommen.',
+    'assume.lu_preview':
+      'Luzern ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    planSavingSplitLu: 'Luzern {icc} · Bund {ifd}',
+    planExplainLu:
       'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
   },
 } as const;
