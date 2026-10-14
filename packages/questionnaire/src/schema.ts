@@ -55,6 +55,7 @@ export const OFFICIAL_HOSTS = [
   'silgeneve.ch',
   'zh.ch', // www.zh.ch, notes.zh.ch (ZH-Lex)
   'be.ch', // www.sv.fin.be.ch (guides, TaxInfo), www.fin.be.ch, www.belex.sites.be.ch (BELEX)
+  'vd.ch', // www.vd.ch (guide, forms, tables), prestations.vd.ch (BLV, VaudTax)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
 ] as const;

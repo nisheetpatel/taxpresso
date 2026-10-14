@@ -509,7 +509,12 @@ export class QuestionnaireEngine {
       case 'commune': {
         if (typeof raw !== 'string') return bad('expected a commune');
         const f = fold(raw.replace(/^(ville de|commune de|le|la)\s+/i, ''));
-        const hit = this.communes.find((c) => c.slug === raw || fold(c.name) === f);
+        // The name as given first ("Le Chenit", "La Tour-de-Peilz" are names), then without the
+        // words before it ("Ville de Lausanne").
+        const whole = fold(raw);
+        const hit =
+          this.communes.find((c) => c.slug === raw || fold(c.name) === whole) ??
+          this.communes.find((c) => fold(c.name) === f);
         if (hit) return hit.slug;
         // A commune listed once per part ("Uster, Teil 1 (...)"): its name alone names one part
         // only when it has one; otherwise the user says which.

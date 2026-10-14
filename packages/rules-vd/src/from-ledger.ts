@@ -72,17 +72,21 @@ export const VAUD_READING: CantonLedgerReading<VaudCantonal> = {
       const value = amount('vd.contents_value');
       if (value) out.furnitureInsurance = value;
     }
-    // Childcare split per child, when there are several children (the limit is per child).
-    if (children.length > 1) {
-      const care = children.map((_, i) => {
+    // Childcare split per child, when there are several children (the limit is per child), read
+    // only while the household says it pays for childcare (an answer left from before doesn't count).
+    const care = answer('profile.childcare');
+    if (children.length > 1 && (care === 'creche_or_daycare' || care === 'nanny')) {
+      const perChild = children.map((_, i) => {
         const a = amount('vd.child_care', `child${i + 1}`);
         return a && a.value > 0 ? a : undefined;
       });
-      if (care.some(Boolean)) out.childcare = care;
+      if (perChild.some(Boolean)) out.childcare = perChild;
     }
-    // Code 480: the interest on savings as the user gave it, instead of the accounts' own.
+    // Code 480: the interest on savings as the user gave it, instead of the accounts' own, while
+    // the household says it has bank accounts.
+    const banks = answer('profile.banks');
     const savings = amount('vd.savings_interest');
-    if (savings) out.savingsInterest = savings;
+    if (savings && typeof banks === 'number' && banks > 0) out.savingsInterest = savings;
     return out;
   },
 };

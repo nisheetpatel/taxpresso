@@ -461,7 +461,7 @@ describe('the questions every canton shares', () => {
     const file = sharedQuestionnaire2026();
     const canton = file.questions[0]!;
     expect(canton).toMatchObject({ id: 'canton', key: 'profile.canton', type: 'choice' });
-    expect(canton.options?.map((o) => o.value)).toEqual(['GE', 'ZH', 'BE', 'other']);
+    expect(canton.options?.map((o) => o.value)).toEqual(['GE', 'ZH', 'BE', 'VD', 'other']);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
     expect(canton.link?.url).toBe('https://github.com/nisheetpatel/taxpresso/issues/1');
     // A move from another canton: the canton of 31 December taxes the whole year (LIFD art. 105).
@@ -520,7 +520,7 @@ describe('the questions every canton shares', () => {
     expect(e.next(snap)?.id).toBe('civil_status');
     expect(e.render(slot, snap, 'en')).toMatchObject({ value: 'GE', assumed: true });
     // An answer the key doesn't take is not assumed.
-    const refused = e.snapshot(fresh, { 'profile.canton': 'VD' });
+    const refused = e.snapshot(fresh, { 'profile.canton': 'TI' });
     expect(refused.slots.find((s) => s.id === 'canton')?.value).toBeUndefined();
     // The user's answer wins.
     const answered = e.snapshot(ledger, { 'profile.canton': 'ZH' });

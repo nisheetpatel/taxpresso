@@ -451,6 +451,9 @@ importers:
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../rules-ge
+      '@taxpresso/rules-vd':
+        specifier: workspace:*
+        version: link:../rules-vd
       '@taxpresso/rules-zh':
         specifier: workspace:*
         version: link:../rules-zh
