@@ -58,6 +58,10 @@ const messages = {
       'Type each value into eTax.zug or the paper form K, page by page in the form’s order: page 2 the income, page 3 the deductions, each in two columns, Kanton and Bund, page 4 the wealth. Amounts are whole francs (keine Rappenbeträge), without separators. Tick each value once it is in.',
     coupleZg:
       'On Zug’s form K, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
+    leadSg:
+      'Type each value into E-Tax SG or the paper forms, in the form’s order: first Form 4 (Berufskosten) for each person, whose total goes to 10.1 or 10.2, then the return’s page 2 the income, page 3 the deductions, page 4 the wealth. The return has one column: the tax office works out the federal tax from it. Amounts are whole francs, without separators. Tick each value once it is in.',
+    coupleSg:
+      'On the St. Gallen return, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -98,6 +102,8 @@ const messages = {
     coupleBs: `Sur le formulaire bâlois, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
     leadZg: `Recopiez chaque valeur dans eTax.zug ou le formulaire K papier, page par page dans l’ordre du formulaire${NB}: page 2 les revenus, page 3 les déductions, chacune en deux colonnes, Kanton et Bund, page 4 la fortune. Les montants sont en francs entiers (keine Rappenbeträge), sans séparateurs. Cochez chaque valeur une fois saisie.`,
     coupleZg: `Sur le formulaire K de Zoug, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadSg: `Recopiez chaque valeur dans E-Tax SG ou les formulaires papier, dans l’ordre du formulaire${NB}: d’abord le formulaire 4 (Berufskosten, frais professionnels) de chaque personne, dont le total va au 10.1 ou au 10.2, puis la page 2 de la déclaration les revenus, la page 3 les déductions, la page 4 la fortune. La déclaration a une seule colonne${NB}: l’administration fiscale en déduit l’impôt fédéral. Les montants sont en francs entiers, sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    coupleSg: `Sur la déclaration saint-galloise, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
     title: 'Fülle deine Steuererklärung aus',
@@ -152,6 +158,10 @@ const messages = {
       'Tippe jeden Wert in eTax.zug oder ins Papierformular K, Seite für Seite in der Reihenfolge des Formulars: Seite 2 die Einkünfte, Seite 3 die Abzüge, je in zwei Spalten, Kanton und Bund, Seite 4 das Vermögen. Beträge in ganzen Franken (keine Rappenbeträge), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
     coupleZg:
       'Auf dem Formular K von Zug ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadSg:
+      'Tippe jeden Wert in E-Tax SG oder in die Papierformulare, in der Reihenfolge des Formulars: zuerst das Formular 4 (Berufskosten) für jede Person, dessen Total in Ziffer 10.1 oder 10.2 kommt, dann auf der Steuererklärung Seite 2 die Einkünfte, Seite 3 die Abzüge, Seite 4 das Vermögen. Die Steuererklärung hat eine Spalte: Die Steuerbehörde leitet die direkte Bundessteuer daraus ab. Beträge in ganzen Franken, ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    coupleSg:
+      'Auf der St. Galler Steuererklärung ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
 } as const;
 

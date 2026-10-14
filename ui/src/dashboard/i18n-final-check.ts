@@ -45,6 +45,8 @@ const messages = {
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung Basel-Stadt) for more time to file (Fristerstreckung), online in the eSteuern.BS portal',
     moreTimeZg:
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Zug) for more time to file (Fristerstreckung), online at www.zg.ch/tax with your Pers ID',
+    moreTimeSg:
+      'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristverlängerung), before the deadline, online at www.steuern.sg.ch',
   },
   fr: {
     title: 'Vérification finale',
@@ -80,6 +82,7 @@ const messages = {
     moreTimeVd: `Un document n’arrivera pas à temps${NB}? Demandez un délai à l’Administration cantonale des impôts (ACI), en ligne avec e-Délai`,
     moreTimeBs: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale (Steuerverwaltung Basel-Stadt), en ligne dans le portail eSteuern.BS`,
     moreTimeZg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale de Zoug (Steuerverwaltung), en ligne sur www.zg.ch/tax avec votre Pers ID`,
+    moreTimeSg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), avant l’échéance, en ligne sur www.steuern.sg.ch`,
   },
   de: {
     title: 'Schlusskontrolle',
@@ -123,6 +126,8 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung Basel-Stadt eine Fristerstreckung, online im Portal eSteuern.BS',
     moreTimeZg:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Zug eine Fristerstreckung, online unter www.zg.ch/tax mit deiner Pers ID',
+    moreTimeSg:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt vor Ablauf der Frist eine Fristverlängerung, online unter www.steuern.sg.ch',
   },
 } as const;
 
