@@ -1,6 +1,6 @@
 // UI strings in English, French and German (SPEC.md section 1). Second person, plain words (German:
 // the informal "du"), official terms next to their gloss: French for Geneva and Vaud, German for
-// Zurich, Bern and Basel-Landschaft.
+// Zurich, Bern, Basel-Landschaft and Basel-Stadt.
 // Status labels follow SPEC.md section 11b.
 const NB = String.fromCharCode(0xa0);
 
@@ -168,16 +168,22 @@ export const messages = {
     planSavingSplitBl: 'Basel-Landschaft {icc} · federal {ifd}',
     planExplainBl:
       'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
-    planExplainAg:
-      'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
     'assume.vd_commune_default': 'Commune not answered yet: Lausanne assumed.',
-    'assume.ag_commune_default': 'Commune not answered yet: Aarau assumed.',
     'assume.vd_preview':
       'Vaud is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    planSavingSplitVd: 'Vaud {icc} · federal {ifd}',
+    'assume.bs_commune_default': 'Commune not answered yet: City of Basel assumed.',
+    'assume.ag_commune_default': 'Commune not answered yet: Aarau assumed.',
+    'assume.bs_preview':
+      'Basel-Stadt is a preview: the rules its documents don’t spell out are applied as in your estimate.',
     'assume.ag_preview':
       'Aargau is a preview: the rules its documents don’t spell out are applied as in your estimate.',
-    planSavingSplitVd: 'Vaud {icc} · federal {ifd}',
+    planSavingSplitBs: 'Basel-Stadt {icc} · federal {ifd}',
     planSavingSplitAg: 'Aargau {icc} · federal {ifd}',
+    planExplainBs:
+      'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
+    planExplainAg:
+      'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
   },
   fr: {
     docTitle: 'Taxpresso · Vos impôts, le temps d’un espresso.',
@@ -338,14 +344,19 @@ export const messages = {
     planSavingSplitBl: 'Bâle-Campagne {icc} · fédéral {ifd}',
     planExplainBl:
       'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
+    'assume.vd_commune_default': `Commune pas encore indiquée${NB}: Lausanne par défaut.`,
+    'assume.vd_preview': `Vaud est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    planSavingSplitVd: 'Vaud {icc} · fédéral {ifd}',
+    'assume.bs_commune_default': `Commune pas encore indiquée${NB}: Ville de Bâle par défaut.`,
+    'assume.ag_commune_default': `Commune pas encore indiquée${NB}: Aarau par défaut.`,
+    'assume.bs_preview': `Bâle-Ville est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    'assume.ag_preview': `Argovie est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    planSavingSplitBs: 'Bâle-Ville {icc} · fédéral {ifd}',
+    planSavingSplitAg: 'Argovie {icc} · fédéral {ifd}',
+    planExplainBs:
+      'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
     planExplainAg:
       'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
-    'assume.vd_commune_default': `Commune pas encore indiquée${NB}: Lausanne par défaut.`,
-    'assume.ag_commune_default': `Commune pas encore indiquée${NB}: Aarau par défaut.`,
-    'assume.vd_preview': `Vaud est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
-    'assume.ag_preview': `Argovie est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
-    planSavingSplitVd: 'Vaud {icc} · fédéral {ifd}',
-    planSavingSplitAg: 'Argovie {icc} · fédéral {ifd}',
   },
   de: {
     docTitle: 'Taxpresso · Deine Steuern, erledigt bei einem Espresso.',
@@ -513,16 +524,22 @@ export const messages = {
     planSavingSplitBl: 'Basel-Landschaft {icc} · Bund {ifd}',
     planExplainBl:
       'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
-    planExplainAg:
-      'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
     'assume.vd_commune_default': 'Gemeinde noch nicht angegeben: Lausanne angenommen.',
-    'assume.ag_commune_default': 'Gemeinde noch nicht angegeben: Aarau angenommen.',
     'assume.vd_preview':
       'Die Waadt ist eine Vorschau: Regeln, die ihre Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    planSavingSplitVd: 'Waadt {icc} · Bund {ifd}',
+    'assume.bs_commune_default': 'Gemeinde noch nicht angegeben: Stadt Basel angenommen.',
+    'assume.ag_commune_default': 'Gemeinde noch nicht angegeben: Aarau angenommen.',
+    'assume.bs_preview':
+      'Basel-Stadt ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
     'assume.ag_preview':
       'Aargau ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
-    planSavingSplitVd: 'Waadt {icc} · Bund {ifd}',
+    planSavingSplitBs: 'Basel-Stadt {icc} · Bund {ifd}',
     planSavingSplitAg: 'Aargau {icc} · Bund {ifd}',
+    planExplainBs:
+      'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+    planExplainAg:
+      'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
   },
 } as const;
 

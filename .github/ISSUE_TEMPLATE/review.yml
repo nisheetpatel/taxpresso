@@ -1,0 +1,30 @@
+name: Leave a review
+description: Tell us what you think of Taxpresso. With your OK, we may quote you on taxpresso.ch.
+title: 'Review: '
+labels: [review]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking a minute. This page is public, so please don't include real tax data, amounts or anything that identifies you beyond the name you choose below.
+  - type: textarea
+    id: review
+    attributes:
+      label: Your review
+      description: What did you like, what was hard? Any language is welcome.
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Name to show
+      description: 'If we quote you, which name should we show? A first name is enough. Leave it empty to stay anonymous.'
+    validations:
+      required: false
+  - type: checkboxes
+    id: permission
+    attributes:
+      label: Quoting
+      options:
+        - label: You may quote this review on taxpresso.ch.
+          required: false

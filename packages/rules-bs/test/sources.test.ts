@@ -4,11 +4,14 @@
 // a page). The citations written into the rules (the form's lines, the laws' rules) too. A 2026
 // constant cites 2026 documents, or documents valid for every year; a 2025 constant cites 2025
 // documents, except the few that name a later document on purpose (listed below, with why).
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { ifdParamsFor } from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   ASSESS_RULES,
+  BS_OFFICIAL_DOCUMENTS,
+  BS_TERMS,
+  bsKeys,
   bsParamsFor,
   COMPUTE_RULES,
   ESTIMATE_TEXT,
@@ -108,6 +111,61 @@ describe('citations', () => {
     }
     for (const year of [2025, 2026] as const) {
       for (const [name, c] of constants(year)) expect(c.source, name).not.toMatch(/[–—]/);
+    }
+  });
+});
+
+describe('Basel-Stadt’s keys', () => {
+  it('cite Basel-Stadt’s documents, with the page, paragraph or part', () => {
+    for (const year of [2025, 2026]) {
+      const keys = bsKeys(year);
+      for (const k of [
+        'profile.commune',
+        'profile.moved',
+        'bs.work_rate',
+        'bs.reference_age',
+        'bs.cohabiting',
+        'bs.main_upkeep',
+        'bs.child_minor',
+        'bs.church',
+        'bs.child_care',
+        'bs.party',
+      ]) {
+        expectCited(keys[k]!.source!, `${year} ${k}`);
+      }
+      for (const [k, def] of Object.entries(keys)) {
+        if (def.source?.startsWith('bs-')) expectCited(def.source, `${year} ${k}`);
+      }
+    }
+    expectCited(BS_TERMS.moreTimeSource, 'more time');
+  });
+});
+
+describe('the official Basel-Stadt documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/bs/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    expect(Object.keys(BS_OFFICIAL_DOCUMENTS).sort()).toEqual(manifest.map((m) => m.id).sort());
+    for (const [id, doc] of Object.entries(BS_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id)!;
+      expect(doc, id).toEqual({ title: m.title, url: m.url, pdf: m.format === 'pdf' });
+    }
+  });
+
+  it('cover every Basel-Stadt document the rules cite', () => {
+    const dir = new URL('../src/', import.meta.url);
+    const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    for (const f of files) {
+      const text = readFileSync(new URL(f, dir), 'utf8');
+      for (const id of text.match(/\bbs-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]\b/g) ?? []) {
+        if (manifest.some((m) => m.id === id)) {
+          expect(Object.keys(BS_OFFICIAL_DOCUMENTS), `${f}: ${id}`).toContain(id);
+        }
+      }
     }
   });
 });

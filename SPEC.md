@@ -443,6 +443,8 @@ taxpresso/
                         summary (wired into the extension as a preview)
     rules-bl/           Basel-Landschaft's state, communal and church tax, and the federal tax of its
                         Bundessteuer column (wired into the extension as a preview)
+    rules-bs/           Basel-Stadt's cantonal and communal tax, and the federal tax of its Bund
+                        column (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
                         worksheet (wired into the extension as a preview)
     rules-ag/           Aargau's cantonal, communal and church tax, and the federal tax the tax office
@@ -453,6 +455,8 @@ taxpresso/
     filing-zh/          the Zurich form map (main form and annexes) and the values to type on it
     filing-be/          the Bern forms and TaxMe's summaries, and the values to type on them
     filing-bl/          the Basel-Landschaft return (pages 2 to 4, two columns) and the values to type
+    filing-bs/          the Basel-Stadt main form and forms W, B, K, Z and F (Kanton and Bund columns)
+                        and the values to type on them
     filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
                         worksheet for the federal tax, to check
     filing-ag/          the Aargau return as the guide numbers it (the main form 101.01 is not
@@ -467,6 +471,9 @@ taxpresso/
                         shared custody, parties, childcare and education per child)
   data/bl/2026/         Basel-Landschaft's questionnaire: the shared questions, its own (commune by name,
                         church, shared custody, each child's income and childcare, kind of pension)
+  data/bs/2026/         Basel-Stadt's questionnaire: the shared questions, its own (reference age, work
+                        rate, shared custody, each child under 18, childcare per child, commune, church,
+                        parties)
   data/vd/2026/         Vaud's questionnaire: the shared questions, its own (commune and its part,
                         household alone with the children, upkeep, rent, household contents,
                         childcare per child, savings interest)

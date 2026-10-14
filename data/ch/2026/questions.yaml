@@ -35,17 +35,17 @@ questions:
   # the cantonal and communal tax, ge-2025-guide-declaration-pp p. 53 (Arrivée d'un canton suisse)
   # zh-2025-guide-natuerliche-personen p. 5 and 6 (Zuzug aus einem anderen Kanton),
   # be-2025-wegleitung-np-de p. 10 (Seite 1: Wohnsitz am Ende des Jahres), bl-2026-wegleitung
-  # p. 3 and 4 (Wer hat eine Steuererklärung einzureichen?; Zuzug aus einem anderen Kanton) and
+  # p. 3 and 4 (Wer hat eine Steuererklärung einzureichen?; Zuzug aus einem anderen Kanton),
   # vd-2025-guide p. 6 (Début et fin de l'assujettissement: arriving from another canton, the whole
-  # year) and ag-2025-guide-wegleitung p. 7 and 8 (Wer füllt eine Steuererklärung aus?;
-  # Wohnsitzverlegung).
+  # year), bs-2025-guide-wegleitung p. 8 (Zuzug aus einem anderen Kanton) and
+  # ag-2025-guide-wegleitung p. 7 and 8 (Wer füllt eine Steuererklärung aus?; Wohnsitzverlegung).
   - id: canton
     key: profile.canton
     type: choice
     explain:
-      en: 'The canton you lived in on 31 December taxes your whole year: cantonal, communal and federal tax. Taxpresso prepares returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud and Aargau so far.'
-      fr: 'Le canton où vous habitiez au 31 décembre vous impose pour toute l’année : impôt cantonal, communal et fédéral. Taxpresso prépare pour l’instant les déclarations de Genève, de Zurich, de Berne, de Bâle-Campagne, de Vaud et d’Argovie.'
-      de: 'Der Kanton, in dem du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr: Staats-, Gemeinde- und Bundessteuer. Taxpresso bereitet bisher Steuererklärungen für Genf, Zürich, Bern, Basel-Landschaft, Waadt und Aargau vor.'
+      en: 'The canton you lived in on 31 December taxes your whole year: cantonal, communal and federal tax. Taxpresso prepares returns for {cantons} so far.'
+      fr: 'Le canton où vous habitiez au 31 décembre vous impose pour toute l’année : impôt cantonal, communal et fédéral. Taxpresso prépare pour l’instant les déclarations de ces cantons : {cantons}.'
+      de: 'Der Kanton, in dem du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr: Staats-, Gemeinde- und Bundessteuer. Taxpresso bereitet bisher Steuererklärungen für {cantons} vor.'
     learnMore:
       url: 'https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf#page=58'
       label:
@@ -87,15 +87,20 @@ questions:
       - value: VD
         label: { en: 'Canton of Vaud', fr: 'Canton de Vaud', de: 'Kanton Waadt' }
         chip: { en: 'Vaud', fr: 'Vaud', de: 'Waadt' }
+      - value: BS
+        label: { en: 'Canton of Basel-Stadt', fr: 'Canton de Bâle-Ville', de: 'Kanton Basel-Stadt' }
+        chip: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' }
       - value: AG
         label: { en: 'Canton of Aargau', fr: 'Canton d’Argovie', de: 'Kanton Aargau' }
         chip: { en: 'Aargau', fr: 'Argovie', de: 'Aargau' }
+      # The cantons Taxpresso covers are named from the options above ({cantonsOr}, {cantons}:
+      # packages/questionnaire, schema.ts), so adding a canton adds its option only.
       - value: other
         label: { en: 'Another canton', fr: 'Un autre canton', de: 'Ein anderer Kanton' }
         notSupported:
-          en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud or Aargau'
-          fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud ou Argovie'
-          de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt oder Aargau'
+          en: 'A canton other than {cantonsOr}'
+          fr: 'Un autre canton que {cantonsOr}'
+          de: 'Ein anderer Kanton als {cantonsOr}'
 
   # ch-2026-ifd-instructions-personnes-physiques p. 1 (situation on 31 December)
   - id: civil_status

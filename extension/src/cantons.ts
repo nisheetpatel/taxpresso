@@ -12,6 +12,7 @@ import { filing as aargauFiling } from '@taxpresso/filing-ag';
 import { filing as bernFiling } from '@taxpresso/filing-be';
 import { filing as baselLandFiling } from '@taxpresso/filing-bl';
 import { filing as vaudFiling } from '@taxpresso/filing-vd';
+import { filing as baselFiling } from '@taxpresso/filing-bs';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
@@ -19,6 +20,7 @@ import {
   agQuestionnaire2026,
   beQuestionnaire2026,
   blQuestionnaire2026,
+  bsQuestionnaire2026,
   geQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
@@ -95,6 +97,17 @@ import {
   type VaudCantonal,
   type VdTaxResult,
 } from '@taxpresso/rules-vd';
+import {
+  BASEL_READING,
+  BS_TERMS,
+  bsParamsFor,
+  communeOptions as baselCommunes,
+  NOTE_VALUABLES as BASEL_VALUABLES,
+  rules as baselRules,
+  view as baselView,
+  type BaselCantonal,
+  type BsTaxResult,
+} from '@taxpresso/rules-bs';
 import {
   AARGAU_READING,
   AG_TERMS,
@@ -396,6 +409,43 @@ const VAUD: CantonEntry = {
   tou: false,
 };
 
+const BASEL: CantonEntry = {
+  code: 'BS',
+  name: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' },
+  // The canton's official software, in the eSteuern.BS portal (bs-2025-efiling-baltax-tipps p. 1).
+  software: 'BalTax Online',
+  rules: baselRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? bsQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...baselRules.keys(taxYear) }),
+  communes: (taxYear) => baselCommunes(taxYear),
+  // Line 835 takes cash, precious metals and other assets together; a vehicle of daily use is
+  // tax-free there, which the shared reading can't tell: the note says so.
+  ...sharedLedger(BASEL_READING, baselRules, BASEL_VALUABLES),
+  view: baselView,
+  filing: baselFiling,
+  terms: BS_TERMS,
+  plan: {
+    computeReturn: (input) => baselRules.computeReturn(input as HouseholdInput<BaselCantonal>),
+    incomeTax: (r) => baselView.incomeTax(r as BsTaxResult),
+    // The city of Basel, by its name (no document gives Basel-Stadt's federal commune numbers).
+    defaultCommune: 'Basel',
+    communeName: { en: 'City of Basel', fr: 'Ville de Bâle', de: 'Stadt Basel' },
+    sources(taxYear) {
+      // The documents a Basel-Stadt household's income tax rests on, for the year.
+      const P = bsParamsFor(taxYear);
+      return [
+        P.income.B.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'bs_preview', communeDefault: 'bs_commune_default' },
+    // Basel-Stadt's rule for a 3a catch-up from 2026 (bs-2026-guide-wegleitung-b p. 34).
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 const AARGAU: CantonEntry = {
   code: 'AG',
   name: { en: 'Aargau', fr: 'Argovie', de: 'Aargau' },
@@ -440,6 +490,7 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   BE: BERN,
   BL: BASEL_LAND,
   VD: VAUD,
+  BS: BASEL,
   AG: AARGAU,
 };
 

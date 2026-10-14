@@ -4,6 +4,8 @@ import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
+  agQuestionnaire2026,
+  bsQuestionnaire2026,
   geQuestionnaire2026,
   LearnMore,
   NBSP,
@@ -13,6 +15,7 @@ import {
   QuestionnaireError,
   resolveShared,
   sharedQuestionnaire2026,
+  zhQuestionnaire2026,
 } from '../src/index.js';
 
 /** Geneva's keys with the canton question every canton shares. */
@@ -467,6 +470,7 @@ describe('the questions every canton shares', () => {
       'BE',
       'BL',
       'VD',
+      'BS',
       'AG',
       'other',
     ]);
@@ -476,6 +480,32 @@ describe('the questions every canton shares', () => {
     expect(canton.learnMore?.url).toMatch(/fedlex\.admin\.ch\/.+#page=58$/);
     expect(official).toContain(canton.learnMore!.url.replace(/#page=\d+$/, ''));
     expect(canton.help?.en).toMatch(/taxes the whole year/);
+    // The cantons covered are named from the options themselves: a canton added there is named.
+    expect(canton.explain?.en).toMatch(
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt and Aargau so far\.$/,
+    );
+    expect(canton.explain?.fr).toMatch(
+      new RegExp(
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville et Argovie\\.$`,
+      ),
+    );
+    expect(canton.explain?.de).toMatch(
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt und Aargau vor\.$/,
+    );
+    expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt or Aargau',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville ou Argovie',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt oder Aargau',
+    });
+    for (const f of [
+      file,
+      geQuestionnaire2026(),
+      zhQuestionnaire2026(),
+      bsQuestionnaire2026(),
+      agQuestionnaire2026(),
+    ]) {
+      expect(JSON.stringify(f)).not.toMatch(/\{cantons/);
+    }
     for (const item of [...file.questions, ...file.requirements]) {
       expect(item.explain?.de, item.id).toBeTruthy();
       expect(item.learnMore?.label.de, item.id).toBeTruthy();
