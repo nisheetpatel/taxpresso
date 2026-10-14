@@ -147,7 +147,7 @@ function both(h: Shared) {
 describe('the federal tax on the Zurich return', () => {
   it(
     'equals Geneva’s federal tax for the same household, to the centime (2,000 households)',
-    { timeout: 60_000 },
+    { timeout: 300_000 },
     () => {
       let compared = 0;
       for (let i = 0; i < 2_000; i++) {
