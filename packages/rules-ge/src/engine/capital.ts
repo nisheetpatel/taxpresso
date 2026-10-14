@@ -81,6 +81,18 @@ export interface CapitalOutcome {
   secondPillar: EnginePerson[];
 }
 
+/**
+ * a x b / den to the nearest 5 centimes, halves up, exactly: a lump sum of millions times its
+ * scale's tax goes beyond the integers a JavaScript number holds exactly.
+ */
+function round5Exact(a: number, b: number, den: number): number {
+  const num = BigInt(a) * BigInt(b);
+  const d = BigInt(den);
+  const exact = Number(((2n * num + 5n * d) / (10n * d)) * 5n);
+  // The same as round5 where the product is a safe integer.
+  return Number.isSafeInteger(a * b) ? round5(a * b, den) : exact;
+}
+
 /** Year of a YYYY-MM-DD date. */
 const yearOf = (date: string) => Number(date.slice(0, 4));
 
@@ -124,7 +136,7 @@ export function capitalIcc(
   const scale = sTrace.p(I.incomeScale);
   const rateTax = bracketTax(scale, rateIncome);
   const scaleTax =
-    splitting === 'none' || rateIncome === 0 ? rateTax : round5(C * rateTax, rateIncome);
+    splitting === 'none' || rateIncome === 0 ? rateTax : round5Exact(C, rateTax, rateIncome);
   const scaleTaxLine = sTrace.line(
     scaleTax,
     t(

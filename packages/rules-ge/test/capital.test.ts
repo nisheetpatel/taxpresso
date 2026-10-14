@@ -471,6 +471,20 @@ describe('what is counted, and what fails closed', () => {
     expect(favreBuyIn.icc).not.toBeNull();
   });
 
+  it('stays exact for lump sums of millions, with splitting', () => {
+    // CHF 40 million for a married couple: the scale at 20 million, nearly all at 18 %; with the
+    // centimes (x 1.7449 at a flat 43.69 %), a fifth of it comes close to the top row of the AFC's
+    // table (6.28 %, ge-2025-source-capital-icc-tariff p. 4), never above it.
+    const C = chf(40_000_000);
+    const r = capitalIcc(paramsFor(2025), amount(C), 'full', flat43_69);
+    expect(r.rateIncome.amount).toBe(chf(20_000_000));
+    expect(Number.isSafeInteger(r.scaleTax.amount)).toBe(true);
+    expect(r.scaleTax.amount % 5).toBe(0);
+    const rate = r.tax.amount / C;
+    expect(rate).toBeGreaterThan(0.062);
+    expect(rate).toBeLessThan(0.0628);
+  });
+
   it('refuses a lump sum of someone not in the household', () => {
     expect(() => base({ benefits: [one({ person: 'p2' })], reasons: {} })).toThrow(
       /not in the household/,
