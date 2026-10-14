@@ -880,6 +880,10 @@ export class CantonRegistry {
 
   /** The questionnaire of a canton; its own once it has one, else the questions every canton shares. */
   engine(canton: CantonEntry | undefined): QuestionnaireEngine {
+    // Every read asks for the engine: the questionnaire file is parsed once, not on each call.
+    const asked = canton?.code ?? 'shared';
+    const known = this.#engines.get(`for:${asked}`);
+    if (known) return known;
     const file = canton?.questionnaire(this.taxYear);
     const id = file && canton ? canton.code : 'shared';
     let engine = this.#engines.get(id);
@@ -897,6 +901,7 @@ export class CantonRegistry {
             );
       this.#engines.set(id, engine);
     }
+    this.#engines.set(`for:${asked}`, engine);
     return engine;
   }
 }

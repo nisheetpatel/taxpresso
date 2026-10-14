@@ -23,6 +23,8 @@ const strings = {
   en: {
     full: 'Full screen',
     exitFull: 'Exit full screen',
+    pip: 'Keep beside the chat',
+    inline: 'Back into the chat',
     browser: 'Open in your browser',
     copyLink: 'If nothing opens, copy this link into a browser on this computer:',
     alone: 'Ask Claude to open your Taxpresso dashboard.',
@@ -31,6 +33,8 @@ const strings = {
   fr: {
     full: 'Plein écran',
     exitFull: 'Quitter le plein écran',
+    pip: 'Garder à côté de la conversation',
+    inline: 'Remettre dans la conversation',
     browser: 'Ouvrir dans le navigateur',
     copyLink: 'Si rien ne s’ouvre, copiez ce lien dans un navigateur de cet ordinateur :',
     alone: 'Demandez à Claude d’ouvrir votre tableau de bord Taxpresso.',
@@ -40,6 +44,8 @@ const strings = {
   de: {
     full: 'Vollbild',
     exitFull: 'Vollbild verlassen',
+    pip: 'Neben dem Chat behalten',
+    inline: 'Zurück in den Chat',
     browser: 'Im Browser öffnen',
     copyLink: 'Wenn sich nichts öffnet, kopiere diesen Link in einen Browser auf diesem Computer:',
     alone: 'Bitte Claude, dein Taxpresso-Dashboard zu öffnen.',
@@ -49,6 +55,8 @@ const strings = {
   it: {
     full: 'Schermo intero',
     exitFull: 'Esci dallo schermo intero',
+    pip: 'Tieni accanto alla chat',
+    inline: 'Rimetti nella chat',
     browser: 'Apri nel browser',
     copyLink: 'Se non si apre niente, copia questo link in un browser su questo computer:',
     alone: 'Chiedi a Claude di aprire la tua dashboard Taxpresso.',
@@ -106,11 +114,10 @@ function Bar({ host }: { host: Host }) {
   const [showLink, setShowLink] = useState(false);
   const s = strings[lang];
   const mode = ctx.displayMode ?? 'inline';
-  const canFull = (ctx.availableDisplayModes ?? []).includes('fullscreen');
-  if (!canFull && !url) return null;
+  const can = (m: McpUiDisplayMode) => (ctx.availableDisplayModes ?? []).includes(m);
+  if (!can('fullscreen') && !can('pip') && !url) return null;
 
-  const toggle = async () => {
-    const want: McpUiDisplayMode = mode === 'fullscreen' ? 'inline' : 'fullscreen';
+  const ask = async (want: McpUiDisplayMode) => {
     try {
       update({ displayMode: (await host.requestDisplayMode({ mode: want })).mode });
     } catch {
@@ -129,9 +136,23 @@ function Bar({ host }: { host: Host }) {
   return (
     <nav class="embed-bar" aria-label="Taxpresso">
       <div class="embed-actions">
-        {canFull ? (
-          <button type="button" onClick={() => void toggle()}>
+        {/* Beside the chat (pip) is the companion panel; full screen, or back into the chat. */}
+        {can('pip') && mode !== 'pip' ? (
+          <button type="button" onClick={() => void ask('pip')}>
+            {s.pip}
+          </button>
+        ) : null}
+        {can('fullscreen') ? (
+          <button
+            type="button"
+            onClick={() => void ask(mode === 'fullscreen' ? 'inline' : 'fullscreen')}
+          >
             {mode === 'fullscreen' ? s.exitFull : s.full}
+          </button>
+        ) : null}
+        {mode === 'pip' ? (
+          <button type="button" onClick={() => void ask('inline')}>
+            {s.inline}
           </button>
         ) : null}
         {url ? (
@@ -177,7 +198,8 @@ function BrowserOnly({ host }: { host: Host }) {
 
 const host = new Host(
   { name: 'Taxpresso dashboard', version: '0.1.0' },
-  { availableDisplayModes: ['inline', 'fullscreen'] },
+  // Beside the chat (pip) where the host offers it: the panel the chat leads (docs/design/simple.md).
+  { availableDisplayModes: ['inline', 'fullscreen', 'pip'] },
 );
 host.ontoolresult = ({ structuredContent }) => {
   const result = structuredContent as OpenResult | undefined;
@@ -213,6 +235,15 @@ try {
   } else {
     setTransport(mcpTransport(host, viewKey()));
     render(<Embedded host={host} />, root);
+    // The dashboard is a companion to the chat: once, at the start, ask to float beside it (pip)
+    // when the host offers that; the user can put it back into the chat with one click.
+    const ctx = host.getHostContext();
+    if (ctx?.displayMode !== 'pip' && ctx?.availableDisplayModes?.includes('pip')) {
+      void host
+        .requestDisplayMode({ mode: 'pip' })
+        .then(({ mode }) => update({ displayMode: mode }))
+        .catch(() => undefined);
+    }
   }
 } catch {
   render(<p class="embed-alone">{strings[view.lang].alone}</p>, root);

@@ -42,6 +42,8 @@ const html = `<!doctype html>
   iframe { width: 100%; height: 240px; border: 1px solid #dcddd8; border-radius: 14px; background: transparent; }
   [data-theme='dark'] iframe { border-color: #3a3936; }
   [data-mode='fullscreen'] iframe { position: fixed; inset: 0; width: 100vw; height: 100vh !important; border: none; border-radius: 0; z-index: 10; }
+  [data-mode='pip'] iframe { position: fixed; top: 16px; right: 16px; width: min(420px, calc(100vw - 32px)); height: calc(100vh - 120px) !important; z-index: 10; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22); }
+  [data-mode='pip'] main { margin-left: max(16px, calc(50vw - 600px)); margin-right: 460px; }
   .composer { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); width: min(680px, calc(100vw - 32px)); padding: 12px 16px; border-radius: 16px; background: #ffffff; color: #6b7078; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18); z-index: 20; }
   [data-theme='dark'] .composer { background: #30302e; color: #a8a8a3; }
   .muted { color: #6b7078; font-size: 12px; }
@@ -52,7 +54,7 @@ const html = `<!doctype html>
 <body>
 <main>
   <p class="muted">Preview host: this page stands in for Claude Desktop. The view below is the real one from the extension.</p>
-  <div class="bar"><button id="theme" type="button">Light or dark</button><button id="mode" type="button">Inline or full screen (host side)</button></div>
+  <div class="bar"><button id="theme" type="button">Light or dark</button><button id="mode" type="button">Inline, beside the chat or full screen (host side)</button></div>
   <div class="bubble">Open my Taxpresso dashboard.</div>
   <iframe id="view" title="Taxpresso dashboard" sandbox="allow-scripts"></iframe>
   <ol id="log" class="muted"></ol>

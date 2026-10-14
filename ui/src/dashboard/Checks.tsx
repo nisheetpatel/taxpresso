@@ -79,7 +79,8 @@ function CheckItem({ c, lang, act }: { c: CheckView; lang: Language; act: Act })
 export function Checks({ state, lang, act }: { state: State; lang: Language; act: Act }) {
   const open = state.checks.filter((c) => !c.resolved);
   const settled = state.checks.filter((c) => c.resolved);
-  if (state.checks.length === 0 && state.cards.length === 0) return null;
+  // Nothing across the documents to check: nothing to show (docs/design/simple.md).
+  if (state.checks.length === 0) return null;
   return (
     <section class="card side-card dc-checks" aria-labelledby="checks-title">
       <div class="section-head">

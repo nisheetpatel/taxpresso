@@ -17,7 +17,9 @@ const params = new URLSearchParams(location.search);
 const asked = params.get('lang');
 const lang = asked === 'fr' || asked === 'de' || asked === 'it' ? asked : 'en';
 let theme: McpUiTheme = params.get('theme') === 'dark' ? 'dark' : 'light';
-let mode: McpUiDisplayMode = params.get('mode') === 'fullscreen' ? 'fullscreen' : 'inline';
+const askedMode = params.get('mode');
+let mode: McpUiDisplayMode =
+  askedMode === 'fullscreen' || askedMode === 'pip' ? askedMode : 'inline';
 
 /** The default CSP of MCP Apps hosts for a view that declares no domain: nothing from outside. */
 const CSP = [
@@ -55,7 +57,8 @@ async function backend<T>(path: string, body?: unknown): Promise<T> {
 const context: McpUiHostContext = {
   theme,
   displayMode: mode,
-  availableDisplayModes: ['inline', 'fullscreen'],
+  availableDisplayModes:
+    params.get('pip') === 'no' ? ['inline', 'fullscreen'] : ['inline', 'fullscreen', 'pip'],
   locale: { en: 'en-GB', fr: 'fr-CH', de: 'de-CH', it: 'it-CH' }[lang],
   platform: 'desktop',
 };
@@ -109,7 +112,8 @@ bridge.onopenlink = ({ url }) => {
   return Promise.resolve({});
 };
 bridge.onrequestdisplaymode = ({ mode: wanted }) => {
-  const next = wanted === 'fullscreen' ? 'fullscreen' : 'inline';
+  // ?pip=no plays a host without pip.
+  const next = wanted === 'pip' && params.get('pip') === 'no' ? mode : wanted;
   note(`The view asked for ${wanted}`);
   show(next);
   return Promise.resolve({ mode: next });
@@ -125,7 +129,9 @@ document.querySelector('#theme')!.addEventListener('click', () => {
 });
 document
   .querySelector('#mode')!
-  .addEventListener('click', () => show(mode === 'fullscreen' ? 'inline' : 'fullscreen'));
+  .addEventListener('click', () =>
+    show(mode === 'inline' ? 'pip' : mode === 'pip' ? 'fullscreen' : 'inline'),
+  );
 
 document.documentElement.dataset.theme = theme;
 document.body.dataset.mode = mode;

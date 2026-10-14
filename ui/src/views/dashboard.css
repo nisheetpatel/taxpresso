@@ -70,6 +70,28 @@ body {
   overflow: visible;
 }
 
+/* Beside the chat (pip): a glanceable companion. The host sizes the window; the title and its lead
+   give way to the next step and the stages (docs/design/simple.md). */
+[data-display='pip'] .intro,
+[data-display='pip'] .foot-line {
+  display: none;
+}
+
+[data-display='pip'] .page {
+  padding: 16px 14px 24px;
+}
+
+/* The floating window has its own height: the view scrolls in it, the bar stays on top. */
+[data-display='pip'] .embed-scroll {
+  max-height: none;
+  overflow: visible;
+}
+
+[data-display='pip'] .topbar {
+  padding: 10px 14px;
+  gap: 8px;
+}
+
 .embed-alone {
   margin: 0;
   padding: 20px 16px;

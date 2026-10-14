@@ -128,12 +128,28 @@ export interface ExtractionResult {
   unchanged: number;
   /** Values the user already confirmed differently: kept, never overwritten by a proposal. */
   kept: { key: string; person: Owner; value: FactValue }[];
+  /** Household answers the questions don't ask yet (the commune before the canton): not saved. */
+  later: string[];
   document: VaultDocument;
 }
 
 /** One value of one document; a value about one of its accounts names the account too. */
 export const enteredSlot = (docId: string, key: string, person: Owner, instance?: string) =>
   `${docId}|${key}|${person}${instance && instance !== docId ? `|${instance}` : ''}`;
+
+/**
+ * The household answers an assessment (avis de taxation) prints, which Claude may propose from it
+ * with their page: the questions show them as suggestions the user confirms, like last year's
+ * declaration (docs/design/simple.md). Only answers the canton's questions have.
+ */
+export const ASSESSMENT_HOUSEHOLD_KEYS = [
+  'profile.canton',
+  'profile.civil_status',
+  'profile.children_count',
+  'profile.commune',
+] as const;
+const isHouseholdAnswer = (key: string) =>
+  (ASSESSMENT_HOUSEHOLD_KEYS as readonly string[]).includes(key);
 
 /** Planning inputs the user can give in the dashboard or the chat (never filed). */
 export const PLAN_KEYS = [
@@ -166,6 +182,8 @@ export class Workspace {
   readonly #activity: ActivityEntry[] = [];
   /** The securities list read from broker exports (SPEC.md 5.7), and exports that can't be read. */
   #securities: { summary: SecuritiesSummary; unreadable: string[] } | undefined;
+  /** Derived results kept while nothing they read changed (./workspace.ts, memo). */
+  readonly #memo = new Map<string, { key: string; value: unknown }>();
 
   constructor(config: Config, cantons: CantonRegistry) {
     this.config = config;
@@ -323,6 +341,33 @@ export class Workspace {
    * (./cantons.ts), with the federal tax; nothing without the canton.
    */
   estimate(): CantonEstimate {
+    return this.memo('estimate', '', () => this.#estimate());
+  }
+
+  /**
+   * What every derived result reads, as one key: the ledger (append-only, so its size), the
+   * documents (their kind, owner, year, how they were read, what replaced them) and the day.
+   * The dashboard asks for its state every second; with this, an unchanged return costs nothing.
+   */
+  stateKey(): string {
+    return `${this.#ledger?.size ?? -1}|${this.today()}|${JSON.stringify(this.#documents)}`;
+  }
+
+  /**
+   * A derived result, computed again only when the state it reads changed (stateKey, plus `extra`
+   * for what lives outside the ledger, such as the TOU decisions). Values never change: the same
+   * inputs give the same result, only sooner.
+   */
+  memo<T>(name: string, extra: string, fn: () => T): T {
+    const key = `${this.stateKey()}|${extra}`;
+    const hit = this.#memo.get(name);
+    if (hit && hit.key === key) return hit.value as T;
+    const value = fn();
+    this.#memo.set(name, { key, value });
+    return value;
+  }
+
+  #estimate(): CantonEstimate {
     const state = this.canton();
     const canton = state.canton;
     if (canton) {
@@ -617,7 +662,7 @@ export class Workspace {
   }
 
   plan(): Pillar3aResult {
-    return pillar3aPlan(this.planInput());
+    return this.memo('plan', '', () => pillar3aPlan(this.planInput()));
   }
 
   /**
@@ -722,7 +767,13 @@ export class Workspace {
       if (values.length > 0 && !kind) {
         throw new ExtractionError('Say what kind of document this is (document.kind) first.');
       }
-      const allowed: readonly string[] = documentFields(kind);
+      // An assessment also gives the household answers it prints, as suggestions (C7).
+      const allowed: readonly string[] = [
+        ...documentFields(kind),
+        ...(kind === 'tax_assessment' ? ASSESSMENT_HOUSEHOLD_KEYS : []),
+      ];
+      // A household answer the questions don't ask yet (the commune before the canton): later.
+      const later: string[] = [];
       const owner = userSaid && doc.person ? doc.person : (details.person ?? doc.person);
 
       // Check everything before writing anything.
@@ -734,6 +785,13 @@ export class Workspace {
           throw new ExtractionError(
             `${v.key} is not a value of this kind of document (${kind}). Its values: ${allowed.join(', ') || 'none yet'}.`,
           );
+        }
+        if (
+          isHouseholdAnswer(v.key) &&
+          (!this.keys[v.key] || !this.engine.file.questions.some((q) => q.key === v.key))
+        ) {
+          later.push(v.key);
+          continue;
         }
         const def = this.keys[v.key];
         if (!def) {
@@ -772,7 +830,9 @@ export class Workspace {
         ready.push({
           key: v.key,
           person,
-          value: coerceValue(v.key, def, v.value),
+          value: isHouseholdAnswer(v.key)
+            ? this.#householdAnswer(v.key, v.value)
+            : coerceValue(v.key, def, v.value),
           page: v.page,
           ...(box ? { box } : {}),
         });
@@ -794,8 +854,38 @@ export class Workspace {
         doc.parse = { method: 'claude', ok: true, warnings: [] };
       }
 
-      const result: ExtractionResult = { saved: 0, unchanged: 0, kept: [], document: doc };
+      const result: ExtractionResult = {
+        saved: 0,
+        unchanged: 0,
+        kept: [],
+        later,
+        document: doc,
+      };
       for (const r of ready) {
+        if (isHouseholdAnswer(r.key)) {
+          // A suggested answer, as from last year's declaration: no instance, so the question
+          // shows it; never over the user's own answer.
+          const answer = this.ledger.get(r.key, r.person);
+          const same = JSON.stringify(answer?.value) === JSON.stringify(r.value);
+          if (answer && answer.status !== 'extracted') {
+            if (same) result.unchanged++;
+            else result.kept.push({ key: r.key, person: r.person, value: answer.value });
+            continue;
+          }
+          if (same && answer?.source.docId === doc.id) {
+            result.unchanged++;
+            continue;
+          }
+          this.ledger.append({
+            key: r.key,
+            person: r.person,
+            value: r.value,
+            status: 'extracted',
+            source: { method: 'claude', docId: doc.id, page: r.page },
+          });
+          result.saved++;
+          continue;
+        }
         const current = this.ledger.get(r.key, r.person, doc.id);
         const same =
           current !== undefined && JSON.stringify(current.value) === JSON.stringify(r.value);
@@ -1145,6 +1235,15 @@ export class Workspace {
     }
     const answered = snap.answers.has('profile.civil_status|household');
     return answered && snap.people.length === 1 ? 'p1' : undefined;
+  }
+
+  /** A household answer read from a document, as its question takes it. */
+  #householdAnswer(key: string, raw: unknown): FactValue {
+    try {
+      return this.engine.coerceAnswer(key, raw);
+    } catch (err) {
+      throw new ExtractionError(`${key}: ${(err as Error).message}`);
+    }
   }
 
   #document(id: string): VaultDocument {
