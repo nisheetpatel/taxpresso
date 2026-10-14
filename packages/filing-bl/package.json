@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-bl",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Basel-Landschaft form map and the values to type on the Basel-Landschaft return, in the form's order (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-bl": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

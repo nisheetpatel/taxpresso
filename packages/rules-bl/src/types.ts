@@ -3,7 +3,15 @@
 // concept is the same, so one ledger mapping can feed every canton (docs/design/cantons.md, section
 // 2). Items carry the code of the line on the Basel-Landschaft return (./rubrics.ts), deductions
 // negative, income and assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { BlTaxYear } from './params.js';
 
 export type {
@@ -11,6 +19,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -127,9 +136,31 @@ export interface BlEngineInput {
   childSupport?: 'receives' | 'pays' | 'none';
   /** Shared custody without child support: whether you mainly bear the children's upkeep. */
   mainUpkeep?: boolean;
+  /**
+   * The federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). Unknown, the federal tax is not
+   * computed.
+   */
+  ifdParentalScale?: boolean;
   /** Opt-in church tax (Kirchensteuer): each adult's church. */
   church?: { p1?: Confession; p2?: Confession };
   household?: {
+    /**
+     * 640: childcare paid for the household as a whole (the invoices of a crèche, say), when not
+     * given per child: it counts where one child's limit settles it (./compute.ts).
+     */
+    childcare?: Amount;
+    /**
+     * 620/625/630, federal column only: health and accident insurance premiums paid, the premium
+     * subsidy received, life insurance premiums and savings interest. The state tax deducts its
+     * maximum whatever was paid (Steuerbuch 29 Nr. 15); the federal tax counts what was paid, up to
+     * its own maximum (LIFD art. 33 al. 1 let. g).
+     */
+    healthPremiums?: Amount;
+    accidentPremiums?: Amount;
+    healthSubsidy?: Amount;
+    lifeInsurancePremiums?: Amount;
+    savingsInterest?: Amount;
     /** 320: child support received for minor children. */
     childSupportReceived?: Amount;
     /** 380: other taxable income, as given. */
@@ -234,17 +265,25 @@ export interface BlIccResult {
   };
 }
 
+/**
+ * The federal direct tax (direkte Bundessteuer) of the return's Bundessteuer column (./ifd.ts): the
+ * same income lines, the federal deductions on the same codes, the total of the deductions (789)
+ * and the taxable income (790).
+ */
+export interface BlIfdResult extends IfdResult {
+  items: Item[];
+  /** 789, Total der Abzüge, Bundessteuer. */
+  totalDeductions: Line;
+}
+
 export interface BlTaxResult {
   canton: 'BL';
   taxYear: BlTaxYear;
   commune: CommuneRef;
   icc: BlIccResult | null;
-  /**
-   * The federal tax is packages/rules-ch's; Basel-Landschaft's result shows it once the federal
-   * column of the Basel-Landschaft return is mapped (docs/design/cantons.md, section 6).
-   */
-  ifd: null;
-  /** The state, communal (and church, when asked for) tax, when computed. */
+  /** The federal tax of the Bundessteuer column (./ifd.ts, packages/rules-ch's rules), or null. */
+  ifd: BlIfdResult | null;
+  /** The state, communal (and church, when asked for) tax and the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -254,4 +293,6 @@ export interface BlTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes. */
+  limits: LimitApplied[];
 }

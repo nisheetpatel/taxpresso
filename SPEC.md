@@ -441,12 +441,19 @@ taxpresso/
                         (wired into the extension as a preview)
     rules-be/           Bern's cantonal, communal and church tax, and the federal tax of TaxMe's
                         summary (wired into the extension as a preview)
+    rules-bl/           Basel-Landschaft's state, communal and church tax, and the federal tax of its
+                        Bundessteuer column (wired into the extension as a preview)
+    rules-bs/           Basel-Stadt's cantonal and communal tax, and the federal tax of its Bund
+                        column (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax (not wired into the extension yet)
     optimizer/
     filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation; the form shapes
                         and the copy panel every canton's form uses
     filing-zh/          the Zurich form map (main form and annexes) and the values to type on it
     filing-be/          the Bern forms and TaxMe's summaries, and the values to type on them
+    filing-bl/          the Basel-Landschaft return (pages 2 to 4, two columns) and the values to type
+    filing-bs/          the Basel-Stadt main form and forms W, B, K, Z and F (Kanton and Bund columns)
+                        and the values to type on them
   ui/                   Vite app; views reused as MCP Apps resources
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
@@ -455,6 +462,11 @@ taxpresso/
   data/zh/2026/         Zurich's questionnaire: the shared questions, its own (commune, church)
   data/be/2026/         Bern's questionnaire: the shared questions, its own (household, church, parish,
                         shared custody, parties, childcare and education per child)
+  data/bl/2026/         Basel-Landschaft's questionnaire: the shared questions, its own (commune by name,
+                        church, shared custody, each child's income and childcare, kind of pension)
+  data/bs/2026/         Basel-Stadt's questionnaire: the shared questions, its own (reference age, work
+                        rate, shared custody, each child under 18, childcare per child, commune, church,
+                        parties)
   test/golden/          households + GeTax expected outputs
   test/fixtures/        sample PDFs (synthetic only, never real data)
   docs/                 privacy policy, support, example prompts

@@ -94,7 +94,7 @@ describe('MCP surface', () => {
     const first = await call('next_questions');
     expect(text(first)).toMatch(/\[canton\] Où habitiez-vous au 31 décembre 2026/);
     expect(text(first)).toMatch(
-      /GE = Canton of Geneva; ZH = Canton of Zurich; BE = Canton of Bern; BS = Canton of Basel-Stadt; other = Another canton \[not supported yet\]/,
+      /GE = Canton of Geneva; ZH = Canton of Zurich; BE = Canton of Bern; BL = Canton of Basel-Landschaft; BS = Canton of Basel-Stadt; other = Another canton \[not supported yet\]/,
     );
     expect(text(first)).toMatch(
       /Vote for the next canton: https:\/\/github\.com\/nisheetpatel\/taxpresso\/issues\/1/,

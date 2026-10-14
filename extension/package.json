@@ -13,6 +13,7 @@
   "dependencies": {
     "@modelcontextprotocol/server": "^2.3.0",
     "@taxpresso/filing-be": "workspace:*",
+    "@taxpresso/filing-bl": "workspace:*",
     "@taxpresso/filing-bs": "workspace:*",
     "@taxpresso/filing-ge": "workspace:*",
     "@taxpresso/filing-zh": "workspace:*",
@@ -21,6 +22,7 @@
     "@taxpresso/optimizer": "workspace:*",
     "@taxpresso/questionnaire": "workspace:*",
     "@taxpresso/rules-be": "workspace:*",
+    "@taxpresso/rules-bl": "workspace:*",
     "@taxpresso/rules-bs": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",

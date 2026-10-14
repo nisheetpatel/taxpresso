@@ -1,9 +1,10 @@
 // The one entry point: computeReturn(input) gives the lines of the Basel-Landschaft return by code
-// and person, the totals and the state, communal and (on request) church tax, each line explained
-// with its sources. First stage here (household figures to the lines of the return, every cap,
-// floor and taper of the Basel-Landschaft documents, in the order of the return's codes), second
-// stage in ./assess.ts (lines to taxes). The same two stages, with the same names, as
-// packages/rules-fr, rules-bs and rules-be.
+// and person, the totals and the state, communal and (on request) church tax, and the federal tax
+// of the return's Bundessteuer column (./ifd.ts), each line explained with its sources. First stage
+// here (household figures to the lines of the return, every cap, floor and taper of the
+// Basel-Landschaft documents, in the order of the return's codes, with the limits each applied for
+// the final check), second stage in ./assess.ts (lines to taxes). The same two stages, with the
+// same names, as packages/rules-fr, rules-bs and rules-be.
 import {
   answered,
   chf,
@@ -12,9 +13,11 @@ import {
   roundFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import { assess, BlInputError, communeOf, communeRef, subtotals } from './assess.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import {
   childcareShared,
   childRule,
@@ -41,6 +44,7 @@ import { pensionerDeduction, sideJobFlat, twoEarnerDeduction, vehicleCost } from
 import type {
   BlEngineInput,
   BlTaxResult,
+  ChildInput,
   EmploymentInput,
   Item,
   ItemPerson,
@@ -60,8 +64,35 @@ class Notes {
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A cap a state tax rule applied (SPEC.md 10.0), on `code` for `person`, cited by the constant
+   * that sets it: `given` before the rule, `counted` after it. `rule` names it as the federal
+   * concepts are (packages/rules-ch, ifd/items.ts).
+   */
+  limit(
+    rule: string,
+    p: { source: string },
+    code: string,
+    person: LimitApplied['person'],
+    given: number,
+    limit: number,
+    counted: number,
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: 'icc',
+      kind: 'cap',
+      given,
+      limit,
+      counted,
+      source: p.source,
+      rule,
+    });
   }
 }
 
@@ -223,6 +254,7 @@ function personItems(P: BlYearParams, p: PersonInput, items: Item[], notes: Note
     if (tv.cost > 0) {
       const max = trTravel.p(A.travel).max;
       const v = Math.min(tv.cost, max);
+      notes.limit('commute', A.travel, PERSON_CODES.travel[id], id, tv.cost, max, v);
       const how =
         v < tv.cost
           ? t(
@@ -243,6 +275,7 @@ function personItems(P: BlYearParams, p: PersonInput, items: Item[], notes: Note
       const days = p.mealDays ?? 0;
       const meals = mealsDeduction(days, canteen, m);
       const [perDay, perYear] = canteen ? [m.halfPerDay, m.halfPerYear] : [m.perDay, m.perYear];
+      notes.limit('meals', A.meals, PERSON_CODES.meals[id], id, days * perDay, perYear, meals);
       if (meals > 0) {
         items.push(
           item(
@@ -369,6 +402,20 @@ function personItems(P: BlYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limits.push({
+      code: PERSON_CODES.pillar3a[id],
+      person: id,
+      tax: 'icc',
+      kind: l.kind,
+      given: l.given,
+      limit: l.limit,
+      counted: l.counted,
+      source: l.param.source,
+      ...(l.param.estimate ? { estimate: true } : {}),
+      rule: 'pillar3a',
+    });
+  }
   if (r3a.deduction && r3a.deduction.amount < 0) {
     items.push(
       item(
@@ -388,6 +435,7 @@ function personItems(P: BlYearParams, p: PersonInput, items: Item[], notes: Note
     const paid = total(tr, [p.trainingCosts]);
     const cap = tr.p(A.training);
     const amount = Math.min(paid, cap);
+    notes.limit('training', A.training, '650', id, paid, cap, amount);
     if (amount > 0) {
       training = {
         amount,
@@ -419,6 +467,8 @@ function personItems(P: BlYearParams, p: PersonInput, items: Item[], notes: Note
 
 /** A child as the deductions read it. */
 interface CountedChild {
+  /** Its place in the children given, from 1. */
+  n: number;
   /** Gets the child reduction (and raises 630, gives Vollsplitting and the higher allowance). */
   reduction: boolean;
   /** Its childcare counts here (640). */
@@ -433,13 +483,14 @@ interface CountedChild {
  */
 function familyOf(
   input: BlEngineInput,
+  given: readonly ChildInput[],
   couple: boolean,
   notes: Notes,
 ): { splitting: boolean; children: CountedChild[]; sources: string[] } {
   const y = input.taxYear;
   const children: CountedChild[] = [];
   const sources = [familySituation().source];
-  for (const ch of input.children ?? []) {
+  for (const [i, ch] of given.entries()) {
     const lives = ch.livesWithYou ?? true;
     const base = {
       ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
@@ -481,7 +532,7 @@ function familyOf(
       counts = false;
       notes.add(notes.assumptions, NOTE.childOwnIncome);
     }
-    children.push({ reduction: counts, childcare: lives, ...base });
+    children.push({ n: i + 1, reduction: counts, childcare: lives, ...base });
   }
   const counted = children.filter((c) => c.reduction);
   if (counted.length) {
@@ -491,6 +542,36 @@ function familyOf(
   const splitting = couple || counted.length > 0;
   if (splitting) sources.push(splittingRule(y).source, wealthAllowance(y).source);
   return { splitting, children, sources: [...new Set(sources)] };
+}
+
+/**
+ * Childcare paid for the household as a whole (the invoices of a crèche, say): the limit is per
+ * child (StG § 29 Abs. 1 lit. c; bl-2026-wegleitung p. 32). It is that child's when one child can
+ * have it, or when the whole amount is within one child's limit; otherwise how it splits decides the
+ * deduction, and the tax is not computed without it (fail closed).
+ */
+function withHouseholdChildcare(
+  input: BlEngineInput,
+  P: BlYearParams,
+  notes: Notes,
+): readonly ChildInput[] {
+  const children = input.children ?? [];
+  const care = input.household?.childcare;
+  if (!care) return children;
+  if (children.some((ch) => ch.childcare)) {
+    throw new BlInputError('Childcare: give it per child or for the household, not both.');
+  }
+  const eligible = children
+    .map((ch, i) => ({ ch, i }))
+    .filter(({ ch }) => (ch.livesWithYou ?? true) && ch.under14 !== false);
+  const paid = total(new Trace(), [care]);
+  if (eligible.length === 1 || (eligible.length > 1 && paid <= P.amounts.childcare.value)) {
+    const at = eligible[0]!.i;
+    return children.map((ch, i) => (i === at ? { ...ch, childcare: care } : ch));
+  }
+  if (eligible.length > 1) notes.add(notes.unsupported, NOTE.childcareSplit);
+  else if (paid > 0) notes.add(notes.notCounted, NOTE.childcareNoChild);
+  return children;
 }
 
 /**
@@ -546,17 +627,18 @@ export function computeReturn(input: BlEngineInput): BlTaxResult {
   notes.add(notes.notCounted, NOTE.dependents);
   notes.add(notes.notCounted, NOTE.fireLevy);
 
-  const fam = familyOf(input, couple, notes);
+  const children = withHouseholdChildcare(input, P, notes);
+  const fam = familyOf(input, children, couple, notes);
   const churchRate = churchOf(input, couple, notes);
   const base = {
     canton: 'BL' as const,
     taxYear: y,
     commune: ref,
-    ifd: null,
   };
   const result = (lines: readonly Line[]): BlTaxResult => ({
     ...base,
     icc: null,
+    ifd: null,
     total: null,
     estimates: lines.some((l) => l.estimates?.includes('input-estimate'))
       ? [{ id: 'input-estimate', what: ESTIMATE_TEXT['input-estimate'] }]
@@ -568,6 +650,7 @@ export function computeReturn(input: BlEngineInput): BlTaxResult {
     notCounted: notes.notCounted,
     unsupported: notes.unsupported,
     unverifiedRules: [],
+    limits: notes.limits,
   });
   // Something every later line rests on is missing or not supported (a question about the family
   // or the church, self-employment): the result says that first.
@@ -631,6 +714,7 @@ export function computeReturn(input: BlEngineInput): BlTaxResult {
     const extra = tr.p(A.debtInterestExtra);
     const cap = movableIncome + extra;
     const ded = Math.min(paid, cap);
+    notes.limit('debt_interest', A.debtInterestExtra, '555', 'household', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -701,7 +785,9 @@ export function computeReturn(input: BlEngineInput): BlTaxResult {
       for (const ch of withCare) {
         if (ch.under14 === false || !ch.childcare) continue;
         if (ch.under14 === undefined) notes.add(notes.assumptions, NOTE.under14);
-        const one = Math.min(total(tr, [ch.amount]), cap);
+        const paid = total(tr, [ch.amount]);
+        const one = Math.min(paid, cap);
+        notes.limit('childcare', A.childcare, '640', `child${ch.n}`, paid, cap, one);
         ded += one;
         parts.push(chf(one));
       }
@@ -789,6 +875,7 @@ export function computeReturn(input: BlEngineInput): BlTaxResult {
     const paid = total(tr, [hh.politicalParty]);
     const max = tr.p(A.party);
     const ded = Math.min(paid, max);
+    notes.limit('party', A.party, '735', 'household', paid, max, ded);
     if (couple && paid > max) notes.add(notes.unverified, NOTE.partyCouple);
     if (ded > 0) {
       items.push(
@@ -948,19 +1035,114 @@ export function computeReturn(input: BlEngineInput): BlTaxResult {
   if (icc.taxes.childReduction.amount < 0 && icc.taxes.normalIncome.amount === 0 && counted) {
     notes.add(notes.assumptions, NOTE.childReductionCapped);
   }
-  const lines = allLines({ icc });
+
+  // The federal tax, the Bundessteuer column (./ifd.ts): the same income lines, the federal
+  // deductions. Who counts the children follows the federal rules (circular 30): in full, half in
+  // shared custody without child support, not for the parent who pays it.
+  const sharedAlone = !couple && children.some((ch) => ch.custody === 'shared');
+  const support = sharedAlone ? input.childSupport : undefined;
+  const childSources =
+    support === 'receives'
+      ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+      : support === 'pays'
+        ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'none' && input.ifdParentalScale !== undefined
+          ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 13.4.2, 14.4)`]
+          : [];
+  const federalChildren: FederalChild[] = [];
+  for (const ch of children) {
+    const child = {
+      livesWithYou: ch.livesWithYou ?? true,
+      ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
+      ...(ch.childcare ? { childcare: ch.childcare } : {}),
+    };
+    if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
+      federalChildren.push({ weight: 1, ...child });
+    } else if (input.childSupport === 'none') {
+      federalChildren.push({ weight: 0.5, ...child });
+    }
+  }
+  const earning = (id: 'p1' | 'p2') =>
+    new Set<string>([PERSON_CODES.main[id], PERSON_CODES.side[id], PERSON_CODES.allowances[id]]);
+  const federal = federalReturn(
+    {
+      input,
+      couple,
+      incomeItems: items.filter((i) => INCOME.has(i.code)),
+      inFull: items.filter((i) => IN_FULL.has(i.code)),
+      children: federalChildren,
+      childSources,
+      wealthIncome: movableIncome,
+    },
+    people.map((p) => ({
+      input: p,
+      earnings: items.filter((i) => i.person === p.id && earning(p.id).has(i.code)),
+    })),
+  );
+  const ifd = federal.ifd;
+  for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
+  const lines = allLines({ icc, ifd });
   return {
     ...result(lines),
-    unsupported: [],
+    unsupported: [...federal.notes.unsupported],
     icc,
-    total: icc.taxes.total.amount,
-    unverifiedRules: unverified,
+    ifd,
+    total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
+    unverifiedRules: [...unverified, ...federal.notes.unverified],
+    limits: bothTaxes(notes.limits, federal.notes.limits),
   };
 }
 
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+/**
+ * Deductions in full in both columns: buy-ins paid directly (600/605), alimony (570), child
+ * support (575) and the costs of keeping securities (655).
+ */
+const IN_FULL = new Set(['570', '575', '600', '605', '655']);
+
+/**
+ * The limits of both taxes, a limit applied alike in each (same line, rule kind and amounts, as
+ * the pillar 3a cap) said once for both: the final check then shows it once (SPEC.md 10.0).
+ */
+function bothTaxes(icc: readonly LimitApplied[], ifd: readonly LimitApplied[]): LimitApplied[] {
+  const out = icc.map((l) => ({ ...l }));
+  for (const f of ifd) {
+    const same = out.find(
+      (l) =>
+        l.tax === 'icc' &&
+        l.code === f.code &&
+        l.person === f.person &&
+        l.kind === f.kind &&
+        l.given === f.given &&
+        l.limit === f.limit &&
+        l.counted === f.counted &&
+        l.rule === f.rule &&
+        Boolean(l.estimate) === Boolean(f.estimate),
+    );
+    if (same) same.tax = 'both';
+    else out.push(f);
+  }
+  return out;
+}
+
 /** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<BlTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+export function allLines(r: Pick<BlTaxResult, 'icc'> & { ifd?: BlTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.netIncome,
+        f.totalDeductions,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
@@ -982,6 +1164,7 @@ export function allLines(r: Pick<BlTaxResult, 'icc'>): Line[] {
     x.taxes.communalWealth,
     ...(x.taxes.church ? [x.taxes.church] : []),
     x.taxes.total,
+    ...federal,
   ];
 }
 

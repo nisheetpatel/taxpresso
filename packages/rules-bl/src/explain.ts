@@ -181,4 +181,12 @@ export const NOTE = {
     en: 'Childcare is deductible when it is needed because you work (or train, or are disabled); for a married couple, both. It is not counted here.',
     fr: `Les frais de garde sont déductibles lorsqu’ils sont nécessaires parce que vous travaillez (ou êtes en formation, ou invalide)${NB}; pour un couple marié, les deux. Ils ne sont pas comptés ici.`,
   },
+  childcareSplit: {
+    en: 'Childcare (Kinderbetreuung durch Dritte, 640) not computed: the limit is per child (StG § 29 Abs. 1 lit. c), and the costs you gave for the household are above one child’s limit, so how they split between your children decides the deduction. Taxpresso doesn’t compute the tax until it knows what was paid for each child.',
+    fr: `Frais de garde (Kinderbetreuung durch Dritte, 640) non calculés${NB}: la limite est par enfant (StG § 29 al. 1 let. c), et les frais indiqués pour le ménage dépassent la limite d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Taxpresso ne calcule pas l’impôt avant de savoir ce qui a été payé pour chaque enfant.`,
+  },
+  childcareNoChild: {
+    en: 'Childcare (Kinderbetreuung durch Dritte, 640): not counted, no child under 14 living with you was given.',
+    fr: `Frais de garde (Kinderbetreuung durch Dritte, 640)${NB}: non comptés, aucun enfant de moins de 14 ans vivant avec vous n’est indiqué.`,
+  },
 } satisfies Record<string, Text>;

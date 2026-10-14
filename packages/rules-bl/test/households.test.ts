@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
   allLines,
   computeReturn,
+  FEDERAL_NOTE,
   NOTE,
   type BlEngineInput,
   type BlTaxResult,
@@ -30,6 +31,9 @@ describe('H1: single, Liestal, 2025, employed, securities', () => {
   // Tariff, single, 2025 at 70,000: 6,405.85. State tax at 100 %: 6,405.85.
   // Liestal 65 %: 4,163.8025, to 5 centimes 4,163.80.
   // 800: 50,000; 905: 90,000; 910: 0, no wealth tax. Total 10,569.65.
+  // Federal column: 500 1,032; 510 3,000; 520 the 3 % flat on 86,600, 2,598; 610 7,258. Before 720:
+  // 86,900 - 13,888 = 73,012. 720: (73,012 - 1,200) x 5 : 95 = 3,780 > 1,200, nothing. 738: 1,610
+  // (at least 100, at most 20 % of 73,012). 790: 71,402.
   const r = computeReturn({
     taxYear: 2025,
     commune: 'Liestal',
@@ -80,11 +84,15 @@ describe('H1: single, Liestal, 2025, employed, securities', () => {
     expect(x.cantonalWealth.amount).toBe(0);
     expect(x.communalWealth.amount).toBe(0);
     expect(x.church).toBeNull();
-    expect(r.total).toBe(chf(10_569.65));
+    // The state, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(10_569.65));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.commune).toEqual({ bfs: null, name: 'Liestal', rate: 6_500 });
-    expect(r.ifd).toBeNull();
+    expect(r.ifd?.taxableIncome.amount).toBe(chf(71_402));
+    expect(r.ifd?.items.find((i) => i.code === '720')).toBeUndefined();
+    expect(r.ifd?.items.find((i) => i.code === '738')?.amount).toBe(chf(-1_610));
     expect(r.estimates).toEqual([]);
-    expect(r.unverifiedRules).toEqual([NOTE.rounding]);
+    expect(r.unverifiedRules).toEqual([NOTE.rounding, FEDERAL_NOTE.medicalShare]);
     expect(r.assumptions).toContainEqual(NOTE.insuranceFlat);
     expect(r.assumptions).toContainEqual(NOTE.fullYear);
     expect(r.notCounted).toContainEqual(NOTE.churchNotAsked);
@@ -194,7 +202,9 @@ describe('H2: married, two earners, two children, Allschwil, 2026, Roman Catholi
     expect(x.cantonalWealth.amount).toBe(chf(88));
     expect(x.communalWealth.amount).toBe(chf(51.05));
     expect(x.church?.amount).toBe(chf(672.7));
-    expect(r.total).toBe(chf(13_958.55));
+    // The state, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(13_958.55));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.churchBase]);
     expect(r.assumptions).toContainEqual(NOTE.childrenAtCharge);
     expect(r.notCounted).not.toContainEqual(NOTE.churchNotAsked);
@@ -246,7 +256,9 @@ describe('H3: single parent, Reinach, 2025, one child, child support received', 
     expect(x.childReduction.amount).toBe(chf(-750));
     expect(x.communalIncome.amount).toBe(chf(1_024.35));
     expect(x.cantonalWealth.amount).toBe(0);
-    expect(r.total).toBe(chf(2_903.85));
+    // The state, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(2_903.85));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.bikeFlat);
   });
 
@@ -306,7 +318,9 @@ describe('H4: retiree with wealth, Binningen, 2026', () => {
     expect(x.cantonalWealth.amount).toBe(chf(2_279.5));
     expect(x.communalWealth.amount).toBe(chf(1_116.95));
     expect(x.church).toBeNull();
-    expect(r.total).toBe(chf(10_712.85));
+    // The state, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(10_712.85));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.notCounted).toContainEqual(NOTE.pensionerWealth);
     expect(r.notCounted).not.toContainEqual(NOTE.churchNotAsked);
     expect(r.assumptions).toContainEqual(NOTE.pensions);
@@ -336,7 +350,9 @@ describe('H4: retiree with wealth, Binningen, 2026', () => {
     expect(low.icc?.taxableIncome.amount).toBe(chf(17_000));
     expect(low.icc?.taxes.incomeTariffTax.amount).toBe(chf(94.3));
     expect(low.icc?.taxes.communalIncome.amount).toBe(chf(46.2));
-    expect(low.total).toBe(chf(140.5));
+    // The state, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(low.icc!.taxes.total.amount).toBe(chf(140.5));
+    expect(low.total).toBe(low.icc!.taxes.total.amount + low.ifd!.tax.amount);
     // The same with an IV pension: line 771, the IV maximum 30,240, so 40 % less 18 % (1,760
     // above it, 18 started CHF 100) = 22 %: 7,040.
     const iv = computeReturn({
@@ -409,7 +425,9 @@ describe('H5: shared custody, Sissach, 2025, the parent who pays child support',
     expect(x.incomeTariffTax.amount).toBe(chf(4_193.9));
     expect(x.childReduction.amount).toBe(0);
     expect(x.communalIncome.amount).toBe(chf(2_390.5));
-    expect(r.total).toBe(chf(6_584.4));
+    // The state, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(6_584.4));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.childSupportPaid);
     expect(r.assumptions).toContainEqual(NOTE.childcareShared);
   });

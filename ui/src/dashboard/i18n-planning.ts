@@ -129,6 +129,14 @@ const messages = {
     cuRuleIncomeBe: 'You must have had earned income subject to AHV in 2025.',
     touGenevaOnlyBe:
       'TOU is Geneva’s procedure. For Bern, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
+    splitBl: 'Basel-Landschaft {icc} · federal {ifd}',
+    lppOfficialBl: 'Einkäufe 2. Säule (Pensionskasse)',
+    lppAttestationBl:
+      'Your fund confirms the payment with a certificate (Bescheinigung): keep it for your return.',
+    cuOfficialBl: 'Nachträglicher Einkauf in die Säule 3a',
+    cuRuleIncomeBl: 'You must have had earned income subject to AHV in 2025.',
+    touGenevaOnlyBl:
+      'TOU is Geneva’s procedure. For Basel-Landschaft, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
     splitBs: 'Basel-Stadt {icc} · federal {ifd}',
     lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
     lppAttestationBs:
@@ -245,6 +253,12 @@ const messages = {
     cuOfficialBe: 'Nachzahlung (Einkauf) in die Säule 3a',
     cuRuleIncomeBe: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
     touGenevaOnlyBe: `La TOU est une procédure genevoise. Pour Berne, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
+    splitBl: 'Bâle-Campagne {icc} · fédéral {ifd}',
+    lppOfficialBl: 'Einkäufe 2. Säule (Pensionskasse)',
+    lppAttestationBl: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: gardez-la pour votre déclaration.`,
+    cuOfficialBl: 'Nachträglicher Einkauf in die Säule 3a',
+    cuRuleIncomeBl: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
+    touGenevaOnlyBl: `La TOU est une procédure genevoise. Pour Bâle-Campagne, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
     splitBs: 'Bâle-Ville {icc} · fédéral {ifd}',
     lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
     lppAttestationBs: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: gardez-la pour votre déclaration.`,
@@ -379,6 +393,14 @@ const messages = {
     cuRuleIncomeBe: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
     touGenevaOnlyBe:
       'Die TOU ist ein Genfer Verfahren. Für Bern unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
+    splitBl: 'Basel-Landschaft {icc} · Bund {ifd}',
+    lppOfficialBl: 'Einkäufe 2. Säule (Pensionskasse)',
+    lppAttestationBl:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Bewahre sie für deine Steuererklärung auf.',
+    cuOfficialBl: 'Nachträglicher Einkauf in die Säule 3a',
+    cuRuleIncomeBl: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    touGenevaOnlyBl:
+      'Die TOU ist ein Genfer Verfahren. Für Basel-Landschaft unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
     splitBs: 'Basel-Stadt {icc} · Bund {ifd}',
     lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
     lppAttestationBs:

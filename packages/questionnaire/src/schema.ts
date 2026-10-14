@@ -55,6 +55,9 @@ export const OFFICIAL_HOSTS = [
   'silgeneve.ch',
   'zh.ch', // www.zh.ch, notes.zh.ch (ZH-Lex)
   'be.ch', // www.sv.fin.be.ch (guides, TaxInfo), www.fin.be.ch, www.belex.sites.be.ch (BELEX)
+  'baselland.ch', // www.baselland.ch, kanton.baselland.ch (Steuerbuch)
+  'bl.ch', // statistik.bl.ch (communal and church tax rates), bl.clex.ch (laws)
+  'bl-api.webcloud7.ch', // the file host of baselland.ch: Basel-Landschaft's guides and forms
   'bs.ch', // www.bs.ch, media.bs.ch (guides, forms), www.gesetzessammlung.bs.ch (laws)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch

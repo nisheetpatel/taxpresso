@@ -236,7 +236,7 @@ export function buildStatus(
 
 /** The cantons Taxpresso prepares returns for, in words: "Geneva, Zurich and Bern". */
 export function cantonList(lang: 'en' | 'fr' | 'de' = 'en'): string {
-  return cantonNames(SUPPORTED_CANTONS, lang);
+  return cantonNames(SUPPORTED_CANTONS, 'and', lang);
 }
 
 /** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */

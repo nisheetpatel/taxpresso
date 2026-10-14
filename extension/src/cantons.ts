@@ -9,12 +9,14 @@ import {
   type FormMap,
 } from '@taxpresso/filing-ge';
 import { filing as bernFiling } from '@taxpresso/filing-be';
+import { filing as baselLandFiling } from '@taxpresso/filing-bl';
 import { filing as baselFiling } from '@taxpresso/filing-bs';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
 import {
   beQuestionnaire2026,
+  blQuestionnaire2026,
   bsQuestionnaire2026,
   geQuestionnaire2026,
   QuestionnaireEngine,
@@ -69,6 +71,17 @@ import {
   type BernCantonal,
   type BeTaxResult,
 } from '@taxpresso/rules-be';
+import {
+  BASEL_LAND_READING,
+  BL_TERMS,
+  blParamsFor,
+  communeOptions as baselLandCommunes,
+  NOTE_VALUABLES as BL_NOTE_VALUABLES,
+  rules as baselLandRules,
+  view as baselLandView,
+  type BaselLandCantonal,
+  type BlTaxResult,
+} from '@taxpresso/rules-bl';
 import {
   BASEL_READING,
   BS_TERMS,
@@ -125,8 +138,6 @@ export interface CantonEntry {
   communes(taxYear: number): { slug: string; name: string }[];
   /** For Claude, after "Answer: the name of the commune": what else the answer needs. */
   communeHint?: string;
-  /** Pages of its form to name as examples (get_form_values), as the copy panel ids them. */
-  formPages: readonly string[];
   /**
    * For a return started before Taxpresso asked for the canton: the answers that only this canton
    * asks, in words, when there are some (then the return is taken as this canton's).
@@ -197,7 +208,6 @@ const GENEVA: CantonEntry = {
   code: 'GE',
   name: { en: 'Geneva', fr: 'Genève', de: 'Genf' },
   software: 'GeTax',
-  formPages: ['PG1', 'A1', 'C3'],
   rules: genevaRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? geQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...genevaRules.keys(taxYear) }),
@@ -230,7 +240,6 @@ const ZURICH: CantonEntry = {
   code: 'ZH',
   name: { en: 'Zurich', fr: 'Zurich', de: 'Zürich' },
   software: 'ZHprivateTax',
-  formPages: ['S2', 'BA1', 'VP'],
   rules: zurichRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? zhQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zurichRules.keys(taxYear) }),
@@ -267,7 +276,6 @@ const BERN: CantonEntry = {
   code: 'BE',
   name: { en: 'Bern', fr: 'Berne', de: 'Bern' },
   software: 'TaxMe-Online',
-  formPages: ['F2', 'F6', 'ZK'],
   rules: bernRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? beQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...bernRules.keys(taxYear) }),
@@ -300,12 +308,48 @@ const BERN: CantonEntry = {
   tou: false,
 };
 
+const BASEL_LAND: CantonEntry = {
+  code: 'BL',
+  name: { en: 'Basel-Landschaft', fr: 'Bâle-Campagne', de: 'Basel-Landschaft' },
+  software: 'E-Tax BL',
+  rules: baselLandRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? blQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...baselLandRules.keys(taxYear) }),
+  communes: (taxYear) => baselLandCommunes(taxYear),
+  // Page 4 has lines of its own for cash and gold (805) and vehicles (815): say they are together.
+  ...sharedLedger(BASEL_LAND_READING, baselLandRules, BL_NOTE_VALUABLES),
+  view: baselLandView,
+  filing: baselLandFiling,
+  terms: BL_TERMS,
+  plan: {
+    computeReturn: (input) =>
+      baselLandRules.computeReturn(input as HouseholdInput<BaselLandCantonal>),
+    incomeTax: (r) => baselLandView.incomeTax(r as BlTaxResult),
+    // Liestal, the capital, by its name (the canton's table has no BFS numbers).
+    defaultCommune: 'Liestal',
+    communeName: { en: 'Liestal', fr: 'Liestal', de: 'Liestal' },
+    sources(taxYear) {
+      // The documents a Basel-Landschaft household's income tax rests on, for the year.
+      const P = blParamsFor(taxYear);
+      return [
+        P.income.source,
+        P.multiplier.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'bl_preview', communeDefault: 'bl_commune_default' },
+    // Basel-Landschaft's rule for a 3a catch-up from 2026 (bl-2026-wegleitung p. 31).
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 const BASEL: CantonEntry = {
   code: 'BS',
   name: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' },
   // The canton's official software, in the eSteuern.BS portal (bs-2025-efiling-baltax-tipps p. 1).
   software: 'BalTax Online',
-  formPages: ['H3', 'B1', 'W'],
   rules: baselRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? bsQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...baselRules.keys(taxYear) }),
@@ -342,36 +386,35 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
   BE: BERN,
+  BL: BASEL_LAND,
   BS: BASEL,
 };
 
-const JOIN = {
-  and: { en: 'and', fr: 'et', de: 'und' },
-  or: { en: 'or', fr: 'ou', de: 'oder' },
-} as const;
-
-/** Cantons in words, from the registry: "Geneva, Zurich and Bern" (`or`: "... or Bern"). */
+/**
+ * Canton names in words, the last one joined by "and" or "or", in the registry's order: "Zurich,
+ * Bern and Basel-Landschaft". For the texts that list the cantons, so a new canton needs no text.
+ */
 export function cantonNames(
-  codes: readonly SupportedCanton[] = SUPPORTED_CANTONS,
+  codes: readonly SupportedCanton[],
+  join: 'and' | 'or',
   lang: 'en' | 'fr' | 'de' = 'en',
-  join: keyof typeof JOIN = 'and',
 ): string {
   const names = codes.map((c) => CANTONS[c].name[lang]);
+  const word = {
+    and: { en: 'and', fr: 'et', de: 'und' },
+    or: { en: 'or', fr: 'ou', de: 'oder' },
+  }[join][lang];
   return names.length > 1
-    ? `${names.slice(0, -1).join(', ')} ${JOIN[join][lang]} ${names.at(-1)}`
+    ? `${names.slice(0, -1).join(', ')} ${word} ${names.at(-1)}`
     : names.join('');
 }
 
-/** What Taxpresso prepares, for the tool texts: "Geneva, or Zurich and Bern as a preview". */
-export function cantonScope(): string {
-  const full = SUPPORTED_CANTONS.filter((c) => !CANTONS[c].view.preview);
-  const preview = SUPPORTED_CANTONS.filter((c) => CANTONS[c].view.preview);
-  return preview.length
-    ? `${cantonNames(full)}, or ${cantonNames(preview)} as a preview`
-    : cantonNames(full);
-}
-
-/** The cantons whose questions and results have German texts (their forms are German). */
+/** The cantons Taxpresso prepares in full (Geneva) and those it prepares as a preview. */
+export const fullCantons = (): SupportedCanton[] =>
+  SUPPORTED_CANTONS.filter((c) => !CANTONS[c].view.preview);
+export const previewCantons = (): SupportedCanton[] =>
+  SUPPORTED_CANTONS.filter((c) => CANTONS[c].view.preview);
+/** The cantons whose official form is in German (the questions and the estimate in German too). */
 export const germanCantons = (): SupportedCanton[] =>
   SUPPORTED_CANTONS.filter((c) => CANTONS[c].view.german);
 

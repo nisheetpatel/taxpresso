@@ -1,18 +1,19 @@
 // Basel-Landschaft behind the canton interface (packages/rules-ch, canton.ts; docs/design/cantons.md,
 // section 2): the household input becomes Basel-Landschaft's engine input, and computeReturn gives
-// exactly what the engine gives (the state, communal and church tax; the federal column of the
-// Basel-Landschaft return is not mapped yet, so `ifd` is null). Not wired into the extension. A fact
-// that changes the tax and that Basel-Landschaft's engine does not read is refused, never dropped
-// (fail closed). Left aside because they don't change Basel-Landschaft's tax: the insurance premiums,
-// the premium subsidy and the savings interest (the canton deducts the maximum whatever was paid,
-// Steuerbuch 29 Nr. 15; the interest is part of the accounts' income), the withholding tax credit
-// shown next to the tax, the federal parental scale, and the facts only Geneva's rules use (a
-// person's or a child's age band, Geneva's meal rule, the commune of work).
+// exactly what the engine gives (the state, communal and church tax, and the federal tax of the
+// return's Bundessteuer column, ./ifd.ts). The extension reads it through its canton registry. A
+// fact that changes the tax and that Basel-Landschaft's engine does not read is refused, never
+// dropped (fail closed). The insurance premiums, the premium subsidy and the savings interest count
+// for the federal tax only (the canton deducts its maximum whatever was paid, Steuerbuch 29 Nr. 15).
+// Left aside because they change neither tax: the withholding tax credit shown next to the tax, and
+// the facts only Geneva's rules use (a person's or a child's age band, Geneva's meal rule, the
+// commune of work).
+import type { DocumentKind } from '@taxpresso/ledger';
 import {
-  KEYS_ECH0196_2026,
-  KEYS_SALARY_CERTIFICATE_2026,
-  KEYS_SECURITIES_2026,
+  ATTESTATION_FIELDS_2026,
+  DOCUMENT_FIELDS_WEALTH_2026,
   SALARY_CERTIFICATE_FIELDS_2026,
+  type Amount,
   type CantonRules,
   type Commune,
   type DocumentRule,
@@ -23,10 +24,12 @@ import {
 import { BlInputError } from './assess.js';
 import { communesFor, slugOf } from './communes.js';
 import { computeReturn } from './compute.js';
+import { blKeys } from './keys.js';
 import { BL_TAX_YEARS, blParamsFor, type BlTaxYear } from './params.js';
 import type {
   BlEngineInput,
   BlTaxResult,
+  ChildInput,
   Confession,
   MovableOwner,
   PensionKind,
@@ -46,14 +49,12 @@ export interface BaselLandCantonal {
   mainUpkeep?: boolean;
   /** Opt-in church tax: each adult's church. */
   church?: { p1?: Confession; p2?: Confession };
+  /**
+   * Childcare paid, by child, in the order of `children` (the limit is per child, StG § 29 Abs. 1
+   * lit. c): replaces childcare given for the household as a whole.
+   */
+  childcare?: readonly (Amount | undefined)[];
 }
-
-/** The shared keys: the salary certificate, the securities and the e-tax statements. */
-const KEYS = {
-  ...KEYS_SALARY_CERTIFICATE_2026,
-  ...KEYS_SECURITIES_2026,
-  ...KEYS_ECH0196_2026,
-} as const;
 
 function refuse(what: string): never {
   throw new BlInputError(
@@ -91,30 +92,32 @@ export function baselLandInput(input: HouseholdInput<BaselLandCantonal>): BlEngi
     );
   }
   const c = input.cantonal ?? {};
-  if (input.household?.childcare) {
-    refuse('Childcare for the household (household.childcare; give it per child)');
-  }
-  if (c.childrenOwnIncome && c.childrenOwnIncome.length !== (input.children?.length ?? 0)) {
+  const count = input.children?.length ?? 0;
+  if (c.childrenOwnIncome && c.childrenOwnIncome.length !== count) {
     throw new BlInputError('cantonal.childrenOwnIncome needs one answer per child, in order.');
   }
-  const children = input.children?.map((ch, i) => {
+  if (c.childcare && c.childcare.length > count) {
+    refuse('Childcare for a child not in children (cantonal.childcare)');
+  }
+  const children: ChildInput[] | undefined = input.children?.map((ch, i) => {
     const ownIncome = c.childrenOwnIncome?.[i];
-    return { ...without(ch, ['age']), ...(ownIncome !== undefined ? { ownIncome } : {}) };
+    const care = c.childcare?.[i];
+    return {
+      ...without(ch, ['age']),
+      ...(ownIncome !== undefined ? { ownIncome } : {}),
+      ...(care ? { childcare: care } : {}),
+    };
   });
   const movable = input.movable?.map((m) => {
     const owner: string = m.owner;
     if (!isOwner(owner)) refuse(`Accounts or securities of ${owner} (movable[].owner)`);
     return { ...without(m, ['owner', 'withholdingSwiss']), owner };
   });
+  // Childcare split per child replaces the household's total.
   const household = input.household
-    ? without(input.household, [
-        'childcare',
-        'healthPremiums',
-        'accidentPremiums',
-        'healthSubsidy',
-        'lifeInsurancePremiums',
-        'savingsInterest',
-      ])
+    ? c.childcare
+      ? without(input.household, ['childcare'])
+      : input.household
     : undefined;
   return {
     taxYear: input.taxYear as BlTaxYear,
@@ -123,6 +126,7 @@ export function baselLandInput(input: HouseholdInput<BaselLandCantonal>): BlEngi
     people: input.people.map((p) => person(p, c)),
     ...(children ? { children } : {}),
     ...(input.childSupport ? { childSupport: input.childSupport } : {}),
+    ...(input.ifdParentalScale !== undefined ? { ifdParentalScale: input.ifdParentalScale } : {}),
     ...(c.mainUpkeep !== undefined ? { mainUpkeep: c.mainUpkeep } : {}),
     ...(c.church ? { church: c.church } : {}),
     ...(household && Object.keys(household).length ? { household } : {}),
@@ -145,10 +149,22 @@ function communes(taxYear: number): Commune[] {
   }));
 }
 
-/** What each kind of document gives: so far the salary certificate, the same in every canton. */
+/**
+ * What each kind of document gives: the documents every canton asks for (packages/rules-ch keys/),
+ * the salary certificate, the attestations and the bank and wealth documents. The tax assessment
+ * is Geneva's only for now.
+ */
 function documents(taxYear: number): DocumentRule[] {
   blParamsFor(taxYear);
-  return [{ kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 }];
+  const fields: Partial<Record<DocumentKind, readonly string[]>> = {
+    salary_certificate: SALARY_CERTIFICATE_FIELDS_2026,
+    ...ATTESTATION_FIELDS_2026,
+    ...DOCUMENT_FIELDS_WEALTH_2026,
+  };
+  return (Object.entries(fields) as [DocumentKind, readonly string[]][]).map(([kind, keys]) => ({
+    kind,
+    keys,
+  }));
 }
 
 export const rules: CantonRules<BaselLandCantonal, BlTaxResult> = {
@@ -158,7 +174,7 @@ export const rules: CantonRules<BaselLandCantonal, BlTaxResult> = {
   computeReturn: (input) => computeReturn(baselLandInput(input)),
   keys: (taxYear) => {
     blParamsFor(taxYear);
-    return KEYS;
+    return blKeys(taxYear);
   },
   documents,
   sourcesIndex: 'docs/sources/bl',

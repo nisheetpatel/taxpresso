@@ -1,8 +1,9 @@
 // The dashboard's languages (config.ts, UI_LANGUAGES): English, French and German. The questions,
 // the canton names, the document kinds and the estimate of a canton with a German form (Zurich,
-// Bern: its result view's `german`) have German texts; the other views have English and French
-// content only for now, so a German page shows them in English (contentLang). The page's own
-// words are German throughout (ui/src/dashboard/i18n*.ts).
+// Bern, Basel-Landschaft, Basel-Stadt: its result view's `german`) have German texts; the other
+// views have English and French content only for now, so a German page shows them in English
+// (contentLang).
+// The page's own words are German throughout (ui/src/dashboard/i18n*.ts).
 import { say, type Lang as UiLang } from '@taxpresso/questionnaire';
 
 export { say, type UiLang };
