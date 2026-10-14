@@ -23,6 +23,18 @@ const t = (en: string, fr: string): Text => ({ en, fr });
 
 export type BaselLedgerInput = CantonLedgerInput<BaselCantonal>;
 
+const NB = ' ';
+
+/**
+ * Cash, precious metals and valuables described without a document are taken together on line 835;
+ * a vehicle of daily use is tax-free household goods in Basel-Stadt (bs-2025-guide-wegleitung p. 40),
+ * which the description doesn't tell apart.
+ */
+export const NOTE_VALUABLES: Text = {
+  en: 'Cash, precious metals and other valuables you described are counted on line 835 (Bargeld, Edelmetalle und übrige Vermögenswerte). A vehicle you use every day is tax-free in Basel-Stadt, as household goods (Hausrat): if you described one, take it out.',
+  fr: `Les espèces, métaux précieux et autres objets de valeur décrits sont comptés à la ligne 835 (Bargeld, Edelmetalle und übrige Vermögenswerte). Un véhicule d’usage quotidien est exonéré à Bâle-Ville, comme mobilier de ménage (Hausrat)${NB}: si vous en avez décrit un, retirez-le.`,
+};
+
 /** Basel-Stadt's reading of the ledger: its communes and lines, and its own answers. */
 export const BASEL_READING: CantonLedgerReading<BaselCantonal> = {
   isTaxYear: isBsTaxYear,

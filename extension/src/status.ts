@@ -1,6 +1,6 @@
 import { SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
-import { CANTONS } from './cantons.js';
+import { CANTONS, cantonNames } from './cantons.js';
 import { UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
@@ -236,11 +236,7 @@ export function buildStatus(
 
 /** The cantons Taxpresso prepares returns for, in words: "Geneva, Zurich and Bern". */
 export function cantonList(lang: 'en' | 'fr' | 'de' = 'en'): string {
-  const names = SUPPORTED_CANTONS.map((c) => CANTONS[c].name[lang]);
-  const and = { en: 'and', fr: 'et', de: 'und' }[lang];
-  return names.length > 1
-    ? `${names.slice(0, -1).join(', ')} ${and} ${names.at(-1)}`
-    : names.join('');
+  return cantonNames(SUPPORTED_CANTONS, lang);
 }
 
 /** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */

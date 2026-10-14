@@ -541,7 +541,7 @@ export class Workspace {
       ...(taxYear === 2025 || taxYear === 2026 ? { taxYear } : {}),
       other: {
         plan,
-        ...(typeof commune === 'number' ? { commune } : {}),
+        ...(commune !== undefined ? { commune } : {}),
         ...(known
           ? {
               known: {

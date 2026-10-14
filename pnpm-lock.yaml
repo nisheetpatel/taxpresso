@@ -223,6 +223,9 @@ importers:
       '@taxpresso/filing-be':
         specifier: workspace:*
         version: link:../packages/filing-be
+      '@taxpresso/filing-bs':
+        specifier: workspace:*
+        version: link:../packages/filing-bs
       '@taxpresso/filing-ge':
         specifier: workspace:*
         version: link:../packages/filing-ge
@@ -244,6 +247,9 @@ importers:
       '@taxpresso/rules-be':
         specifier: workspace:*
         version: link:../packages/rules-be
+      '@taxpresso/rules-bs':
+        specifier: workspace:*
+        version: link:../packages/rules-bs
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../packages/rules-ch

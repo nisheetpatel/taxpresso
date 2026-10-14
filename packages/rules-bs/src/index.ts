@@ -80,7 +80,12 @@ export { baselInput, rules, type BaselCantonal } from './canton.js';
 export { federalReturn, federalTotals } from './ifd.js';
 // The ledger read into Basel-Stadt's household input, and Basel-Stadt's keys and communes as its
 // questionnaire offers them.
-export { BASEL_READING, baselInputFromFacts, type BaselLedgerInput } from './from-ledger.js';
+export {
+  BASEL_READING,
+  baselInputFromFacts,
+  NOTE_VALUABLES,
+  type BaselLedgerInput,
+} from './from-ledger.js';
 export { bsKeys, communeOfAnswer, communeOptions, type CommuneOption } from './keys.js';
 // How a Basel-Stadt result reads in the generic views, and the official terms of its return.
 export { view } from './view.js';

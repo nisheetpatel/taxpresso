@@ -1,0 +1,1022 @@
+# Basel-Stadt questionnaire for tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data, not
+# code: packages/questionnaire reads it, and every key and value must exist in Basel-Stadt's keys
+# (packages/rules-bs, src/keys.ts; a test checks).
+#
+# The questions every canton asks come from data/ch/2026/questions.yaml (`use: <id>`), in the order
+# of the Basel-Stadt return (bs-2025-form-hauptformular: page 1 the personal details, then forms B,
+# K, Z and F, then pages 2 to 4), with Basel-Stadt's own explanations and official pages. The
+# questions only Basel-Stadt asks follow what its engine reads (packages/rules-bs, BaselCantonal):
+# the AHV reference age of a person filing alone (line 770), whether a single parent lives as a
+# couple (page 1, section 3) and, with shared custody, mainly bears the children's upkeep (StV
+# § 42), whether each child is under 18 (line 892), the childcare paid per child (form F), the
+# commune (Basel, Riehen or Bettingen) and the move, church membership (StG § 2a), each person's
+# work rate (form B) and payments to political parties (form Z, line 680).
+#
+# Wording and pages follow the Basel-Stadt guide for 2025 (bs-2025-guide-wegleitung), the latest
+# for a whole year; the 2026 guide is not published yet, only the one for a liability ending in
+# 2026 (docs/sources/bs/NOTES.md, Gaps): re-check against it. "p." is the page of the PDF file, as
+# in the links. The guide is in German: the German term of the form is next to each gloss.
+#
+# German: informal "du", Swiss spelling (ss), the official German term next to its gloss. French:
+# write plain spaces before ? ! : ; and the loader makes them non-breaking.
+
+taxYear: 2026
+
+place: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' }
+
+people:
+  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p2:
+    {
+      en: 'Your spouse or partner',
+      fr: 'Votre conjoint ou partenaire',
+      de: 'Dein Partner oder deine Partnerin',
+    }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+
+# BalTax Online, in the eSteuern.BS portal with an AGOV login, is the canton's official tax
+# software (bs-2025-efiling-baltax-tipps p. 1; bs-2025-efiling-steuerportal). No document of the
+# library says it is free, so the text doesn't.
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. BalTax Online, the canton’s official tax software in the eSteuern.BS portal, or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. BalTax Online, le logiciel fiscal officiel du canton dans le portail eSteuern.BS, ou une fiduciaire le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. BalTax Online, die offizielle Steuersoftware des Kantons im Portal eSteuern.BS, oder eine Treuhand kann es.'
+
+questions:
+  - use: canton
+
+  # Page 1 of the main form (Zivilstand); joint taxation of spouses and registered partners:
+  # bs-2025-guide-wegleitung p. 7 (Familienbesteuerung); the form: "Die eingetragene Partnerschaft
+  # gleichgeschlechtlicher Paare wird gleich behandelt wie die Ehe" (bs-2025-form-hauptformular p. 1).
+  - use: civil_status
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=7'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 7: taxing the family, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 7 : imposition de la famille, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 7: Familienbesteuerung'
+    help:
+      en: 'On page 1 of the return: Zivilstand. A registered partnership files like a married couple.'
+      fr: 'Sur la page 1 de la déclaration : Zivilstand (état civil). Un partenariat enregistré déclare comme un couple marié.'
+      de: 'Auf Seite 1 der Steuererklärung: Zivilstand. Eine eingetragene Partnerschaft füllt die Steuererklärung wie ein Ehepaar aus.'
+
+  # Line 770, Abzug für alleinstehende Rentner/innen: for a person filing alone who reached the AHV
+  # reference age, or whose income is mostly pensions (bs-na-law-stv § 43, p. 12;
+  # bs-2025-guide-wegleitung p. 39). Basel-Stadt's engine decides it with this answer
+  # (packages/rules-bs, retiree), and computes nothing without it.
+  - id: reference_age
+    key: bs.reference_age
+    type: yesno
+    perPerson: true
+    when: { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+    explain:
+      en: 'A person filing alone who reached the AHV reference age (Referenzalter) gets an extra deduction for single retirees (Abzug für alleinstehende Rentner/innen, line 770). Before that age, it depends on how much of the income is pensions.'
+      fr: 'Une personne qui déclare seule et a atteint l’âge de référence AVS (Referenzalter) a droit à une déduction supplémentaire pour retraités seuls (Abzug für alleinstehende Rentner/innen, ligne 770). Avant cet âge, cela dépend de la part des rentes dans le revenu.'
+      de: 'Wer allein deklariert und das AHV-Referenzalter erreicht hat, erhält zusätzlich den Abzug für alleinstehende Rentner/innen (Ziffer 770). Vor diesem Alter hängt er davon ab, wie viel des Einkommens Renten sind.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=39'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 39: social deductions, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 39 : déductions sociales, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 39: Sozialabzüge'
+    text:
+      en: 'Had you reached the AHV reference age by 31 December 2026?'
+      fr: 'Aviez-vous atteint l’âge de référence AVS au 31 décembre 2026 ?'
+      de: 'Hattest du am 31. Dezember 2026 das AHV-Referenzalter erreicht?'
+    help:
+      en: 'The reference age (Referenzalter) is the age at which the AHV old-age pension starts as a rule.'
+      fr: 'L’âge de référence (Referenzalter) est l’âge auquel la rente de vieillesse AVS commence en règle générale.'
+      de: 'Das Referenzalter ist das Alter, ab dem die AHV-Altersrente in der Regel beginnt.'
+    chip: { en: 'Reference age', fr: 'Âge de référence', de: 'Referenzalter' }
+
+  # Page 1, section 2 (minor children, children in education); line 750, Abzug für Kinder
+  # (bs-2025-guide-wegleitung p. 38).
+  - use: children
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=38'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 38: child deduction, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 38 : déduction pour enfants, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 38: Abzug für Kinder'
+    help:
+      en: 'On page 1 of the return: section 2, Kinder (children), in your household or outside it.'
+      fr: 'Sur la page 1 de la déclaration : section 2, Kinder (enfants), dans votre ménage ou hors de celui-ci.'
+      de: 'Auf Seite 1 der Steuererklärung: Abschnitt 2, Kinder im eigenen Haushalt oder ausserhalb.'
+
+  # Page 1, section 2: Kinder im eigenen Haushalt, and for parents taxed apart: child support from
+  # the other parent and joint custody (Gemeinsames Sorgerecht). Line 750 (bs-2025-guide-wegleitung
+  # p. 38; StG § 35 al. 1 lit. a: half each without child support).
+  - use: children_custody
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=38'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 38: child deduction, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 38 : déduction pour enfants, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 38: Abzug für Kinder'
+    help:
+      en: 'On page 1 of the return: Kinder im eigenen Haushalt (children in your household); with shared custody, the questions for parents taxed apart.'
+      fr: 'Sur la page 1 de la déclaration : Kinder im eigenen Haushalt (enfants dans votre ménage) ; en garde partagée, les questions pour les parents imposés séparément.'
+      de: 'Auf Seite 1 der Steuererklärung: Kinder im eigenen Haushalt; bei geteilter Obhut die Fragen für getrennt besteuerte Eltern.'
+
+  # Parents taxed apart with joint custody: with child support, the parent taxed on it has the child
+  # deduction; without, each has half (StG § 35 al. 1 lit. a, bs-2025-guide-wegleitung p. 38). For
+  # the federal parental scale: ch-na-circulaire-30-epoux-famille p. 24.
+  - use: child_support
+    explain:
+      en: 'With shared custody, child support decides who counts the children. The parent who receives it gets the child deduction (Abzug für Kinder) in full; without child support, you each get half. For the federal tax, the parental scale, a lower rate, goes to the parent who receives child support or, without it, to the one who earns more.'
+      fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit a droit à toute la déduction pour enfants (Abzug für Kinder) ; sans contribution, chacun en a la moitié. Pour l’impôt fédéral, le barème parental, un taux plus bas, revient au parent qui reçoit la contribution ou, sans contribution, à celui qui gagne le plus.'
+      de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, bekommt den ganzen Abzug für Kinder; ohne Unterhaltsbeiträge erhält jeder die Hälfte. Bei der Bundessteuer geht der Elterntarif, ein tieferer Satz, an den Elternteil, der Unterhaltsbeiträge erhält, oder ohne Unterhaltsbeiträge an den, der mehr verdient.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=38'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 38: child deduction of parents taxed apart, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 38 : déduction pour enfants des parents imposés séparément, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 38: Abzug für Kinder getrennt besteuerter Eltern'
+    help:
+      en: 'Child support (Unterhaltsbeiträge für minderjährige Kinder) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
+      fr: 'La contribution d’entretien (Unterhaltsbeiträge für minderjährige Kinder) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
+      de: 'Unterhaltsbeiträge für minderjährige Kinder sind ein regelmässiger Betrag, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+
+  # Page 1, section 3: "Leben Sie in einer Konkubinatspartnerschaft mit gemeinsamen / nicht
+  # gemeinsamen Kindern?" (bs-2025-form-hauptformular p. 1). The deduction for single parents (765)
+  # and the wealth allowance of 890 are not for cohabiting couples, who have their own deduction
+  # (757): bs-2025-guide-wegleitung p. 39 and 43; packages/rules-bs does not compute them yet.
+  - id: cohabiting
+    key: bs.cohabiting
+    type: yesno
+    when:
+      all:
+        - { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+    explain:
+      en: 'Basel-Stadt gives single parents a deduction (Abzug für alleinerziehende Personen, line 765), a lower income tariff and a higher wealth allowance, but not to an unmarried couple living with children (Konkubinat), who have rules of their own.'
+      fr: 'Bâle-Ville accorde aux familles monoparentales une déduction (Abzug für alleinerziehende Personen, ligne 765), un barème plus bas et un montant exonéré de fortune plus élevé, mais pas à un couple non marié vivant avec des enfants (Konkubinat), qui a ses propres règles.'
+      de: 'Basel-Stadt gibt Alleinerziehenden einen Abzug (Abzug für alleinerziehende Personen, Ziffer 765), einen tieferen Tarif und einen höheren Freibetrag auf dem Vermögen, nicht aber einem Konkubinatspaar mit Kindern, für das eigene Regeln gelten.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=39'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 39: deduction for single parents, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 39 : déduction pour familles monoparentales, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 39: Abzug für alleinerziehende Personen'
+    text:
+      en: 'In 2026, did you live as a couple with a partner you are not married to (Konkubinat), with your children or with shared children?'
+      fr: 'En 2026, viviez-vous en couple avec un partenaire auquel vous n’êtes pas marié(e) (Konkubinat), avec vos enfants ou des enfants communs ?'
+      de: 'Hast du 2026 mit einem Partner oder einer Partnerin, mit dem oder der du nicht verheiratet bist, im Konkubinat mit Kindern gelebt?'
+    help:
+      en: 'On page 1 of the return, section 3: Leben Sie in einer Konkubinatspartnerschaft mit gemeinsamen / nicht gemeinsamen Kindern?'
+      fr: 'Sur la page 1 de la déclaration, section 3 : Leben Sie in einer Konkubinatspartnerschaft mit gemeinsamen / nicht gemeinsamen Kindern? (Vivez-vous en concubinage avec des enfants communs ou non ?)'
+      de: 'Auf Seite 1 der Steuererklärung, Abschnitt 3: Leben Sie in einer Konkubinatspartnerschaft mit gemeinsamen / nicht gemeinsamen Kindern?'
+    yesNotSupported:
+      en: 'A single parent living as a couple with children (Konkubinat mit Kindern)'
+      fr: 'Un parent seul vivant en couple avec des enfants (Konkubinat mit Kindern)'
+      de: 'Alleinerziehend im Konkubinat mit Kindern'
+    chip: { en: 'Living as a couple', fr: 'En concubinage', de: 'Konkubinat' }
+
+  # A child in shared custody: the deduction for single parents (765), tariff B and the wealth
+  # allowance of 890 go to the parent who mainly bears the child's upkeep, with their own income and
+  # wealth and the child support they are taxed on (bs-na-law-stv § 42, p. 11;
+  # bs-2025-guide-wegleitung p. 39). packages/rules-bs computes nothing without the answer.
+  - id: main_upkeep
+    key: bs.main_upkeep
+    type: yesno
+    when:
+      all:
+        - { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+        - { key: profile.children_custody, in: [shared] }
+        - {
+            key: profile.child_support,
+            in: [i_receive, none_i_earn_more, none_other_earns_more, none_unsure],
+          }
+    explain:
+      en: 'With shared custody, Basel-Stadt gives the deduction for single parents (line 765), the lower tariff and the higher wealth allowance only to the parent who mainly bears the children’s upkeep.'
+      fr: 'En garde partagée, Bâle-Ville n’accorde la déduction pour familles monoparentales (ligne 765), le barème plus bas et le montant exonéré de fortune plus élevé qu’au parent qui assume principalement l’entretien des enfants.'
+      de: 'Bei geteilter Obhut gibt Basel-Stadt den Abzug für alleinerziehende Personen (Ziffer 765), den tieferen Tarif und den höheren Freibetrag auf dem Vermögen nur dem Elternteil, der zur Hauptsache für den Unterhalt der Kinder aufkommt.'
+    learnMore:
+      url: 'https://www.gesetzessammlung.bs.ch/api/de/versions/6658/pdf_file#page=11'
+      label:
+        en: 'Basel-Stadt tax ordinance (Steuerverordnung), § 42, in German'
+        fr: 'Ordonnance fiscale de Bâle-Ville (Steuerverordnung), § 42, en allemand'
+        de: 'Steuerverordnung, § 42'
+    text:
+      en: 'Did you mainly bear the children’s upkeep in 2026?'
+      fr: 'Avez-vous assumé l’essentiel de l’entretien des enfants en 2026 ?'
+      de: 'Bist du 2026 zur Hauptsache für den Unterhalt der Kinder aufgekommen?'
+    help:
+      en: 'With your own income and wealth, counting the child support you receive as yours.'
+      fr: 'Avec vos propres revenus et votre fortune, en comptant comme vôtre la contribution d’entretien que vous recevez.'
+      de: 'Mit deinem eigenen Einkommen und Vermögen, die Unterhaltsbeiträge, die du erhältst, eingerechnet.'
+    chip: { en: 'Main upkeep', fr: 'Entretien principal', de: 'Hauptunterhalt' }
+
+  # Line 892, Freibetrag für minderjährige Kinder: a wealth allowance per minor child
+  # (bs-na-law-stg § 49 al. 1 lit. c, p. 20; bs-2025-guide-wegleitung p. 43). Page 1, section 2 of
+  # the 2025 return lists minors by year of birth (2008 to 2025). Asked per child.
+  - id: child_minor
+    key: bs.child_minor
+    type: yesno
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+    explain:
+      en: 'Basel-Stadt exempts part of your wealth for each minor child you mainly provide for (Freibetrag für minderjährige Kinder, line 892).'
+      fr: 'Bâle-Ville exonère une partie de votre fortune pour chaque enfant mineur à votre charge principale (Freibetrag für minderjährige Kinder, ligne 892).'
+      de: 'Basel-Stadt stellt für jedes minderjährige Kind, für das du hauptsächlich sorgst, einen Teil deines Vermögens steuerfrei (Freibetrag für minderjährige Kinder, Ziffer 892).'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=43'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 43: wealth allowances, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 43 : montants exonérés de fortune, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 43: Steuerfreie Beträge'
+    text:
+      en: 'Was child {n} under 18 on 31 December 2026?'
+      fr: 'L’enfant {n} avait-il moins de 18 ans au 31 décembre 2026 ?'
+      de: 'War Kind {n} am 31. Dezember 2026 unter 18?'
+    help:
+      en: 'Born in 2009 or later. Number your children the same way in every answer, for example from the eldest.'
+      fr: 'Né en 2009 ou après. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Jahrgang 2009 oder jünger. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # Line 670, Abzug für fremdbetreute Kinder, and form F (bs-2025-guide-wegleitung p. 36;
+  # bs-2025-form-kzf-krankheit-zuwendung-betreuung p. 2): children under 14, each up to a limit.
+  - use: childcare
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=36'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 36: childcare, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 36 : frais de garde, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 36: Abzug für fremdbetreute Kinder'
+    help:
+      en: 'A crèche (Tagesheim), day parents (Tagesmutter) or another person looking after your children under 14 while you work or study. On form F: Kinderbetreuungskosten.'
+      fr: 'Une crèche (Tagesheim), une maman de jour (Tagesmutter) ou une autre personne qui garde vos enfants de moins de 14 ans pendant que vous travaillez ou étudiez. Sur le formulaire F : Kinderbetreuungskosten (frais de garde).'
+      de: 'Ein Tagesheim, eine Tagesmutter oder eine andere Person, die deine Kinder unter 14 betreut, während du arbeitest oder in Ausbildung bist. Auf dem Formular F: Kinderbetreuungskosten.'
+
+  # Form F asks the childcare paid per child, and the limit is per child
+  # (bs-2025-form-kzf-krankheit-zuwendung-betreuung p. 2; bs-2025-guide-wegleitung p. 36). With
+  # several children, how the invoices' total splits can decide the deduction: asked per child.
+  - id: child_care
+    key: bs.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+    explain:
+      en: 'Form F asks the childcare paid for each child, and the Basel-Stadt limit is per child, so the split between your children can change the deduction. Your invoices give the total.'
+      fr: 'Le formulaire F demande les frais de garde payés pour chaque enfant (Kinderbetreuungskosten), et la limite de Bâle-Ville est par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
+      de: 'Das Formular F fragt die Kinderbetreuungskosten für jedes Kind, und der Basler Höchstbetrag gilt pro Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/b40d5308954ad20f3d8b2e099f1eabbabe2046f8/15030-fw-np-ste-25-02-krankheitskosten-zuwendungen-kinderbet.pdf#page=2'
+      label:
+        en: 'Form F, childcare costs (Kinderbetreuungskosten), in German'
+        fr: 'Formulaire F, frais de garde (Kinderbetreuungskosten), en allemand'
+        de: 'Formular F, Kinderbetreuungskosten'
+    text:
+      en: 'How much of the childcare you paid in 2026 was for child {n}?'
+      fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
+      de: 'Wie viel der 2026 bezahlten Kinderbetreuungskosten war für Kind {n}?'
+    help:
+      en: 'In CHF, after any contributions you received, 0 if child {n} had none. Number your children the same way in every answer, for example from the eldest.'
+      fr: 'En CHF, après les contributions reçues, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, nach Abzug erhaltener Beiträge, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # The commune of 31 December: Basel, Riehen or Bettingen (bs-2025-guide-wegleitung p. 8,
+  # Wohnsitzwechsel, a move between them as one from another canton; p. 9, Steuerberechnung: in Basel
+  # the canton levies the whole tax, in Riehen and Bettingen half of it and the commune its own tax;
+  # the rates of 2026 in bs-2026-communal-ansaetze-abzuege p. 1).
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'The commune you lived in on 31 December taxes your whole year. In the city of Basel the canton levies the whole tax and there is no communal tax; in Riehen and Bettingen the canton levies part of it and the commune its own tax (Gemeindesteuer), at its own rate (Steuerfuss).'
+      fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année. En ville de Bâle, le canton prélève tout l’impôt et il n’y a pas d’impôt communal ; à Riehen et Bettingen, le canton en prélève une part et la commune son propre impôt (Gemeindesteuer), à son propre taux (Steuerfuss).'
+      de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr. In der Stadt Basel erhebt der Kanton die ganze Steuer und es gibt keine Gemeindesteuer; in Riehen und Bettingen erhebt der Kanton einen Teil und die Gemeinde ihre eigene Gemeindesteuer, zu ihrem eigenen Steuerfuss.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=9'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 9: how the tax is computed, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 9 : calcul de l’impôt, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 9: Steuerberechnung'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+    help:
+      en: 'Basel, Riehen or Bettingen.'
+      fr: 'Bâle (Basel), Riehen ou Bettingen.'
+      de: 'Basel, Riehen oder Bettingen.'
+
+  # bs-2025-guide-wegleitung p. 8 (Wohnsitzwechsel): from another canton, Basel-Stadt taxes the whole
+  # year; from abroad, or leaving Switzerland, a return for part of the year (not covered by
+  # rules-bs: docs/sources/bs/NOTES.md, Open points for the rules).
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'A move between Basel, Riehen and Bettingen changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Basel-Stadt taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
+      fr: 'Un déménagement entre Bâle, Riehen et Bettingen ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Bâle-Ville vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      de: 'Ein Umzug zwischen Basel, Riehen und Bettingen ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Basel-Stadt besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=8'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 8: moving, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 8 : changement de domicile, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 8: Wohnsitzwechsel'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+      de: 'Bist du 2026 umgezogen?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - value: within_basel
+        label:
+          {
+            en: 'Yes, within the canton of Basel-Stadt',
+            fr: 'Oui, dans le canton de Bâle-Ville',
+            de: 'Ja, innerhalb des Kantons Basel-Stadt',
+          }
+        chip: { en: 'Moved in Basel-Stadt', fr: 'Déménagé à Bâle-Ville', de: 'Umzug im Kanton' }
+      - value: from_other_canton
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            de: 'Ja, aus einem anderen Kanton',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            de: 'Zuzug aus einem anderen Kanton',
+          }
+      - value: from_abroad
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            de: 'Ja, ich bin aus dem Ausland zugezogen',
+          }
+        notSupported:
+          {
+            en: 'Arriving from abroad during the year (Zuzug aus dem Ausland)',
+            fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland)',
+            de: 'Ein Zuzug aus dem Ausland während des Jahres',
+          }
+      - value: leaving_switzerland
+        label:
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+          }
+        notSupported:
+          {
+            en: 'Leaving Switzerland (Wegzug ins Ausland)',
+            fr: 'Un départ de Suisse (Wegzug ins Ausland)',
+            de: 'Ein Wegzug ins Ausland',
+          }
+
+  # Church tax (Kirchensteuer): the recognised churches and religious communities levy it on their
+  # members (bs-na-law-stg § 2a, p. 1). Its rates are in no document of the library: Taxpresso says
+  # it is not in the calculation for a member (packages/rules-bs, NOTE.church), nothing for others.
+  - id: church
+    key: bs.church
+    type: yesno
+    perPerson: true
+    explain:
+      en: 'The recognised churches and religious communities levy a church tax (Kirchensteuer) on their members. Its rates are not in the documents Taxpresso has, so it is not in the calculation: Taxpresso tells a member so.'
+      fr: 'Les Églises et communautés religieuses reconnues prélèvent un impôt ecclésiastique (Kirchensteuer) auprès de leurs membres. Ses taux ne figurent pas dans les documents dont dispose Taxpresso, il n’est donc pas dans le calcul : Taxpresso le signale à un membre.'
+      de: 'Die anerkannten Kirchen und Religionsgemeinschaften erheben von ihren Mitgliedern eine Kirchensteuer. Die Sätze dieser Steuer stehen in keinem Dokument, das Taxpresso hat, sie ist also nicht in der Berechnung: Taxpresso sagt das einem Mitglied.'
+    learnMore:
+      url: 'https://www.gesetzessammlung.bs.ch/api/de/versions/6745/pdf_file_with_annexes#page=1'
+      label:
+        en: 'Basel-Stadt tax law (Steuergesetz), § 2a: church tax, in German'
+        fr: 'Loi fiscale de Bâle-Ville (Steuergesetz), § 2a : impôt ecclésiastique, en allemand'
+        de: 'Steuergesetz, § 2a: Kirchensteuer'
+    text:
+      p1:
+        en: 'On 31 December 2026, were you a member of a recognised church or religious community?'
+        fr: 'Au 31 décembre 2026, étiez-vous membre d’une Église ou communauté religieuse reconnue ?'
+        de: 'Warst du am 31. Dezember 2026 Mitglied einer anerkannten Kirche oder Religionsgemeinschaft?'
+      p2:
+        en: 'On 31 December 2026, was your spouse or partner a member of a recognised church or religious community?'
+        fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre d’une Église ou communauté religieuse reconnue ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer anerkannten Kirche oder Religionsgemeinschaft?'
+    help:
+      en: 'Such as the Reformed, Roman Catholic or Christ Catholic church, or the Israelite community.'
+      fr: 'Par exemple l’Église réformée, catholique romaine ou catholique chrétienne, ou la communauté israélite.'
+      de: 'Etwa die evangelisch-reformierte, die römisch-katholische oder die christkatholische Kirche oder die Israelitische Gemeinde.'
+    chip: { en: 'Church member', fr: 'Membre d’une Église', de: 'Kirchenmitglied' }
+
+  # Income from employment, social insurance and pensions (bs-2025-guide-wegleitung p. 19 to 23).
+  - use: income_sources
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=19'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 19: employment income, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 19 : revenus d’activité, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 19: Einkünfte aus unselbstständiger Erwerbstätigkeit'
+    options:
+      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - value: replacement_income
+        label:
+          en: 'Unemployment, sickness or accident benefits'
+          fr: 'Des indemnités (chômage, maladie, accident)'
+          de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+      - value: pension
+        label:
+          {
+            en: 'A pension (AHV, IV or pension fund)',
+            fr: 'Une rente (AVS, AI ou caisse de pension)',
+            de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+          }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+      - value: alimony
+        label:
+          {
+            en: 'Alimony or child support received',
+            fr: 'Une pension alimentaire reçue',
+            de: 'Erhaltene Unterhaltsbeiträge',
+          }
+        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+      - value: self_employment
+        label:
+          {
+            en: 'Income from self-employment',
+            fr: 'Un revenu d’activité indépendante',
+            de: 'Einkommen aus selbstständiger Erwerbstätigkeit',
+          }
+        notSupported:
+          {
+            en: 'Self-employment (selbstständige Erwerbstätigkeit, codes 150 to 175)',
+            fr: 'L’activité indépendante (selbstständige Erwerbstätigkeit, codes 150 à 175)',
+            de: 'Die selbstständige Erwerbstätigkeit (Ziffern 150 bis 175)',
+          }
+
+  # Lines 100/105 (Haupterwerb) and 110/115 (Nebenerwerb), one salary certificate each
+  # (bs-2025-guide-wegleitung p. 19 and 20).
+  - use: employers
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=19'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 19: main employment, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 19 : activité principale, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 19: Haupterwerb'
+    help:
+      en: 'Each one gives you a salary certificate (Lohnausweis).'
+      fr: 'Chacun vous remet un certificat de salaire (Lohnausweis).'
+      de: 'Jeder gibt dir einen Lohnausweis.'
+
+  # Form B: "Beschäftigungsgrad / Pensum in Prozent" for each person (bs-2025-form-b-berufskosten
+  # p. 1 and 2); the canton's flat amount for professional costs is cut in proportion at a low work
+  # rate (bs-2025-guide-wegleitung p. 30, 500/520). packages/rules-bs computes nothing without it
+  # when the actual costs are lower than the flat amount.
+  - id: work_rate
+    key: bs.work_rate
+    type: number
+    perPerson: true
+    min: 1
+    max: 100
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'Basel-Stadt deducts a flat amount for professional costs (Pauschalabzug für Berufskosten) unless your actual costs are higher. For part-time work at a low work rate, the flat amount is cut in proportion.'
+      fr: 'Bâle-Ville déduit un forfait pour frais professionnels (Pauschalabzug für Berufskosten), sauf si vos frais effectifs sont plus élevés. Pour un temps partiel à un taux bas, le forfait est réduit en proportion.'
+      de: 'Basel-Stadt zieht einen Pauschalabzug für Berufskosten ab, ausser deine tatsächlichen Kosten sind höher. Bei Teilzeit mit tiefem Beschäftigungsgrad wird die Pauschale anteilig gekürzt.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=30'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 30: professional costs, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 30 : frais professionnels, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 30: Berufskosten'
+    text:
+      p1:
+        en: 'At what work rate did you work in 2026, in percent of full time?'
+        fr: 'À quel taux d’activité avez-vous travaillé en 2026, en pour-cent d’un plein temps ?'
+        de: 'Zu welchem Beschäftigungsgrad hast du 2026 gearbeitet, in Prozent einer Vollzeitstelle?'
+      p2:
+        en: 'At what work rate did your spouse or partner work in 2026, in percent of full time?'
+        fr: 'À quel taux d’activité votre conjoint ou partenaire a-t-il travaillé en 2026, en pour-cent d’un plein temps ?'
+        de: 'Zu welchem Beschäftigungsgrad hat dein Partner oder deine Partnerin 2026 gearbeitet, in Prozent einer Vollzeitstelle?'
+    help:
+      en: 'A whole number, 100 for full time. With several jobs, add them up, at most 100. On form B: Beschäftigungsgrad / Pensum in Prozent.'
+      fr: 'Un nombre entier, 100 pour un plein temps. Avec plusieurs emplois, additionnez-les, au plus 100. Sur le formulaire B : Beschäftigungsgrad / Pensum in Prozent (taux d’activité).'
+      de: 'Eine ganze Zahl, 100 für Vollzeit. Bei mehreren Stellen zusammenzählen, höchstens 100. Auf dem Formular B: Beschäftigungsgrad / Pensum in Prozent.'
+
+  # Tax at source (Quellensteuer): an ordinary return only when the canton orders one or the person
+  # asks for it by 31 March of the next year (nachträgliche ordentliche Veranlagung, NOV):
+  # bs-2026-source-tax-wegleitung p. 5 and 11; bs-2025-guide-wegleitung p. 5. Not covered by
+  # rules-bs.
+  - use: taxed_at_source
+    yesNotSupported:
+      en: 'Tax at source in Basel-Stadt (Quellensteuer) and the ordinary assessment that follows it (nachträgliche ordentliche Veranlagung, NOV)'
+      fr: 'L’impôt à la source à Bâle-Ville (Quellensteuer) et la taxation ordinaire ultérieure qui le suit (nachträgliche ordentliche Veranlagung, NOV)'
+      de: 'Die Quellensteuer in Basel-Stadt und die nachträgliche ordentliche Veranlagung (NOV)'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/445bc8b2afa6166c46741bdfda12f44792e12703/19000-mb-qst-a-26-wegleitung-und-tariftabellen.pdf#page=11'
+      label:
+        en: 'Tax at source in Basel-Stadt 2026, p. 11: the ordinary assessment afterwards, in German'
+        fr: 'Impôt à la source à Bâle-Ville 2026, p. 11 : taxation ordinaire ultérieure, en allemand'
+        de: 'Quellenbesteuerung 2026, S. 11: nachträgliche ordentliche Veranlagung'
+    help:
+      en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, chiffre 12).'
+      de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+
+  # Lines 620/625, Gebundene Selbstvorsorge (Säule 3a), with the attestation
+  # (bs-2025-guide-wegleitung p. 33).
+  - use: pillar3a
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=33'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 33: pillar 3a, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 33 : pilier 3a, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 33: Gebundene Selbstvorsorge (Säule 3a)'
+    help:
+      en: 'Your bank or insurer sends an attestation (Bescheinigung). On the return: Gebundene Selbstvorsorge (Säule 3a), 620 and 625.'
+      fr: 'Votre banque ou votre assurance vous envoie une attestation (Bescheinigung). Sur la déclaration : Gebundene Selbstvorsorge (Säule 3a), 620 et 625.'
+      de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung. In der Steuererklärung: Gebundene Selbstvorsorge (Säule 3a), Ziffern 620 und 625.'
+
+  # Lines 610/615, Berufliche Vorsorge (Pensionskasse): buy-ins the salary certificate doesn't show
+  # (bs-2025-guide-wegleitung p. 33).
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=33'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 33: pension fund buy-ins, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 33 : rachats de prévoyance professionnelle, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 33: Berufliche Vorsorge (Pensionskasse)'
+    help:
+      en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On the return: Berufliche Vorsorge (Pensionskasse), 610 and 615.'
+      fr: 'Un versement volontaire en plus des cotisations habituelles. Comptez seulement un rachat que votre certificat de salaire ne montre pas. Sur la déclaration : Berufliche Vorsorge (Pensionskasse), 610 et 615.'
+      de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. In der Steuererklärung: Berufliche Vorsorge (Pensionskasse), Ziffern 610 und 615.'
+
+  # Travel to work (Fahrkosten, form B 503/523) for both taxes, each up to its own cap:
+  # bs-2025-guide-wegleitung p. 30; ch-2026-ifd-instructions-personnes-physiques p. 6. No "over 2
+  # hours a day" choice: only Geneva's meal rule needs it (rules-bs, keys.ts, bsKeys).
+  - use: commute
+    explain:
+      en: 'Getting to work is deducted as travel costs (Fahrkosten), for the cantonal and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
+      fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrkosten), pour l’impôt cantonal et l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
+      de: 'Der Arbeitsweg wird als Fahrkosten abgezogen, bei der Kantons- und der Bundessteuer, je bis zu ihrem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=30'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 30: travel costs, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 30 : frais de déplacement, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 30: Fahrkosten'
+    help:
+      en: 'Choose how you went on most work days. On form B: Fahrkosten zwischen Wohn- und Arbeitsstätte.'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire B : Fahrkosten zwischen Wohn- und Arbeitsstätte (frais de déplacement).'
+      de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf dem Formular B: Fahrkosten zwischen Wohn- und Arbeitsstätte.'
+    options:
+      - value: public_transport
+        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+            de: 'Motorrad oder Roller mit weissem Kontrollschild',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+            de: 'Velo, E-Bike oder Mofa mit gelbem Kontrollschild',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - value: mostly_home
+        label:
+          {
+            en: 'From home, almost every day',
+            fr: 'Depuis chez moi, presque tous les jours',
+            de: 'Von zu Hause, fast jeden Tag',
+          }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+
+  # bs-2025-guide-wegleitung p. 30 (503/523: a U-Abo TNW or a GA, form B).
+  - use: commute_transit_cost
+    explain:
+      en: 'You deduct the public transport you paid to get to work, for the cantonal and the federal tax, each up to its own yearly limit.'
+      fr: 'Vous déduisez les transports publics payés pour aller au travail, pour l’impôt cantonal et l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Du ziehst die bezahlten Kosten des öffentlichen Verkehrs zur Arbeit ab, bei der Kantons- und der Bundessteuer, je bis zu ihrem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=30'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 30: public transport, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 30 : transports publics, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 30: Fahrkosten für öffentliche Verkehrsmittel'
+    help:
+      en: 'What your tickets cost in the year: an annual or monthly U-Abo TNW, or a GA.'
+      fr: 'Ce que vos abonnements ont coûté dans l’année : un U-Abo TNW annuel ou mensuel, ou un AG.'
+      de: 'Was deine Abos im Jahr gekostet haben: ein U-Abo TNW (Jahres- oder Monatsabo) oder ein GA.'
+
+  # bs-2025-guide-wegleitung p. 30 (private vehicles: only when public transport can't reasonably
+  # be used; otherwise what it would have cost).
+  - use: commute_transit_usable
+    explain:
+      en: 'A driver deducts what public transport would have cost, for both taxes. The kilometres count only when public transport can’t reasonably be used for the trip.'
+      fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics, pour les deux impôts. Les kilomètres ne comptent que si les transports publics ne peuvent raisonnablement pas être utilisés pour le trajet.'
+      de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Die Kilometer zählen nur, wenn der öffentliche Verkehr für den Weg nicht zumutbar ist.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=30'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 30: private vehicles, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 30 : véhicules privés, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 30: Fahrkosten für private Fahrzeuge'
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, I could have used public transport',
+            fr: 'Oui, j’aurais pu prendre les transports publics',
+            de: 'Ja, ich hätte den öffentlichen Verkehr nehmen können',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No, public transport could not reasonably be used for the trip',
+            fr: 'Non, les transports publics ne pouvaient raisonnablement pas être utilisés pour le trajet',
+            de: 'Nein, der öffentliche Verkehr war für den Weg nicht zumutbar',
+          }
+
+  # bs-2025-guide-wegleitung p. 30
+  - use: commute_transit_equivalent
+    explain:
+      en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
+      fr: 'Ce prix est ce que vous déduisez pour vos trajets en voiture, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Dieser Preis ist, was du für die Fahrten mit dem Fahrzeug abziehst, bei beiden Steuern, je bis zu ihrem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=30'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 30: travel costs, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 30 : frais de déplacement, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 30: Fahrkosten'
+
+  # bs-2025-guide-wegleitung p. 30; form B (km a day x days = km a year, at a rate per km).
+  - use: commute_distance
+    explain:
+      en: 'When public transport can’t be used, both taxes count a fixed amount per kilometre, there and back once a day, each up to its own yearly limit.'
+      fr: 'Si les transports publics ne peuvent pas être utilisés, les deux impôts comptent un montant fixe par kilomètre, aller et retour une fois par jour, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Wenn der öffentliche Verkehr nicht zumutbar ist, zählen beide Steuern einen festen Betrag pro Kilometer, einmal pro Tag hin und zurück, je bis zu ihrem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/630cae1c108bb2f52c9d0b4e45506b4f22e695d5/15020-fw-np-ste-25-02-berufskosten-ansichtsexemplar.pdf#page=1'
+      label:
+        en: 'Form B, professional costs (Berufskosten), in German'
+        fr: 'Formulaire B, frais professionnels (Berufskosten), en allemand'
+        de: 'Formular B, Berufskosten'
+
+  # bs-2025-guide-wegleitung p. 31 (220 working days a year at most).
+  - use: commute_drive_days
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=31'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 31: working days, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 31 : jours de travail, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 31: Arbeitstage'
+    help:
+      en: 'Leave out holidays, sick days and days worked from home. Basel-Stadt counts at most 220 working days a year.'
+      fr: 'Sans les vacances, les jours de maladie et les jours de télétravail. Bâle-Ville compte au plus 220 jours de travail par an.'
+      de: 'Ohne Ferien, Krankheitstage und Tage im Homeoffice. Basel-Stadt zählt höchstens 220 Arbeitstage im Jahr.'
+
+  # Meals away from home (Mehrkosten für auswärtige Verpflegung, form B 504/524), for both taxes: a
+  # fixed amount per day, half of it with a canteen or meal vouchers (bs-2025-guide-wegleitung p. 31).
+  - use: meal_days
+    explain:
+      en: 'Lunch away from home because of work costs more than at home (Mehrkosten für auswärtige Verpflegung). A fixed amount per day counts for both taxes, each up to its own yearly limit, half of it when your employer makes your meals cheaper (a canteen, meal vouchers).'
+      fr: 'Le repas de midi pris hors du domicile à cause du travail coûte plus cher qu’à la maison (Mehrkosten für auswärtige Verpflegung). Un montant fixe par jour compte pour les deux impôts, chacun jusqu’à sa propre limite annuelle, la moitié si votre employeur réduit le prix de vos repas (cantine, bons de repas).'
+      de: 'Das Mittagessen auswärts wegen der Arbeit kostet mehr als zu Hause (Mehrkosten für auswärtige Verpflegung). Ein fester Betrag pro Tag zählt bei beiden Steuern, je bis zu ihrem eigenen jährlichen Höchstbetrag, die Hälfte, wenn dein Arbeitgeber die Mahlzeiten verbilligt (Kantine, Lunch-Checks).'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=31'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 31: meals away from home, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 31 : repas hors du domicile, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 31: Mehrkosten für auswärtige Verpflegung'
+    help:
+      en: 'Count the work days you couldn’t eat lunch at home; 0 if you usually did.'
+      fr: 'Comptez les jours de travail où vous ne pouviez pas manger à la maison à midi ; 0 si vous le pouviez en général.'
+      de: 'Zähl die Arbeitstage, an denen du mittags nicht zu Hause essen konntest; 0, wenn du es meistens konntest.'
+
+  # Accounts and securities (Guthaben und Wertschriften, form W, line 800; their income, line 369):
+  # bs-2025-guide-wegleitung p. 24 and p. 40. Basel-Stadt taxes them at their market value or, when
+  # lower, the mean of the market value and the income capitalised (form W, lines 11 to 16).
+  - use: banks
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=40'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 40: accounts and securities, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 40 : avoirs et titres, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 40: Guthaben und Wertschriften'
+    help:
+      en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers. In Basel-Stadt the income of each account matters even when it is zero: ask for the e-tax statement (eSteuerauszug) if your bank offers it. On form W: Wertschriftenverzeichnis.'
+      fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers. À Bâle-Ville, le rendement de chaque compte compte même s’il est nul : demandez le relevé fiscal électronique (eSteuerauszug) si votre banque le propose. Sur le formulaire W : Wertschriftenverzeichnis (état des titres).'
+      de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker. In Basel-Stadt zählt der Ertrag jedes Kontos, auch wenn er null ist: Verlang den eSteuerauszug, wenn deine Bank ihn anbietet. Auf dem Formular W: Wertschriftenverzeichnis.'
+
+  # Crypto (bs-2025-other-krypto-merkblatt; bs-2025-guide-wegleitung p. 40: in form W, at the
+  # price at the end of the year).
+  - use: crypto
+    learnMore:
+      url: 'https://media.bs.ch/original_file/8c06838fade72c9930ac1c73967eca9ad0e70707/18023-mb-np-kryptowaehrungen-cd-bf.pdf'
+      label:
+        en: 'Taxation of cryptocurrencies in Basel-Stadt, in German'
+        fr: 'Imposition des cryptomonnaies à Bâle-Ville, en allemand'
+        de: 'Besteuerung von Kryptowährungen (Merkblatt)'
+    help:
+      en: 'They go in the securities list (Wertschriftenverzeichnis, form W), at their price on 31 December.'
+      fr: 'Elles vont dans l’état des titres (Wertschriftenverzeichnis, formulaire W), à leur cours au 31 décembre.'
+      de: 'Sie gehören ins Wertschriftenverzeichnis (Formular W), zum Kurs am 31. Dezember.'
+
+  # Medical costs (725, form K: bs-2025-guide-wegleitung p. 37), donations (732, form Z: p. 38),
+  # payments to political parties (680, form Z: p. 36), debt interest (550: p. 32), alimony and
+  # child support paid (560, 561: p. 32).
+  - use: payments
+    explain:
+      en: 'Each of these can lower your tax if you keep the proof. In Basel-Stadt, payments to political parties are a deduction of their own (line 680), apart from donations to charities (line 732).'
+      fr: 'Chacun de ces frais peut diminuer votre impôt si vous en gardez la preuve. À Bâle-Ville, les versements aux partis politiques sont une déduction à part (ligne 680), distincte des dons aux œuvres (ligne 732).'
+      de: 'Jeder dieser Posten kann deine Steuer senken, wenn du einen Beleg hast. In Basel-Stadt sind Beiträge an politische Parteien ein eigener Abzug (Ziffer 680), getrennt von den Zuwendungen (Ziffer 732).'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=37'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 37: illness costs, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 37 : frais de maladie, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 37: Krankheits-, Unfall- und Behinderungskosten'
+    options:
+      - value: medical_costs
+        label:
+          {
+            en: 'Medical or dental costs that insurance didn’t cover',
+            fr: 'Des frais médicaux ou dentaires non remboursés',
+            de: 'Arzt- oder Zahnarztkosten, die die Versicherung nicht bezahlt hat',
+          }
+        chip: { en: 'Medical costs', fr: 'Frais médicaux', de: 'Krankheitskosten' }
+      - value: donations
+        label:
+          {
+            en: 'Donations to charities in Switzerland',
+            fr: 'Des dons à des œuvres d’utilité publique en Suisse',
+            de: 'Zuwendungen an gemeinnützige Institutionen in der Schweiz',
+          }
+        chip: { en: 'Donations', fr: 'Dons', de: 'Zuwendungen' }
+      - value: political_party
+        label:
+          {
+            en: 'Membership fees or donations to political parties',
+            fr: 'Des cotisations ou des dons à des partis politiques',
+            de: 'Beiträge oder Zuwendungen an politische Parteien',
+          }
+        chip: { en: 'Political party', fr: 'Parti politique', de: 'Politische Partei' }
+      - value: loan_interest
+        label:
+          {
+            en: 'Interest on a loan, such as a consumer or car loan',
+            fr: 'Des intérêts d’un emprunt, par exemple un crédit à la consommation ou auto',
+            de: 'Zinsen für einen Kredit, etwa einen Konsum- oder Autokredit',
+          }
+        chip: { en: 'Loan interest', fr: 'Intérêts d’emprunt', de: 'Schuldzinsen' }
+      - value: alimony_paid
+        label:
+          {
+            en: 'Alimony or child support',
+            fr: 'Une pension alimentaire ou une contribution d’entretien',
+            de: 'Unterhaltsbeiträge',
+          }
+        chip: { en: 'Pays alimony', fr: 'Verse une pension', de: 'Zahlt Unterhalt' }
+
+  # Line 680, Beiträge an politische Parteien, and form Z (bs-2025-guide-wegleitung p. 36;
+  # bs-2025-form-kzf-krankheit-zuwendung-betreuung p. 2): one limit for the whole return, for the
+  # cantonal tax and for the federal tax.
+  - id: party
+    key: bs.party
+    type: money
+    when: { key: profile.payments, includes: political_party }
+    explain:
+      en: 'Membership fees, mandate levies and donations to political parties (Beiträge an politische Parteien) are deducted up to a limit for the whole return, for the cantonal and for the federal tax.'
+      fr: 'Les cotisations, contributions de mandat et dons aux partis politiques (Beiträge an politische Parteien) sont déduits jusqu’à une limite pour toute la déclaration, pour l’impôt cantonal et pour l’impôt fédéral.'
+      de: 'Mitgliederbeiträge, Mandatsabgaben, Parteisteuern und Zuwendungen an politische Parteien werden bis zu einem Höchstbetrag pro Steuererklärung abgezogen, bei der Kantons- und bei der Bundessteuer.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=36'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 36: political parties, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 36 : partis politiques, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 36: Beiträge an politische Parteien'
+    text:
+      en: 'How much did you pay to political parties in 2026, in membership fees and donations?'
+      fr: 'Combien avez-vous versé à des partis politiques en 2026, en cotisations et en dons ?'
+      de: 'Wie viel hast du 2026 an politische Parteien bezahlt, als Beiträge und Zuwendungen?'
+    help:
+      en: 'In CHF, together for your household, 0 if none. On form Z: Beiträge an politische Parteien.'
+      fr: 'En CHF, pour votre ménage ensemble, 0 si rien. Sur le formulaire Z : Beiträge an politische Parteien.'
+      de: 'In CHF, für deinen Haushalt zusammen, 0, wenn nichts. Auf dem Formular Z: Beiträge an politische Parteien.'
+
+  # What Taxpresso can't prepare for Basel-Stadt yet: property (form L, Liegenschaftenverzeichnis;
+  # line 479), inheritances and gifts (form W, page 1; form E), income from abroad, capital
+  # payments (Kapitalleistungen aus Vorsorge, page 1, section 4). BalTax Online is the canton's
+  # official software (bs-2025-efiling-baltax-tipps p. 1).
+  - use: special
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=28'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 28: property, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 28 : immeubles, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 28: Liegenschaften'
+    options:
+      - value: real_estate
+        label:
+          {
+            en: 'I own real estate, in Switzerland or abroad',
+            fr: 'Je possède un bien immobilier, en Suisse ou à l’étranger',
+            de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+          }
+        notSupported:
+          {
+            en: 'Real estate (Formular L, Liegenschaftenverzeichnis)',
+            fr: 'Les immeubles (Formular L, Liegenschaftenverzeichnis)',
+            de: 'Liegenschaften (Formular L, Liegenschaftenverzeichnis)',
+          }
+      - value: inheritance_or_gift
+        label:
+          {
+            en: 'I received an inheritance or a large gift',
+            fr: 'J’ai reçu un héritage ou une donation importante',
+            de: 'Ich habe eine Erbschaft oder eine grössere Schenkung erhalten',
+          }
+        notSupported:
+          {
+            en: 'An inheritance or a gift (Schenkung, Erbschaft)',
+            fr: 'Un héritage ou une donation (Schenkung, Erbschaft)',
+            de: 'Eine Erbschaft oder eine Schenkung',
+          }
+      - value: foreign_income
+        label:
+          {
+            en: 'I had income from abroad (salary, pension, rent)',
+            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+            de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+          }
+        notSupported:
+          {
+            en: 'Income from abroad',
+            fr: 'Les revenus de l’étranger',
+            de: 'Einkünfte aus dem Ausland',
+          }
+      - value: pension_capital
+        label:
+          {
+            en: 'I withdrew pension capital (2nd or 3rd pillar)',
+            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
+            de: 'Ich habe Vorsorgekapital bezogen (2. oder 3. Säule)',
+          }
+        notSupported:
+          {
+            en: 'A pension capital withdrawal (Kapitalleistung aus Vorsorge)',
+            fr: 'Un retrait de capital de prévoyance (Kapitalleistung aus Vorsorge)',
+            de: 'Eine Kapitalleistung aus Vorsorge',
+          }
+
+# The documents, with the page of the Basel-Stadt guide (bs-2025-guide-wegleitung).
+requirements:
+  - use: salary_certificate
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=19'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 19: employment income, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 19 : revenus d’activité, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 19: Haupterwerb'
+    source: 'bs-2025-guide-wegleitung p. 19'
+
+  - use: replacement_income
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=23'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 23: benefits, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 23 : indemnités, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Erwerbsausfallentschädigungen'
+    source: 'bs-2025-guide-wegleitung p. 23'
+
+  - use: pension
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=22'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 22: pensions, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 22 : rentes, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 22: Renten'
+    source: 'bs-2025-guide-wegleitung p. 22'
+
+  - use: pillar3a
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=33'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 33: pillar 3a, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 33 : pilier 3a, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 33: Säule 3a'
+    source: 'bs-2025-guide-wegleitung p. 33'
+
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=33'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 33: pension fund buy-ins, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 33 : rachats de prévoyance, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 33: Berufliche Vorsorge'
+    source: 'bs-2025-guide-wegleitung p. 33'
+
+  # Basel-Stadt's cantonal deduction for insurance premiums is a flat amount whatever was paid
+  # (bs-2025-guide-wegleitung p. 35); the federal one is what was paid, up to a limit: the
+  # attestation counts for the federal tax.
+  - use: health_premiums
+    explain:
+      en: 'Your health insurer’s yearly statement of premiums paid, basic and supplementary. Basel-Stadt gives a flat amount for the cantonal tax whatever you paid; the federal tax counts what you paid, up to a limit.'
+      fr: 'Le relevé annuel des primes payées de votre assureur maladie, de base et complémentaires. Bâle-Ville accorde un forfait pour l’impôt cantonal quel que soit le montant payé ; l’impôt fédéral compte ce que vous avez payé, jusqu’à une limite.'
+      de: 'Die jährliche Prämienbescheinigung deiner Krankenkasse, Grund- und Zusatzversicherung. Basel-Stadt gibt bei der Kantonssteuer eine Pauschale, egal was du bezahlt hast; die Bundessteuer zählt, was du bezahlt hast, bis zu einem Höchstbetrag.'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=35'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 35: insurance premiums, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 35 : primes d’assurance, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 35: Versicherungsprämien'
+    source: 'bs-2025-guide-wegleitung p. 35'
+
+  - use: banks
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=40'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 40: accounts and securities, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 40 : avoirs et titres, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 40: Guthaben und Wertschriften'
+    source: 'bs-2025-guide-wegleitung p. 24, p. 40'
+
+  - use: crypto
+    learnMore:
+      url: 'https://media.bs.ch/original_file/8c06838fade72c9930ac1c73967eca9ad0e70707/18023-mb-np-kryptowaehrungen-cd-bf.pdf'
+      label:
+        en: 'Taxation of cryptocurrencies in Basel-Stadt, in German'
+        fr: 'Imposition des cryptomonnaies à Bâle-Ville, en allemand'
+        de: 'Besteuerung von Kryptowährungen (Merkblatt)'
+    source: 'bs-2025-other-krypto-merkblatt p. 1; bs-2025-guide-wegleitung p. 40'
+
+  - use: childcare
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=36'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 36: childcare, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 36 : frais de garde, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 36: Abzug für fremdbetreute Kinder'
+    source: 'bs-2025-guide-wegleitung p. 36; bs-2025-form-kzf-krankheit-zuwendung-betreuung p. 2'
+
+  - use: medical
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=37'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 37: illness and accident costs, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 37 : frais de maladie et d’accident, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 37: Krankheits-, Unfall- und Behinderungskosten'
+    source: 'bs-2025-guide-wegleitung p. 37; bs-2025-form-kzf-krankheit-zuwendung-betreuung p. 1'
+
+  # Donations (732, form Z) and payments to political parties (680, form Z) are separate answers in
+  # Basel-Stadt; the receipts of both are donation receipts.
+  - use: donations
+    when: { key: profile.payments, includesAny: [donations, political_party] }
+    explain:
+      en: 'Receipts from the charities or political parties you gave to (form Z).'
+      fr: 'Les reçus des œuvres ou des partis politiques à qui vous avez donné (formulaire Z).'
+      de: 'Belege der Institutionen oder Parteien, denen du gespendet hast (Formular Z).'
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=38'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 38: donations, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 38 : dons, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 38: Zuwendungen'
+    source: 'bs-2025-guide-wegleitung p. 36, p. 38; bs-2025-form-kzf-krankheit-zuwendung-betreuung p. 2'
+
+  - use: loan_interest
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=32'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 32: debt interest, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 32 : intérêts de dettes, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Schuldzinsen'
+    source: 'bs-2025-guide-wegleitung p. 32; bs-2025-form-s-schuldenverzeichnis p. 1'
+
+  - use: alimony
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=32'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 32: alimony and child support paid, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 32 : pensions et contributions versées, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Unterhaltsbeiträge'
+    source: 'bs-2025-guide-wegleitung p. 23, p. 32'
+
+  - use: separation_judgment
+    learnMore:
+      url: 'https://media.bs.ch/original_file/909f72222b7511334f4dc4d1b9aeb74a9f5cc54c/15500-fw-np-ste-25-05-wegleitung-bf-1.pdf#page=7'
+      label:
+        en: 'Basel-Stadt tax guide 2025, p. 7: taxing the family, in German'
+        fr: 'Guide fiscal de Bâle-Ville 2025, p. 7 : imposition de la famille, en allemand'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 7: Familienbesteuerung'
+    source: 'bs-2025-guide-wegleitung p. 7'

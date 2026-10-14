@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@taxpresso/rules-be": "workspace:*",
+    "@taxpresso/rules-bs": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",
     "@taxpresso/rules-zh": "workspace:*",

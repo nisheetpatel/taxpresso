@@ -9,11 +9,13 @@ import {
   type FormMap,
 } from '@taxpresso/filing-ge';
 import { filing as bernFiling } from '@taxpresso/filing-be';
+import { filing as baselFiling } from '@taxpresso/filing-bs';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
 import {
   beQuestionnaire2026,
+  bsQuestionnaire2026,
   geQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
@@ -67,6 +69,17 @@ import {
   type BernCantonal,
   type BeTaxResult,
 } from '@taxpresso/rules-be';
+import {
+  BASEL_READING,
+  BS_TERMS,
+  bsParamsFor,
+  communeOptions as baselCommunes,
+  NOTE_VALUABLES as BASEL_VALUABLES,
+  rules as baselRules,
+  view as baselView,
+  type BaselCantonal,
+  type BsTaxResult,
+} from '@taxpresso/rules-bs';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -112,6 +125,8 @@ export interface CantonEntry {
   communes(taxYear: number): { slug: string; name: string }[];
   /** For Claude, after "Answer: the name of the commune": what else the answer needs. */
   communeHint?: string;
+  /** Pages of its form to name as examples (get_form_values), as the copy panel ids them. */
+  formPages: readonly string[];
   /**
    * For a return started before Taxpresso asked for the canton: the answers that only this canton
    * asks, in words, when there are some (then the return is taken as this canton's).
@@ -182,6 +197,7 @@ const GENEVA: CantonEntry = {
   code: 'GE',
   name: { en: 'Geneva', fr: 'Genève', de: 'Genf' },
   software: 'GeTax',
+  formPages: ['PG1', 'A1', 'C3'],
   rules: genevaRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? geQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...genevaRules.keys(taxYear) }),
@@ -214,6 +230,7 @@ const ZURICH: CantonEntry = {
   code: 'ZH',
   name: { en: 'Zurich', fr: 'Zurich', de: 'Zürich' },
   software: 'ZHprivateTax',
+  formPages: ['S2', 'BA1', 'VP'],
   rules: zurichRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? zhQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zurichRules.keys(taxYear) }),
@@ -250,6 +267,7 @@ const BERN: CantonEntry = {
   code: 'BE',
   name: { en: 'Bern', fr: 'Berne', de: 'Bern' },
   software: 'TaxMe-Online',
+  formPages: ['F2', 'F6', 'ZK'],
   rules: bernRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? beQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...bernRules.keys(taxYear) }),
@@ -282,11 +300,80 @@ const BERN: CantonEntry = {
   tou: false,
 };
 
+const BASEL: CantonEntry = {
+  code: 'BS',
+  name: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' },
+  // The canton's official software, in the eSteuern.BS portal (bs-2025-efiling-baltax-tipps p. 1).
+  software: 'BalTax Online',
+  formPages: ['H3', 'B1', 'W'],
+  rules: baselRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? bsQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...baselRules.keys(taxYear) }),
+  communes: (taxYear) => baselCommunes(taxYear),
+  // Line 835 takes cash, precious metals and other assets together; a vehicle of daily use is
+  // tax-free there, which the shared reading can't tell: the note says so.
+  ...sharedLedger(BASEL_READING, baselRules, BASEL_VALUABLES),
+  view: baselView,
+  filing: baselFiling,
+  terms: BS_TERMS,
+  plan: {
+    computeReturn: (input) => baselRules.computeReturn(input as HouseholdInput<BaselCantonal>),
+    incomeTax: (r) => baselView.incomeTax(r as BsTaxResult),
+    // The city of Basel, by its name (no document gives Basel-Stadt's federal commune numbers).
+    defaultCommune: 'Basel',
+    communeName: { en: 'City of Basel', fr: 'Ville de Bâle', de: 'Stadt Basel' },
+    sources(taxYear) {
+      // The documents a Basel-Stadt household's income tax rests on, for the year.
+      const P = bsParamsFor(taxYear);
+      return [
+        P.income.B.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'bs_preview', communeDefault: 'bs_commune_default' },
+    // Basel-Stadt's rule for a 3a catch-up from 2026 (bs-2026-guide-wegleitung-b p. 34).
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
   BE: BERN,
+  BS: BASEL,
 };
+
+const JOIN = {
+  and: { en: 'and', fr: 'et', de: 'und' },
+  or: { en: 'or', fr: 'ou', de: 'oder' },
+} as const;
+
+/** Cantons in words, from the registry: "Geneva, Zurich and Bern" (`or`: "... or Bern"). */
+export function cantonNames(
+  codes: readonly SupportedCanton[] = SUPPORTED_CANTONS,
+  lang: 'en' | 'fr' | 'de' = 'en',
+  join: keyof typeof JOIN = 'and',
+): string {
+  const names = codes.map((c) => CANTONS[c].name[lang]);
+  return names.length > 1
+    ? `${names.slice(0, -1).join(', ')} ${JOIN[join][lang]} ${names.at(-1)}`
+    : names.join('');
+}
+
+/** What Taxpresso prepares, for the tool texts: "Geneva, or Zurich and Bern as a preview". */
+export function cantonScope(): string {
+  const full = SUPPORTED_CANTONS.filter((c) => !CANTONS[c].view.preview);
+  const preview = SUPPORTED_CANTONS.filter((c) => CANTONS[c].view.preview);
+  return preview.length
+    ? `${cantonNames(full)}, or ${cantonNames(preview)} as a preview`
+    : cantonNames(full);
+}
+
+/** The cantons whose questions and results have German texts (their forms are German). */
+export const germanCantons = (): SupportedCanton[] =>
+  SUPPORTED_CANTONS.filter((c) => CANTONS[c].view.german);
 
 /** The canton of the year being prepared, and how Taxpresso knows it. */
 export interface CantonState {
