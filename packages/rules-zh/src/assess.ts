@@ -13,7 +13,7 @@
 // Gemeindesteuer times the commune's, the Kirchensteuer (on request) times the church's, each a
 // percentage of the same simple tax; the Personalsteuer is a fixed amount per adult.
 import { chf, pct, roundCentime, Trace } from './calc.js';
-import type { Cited } from './cited.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import { pick } from './communes.js';
 import { churchSplit, multipliers, personalTax } from './law.js';
 import { zhParamsFor, type ZhTaxYear } from './params.js';

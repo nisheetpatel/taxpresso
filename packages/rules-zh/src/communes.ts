@@ -3,7 +3,7 @@
 // its BFS number. Some communes have parts with different multipliers (school districts, church
 // parishes): the table then gives two or three values, without naming the parts, and the engine
 // computes only once it is told which applies.
-import type { Cited } from './cited.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import { zhParamsFor } from './params.js';
 
 export interface CommuneRates {

@@ -1,6 +1,6 @@
 // Rules of the Zurich Steuergesetz whose amounts are in the law itself, not indexed: the same
 // text in the versions in force on 1 January 2025 and 1 April 2026 (same paragraphs, same pages).
-import type { Cited } from './cited.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { ZhTaxYear } from './params.js';
 
 const LAW: Record<ZhTaxYear, string> = {

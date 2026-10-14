@@ -382,6 +382,10 @@ importers:
         version: 6.0.3
 
   packages/rules-zh:
+    dependencies:
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

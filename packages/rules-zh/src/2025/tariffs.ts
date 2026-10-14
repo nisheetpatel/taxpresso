@@ -3,7 +3,7 @@
 // Nachtrag 127), as set by the cold-progression ordinance from 1 January 2024 (zh-2025-tariff-
 // kalte-progression-ab-2024, StG footnote 109); both print the same figures. The wealth tariff's
 // first step at 0 ‰ is Zurich's tax-free amount of wealth: there is no other wealth deduction.
-import type { Cited } from '../cited.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { StepTariff } from '../tariff.js';
 
 const LAW = 'zh-2025-law-steuergesetz-631-1-stand-2025';

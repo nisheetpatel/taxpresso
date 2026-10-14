@@ -3,21 +3,16 @@
 // or the rule as the document states it. Shares are rounded to the nearest franc (./calc.ts).
 import { roundFranc, shareFranc } from './calc.js';
 
+/**
+ * Meals away from home (per working day, at most per year, the reduced rate with a canteen) and
+ * medical costs above a share of the Nettoeinkommen (line 310): the same rules as every canton's,
+ * packages/rules-ch (core/rules.ts).
+ */
+export { mealsDeduction, medicalDeduction } from '@taxpresso/rules-ch';
+
 /** A share of an amount, to the franc, between a minimum and a maximum (3 % flat, 20 % side job). */
 export function flatShare(amount: number, p: { rateBp: number; min: number; max: number }): number {
   return Math.min(p.max, Math.max(p.min, shareFranc(Math.max(0, amount), p.rateBp)));
-}
-
-/** Meals away from home: per working day, at most per year; the reduced rate with a canteen. */
-export function mealsDeduction(
-  days: number,
-  canteen: boolean,
-  p: { perDay: number; perYear: number; halfPerDay: number; halfPerYear: number },
-): number {
-  if (days <= 0) return 0;
-  return canteen
-    ? Math.min(days * p.halfPerDay, p.halfPerYear)
-    : Math.min(days * p.perDay, p.perYear);
 }
 
 /** Driving to work when public transport can't be used: there and back each day, per km. */
@@ -59,12 +54,6 @@ export function pillar3aCap(
  */
 export function twoEarner(lowerEarned: number, max: number): number {
   return lowerEarned <= 0 ? 0 : Math.min(max, lowerEarned);
-}
-
-/** Medical costs above a share of the Nettoeinkommen (line 310). */
-export function medicalDeduction(costs: number, base310: number, thresholdBp: number) {
-  const threshold = shareFranc(Math.max(0, base310), thresholdBp);
-  return { threshold, deduction: Math.max(0, costs - threshold) };
 }
 
 /** Donations: none under the minimum in the year, at most a share of the Nettoeinkommen (310). */
