@@ -563,3 +563,87 @@ describe('fail closed', () => {
     expect(() => computeReturn({ ...base, taxYear: 2024 as 2025 })).toThrow(/not supported/);
   });
 });
+
+describe('what the extension gives as the ledger has it', () => {
+  // A single parent in Lausanne, 2025, two children under 14, both living with her, a household
+  // alone with them (part 1.3 + 2 x 0.5); one salary.
+  const base: VdEngineInput = {
+    taxYear: 2025,
+    commune: 'Lausanne',
+    civilStatus: 'divorced',
+    ownHousehold: true,
+    rent: amt(12_000),
+    people: [
+      {
+        id: 'p1',
+        employments: [{ gross: amt(90_000), socialContributions: amt(5_760) }],
+      },
+    ],
+    children: [{ custody: 'full' }, { custody: 'full' }],
+  };
+
+  it('childcare for the household: a child’s when within any child’s limit (code 670)', () => {
+    const r = computeReturn({ ...base, household: { childcare: amt(9_000) } });
+    expect(r.unsupported).toEqual([]);
+    expect(find(r, '670')).toBe(chf(-9_000));
+    const one = computeReturn({
+      ...base,
+      children: [{ custody: 'full' }],
+      household: { childcare: amt(20_000) },
+    });
+    // One child: that child's, at most its limit (15,200 in 2025, vd-2025-guide p. 44).
+    expect(find(one, '670')).toBe(chf(-15_200));
+  });
+
+  it('childcare for the household above one child’s limit, several children: not computed', () => {
+    const r = computeReturn({ ...base, household: { childcare: amt(20_000) } });
+    expect(r.icc).toBeNull();
+    expect(r.unsupported).toEqual([NOTE.childcareSplit]);
+    // Given per child, it is.
+    const split = computeReturn({
+      ...base,
+      children: [
+        { custody: 'full', childcare: amt(12_000) },
+        { custody: 'full', childcare: amt(8_000) },
+      ],
+    });
+    expect(find(split, '670')).toBe(chf(-20_000));
+    expect(() =>
+      computeReturn({
+        ...base,
+        children: [{ custody: 'full', childcare: amt(1_000) }, { custody: 'full' }],
+        household: { childcare: amt(1_000) },
+      }),
+    ).toThrow(VdInputError);
+  });
+
+  it('childcare for the household with no child under 14: not counted, and said', () => {
+    const r = computeReturn({
+      ...base,
+      children: [
+        { custody: 'full', under14: false },
+        { custody: 'full', under14: false },
+      ],
+      household: { childcare: amt(5_000) },
+    });
+    expect(find(r, '670')).toBe(0);
+    expect(r.notCounted).toContainEqual(NOTE.childcareNoChild);
+  });
+
+  it('savings interest above the income of code 410: at most that income, and said (p. 40)', () => {
+    const r = computeReturn({
+      ...base,
+      household: { savingsInterest: amt(300) },
+      movable: [{ owner: 'p1', value: amt(20_000), income: amt(100) }],
+    });
+    expect(find(r, '480')).toBe(chf(-100));
+    expect(r.notCounted).toContainEqual(NOTE.savingsAbove410);
+  });
+
+  it('household contents said to be within the deduction: nothing declared, nothing assumed', () => {
+    const within = computeReturn({ ...base, furnitureWithin: true });
+    expect(wealth(within, '440')).toBe(0);
+    expect(within.assumptions).not.toContainEqual(NOTE.furnitureNotGiven);
+    expect(computeReturn(base).assumptions).toContainEqual(NOTE.furnitureNotGiven);
+  });
+});

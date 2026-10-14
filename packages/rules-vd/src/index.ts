@@ -92,7 +92,12 @@ export { rules, vaudInput, type VaudCantonal } from './canton.js';
 export { FEDERAL_NOTE, federalReturn, federalTotals } from './ifd.js';
 // The ledger read into Vaud's household input, Vaud's keys and the communes and parts its
 // questionnaire offers.
-export { VAUD_READING, vaudInputFromFacts, type VaudLedgerInput } from './from-ledger.js';
+export {
+  NOTE_VALUABLES,
+  VAUD_READING,
+  vaudInputFromFacts,
+  type VaudLedgerInput,
+} from './from-ledger.js';
 export {
   communeOfAnswer,
   communeOptions,

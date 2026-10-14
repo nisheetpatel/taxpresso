@@ -19,9 +19,19 @@ import { communeByName } from './communes.js';
 import { communeOfAnswer, partOfAnswer } from './keys.js';
 import { isVdTaxYear } from './params.js';
 
+const NB = '\u00a0';
 const t = (en: string, fr: string): Text => ({ en, fr });
 
 export type VaudLedgerInput = CantonLedgerInput<VaudCantonal>;
+
+/**
+ * Cash, precious metals and vehicles the user described come together, as other movable wealth:
+ * the Vaud return has its own lines for them (420, 430, form page 3), the taxable wealth is the same.
+ */
+export const NOTE_VALUABLES: Text = t(
+  'Cash, precious metals and vehicles you described are taken together on line 445 (Autre fortune); the form also has 420 for cash, gold, precious metals and crypto-assets and 430 for vehicles: the taxable wealth is the same.',
+  `Les espèces, métaux précieux et véhicules décrits sont pris ensemble à la ligne 445 (Autre fortune)${NB}; le formulaire a aussi 420 pour le numéraire, l’or, les autres métaux précieux et les crypto-monnaies et 430 pour les véhicules${NB}: la fortune imposable est la même.`,
+);
 
 /** Vaud's reading of the ledger: its communes and lines, and its own answers. */
 export const VAUD_READING: CantonLedgerReading<VaudCantonal> = {
