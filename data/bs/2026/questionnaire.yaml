@@ -600,6 +600,10 @@ questions:
       de: 'Eine ganze Zahl, 100 für Vollzeit. Bei mehreren Stellen zusammenzählen, höchstens 100. Auf dem Formular B: Beschäftigungsgrad / Pensum in Prozent.'
       it: 'Un numero intero, 100 per un tempo pieno. Con più impieghi, sommali, al massimo 100. Sul modulo B: Beschäftigungsgrad / Pensum in Prozent.'
 
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
+
   # Tax at source (Quellensteuer): an ordinary return only when the canton orders one or the person
   # asks for it by 31 March of the next year (nachträgliche ordentliche Veranlagung, NOV):
   # bs-2026-source-tax-wegleitung p. 5 and 11; bs-2025-guide-wegleitung p. 5. Not covered by

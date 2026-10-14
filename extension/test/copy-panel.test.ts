@@ -181,7 +181,13 @@ describe('the copy panel in the dashboard', () => {
   });
 
   it('shows English glosses next to the official French labels', async () => {
-    const { api } = await setUp();
+    const { ws, api } = await setUp();
+    // In October nobody fills in the form yet: no note on which year's form the codes come from
+    // (docs/design/simple.md). From January, when the form is filled in, the note is there.
+    ws.config.today = () => '2026-10-14';
+    const october = (await api(req('GET', '/state', {}, 'en'))).body as DashboardState;
+    expect(october.copyPanel.note).toBeUndefined();
+    ws.config.today = () => '2027-01-10';
     const s = (await api(req('GET', '/state', {}, 'en'))).body as DashboardState;
     expect(rowsOf(s).find((r) => r.ref === '31.10')).toMatchObject({
       label: 'Cotisations AVS/AI, APG, Chômage, AANP, Amat',

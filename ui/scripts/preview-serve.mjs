@@ -44,6 +44,7 @@ await client.connect(
 
 if (args.demo) {
   for (const [id, value] of [
+    ['canton', 'GE'],
     ['civil_status', 'single'],
     ['children', 0],
     ['commune', 'meyrin'],

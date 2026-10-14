@@ -23,4 +23,9 @@ export interface Transport {
   send(req: ApiRequest): Promise<unknown>;
   /** True inside the conversation (the MCP Apps view), where documents are not added. */
   embedded?: boolean;
+  /**
+   * Hands a request to Claude as the user's message in the chat, when the host can (the MCP Apps
+   * view). True when sent. The page itself never calls a model (SPEC.md C1).
+   */
+  ask?(text: string): Promise<boolean>;
 }

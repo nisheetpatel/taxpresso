@@ -61,19 +61,48 @@ export function ExportCard({
   lang,
   busy,
   act,
+  compact = false,
 }: {
   state: State & { folderExport?: FolderExportState };
   lang: Language;
   busy: string;
   act: Act;
+  /** In the footer: one line that opens (docs/design/simple.md). */
+  compact?: boolean;
 }): JSX.Element | null {
   // Nothing to copy before the year's folder exists.
   if (!state.vault.exists || state.vault.problem) return null;
-  const last = state.folderExport?.last;
-  const saving = busy === tx(lang, 'saving');
+  if (compact) {
+    return (
+      <details class="foot-activity" open={state.folderExport?.last !== undefined}>
+        <summary>{tx(lang, 'title')}</summary>
+        <ExportBody state={state} lang={lang} busy={busy} act={act} />
+      </details>
+    );
+  }
   return (
     <section class="card side-card" aria-labelledby="ex-title">
       <h2 id="ex-title">{tx(lang, 'title')}</h2>
+      <ExportBody state={state} lang={lang} busy={busy} act={act} />
+    </section>
+  );
+}
+
+function ExportBody({
+  state,
+  lang,
+  busy,
+  act,
+}: {
+  state: State & { folderExport?: FolderExportState };
+  lang: Language;
+  busy: string;
+  act: Act;
+}): JSX.Element {
+  const last = state.folderExport?.last;
+  const saving = busy === tx(lang, 'saving');
+  return (
+    <>
       <p class="muted">{tx(lang, 'lead', { year: state.taxYear })}</p>
       <button
         type="button"
@@ -93,6 +122,6 @@ export function ExportCard({
           <span class="muted">{tx(lang, 'private')}</span>
         </p>
       ) : null}
-    </section>
+    </>
   );
 }

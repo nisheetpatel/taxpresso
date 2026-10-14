@@ -1,6 +1,6 @@
 // Pension fund buy-in, 3a catch-up and TOU through the dashboard API and the MCP tools, with the
 // decision stored in decisions.json. Synthetic household: Ana Ribeiro, Meyrin, single parent with
-// one child, taxed at source, considering TOU (SPEC.md section 13, item 9).
+// one child, a B permit: taxed at source, worked out from that (SPEC.md section 13, item 9).
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
@@ -34,8 +34,11 @@ const RIBEIRO: [string, unknown][] = [
   ['moved', 'no'],
   ['income_sources:p1', ['salary']],
   ['employers:p1', 1],
-  ['taxed_at_source:p1', true],
-  ['tou:p1', 'considering'],
+  // The plain fact; taxed at source follows from it (LISP art. 1, LIFD art. 83).
+  ['residence:p1', 'permit_other'],
+  ['employer_in_switzerland:p1', true],
+  ['tou:p1', 'no'],
+  ['lives_with_other_parent', false],
 ];
 
 async function ribeiro(ws: Workspace) {
@@ -109,13 +112,16 @@ describe('TOU in the dashboard', () => {
   it('records nothing without the comparison, when compulsory, or after the deadline', async () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
-    const noFigure = await planning(api, '/decide', {
+    // Whether TOU is compulsory isn't known yet: nothing to decide before that.
+    const unknown = await planning(api, '/decide', {
       id: 'tou',
       choice: 'decline',
       confirmed: false,
     });
-    expect(noFigure.status).toBe(400);
-    expect((noFigure.state as unknown as { error: string }).error).toMatch(/comparison first/);
+    expect(unknown.status).toBe(400);
+    expect((unknown.state as unknown as { error: string }).error).toMatch(
+      /needs to know first whether TOU is compulsory/,
+    );
 
     await planning(api, '/planning', { field: 'withheld', value: 30_000 });
     await api(req('POST', '/plan', { person: 'p1', field: 'gross', value: 130_000 }));
@@ -130,15 +136,39 @@ describe('TOU in the dashboard', () => {
     expect(compulsory.status).toBe(400);
   });
 
-  it('estimates the tax withheld from the payslip tariff, and refuses unknown tariffs', async () => {
+  it('estimates the tax withheld with the barème it works out, a payslip’s winning', async () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
-    let res = await planning(api, '/planning', { field: 'tariff', value: 'h1' });
-    expect(res.state.planning!.inputs[0]?.tariff).toBe('H1N');
-    const withheld = res.state.planning!.tou.withheld!;
+    // Nothing asked: a single parent with one child in main custody is at H1 (directives ch. 5.2.1.4).
+    let res = await planning(api, '/planning', { field: 'otherIncome', value: false });
+    let withheld = res.state.planning!.tou.withheld!;
     expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'H1N' });
     expect(withheld.totalCentimes).toBeGreaterThan(0);
     expect(res.state.planning!.tou.assumptions).toContain('withheld_from_tariff');
+    const facts = (st: DashboardState) =>
+      st.journey.about.filter((f) => f.id === 'source_tax').map((f) => f.text?.en ?? '');
+    expect(facts(res.state)).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^Barème H1N: single parent, the children living with you/),
+        expect.stringMatching(/^Tax taken at source for 2026: about CHF/),
+      ]),
+    );
+    expect(res.state.journey.about.find((f) => /about CHF/.test(f.text?.en ?? ''))?.estimate).toBe(
+      true,
+    );
+    // A barème read from a payslip wins, and both show.
+    res = await planning(api, '/planning', { field: 'tariff', value: 'a0' });
+    expect(res.state.planning!.inputs[0]?.tariff).toBe('A0N');
+    withheld = res.state.planning!.tou.withheld!;
+    expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'A0N' });
+    expect(res.state.planning!.sourceTax?.people[0]).toMatchObject({
+      tariff: 'A0N',
+      derivedTariff: { code: 'H1N' },
+      documentTariff: 'A0N',
+    });
+    expect(facts(res.state)).toContain(
+      'Barème A0N, from a payslip; it wins over the one Taxpresso works out, H1N.',
+    );
     res = await planning(api, '/planning', { field: 'tariff', value: 'A0Y' });
     expect(res.status).toBe(400);
     res = await planning(api, '/planning', { field: 'tariff', value: 'D0' });
@@ -218,6 +248,9 @@ describe('the MCP tools', () => {
     try {
       for (const [id, value] of RIBEIRO) await call('answer_question', { id, value });
       await call('set_fact', { key: 'plan.gross_salary', value: 80_000 });
+      // The two plain questions that decide whether TOU is compulsory, answered no.
+      await call('set_fact', { key: 'plan.tou_other_income', value: false });
+      await call('set_fact', { key: 'plan.tou_taxable_wealth', value: false });
       const tariff = await call('set_fact', { key: 'plan.source_tax_tariff', value: 'h1' });
       expect(tariff.isError).toBeFalsy();
       expect(ws.ledger.get('plan.source_tax_tariff', 'p1')?.value).toBe('H1N');

@@ -150,6 +150,9 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
   // 1 and 5. A document for another tax year; a pillar 3a attestation for another year.
   for (const doc of documents) {
     if (doc.kind === 'prior_declaration') continue; // last year's declaration, by design
+    // Last year's assessment (avis de taxation) too: "Last year, reviewed" reads it, and it is
+    // what a new user often has first (docs/design/simple.md).
+    if (doc.kind === 'tax_assessment' && doc.taxYear === Y - 1) continue;
     const year = otherYear(doc, Y);
     if (year === undefined) continue;
     if (doc.kind === 'pillar3a_attestation') {

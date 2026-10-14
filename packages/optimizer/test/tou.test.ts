@@ -23,7 +23,7 @@ const ribeiro: HouseholdInput = {
 const ana: TouPerson = {
   person: 'p1',
   taxedAtSource: true,
-  tou: 'considering',
+  tou: 'no',
   grossCentimes: CHF(80_000),
   working: true,
   withheld: { centimes: CHF(9_850), from: 'stated' },
@@ -50,6 +50,8 @@ describe('TOU comparison', () => {
     expect(tou.withheld?.totalCentimes).toBe(CHF(9_850));
     expect(tou.differenceCentimes).toBe(CHF(9_850) - ordinary.totalCentimes);
     expect(tou.compulsory).toBe('no');
+    // None of the compulsory cases: a real choice, with the comparison.
+    expect(tou.mode).toBe('choice');
     expect(tou.assumptions).toEqual(expect.arrayContaining(['income_tax_only', 'icc_2025_scale']));
     // Flat deductions only make the ordinary tax too high here: said the TOU way round.
     expect(tou.assumptions).toContain('ordinary_may_be_lower');
@@ -88,7 +90,7 @@ describe('TOU comparison', () => {
     );
   });
 
-  it('does not compare a couple where only one person is taxed at source', () => {
+  it('does not compare a couple where one is taxed at source and the other, with income, is not', () => {
     const couple: HouseholdInput = {
       ...ribeiro,
       couple: true,
@@ -100,11 +102,84 @@ describe('TOU comparison', () => {
     const tou = touPlan(
       input({
         household: couple,
-        people: [ana, { person: 'p2', taxedAtSource: false, working: true }],
+        // An international civil servant, for one: income of their own, not taxed at source.
+        people: [ana, { person: 'p2', taxedAtSource: false, working: true, ownIncome: true }],
       }),
     );
     expect(tou.problem).toBe('mixed_couple');
     expect(tou.differenceCentimes).toBeUndefined();
+  });
+
+  it('compares a couple whose spouse has no income of their own (barème B): not a mixed couple', () => {
+    const couple: HouseholdInput = {
+      ...ribeiro,
+      couple: true,
+      people: [...ribeiro.people, { person: 'p2', hasPensionFund: false, paidCentimes: 0 }],
+    };
+    const tou = touPlan(
+      input({
+        household: couple,
+        people: [ana, { person: 'p2', taxedAtSource: false, working: false }],
+      }),
+    );
+    expect(tou.problem).toBeUndefined();
+    expect(tou.missingWithheld).toEqual([]);
+    expect(tou.differenceCentimes).toBe(CHF(9_850) - tou.ordinary!.totalCentimes);
+  });
+
+  it('counts the benefits of a spouse on unemployment in the ordinary tax', () => {
+    const people = [
+      ...ribeiro.people,
+      { person: 'p2' as const, hasPensionFund: false, paidCentimes: 0 },
+    ];
+    const without = touPlan(
+      input({
+        household: { ...ribeiro, couple: true, people },
+        people: [
+          ana,
+          {
+            person: 'p2',
+            taxedAtSource: true,
+            tou: 'no',
+            grossCentimes: CHF(30_000),
+            working: true,
+            withheld: { centimes: CHF(1_500), from: 'certificate' },
+          },
+        ],
+      }),
+    );
+    const withBenefits = touPlan(
+      input({
+        household: {
+          ...ribeiro,
+          couple: true,
+          people: [people[0]!, { ...people[1]!, replacementCentimes: CHF(30_000) }],
+        },
+        people: [
+          ana,
+          {
+            person: 'p2',
+            taxedAtSource: true,
+            tou: 'no',
+            grossCentimes: CHF(30_000),
+            working: true,
+            withheld: { centimes: CHF(1_500), from: 'certificate' },
+          },
+        ],
+      }),
+    );
+    expect(withBenefits.ordinary!.totalCentimes).toBeGreaterThan(without.ordinary!.totalCentimes);
+    expect(withBenefits.withheld?.totalCentimes).toBe(CHF(11_350));
+    expect(withBenefits.assumptions).not.toContain('no_income_for_some');
+  });
+
+  it('fails closed without the benefits attestation, or with a pension it does not count', () => {
+    expect(touPlan(input({ people: [{ ...ana, benefitsUnknown: true }] })).problem).toBe(
+      'benefits_unknown',
+    );
+    const pension = touPlan(input({ people: [{ ...ana, uncounted: true }] }));
+    expect(pension.problem).toBe('income_not_counted');
+    expect(pension.ordinary).toBeUndefined();
   });
 
   it('does nothing for a household not taxed at source', () => {
@@ -133,6 +208,42 @@ describe('when TOU is compulsory', () => {
     expect(touPlan(input({ people: [{ ...ana, tou: 'already' }] })).compulsory).toBe('yes');
   });
 
+  it('is a fact, not a choice: no comparison when compulsory or already in place', () => {
+    const compulsory = touPlan(input({ otherIncome: true }));
+    expect(compulsory.mode).toBe('compulsory');
+    expect(compulsory.ordinary).toBeUndefined();
+    expect(compulsory.differenceCentimes).toBeUndefined();
+    // The tax withheld still shows: it counts towards the ordinary tax.
+    expect(compulsory.withheld?.totalCentimes).toBe(CHF(9_850));
+    const inPlace = touPlan(input({ people: [{ ...ana, tou: 'already' }] }));
+    expect(inPlace.mode).toBe('in_place');
+    expect(inPlace.ordinary).toBeUndefined();
+    expect(touPlan(input({ otherIncome: undefined })).mode).toBe('unknown');
+  });
+
+  it('counts benefits in the CHF 120,000 and decides as soon as the known part reaches it', () => {
+    const at = (p: Partial<TouPerson>) => touPlan(input({ people: [{ ...ana, ...p }] }));
+    // Salary 100,000 and benefits 25,000 taxed at source: compulsory (RISP art. 7 al. 2).
+    expect(at({ grossCentimes: CHF(125_000) }).compulsory).toBe('yes');
+    // The benefits not known yet, the salary alone over the limit: compulsory anyway.
+    expect(at({ grossCentimes: undefined, grossAtLeastCentimes: CHF(121_000) }).mode).toBe(
+      'compulsory',
+    );
+    // Not over the limit with what is known: not known yet, never "no".
+    expect(at({ grossCentimes: undefined, grossAtLeastCentimes: CHF(90_000) }).compulsory).toBe(
+      'unknown',
+    );
+  });
+
+  it('uses the 2025 amounts for 2025, and refuses a year without them', () => {
+    const tou = touPlan(input({ taxYear: 2025, today: '2025-10-01' }));
+    expect(tou.thresholds.wealthFree.single).toBe(8_763_200);
+    expect(tou.reasons.find((r) => r.id === 'gross')?.source).toMatch(
+      /ge-2025-source-directives p\. 50/,
+    );
+    expect(() => touPlan(input({ taxYear: 2027 }))).toThrow(/2027/);
+  });
+
   it('is unknown while an answer is missing, never "no"', () => {
     const tou = touPlan(input({ otherIncome: undefined }));
     expect(tou.compulsory).toBe('unknown');
@@ -151,16 +262,19 @@ describe('when TOU is compulsory', () => {
     const tou = touPlan(
       input({
         household: couple,
-        people: [ana, { person: 'p2', taxedAtSource: true, tou: 'considering', working: false }],
+        // A spouse without any activity is not taxed at source (nothing to tax).
+        people: [ana, { person: 'p2', taxedAtSource: false, working: false }],
       }),
     );
     expect(reason(tou, 'spouse_without_activity')).toBe('check');
     expect(tou.compulsory).toBe('check');
+    expect(tou.mode).toBe('check');
     expect(tou.reasons.find((r) => r.id === 'spouse_without_activity')?.source).toBe(
       'ge-na-tou-quand-page',
     );
-    // The spouse has no figure: no comparison yet.
-    expect(tou.missingWithheld).toEqual(['p2']);
+    // Only Ana is taxed at source, and her figure is known: the comparison shows.
+    expect(tou.missingWithheld).toEqual([]);
+    expect(tou.differenceCentimes).toBeDefined();
   });
 
   it('flags the tariff C correction when both spouses work', () => {
@@ -180,7 +294,7 @@ describe('when TOU is compulsory', () => {
           {
             person: 'p2',
             taxedAtSource: true,
-            tou: 'considering',
+            tou: 'no',
             grossCentimes: CHF(45_000),
             working: true,
             withheld: { centimes: CHF(3_000), from: 'certificate' },

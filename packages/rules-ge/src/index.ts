@@ -109,11 +109,30 @@ export {
   type SourceTaxYear,
 } from './source-tax/index.js';
 export {
+  deriveTariffs,
+  TARIFF_MAX_CHILDREN,
+  tariffSources,
+  TariffYearError,
+  type DerivedTariff,
+  type TariffAssumption,
+  type TariffHousehold,
+  type TariffOpen,
+  type TariffPerson,
+  type TariffWhy,
+} from './source-tax/tariff.js';
+export {
+  SOURCE_TAX_FACTS,
+  SOURCE_TAX_SUBJECT,
+  TOU_2025_GROSS_THRESHOLD,
+  TOU_2025_OTHER_INCOME_THRESHOLD,
+  TOU_2025_WEALTH_FREE,
   TOU_2026_GROSS_THRESHOLD,
   TOU_2026_OTHER_INCOME_THRESHOLD,
   TOU_2026_WEALTH_FREE,
   TOU_FACTS,
   touDeadline,
+  touThresholds,
+  type TouThresholds,
 } from './2026/tou.js';
 export {
   LPP_BUYIN_FACTS,
@@ -150,7 +169,23 @@ export {
   type AssessmentView,
   type ObjectionDeadline,
 } from './2026/assessment.js';
-export { computeReturn, allLines, EngineInputError } from './engine/compute.js';
+export { computeReturn, allLines, capitalLines, EngineInputError } from './engine/compute.js';
+// The separate tax on lump sums from the 2nd pillar and pillar 3a (prestations en capital, 98.12).
+export { capitalIcc, capitalTax, type CapitalOutcome } from './engine/capital.js';
+export {
+  CAPITAL_ADDED_UP,
+  CAPITAL_CENTIMES,
+  CAPITAL_COMMUNE,
+  CAPITAL_FIFTH,
+} from './law/capital.js';
+// Self-employment, the simple case (annexe B): its keys and the notes its lines carry.
+export {
+  BUSINESS_FIELDS_2026,
+  KEYS_BUSINESS_DOCUMENTS_2026,
+  KEYS_BUSINESS_PROFILE_2026,
+  type BusinessDocumentKey,
+} from './2026/business-keys.js';
+export { BUSINESS_NOTE } from './engine/business.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {
@@ -166,7 +201,7 @@ export { pillar3aCapWithoutFund } from '@taxpresso/rules-ch';
 export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
 export { bracketTax, federalScaleTax, chf } from '@taxpresso/rules-ch';
 export type * from './engine/types.js';
-export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
+export { capitalFromFacts, engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';
 export {
   finalCheck,

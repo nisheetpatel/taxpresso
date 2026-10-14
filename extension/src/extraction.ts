@@ -133,6 +133,19 @@ export const ENUM_LABELS: Record<string, Record<string, { en: string; fr: string
     ifd: { en: 'Federal direct tax (IFD)', fr: 'Impôt fédéral direct (IFD)' },
     icc_ifd: { en: 'Both (ICC and IFD)', fr: 'Les deux (ICC et IFD)' },
   },
+  'capital.reason': {
+    retirement: { en: 'Retirement', fr: 'Retraite' },
+    home: {
+      en: 'Buying or paying off your own home',
+      fr: 'Encouragement à la propriété du logement',
+    },
+    self_employment: {
+      en: 'Starting out self-employed',
+      fr: 'Début d’une activité lucrative indépendante',
+    },
+    leaving: { en: 'Leaving Switzerland', fr: 'Départ définitif de la Suisse' },
+    other: { en: 'Another reason', fr: 'Autre motif' },
+  },
 };
 
 /** What Claude should look for on a document of this kind, for get_document_for_review. */

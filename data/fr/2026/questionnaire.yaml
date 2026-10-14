@@ -1127,6 +1127,10 @@ questions:
       de: 'Jeder gibt dir einen Lohnausweis (certificat de salaire).'
       it: 'Ognuno ti dà un certificato di salario (certificat de salaire).'
 
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
+
   # Tax at source (impôt à la source): an ordinary assessment afterwards (TOU) automatically above a
   # salary threshold, or on request by 31 March of the next year, which can't be withdrawn
   # (fr-2026-source-tax-ordonnance art. 11, 12). Not covered by packages/rules-fr.

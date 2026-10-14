@@ -108,10 +108,9 @@ async function keller(church: [string, string] = ['catholic', 'catholic'], paris
     ...(parish ? ([['parish', 'baden:Baden']] as [string, unknown][]) : []),
     ['income_sources:p1', ['salary']],
     ['employers:p1', 1],
-    ['taxed_at_source:p1', false],
+    ['residence:p1', 'swiss'],
     ['income_sources:p2', ['salary']],
     ['employers:p2', 1],
-    ['taxed_at_source:p2', false],
     ['pillar3a:p1', true],
     ['pillar3a:p2', false],
     ['lpp_buyin:p1', false],
@@ -155,7 +154,7 @@ const HUBER: [string, unknown][] = [
   ['church:p1', 'none'],
   ['income_sources:p1', ['salary']],
   ['employers:p1', 1],
-  ['taxed_at_source:p1', false],
+  ['residence:p1', 'swiss'],
   ['pillar3a:p1', true],
   ['lpp_buyin:p1', false],
   ['commute:p1', 'walk'],
@@ -270,6 +269,22 @@ describe('an Aargau return', () => {
       expect.arrayContaining(['1.1', '13.2', '14', '15.0', '16', 'bund-ehepaar', '19.1']),
     );
     expect(texts(detail)).toMatch(/- Bund bund-ehepaar Abzug für Verheiratete/);
+  });
+
+  it('leads with one next step and the five stages, as every canton does', async () => {
+    await keller();
+    const status = (await call('get_status')).structuredContent as {
+      next: { id: string; stage: string | null };
+      stages: { id: string; status: string }[];
+    };
+    expect(status.stages.map((x) => x.id)).toEqual(['about', 'documents', 'tax', 'save', 'file']);
+    expect(status.stages.find((x) => x.id === 'about')?.status).toBe('done');
+    // Computed from the confirmed salary certificates, not an estimate.
+    expect(status.stages.find((x) => x.id === 'tax')?.status).toBe('computed');
+    // The dashboard leads with the same single next step.
+    const s = await state();
+    expect(s.journey.next.id).toBe(status.next.id);
+    expect(s.journey.stages.map((x) => x.id)).toEqual(status.stages.map((x) => x.id));
   });
 
   it('shows the estimate in the dashboard, in the official German terms', async () => {
@@ -429,7 +444,10 @@ describe('an Aargau return', () => {
     expect(panel.unplaced).toEqual([]);
     expect(panel.total).toBeGreaterThan(0);
     expect(panel.provisional).toBe(true);
-    expect(panel.note).toMatch(/101\.01/);
+    // The dashboard keeps the note on the form for when it is filled in, after the year ends
+    // (docs/design/simple.md); the chat's values to type say it now.
+    expect(panel.note).toBeUndefined();
+    expect(texts(list)).toMatch(/101\.01/);
     // The PDF check is Geneva's only: said plainly, in both places.
     const pdf = await call('reconcile_official_pdf');
     expect(texts(pdf)).toMatch(/reads Geneva declarations only/);

@@ -62,6 +62,9 @@ function thisYear(r: TaxResult, form: string, code: string): { value: YearPair; 
     if (code === '14.00') return sum(of('14.00'), true);
     if (code === '16.00') return sum(of('16.40', '16.70'), true);
     if (code === '55.00') return sum(of('55.10'), true);
+    // Annexe B on the wealth page: business assets (12.50) and debts (57.50).
+    if (code === '12.00') return sum(of('12.50'), true);
+    if (code === '57.00') return sum(of('57.50'), true);
     return { value: {}, lines: [] };
   }
   switch (code) {
@@ -85,6 +88,11 @@ function thisYear(r: TaxResult, form: string, code: string): { value: YearPair; 
       return sum(start('31.'));
     case '41.00':
       return sum(start('41.'));
+    // Annexe B: its deductions (32.10 to 32.95) and losses (57.10, 57.20).
+    case '32.00':
+      return sum(start('32.'));
+    case '57.00':
+      return sum(of('57.10', '57.20'));
     case '52.00':
       return {
         value: {

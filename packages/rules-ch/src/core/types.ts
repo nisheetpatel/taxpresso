@@ -77,6 +77,49 @@ export interface EmploymentInput {
   side?: boolean;
 }
 
+/**
+ * The year of a sole proprietorship (raison individuelle), as its accounts or simple records give
+ * it: each line of the profit and loss account and of the balance sheet, the owner's own AVS/AI/APG
+ * contributions and the losses of earlier years (../business/self-employment.ts reads it).
+ */
+export interface BusinessInput {
+  /** Turnover: fees, sales, operating income (chiffre d'affaires brut). */
+  turnover?: Amount;
+  /** Benefits received for lost earnings (indemnités pour pertes de gains). */
+  benefits?: Amount;
+  /** Income of the business's own money and investments (produits financiers). */
+  financialIncome?: Amount;
+  /** Other income of the business (autres produits). */
+  otherIncome?: Amount;
+  /** Materials, goods and services bought (charges de matières, de marchandises et de services). */
+  costsGoods?: Amount;
+  /** Staff costs, the owner's own pay excluded (charges du personnel). */
+  costsStaff?: Amount;
+  /** Depreciation (amortissements). */
+  depreciation?: Amount;
+  /** Provisions (provisions). */
+  provisions?: Amount;
+  /** Interest on business debts (intérêts de dettes). */
+  interest?: Amount;
+  /** Overheads and other operating costs (frais généraux et autres charges d'exploitation). */
+  costsOther?: Amount;
+  /** Balance sheet at the end of the business year: current assets (actifs circulants). */
+  currentAssets?: Amount;
+  /** Fixed assets (actifs immobilisés). */
+  fixedAssets?: Amount;
+  /** Business debts and provisions (passifs commerciaux). */
+  liabilities?: Amount;
+  /** The owner's own AVS/AI/APG contributions for the business year (acomptes). */
+  avsYear?: Amount;
+  /** The owner's further contributions paid in the year after final decisions for earlier years. */
+  avsEarlier?: Amount;
+  /**
+   * Losses of the seven previous business years not deducted yet, as the last assessment shows
+   * them, for the cantonal and for the federal tax.
+   */
+  priorLosses?: { cantonal?: Amount; federal?: Amount };
+}
+
 export interface PersonInput {
   id: EnginePerson;
   employments?: readonly EmploymentInput[];
@@ -89,6 +132,12 @@ export interface PersonInput {
   unemploymentBenefits?: Amount;
   /** Net income from self-employment, as given (accounts not computed here). */
   selfEmploymentProfit?: Amount;
+  /**
+   * Geneva: one sole proprietorship's year, line by line from its accounts or simple records, with
+   * the owner's own AVS/AI/APG contributions and earlier losses (../business/self-employment.ts).
+   * The other cantons don't read it: their engines fail closed on self-employment.
+   */
+  business?: BusinessInput;
   /** AVS/AI pensions. */
   pensionAvs?: Amount;
   /** Pensions from a pension fund. */
@@ -318,6 +367,46 @@ export interface IfdTax {
   tax: Line;
 }
 
+/**
+ * The federal tax on lump sums from the 2nd pillar or pillar 3a (prestations en capital provenant de
+ * la prévoyance, ch-na-law-lifd art. 38): taxed apart from the other income, at a fifth of the
+ * scale (../ifd/capital.ts).
+ */
+export interface IfdCapitalTax {
+  /** Every lump sum of the year with the fraction under CHF 100 dropped (Form. 58c note 1). */
+  scaleIncome: Line;
+  /** single, or the married scale for a couple and a single parent (art. 38 al. 2). */
+  scale: IfdScale;
+  /** One year's tax by that scale on an income of that amount. */
+  scaleTax: Line;
+  /** A fifth of it, rounded down to 5 centimes: the tax on the lump sums. */
+  tax: Line;
+}
+
+/**
+ * The separate tax on lump sums from pension funds, vested benefits and pillar 3a (prestations en
+ * capital provenant de la prévoyance): a full year's tax of its own, at a fifth of the scales, on
+ * every lump sum of the year added up, the spouses' together (ch-na-law-lifd art. 9 al. 1 and 38;
+ * each canton's law). It never enters the progressive income base. `Icc` is the canton's own part.
+ */
+export interface CapitalTax<Icc extends { tax: Line } = { tax: Line }> {
+  /** One item per lump sum counted, by the canton's line code and person (Geneva: 98.12). */
+  items: Item[];
+  /** Every lump sum counted, added up: the amount taxed. */
+  amount: Line;
+  /**
+   * A lump sum from the 2nd pillar is among them: buy-ins of the three years before may lose their
+   * deduction (ch-na-law-lpp art. 79b al. 3, p. 66).
+   */
+  secondPillar: boolean;
+  /** The cantonal and communal tax on it; null when not computed (why: `unsupported`). */
+  icc: Icc | null;
+  /** The federal tax on it; null when not computed (why: `unsupported`). */
+  ifd: IfdCapitalTax | null;
+  /** The two together, when both are computed. */
+  total: Line | null;
+}
+
 /** The federal direct tax (IFD), as every canton's result shows it. */
 export interface IfdResult extends IfdTax {
   items: Item[];
@@ -353,9 +442,15 @@ export interface TaxResult<Icc extends CantonalResult = CantonalResult> {
   ifd: IfdResult | null;
   /**
    * The taxes computed: in Geneva the cantonal and communal tax plus the federal tax, when both are;
-   * in Zurich the same (its Bundessteuer column).
+   * in Zurich the same (its Bundessteuer column). The separate tax on pension capital (`capital`)
+   * is a tax of its own and is not in this total.
    */
   total: number | null;
+  /**
+   * The separate tax on lump sums from the 2nd pillar and pillar 3a, in a canton that computes it
+   * (Geneva). Absent when the household received none.
+   */
+  capital?: CapitalTax;
   /** Every estimate the result relies on (SPEC.md section 9). */
   estimates: EstimateNote[];
   /** Items that rely on values still awaiting the user's OK. */

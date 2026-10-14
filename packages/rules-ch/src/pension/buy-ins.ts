@@ -23,7 +23,7 @@ export const PILLAR3A_2025: Cited<{
   capWithoutPensionFund: number;
   shareWithoutPensionFundBp: number;
 }> = {
-  source: 'ge-2025-guide-declaration-pp p. 18',
+  source: 'ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)',
   value: {
     capWithPensionFund: 725_800,
     capWithoutPensionFund: 3_628_800,

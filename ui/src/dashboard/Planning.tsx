@@ -7,7 +7,8 @@ import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { api } from './api';
 import { t, type Language } from './i18n';
-import { assumption, day, pck, type PlanningMessageKey, tp } from './i18n-planning';
+import { tj } from './i18n-journey';
+import { assumption, assumptionList, day, pck, type PlanningMessageKey, tp } from './i18n-planning';
 import type { PlannedState, State } from './types';
 import type { Estimate, PlanningField, PlanningState } from './types-planning';
 
@@ -114,13 +115,15 @@ function How({
   sources: string[];
   lang: Language;
 }) {
+  // Only assumptions that have words: never an empty bullet.
+  const how = assumptionList(lang, assumptions);
   return (
     <details class="pl-how">
       <summary>{tp(lang, 'how')}</summary>
-      {assumptions.length ? (
+      {how.length ? (
         <ul>
-          {assumptions.map((a) => (
-            <li key={a}>{assumption(lang, a)}</li>
+          {how.map((a) => (
+            <li key={a}>{a}</li>
           ))}
         </ul>
       ) : null}
@@ -180,11 +183,16 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   };
   const atSource = planning.inputs.filter((i) => i.taxedAtSource);
 
+  // TOU already in place or compulsory is a fact ("About you"), never a choice (docs/design/simple.md).
+  const fact = tou.mode === 'in_place' || tou.mode === 'compulsory';
   let decision: JSX.Element;
-  if (tou.compulsory === 'yes') {
+  if (fact) {
     decision = <p class="pl-next">{tp(lang, 'touNextCompulsory', { date: deadline })}</p>;
   } else if (tou.deadlinePassed) {
     decision = <></>;
+  } else if (tou.mode === 'unknown' && !tou.decision) {
+    // Whether TOU is compulsory isn't known yet: the questions below come first.
+    decision = <p class="muted small-text">{tp(lang, 'touAnswerFirst')}</p>;
   } else if (tou.decision && !changing) {
     const date = day(tou.decision.decidedAt, lang);
     decision = (
@@ -249,10 +257,10 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </span>
       </div>
 
-      {tou.compulsory === 'yes' || tou.compulsory === 'check' ? (
-        <div class={`banner ${tou.compulsory === 'yes' ? 'banner-estimate' : 'banner-fix'}`}>
+      {fact || tou.mode === 'check' ? (
+        <div class={`banner ${fact ? 'banner-estimate' : 'banner-fix'}`}>
           <strong>
-            {tp(lang, tou.compulsory === 'yes' ? 'touCompulsoryYes' : 'touCompulsoryCheck', {
+            {tp(lang, fact ? 'touCompulsoryYes' : 'touCompulsoryCheck', {
               date: deadline,
             })}
           </strong>
@@ -266,14 +274,23 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </div>
       ) : null}
 
-      {tou.problem === 'mixed_couple' ? (
-        <p class="banner banner-fix">{tp(lang, 'touMixed')}</p>
+      {tou.problem && tou.problem !== 'no_income' ? (
+        <p class="banner banner-fix">
+          {tp(
+            lang,
+            tou.problem === 'mixed_couple'
+              ? 'touMixed'
+              : tou.problem === 'benefits_unknown'
+                ? 'touBenefitsUnknown'
+                : 'touIncomeNotCounted',
+          )}
+        </p>
       ) : (
         <div class="pl-figures">
           <div class="pl-figure">
             <span>{tp(lang, 'touWithheld')}</span>
             <strong class="tnum">
-              {tou.withheld ? chf(tou.withheld.totalCentimes, lang) : '?'}
+              {tou.withheld ? chf(tou.withheld.totalCentimes, lang) : tp(lang, 'touNotKnown')}
             </strong>
             {tou.withheld ? (
               <span class="pl-hint">
@@ -312,60 +329,68 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
                     })}
               </strong>
             ) : (
-              <strong class="tnum">?</strong>
+              <span class="pl-hint">{tp(lang, 'touNotKnown')}</span>
             )}
           </div>
         </div>
       )}
 
+      {tou.missingWithheld.length ? (
+        <p class="small-text muted">{tp(lang, 'touWithheldLater')}</p>
+      ) : null}
+
       {atSource.some(
         (i) => tou.withheld?.people.find((w) => w.person === i.person)?.from !== 'certificate',
       ) ? (
-        <div class="pl-inputs">
-          {tou.missingWithheld.length ? (
-            <p class="small-text">{tp(lang, 'touNeedWithheld')}</p>
-          ) : null}
-          {atSource.map((i) =>
-            tou.withheld?.people.find((w) => w.person === i.person)?.from ===
-            'certificate' ? null : (
-              <fieldset class="pl-person" key={i.person}>
-                {couple ? <legend>{whoLabel(i.person, couple, lang)}</legend> : null}
-                <MoneyField
-                  key={`w-${i.withheld ?? ''}`}
-                  id={`tou-withheld-${i.person}`}
-                  label={tp(lang, 'touWithheldLabel')}
-                  centimes={i.withheld}
-                  onSave={(v) => save(i.person, 'withheld', v)}
-                />
-                <div class="pl-field">
-                  <label for={`tou-tariff-${i.person}`}>{tp(lang, 'touTariffLabel')}</label>
-                  <select
-                    id={`tou-tariff-${i.person}`}
-                    class="select"
-                    value={i.tariff ?? ''}
-                    onChange={(e) =>
-                      save(i.person, 'tariff', (e.target as HTMLSelectElement).value)
-                    }
-                  >
-                    <option value="" disabled>
-                      {tp(lang, 'touTariffNone')}
-                    </option>
-                    {planning.tariffs.map((code) => (
-                      <option key={code} value={code}>
-                        {code}
+        // The tax withheld and the tariff come from documents or the chat; corrections here.
+        <details class="change">
+          <summary>{tj(lang, 'change')}</summary>
+          <div class="pl-inputs">
+            {tou.missingWithheld.length ? (
+              <p class="small-text">{tp(lang, 'touNeedWithheld')}</p>
+            ) : null}
+            {atSource.map((i) =>
+              tou.withheld?.people.find((w) => w.person === i.person)?.from ===
+              'certificate' ? null : (
+                <fieldset class="pl-person" key={i.person}>
+                  {couple ? <legend>{whoLabel(i.person, couple, lang)}</legend> : null}
+                  <MoneyField
+                    key={`w-${i.withheld ?? ''}`}
+                    id={`tou-withheld-${i.person}`}
+                    label={tp(lang, 'touWithheldLabel')}
+                    centimes={i.withheld}
+                    onSave={(v) => save(i.person, 'withheld', v)}
+                  />
+                  <div class="pl-field">
+                    <label for={`tou-tariff-${i.person}`}>{tp(lang, 'touTariffLabel')}</label>
+                    <select
+                      id={`tou-tariff-${i.person}`}
+                      class="select"
+                      value={i.tariff ?? ''}
+                      onChange={(e) =>
+                        save(i.person, 'tariff', (e.target as HTMLSelectElement).value)
+                      }
+                    >
+                      <option value="" disabled>
+                        {tp(lang, 'touTariffNone')}
                       </option>
-                    ))}
-                  </select>
-                </div>
-              </fieldset>
-            ),
-          )}
-        </div>
+                      {planning.tariffs.map((code) => (
+                        <option key={code} value={code}>
+                          {code}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </fieldset>
+              ),
+            )}
+          </div>
+        </details>
       ) : null}
 
-      {tou.compulsory !== 'yes' ? (
+      {!fact ? (
         <div class="pl-questions">
-          {tou.compulsory === 'unknown' ? (
+          {tou.mode === 'unknown' ? (
             <p class="small-text">{tp(lang, 'touCompulsoryUnknown')}</p>
           ) : null}
           {(
@@ -404,7 +429,7 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   );
 }
 
-function LppCard({ state, lang, act }: Props) {
+export function LppCard({ state, lang, act }: Props) {
   const { lpp, inputs, needsTou } = state.planning;
   const canton = state.canton?.code;
   const save = useSave(lang, act);
@@ -419,26 +444,29 @@ function LppCard({ state, lang, act }: Props) {
         <span class="pl-official">({tp(lang, pck('lppOfficial', canton))})</span>
       </h2>
       <p class="muted small-text">{tp(lang, 'lppLead')}</p>
-      {inputs.map((i) => (
-        <fieldset class="pl-person" key={i.person}>
-          {couple ? <legend>{whoLabel(i.person, couple, lang)}</legend> : null}
-          <MoneyField
-            key={`c-${i.lppCapacity ?? ''}`}
-            id={`lpp-cap-${i.person}`}
-            label={tp(lang, 'lppCapacity')}
-            hint={tp(lang, 'lppCapacityHint')}
-            centimes={i.lppCapacity}
-            onSave={(v) => save(i.person, 'lppCapacity', v)}
-          />
-          <MoneyField
-            key={`a-${i.lppAmount ?? ''}`}
-            id={`lpp-amount-${i.person}`}
-            label={tp(lang, 'lppAmount')}
-            centimes={i.lppAmount}
-            onSave={(v) => save(i.person, 'lppAmount', v)}
-          />
-        </fieldset>
-      ))}
+      <details class="change">
+        <summary>{tj(lang, 'change')}</summary>
+        {inputs.map((i) => (
+          <fieldset class="pl-person" key={i.person}>
+            {couple ? <legend>{whoLabel(i.person, couple, lang)}</legend> : null}
+            <MoneyField
+              key={`c-${i.lppCapacity ?? ''}`}
+              id={`lpp-cap-${i.person}`}
+              label={tp(lang, 'lppCapacity')}
+              hint={tp(lang, 'lppCapacityHint')}
+              centimes={i.lppCapacity}
+              onSave={(v) => save(i.person, 'lppCapacity', v)}
+            />
+            <MoneyField
+              key={`a-${i.lppAmount ?? ''}`}
+              id={`lpp-amount-${i.person}`}
+              label={tp(lang, 'lppAmount')}
+              centimes={i.lppAmount}
+              onSave={(v) => save(i.person, 'lppAmount', v)}
+            />
+          </fieldset>
+        ))}
+      </details>
       {over ? (
         <p class="banner banner-fix">
           {tp(lang, 'lppOver', { cap: chf(over.capacityCentimes ?? 0, lang) })}
@@ -469,7 +497,7 @@ function LppCard({ state, lang, act }: Props) {
   );
 }
 
-function CatchUpCard({ state, lang, act }: Props) {
+export function CatchUpCard({ state, lang, act }: Props) {
   const canton = state.canton?.code;
   const { catchUp, inputs, needsTou } = state.planning;
   const save = useSave(lang, act);
@@ -483,16 +511,28 @@ function CatchUpCard({ state, lang, act }: Props) {
         <span class="pl-official">({tp(lang, pck('cuOfficial', canton))})</span>
       </h2>
       <p class="muted small-text">{tp(lang, 'cuLead')}</p>
-      {inputs.map((i) => {
-        const r = catchUp.people.find((p) => p.person === i.person);
-        const amount = chf(r?.catchUpCentimes ?? 0, lang);
-        const status =
-          !r || r.status === 'unknown'
-            ? tp(lang, 'cuUnknown')
-            : r.status === 'no_gap'
-              ? tp(lang, 'cuNoGap')
-              : tp(lang, r.isMaximum ? 'cuPossibleMax' : 'cuPossible', { amount });
-        return (
+      <ul class="pl-statuses small-text">
+        {inputs.map((i) => {
+          const r = catchUp.people.find((p) => p.person === i.person);
+          const amount = chf(r?.catchUpCentimes ?? 0, lang);
+          const status =
+            !r || r.status === 'unknown'
+              ? tp(lang, 'cuUnknown')
+              : r.status === 'no_gap'
+                ? tp(lang, 'cuNoGap')
+                : tp(lang, r.isMaximum ? 'cuPossibleMax' : 'cuPossible', { amount });
+          return (
+            <li key={i.person}>
+              {couple ? <strong>{whoLabel(i.person, couple, lang)}: </strong> : null}
+              {status}
+              {r?.status === 'pay_this_year_first' ? ` ${tp(lang, 'cuFirst')}` : ''}
+            </li>
+          );
+        })}
+      </ul>
+      <details class="change">
+        <summary>{tj(lang, 'change')}</summary>
+        {inputs.map((i) => (
           <fieldset class="pl-person" key={i.person}>
             {couple ? <legend>{whoLabel(i.person, couple, lang)}</legend> : null}
             <MoneyField
@@ -503,13 +543,9 @@ function CatchUpCard({ state, lang, act }: Props) {
               centimes={i.paid2025}
               onSave={(v) => save(i.person, 'paid2025', v)}
             />
-            <p class="pl-status small-text">
-              {status}
-              {r?.status === 'pay_this_year_first' ? ` ${tp(lang, 'cuFirst')}` : ''}
-            </p>
           </fieldset>
-        );
-      })}
+        ))}
+      </details>
       {catchUp.saving ? <Saving saving={catchUp.saving} lang={lang} canton={canton} /> : null}
       {needsTou && catchUp.catchUpCentimes > 0 ? (
         <p class="banner banner-estimate">{tp(lang, 'onlyWithTou')}</p>
@@ -522,15 +558,5 @@ function CatchUpCard({ state, lang, act }: Props) {
       </ul>
       <How assumptions={catchUp.assumptions} sources={catchUp.sources} lang={lang} />
     </section>
-  );
-}
-
-/** The pension fund buy-in and the 3a catch-up, next to each other below the 3a card. */
-export function MoreBeforeDecember(props: Props): JSX.Element {
-  return (
-    <div class="pl-grid">
-      <LppCard {...props} />
-      <CatchUpCard {...props} />
-    </div>
   );
 }

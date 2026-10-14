@@ -108,6 +108,8 @@ export {
   type FederalConcept,
 } from './ifd/items.js';
 export { ifdTax } from './ifd/assess.js';
+// The federal tax on lump sums from the 2nd pillar and pillar 3a (art. 38 LIFD).
+export { IFD_CAPITAL_FIFTH, IFD_CAPITAL_NOTE, ifdCapitalTax } from './ifd/capital.js';
 export { IFD_OBJECTION, type ObjectionRule } from './ifd/objection.js';
 // The canton interface (docs/design/cantons.md, section 2).
 export type {
@@ -121,6 +123,7 @@ export type {
 // How a canton's result reads: one generic view for every canton (compute_tax, the estimate card,
 // the final check, the plans).
 export type {
+  CapitalView,
   IncomeTax,
   ResultView,
   ViewLine,
@@ -130,6 +133,22 @@ export type {
 } from './view.js';
 // The official terms of a canton's form, for the generic texts (final check, plans, copy panel).
 export type { CantonTerms, OfficialDocument } from './terms.js';
+// Self-employment, the simple case: a sole proprietorship's year from its accounts, the owner's
+// AVS/AI/APG contributions, the losses of earlier years (Geneva's annexe B reads it).
+export {
+  businessLine,
+  businessYear,
+  CHARGE_LINES,
+  lossWindow,
+  resultHow,
+  REVENUE_LINES,
+  SELF_EMPLOYMENT_FEDERAL,
+  SELF_EMPLOYMENT_RULES,
+  type BusinessFigure,
+  type BusinessYear,
+  type ChargeLine,
+  type RevenueLine,
+} from './business/self-employment.js';
 // Pillar 3a and the pension fund (2nd pillar): the federal limits, the same for every canton's tax.
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './pension/pillar3a.js';
 export {

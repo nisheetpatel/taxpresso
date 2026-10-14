@@ -7,7 +7,9 @@ Synthetic documents only (SPEC.md section 13). Never real personal data: the dem
 - `dupont-certificat-salaire-2026.pdf`: a two-page salary certificate for Jean Dupont with a text layer, clearly fake values, and one line that tries to give instructions (it must stay data).
 - `dupont-scan-3a-2026.pdf`: one page with an image and no text, like a scan.
 
-Both are written byte by byte by `node test/fixtures/make-fixtures.mjs`; rerun it after changing them.
+- `keller-avis-taxation-2025.pdf`: last year's assessment (avis de taxation) of a made-up couple, Lucas and Emma Keller, Lancy, both taxed at source and in TOU: the kind of document a new user drops first (docs/design/simple.md). One page with a text layer, a household line (civil status, commune, children) and a few assessed figures, all fake; its layout is invented, since the sources library has no specimen of a Geneva assessment. One line tries to give instructions: it is data.
+
+All three are written byte by byte by `node test/fixtures/make-fixtures.mjs`; rerun it after changing them.
 
 Last year's declaration (SPEC.md section 5.4), written by `node test/fixtures/make-prior-fixtures.mjs` the same way, with a text layer laid out like a declaration printed by tax software (page codes, rubric lines with ICC and IFD columns, amounts with apostrophes, "Page n/N" footers). Every name, date and number is fake, and page 1 carries a line that tries to give instructions:
 

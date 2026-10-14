@@ -19,6 +19,7 @@ export {
   type LedgerRoute,
   type UnplacedValue,
 } from './2026/ledger-map.js';
+export { annexBItems, selfEmployed3a, type AnnexBInput } from './2026/annex-b.js';
 export {
   buildCopyPanel,
   COLUMN_LABELS,

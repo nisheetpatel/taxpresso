@@ -9,6 +9,7 @@ import {
   KEYS_SECURITIES_2026,
   KEYS_WEALTH_2026,
 } from '@taxpresso/rules-ch';
+import { KEYS_BUSINESS_PROFILE_2026 } from './business-keys.js';
 import { COMMUNES_2026 } from './communes.js';
 import { DOCUMENT_KEYS_2026 } from './document-keys.js';
 import { sourceTaxTariffs } from '../source-tax/index.js';
@@ -34,17 +35,50 @@ export const KEYS_2026 = {
   },
   'profile.income_sources': H['profile.income_sources'],
   'profile.employers': H['profile.employers'],
-  'profile.taxed_at_source': H['profile.taxed_at_source'],
-  'profile.tou': {
-    type: 'enum',
-    values: ['already', 'considering', 'no'],
+  'profile.residence': H['profile.residence'],
+  // Paid by an employer in Switzerland (or its Swiss branch, or the Swiss company in the end): a
+  // salary paid directly from abroad is taxed ordinarily (ge-na-law-risp art. 5).
+  'profile.employer_in_switzerland': {
+    type: 'boolean',
     perPerson: true,
     label: {
-      en: 'Ordinary taxation instead of source tax',
-      fr: 'Taxation ordinaire ultérieure (TOU)',
+      en: 'Salary paid by an employer in Switzerland',
+      fr: 'Salaire versé par un employeur en Suisse',
+    },
+    official: 'débiteur de la prestation imposable (DPI)',
+    source: 'ge-na-law-risp art. 5; ge-2026-source-directives p. 6 (ch. 1.1.2)',
+  },
+  'profile.taxed_at_source': H['profile.taxed_at_source'],
+  // Already taxed ordinarily after source tax (TOU) before this year: a fact, which keeps TOU every
+  // year while taxed at source (ge-na-law-lisp art. 4 al. 5, art. 5 al. 5). Whether to ask for it is
+  // the TOU card's decision, not an answer ('considering' was one until October 2026: asked again).
+  'profile.tou': {
+    type: 'enum',
+    values: ['already', 'no'],
+    perPerson: true,
+    label: {
+      en: 'Already taxed ordinarily after source tax (TOU)',
+      fr: 'Déjà en taxation ordinaire ultérieure (TOU)',
     },
     official: 'taxation ordinaire ultérieure (TOU)',
+    source: 'ge-na-law-lisp art. 4 al. 5, art. 5 al. 5',
   },
+  // A single parent taxed at source living with the children's other parent: barème A0, not H
+  // (./../source-tax/tariff.ts).
+  'profile.lives_with_other_parent': {
+    type: 'boolean',
+    perPerson: false,
+    label: {
+      en: 'Lives with the children’s other parent, unmarried',
+      fr: 'Vit en couple avec l’autre parent des enfants, sans être marié(e)',
+    },
+    official: 'concubins avec enfant(s) à charge',
+    source: 'ge-2026-source-directives p. 30 (ch. 5.5.1)',
+  },
+  // Self-employment (annexe B), the simple case: how the business is run, its year, its place,
+  // what Taxpresso can't prepare yet, earlier losses, and the year's expected profit for the plans
+  // (./business-keys.ts).
+  ...KEYS_BUSINESS_PROFILE_2026,
   'profile.pillar3a': H['profile.pillar3a'],
   'profile.lpp_buyin': H['profile.lpp_buyin'],
   // Travel to work and lunches away from home (frais de déplacement, frais de repas): what people
@@ -71,6 +105,18 @@ export const KEYS_2026 = {
   'profile.crypto': H['profile.crypto'],
   'profile.payments': H['profile.payments'],
   'profile.special': H['profile.special'],
+  // A lump sum from the 2nd pillar (pension fund, vested benefits) or pillar 3a, taxed apart at a
+  // fifth of the scale (ge-na-law-lipp art. 45; ch-na-law-lifd art. 38, p. 32), declared at 98.12
+  // (ge-2025-guide-declaration-pp p. 13): who received which (../engine/capital.ts). The amount, the
+  // date and the reason are read on the attestation (./document-keys.ts).
+  'profile.pension_capital': {
+    type: 'enum_list',
+    values: ['pillar2', 'pillar3a'],
+    perPerson: true,
+    label: { en: 'Pension capital received', fr: 'Prestations en capital reçues' },
+    official: 'prestations en capital du 2e et 3e pilier A',
+    source: 'ge-2025-guide-declaration-pp p. 13; ch-na-law-lifd art. 22 al. 1 (p. 17)',
+  },
   // Planning inputs for "before 31 December" (SPEC.md section 8, group B). Rough figures the user
   // gives for an estimate; never filed.
   'plan.gross_salary': H['plan.gross_salary'],

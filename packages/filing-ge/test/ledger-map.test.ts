@@ -48,8 +48,9 @@ describe('the routes from ledger values to rubrics', () => {
         if (route.line) expect(rubric!.repeats, t.key).toBeGreaterThan(0);
         if (rubric!.format === 'tick') expect(def.type, route.key).toBe('boolean');
         if (rubric!.format === 'money') expect(def.type, route.key).toBe('money');
-        // A per-person value on a household rubric goes under that person ("Contr. A").
-        if (def.perPerson && typeof route.to === 'string') {
+        // A per-person value on a household rubric goes under that person ("Contr. A"), unless the
+        // form asks one amount for the household (98.12).
+        if (def.perPerson && typeof route.to === 'string' && !route.together) {
           expect(rubric!.parts, t.key).toEqual(expect.arrayContaining(['A', 'B']));
         }
       }
@@ -85,6 +86,14 @@ describe('the routes from ledger values to rubrics', () => {
         expect(rubric!.columns, code).toContain(column);
       }
     }
+    // The lump sums from the 2nd pillar and pillar 3a: one "Montant" box of the household (PG2).
+    for (const code of ENGINE_RUBRICS_2026.info) {
+      const rubric = FORM_2026.rubrics.find((r) => r.key === code);
+      expect(rubric, code).toMatchObject({ page: 'PG2', person: 'household', columns: ['amount'] });
+    }
+    expect(LEDGER_ROUTES_2026.filter((r) => r.key === 'capital.amount')).toMatchObject([
+      { to: '98.12', together: true },
+    ]);
     // Meals in both columns; Geneva travel in the ICC column, federal travel in the IFD column.
     expect(ENGINE_RUBRICS_2026.icc).toEqual(expect.arrayContaining(['31.60', '31.70', '41.70']));
     expect(ENGINE_RUBRICS_2026.ifd).toEqual(expect.arrayContaining(['31.60', '31.71', '41.71']));

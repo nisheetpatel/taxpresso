@@ -5,9 +5,9 @@
 import { PILLAR3A_2026 } from '@taxpresso/rules-ch';
 import {
   type Assumption,
+  earnedOf,
   estimateSources,
   type HouseholdInput,
-  netOf,
   noTaxOf,
   ordinaryTaxEstimator,
   type PersonInput,
@@ -36,10 +36,12 @@ export interface Pillar3aResult {
 function capOf(p: PersonInput): { cap: number; isMaximum: boolean } {
   const c = PILLAR3A_2026.value;
   if (p.hasPensionFund) return { cap: c.capWithPensionFund, isMaximum: false };
-  const net = netOf(p);
-  if (net === undefined) return { cap: c.capWithoutPensionFund, isMaximum: true };
+  // Without a pension fund: a share of what every activity earns, a business's expected profit after
+  // its owner's AVS contributions included (ch-2026-ifd-instructions-personnes-physiques p. 7).
+  const earned = earnedOf(p);
+  if (earned === undefined) return { cap: c.capWithoutPensionFund, isMaximum: true };
   return {
-    cap: Math.min(c.capWithoutPensionFund, pct(net, c.shareWithoutPensionFundBp)),
+    cap: Math.min(c.capWithoutPensionFund, pct(Math.max(0, earned), c.shareWithoutPensionFundBp)),
     isMaximum: false,
   };
 }

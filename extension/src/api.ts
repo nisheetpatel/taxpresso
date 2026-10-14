@@ -30,6 +30,7 @@ import { finalCheckView } from './final-check.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 import { CANTONS } from './cantons.js';
 import { TaxYears } from './years.js';
+import { journey } from './journey.js';
 
 const Answer = z.object({
   id: z.string().max(80),
@@ -90,6 +91,8 @@ const LineOwnerChange = z.object({
 });
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
+/** Kinds only Geneva reads so far: self-employment, the simple case (SPEC.md section 1). */
+const GENEVA_ONLY: ReadonlySet<string> = new Set(['business_accounts', 'avs_contributions']);
 
 /** Where a question's suggestion comes from: last year's declaration, its year and page. */
 function suggestedFrom(ws: Workspace, slot: Slot) {
@@ -121,7 +124,27 @@ export function dashboardState(
       : undefined;
   const next = ws.next();
   const canton = ws.canton();
+  // One next step and the stages, the same as get_status's (./journey.ts, docs/design/simple.md).
+  const j = journey(ws);
+  // "Your assessment" compares this year's assessment; an earlier year's feeds the review.
+  const otherYear = new Set(
+    ws.documents
+      .filter((d) => d.taxYear !== undefined && d.taxYear !== ws.taxYear)
+      .map((d) => d.id),
+  );
   return {
+    journey: {
+      next: j.next,
+      stage: j.stage,
+      stages: j.stages,
+      about: j.about,
+      hasFigures: j.hasFigures,
+      savings: j.savings,
+      touChoice: j.touChoice,
+      documentsIn: j.documentsIn,
+      // Before 31 December of the year, its documents mostly don't exist yet.
+      yearEnded: ws.today() > `${ws.taxYear}-12-31`,
+    },
     version: ws.config.version,
     taxYear: ws.taxYear,
     // The year switch: every year Taxpresso prepares, with its cantons (./years.ts).
@@ -181,7 +204,9 @@ export function dashboardState(
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
     })),
-    kinds: KIND_ORDER.map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
+    kinds: KIND_ORDER.filter((k) => canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)).map(
+      (k) => ({ value: k, label: say(KIND_LABELS[k], lang) }),
+    ),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
     // 10.5 second view, 10.8): ./document-views.ts.
     cards: documentCards(ws, content),
@@ -189,7 +214,7 @@ export function dashboardState(
       .filter((d) => d.replacedBy)
       .map((d) => ({ id: d.id, filename: d.filename, by: d.replacedBy! })),
     checks: documentChecks(ws, content),
-    assessments: assessmentCards(ws, content),
+    assessments: assessmentCards(ws, content).filter((a) => !otherYear.has(a.docId)),
     // The values to type into the official declaration, in the form's order (SPEC.md 10.5).
     copyPanel: copyPanelView(ws, content),
     // "Check before you transmit": this year's declaration PDF against them (SPEC.md 10.4).

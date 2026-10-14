@@ -41,6 +41,25 @@ export const KEYS_HOUSEHOLD_2026 = {
     perPerson: true,
     label: { en: 'Employers in the year', fr: 'Employeurs dans l’année' },
   },
+  // Swiss, a settlement permit (C) or another one: what decides taxation at source. Workers without
+  // a settlement permit are taxed at source on their pay and on the benefits that replace it, and
+  // spouses living together are not when one of them is Swiss or holds one (ch-na-law-lifd p. 49,
+  // art. 83 al. 1 and 2, art. 84 al. 2 let. a and b; for Geneva ge-na-law-lisp art. 1 and 2).
+  'profile.residence': {
+    type: 'enum',
+    values: ['swiss', 'permit_c', 'permit_other', 'other'],
+    perPerson: true,
+    label: {
+      en: 'Swiss citizenship or permit on 31 December',
+      fr: 'Nationalité suisse ou permis au 31 décembre',
+      de: 'Schweizer Bürgerrecht oder Bewilligung am 31. Dezember',
+      it: 'Cittadinanza svizzera o permesso al 31 dicembre',
+    },
+    official: 'nationalité suisse, autorisation d’établissement (permis C)',
+    source: 'ch-na-law-lifd p. 49 (art. 83 al. 1 and 2)',
+  },
+  // Derived from the answers above where the law settles it (the questionnaire's `derive`); asked
+  // only where it doesn't (data/ch/2026/questions.yaml).
   'profile.taxed_at_source': {
     type: 'boolean',
     perPerson: true,

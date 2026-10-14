@@ -35,9 +35,14 @@ import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
 import { CANTONS, cantonNames, fullCantons, germanCantons, previewCantons } from './cantons.js';
-import { PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
+import { PILLAR3A_2026, PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
-import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
+import {
+  ASSESSMENT_HOUSEHOLD_KEYS,
+  PLAN_KEYS,
+  WorkspaceError,
+  type Workspace,
+} from './workspace.js';
 import { registerYearTool } from './year-tool.js';
 import { DEFAULT_TAX_YEAR, TaxYears } from './years.js';
 
@@ -317,14 +322,21 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
     async ({ id, value }) => {
       const ws = years.current;
       try {
+        await ws.ready();
+        // What follows from the answers (taxed at source, from the permit): new consequences of
+        // this answer are said with it.
+        const derivedBefore = new Set(ws.engine.notSupported(ws.snapshot()).map((n) => n.slotId));
         const { added } = await ws.answer(id, value, 'chat');
         const snap = ws.snapshot();
         const slot = snap.slots.find((s) => s.id === id);
         const saved = slot ? ws.engine.describe(slot, 'en') : String(value);
         const newlyMissing = added.filter((r) => r.status === 'missing').map((r) => r.label.en);
+        const derivedIds = new Set(snap.derived.map((s) => s.id));
         const notSupported = ws.engine
           .notSupported(snap)
-          .filter((n) => n.slotId === id)
+          .filter(
+            (n) => n.slotId === id || (derivedIds.has(n.slotId) && !derivedBefore.has(n.slotId)),
+          )
           .map((n) => n.what.en);
         const nextSlot = ws.next();
         const next = nextSlot ? questionOut(ws, nextSlot) : undefined;
@@ -538,6 +550,17 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
       } else {
         lines.push(
           'No salary yet: ask for a rough yearly salary and save it with set_fact (plan.gross_salary) to estimate the saving.',
+        );
+      }
+      // Self-employed in Geneva (annexe B): the year's expected profit counts for the 3a room.
+      const answers = ws.snapshot().answers;
+      const self = plan.people.filter((p) => {
+        const sources = answers.get(`profile.income_sources|${p.person}`);
+        return Array.isArray(sources) && sources.includes('self_employment');
+      });
+      if (canton?.code === 'GE' && self.length) {
+        lines.push(
+          `Self-employed (${self.map((p) => WHO[p.person]).join(', ')}): without a pension fund the limit is 20 % of what every activity earns, the business's profit after the person's own AVS contributions included (${PILLAR3A_2026.source}). Once the year's accounts are read, Taxpresso takes the profit from them. Before that, ask in plain words roughly what profit (bénéfice net) the business will make this year, after their own AVS contributions, and save it with set_fact (plan.business_profit).`,
         );
       }
       lines.push(
@@ -804,7 +827,11 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         values: z
           .array(
             z.object({
-              key: z.enum(DOCUMENT_VALUE_KEYS),
+              key: z
+                .enum([...DOCUMENT_VALUE_KEYS, ...ASSESSMENT_HOUSEHOLD_KEYS])
+                .describe(
+                  'A value of the document. An assessment (tax_assessment) may also give the household answers it prints (profile.*): they become suggestions the user confirms.',
+                ),
               value: z
                 .union([z.string().max(200), z.boolean(), z.number()])
                 .describe(
@@ -871,6 +898,20 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
             : 'Nothing from this document is waiting for the user’s OK.',
         );
         if (checks.length) lines.push(`Check this, with the user: ${checks.join(' ')}`);
+        if (result.later.length) {
+          lines.push(
+            `Not saved yet: ${result.later.join(', ')}. Its question comes once the canton is answered: propose it again then.`,
+          );
+        }
+        // Household answers an assessment prints wait in their questions, as suggestions.
+        const suggested = ws
+          .snapshot()
+          .slots.filter((s) => s.value === undefined && s.suggestion?.source.docId === doc.id);
+        if (suggested.length) {
+          lines.push(
+            `${suggested.length} answer${suggested.length === 1 ? '' : 's'} suggested from this document wait in the questions: ask whether each is still right this year (next_questions), then save what the user says with answer_question.`,
+          );
+        }
         return {
           content: [{ type: 'text', text: lines.join('\n') }],
           structuredContent: {
@@ -967,7 +1008,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         content: [
           {
             type: 'text',
-            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running.`,
+            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running. Keep it beside the chat: in the chat it floats next to the conversation where the app allows it; in Cowork or the Code tab, open this link in the built-in browser pane next to the chat. Then guide the user from the chat: the dashboard follows.`,
           },
         ],
         structuredContent: { url, status: status(ws) },

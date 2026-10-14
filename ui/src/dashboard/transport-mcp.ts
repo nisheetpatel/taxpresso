@@ -14,6 +14,11 @@ export interface ToolCaller {
     content?: unknown[];
     structuredContent?: unknown;
   }>;
+  /** A message in the chat, as the user's (MCP Apps ui/message); not every host has it. */
+  sendMessage?(params: {
+    role: 'user';
+    content: { type: 'text'; text: string }[];
+  }): Promise<{ isError?: boolean }>;
 }
 
 interface Reply {
@@ -74,6 +79,15 @@ export function mcpTransport(host: ToolCaller, key: string): Transport {
 
   return {
     embedded: true,
+    async ask(text) {
+      if (!host.sendMessage) return false;
+      try {
+        const sent = await host.sendMessage({ role: 'user', content: [{ type: 'text', text }] });
+        return sent.isError !== true;
+      } catch {
+        return false;
+      }
+    },
     async send(req) {
       if (req.file) return upload(req, req.file);
       const key =
