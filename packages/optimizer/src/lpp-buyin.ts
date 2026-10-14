@@ -8,6 +8,7 @@ import {
   type Deduction,
   estimateSources,
   type HouseholdInput,
+  noTaxOf,
   ordinaryTaxEstimator,
   savingOf,
   type TaxEstimate,
@@ -25,7 +26,9 @@ export type LppBuyInProblem =
   /** The amount is more than the fund allows: the fund wouldn't accept it. */
   | 'over_capacity'
   /** No salary known: nothing to compute the tax from. */
-  | 'no_income';
+  | 'no_income'
+  /** The canton's tax can't be computed for the year (its rates are not published). */
+  | 'no_tax';
 
 export interface LppBuyInResult {
   people: (LppBuyInPerson & { overCapacity: boolean })[];
@@ -60,6 +63,8 @@ export function lppBuyInPlan(h: HouseholdInput, people: readonly LppBuyInPerson[
   };
   if (rows.some((p) => p.overCapacity)) return { ...result, problem: 'over_capacity' };
   if (amountCentimes === 0) return result;
+  const noTax = noTaxOf(h);
+  if (noTax) return { ...result, problem: 'no_tax', assumptions: [noTax] };
   const estimator = ordinaryTaxEstimator(h);
   if (!estimator) return { ...result, problem: 'no_income' };
   const base: Deduction[] = h.people.map((p) => ({

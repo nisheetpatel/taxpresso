@@ -49,6 +49,8 @@ const messages = {
       'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristerstreckung), online with the e-Fristerstreckung at steuern.lu.ch',
     moreTimeSg:
       'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristverlängerung), before the deadline, online at www.steuern.sg.ch',
+    moreTimeFr:
+      'A document won’t arrive in time? Ask the cantonal tax office (Service cantonal des contributions, SCC) for more time to file (prolongation du délai): CHF 20 with the QR bill that comes with your return',
     moreTimeAg:
       'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristverlängerung), online at www.ag.ch/fristerstreckung',
   },
@@ -88,6 +90,7 @@ const messages = {
     moreTimeZg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale de Zoug (Steuerverwaltung), en ligne sur www.zg.ch/tax avec votre Pers ID`,
     moreTimeLu: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) au service des impôts de votre commune (Gemeindesteueramt), en ligne avec l’e-Fristerstreckung sur steuern.lu.ch`,
     moreTimeSg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), avant l’échéance, en ligne sur www.steuern.sg.ch`,
+    moreTimeFr: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai au Service cantonal des contributions (SCC)${NB}: 20 francs avec la facture QR jointe à votre déclaration`,
     moreTimeAg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), en ligne sur www.ag.ch/fristerstreckung`,
   },
   de: {
@@ -136,6 +139,8 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristerstreckung, online mit der e-Fristerstreckung unter steuern.lu.ch',
     moreTimeSg:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt vor Ablauf der Frist eine Fristverlängerung, online unter www.steuern.sg.ch',
+    moreTimeFr:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage beim kantonalen Steueramt (Service cantonal des contributions, SCC) eine Fristerstreckung (prolongation du délai): 20 Franken mit der QR-Rechnung, die deiner Steuererklärung beiliegt',
     moreTimeAg:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristverlängerung, online unter www.ag.ch/fristerstreckung',
   },

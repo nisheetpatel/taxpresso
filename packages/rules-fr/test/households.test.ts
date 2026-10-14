@@ -86,9 +86,10 @@ describe('H1: single, Fribourg, 2025, employed, public transport, Catholic churc
     expect(x.wealthBase.amount).toBe(0);
     expect(x.churchIncome?.amount).toBe(chf(248.75));
     expect(x.churchWealth?.amount).toBe(0);
-    expect(r.total).toBe(chf(7_545.9));
+    expect(r.icc?.taxes.total.amount).toBe(chf(7_545.9));
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.commune).toEqual({ bfs: 2196, name: 'Fribourg', rate: 8_000 });
-    expect(r.ifd).toBeNull();
+    expect(r.ifd).not.toBeNull();
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
     expect(r.notCounted).toContainEqual(NOTE.dependents);
     expect(r.assumptions).toContainEqual(NOTE.healthFlat);
@@ -108,11 +109,11 @@ describe('H1: single, Fribourg, 2025, employed, public transport, Catholic churc
   });
 
   it('the same household by its commune number, and without the church tax', () => {
-    expect(computeReturn({ ...input, commune: 2196 }).total).toBe(chf(7_545.9));
+    expect(computeReturn({ ...input, commune: 2196 }).icc?.taxes.total.amount).toBe(chf(7_545.9));
     const noChurch = { ...input };
     delete noChurch.church;
     const n = computeReturn(noChurch);
-    expect(n.total).toBe(chf(7_545.9 - 248.75));
+    expect(n.icc?.taxes.total.amount).toBe(chf(7_545.9 - 248.75));
     expect(n.icc?.taxes.churchIncome).toBeNull();
     expect(n.notCounted).toContainEqual(NOTE.churchNotAsked);
   });
@@ -224,7 +225,8 @@ describe('H2: married, two earners, two children, Bulle, 2025', () => {
     expect(x.communalIncome.amount).toBe(chf(4_060.2));
     expect(x.wealthBase.amount).toBe(0);
     expect(x.churchIncome).toBeNull();
-    expect(r.total).toBe(chf(9_306.2));
+    expect(r.icc?.taxes.total.amount).toBe(chf(9_306.2));
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.commune).toEqual({ bfs: 2125, name: 'Bulle', rate: 7_430 });
   });
 });
@@ -290,7 +292,8 @@ describe('H3: single parent, Murten, 2025, child support received, Catholic chur
     expect(x.cantonalIncome.amount).toBe(chf(2_089.45));
     expect(x.communalIncome.amount).toBe(chf(1_349.45));
     expect(x.churchIncome?.amount).toBe(chf(174.1));
-    expect(r.total).toBe(chf(3_613));
+    expect(r.icc?.taxes.total.amount).toBe(chf(3_613));
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.commune).toEqual({ bfs: 2275, name: 'Murten', rate: 6_200 });
     expect(r.assumptions).toContainEqual(NOTE.childrenAtCharge);
   });
@@ -368,7 +371,8 @@ describe('H4: retiree with wealth, Villars-sur-Glâne, 2025, Reformed church tax
     expect(x.communalWealth.amount).toBe(chf(2_649.95));
     expect(x.churchIncome?.amount).toBe(chf(612.45));
     expect(x.churchWealth?.amount).toBe(chf(414.7));
-    expect(r.total).toBe(chf(18_705.7));
+    expect(r.icc?.taxes.total.amount).toBe(chf(18_705.7));
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.assumptions).toContainEqual(NOTE.pensions);
   });
 });
@@ -419,7 +423,8 @@ describe('H5: alternating custody, Düdingen, 2025', () => {
     expect(r.icc?.taxes.incomeBase.amount).toBe(chf(4_370.6));
     expect(r.icc?.taxes.cantonalIncome.amount).toBe(chf(4_195.8));
     expect(r.icc?.taxes.communalIncome.amount).toBe(chf(3_583.9));
-    expect(r.total).toBe(chf(7_779.7));
+    expect(r.icc?.taxes.total.amount).toBe(chf(7_779.7));
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
     expect(r.assumptions).toContainEqual(NOTE.childSupportPaid);
     expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.sharedCustody]);
     expect(r.icc?.items.find((i) => i.code === '4.110')?.sources.join(' ')).toContain(
@@ -448,7 +453,8 @@ describe('H5: alternating custody, Düdingen, 2025', () => {
     expect(r.icc?.taxableIncome.amount).toBe(chf(68_000));
     expect(r.icc?.family).toBe(true);
     expect(r.icc?.taxes.incomeBase.amount).toBe(chf(4_416.4));
-    expect(r.total).toBe(chf(7_861.2));
+    expect(r.icc?.taxes.total.amount).toBe(chf(7_861.2));
+    expect(r.total).toBe(r.ifd ? r.icc!.taxes.total.amount + r.ifd.tax.amount : null);
   });
 
   it('without child support, or without the answer, the tax is not computed', () => {
@@ -471,9 +477,38 @@ describe('tax year 2026', () => {
       people: [{ id: 'p1', employments: [{ gross: amt(60_000) }] }],
     });
     expect(r.icc).toBeNull();
+    expect(r.ifd).toBeNull();
     expect(r.total).toBeNull();
     expect(r.unsupported).toEqual([NOTE.communes2026]);
     expect(r.commune).toEqual({ bfs: 2125, name: 'Bulle', rate: null });
+    // The lines of the return are computed all the same: the values to type need no coefficient.
+    expect(r.form?.items.map((i) => i.code)).toEqual(['1.110', '2.130', '4.110']);
+    expect(r.form?.taxableIncome.amount).toBeGreaterThan(0);
+  });
+
+  it('a household the lines can’t be computed for says so too, after the coefficients', () => {
+    const r = computeReturn({
+      taxYear: 2026,
+      commune: 'Bulle',
+      civilStatus: 'divorced',
+      people: [{ id: 'p1', employments: [{ gross: amt(60_000) }] }],
+      children: [{ custody: 'shared' }],
+      childSupport: 'none',
+    });
+    expect(r.form).toBeNull();
+    expect(r.unsupported).toEqual([NOTE.communes2026, NOTE.sharedNoSupport]);
+  });
+
+  it('the church tax waits for the coefficients: a parish not given doesn’t stop the lines', () => {
+    const r = computeReturn({
+      taxYear: 2026,
+      commune: 'Tafers',
+      civilStatus: 'single',
+      church: { p1: 'catholic' },
+      people: [{ id: 'p1', employments: [{ gross: amt(60_000) }] }],
+    });
+    expect(r.unsupported).toEqual([NOTE.communes2026]);
+    expect(r.form).not.toBeNull();
   });
 
   it('knows the communes of 2026: Fétigny-Ménières, not Fétigny', () => {

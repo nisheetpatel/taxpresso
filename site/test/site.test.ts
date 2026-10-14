@@ -1,9 +1,20 @@
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { COMMUNE_CENTIMES_2026, COMMUNES_2026 } from '../../packages/rules-ge/src/2026/communes.ts';
 import { SUPPORTED_CANTONS } from '../../packages/rules-ch/src/keys/canton.ts';
+import {
+  CANTON_PAGES,
+  type CantonPage,
+  cantonPath,
+  cantonSlug,
+  cantonsPath,
+  FIGURE_MODULES,
+  loadFigures,
+} from '../src/canton-data.ts';
+import { cantonPages } from '../src/canton-pages.ts';
 import { CANTONS, listOf, NEXT_CANTONS } from '../src/cantons.ts';
 import {
   BASE_URL,
@@ -32,6 +43,8 @@ import { builtPages, PAGES, robots, sitemap } from '../src/pages.ts';
 import { privacy, privacyPath } from '../src/privacy.ts';
 import {
   render,
+  renderCanton,
+  renderCantons,
   renderGeneva,
   renderGenevaPage,
   renderGuide,
@@ -383,12 +396,194 @@ describe('Geneva reference pages', () => {
     }
   });
 
-  it('are linked from every footer and from the guides', () => {
+  it('are linked from the index of the canton pages, which every footer links to, and from the guides', () => {
     for (const { lang, path: p } of LANGS) {
-      const link = `<a href="${genevaPath(p)}">${geneva[lang].link}</a>`;
+      const footer = `<a href="${cantonsPath(p)}">${cantonPages[lang].index.link}</a>`;
       for (const html of [render(lang), renderStart(lang), renderPrivacy(lang), ...pagesOf(lang)])
-        expect(html).toContain(link);
+        expect(html).toContain(footer);
+      expect(renderCantons(lang)).toContain(`<a class="guide-card" href="${genevaPath(p)}">`);
       expect(renderGuides(lang)).toContain(`href="${genevaPath(p)}"`);
+    }
+  });
+});
+
+describe('canton reference pages', () => {
+  const root = path.join(here, '..', '..');
+  const hasPackage = (code: string) =>
+    existsSync(path.join(root, 'packages', `rules-${code.toLowerCase()}`, 'src'));
+  const others = CANTONS.filter((c) => c.code !== 'GE');
+  const main = (html: string) => /<main[\s\S]*<\/main>/.exec(html)![0];
+
+  /** Every canton with a figures module, also those not in CANTONS yet, as its page would be. */
+  const all = async (): Promise<CantonPage[]> =>
+    (
+      await Promise.all(
+        Object.keys(FIGURE_MODULES).map(async (code) => {
+          const figures = await loadFigures(code);
+          const listed = CANTONS.find((c) => c.code === code);
+          const next = NEXT_CANTONS.find((c) => c.code === code)!;
+          const canton = listed ?? { ...next, status: 'preview' as const };
+          return figures ? { canton, slug: cantonSlug(canton), figures } : undefined;
+        }),
+      )
+    ).filter((p): p is CantonPage => p !== undefined);
+
+  /** Every string a page is written with: the copy and the canton's own terms. */
+  const words = (pages: CantonPage[]) => [
+    ...strings(cantonPages),
+    ...pages.flatMap(({ figures: f }) => [
+      f.term,
+      f.base,
+      f.tax,
+      ...(f.canton ? [f.canton.term] : []),
+      ...f.communes.columns.flatMap((c) => ('term' in c.label ? [c.label.term] : [])),
+      ...f.deductions.flatMap((d) => (d.term ? [d.term] : [])),
+    ]),
+  ];
+
+  it('exist for every canton of cantons.ts but Geneva, in every language', () => {
+    const built = new Set(builtPages().map((page) => page.path));
+    for (const c of others) {
+      expect(Object.keys(FIGURE_MODULES), `${c.code} has no module in figures/`).toContain(c.code);
+      if (!hasPackage(c.code)) continue; // its rules package isn't in this checkout yet
+      const page = CANTON_PAGES.find((p) => p.canton.code === c.code);
+      expect(page, c.code).toBeDefined();
+      for (const { path: p } of LANGS) expect(built, c.code).toContain(cantonPath(p, page!.slug));
+    }
+    expect(CANTON_PAGES.map((p) => p.canton.code)).toEqual(
+      others.filter((c) => hasPackage(c.code)).map((c) => c.code),
+    );
+  });
+
+  it('have a figures module for every canton with a rules package, which loads', async () => {
+    const pages = await all();
+    for (const code of Object.keys(FIGURE_MODULES))
+      if (hasPackage(code))
+        expect(
+          pages.map((p) => p.canton.code),
+          code,
+        ).toContain(code);
+    expect(await loadFigures('XX')).toBeUndefined();
+  });
+
+  it('have the same structure in every language as in French, with no en or em dashes', async () => {
+    for (const { lang } of LANGS)
+      expect(shape(cantonPages[lang]), lang).toEqual(shape(cantonPages.fr));
+    for (const s of words(await all())) expect(s, s).not.toMatch(DASHES);
+  });
+
+  it('type no number: every figure is a {placeholder} filled from the rules packages', async () => {
+    // Digits that are part of a name, not a figure: pillar 3a, the 3rd pillar a as cantons write it.
+    const NAMES = /\b3a\b|3e pilier [Aa]\b|3\. Säule( a)?|Säule 3a|pilastro 3a|pilar 3a|\{\w+\}/g;
+    for (const s of words(await all())) expect(s.replace(NAMES, ''), s).not.toMatch(/\d/);
+  });
+
+  it('cite only documents from the sources library, linked at their page', async () => {
+    const manifest = JSON.parse(
+      await readFile(path.join(root, 'docs', 'sources', 'manifest.json'), 'utf8'),
+    ) as { entries: { id: string; url: string; format: string }[] };
+    const byId = new Map(manifest.entries.map((e) => [e.id, e]));
+    const official = new Set(manifest.entries.map((e) => e.url));
+    const check = (c: Citation) => {
+      const entry = byId.get(c.id);
+      expect(entry, c.id).toBeDefined();
+      const page = /\bp\. (\d+)/.exec(c.at)?.[1];
+      expect(c.href, c.id).toBe(
+        entry!.format === 'pdf' && page ? `${entry!.url}#page=${page}` : entry!.url,
+      );
+    };
+    const pages = await all();
+    for (const { figures: f } of pages) {
+      f.communes.sources.forEach((s) => s.sources.forEach(check));
+      f.canton?.rates.forEach((r) => r.sources.forEach(check));
+      f.wide.forEach((w) => w.sources.forEach(check));
+      for (const d of f.deductions)
+        for (const l of [...d.cantonal, ...d.federal]) {
+          expect(l.sources.length, `${f.code} ${d.id}`).toBeGreaterThan(0);
+          l.sources.forEach(check);
+        }
+    }
+    for (const { lang } of LANGS)
+      for (const page of pages)
+        for (const [, href] of main(renderCanton(lang, page)).matchAll(/href="(https:[^"]+)"/g))
+          expect(official, href).toContain(href!.replace(/&amp;/g, '&').replace(/#page=\d+$/, ''));
+  });
+
+  it('give each year’s rates the tax year of the documents they come from', async () => {
+    // A year shown is the year of the module it is read from: a table of the sources library that
+    // is for a tax year says which. (A deduction can rightly cite an earlier year's law that still
+    // governs, so only the rates are checked.)
+    const ofYear = (year: number, sources: Citation[], what: string) => {
+      const years = sources.map((c) => c.taxYear).filter((y): y is number => y !== null);
+      if (years.length) expect(years, what).toContain(year);
+    };
+    for (const { figures: f } of await all()) {
+      for (const s of f.communes.sources) ofYear(s.year, s.sources, `${f.code} communes ${s.year}`);
+      for (const r of f.canton?.rates ?? [])
+        ofYear(r.year, r.sources, `${f.code} canton ${r.year}`);
+      for (const w of f.wide) ofYear(w.year, w.sources, `${f.code} ${w.church} ${w.year}`);
+    }
+  });
+
+  it('show every commune of both years with its multiplier from the rules package', async () => {
+    const zh = (await all()).find((p) => p.canton.code === 'ZH')!;
+    const { COMMUNES_2026: ZH_2026 } = await import('../../packages/rules-zh/src/2026/communes.ts');
+    const { COMMUNES_2025: ZH_2025 } = await import('../../packages/rules-zh/src/2025/communes.ts');
+    const html = renderCanton('en', zh);
+    const rows = [
+      ...html.matchAll(/<tr><th scope="row">([^<]+)<\/th>((?:<td[^>]*>.*?<\/td>)+)<\/tr>/g),
+    ].map((m) => ({
+      name: m[1]!,
+      cells: [...m[2]!.matchAll(/<td[^>]*>(.*?)<\/td>/g)].map((c) => c[1]!.replace(/<[^>]+>/g, '')),
+    }));
+    expect(rows).toHaveLength(new Set([...ZH_2026.value, ...ZH_2025.value].map((c) => c.bfs)).size);
+    for (const c of ZH_2026.value) {
+      const row = rows.find((r) => r.name === c.name)!;
+      expect(row, c.name).toBeDefined();
+      expect(row.cells[0], c.name).toBe([...new Set(c.rates)].map((r) => `${r}%`).join(' / '));
+    }
+    for (const page of await all()) {
+      const table = renderCanton('de', page);
+      const count = (table.match(/<tr><th scope="row">/g) ?? []).length;
+      expect(count, page.canton.code).toBe(page.figures.communes.rows.length);
+      expect(count, page.canton.code).toBeGreaterThan(2);
+      // Every row has a value in at least one column.
+      for (const r of page.figures.communes.rows)
+        expect(
+          r.cells.some((cell) => cell.length > 0),
+          `${page.canton.code} ${r.name}`,
+        ).toBe(true);
+    }
+  });
+
+  it('say the tax year, ask you to check the official source, say a preview is one and offer Taxpresso', async () => {
+    for (const { lang, path: p } of LANGS) {
+      for (const page of await all()) {
+        const html = renderCanton(lang, page);
+        expect(html).toContain(
+          `<p class="ref-year">${geneva[lang].year.replace('{year}', String(TAX_YEAR))}</p>`,
+        );
+        expect(html).toContain(geneva[lang].check);
+        expect(html).toContain(`<a class="btn btn-crema" href="${startPath(p)}">`);
+        expect(html.includes('<p class="ref-note">'), `${lang} ${page.canton.code}`).toBe(
+          page.canton.status === 'preview',
+        );
+        expect(/<h1>(.*?)<\/h1>/.exec(html)?.[1], lang).toContain(page.canton.name[lang]);
+        expect(html, lang).not.toMatch(/\{\w+\}/);
+        expect(html).not.toMatch(RUNNABLE_SCRIPT);
+        for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
+      }
+    }
+  });
+
+  it('are listed on an index linked from every footer, which links to each of them and to Geneva', () => {
+    for (const { lang, path: p } of LANGS) {
+      const index = renderCantons(lang);
+      for (const page of CANTON_PAGES)
+        expect(index).toContain(`<a class="guide-card" href="${cantonPath(p, page.slug)}">`);
+      const footer = `<a href="${cantonsPath(p)}">${cantonPages[lang].index.link}</a>`;
+      for (const page of builtPages().filter((b) => b.lang === lang))
+        expect(page.html(), page.path).toContain(footer);
     }
   });
 });

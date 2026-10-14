@@ -42,8 +42,9 @@ questions:
   # für die ganze Steuerperiode zuständig), lu-2025-guide-wegleitung p. 8 (Zuzug in den Kanton
   # Luzern: the tax liability in Lucerne for the whole tax period), sg-2025-guide-wegleitung
   # p. 11 (Zuzug aus einem anderen Kanton: für das ganze Steuerjahr 2025 im Kanton St.Gallen
-  # steuerpflichtig) and ag-2025-guide-wegleitung p. 7 and 8 (Wer füllt eine Steuererklärung aus?;
-  # Wohnsitzverlegung).
+  # steuerpflichtig), fr-2025-guide-instructions-generales p. 4 (arriving from another canton:
+  # taxable for the whole year) and ag-2025-guide-wegleitung p. 7 and 8 (Wer füllt eine
+  # Steuererklärung aus?; Wohnsitzverlegung).
   - id: canton
     key: profile.canton
     type: choice
@@ -104,6 +105,9 @@ questions:
       - value: SG
         label: { en: 'Canton of St. Gallen', fr: 'Canton de Saint-Gall', de: 'Kanton St. Gallen' }
         chip: { en: 'St. Gallen', fr: 'Saint-Gall', de: 'St. Gallen' }
+      - value: FR
+        label: { en: 'Canton of Fribourg', fr: 'Canton de Fribourg', de: 'Kanton Freiburg' }
+        chip: { en: 'Fribourg', fr: 'Fribourg', de: 'Freiburg' }
       - value: AG
         label: { en: 'Canton of Aargau', fr: 'Canton d’Argovie', de: 'Kanton Aargau' }
         chip: { en: 'Aargau', fr: 'Argovie', de: 'Aargau' }

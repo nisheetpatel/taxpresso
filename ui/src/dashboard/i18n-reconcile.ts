@@ -24,6 +24,8 @@ const messages = {
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your Lucerne return, compare what you typed in eSteuern.LU with the values to type above. You transmit your declaration yourself.',
     notAvailableSg:
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your St. Gallen return, compare what you typed in E-Tax SG with the values to type above. You transmit your declaration yourself.',
+    notAvailableFr:
+      'Taxpresso checks the PDF of Geneva declarations only, for now. For your Fribourg return, compare what you typed in FriTax with the values to type above. You transmit your declaration yourself.',
     lead: 'When you have typed everything, download the PDF of your declaration from GeTax or the online declaration (e-démarches) and add it here. Taxpresso reads it on this computer and compares each amount with what you had to type, in whole francs. It keeps no name or number from it.',
     add: 'Add the PDF of your declaration',
     addAgain: 'Add the new PDF',
@@ -98,6 +100,8 @@ const messages = {
     notAvailableZg: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration zougoise, comparez vous-même ce que vous avez saisi dans eTax.zug avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     notAvailableLu: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration lucernoise, comparez vous-même ce que vous avez saisi dans eSteuern.LU avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     notAvailableSg: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration saint-galloise, comparez vous-même ce que vous avez saisi dans E-Tax SG avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
+    notAvailableFr:
+      'Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration fribourgeoise, comparez vous-même ce que vous avez saisi dans FriTax avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.',
     lead: 'Quand vous avez tout saisi, téléchargez le PDF de votre déclaration depuis GeTax ou la déclaration en ligne (e-démarches) et ajoutez-le ici. Taxpresso le lit sur cet ordinateur et compare chaque montant avec ce que vous deviez saisir, en francs entiers. Il n’en garde aucun nom ni numéro.',
     add: 'Ajouter le PDF de votre déclaration',
     addAgain: 'Ajouter le nouveau PDF',
@@ -174,6 +178,8 @@ const messages = {
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Luzerner Steuererklärung vergleiche selbst, was du in eSteuern.LU eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
     notAvailableSg:
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine St. Galler Steuererklärung vergleiche selbst, was du in E-Tax SG eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
+    notAvailableFr:
+      'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Freiburger Steuererklärung vergleiche selbst, was du in FriTax eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
     lead: 'Wenn du alles eingetragen hast, lade das PDF deiner Steuererklärung aus GeTax oder der Online-Steuererklärung (e-démarches) herunter und füge es hier hinzu. Taxpresso liest es auf diesem Computer und vergleicht jeden Betrag mit dem, was du eintragen solltest, in ganzen Franken. Es behält keinen Namen und keine Nummer daraus.',
     add: 'PDF deiner Steuererklärung hinzufügen',
     addAgain: 'Das neue PDF hinzufügen',

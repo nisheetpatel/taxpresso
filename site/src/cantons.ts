@@ -90,6 +90,18 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
     },
   },
   {
+    code: 'FR',
+    status: 'preview',
+    name: {
+      en: 'Fribourg',
+      fr: 'Fribourg',
+      de: 'Freiburg',
+      it: 'Friburgo',
+      es: 'Friburgo',
+      pt: 'Friburgo',
+    },
+  },
+  {
     code: 'AG',
     status: 'preview',
     name: {
@@ -108,18 +120,6 @@ export type CantonWhen = 'next' | 'then';
 
 /** The cantons coming next, in order. Not in the extension yet. */
 export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
-  {
-    code: 'FR',
-    when: 'then',
-    name: {
-      en: 'Fribourg',
-      fr: 'Fribourg',
-      de: 'Freiburg',
-      it: 'Friburgo',
-      es: 'Friburgo',
-      pt: 'Friburgo',
-    },
-  },
   {
     code: 'TI',
     when: 'then',

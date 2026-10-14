@@ -1449,6 +1449,90 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Fribourg return: its questions, the values to type, and why 2026 waits, offline', async () => {
+    // Another household in its own folder, in its own server process with the same guard: Léa
+    // Rossier, single, in Fribourg, Roman Catholic, with the synthetic salary certificate read from
+    // its barcode. Tax year 2026 has no communal coefficients: the estimate says so and never
+    // guesses them; the values to type work all the same.
+    const frVault = path.join(work, 'Fribourg');
+    const frTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: frVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    frTransport.stderr?.on('data', (d) => (stderr += d));
+    const fr = new Client({ name: 'taxpresso-offline-test-fr', version: '0.0.0' });
+    await fr.connect(frTransport);
+    try {
+      const answers = [
+        ['canton', 'FR'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Fribourg'],
+        ['moved', 'no'],
+        ['church:p1', 'catholic'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 800],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['health_subsidy', 0],
+        ['life_insurance', 0],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await fr.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await fr.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'FR');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(frVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await fr.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await fr.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'FR');
+      assert.equal(tax.structuredContent.commune.bfs, 2196);
+      assert.equal(tax.structuredContent.commune.rate, null);
+      assert.equal(tax.structuredContent.icc, null);
+      assert.equal(tax.structuredContent.total, null);
+      assert.match(tax.content[0].text, /communal tax rates for 2026 \(coefficients communaux\)/);
+
+      const sections = await fr.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['V', 'VI', 'VIII', 'IX'],
+      );
+      const income = await fr.callTool({ name: 'get_form_values', arguments: { section: 'V' } });
+      assert.match(income.content[0].text, /- 1\.110 Activité salariée principale/);
+
+      const check = await fr.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      assert.equal(check.structuredContent.verdict, 'not_ready');
+      const pdf = await fr.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await fr.close();
+    }
+  });
+
   test('an Aargau return: its questions, its tax and the values to type, offline', async () => {
     // Another household in its own folder, in its own server process with the same guard: Lea
     // Huber, single, in Aarau, with the synthetic salary certificate read from its barcode.

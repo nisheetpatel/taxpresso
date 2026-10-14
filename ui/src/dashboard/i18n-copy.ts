@@ -64,10 +64,14 @@ const messages = {
       'On the Lucerne return, Person 1 is {a} and Person 2 is {b}. The return prints the husband as Person 1: if yours has them the other way round, swap the values.',
     leadSg:
       'Type each value into E-Tax SG or the paper forms, in the form’s order: first Form 4 (Berufskosten) for each person, whose total goes to 10.1 or 10.2, then the return’s page 2 the income, page 3 the deductions, page 4 the wealth. The return has one column: the tax office works out the federal tax from it. Amounts are whole francs, without separators. Tick each value once it is in.',
-    leadAg:
-      'Type each value into eTAX AARGAU or the paper form: the sheets first (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), then the main form. Amounts are whole francs, without centimes or separators. The codes are the sections of the Aargau guide: check each against your form or eTAX AARGAU. There is no federal column: the tax office works out the federal tax. Tick each value once it is in.',
     coupleSg:
       'On the St. Gallen return, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
+    leadFr:
+      'Type each value into FriTax, the canton’s free program on your computer, or on the paper return, code by code in the return’s order: annex 01 (the securities list) and annex 02 (the debts) first, their totals carry to codes 3.210 and 4.210. Amounts are whole francs, without separators. FriTax works some lines out itself (the flat amounts, the totals): only check those. Tick each value once it is in.',
+    leadAg:
+      'Type each value into eTAX AARGAU or the paper form: the sheets first (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), then the main form. Amounts are whole francs, without centimes or separators. The codes are the sections of the Aargau guide: check each against your form or eTAX AARGAU. There is no federal column: the tax office works out the federal tax. Tick each value once it is in.',
+    coupleFr:
+      'On the Fribourg return, person 1 (personne 1) is {a} and person 2 (personne 2) is {b}. If your return has them the other way round, swap the values.',
     coupleAg:
       'On the Aargau forms, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
@@ -113,8 +117,11 @@ const messages = {
     leadLu: `Recopiez chaque valeur dans eSteuern.LU ou les formulaires papier, dans l’ordre que conseille le guide${NB}: d’abord le formulaire B et l’état des titres, puis les pages 2 à 4 de la déclaration, dans sa colonne unique. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. L’Ergänzungsblatt Direkte Bundessteuer est facultatif${NB}: ses valeurs sont là pour vérifier. Cochez chaque valeur une fois saisie.`,
     coupleLu: `Sur la déclaration lucernoise, la Person 1 est {a} et la Person 2 est {b}. La déclaration imprime le mari comme Person 1${NB}: si la vôtre les inverse, inversez les valeurs.`,
     leadSg: `Recopiez chaque valeur dans E-Tax SG ou les formulaires papier, dans l’ordre du formulaire${NB}: d’abord le formulaire 4 (Berufskosten, frais professionnels) de chaque personne, dont le total va au 10.1 ou au 10.2, puis la page 2 de la déclaration les revenus, la page 3 les déductions, la page 4 la fortune. La déclaration a une seule colonne${NB}: l’administration fiscale en déduit l’impôt fédéral. Les montants sont en francs entiers, sans séparateurs. Cochez chaque valeur une fois saisie.`,
-    leadAg: `Recopiez chaque valeur dans eTAX AARGAU ou le formulaire papier${NB}: d’abord les feuilles annexes (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), puis le formulaire principal. Les montants sont en francs entiers, sans centimes ni séparateurs. Les codes sont les sections du guide argovien${NB}: vérifiez chacun sur votre formulaire ou dans eTAX AARGAU. Il n’y a pas de colonne fédérale${NB}: l’administration calcule l’impôt fédéral. Cochez chaque valeur une fois saisie.`,
     coupleSg: `Sur la déclaration saint-galloise, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadFr: `Recopiez chaque valeur dans FriTax, le programme gratuit du canton sur votre ordinateur, ou sur la déclaration papier, code par code dans l’ordre de la déclaration${NB}: d’abord l’annexe 01 (état des titres) et l’annexe 02 (état des dettes), dont les totaux sont reportés aux codes 3.210 et 4.210. Les montants sont en francs entiers, sans séparateurs. FriTax calcule lui-même certaines lignes (les forfaits, les totaux)${NB}: vérifiez-les seulement. Cochez chaque valeur une fois saisie.`,
+    leadAg: `Recopiez chaque valeur dans eTAX AARGAU ou le formulaire papier${NB}: d’abord les feuilles annexes (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), puis le formulaire principal. Les montants sont en francs entiers, sans centimes ni séparateurs. Les codes sont les sections du guide argovien${NB}: vérifiez chacun sur votre formulaire ou dans eTAX AARGAU. Il n’y a pas de colonne fédérale${NB}: l’administration calcule l’impôt fédéral. Cochez chaque valeur une fois saisie.`,
+    coupleFr:
+      'Sur la déclaration fribourgeoise, la personne 1 est {a} et la personne 2 est {b}. Si votre déclaration les inverse, inversez les valeurs.',
     coupleAg: `Sur les formulaires argoviens, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
@@ -176,10 +183,14 @@ const messages = {
       'Auf der Luzerner Steuererklärung ist Person 1 {a} und Person 2 {b}. Die Steuererklärung führt den Ehemann als Person 1: Wenn deine sie umgekehrt hat, tausche die Werte.',
     leadSg:
       'Tippe jeden Wert in E-Tax SG oder in die Papierformulare, in der Reihenfolge des Formulars: zuerst das Formular 4 (Berufskosten) für jede Person, dessen Total in Ziffer 10.1 oder 10.2 kommt, dann auf der Steuererklärung Seite 2 die Einkünfte, Seite 3 die Abzüge, Seite 4 das Vermögen. Die Steuererklärung hat eine Spalte: Die Steuerbehörde leitet die direkte Bundessteuer daraus ab. Beträge in ganzen Franken, ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
-    leadAg:
-      'Tippe jeden Wert in eTAX AARGAU oder ins Papierformular: zuerst die Hilfsblätter (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), dann den Hauptbogen. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Die Ziffern sind die Abschnitte der Wegleitung: Prüfe jede auf deinem Formular oder in eTAX AARGAU. Eine Spalte für die Bundessteuer gibt es nicht: Das Steueramt berechnet sie. Hake jeden Wert ab, sobald er drin ist.',
     coupleSg:
       'Auf der St. Galler Steuererklärung ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadFr:
+      'Tippe jeden Wert in FriTax, das kostenlose Programm des Kantons auf deinem Computer, oder in die Papiersteuererklärung, Code für Code in der Reihenfolge der Steuererklärung: zuerst die Beilage 01 (état des titres, Wertschriftenverzeichnis) und die Beilage 02 (état des dettes, Schuldenverzeichnis), deren Totale in die Codes 3.210 und 4.210 übertragen werden. Beträge in ganzen Franken, ohne Trennzeichen. Manche Zeilen berechnet FriTax selbst (die Pauschalen, die Totale): Prüf sie nur. Hake jeden Wert ab, sobald er drin ist.',
+    leadAg:
+      'Tippe jeden Wert in eTAX AARGAU oder ins Papierformular: zuerst die Hilfsblätter (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), dann den Hauptbogen. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Die Ziffern sind die Abschnitte der Wegleitung: Prüfe jede auf deinem Formular oder in eTAX AARGAU. Eine Spalte für die Bundessteuer gibt es nicht: Das Steueramt berechnet sie. Hake jeden Wert ab, sobald er drin ist.',
+    coupleFr:
+      'Auf der Freiburger Steuererklärung ist Person 1 (personne 1) {a} und Person 2 (personne 2) {b}. Wenn deine sie umgekehrt hat, tausche die Werte.',
     coupleAg:
       'Auf den Aargauer Formularen ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },

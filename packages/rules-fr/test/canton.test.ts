@@ -7,6 +7,7 @@ import {
   communesFor,
   computeReturn,
   FrInputError,
+  NOTE,
   rules,
   type FrEngineInput,
   type FribourgCantonal,
@@ -15,10 +16,33 @@ import {
 const chf = (francs: number) => Math.round(francs * 100);
 const amt = (francs: number) => ({ value: chf(francs) });
 
-/** The same household as the canton interface takes it: Fribourg's extras under `cantonal`. */
+/**
+ * The same household as the canton interface takes it: Fribourg's extras under `cantonal` (the
+ * church, each child's age band and whether under 14).
+ */
 function household(e: FrEngineInput): HouseholdInput<FribourgCantonal> {
-  const { church, ...shared } = e;
-  return { ...shared, ...(church ? { cantonal: { church } } : {}) };
+  const { church, children, ...shared } = e;
+  const own = children?.map((c) => ({
+    ...(c.age !== undefined ? { age: c.age } : {}),
+    ...(c.under14 !== undefined ? { under14: c.under14 } : {}),
+  }));
+  const cantonal: FribourgCantonal = {
+    ...(church ? { church } : {}),
+    ...(own?.some((c) => Object.keys(c).length) ? { children: own } : {}),
+  };
+  return {
+    ...shared,
+    ...(children
+      ? {
+          children: children.map((c) => ({
+            custody: c.custody,
+            ...(c.livesWithYou !== undefined ? { livesWithYou: c.livesWithYou } : {}),
+            ...(c.childcare ? { childcare: c.childcare } : {}),
+          })),
+        }
+      : {}),
+    ...(Object.keys(cantonal).length ? { cantonal } : {}),
+  };
 }
 
 const HOUSEHOLDS: FrEngineInput[] = [
@@ -196,12 +220,13 @@ describe('Fribourg through the canton interface', () => {
     expect(computed).toBeLessThan(all.length);
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the cantonal and communal tax of each household, and the federal tax', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
       expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.icc!.taxes.total.amount).toBeGreaterThan(0);
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     }
   });
 
@@ -229,7 +254,8 @@ describe('Fribourg through the canton interface', () => {
   it('refuses a fact Fribourg does not read, and an unknown commune', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<FribourgCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      { ...h, cantonal: { ...h.cantonal, childcare: [amt(5_000)] } },
+      { ...h, cantonal: { ...h.cantonal, children: [{ age: 'young' }] } },
       { ...h, household: { accidentPremiums: amt(500) } },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, commune: 5586 },
@@ -256,15 +282,120 @@ describe('Fribourg through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys and its own, and what each document gives', () => {
     expect(rules.canton).toBe('FR');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2025))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'fr.church',
+        'fr.parish',
+        'fr.child_age',
+        'fr.child_care',
+        'fr.health_subsidy',
+        'fr.life_insurance',
+        'fr.savings_interest',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.documents(2026)).toContainEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(rules.documents(2026).map((d) => d.kind)).toEqual(
+      expect.arrayContaining(['pillar3a_attestation', 'health_premiums', 'childcare_invoice']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/fr');
+  });
+});
+
+describe('childcare given for the household, each child’s answers, and the answers that replace documents', () => {
+  // A single parent in Bulle, 2025, with one or two children under 14 living with them: childcare
+  // up to 12,000 per child (4.380, LICD art. 34 al. 3).
+  const base = (children: number, cantonal: FribourgCantonal = {}, care = 9_000) =>
+    rules.computeReturn({
+      taxYear: 2025,
+      commune: 2125,
+      civilStatus: 'divorced',
+      people: [
+        { id: 'p1', employments: [{ gross: amt(90_000), socialContributions: amt(5_760) }] },
+      ],
+      children: Array.from({ length: children }, () => ({ custody: 'full' as const })),
+      household: { childcare: amt(care) },
+      cantonal: {
+        church: { p1: 'none' },
+        children: Array.from({ length: children }, () => ({
+          age: 'child' as const,
+          under14: true,
+        })),
+        ...cantonal,
+      },
+    });
+  const line = (r: ReturnType<typeof base>, code: string) =>
+    r.icc?.items.find((i) => i.code === code)?.amount;
+
+  it('one child: the invoices’ total is that child’s', () => {
+    const r = base(1);
+    expect(line(r, '4.380')).toBe(chf(-9_000));
+    expect(r.limits.find((l) => l.code === '4.380')?.person).toBe('child1');
+  });
+
+  it('two children: any split gives the same within one child’s limit, else it is asked', () => {
+    expect(line(base(2), '4.380')).toBe(chf(-9_000));
+    const split = base(2, {}, 20_000);
+    expect(split.icc).toBeNull();
+    expect(split.unsupported).toEqual([NOTE.childcareSplit]);
+    const given = base(2, { childcare: [amt(15_000), amt(5_000)] }, 20_000);
+    expect(line(given, '4.380')).toBe(chf(-(12_000 + 5_000)));
+  });
+
+  it('a child of 14 or more: no childcare, and the result says so', () => {
+    const older = base(1, { children: [{ age: 'child', under14: false }] });
+    expect(line(older, '4.380')).toBeUndefined();
+    expect(older.notCounted).toContainEqual(NOTE.childcareNotCounted);
+  });
+
+  it('a young adult in training and an adult child: their flat health amounts, or not computed', () => {
+    const young = base(1, { children: [{ age: 'young', under14: false }] }, 0);
+    expect(line(young, '4.110')).toBe(chf(-(4_810 + 4_210)));
+    const adult = base(1, { children: [{ age: 'adult', under14: false }] }, 0);
+    expect(adult.unsupported).toContainEqual(NOTE.adultChild);
+  });
+
+  it('the subsidy, life insurance and savings interest answered replace the documents’ own', () => {
+    const r = rules.computeReturn({
+      taxYear: 2025,
+      commune: 2125,
+      civilStatus: 'single',
+      people: [{ id: 'p1', employments: [{ gross: amt(70_000) }] }],
+      household: { healthSubsidy: amt(500), savingsInterest: amt(40) },
+      movable: [{ owner: 'p1', value: amt(50_000), income: amt(100) }],
+      cantonal: {
+        church: { p1: 'none' },
+        healthSubsidy: amt(1_000),
+        lifeInsurancePremiums: amt(600),
+        savingsInterest: amt(400),
+      },
+    });
+    expect(line(r, '4.110')).toBe(chf(-(4_810 - 1_000)));
+    expect(line(r, '4.120')).toBe(chf(-600));
+    // 400 given, never more than the income of the accounts (100): 100.
+    expect(line(r, '4.150')).toBe(chf(-100));
+    expect(r.notCounted).toContainEqual(NOTE.savingsAbove);
+  });
+});
+
+describe('tax year 2026 through the interface', () => {
+  it('says why the tax waits, and gives the lines of the return', () => {
+    const r = rules.computeReturn(household({ ...HOUSEHOLDS[0]!, taxYear: 2026, commune: 2196 }));
+    expect(r.icc).toBeNull();
+    expect(r.ifd).toBeNull();
+    expect(r.total).toBeNull();
+    expect(r.unsupported).toEqual([NOTE.communes2026]);
+    expect(r.unsupported[0]!.de).toMatch(/noch nicht veröffentlicht/);
+    expect(r.form?.items.length).toBeGreaterThan(3);
+    expect(r.limits.length).toBeGreaterThan(0);
   });
 });
