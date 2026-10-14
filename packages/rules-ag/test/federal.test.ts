@@ -125,7 +125,7 @@ function household(): Shared {
       const under14 = maybe(0.3) ? maybe(0.7) : undefined;
       return {
         custody: shared && maybe(0.8) ? 'shared' : 'full',
-        ...(maybe(0.4) ? { childcare: amt(500, 25_000) } : {}),
+        ...(maybe(0.4) ? { childcare: amt(500, 40_000) } : {}),
         ...(under14 !== undefined ? { under14 } : {}),
       };
     }),
@@ -471,5 +471,36 @@ describe('where the cantons’ engines take a federal deduction differently (ope
     expect(ded(ag.icc!.items, '15.0')).toBe(chf(10_000));
     expect(ag.notCounted).toContainEqual(NOTE.childcareOver14);
     expect(ag.notCounted).toContainEqual(IFD_NOTE.childcareAge);
+  });
+});
+
+describe('childcare of one child above the maximum, next to another under it', () => {
+  it('caps each child’s costs, then adds them up, for both taxes', () => {
+    // Two children under 14, childcare of 30,000 and 5,000: each child's costs count at most the
+    // maximum, then they are added up: cantonal 25,000 + 5,000 = 30,000 (15.0, at most 25,000 per
+    // child, StG § 40 Abs. 1 lit. n); federal 25,800 + 5,000 = 30,800 (Form. 2a 2026 p. 8, "25 800
+    // fr. par enfant"), where the federal sum used to take 35,000 within twice the maximum.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(30_000) } },
+        { custody: 'full', under14: true, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = aargau.computeReturn({
+      ...h,
+      commune: 'Aarau',
+      cantonal: { church: { p1: 'none', p2: 'none' }, childBands: ['under14', 'under14'] },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '15.0')).toBe(chf(30_000));
+    expect(ded(r.ifd!.items, '15.0')).toBe(chf(30_800));
   });
 });

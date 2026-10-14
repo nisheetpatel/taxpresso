@@ -89,6 +89,7 @@ export {
   type IfdTaxYear,
 } from './ifd/params.js';
 export {
+  capPerChild,
   childcareCosts,
   childDeduction,
   commuteBase,
@@ -106,7 +107,9 @@ export {
   trainingCosts,
   twoEarner,
   type CaredChild,
+  type ChildCare,
   type CommuteBase,
+  type FederalChildcare,
   type FederalConcept,
 } from './ifd/items.js';
 export { ifdTax } from './ifd/assess.js';

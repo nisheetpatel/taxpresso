@@ -425,3 +425,34 @@ describe('childcare of a child of 14 or more', () => {
     expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
   });
 });
+
+describe('childcare of one child above the maximum, next to another under it', () => {
+  it('caps each child’s costs, then adds them up', () => {
+    // Two children under 14, childcare of 30,000 and 5,000: each child’s costs count at most the
+    // maximum, then they are added up: cantonal 10,000 + 5,000 = 15,000 (640, at most 10,000 per
+    // child, StG § 29 Abs. 1 lit. c); federal 25,800 + 5,000 = 30,800 (Form. 2a 2026 p. 8: "25 800
+    // fr. par enfant"), where the federal sum used to take 35,000 within twice the maximum.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(30_000) } },
+        { custody: 'full', under14: true, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = baselLand.computeReturn({
+      ...h,
+      commune: 'Liestal',
+      cantonal: { church: { p1: 'none', p2: 'none' } },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '640')).toBe(chf(15_000));
+    expect(ded(r.ifd!.items, '640')).toBe(chf(30_800));
+  });
+});

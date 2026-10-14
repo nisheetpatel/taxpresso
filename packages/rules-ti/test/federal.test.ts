@@ -126,7 +126,7 @@ function household(deductionsGeneva = false): Shared {
     people: couple ? [person('p1'), person('p2')] : [person('p1')],
     children: Array.from({ length: kids }, () => ({
       custody: shared && maybe(0.8) ? 'shared' : 'full',
-      ...(maybe(0.4) ? { childcare: amt(500, 25_000) } : {}),
+      ...(maybe(0.4) ? { childcare: amt(500, 40_000) } : {}),
       ...(maybe(0.3) ? { under14: maybe(0.7) } : {}),
     })),
   };
@@ -551,5 +551,40 @@ describe('childcare of a child of 14 or more', () => {
     expect(ded(r.ifd!.items, '20')).toBe(chf(8_000));
     expect(r.notCounted).toContainEqual(NOTE.childcareAway);
     expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
+  });
+});
+
+describe('childcare of one child above the maximum, next to another under it', () => {
+  it('caps each child’s costs, then adds them up', () => {
+    // Two children under 14, childcare of 30,000 and 5,000: each child’s costs count at most the
+    // maximum, then they are added up: cantonal 26,200 + 5,000 = 31,200 (20, at most 26,200 per
+    // child, LT art. 32a); federal 25,800 + 5,000 = 30,800 (Form. 2a 2026 p. 8: "25 800 fr. par
+    // enfant"), where the federal sum used to take 35,000 within twice the maximum.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(30_000) } },
+        { custody: 'full', under14: true, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = ticino.computeReturn({
+      ...h,
+      commune: 'Lugano',
+      cantonal: {
+        workRate: { p1: 100, p2: 100 },
+        monthsWorked: { p1: 12, p2: 12 },
+        childrenMinor: [true, true],
+      },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '20')).toBe(chf(31_200));
+    expect(ded(r.ifd!.items, '20')).toBe(chf(30_800));
   });
 });

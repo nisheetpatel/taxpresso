@@ -23,6 +23,10 @@ export const NOTE = {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,
   },
+  childcareSplit: {
+    en: 'Childcare (frais de garde, 59.10 and 59.12) not computed: the maximum is per child (guide p. 30), and the childcare you gave for the household is above one child’s maximum, so how it splits between your children decides the deduction. Give what you paid for each child; until then the tax is not computed.',
+    fr: `Frais de garde (59.10 et 59.12) non calculés${NB}: le maximum est par enfant (guide p. 30), et les frais indiqués pour le ménage dépassent le maximum d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Indiquez ce que vous avez payé pour chaque enfant${NB}; d’ici là, l’impôt n’est pas calculé.`,
+  },
   childcareAge: {
     en: 'Childcare (frais de garde, 59.10 and 59.12) counts only up to the month of the child’s 14th birthday (guide p. 30). The costs given for a child of 14 or more at the end of the year are not counted here.',
     fr: `Les frais de garde (59.10 et 59.12) ne comptent que jusqu’au mois du 14e anniversaire de l’enfant (guide p. 30). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,

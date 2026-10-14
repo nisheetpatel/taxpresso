@@ -50,6 +50,10 @@ export const IFD_NOTE = {
     en: 'Childcare, federal tax: only the care of a child up to their 14th birthday counts (LIFD art. 33 al. 3; ESTV circular 30). The costs given for a child of 14 or more at the end of the year are not counted here.',
     fr: `Frais de garde, impôt fédéral${NB}: seule compte la garde d’un enfant jusqu’à ses 14 ans (LIFD art. 33 al. 3${NB}; circulaire AFC n° 30). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
   },
+  childcareSplit: {
+    en: 'Federal tax not computed: the childcare maximum is per child (LIFD art. 33 al. 3), and the childcare you gave for the household is above one child’s maximum, so how it splits between your children decides the deduction. Give what you paid for each child.',
+    fr: `Impôt fédéral non calculé${NB}: le maximum des frais de garde est par enfant (LIFD art. 33 al. 3), et les frais de garde indiqués pour le ménage dépassent le maximum d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Indiquez ce que vous avez payé pour chaque enfant.`,
+  },
   ifdShared: {
     en: 'Federal tax not computed: with shared custody, the parental scale (barème parental) goes to the parent who receives child support or, without child support, to the parent who earns more (ESTV circular 30). Answer the question on child support so Taxpresso knows which parent you are.',
     fr: `Impôt fédéral non calculé${NB}: en garde alternée, le barème parental revient au parent qui reçoit la contribution d’entretien ou, sans contribution, au parent qui gagne le plus (circulaire AFC n° 30). Répondez à la question sur la contribution d’entretien pour que Taxpresso sache quel parent vous êtes.`,
@@ -546,6 +550,29 @@ export interface CaredChild {
   childcare?: Amount;
 }
 
+/** One child's childcare before the maximum, in centimes. */
+export interface ChildCare {
+  amount: number;
+}
+
+/** The childcare the federal deduction counts, before its maximum (`federalChildcare`). */
+export interface FederalChildcare {
+  /** All the costs counted, to the franc. */
+  care: number;
+  /**
+   * Each child's costs, the children under 14 with costs in their order; a household amount as
+   * one child's where that is exact (one child under 14, or within one child's maximum).
+   */
+  perChild: ChildCare[];
+  /** Costs were given for a child of 14 or more (IFD_NOTE.childcareAge). */
+  older: boolean;
+  /**
+   * A household amount for several children under 14, above one child's maximum: how it splits
+   * between them decides the deduction, so it is not computed (IFD_NOTE.childcareSplit).
+   */
+  split: boolean;
+}
+
 /**
  * The childcare the federal deduction counts, before its maximum: the costs of each child under 14
  * (LIFD art. 33 al. 3, ch-na-law-lifd p. 27: "si l’enfant a moins de 14 ans"; Form. 2a,
@@ -554,33 +581,96 @@ export interface CaredChild {
  * The costs given for a child of 14 or more at the end of the year are left out, and `older` says
  * there were some (IFD_NOTE.childcareAge): the care before a 14th birthday in the year would count
  * (ch-na-circulaire-30-epoux-famille p. 13, 8.2), but only the age at the end of the year is known.
+ * The maximum is per child (the same page: "25 800 fr. par enfant"): a household amount is one
+ * child's when there is one child under 14, or when the whole of it is within `within`, the
+ * smallest maximum per child that applies (the federal one, or a canton's lower one); otherwise
+ * how it splits decides, and `split` says so.
  */
 export function federalChildcare(
   children: readonly CaredChild[],
   household: Amount | undefined,
   tr: Trace,
-): { care: number; older: boolean } {
+  within?: number,
+): FederalChildcare {
   const isOlder = (c: CaredChild) => c.under14 === false && (c.childcare?.value ?? 0) > 0;
+  const care = francTotal(tr, [
+    ...children.map((c) => (isOlder(c) ? undefined : c.childcare)),
+    household,
+  ]);
+  const young = children.filter((c) => c.under14 !== false);
+  const whole = (household?.value ?? 0) > 0;
+  const exact = young.length <= 1 || within === undefined || care <= within;
   return {
-    care: francTotal(tr, [
-      ...children.map((c) => (isOlder(c) ? undefined : c.childcare)),
-      household,
-    ]),
+    care,
+    perChild: whole
+      ? exact
+        ? [{ amount: care }]
+        : []
+      : young
+          .map((c) => c.childcare?.value ?? 0)
+          .filter((v) => v > 0)
+          .map((amount) => ({ amount })),
     older: children.some(isOlder),
+    split: whole && !exact,
   };
 }
 
-/** Childcare (LIFD art. 33 al. 3): at most the federal maximum per child under 14 (`children`). */
+/**
+ * Each child's childcare at most the maximum, then added up (LIFD art. 33 al. 3: "par enfant";
+ * ch-2026-ifd-instructions-personnes-physiques p. 8: "la déduction maximale est de 25 800 fr. par
+ * enfant"). In words: each child's costs, and for those above the maximum what counts of them.
+ */
+export function capPerChild(
+  max: number,
+  perChild: readonly ChildCare[],
+): { counted: number; capped: ChildCare[]; how: Text } {
+  const counted = roundFranc(perChild.reduce((s, c) => s + Math.min(c.amount, max), 0));
+  const part = (c: ChildCare, counts: string) =>
+    c.amount > max ? `${chf(c.amount)}, ${counts} ${chf(max)}` : chf(c.amount);
+  const parts = (counts: string) => perChild.map((c) => part(c, counts)).join(' + ');
+  return {
+    counted,
+    capped: perChild.filter((c) => c.amount > max),
+    how: t(
+      `Per child under 14, what was paid, at most ${chf(max)}: ${parts('counted')} = ${chf(counted)}.`,
+      `Par enfant de moins de 14 ans, ce qui a été payé, au plus ${chf(max)}${NB}: ${parts('compté')} = ${chf(counted)}.`,
+    ),
+  };
+}
+
+/**
+ * Childcare (LIFD art. 33 al. 3): each child's costs at most the federal maximum, then added up
+ * (`capPerChild`). Where that gives what the maximum times the number of children under 14
+ * (`children`) gives, as when no child's costs pass the maximum next to another child's under
+ * it, it is said that way; otherwise child by child, with the costs that passed the maximum.
+ */
 export function childcareCosts(
   F: Pick<IfdParams, 'childcareMax'>,
   care: number,
   children: number,
   input: Trace,
+  perChild: readonly ChildCare[] = [{ amount: care }],
 ): RuleResult<'childcare'> {
   const cf = new Trace().with(input);
   const maxF = cf.p(F.childcareMax);
   const vf = Math.min(care, maxF * children);
   const capF = maxF * children;
+  const each = capPerChild(maxF, perChild);
+  if (each.counted < vf) {
+    return {
+      deduction: { concept: 'childcare', amount: -each.counted, trace: cf, how: each.how },
+      limits: each.capped.map((c) => ({
+        concept: 'childcare' as const,
+        param: F.childcareMax,
+        kind: 'cap' as const,
+        given: c.amount,
+        limit: maxF,
+        counted: maxF,
+      })),
+      notCounted: [],
+      unverified: [],
+    };
+  }
   return {
     deduction: {
       concept: 'childcare',

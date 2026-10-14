@@ -526,7 +526,13 @@ export function federalReturn(
   if (care > 0) {
     const eligible = couple ? figures.length === 2 && figures.every((x) => x.earns) : true;
     if (eligible) {
-      const federal = childcareCosts(F, care, counted.length, ccTrace);
+      const federal = childcareCosts(
+        F,
+        care,
+        counted.length,
+        ccTrace,
+        counted.map((c) => ({ amount: c.childcare!.value })),
+      );
       apply(notes, federal, 'household');
       if (federal.deduction) items.push(deductionItem(federal.deduction, 'household'));
     } else if (!eligible) {

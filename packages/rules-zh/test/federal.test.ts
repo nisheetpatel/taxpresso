@@ -121,7 +121,7 @@ function household(): Shared {
   if (maybe(0.08)) hh.alimonyPaid = amt(1_000, 30_000);
   if (maybe(0.15)) hh.debtInterest = amt(100, 10_000);
   if (maybe(0.1)) hh.bankFees = amt(10, 1_000);
-  if (kids && maybe(0.1)) hh.childcare = amt(1_000, 20_000);
+  if (kids && maybe(0.1)) hh.childcare = amt(1_000, 40_000);
   if (Object.keys(hh).length) h.household = hh;
   if (maybe(0.5)) {
     h.movable = Array.from({ length: int(1, 3) }, () => ({
@@ -152,7 +152,11 @@ describe('the federal tax on the Zurich return', () => {
       let compared = 0;
       for (let i = 0; i < 2_000; i++) {
         const h = household();
-        const { ge, zh } = both(h);
+        const { ge, zh, zhResult } = both(h);
+        // Childcare for the household above half of Zurich's limit per child, for children in
+        // shared custody: how it splits decides Zurich's own deduction, so nothing is computed
+        // until it is given per child (the federal tax's limit is the whole one).
+        if (zhResult.unsupported.some((n) => n.en === NOTE.childcareSplit.en)) continue;
         expect(Boolean(zh), JSON.stringify(h)).toBe(Boolean(ge));
         if (!ge || !zh) continue;
         compared++;
@@ -339,5 +343,66 @@ describe('childcare of a child of 14 or more', () => {
     expect(ded(r.ifd!.items, '376')).toBe(chf(8_000));
     expect(r.notCounted).toContainEqual(NOTE.childcareAge);
     expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
+  });
+});
+
+describe('childcare of one child above the maximum, next to another under it', () => {
+  it('caps each child’s costs, then adds them up', () => {
+    // Two children under 14, childcare of 30,000 and 5,000: each child’s costs count at most the
+    // maximum, then they are added up: cantonal 25,300 + 5,000 = 30,300 (376, at most 25,300 per
+    // child, StG § 31 Abs. 1 lit. j); federal 25,800 + 5,000 = 30,800 (Form. 2a 2026 p. 8: "25 800
+    // fr. par enfant"), where the federal sum used to take 35,000 within twice the maximum.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(30_000) } },
+        { custody: 'full', under14: true, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = zurich.computeReturn({ ...h, commune: 261 });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '376')).toBe(chf(30_300));
+    expect(ded(r.ifd!.items, '376')).toBe(chf(30_800));
+  });
+  it('childcare given for the household: one child’s within the smallest limit, asked per child above it', () => {
+    // 30,000 of invoices for two children under 14: above one child's limit (25,300, and the
+    // federal 25,800), so how it splits decides the deduction: not computed, and the result says
+    // why (the questionnaire asks it per child, zh.child_care). 25,300: every split gives the same.
+    const household = (francs: number): Shared => ({
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [{ custody: 'full' }, { custody: 'full' }],
+      household: { childcare: { value: chf(francs) } },
+    });
+    const above = zurich.computeReturn({ ...household(30_000), commune: 261 });
+    expect(above.icc).toBeNull();
+    expect(above.ifd).toBeNull();
+    expect(above.unsupported).toContainEqual(NOTE.childcareSplit);
+    const within = zurich.computeReturn({ ...household(25_300), commune: 261 });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(within.icc!.items, '376')).toBe(chf(25_300));
+    expect(ded(within.ifd!.items, '376')).toBe(chf(25_300));
+    // Given per child, the same 30,000 counts: 25,300 + 4,700 for each tax.
+    const split = zurich.computeReturn({
+      ...household(30_000),
+      household: {},
+      commune: 261,
+      cantonal: { childcare: [{ value: chf(25_300) }, { value: chf(4_700) }] },
+    });
+    expect(ded(split.icc!.items, '376')).toBe(chf(30_000));
+    expect(ded(split.ifd!.items, '376')).toBe(chf(30_000));
   });
 });
