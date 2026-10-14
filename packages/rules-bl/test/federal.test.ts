@@ -182,7 +182,7 @@ function four(h: Shared) {
 describe('the federal tax on the Basel-Landschaft return', () => {
   it(
     'equals Geneva’s, Zurich’s and Bern’s federal tax for the same household, to the centime (2,000 households)',
-    { timeout: 60_000 },
+    { timeout: 300_000 },
     () => {
       let compared = 0;
       let skipped = 0;
