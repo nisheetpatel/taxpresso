@@ -1,27 +1,6 @@
 /* Pension fund buy-in, 3a catch-up and the TOU card (Planning.tsx), after
    docs/design/2-optimizations.html. Tokens, chips and banners: ../shared/tokens.css, styles.css. */
 
-/* Tax at source as facts (Planning.tsx, SourceTaxFacts): plain sentences, each with its source. */
-.pl-facts {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.pl-facts-title {
-  font-size: 15px;
-  margin: 0;
-}
-
-.pl-facts ul {
-  margin: 0;
-  padding-left: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  line-height: 1.5;
-}
-
 .pl-tou,
 .pl-card {
   padding: 22px;

@@ -1693,11 +1693,11 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         assert.ok(!res.isError, res.content?.[0]?.text);
       }
       const status = await st.callTool({ name: 'get_status', arguments: {} });
-      const lines = status.structuredContent.sourceTax;
-      assert.ok(lines.some((l) => /^You are taxed at source\. Without a C permit/.test(l)));
-      assert.ok(lines.some((l) => /^Your spouse or partner is taxed at source\./.test(l)));
-      assert.ok(lines.some((l) => /^Barème C0N: married, both of you with income/.test(l)));
-      assert.ok(lines.some((l) => /estimated with barème C0N.*\(an estimate\)/.test(l)));
+      const told = status.structuredContent.journey.join('\n');
+      assert.match(told, /You are taxed at source\. Without a C permit/);
+      assert.match(told, /Your spouse or partner is taxed at source\./);
+      assert.match(told, /Barème C0N: married, both of you with income/);
+      assert.match(told, /estimated with barème C0N[^[]*\(an estimate\)/);
       const list = await st.callTool({ name: 'list_optimizations', arguments: {} });
       assert.match(list.content[0].text, /attestation of the fund that paid your benefits/);
       assert.doesNotMatch(list.content[0].text, /Only one of the couple/);
@@ -1711,9 +1711,10 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         arguments: { key, method: 'GET', path: '/state', query: { lang: 'fr' } },
       });
       const body = view.structuredContent.body;
-      assert.match(body.sourceTax.lines[0].text, /^Vous êtes imposé à la source/);
+      const fact = body.journey.about.find((f) => f.id === 'source_tax');
+      assert.match(fact.text.fr, /^Vous êtes imposé à la source/);
       assert.equal(body.planning.tou.problem, 'benefits_unknown');
-      assert.equal(body.sourceTax.people[0].derivedTariff, 'C0N');
+      assert.equal(body.planning.sourceTax.people[0].derivedTariff.code, 'C0N');
     } finally {
       await st.close();
     }

@@ -27,10 +27,10 @@ import type { Slot } from '@taxpresso/questionnaire';
 import { exportFolder, exportView } from './export.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import { finalCheckView } from './final-check.js';
-import { sourceTaxLines, sourceTaxOf } from './source-tax.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 import { CANTONS } from './cantons.js';
 import { TaxYears } from './years.js';
+import { journey } from './journey.js';
 
 const Answer = z.object({
   id: z.string().max(80),
@@ -122,7 +122,27 @@ export function dashboardState(
       : undefined;
   const next = ws.next();
   const canton = ws.canton();
+  // One next step and the stages, the same as get_status's (./journey.ts, docs/design/simple.md).
+  const j = journey(ws);
+  // "Your assessment" compares this year's assessment; an earlier year's feeds the review.
+  const otherYear = new Set(
+    ws.documents
+      .filter((d) => d.taxYear !== undefined && d.taxYear !== ws.taxYear)
+      .map((d) => d.id),
+  );
   return {
+    journey: {
+      next: j.next,
+      stage: j.stage,
+      stages: j.stages,
+      about: j.about,
+      hasFigures: j.hasFigures,
+      savings: j.savings,
+      touChoice: j.touChoice,
+      documentsIn: j.documentsIn,
+      // Before 31 December of the year, its documents mostly don't exist yet.
+      yearEnded: ws.today() > `${ws.taxYear}-12-31`,
+    },
     version: ws.config.version,
     taxYear: ws.taxYear,
     // The year switch: every year Taxpresso prepares, with its cantons (./years.ts).
@@ -190,7 +210,7 @@ export function dashboardState(
       .filter((d) => d.replacedBy)
       .map((d) => ({ id: d.id, filename: d.filename, by: d.replacedBy! })),
     checks: documentChecks(ws, content),
-    assessments: assessmentCards(ws, content),
+    assessments: assessmentCards(ws, content).filter((a) => !otherYear.has(a.docId)),
     // The values to type into the official declaration, in the form's order (SPEC.md 10.5).
     copyPanel: copyPanelView(ws, content),
     // "Check before you transmit": this year's declaration PDF against them (SPEC.md 10.4).
@@ -232,9 +252,6 @@ export function dashboardState(
         },
     // Pension fund buy-in, 3a catch-up and TOU (SPEC.md section 8, groups B and C): ./planning.ts.
     planning: ws.yearOver() ? null : planningView(ws),
-    // Tax at source as facts, never asked (./source-tax.ts): Geneva, when someone is taxed at
-    // source, in plain words with their sources, estimates flagged.
-    ...sourceTaxState(ws, lang),
     notSupported: ws.engine.notSupported(snap).map((n) => say(n.what, lang)),
     securities: ws.securities(content) ?? null,
     // The tax from the rules engine (./estimate.ts).
@@ -266,29 +283,6 @@ export function dashboardState(
 }
 
 export type DashboardState = ReturnType<typeof dashboardState>;
-
-/** The `sourceTax` part of the state, only for a household with someone taxed at source. */
-function sourceTaxState(ws: Workspace, lang: Lang) {
-  const st = sourceTaxOf(ws);
-  if (!st?.any && !st?.credited) return {};
-  return {
-    sourceTax: {
-      lines: sourceTaxLines(st, lang),
-      people: st.people.map((p) => ({
-        person: p.person,
-        atSource: p.atSource ?? null,
-        how: p.how,
-        tariff: p.tariff ?? null,
-        derivedTariff: p.derivedTariff?.code ?? null,
-        documentTariff: p.documentTariff ?? null,
-        withheld: p.withheld
-          ? { centimes: p.withheld.centimes, from: p.withheld.from, estimate: p.withheld.estimate }
-          : null,
-        missing: p.missing,
-      })),
-    },
-  };
-}
 
 const parse = <T>(schema: z.ZodType<T>, body: Buffer): T => {
   try {

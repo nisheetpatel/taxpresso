@@ -5,10 +5,10 @@ import { CURRENT_TAX_YEAR, UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
-import { sourceTaxLines, sourceTaxOf } from './source-tax.js';
 import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import type { Workspace } from './workspace.js';
 import { TaxYears } from './years.js';
+import { journey, journeyText, nextText, STAGES } from './journey.js';
 
 export const StatusSchema = z.object({
   product: z.literal('Taxpresso'),
@@ -99,13 +99,18 @@ export const StatusSchema = z.object({
     .describe(
       "Last year's declaration, read by Taxpresso: suggested answers and figures to compare.",
     ),
-  sourceTax: z
-    .array(z.string())
-    .optional()
-    .describe(
-      'Tax at source, worked out by Taxpresso (never ask for it): who is taxed at source, the barème, the tax withheld or what gives it, with sources. Geneva, when someone is.',
-    ),
-  nextStep: z.string(),
+  next: z
+    .object({
+      id: z.string(),
+      stage: z.enum(STAGES).nullable(),
+      text: z.string().describe('The next step in the user’s words, as the dashboard shows it.'),
+    })
+    .describe('The one next step, the same as the dashboard’s (docs/design/simple.md).'),
+  stage: z.enum(STAGES).describe('The stage open in the dashboard.'),
+  stages: z.array(z.object({ id: z.enum(STAGES), status: z.string() })),
+  about: z.array(z.string()).describe('Facts shown in "About you" that need no decision.'),
+  journey: z.array(z.string()).describe('The stages and facts in a few lines.'),
+  nextStep: z.string().describe('What Claude does next.'),
   vault: z.object({ path: z.string(), exists: z.boolean(), problem: z.string().optional() }),
   dashboard: z.object({ running: z.boolean() }),
   uiLanguage: z.enum(UI_LANGUAGES),
@@ -146,11 +151,6 @@ export function buildStatus(
     }));
   const notSupported = ws.engine.notSupported(snap).map((n) => n.what.en);
   const canton = ws.canton();
-  // A canton Taxpresso covers, but not for this year, still has its own software to name.
-  const known = canton.canton ?? canton.notOffered;
-  const software = known
-    ? `${known.software} (the canton's free software)`
-    : "their canton's free tax software";
   const documents = ws.activeDocuments();
   const toIdentify = documents.filter((d) => !d.kind).length;
   const toRead = ws.toRead().length;
@@ -161,67 +161,21 @@ export function buildStatus(
     .checks()
     .filter((c) => !c.resolved)
     .map((c) => `${c.title.en} [${c.id}]: ${c.detail.en} ${c.todo.en}`);
-  const assessment = ws.assessments()[0];
   const vault = ws.vaultInfo();
   const securitiesView = ws.securities('en');
   const securities = securitiesStatusText(securitiesView);
   const holdingsText = holdingsStatusText(holdings(ws));
   const lastYear = ws.lastYear('en');
   const priorText = priorStatusText(lastYear);
-  const st = sourceTaxOf(ws);
-  const sourceTax =
-    st?.any || st?.credited
-      ? sourceTaxLines(st, 'en').map(
-          (l) =>
-            `${l.text}${l.estimate ? ' (an estimate)' : ''}${l.source ? ` [${l.source}]` : ''}`,
-        )
-      : undefined;
   const estimates = securitiesView?.rows.some((r) => r.estimate)
     ? [
         "Securities values at the broker's prices and rates, until the official ESTV price list (Kursliste) for the year is available.",
       ]
     : [];
 
-  let nextStep: string;
-  if (vault.problem) nextStep = vault.problem;
-  else if (notSupported.length) {
-    nextStep = `Tell the user plainly that Taxpresso can't prepare this yet: ${notSupported.join('; ')}. Suggest ${software} or a fiduciary. Don't work around it.`;
-  } else if (!canton.answer) {
-    nextStep = `Ask the first question: where the user lived on 31 December (next_questions). That canton taxes the whole year, and it decides the questions and the tax. Taxpresso prepares ${cantonList()} returns so far.${lastYear?.suggestions ? " It comes with a suggestion from last year's declaration: ask the user whether it is still right, then save their answer with answer_question." : ''}`;
-  } else if (
-    // Taxpresso reads Geneva's declarations (GeTax, the online declaration) so far.
-    canton.canton?.code === 'GE' &&
-    open > 0 &&
-    snap.slots.every((s) => s.value === undefined || s.question.key === 'profile.canton') &&
-    !lastYear &&
-    !documents.some((d) => d.kind === 'prior_declaration')
-  ) {
-    nextStep =
-      "Before the next question, ask the user for last year's Geneva tax declaration (the PDF from GeTax, the online declaration or their tax software): Taxpresso reads it on this computer and suggests most answers for them to confirm. They drop it in the dashboard (open_dashboard) or in their Taxpresso folder, then call ingest_vault. If they don't have it, ask the next question: call next_questions.";
-  } else if (open > 0) {
-    nextStep = lastYear?.suggestions
-      ? "Ask the next question: call next_questions. When a question comes with a suggestion from last year's declaration, ask the user whether it is still right, then save their answer with answer_question."
-      : 'Ask the next question: call next_questions.';
-  } else if (whose > 0) {
-    nextStep = `${whose} certificate${whose === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${whose === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Documents), or tell you and you save it with set_document_owner; then the values fill in.`;
-  } else if (toRead > 0) {
-    nextStep = `${toRead} document${toRead === 1 ? '' : 's'} not read yet. Offer to read them: get_document_for_review sends that document's content to Claude, so ask the user first. Then propose what you read with propose_extraction. The user can also say what each one is in the dashboard.`;
-  } else if (toConfirm > 0) {
-    nextStep = `${toConfirm} value${toConfirm === 1 ? '' : 's'} read from documents need the user's OK. Ask them to check each one in the dashboard (Documents), or to confirm in the chat; then save with set_fact.`;
-  } else if (checks.length) {
-    nextStep =
-      'Go through the "Check this" items with the user. Each is settled by replacing the document in the dashboard, or with a short note from the user (set_fact, key check.note, instance = the item id).';
-  } else if (toIdentify > 0) {
-    nextStep = 'Ask the user to say what each new document is, in the dashboard (open_dashboard).';
-  } else if (assessment && assessment.deadlines.length) {
-    nextStep = `The assessment is in: go through the differences with the user in the dashboard ("Your assessment"). The deadline to object is in the card, with its legal source; the date printed on the assessment wins. Taxpresso never sends the objection.`;
-  } else if (missing.length) {
-    nextStep =
-      'Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.';
-  } else {
-    nextStep =
-      'Everything is collected for now. Call compute_tax and give the user the tax it computes, with what is an estimate; then offer the dashboard.';
-  }
+  // One next step and the stages, the same as the dashboard's (./journey.ts).
+  const j = journey(ws);
+  const nextStep = j.claude;
 
   const status: Status = {
     product: 'Taxpresso',
@@ -263,7 +217,11 @@ export function buildStatus(
     ...(securities ? { securities } : {}),
     ...(holdingsText ? { holdings: holdingsText } : {}),
     ...(priorText ? { lastYear: priorText } : {}),
-    ...(sourceTax ? { sourceTax } : {}),
+    next: { id: j.next.id, stage: j.next.stage, text: nextText(j, ws.taxYear) },
+    stage: j.stage,
+    stages: j.stages.map((st) => ({ id: st.id, status: st.status })),
+    about: j.about.map((f) => f.id),
+    journey: journeyText(j),
     nextStep,
     vault,
     dashboard: { running: opts.dashboardRunning },
@@ -307,10 +265,15 @@ function yearsLine(s: Status): string {
 export function statusText(s: Status): string {
   const canton = s.canton ? CANTONS[s.canton].name.en : undefined;
   const over = s.years.find((y) => y.year === s.taxYear)?.over === true;
+  // The year first (docs/design/tax-years.md), then the next step and the stages in one line
+  // each (docs/design/simple.md).
   const lines = [
     `Taxpresso ${s.version}, tax year ${s.taxYear}, ${canton ?? 'canton not known yet'}`,
     yearsLine(s),
     ...(s.yearNote ? [s.yearNote] : []),
+    `Next step: ${s.nextStep}`,
+    `The user's next step, as the dashboard shows it: ${s.next.text}`,
+    ...s.journey,
     ...(s.cantonFrom === 'earlier_answers' && canton
       ? [
           `Canton: ${canton}, taken from the user's earlier answers (${s.cantonBecause.join('; ')}). Taxpresso now asks for the canton first; if it is wrong, the user answers the canton question.`,
@@ -334,18 +297,12 @@ export function statusText(s: Status): string {
   if (s.securities) lines.push(s.securities);
   if (s.holdings) lines.push(s.holdings);
   if (s.lastYear) lines.push(s.lastYear);
-  if (s.sourceTax) {
-    lines.push(
-      `Tax at source, worked out by Taxpresso (don't ask the user for it; TOU details: list_optimizations): ${s.sourceTax.join(' ')}`,
-    );
-  }
   lines.push(
     `Folder: ${s.vault.path}${s.vault.exists ? '' : ' (created with the first answer or document)'}`,
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,
     over
       ? `The tax so far: compute_tax. ${s.taxYear} is over: for 3a or a buy-in, list_optimizations says which year's plans apply and how to switch.`
-      : 'The tax so far: compute_tax. Savings to look at now: list_optimizations (before 31 December: pillar 3a, pension fund buy-in, 3a catch-up; TOU for people taxed at source).',
-    `Next step: ${s.nextStep}`,
+      : 'The tax so far: compute_tax. Ways to save (list_optimizations): offer them once there is a tax, as one question.',
   );
   if (s.runtime) {
     lines.push(

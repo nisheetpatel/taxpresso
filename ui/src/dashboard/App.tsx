@@ -1,5 +1,6 @@
-// Screen 1, "Tell me and drop everything" (docs/design/1-intake.html): question card, answered
-// chips, drop zone, documents, still missing, activity from the chat. Same state as Claude's tools.
+// The dashboard, simple first (docs/design/simple.md): one next step, then five stages (About you,
+// Your documents, Your tax, Ways to save, File), one open, the others one line each. The same state
+// and the same next step as Claude's tools (get_status); every detail stays one click away.
 import { wordmark } from '../shared/logo';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
@@ -13,11 +14,13 @@ import { ExportCard } from './Export';
 import { FinalCheck } from './FinalCheck';
 import { ck, isMessageKey, type Language, type MessageKey, t } from './i18n';
 import { Holdings } from './Holdings';
-import { tp } from './i18n-planning';
+import { assumptionList, tp } from './i18n-planning';
+import { tj } from './i18n-journey';
 import { LastYear } from './LastYear';
-import { MoreBeforeDecember, TouCard } from './Planning';
+import { CatchUpCard, LppCard, TouCard } from './Planning';
 import { Reconcile } from './Reconcile';
 import { Review } from './Review';
+import { Detail, Facts, francs, NextStep, SaveHeadline, StageCard, TaxWaiting } from './Simple';
 import { YearOverCard, YearSwitch } from './Years';
 import {
   isPlanned,
@@ -25,11 +28,13 @@ import {
   type PlannedState,
   type Question,
   type RequirementView,
+  type StageId,
   type State,
   type Value,
 } from './types';
 
-const POLL_MS = 2000;
+/** The panel follows the chat: a change made there shows within about a second. */
+const POLL_MS = 1000;
 
 /** The language button cycles English, French, German, Italian. */
 const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'it', it: 'en' };
@@ -51,6 +56,8 @@ function saveLang(lang: Language): void {
   }
 }
 
+const STAGE_ORDER: StageId[] = ['about', 'documents', 'tax', 'save', 'file'];
+
 export function App(): JSX.Element {
   const [lang, setLang] = useState<Language | undefined>(readLang());
   const [state, setState] = useState<State | null>(null);
@@ -59,6 +66,10 @@ export function App(): JSX.Element {
   const [editing, setEditing] = useState<Question | null>(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [busy, setBusy] = useState('');
+  // Only the active stage is open; the user can open any other one. When the next step moves to
+  // another stage, that one opens instead.
+  const [opened, setOpened] = useState<StageId[]>([]);
+  const shownStage = useRef<StageId | null>(null);
   const L: Language = lang ?? state?.lang ?? 'en';
 
   const refresh = useCallback(async () => {
@@ -75,13 +86,29 @@ export function App(): JSX.Element {
   useEffect(() => {
     void refresh();
     const timer = setInterval(() => void refresh(), POLL_MS);
-    return () => clearInterval(timer);
+    // Back to the page (another tab, the chat): fresh state at once.
+    const now = () => document.visibilityState === 'visible' && void refresh();
+    document.addEventListener('visibilitychange', now);
+    window.addEventListener('focus', now);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', now);
+      window.removeEventListener('focus', now);
+    };
   }, [refresh]);
 
   useEffect(() => {
     document.documentElement.lang = L;
     document.title = t(L, 'docTitle');
   }, [L]);
+
+  const active = state?.journey.stage;
+  useEffect(() => {
+    if (active && active !== shownStage.current) {
+      shownStage.current = active;
+      setOpened([active]);
+    }
+  }, [active]);
 
   /** Runs a change, shows its error if any, and takes the fresh state it returns. */
   const act = async (fn: () => Promise<State>, label = ''): Promise<boolean> => {
@@ -108,6 +135,34 @@ export function App(): JSX.Element {
 
   const question = editing ?? state.question;
   const lastAnswer = state.answers.at(-1);
+  const isOpen = (id: StageId) => opened.includes(id);
+  const toggle = (id: StageId) =>
+    setOpened((now) => (now.includes(id) ? now.filter((x) => x !== id) : [...now, id]));
+  /** Opens a stage (from the next step or a fact) and brings it into view. */
+  const openStage = (id: StageId) => {
+    setOpened((now) => (now.includes(id) ? now : [...now, id]));
+    requestAnimationFrame(() =>
+      document
+        .getElementById(`stage-${id}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
+  };
+  const stage = (id: StageId, body: JSX.Element) => (
+    <StageCard
+      key={id}
+      state={state}
+      id={id}
+      n={STAGE_ORDER.indexOf(id) + 1}
+      lang={L}
+      open={isOpen(id)}
+      onToggle={() => toggle(id)}
+    >
+      {body}
+    </StageCard>
+  );
+  const planned = isPlanned(state) ? state : null;
+  const plan = planned?.plan;
+  const planning = planned?.planning;
 
   return (
     <>
@@ -118,29 +173,44 @@ export function App(): JSX.Element {
         act={act}
         busy={busy !== ''}
       />
-      <main class="page">
-        <div class="columns">
-          <div class="main-col">
-            <section aria-labelledby="q-title" class="stack">
-              <div class="intro">
-                <h1>{t(L, 'title', { year: state.taxYear })}</h1>
-                <p>{t(L, 'lead')}</p>
-              </div>
-              {state.vault.problem ? (
-                <div class="banner banner-fix" role="alert">
-                  <strong>{t(L, 'folderProblem')}</strong> {state.vault.problem}
-                </div>
+      <main class="page page-simple">
+        <div class="intro">
+          <h1>{t(L, 'title', { year: state.taxYear })}</h1>
+          <p>{t(L, 'lead')}</p>
+        </div>
+        {state.vault.problem ? (
+          <div class="banner banner-fix" role="alert">
+            <strong>{t(L, 'folderProblem')}</strong> {state.vault.problem}
+          </div>
+        ) : null}
+        <NextStep state={state} lang={L} act={act} onOpen={openStage} />
+        {error && !(isOpen('about') && question) ? (
+          <p class="banner banner-fix" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {busy && busy !== 'busy' ? (
+          <p class="small-text muted" role="status">
+            {busy}
+          </p>
+        ) : null}
+
+        <div class="stages">
+          {stage(
+            'about',
+            <div class="stack">
+              <Facts state={state} lang={L} onOpen={openStage} />
+              {state.notSupported.length ? (
+                <section class="banner banner-fix" aria-labelledby="ns-title">
+                  <strong id="ns-title">{t(L, 'notSupportedTitle')}</strong>
+                  <ul class="plain-list">
+                    {state.notSupported.map((n) => (
+                      <li key={n}>{n}</li>
+                    ))}
+                  </ul>
+                  <p class="small-text">{state.notSupportedMessage}</p>
+                </section>
               ) : null}
-              {state.yearOver || !isPlanned(state) ? (
-                // A year that is over: the plans are the default year's, one click away.
-                <YearOverCard state={state} lang={L} act={act} busy={busy !== ''} />
-              ) : (
-                <>
-                  <TouCard state={state} lang={L} act={act} />
-                  <Plan3a state={state} lang={L} act={act} />
-                  <MoreBeforeDecember state={state} lang={L} act={act} />
-                </>
-              )}
               {state.chips.length ? (
                 <div class="chips">
                   {state.chips.map((c) => (
@@ -204,41 +274,124 @@ export function App(): JSX.Element {
                   }
                   onCancel={() => (setEditing(null), setError(''))}
                 />
+              ) : state.answers.length ? (
+                <p class="muted">{t(L, 'allDone')}</p>
+              ) : null}
+            </div>,
+          )}
+          {stage(
+            'documents',
+            // What the step is about first: the documents to read or name, else the values to
+            // check, then what is missing; the drop zone and the list are always there.
+            ['read', 'identify', 'whose'].includes(state.journey.next.id) ? (
+              <div class="stack">
+                <Documents state={state} lang={L} busy={busy} act={act} />
+                <DocumentCards state={state} lang={L} act={act} />
+                <Checks state={state} lang={L} act={act} />
+                <Missing state={state} lang={L} act={act} />
+                <Holdings state={state} lang={L} act={act} />
+              </div>
+            ) : (
+              <div class="stack">
+                <DocumentCards state={state} lang={L} act={act} />
+                <Checks state={state} lang={L} act={act} />
+                <Missing state={state} lang={L} act={act} />
+                <Documents state={state} lang={L} busy={busy} act={act} />
+                <Holdings state={state} lang={L} act={act} />
+              </div>
+            ),
+          )}
+          {stage(
+            'tax',
+            <div class="stack">
+              {state.journey.hasFigures ? (
+                <Estimate view={state.estimate} lang={L} cantonName={state.canton?.name} />
               ) : (
-                <div class="card done">
-                  <h2>{t(L, 'allDone')}</h2>
-                  <p class="muted">{t(L, 'allDoneLead')}</p>
-                </div>
+                <TaxWaiting state={state} lang={L} act={act} />
               )}
-            </section>
-            <Estimate view={state.estimate} lang={L} cantonName={state.canton?.name} />
-            <Assessment state={state} lang={L} />
-            <Documents state={state} lang={L} busy={busy} act={act} />
-            <Holdings state={state} lang={L} act={act} />
-            <LastYear view={state.lastYear} year={state.taxYear} lang={L} />
-            <Review view={state.review} taxYear={state.taxYear} lang={L} />
-            <DocumentCards state={state} lang={L} act={act} />
-            <FinalCheck state={state} lang={L} />
-            <CopyPanel state={state} lang={L} act={act} />
-            <Reconcile state={state} lang={L} act={act} />
-          </div>
-          <aside class="side-col">
-            <Missing state={state} lang={L} act={act} />
-            <Checks state={state} lang={L} act={act} />
-            {state.notSupported.length ? (
-              <section class="card side-card" aria-labelledby="ns-title">
-                <h2 id="ns-title">{t(L, 'notSupportedTitle')}</h2>
-                <ul class="plain-list">
-                  {state.notSupported.map((n) => (
-                    <li key={n}>{n}</li>
-                  ))}
-                </ul>
-                <p class="muted small-text">{state.notSupportedMessage}</p>
-              </section>
-            ) : null}
-            <ExportCard state={state} lang={L} busy={busy} act={act} />
-            <ActivityCard state={state} lang={L} />
-          </aside>
+              <LastYear view={state.lastYear} year={state.taxYear} lang={L} />
+            </div>,
+          )}
+          {stage(
+            'save',
+            <div class="stack">
+              {state.yearOver || !planned || !plan || !planning ? (
+                // A year that is over: the plans are the default year's, one click away.
+                <YearOverCard state={state} lang={L} act={act} busy={busy !== ''} />
+              ) : (
+                <>
+                  <SaveHeadline state={state} lang={L} />
+                  {state.journey.touChoice || planning.tou.decision ? (
+                    <TouCard state={planned} lang={L} act={act} />
+                  ) : null}
+                  <div class="details">
+                    <Detail
+                      title={tj(L, 'detail.pillar3a')}
+                      figure={
+                        plan.result.saving
+                          ? tj(L, 'detail.saves', {
+                              amount: francs(
+                                Math.round(plan.result.saving.totalCentimes / 1000) * 1000,
+                                L,
+                              ),
+                            })
+                          : plan.result.roomCentimes
+                            ? tj(L, 'detail.room', { amount: francs(plan.result.roomCentimes, L) })
+                            : undefined
+                      }
+                    >
+                      <Plan3a state={planned} lang={L} act={act} />
+                    </Detail>
+                    <Detail
+                      title={tj(L, 'detail.lpp')}
+                      figure={
+                        planning.lpp.saving
+                          ? tj(L, 'detail.saves', {
+                              amount: francs(
+                                Math.round(planning.lpp.saving.totalCentimes / 1000) * 1000,
+                                L,
+                              ),
+                            })
+                          : undefined
+                      }
+                    >
+                      <LppCard state={planned} lang={L} act={act} />
+                    </Detail>
+                    <Detail
+                      title={tj(L, 'detail.catchup')}
+                      figure={
+                        planning.catchUp.saving
+                          ? tj(L, 'detail.saves', {
+                              amount: francs(
+                                Math.round(planning.catchUp.saving.totalCentimes / 1000) * 1000,
+                                L,
+                              ),
+                            })
+                          : undefined
+                      }
+                    >
+                      <CatchUpCard state={planned} lang={L} act={act} />
+                    </Detail>
+                  </div>
+                </>
+              )}
+              {state.review && state.review.status !== 'none' ? (
+                <Detail title={tj(L, 'detail.review')}>
+                  <Review view={state.review} taxYear={state.taxYear} lang={L} />
+                </Detail>
+              ) : null}
+            </div>,
+          )}
+          {stage(
+            'file',
+            <div class="stack">
+              {state.journey.documentsIn ? null : <p class="muted">{tj(L, 'file.later')}</p>}
+              <FinalCheck state={state} lang={L} />
+              <CopyPanel state={state} lang={L} act={act} />
+              <Reconcile state={state} lang={L} act={act} />
+              <Assessment state={state} lang={L} />
+            </div>,
+          )}
         </div>
         {lost ? (
           <p class="banner banner-fix" role="status">
@@ -246,9 +399,15 @@ export function App(): JSX.Element {
           </p>
         ) : null}
       </main>
-      <footer class="foot">
-        <span>{t(L, embedded() ? 'footerChat' : 'footer')}</span>
-        <span class="tnum">Taxpresso {state.version}</span>
+      <footer class="foot foot-simple">
+        <div class="foot-tools">
+          <ExportCard state={state} lang={L} busy={busy} act={act} compact />
+          <ActivityCard state={state} lang={L} />
+        </div>
+        <div class="foot-line">
+          <span>{t(L, embedded() ? 'footerChat' : 'footer')}</span>
+          <span class="tnum">Taxpresso {state.version}</span>
+        </div>
       </footer>
     </>
   );
@@ -283,6 +442,8 @@ function Plan3a({ state, lang, act }: { state: PlannedState; lang: Language; act
   const noTax = result.assumptions
     .map((a) => `assume.${a}`)
     .find((k): k is MessageKey => k.endsWith('_no_tax') && isMessageKey(k));
+  // Only assumptions that have words: never an empty bullet.
+  const how = assumptionList(lang, result.assumptions);
   return (
     <section class="plan" aria-labelledby="plan-title">
       <span class="plan-when">{t(lang, 'planWhen')}</span>
@@ -320,22 +481,29 @@ function Plan3a({ state, lang, act }: { state: PlannedState; lang: Language; act
           ) : noTax ? (
             // The canton's tax can't be computed for the year (its rates are not published).
             <span class="figure-note">{t(lang, noTax)}</span>
+          ) : state.journey.savings?.parts.includes('pillar3a') ? (
+            // The total reads the salary certificate too; this card only a rough salary.
+            <span class="figure-note">{tj(lang, 'save.inTotal')}</span>
           ) : (
             <span class="figure-note">{t(lang, 'planNeedSalary')}</span>
           )}
         </div>
       </div>
-      <div class={`plan-people${inputs.length > 1 ? ' plan-people-two' : ''}`}>
-        {inputs.map((input) => (
-          <PlanPerson
-            key={input.person}
-            input={input}
-            two={inputs.length > 1}
-            lang={lang}
-            act={act}
-          />
-        ))}
-      </div>
+      {/* The figures come from documents, answers or the chat; corrections stay one click away. */}
+      <details class="change change-dark">
+        <summary>{tj(lang, 'change')}</summary>
+        <div class={`plan-people${inputs.length > 1 ? ' plan-people-two' : ''}`}>
+          {inputs.map((input) => (
+            <PlanPerson
+              key={input.person}
+              input={input}
+              two={inputs.length > 1}
+              lang={lang}
+              act={act}
+            />
+          ))}
+        </div>
+      </details>
       {state.planning.needsTou ? (
         <p class="banner banner-estimate">{tp(lang, 'onlyWithTou')}</p>
       ) : null}
@@ -359,12 +527,13 @@ function Plan3a({ state, lang, act }: { state: PlannedState; lang: Language; act
       </div>
       <details class="plan-how">
         <summary>{t(lang, 'planHow')}</summary>
-        <ul>
-          {result.assumptions.map((a) => {
-            const key = `assume.${a}`;
-            return <li key={a}>{isMessageKey(key) ? t(lang, key) : a}</li>;
-          })}
-        </ul>
+        {how.length ? (
+          <ul>
+            {how.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
+        ) : null}
         <p>
           {t(lang, 'planSources')}: <span class="tnum">{result.sources.join(' · ')}</span>
         </p>
@@ -453,7 +622,7 @@ function Header({
   act: Act;
   busy: boolean;
 }) {
-  const steps = [t(lang, 'step1'), t(lang, 'step2'), t(lang, 'step3')];
+  // The stages replace the old step pills (docs/design/simple.md).
   return (
     <header class="topbar">
       <div class="brand">
@@ -469,19 +638,6 @@ function Header({
           </span>
         )}
       </div>
-      <nav aria-label={t(lang, 'steps')} class="steps">
-        {steps.map((label, i) => (
-          <span
-            key={label}
-            class={`step${i === 0 ? ' step-current' : ''}`}
-            aria-current={i === 0 ? 'step' : undefined}
-            title={i > 0 ? t(lang, 'comingSoon') : undefined}
-          >
-            <span class="step-num">{i + 1}</span>
-            {label}
-          </span>
-        ))}
-      </nav>
       <div class="top-right">
         <button
           type="button"
@@ -530,6 +686,9 @@ function initialDraft(q: Question): Value | undefined {
 function suggestionNote(q: Question, lang: Language, taxYear: number): string {
   const from = q.suggestedFrom ?? {};
   const vars = { year: from.year ?? '', page: from.page ?? '', taxYear };
+  if (from.kind === 'tax_assessment' && from.year) {
+    return t(lang, 'suggestedFromAssessment', vars);
+  }
   if (from.kind !== 'prior_declaration') return t(lang, 'suggestedFromDoc', vars);
   return t(lang, from.year ? 'suggestedFromPrior' : 'suggestedFromPriorNoYear', vars);
 }
@@ -756,7 +915,9 @@ function Documents({
   return (
     <section aria-labelledby="docs-title" class="stack">
       <div class="section-head">
-        <h2 id="docs-title">{t(lang, 'documents')}</h2>
+        <h3 id="docs-title" class="sub-title">
+          {tj(lang, 'docs.here')}
+        </h3>
         {state.documents.length ? (
           <span class="muted">
             {state.documents.length === 1
@@ -913,10 +1074,15 @@ function Missing({ state, lang, act }: { state: State; lang: Language; act: Act 
   return (
     <section class="card side-card" aria-labelledby="missing-title">
       <div class="section-head">
-        <h2 id="missing-title">{t(lang, 'missingTitle')}</h2>
+        <h3 id="missing-title" class="sub-title">
+          {t(lang, 'missingTitle')}
+        </h3>
         <span class="muted tnum">{count}</span>
       </div>
       {open.length === 0 ? <p class="muted">{t(lang, 'missingNone')}</p> : null}
+      {count && !state.journey.yearEnded ? (
+        <p class="muted small-text">{tj(lang, 'docs.later', { year: state.taxYear })}</p>
+      ) : null}
       <ul class="req-list">
         {open.map((rows) =>
           rows.length > 1 ? (
@@ -1169,27 +1335,24 @@ function Explain({
 function ActivityCard({ state, lang }: { state: State; lang: Language }) {
   const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' });
   const items = state.activity.filter((a) => isMessageKey(`act.${a.by}.${a.what}`)).slice(0, 8);
+  if (!items.length) return null;
   return (
-    <section class="card side-card" aria-labelledby="activity-title">
-      <h2 id="activity-title">{t(lang, 'activityTitle')}</h2>
-      {items.length ? (
-        <ol class="activity">
-          {items.map((a, i) => {
-            const key = `act.${a.by}.${a.what}`;
-            return (
-              <li key={`${a.at}-${i}`}>
-                <time class="tnum" dateTime={a.at}>
-                  {time.format(new Date(a.at))}
-                </time>{' '}
-                {isMessageKey(key) ? t(lang, key, { detail: a.detail ?? '' }) : ''}
-              </li>
-            );
-          })}
-        </ol>
-      ) : (
-        <p class="muted">{t(lang, 'activityEmpty')}</p>
-      )}
-    </section>
+    <details class="foot-activity">
+      <summary>{tj(lang, 'activity')}</summary>
+      <ol class="activity">
+        {items.map((a, i) => {
+          const key = `act.${a.by}.${a.what}`;
+          return (
+            <li key={`${a.at}-${i}`}>
+              <time class="tnum" dateTime={a.at}>
+                {time.format(new Date(a.at))}
+              </time>{' '}
+              {isMessageKey(key) ? t(lang, key, { detail: a.detail ?? '' }) : ''}
+            </li>
+          );
+        })}
+      </ol>
+    </details>
   );
 }
 

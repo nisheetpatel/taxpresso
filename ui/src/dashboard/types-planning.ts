@@ -47,26 +47,6 @@ export type TouStatus = 'yes' | 'no' | 'unknown' | 'check';
  */
 export type TouMode = 'in_place' | 'compulsory' | 'choice' | 'check' | 'unknown';
 
-/** Tax at source in plain words (extension/src/source-tax.ts). */
-export interface SourceTaxState {
-  lines: { person?: 'p1' | 'p2'; text: string; source?: string; estimate?: true }[];
-  people: {
-    person: 'p1' | 'p2';
-    atSource: boolean | null;
-    how: 'derived' | 'answered' | 'unknown';
-    /** The barème that counts: a payslip's, else the one worked out. */
-    tariff: string | null;
-    derivedTariff: string | null;
-    documentTariff: string | null;
-    withheld: {
-      centimes: number;
-      from: 'certificate' | 'stated' | 'tariff';
-      estimate: boolean;
-    } | null;
-    missing: string[];
-  }[];
-}
-
 export interface TouPlan {
   applies: boolean;
   /** Only when it applies. */

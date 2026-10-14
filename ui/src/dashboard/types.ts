@@ -7,7 +7,7 @@ import type { CopyPanelState } from './types-copy';
 import type { FinalCheckState } from './types-final-check';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
-import type { PlanningState, SourceTaxState } from './types-planning';
+import type { PlanningState } from './types-planning';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
@@ -97,8 +97,62 @@ export interface YearOverView {
   };
 }
 
+/** Simple first (docs/design/simple.md; extension/src/journey.ts): the next step and the stages. */
+export type StageId = 'about' | 'documents' | 'tax' | 'save' | 'file';
+
+export interface JourneyVars {
+  n?: number;
+  /** Centimes. */
+  amount?: number;
+  /** YYYY-MM-DD. */
+  date?: string;
+  year?: number;
+  /** Centimes: the separate tax on pension capital, never in the total (`amount`). */
+  capital?: number;
+}
+
+export interface Journey {
+  next: { id: string; stage: StageId | null; vars: JourneyVars };
+  /** The stage open by default. */
+  stage: StageId;
+  stages: { id: StageId; status: string; vars: JourneyVars }[];
+  /**
+   * Facts that need no decision, shown as sentences in "About you". A tax-at-source fact
+   * (source_tax) carries its sentence in every language, where it comes from, and whether it is
+   * an estimate.
+   */
+  about: {
+    id: string;
+    who?: 'p1' | 'p2' | 'both';
+    vars: JourneyVars;
+    text?: { en: string; fr: string; de?: string; it?: string };
+    source?: string;
+    estimate?: true;
+  }[];
+  /** At least one income or wealth figure: only then is there a tax to show. */
+  hasFigures: boolean;
+  /** All the plans before 31 December together, or null. */
+  savings: {
+    totalCentimes: number;
+    cantonalCentimes: number;
+    federalCentimes: number;
+    parts: ('pillar3a' | 'pillar3a_catchup' | 'lpp_buyin')[];
+    onlyWithTou: boolean;
+    assumptions: string[];
+    sources: string[];
+  } | null;
+  /** A real TOU choice: the "Decide" card shows. */
+  touChoice: boolean;
+  /** The documents are in: the File stage opens. */
+  documentsIn: boolean;
+  /** 31 December of the tax year has passed. */
+  yearEnded: boolean;
+}
+
 /** Values read from documents, checks and the assessment: ./types-docs.ts. */
 export interface State extends DocumentsState {
+  /** The next step and the stages (docs/design/simple.md). */
+  journey: Journey;
   version: string;
   /** The open tax year: everything on the page is about it. */
   taxYear: number;
@@ -154,11 +208,6 @@ export interface State extends DocumentsState {
   } | null;
   /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. Null for a year that is over. */
   planning: PlanningState | null;
-  /**
-   * Tax at source as facts, never asked (extension/src/source-tax.ts): who is taxed at source, the
-   * barème and the tax withheld, in plain words with their sources. Geneva, when someone is.
-   */
-  sourceTax?: SourceTaxState;
   notSupported: string[];
   /** The values to type into the official declaration, in the form's order (SPEC.md 10.5). */
   copyPanel: CopyPanelState;

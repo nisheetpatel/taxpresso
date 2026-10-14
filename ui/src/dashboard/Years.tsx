@@ -6,7 +6,6 @@ import { api } from './api';
 import type { Language } from './i18n';
 import { ty } from './i18n-years';
 import { day } from './i18n-planning';
-import { SourceTaxFacts } from './Planning';
 import type { State } from './types';
 
 type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
@@ -108,7 +107,6 @@ export function YearOverCard({
             : ty(lang, 'touOrdinary', { year })}
         </p>
       ) : null}
-      <SourceTaxFacts state={state} lang={lang} />
       <details class="plan-how">
         <summary>{ty(lang, 'sources')}</summary>
         <p class="tnum">{sources.join(' · ')}</p>

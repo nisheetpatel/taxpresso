@@ -323,6 +323,16 @@ export class QuestionnaireEngine {
     }
   }
 
+  /**
+   * An answer to the question of `key` as the questionnaire takes it (an option by its value or
+   * label, a commune by its name), without storing it: for a suggestion read from a document.
+   */
+  coerceAnswer(key: string, raw: unknown): FactValue {
+    const question = this.file.questions.find((q) => q.key === key);
+    if (!question) throw new QuestionnaireError(`No question asks for ${key}.`);
+    return this.#coerce(question, raw);
+  }
+
   /** What the "still missing" list shows, derived from the answers and the documents. */
   requirements(
     snapshot: Snapshot,

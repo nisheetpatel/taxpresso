@@ -37,7 +37,12 @@ import { buildStatus, StatusSchema, statusText } from './status.js';
 import { CANTONS, cantonNames, fullCantons, germanCantons, previewCantons } from './cantons.js';
 import { PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
-import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
+import {
+  ASSESSMENT_HOUSEHOLD_KEYS,
+  PLAN_KEYS,
+  WorkspaceError,
+  type Workspace,
+} from './workspace.js';
 import { registerYearTool } from './year-tool.js';
 import { DEFAULT_TAX_YEAR, TaxYears } from './years.js';
 
@@ -809,7 +814,11 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         values: z
           .array(
             z.object({
-              key: z.enum(DOCUMENT_VALUE_KEYS),
+              key: z
+                .enum([...DOCUMENT_VALUE_KEYS, ...ASSESSMENT_HOUSEHOLD_KEYS])
+                .describe(
+                  'A value of the document. An assessment (tax_assessment) may also give the household answers it prints (profile.*): they become suggestions the user confirms.',
+                ),
               value: z
                 .union([z.string().max(200), z.boolean(), z.number()])
                 .describe(
@@ -876,6 +885,20 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
             : 'Nothing from this document is waiting for the user’s OK.',
         );
         if (checks.length) lines.push(`Check this, with the user: ${checks.join(' ')}`);
+        if (result.later.length) {
+          lines.push(
+            `Not saved yet: ${result.later.join(', ')}. Its question comes once the canton is answered: propose it again then.`,
+          );
+        }
+        // Household answers an assessment prints wait in their questions, as suggestions.
+        const suggested = ws
+          .snapshot()
+          .slots.filter((s) => s.value === undefined && s.suggestion?.source.docId === doc.id);
+        if (suggested.length) {
+          lines.push(
+            `${suggested.length} answer${suggested.length === 1 ? '' : 's'} suggested from this document wait in the questions: ask whether each is still right this year (next_questions), then save what the user says with answer_question.`,
+          );
+        }
         return {
           content: [{ type: 'text', text: lines.join('\n') }],
           structuredContent: {
@@ -972,7 +995,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         content: [
           {
             type: 'text',
-            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running.`,
+            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running. Keep it beside the chat: in the chat it floats next to the conversation where the app allows it; in Cowork or the Code tab, open this link in the built-in browser pane next to the chat. Then guide the user from the chat: the dashboard follows.`,
           },
         ],
         structuredContent: { url, status: status(ws) },

@@ -145,24 +145,28 @@ describe('TOU in the dashboard', () => {
     expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'H1N' });
     expect(withheld.totalCentimes).toBeGreaterThan(0);
     expect(res.state.planning!.tou.assumptions).toContain('withheld_from_tariff');
-    expect(res.state.sourceTax?.lines.map((l) => l.text)).toEqual(
+    const facts = (st: DashboardState) =>
+      st.journey.about.filter((f) => f.id === 'source_tax').map((f) => f.text?.en ?? '');
+    expect(facts(res.state)).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^Barème H1N: single parent, the children living with you/),
         expect.stringMatching(/^Tax taken at source for 2026: about CHF/),
       ]),
     );
-    expect(res.state.sourceTax?.lines.find((l) => /about CHF/.test(l.text))?.estimate).toBe(true);
+    expect(res.state.journey.about.find((f) => /about CHF/.test(f.text?.en ?? ''))?.estimate).toBe(
+      true,
+    );
     // A barème read from a payslip wins, and both show.
     res = await planning(api, '/planning', { field: 'tariff', value: 'a0' });
     expect(res.state.planning!.inputs[0]?.tariff).toBe('A0N');
     withheld = res.state.planning!.tou.withheld!;
     expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'A0N' });
-    expect(res.state.sourceTax?.people[0]).toMatchObject({
+    expect(res.state.planning!.sourceTax?.people[0]).toMatchObject({
       tariff: 'A0N',
-      derivedTariff: 'H1N',
+      derivedTariff: { code: 'H1N' },
       documentTariff: 'A0N',
     });
-    expect(res.state.sourceTax?.lines.map((l) => l.text)).toContain(
+    expect(facts(res.state)).toContain(
       'Barème A0N, from a payslip; it wins over the one Taxpresso works out, H1N.',
     );
     res = await planning(api, '/planning', { field: 'tariff', value: 'A0Y' });

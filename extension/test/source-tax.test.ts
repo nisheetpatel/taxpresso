@@ -14,6 +14,17 @@ import { createTaxpressoServer } from '../src/server.js';
 import type { Workspace } from '../src/workspace.js';
 import { makeUiDir, makeWorkspace } from './helpers.js';
 
+/** The tax-at-source facts of "About you" (docs/design/simple.md), in one language. */
+const facts = (s: DashboardState, lang: 'en' | 'fr' | 'de' | 'it' = 'en') =>
+  s.journey.about
+    .filter((f) => f.id === 'source_tax')
+    .map((f) => ({ text: f.text?.[lang] ?? '', source: f.source, estimate: f.estimate }));
+const texts = (s: DashboardState, lang: 'en' | 'fr' | 'de' | 'it' = 'en') =>
+  facts(s, lang).map((f) => f.text);
+/** What get_status tells Claude: the journey's lines, the facts among them. */
+const journeyOf = (structured: Record<string, unknown>) =>
+  (structured.journey as string[]).join('\n');
+
 const req = (method: 'GET' | 'POST', p: string, body: unknown = {}, lang = 'en'): ApiRequest => ({
   method,
   path: p,
@@ -127,18 +138,23 @@ describe('a couple with B permits, one salaried, the other on unemployment benef
       // Before any document: who is taxed at source and the barème are known; the tax withheld
       // is said in plain words to come from the documents.
       const status = await call('get_status');
-      expect(status.structured.sourceTax).toEqual(
+      const told = journeyOf(status.structured);
+      expect(told).toMatch(/You are taxed at source\. Without a C permit/);
+      expect(told).toMatch(/Your spouse or partner is taxed at source\. Without a C permit/);
+      expect(told).toMatch(/Barème C0N: married, both of you with income/);
+      expect(status.structured.about).toContain('source_tax');
+      let s = await state();
+      expect(texts(s)).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^You are taxed at source\. Without a C permit/),
-          expect.stringMatching(/^Your spouse or partner is taxed at source\. Without a C permit/),
           expect.stringMatching(/^Barème C0N: married, both of you with income/),
         ]),
       );
-      expect(status.text).toMatch(/don't ask the user for it/);
-      let s = await state();
       expect(s.planning!.tou.problem).toBe('benefits_unknown');
-      expect(s.sourceTax!.people.find((p) => p.person === 'p2')?.missing).toEqual(['benefits']);
-      expect(s.sourceTax!.lines.map((l) => l.text).join(' ')).toMatch(
+      expect(s.planning!.sourceTax!.people.find((p) => p.person === 'p2')?.missing).toEqual([
+        'benefits',
+      ]);
+      expect(texts(s).join(' ')).toMatch(
         /not known yet\. The attestation of the fund that paid your benefits .* shows the tax it took at source/,
       );
 
@@ -169,8 +185,8 @@ describe('a couple with B permits, one salaried, the other on unemployment benef
       expect(list.text).toMatch(/A choice only once none of the compulsory cases applies/);
       // The dashboard in French: the same facts, in French, with their sources.
       const fr = await state('fr');
-      expect(fr.sourceTax!.lines[0]?.text).toMatch(/^Vous êtes imposé à la source/);
-      expect(fr.sourceTax!.lines[0]?.source).toMatch(/ge-na-law-lisp art\. 1/);
+      expect(facts(fr, 'fr')[0]?.text).toMatch(/^Vous êtes imposé à la source/);
+      expect(facts(fr, 'fr')[0]?.source).toMatch(/ge-na-law-lisp art\. 1/);
     } finally {
       await close();
     }
@@ -199,10 +215,11 @@ describe('a Swiss spouse and a spouse with a B permit', () => {
         asked.filter((id) => id.startsWith('taxed_at_source') || id.startsWith('tou')),
       ).toEqual([]);
       const status = await call('get_status');
-      expect(status.structured.sourceTax).toBeUndefined();
-      expect(status.text).not.toMatch(/Tax at source/);
+      expect(status.structured.about).not.toContain('source_tax');
+      expect(status.text).not.toMatch(/taxed at source/);
       const s = await state();
-      expect(s.sourceTax).toBeUndefined();
+      expect(facts(s)).toEqual([]);
+      expect(s.planning!.sourceTax).toBeUndefined();
       expect(s.planning!.tou.applies).toBe(false);
       expect(s.planning!.inputs.map((i) => i.taxedAtSource)).toEqual([false, false]);
       expect((await call('list_optimizations')).text).not.toMatch(/TOU \(taxation ordinaire/);
@@ -234,19 +251,15 @@ describe('a single parent with a B permit and two children', () => {
       });
       await call('set_fact', { key: 'plan.gross_salary', value: 68_000 });
       const status = await call('get_status');
-      const lines = status.structured.sourceTax as string[];
-      expect(lines).toEqual(
-        expect.arrayContaining([
-          expect.stringMatching(
-            /^Barème H2N: single parent, the children living with you; it counts each child as under 25/,
-          ),
-          expect.stringMatching(
-            /^Tax taken at source for 2026: about CHF [\d,]+, estimated with barème H2N on the gross salary\. \(an estimate\)/,
-          ),
-        ]),
+      const told = journeyOf(status.structured);
+      expect(told).toMatch(
+        /Barème H2N: single parent, the children living with you; it counts each child as under 25/,
+      );
+      expect(told).toMatch(
+        /Tax taken at source for 2026: about CHF [\d,]+, estimated with barème H2N on the gross salary\. \(an estimate\)/,
       );
       const s = await state('de');
-      expect(s.sourceTax!.lines.find((l) => l.estimate)?.text).toMatch(
+      expect(facts(s, 'de').find((l) => l.estimate)?.text).toMatch(
         /^An der Quelle abgezogene Steuer 2026: etwa CHF .* geschätzt mit Tarif H2N/,
       );
       expect(s.planning!.tou.withheld?.people[0]).toMatchObject({ from: 'tariff', tariff: 'H2N' });
@@ -337,8 +350,14 @@ describe('a couple whose income makes TOU compulsory', () => {
       ]);
       const s = await state();
       // The spouse has no income: barème B1, and that is no "only one of you is taxed at source".
-      expect(s.sourceTax!.people[0]).toMatchObject({ derivedTariff: 'B1N', atSource: true });
-      expect(s.sourceTax!.people[1]).toMatchObject({ atSource: false });
+      expect(s.planning!.sourceTax!.people[0]).toMatchObject({
+        derivedTariff: { code: 'B1N' },
+        atSource: true,
+      });
+      expect(s.planning!.sourceTax!.people[1]).toMatchObject({ atSource: false });
+      // A fact, not a choice: in "About you", no "Decide" card.
+      expect(s.journey.about.map((f) => f.id)).toContain('tou_compulsory');
+      expect(s.journey.touChoice).toBe(false);
       expect(s.planning!.tou).toMatchObject({ mode: 'compulsory' });
       expect(s.planning!.tou.problem).toBeUndefined();
       expect(s.planning!.tou.reasons.find((r) => r.id === 'gross')?.status).toBe('yes');
@@ -387,7 +406,7 @@ describe('where the law leaves it open', () => {
       await ws.setPlan('p1', 'plan.tou_taxable_wealth', false, 'chat');
       const s = await state();
       expect(s.planning!.tou.problem).toBe('mixed_couple');
-      expect(s.sourceTax!.lines.map((l) => l.text)).toContain(
+      expect(texts(s)).toContain(
         'Your spouse or partner is not taxed at source. That is what you said.',
       );
       const list = await call('list_optimizations');
@@ -421,12 +440,14 @@ describe('a C permit received during the year', () => {
       ]);
       const s = await state();
       expect(s.planning!.tou.applies).toBe(false);
-      expect(s.sourceTax!.lines.map((l) => l.text)).toEqual([
+      expect(texts(s)).toEqual([
         'You are not taxed at source. Swiss citizens and C permit holders are not taxed at source, and neither is someone married to one of them.',
         'Tax taken at source in 2026 all the same, salary certificate box 12: CHF 3,100. The whole year is taxed ordinarily (a C permit, Swiss citizenship or a marriage during the year, for example), and this tax counts towards it.',
       ]);
-      expect(s.sourceTax!.lines[1]?.source).toMatch(/ge-na-law-risp art\. 10/);
-      expect((await call('get_status')).structured.sourceTax).toHaveLength(2);
+      expect(facts(s)[1]?.source).toMatch(/ge-na-law-risp art\. 10/);
+      expect(journeyOf((await call('get_status')).structured)).toMatch(
+        /counts towards it\. \[ge-na-law-risp art\. 10/,
+      );
     } finally {
       await close();
     }
