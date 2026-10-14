@@ -2,7 +2,12 @@
 // exactly what the engine gives for the same household, a fact that would change Basel-Landschaft's
 // tax and that its engine does not read is refused, and the communes are the official table's.
 // Synthetic only.
-import { SALARY_CERTIFICATE_FIELDS_2026, type HouseholdInput } from '@taxpresso/rules-ch';
+import {
+  ATTESTATION_FIELDS_2026,
+  DOCUMENT_FIELDS_WEALTH_2026,
+  SALARY_CERTIFICATE_FIELDS_2026,
+  type HouseholdInput,
+} from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   BlInputError,
@@ -237,22 +242,22 @@ describe('Basel-Landschaft through the canton interface', () => {
     expect(computed).toBeLessThan(all.length);
   });
 
-  it('computes the state and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the state and communal tax of each household and the federal tax of its column', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
       expect(r.unsupported).toEqual([]);
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
       expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
     }
   });
 
-  it('leaves aside the facts that do not change Basel-Landschaft’s tax', () => {
+  it('leaves aside the facts that change neither tax', () => {
     const e = HOUSEHOLDS[0]!;
     const h = household(e);
     const p1 = h.people[0]!;
     const other: HouseholdInput<BaselLandCantonal> = {
       ...h,
-      ifdParentalScale: true,
       people: [
         {
           ...p1,
@@ -261,6 +266,16 @@ describe('Basel-Landschaft through the canton interface', () => {
           employments: p1.employments!.map((x) => ({ ...x, workCommune: 'geneve' })),
         },
       ],
+      movable: h.movable!.map((m) => ({ ...m, withholdingSwiss: amt(70) })),
+    };
+    expect(rules.computeReturn(other)).toEqual(computeReturn(e));
+  });
+
+  it('counts the insurance premiums for the federal tax only (the canton deducts its maximum)', () => {
+    const e = HOUSEHOLDS[0]!;
+    const h = household(e);
+    const with_ = rules.computeReturn({
+      ...h,
       household: {
         ...h.household,
         healthPremiums: amt(5_500),
@@ -269,15 +284,53 @@ describe('Basel-Landschaft through the canton interface', () => {
         lifeInsurancePremiums: amt(800),
         savingsInterest: amt(100),
       },
-      movable: h.movable!.map((m) => ({ ...m, withholdingSwiss: amt(70) })),
+    });
+    const without_ = computeReturn(e);
+    expect(with_.icc).toEqual(without_.icc);
+    expect(with_.ifd!.items.find((i) => i.code === '625')?.amount).toBeLessThan(0);
+    expect(without_.ifd!.items.find((i) => i.code === '625')).toBeUndefined();
+    expect(with_.ifd!.tax.amount).toBeLessThan(without_.ifd!.tax.amount);
+  });
+
+  it('takes childcare given for the household where one child’s limit settles it', () => {
+    const e = HOUSEHOLDS[2]!; // one child under 14
+    const h = household(e);
+    const one = { ...h, children: [{ custody: 'full' as const, under14: true }] };
+    const r = rules.computeReturn({ ...one, household: { ...h.household, childcare: amt(6_000) } });
+    expect(r).toEqual(computeReturn(e));
+    // Two children under 14 and more than one child's limit: the split decides, not computed.
+    const two = {
+      ...h,
+      children: [
+        { custody: 'full' as const, under14: true },
+        { custody: 'full' as const, under14: true },
+      ],
     };
-    expect(rules.computeReturn(other)).toEqual(computeReturn(e));
+    const split = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(15_000) },
+    });
+    expect(split.icc).toBeNull();
+    expect(split.unsupported.map((x) => x.en).join(' ')).toMatch(/limit is per child/);
+    // Split per child (the questionnaire's bl.child_care), it is computed.
+    const each = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(15_000) },
+      cantonal: { childcare: [amt(9_000), amt(6_000)] },
+    });
+    expect(each.icc?.items.find((i) => i.code === '640')?.amount).toBe(-chf(15_000));
+    // Within one child's limit, any split gives the same: computed.
+    const within = rules.computeReturn({
+      ...two,
+      household: { ...h.household, childcare: amt(8_000) },
+    });
+    expect(within.icc?.items.find((i) => i.code === '640')?.amount).toBe(-chf(8_000));
   });
 
   it('refuses a fact Basel-Landschaft does not read, a commune by number and an unknown commune', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<BaselLandCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      { ...h, cantonal: { childcare: [amt(1_000)] } },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, commune: 2829 },
       { ...h, commune: 'Basel' },
@@ -305,15 +358,30 @@ describe('Basel-Landschaft through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys, its own and what each kind of document gives', () => {
     expect(rules.canton).toBe('BL');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2025))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'bl.pension_kind',
+        'bl.child_income',
+        'bl.main_upkeep',
+        'bl.church',
+        'bl.child_care',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.keys(2026)['profile.commune']?.values).toHaveLength(86);
+    expect(rules.documents(2026)).toEqual(
+      Object.entries({
+        salary_certificate: SALARY_CERTIFICATE_FIELDS_2026,
+        ...ATTESTATION_FIELDS_2026,
+        ...DOCUMENT_FIELDS_WEALTH_2026,
+      }).map(([kind, keys]) => ({ kind, keys })),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/bl');
   });
 });
