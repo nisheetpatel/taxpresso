@@ -84,6 +84,14 @@ export const DOCUMENT_KINDS = [
   // passifs), and the AVS compensation fund's statement of the owner's contributions.
   'business_accounts',
   'avs_contributions',
+  // A home or land abroad (immeuble à l'étranger, annexe D; ge-2025-guide-declaration-pp p. 32 and
+  // 33): the country's tax notice or attestation (its tax value, its rental value; in France the
+  // taxe d'habitation or taxes foncières), the deed of purchase (acte d'acquisition) where the
+  // country sets no tax value, and the management account (compte de gestion) of a property let
+  // (ge-na-revenu-immobilier-page, ge-na-valeur-fiscale-page).
+  'foreign_property_tax_notice',
+  'foreign_property_deed',
+  'foreign_property_rent_statement',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 

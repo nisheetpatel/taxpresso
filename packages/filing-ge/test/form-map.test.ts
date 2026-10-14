@@ -24,15 +24,10 @@ describe('the 2025 form map', () => {
       expectCited(p.source, p.id);
       expect(p.source, p.id).toContain(`ge-2025-declaration-specimen p. ${p.pdfPage}`);
     }
-    // Property is listed as placeholders, out of scope for now; of annexe B (self-employment, the
-    // simple case), B3's stock and depreciation tables are the user's to copy from the accounts.
-    expect(pages.filter((p) => !p.supported).map((p) => p.id)).toEqual([
-      'B3',
-      'D1',
-      'D2',
-      'D3',
-      'D4',
-    ]);
+    // Of annexe D, D1 and D2 take a property abroad (the simple case); D3 and D4 are placeholders,
+    // out of scope for now; of annexe B (self-employment, the simple case), B3's stock and
+    // depreciation tables are the user's to copy from the accounts.
+    expect(pages.filter((p) => !p.supported).map((p) => p.id)).toEqual(['B3', 'D3', 'D4']);
   });
 
   it('gives every rubric a label, a gloss, a place and a source on its own page', () => {
@@ -125,10 +120,24 @@ describe('the 2025 form map', () => {
     expect(find('A1', '31.20')).toMatchObject({ role: 'computed', columns: ['ifd'] });
     expect(find('A1', '11.00').role).toBe('total');
     expect(find('PG2', '11.00')).toMatchObject({ role: 'report', person: 'A' });
-    // Self-employment, the simple case: its totals on the summary pages are supported, property's not.
+    // Self-employment and a property abroad, the simple cases: their totals on the summary pages
+    // are supported; property costs carried over (58.01) are not.
     expect(find('PG2', '12.00')).toMatchObject({ role: 'report', supported: true });
     expect(find('PG3', '57.00')).toMatchObject({ role: 'report', supported: true });
-    expect(find('PG2', '15.00').supported).toBe(false);
+    expect(find('PG2', '15.00')).toMatchObject({ role: 'report', supported: true });
+    expect(find('PG4', '15.00')).toMatchObject({ role: 'report', supported: true });
+    expect(find('PG3', '58.00')).toMatchObject({ role: 'report', supported: true });
+    expect(find('PG3', '58.01').supported).toBe(false);
+    expect(find('D1', '15.10')).toMatchObject({
+      label: 'Immeubles occupés par le propriétaire',
+      columns: ['wealth', 'ifd', 'icc'],
+      repeats: 2,
+    });
+    expect(find('D2', '15.20')).toMatchObject({ label: 'Immeubles locatifs ou loués' });
+    expect(find('E1', '55.20')).toMatchObject({
+      label: 'Intérêts et dettes hypothécaires',
+      supported: true,
+    });
     expect(find('PG3', '71.00')).toMatchObject({ role: 'input', parts: ['A', 'B', 'children'] });
     expect(find('F1', 'F1-RSI').format).toBe('money_cents');
     expect(find('C3', '52.21').columns).toEqual(['icc_ifd']);

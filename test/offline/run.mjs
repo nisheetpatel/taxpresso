@@ -2209,6 +2209,198 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
   });
 
+  test('a Geneva home abroad: a flat let in Portugal counted for the rate, a loss abroad, offline', async () => {
+    // Inès Varela, single, Carouge, a flat let in Portugal; Paolo Ferri, single, Meyrin, a holiday
+    // home in Italy whose mortgage makes a loss abroad (packages/rules-ge/test/abroad.test.ts, A1
+    // and A3, derived by hand from the official documents). Each in its own folder and server
+    // process with the same guard; documents in euros, converted at the official rates.
+    const run = async (folder, answers, docs) => {
+      const abVault = path.join(work, folder);
+      const abTransport = new StdioClientTransport({
+        command: process.execPath,
+        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        env: {
+          ...process.env,
+          TAXPRESSO_VAULT_PATH: abVault,
+          TAXPRESSO_UI_LANGUAGE: 'fr',
+          TAXPRESSO_NET_GUARD_LOG: guardLog,
+        },
+        stderr: 'pipe',
+      });
+      abTransport.stderr?.on('data', (d) => (stderr += d));
+      const ab = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
+      await ab.connect(abTransport);
+      const call = async (name, args = {}) => {
+        const res = await ab.callTool({ name, arguments: args });
+        assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+        return res;
+      };
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(abVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind, taxYear: 2026, person },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      return { ab, call };
+    };
+    const common = [
+      ['canton', 'GE'],
+      ['civil_status', 'single'],
+      ['children', 0],
+      ['moved', 'no'],
+      ['income_sources:p1', ['salary']],
+      ['employers:p1', 1],
+      ['pillar3a:p1', false],
+      ['lpp_buyin:p1', false],
+      ['commute:p1', 'walk'],
+      ['meal_days:p1', 0],
+      ['banks', 1],
+      ['crypto', false],
+      ['payments', []],
+      ['special', ['property_abroad']],
+    ];
+    const varela = await run(
+      'Etranger-Varela',
+      [
+        ...common,
+        ['commune', 'Carouge'],
+        ['residence:p1', 'swiss'],
+        ['abroad_property', 'let'],
+        ['abroad_property_owner', 'p1'],
+        ['abroad_property_country', 'portugal'],
+        ['abroad_property_old', true],
+        ['abroad_property_loan', false],
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "98'000.00"],
+            ['salary.gross', "98'000.00"],
+            ['salary.social_contributions', "6'174.00"],
+            ['salary.lpp_ordinary', "5'400.00"],
+          ],
+        ],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "5'880.00"]]],
+        'banque-2026.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "24'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+        'avis-portugal-2026.pdf': [
+          'foreign_property_tax_notice',
+          'household',
+          [
+            ['abroad.currency', 'EUR'],
+            ['abroad.tax_value', "150'000.00"],
+          ],
+        ],
+        'gestion-portugal-2026.pdf': [
+          'foreign_property_rent_statement',
+          'household',
+          [
+            ['abroad.currency', 'EUR'],
+            ['abroad.rents', "9'000.00"],
+            ['abroad.costs', "1'350.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await varela.call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, 1_294_690);
+      assert.equal(tax.structuredContent.ifd.tax, 179_430);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      assert.deepEqual(tax.structuredContent.notSupported, []);
+      const pages = (await varela.call('get_form_values')).structuredContent.sections.map(
+        (s) => s.page,
+      );
+      assert.ok(pages.includes('D2'), `D2 in ${pages}`);
+      const pg3 = await varela.call('get_form_values', { section: 'PG3' });
+      assert.match(pg3.content[0].text, /97\.00 Part proportionnelle du revenu non imposable/);
+      const status = await varela.call('get_status');
+      assert.match(status.content[0].text, /exemption avec réserve de progression/);
+      const check = await varela.call('final_check');
+      assert.ok(check.structuredContent.know.some((i) => i.id === 'abroad:rate'));
+    } finally {
+      await varela.ab.close();
+    }
+
+    const ferri = await run(
+      'Etranger-Ferri',
+      [
+        ...common,
+        ['commune', 'Meyrin'],
+        ['residence:p1', 'permit_c'],
+        ['abroad_property', 'own_use'],
+        ['abroad_property_owner', 'p1'],
+        ['abroad_property_country', 'italy'],
+        ['abroad_property_old', true],
+        ['abroad_property_loan', true],
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "72'000.00"],
+            ['salary.gross', "72'000.00"],
+            ['salary.social_contributions', "4'536.00"],
+            ['salary.lpp_ordinary', "3'600.00"],
+          ],
+        ],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "5'400.00"]]],
+        'banque-2026.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "10'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+        'avis-italie-2026.pdf': [
+          'foreign_property_tax_notice',
+          'household',
+          [
+            ['abroad.currency', 'EUR'],
+            ['abroad.tax_value', "120'000.00"],
+          ],
+        ],
+        'hypotheque-italie-2026.pdf': [
+          'debt_interest',
+          'household',
+          [
+            ['debt.currency', 'EUR'],
+            ['debt.balance_in_currency', "110'000.00"],
+            ['debt.interest_in_currency', "6'600.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await ferri.call('compute_tax');
+      assert.equal(tax.structuredContent.icc, null);
+      assert.equal(tax.structuredContent.ifd, null);
+      assert.match(tax.structuredContent.unsupported.join(' '), /a loss abroad/);
+    } finally {
+      await ferri.ab.close();
+    }
+  });
+
   test('an Aargau return: its questions, its tax and the values to type, offline', async () => {
     // Another household in its own folder, in its own server process with the same guard: Lea
     // Huber, single, in Aarau, with the synthetic salary certificate read from its barcode.

@@ -117,7 +117,10 @@ export interface HouseholdInput {
    * What the ledger already knows besides the salaries and the plans' own deductions (health
    * premiums, childcare, donations, the état des titres...), so the plans run on the real tax.
    */
-  known?: Pick<EngineInput, 'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale'>;
+  known?: Pick<
+    EngineInput,
+    'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale' | 'abroad'
+  >;
 }
 
 export type Assumption =
@@ -229,6 +232,8 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
       : {}),
     ...(h.known?.household ? { household: h.known.household } : {}),
     ...(h.known?.wealthItems ? { wealthItems: h.known.wealthItems } : {}),
+    // A home or land abroad: counted for the rate, so the plans' savings are at the real rate.
+    ...(h.known?.abroad ? { abroad: h.known.abroad } : {}),
   };
 }
 

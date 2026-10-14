@@ -216,6 +216,9 @@ export const ENGINE_RUBRICS_2026 = {
 const FROM_ENGINE = (rubrics: string) =>
   `An answer, not a value to type: the tax engine turns it into ${rubrics} (${SPEC} p. 5 and 6; ${GUIDE} p. 19 to 22).`;
 
+const ABROAD = (what: string) =>
+  `${what} (${SPEC} p. 2 to 4, 15 and 16; ${GUIDE} p. 32 to 35): the engine places the converted francs (annexe D).`;
+
 const ETAT = (page: string, pdfPage: number) =>
   `A line of the securities list (état des titres, ${page}, ${SPEC} p. ${pdfPage}): the dashboard's securities card lists it, and its totals go to F1 and 14.00.`;
 
@@ -293,6 +296,26 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'business.name': `Goes to B1 with the business's sheet (${SPEC} p. 7): the name of the business.`,
   'business.period_from': `Goes to B1 with the business's sheet (${SPEC} p. 7): the business year.`,
   'business.period_to': `Goes to B1 with the business's sheet (${SPEC} p. 7): the business year.`,
+  // A property abroad: its amounts are printed in its currency; Taxpresso converts them and the
+  // engine places the francs on annexe D (./annex-d.ts), never one value at a time.
+  'abroad.currency': ABROAD(
+    'The currency of the amounts: Taxpresso converts them into francs at the official rate',
+  ),
+  'abroad.tax_value': ABROAD('The value of the property abroad, on D1 or D2 and PG4 15.00'),
+  'abroad.purchase_price': ABROAD(
+    'The value of the property abroad when the country sets none, on D1 or D2 and PG4 15.00',
+  ),
+  'abroad.rental_value': ABROAD('The rental value of a home abroad, on D1 15.10 and PG2 15.00'),
+  'abroad.land_tax_base': ABROAD(
+    'Twice it is the rental value of a home in France, on D1 15.10 and PG2 15.00',
+  ),
+  'abroad.rents': ABROAD('The rents of a property let abroad, on D2 15.20 and PG2 15.00'),
+  'abroad.costs': ABROAD('The upkeep costs of a property let abroad, on D2 and PG3 58.00'),
+  // A loan statement in another currency: converted by the securities list's other wealth, then on
+  // E1 55.20 (./annex-d.ts).
+  'debt.currency': `The currency of a loan abroad: Taxpresso converts its amounts and places them on E1 55.20 (${SPEC} p. 19; ${GUIDE} p. 37).`,
+  'debt.balance_in_currency': `A loan abroad, converted at the official rate of 31 December and placed on E1 55.20 (${SPEC} p. 19; ${GUIDE} p. 37).`,
+  'debt.interest_in_currency': `A loan abroad's interest, converted at the year's average rate and placed on E1 55.20 (${SPEC} p. 19; ${GUIDE} p. 37).`,
   'life_insurance.surrender_value': `Goes to 16.70 (C3) through the securities list's other wealth (${SPEC} p. 13); the dashboard's securities card shows it until the engine places it.`,
   'life_insurance.premiums': `Goes to 52.11 (C3) through the securities list's other wealth (${SPEC} p. 13); the dashboard's securities card shows it until the engine places it.`,
 };

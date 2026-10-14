@@ -606,6 +606,7 @@ export class Workspace {
               ...(known.ifdParentalScale !== undefined
                 ? { ifdParentalScale: known.ifdParentalScale }
                 : {}),
+              ...(known.abroad ? { abroad: known.abroad } : {}),
             },
           }
         : {}),

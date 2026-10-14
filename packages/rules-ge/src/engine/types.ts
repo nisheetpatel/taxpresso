@@ -123,6 +123,37 @@ export interface CapitalInput {
   arrivedFromAbroad?: boolean;
 }
 
+/**
+ * A home or land abroad (immeuble à l'étranger, annexe D), the simple case: one property, owned by
+ * one spouse or both, used by the household (or kept for its use or its family's), let to tenants,
+ * or land with no home on it. Taxed where it lies; Geneva and the federal tax count it only for the
+ * rate (./abroad.ts). Amounts in francs, converted at the official rates (from-ledger).
+ */
+export interface AbroadPropertyInput {
+  /** Whose it is: one spouse, or both ('household'). */
+  owner: EnginePerson | 'household';
+  /** own_use: 15.10, rental value; let: 15.20, rents; land: 15.20, no income. */
+  use: 'own_use' | 'let' | 'land';
+  /** The country's name in French, as the form's Situation asks ("nom du pays"). */
+  country?: Text;
+  /** In France, the rental value comes from the taxe d'habitation or the taxes foncières. */
+  france?: boolean;
+  /** Its value on 31 December: the tax value set by the country, else the purchase price. */
+  value?: Amount;
+  valueBasis?: 'tax_value' | 'purchase_price' | 'estimate';
+  /** Own use: the rental value the country sets (France: the taxe d'habitation's, or twice the taxes foncières' base). */
+  rentalValue?: Amount;
+  rentalBasis?: 'country' | 'france_habitation' | 'france_land_tax';
+  /** Let: the rents received in the year. */
+  rents?: Amount;
+  /** Let: the actual upkeep, insurance and management costs of the year. */
+  costs?: Amount;
+  /** The building was more than 10 years old on 1 January: the flat upkeep rates. */
+  old?: boolean;
+  /** What puts the household outside the simple case, read from the answers (fail closed). */
+  unsupported?: readonly Text[];
+}
+
 export interface EngineInput {
   taxYear: TaxYear;
   /** Commune of residence on 31 December. */
@@ -163,6 +194,8 @@ export interface EngineInput {
   unsupported?: readonly Text[];
   /** Lump sums from the 2nd pillar and pillar 3a, taxed apart (./capital.ts). */
   capital?: CapitalInput;
+  /** A home or land abroad: exempt, counted for the rate (./abroad.ts). */
+  abroad?: AbroadPropertyInput;
 }
 
 /**
@@ -236,6 +269,11 @@ export interface IccResult extends CantonalResult {
   totalIncome: Line;
   /** 99.00 revenu imposable. */
   taxableIncome: Line;
+  /**
+   * 97.00 part proportionnelle du revenu non imposable: with a property abroad, the share of the
+   * total net income (95.00, then the income for the rate) not taxed in Geneva.
+   */
+  exemptIncome?: Line;
   splitting: IccSplitting;
   /** Revenu déterminant le taux. */
   rateIncome: Line;
@@ -244,6 +282,11 @@ export interface IccResult extends CantonalResult {
     grossWealth: Line;
     netWealth: Line;
     socialDeduction: Item;
+    /** 95.00 fortune nette totale, with a property abroad: the wealth for the rate. */
+    rateWealth?: Line;
+    /** 97.00 part proportionnelle de la fortune non-imposable. */
+    exemptWealth?: Line;
+    /** 99.00 fortune imposable. */
     taxableWealth: Line;
   };
   taxes: IccTaxes;
@@ -259,6 +302,31 @@ export interface IfdResult extends FederalResult {
   subtotal9220: Line;
   subtotal9240: Line;
   totalIncome: Line;
+  /** 97.00 with a property abroad: the part of the total net income not taxed in Switzerland. */
+  exemptIncome?: Line;
+  /** With a property abroad: the tax on 99.00 at the rate of the whole income (LIFD art. 7). */
+  atRate?: Line;
+}
+
+/**
+ * A property abroad in the result: its lines on annexe D and how it was split, for the copy
+ * panel, the final check and the explanations. Absent without one.
+ */
+export interface AbroadResult {
+  /** Whose it is, how it is used, and its country, as the input said. */
+  owner: AbroadPropertyInput['owner'];
+  use: AbroadPropertyInput['use'];
+  country?: Text;
+  /** Its income and costs, per tax (15.10 or 15.20, 58.00), and its value (wealth). */
+  icc: Item[];
+  ifd: Item[];
+  wealth: Item[];
+  /** The debts and debt interest that go abroad, in proportion to the gross assets. */
+  debts?: Line;
+  interestIcc?: Line;
+  interestIfd?: Line;
+  /** The share of the gross assets abroad, in basis points, for the words. */
+  shareBp: number;
 }
 
 export interface TaxResult extends SharedTaxResult<IccResult> {
@@ -276,6 +344,8 @@ export interface TaxResult extends SharedTaxResult<IccResult> {
    * 12.46, 57.00, 12.52, 32.00) with the ones the return carries. Absent without self-employment.
    */
   business?: BusinessSheet[];
+  /** A home or land abroad, counted for the rate (./abroad.ts). Absent without one. */
+  abroad?: AbroadResult;
 }
 
 /** One sheet of annexe B, for one person: its lines per column, in the form's order. */

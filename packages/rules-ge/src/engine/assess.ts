@@ -23,15 +23,19 @@ import { COMMUNAL_SPLIT } from '../law/lcp.js';
 import {
   bracketTax,
   chf,
+  exemptPart,
   floorFranc,
   ifdTax,
+  ifdTaxAtRate,
   percent,
   round5,
   roundFranc,
   share5,
   Trace,
   type IfdScale,
+  type IncomeSplit,
 } from '@taxpresso/rules-ch';
+import { ABROAD_SOURCES } from './abroad.js';
 import { paramsFor, type TaxYear, type YearParams } from './params.js';
 import { AFTER_9220, AFTER_9240, isIncomeCode, rubric, SOCIAL } from './rubrics.js';
 import type {
@@ -70,6 +74,12 @@ export interface AssessInput {
   credits?: { withholdingTax?: Line; foreignTax?: Line };
   /** Social aid recipients and others the law exempts from the taxe personnelle (LCP art. 377). */
   personalTaxExempt?: boolean;
+  /**
+   * A property abroad (./abroad.ts): in each tax, its net income and the whole net income before
+   * the deductions not linked to an income; for wealth, the gross assets abroad and in all. The
+   * share not taxed here is 97.00, and the rate is the one of the whole (95.00).
+   */
+  abroad?: { icc: IncomeSplit; ifd: IncomeSplit; wealth: { foreign: number; total: number } };
 }
 
 const t = (en: string, fr: string): Text => ({ en, fr });
@@ -192,6 +202,46 @@ export function incomeTotals(items: readonly Item[], tax: 'ICC' | 'IFD'): Income
       ),
     );
   return { grossIncome, subtotal9220, subtotal9240, netIncome, totalIncome, taxableIncome };
+}
+
+/**
+ * With a property abroad: the total net income in whole francs is the income for the rate (95.00),
+ * its share not taxed here is 97.00 (part proportionnelle du revenu non imposable), and the rest is
+ * the taxable income (99.00), on the Geneva form's page PG3 (ge-2025-declaration-specimen p. 3).
+ */
+function exemptIncomeLines(
+  totals: IncomeTotals,
+  split: IncomeSplit,
+  tax: 'ICC' | 'IFD',
+): { rateBase: number; exempt: Line; taxable: Line } {
+  const rateBase = Math.max(0, floorFranc(totals.totalIncome.amount));
+  const part = exemptPart(rateBase, split.foreign, split.world);
+  const exempt = new Trace()
+    .src(...ABROAD_SOURCES[tax === 'ICC' ? 'income' : 'ifd'])
+    .from(totals.totalIncome)
+    .line(
+      part,
+      t(
+        `Share of income not taxed here, ${tax} (part proportionnelle du revenu non imposable, 97.00)`,
+        `Part proportionnelle du revenu non imposable ${tax} (97.00)`,
+      ),
+      t(
+        `The total net income ${chf(rateBase)} x the net income of your property abroad (${chf(split.foreign)}) / your whole net income before the deductions not linked to an income (${chf(split.world)}), to the franc: ${chf(part)}.`,
+        `Le revenu net total ${chf(rateBase)} x le revenu net de votre immeuble à l’étranger (${chf(split.foreign)}) / l’ensemble de votre revenu net avant les déductions sans lien avec un revenu (${chf(split.world)}), au franc${NB}: ${chf(part)}.`,
+      ),
+    );
+  const taxable = new Trace()
+    .src('ge-2025-declaration-specimen p. 3')
+    .from(totals.totalIncome, exempt)
+    .line(
+      rateBase - part,
+      t(`Taxable income, ${tax} (revenu imposable, 99.00)`, `Revenu imposable ${tax} (99.00)`),
+      t(
+        `The total net income in whole francs (${chf(rateBase)}) less the share not taxed here (${chf(part)}): ${chf(rateBase - part)}, taxed at the rate of the whole income.`,
+        `Le revenu net total en francs entiers (${chf(rateBase)}) moins la part non imposable ici (${chf(part)})${NB}: ${chf(rateBase - part)}, imposé au taux de l’ensemble du revenu.`,
+      ),
+    );
+  return { rateBase, exempt, taxable };
 }
 
 function communalSplit(
@@ -322,22 +372,35 @@ export function assess(input: AssessInput): Assessment {
   const wealthItems = input.wealthItems.map(asItem);
   const ifdItems = input.ifdItems.map(asItem);
 
-  // ICC income.
-  const iccTotals = incomeTotals(iccItems, 'ICC');
+  // ICC income. With a property abroad, 99.00 is the part taxed here (after 97.00) and the rate is
+  // read at the whole income (95.00, LIPP art. 6 al. 1).
+  const iccTotals0 = incomeTotals(iccItems, 'ICC');
+  const iccExempt = input.abroad
+    ? exemptIncomeLines(iccTotals0, input.abroad.icc, 'ICC')
+    : undefined;
+  const iccTotals = iccExempt ? { ...iccTotals0, taxableIncome: iccExempt.taxable } : iccTotals0;
   const taxable = iccTotals.taxableIncome.amount;
+  /** The income the rate is read at: the taxable income, or with a property abroad 95.00. */
+  const rateBase = iccExempt ? iccExempt.rateBase : taxable;
   const splitting = input.splitting;
-  const rateTrace = new Trace().from(iccTotals.taxableIncome);
-  let rateIncome = taxable;
-  let rateHow = t(
-    `No splitting: the rate is the one for the whole income, ${chf(taxable)}.`,
-    `Pas de splitting${NB}: le taux est celui du revenu entier, ${chf(taxable)}.`,
-  );
+  const rateTrace = new Trace().from(iccExempt ? iccTotals.totalIncome : iccTotals.taxableIncome);
+  if (iccExempt) rateTrace.src(...ABROAD_SOURCES.income);
+  let rateIncome = rateBase;
+  let rateHow = iccExempt
+    ? t(
+        `No splitting: the rate is the one for your whole income, ${chf(rateBase)} (95.00), your property abroad included.`,
+        `Pas de splitting${NB}: le taux est celui de l’ensemble de votre revenu, ${chf(rateBase)} (95.00), votre immeuble à l’étranger compris.`,
+      )
+    : t(
+        `No splitting: the rate is the one for the whole income, ${chf(taxable)}.`,
+        `Pas de splitting${NB}: le taux est celui du revenu entier, ${chf(taxable)}.`,
+      );
   if (splitting !== 'none') {
     const share = rateTrace.p(I.splittingShare)[splitting];
-    rateIncome = roundFranc(taxable * share, 10_000);
+    rateIncome = roundFranc(rateBase * share, 10_000);
     rateHow = t(
-      `${splitting === 'full' ? 'Full' : 'Partial'} splitting: the rate is the one for ${percent(share, 'en')} of ${chf(taxable)}, to the franc: ${chf(rateIncome)}.`,
-      `Splitting ${splitting === 'full' ? 'intégral' : 'partiel'}${NB}: le taux est celui de ${percent(share, 'fr')} de ${chf(taxable)}, au franc${NB}: ${chf(rateIncome)}.`,
+      `${splitting === 'full' ? 'Full' : 'Partial'} splitting: the rate is the one for ${percent(share, 'en')} of ${chf(rateBase)}${iccExempt ? ' (95.00, your property abroad included)' : ''}, to the franc: ${chf(rateIncome)}.`,
+      `Splitting ${splitting === 'full' ? 'intégral' : 'partiel'}${NB}: le taux est celui de ${percent(share, 'fr')} de ${chf(rateBase)}${iccExempt ? ' (95.00, votre immeuble à l’étranger compris)' : ''}, au franc${NB}: ${chf(rateIncome)}.`,
     );
   }
   const rateLine = rateTrace.line(
@@ -349,20 +412,31 @@ export function assess(input: AssessInput): Assessment {
   const baseTrace = new Trace().from(rateLine);
   const incomeScale = baseTrace.p(I.incomeScale);
   const rateTax = bracketTax(incomeScale, rateIncome);
-  const incomeBase =
-    splitting === 'none' || rateIncome === 0 ? rateTax : round5(taxable * rateTax, rateIncome);
+  if (iccExempt) baseTrace.from(iccTotals.taxableIncome);
+  const incomeBase = iccExempt
+    ? rateIncome === 0
+      ? 0
+      : round5(taxable * rateTax, rateIncome)
+    : splitting === 'none' || rateIncome === 0
+      ? rateTax
+      : round5(taxable * rateTax, rateIncome);
   const incomeBaseLine = baseTrace.line(
     incomeBase,
     t('Base income tax (impôt de base sur le revenu)', 'Impôt de base sur le revenu'),
-    splitting === 'none'
+    iccExempt
       ? t(
-          `The scale applied to ${chf(taxable)}, bracket by bracket, each to 5 centimes: ${chf(incomeBase)}.`,
-          `Le barème appliqué à ${chf(taxable)}, tranche par tranche, chacune aux 5 centimes${NB}: ${chf(incomeBase)}.`,
+          `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the income taxed here (99.00): ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
+          `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu imposable ici (99.00)${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
         )
-      : t(
-          `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the whole income: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
-          `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu entier${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
-        ),
+      : splitting === 'none'
+        ? t(
+            `The scale applied to ${chf(taxable)}, bracket by bracket, each to 5 centimes: ${chf(incomeBase)}.`,
+            `Le barème appliqué à ${chf(taxable)}, tranche par tranche, chacune aux 5 centimes${NB}: ${chf(incomeBase)}.`,
+          )
+        : t(
+            `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the whole income: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
+            `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu entier${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
+          ),
   );
 
   const ccTrace = new Trace().from(incomeBaseLine);
@@ -469,27 +543,84 @@ export function assess(input: AssessInput): Assessment {
       ),
     };
   }
-  const taxableWealth = Math.max(0, floorFranc(netWealth + social.amount));
+  // With a property abroad: the net wealth after the social deduction is the wealth for the rate
+  // (95.00), its share abroad 97.00 (the debts and the social deduction split by the assets, LIPP
+  // art. 57 and 58 al. 3), the rest the taxable wealth (99.00), at the rate of the whole (art. 6).
+  const wealthTotal = Math.max(0, floorFranc(netWealth + social.amount));
+  const wAbroad = input.abroad?.wealth;
+  const exemptW = wAbroad ? exemptPart(wealthTotal, wAbroad.foreign, wAbroad.total) : 0;
+  const rateWealthLine = wAbroad
+    ? new Trace()
+        .src(...ABROAD_SOURCES.wealth)
+        .from(netWealthLine, social)
+        .line(
+          wealthTotal,
+          t(
+            'Total net wealth, for the rate (fortune nette totale, 95.00)',
+            'Fortune nette totale, pour le taux (95.00)',
+          ),
+          t(
+            `Net wealth less the social deduction, your property abroad included: ${chf(wealthTotal)}.`,
+            `Fortune nette moins la déduction sociale, votre immeuble à l’étranger compris${NB}: ${chf(wealthTotal)}.`,
+          ),
+        )
+    : undefined;
+  const exemptWealthLine =
+    wAbroad && rateWealthLine
+      ? new Trace()
+          .src(...ABROAD_SOURCES.wealth)
+          .from(rateWealthLine)
+          .line(
+            exemptW,
+            t(
+              'Share of wealth not taxed here (part proportionnelle de la fortune non-imposable, 97.00)',
+              'Part proportionnelle de la fortune non-imposable (97.00)',
+            ),
+            t(
+              `${chf(wealthTotal)} x your gross assets abroad (${chf(wAbroad.foreign)}) / all your gross assets (${chf(wAbroad.total)}), to the franc: ${chf(exemptW)}.`,
+              `${chf(wealthTotal)} x vos actifs bruts à l’étranger (${chf(wAbroad.foreign)}) / l’ensemble de vos actifs bruts (${chf(wAbroad.total)}), au franc${NB}: ${chf(exemptW)}.`,
+            ),
+          )
+      : undefined;
+  const taxableWealth = wealthTotal - exemptW;
   const taxableWealthLine = new Trace()
-    .from(netWealthLine, social)
+    .from(netWealthLine, social, exemptWealthLine)
     .line(
       taxableWealth,
       t('Taxable wealth (fortune imposable)', 'Fortune imposable'),
-      t(
-        `Net wealth less the social deduction: ${chf(taxableWealth)}.`,
-        `Fortune nette moins la déduction sociale${NB}: ${chf(taxableWealth)}.`,
-      ),
+      exemptWealthLine
+        ? t(
+            `Total net wealth ${chf(wealthTotal)} less the share abroad ${chf(exemptW)}: ${chf(taxableWealth)} (99.00), taxed at the rate of the whole.`,
+            `Fortune nette totale ${chf(wealthTotal)} moins la part à l’étranger ${chf(exemptW)}${NB}: ${chf(taxableWealth)} (99.00), imposée au taux de l’ensemble.`,
+          )
+        : t(
+            `Net wealth less the social deduction: ${chf(taxableWealth)}.`,
+            `Fortune nette moins la déduction sociale${NB}: ${chf(taxableWealth)}.`,
+          ),
     );
+  /** The tax of a wealth scale: on the taxable wealth, or at the rate of the whole wealth. */
+  const wealthScaleTax = (scale: Parameters<typeof bracketTax>[0]) =>
+    !wAbroad
+      ? bracketTax(scale, taxableWealth)
+      : wealthTotal === 0
+        ? 0
+        : round5(taxableWealth * bracketTax(scale, wealthTotal), wealthTotal);
 
   const wbTrace = new Trace().from(taxableWealthLine);
-  const wealthBase = bracketTax(wbTrace.p(I.wealthScale), taxableWealth);
+  if (rateWealthLine) wbTrace.from(rateWealthLine);
+  const wealthBase = wealthScaleTax(wbTrace.p(I.wealthScale));
   const wealthBaseLine = wbTrace.line(
     wealthBase,
     t('Base wealth tax (impôt de base sur la fortune)', 'Impôt de base sur la fortune'),
-    t(
-      `The wealth scale applied to ${chf(taxableWealth)}, bracket by bracket, each to 5 centimes: ${chf(wealthBase)}.`,
-      `Le barème de la fortune appliqué à ${chf(taxableWealth)}, tranche par tranche, chacune aux 5 centimes${NB}: ${chf(wealthBase)}.`,
-    ),
+    wAbroad
+      ? t(
+          `The wealth scale at your whole wealth (${chf(wealthTotal)}), applied to the wealth taxed here: ${chf(taxableWealth)} x ${chf(bracketTax(I.wealthScale.value, wealthTotal))} / ${chf(wealthTotal)}, to 5 centimes: ${chf(wealthBase)}.`,
+          `Le barème de la fortune à l’ensemble de votre fortune (${chf(wealthTotal)}), appliqué à la fortune imposable ici${NB}: ${chf(taxableWealth)} x ${chf(bracketTax(I.wealthScale.value, wealthTotal))} / ${chf(wealthTotal)}, aux 5 centimes${NB}: ${chf(wealthBase)}.`,
+        )
+      : t(
+          `The wealth scale applied to ${chf(taxableWealth)}, bracket by bracket, each to 5 centimes: ${chf(wealthBase)}.`,
+          `Le barème de la fortune appliqué à ${chf(taxableWealth)}, tranche par tranche, chacune aux 5 centimes${NB}: ${chf(wealthBase)}.`,
+        ),
   );
   const wcTrace = new Trace().from(wealthBaseLine);
   const wcBp = wcTrace.p(I.wealthCantonalCentimesBp);
@@ -517,7 +648,8 @@ export function assess(input: AssessInput): Assessment {
     ),
   );
   const wsTrace = new Trace().from(taxableWealthLine);
-  const supplementary = bracketTax(wsTrace.p(I.wealthSupplementaryScale), taxableWealth);
+  if (rateWealthLine) wsTrace.from(rateWealthLine);
+  const supplementary = wealthScaleTax(wsTrace.p(I.wealthSupplementaryScale));
   const supplementaryLine = wsTrace.line(
     supplementary,
     t(
@@ -621,20 +753,45 @@ export function assess(input: AssessInput): Assessment {
   const incomeWealthTaxes = iccTotal - personalTax.amount;
   const shieldMayApply = wealthBase > 0 && incomeWealthTaxes * 10 > taxable * 6;
 
-  // IFD: the totals of the Geneva form, then the federal tax on its taxable income (rules-ch).
-  const ifdTotals = incomeTotals(ifdItems, 'IFD');
-  const federal = ifdTax(
-    P.ifd,
-    ifdTotals.taxableIncome,
-    input.ifdScale,
-    input.ifdChildReductions,
-    input.ifdScaleSources,
-  );
+  // IFD: the totals of the Geneva form, then the federal tax on its taxable income (rules-ch). With
+  // a property abroad, on 99.00 at the rate of the whole income (LIFD art. 7 al. 1): the reduction
+  // per child is then not applied (the engine fails closed on the federal tax when it would be).
+  const ifdTotals0 = incomeTotals(ifdItems, 'IFD');
+  const ifdExempt = input.abroad
+    ? exemptIncomeLines(ifdTotals0, input.abroad.ifd, 'IFD')
+    : undefined;
+  const ifdTotals = ifdExempt ? { ...ifdTotals0, taxableIncome: ifdExempt.taxable } : ifdTotals0;
+  const federal = ifdExempt
+    ? ifdTaxAtRate(
+        P.ifd,
+        new Trace()
+          .src(...ABROAD_SOURCES.ifd)
+          .from(ifdTotals.totalIncome)
+          .line(
+            ifdExempt.rateBase,
+            t('Federal rate income (revenu déterminant le taux)', 'Revenu déterminant le taux IFD'),
+            t(
+              `The total net income in whole francs, your property abroad included: ${chf(ifdExempt.rateBase)}.`,
+              `Le revenu net total en francs entiers, votre immeuble à l’étranger compris${NB}: ${chf(ifdExempt.rateBase)}.`,
+            ),
+          ),
+        ifdTotals.taxableIncome,
+        input.ifdScale,
+        input.ifdScaleSources,
+      )
+    : ifdTax(
+        P.ifd,
+        ifdTotals.taxableIncome,
+        input.ifdScale,
+        input.ifdChildReductions,
+        input.ifdScaleSources,
+      );
 
   return {
     icc: {
       items: iccItems,
       ...iccTotals,
+      ...(iccExempt ? { exemptIncome: iccExempt.exempt } : {}),
       splitting,
       rateIncome: rateLine,
       wealth: {
@@ -642,6 +799,8 @@ export function assess(input: AssessInput): Assessment {
         grossWealth: grossWealthLine,
         netWealth: netWealthLine,
         socialDeduction: social,
+        ...(rateWealthLine ? { rateWealth: rateWealthLine } : {}),
+        ...(exemptWealthLine ? { exemptWealth: exemptWealthLine } : {}),
         taxableWealth: taxableWealthLine,
       },
       taxes: {
@@ -664,7 +823,12 @@ export function assess(input: AssessInput): Assessment {
       },
       credits: { ...input.credits },
     },
-    ifd: { items: ifdItems, ...ifdTotals, ...federal },
+    ifd: {
+      items: ifdItems,
+      ...ifdTotals,
+      ...federal,
+      ...(ifdExempt ? { exemptIncome: ifdExempt.exempt } : {}),
+    },
     shieldMayApply,
   };
 }

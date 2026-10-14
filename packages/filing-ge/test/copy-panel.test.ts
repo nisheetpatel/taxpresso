@@ -175,7 +175,7 @@ describe('the copy panel', () => {
         item('14.00', 'household', 50_000_00, { status: 'computed', column: 'wealth' }),
         item('55.10', 'p1', 450_00, { column: 'icc_ifd', instance: 'loan' }),
         item('55.10', 'p1', 15_000_00, { column: 'wealth', instance: 'loan' }),
-        item('15.00', 'household', 1_00, { status: 'computed' }),
+        item('58.01', 'household', 1_00, { status: 'computed' }),
         item('11.10', 'p2', 1_00),
         item('74.00', 'child1', 1_00),
       ],
@@ -196,9 +196,10 @@ describe('the copy panel', () => {
       ['E1', '55.10-1', 'icc_ifd', '450'],
       ['E1', '55.10-1', 'wealth', '15000'],
     ]);
-    // Property is not supported; 11.10 is taxpayer A's; 74.00 has no children's part.
+    // Property costs carried over are not supported; 11.10 is taxpayer A's; 74.00 has no
+    // children's part.
     expect(p.unplaced).toEqual([
-      { code: '15.00', person: 'household' },
+      { code: '58.01', person: 'household' },
       { code: '11.10', person: 'p2' },
       { code: '74.00', person: 'child1' },
     ]);

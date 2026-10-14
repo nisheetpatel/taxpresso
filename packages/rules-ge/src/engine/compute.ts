@@ -36,6 +36,14 @@ import {
   type RuleLimit,
   type RuleResult,
 } from '@taxpresso/rules-ch';
+import {
+  ABROAD_NOTE,
+  ABROAD_UNSUPPORTED,
+  abroadItems,
+  abroadSplit,
+  type AbroadFigures,
+  type AbroadNotes,
+} from './abroad.js';
 import { assess, incomeTotals, type Assessment } from './assess.js';
 import {
   BUSINESS_NOTE,
@@ -746,6 +754,32 @@ export function computeReturn(input: EngineInput): TaxResult {
     }
   }
 
+  // A home or land abroad (./abroad.ts): its lines on annexe D, in both taxes and in wealth, so the
+  // subtotals and the totals are worldwide, as on the form; the split comes after every deduction.
+  const incompleteAbroad: Text[] = [];
+  const abroadNotes: AbroadNotes = {
+    assumption: (x) => notes.add(notes.assumptions, x),
+    notCounted: (x) => notes.add(notes.notCounted, x),
+    unverified: (x) => notes.add(notes.unverified, x),
+    incomplete: (x) => {
+      if (!incompleteAbroad.some((y) => y.en === x.en)) incompleteAbroad.push(x);
+    },
+    limit: (p, kind, at, given, limit, counted) => notes.limit(p, kind, at, given, limit, counted),
+  };
+  let abroad: AbroadFigures | undefined;
+  if (input.abroad) {
+    if (input.abroad.owner !== 'household' && !people.some((p) => p.id === input.abroad!.owner)) {
+      throw new EngineInputError(
+        `A property abroad for ${input.abroad.owner}, not in the household`,
+      );
+    }
+    abroad = abroadItems(P, input.abroad, abroadNotes);
+    icc.push(...abroad.icc);
+    ifd.push(...abroad.ifd);
+    wealthItems.push(...abroad.wealth);
+    notes.add(notes.assumptions, ABROAD_NOTE.exempt);
+  }
+
   // Health insurance subsidy: income for the ICC (guide p. 27); exempt for the IFD (LIFD art. 24
   // let. d), where only the premiums left to pay are deducted.
   const subTrace = new Trace();
@@ -934,12 +968,12 @@ export function computeReturn(input: EngineInput): TaxResult {
   const withCosts = children.filter((c) => (c.childcare?.value ?? 0) > 0);
   const ccTrace = new Trace();
   const within = Math.min(I.childcareMax.value, F.childcareMax.value);
-  const { care, older, perChild, split } = federalChildcare(
-    children,
-    hh.childcare,
-    ccTrace,
-    within,
-  );
+  const {
+    care,
+    older,
+    perChild,
+    split: careNeedsSplit,
+  } = federalChildcare(children, hh.childcare, ccTrace, within);
   if (older) notes.add(notes.notCounted, NOTE.childcareAge);
   const caredFor = new Set<ChildInput>();
   let careSplit = false;
@@ -956,7 +990,7 @@ export function computeReturn(input: EngineInput): TaxResult {
           `Frais de garde${NB}: les deux conjoints doivent travailler (ou être en formation) pour les déduire.`,
         ),
       );
-    } else if (split) {
+    } else if (careNeedsSplit) {
       careSplit = true;
       notes.add(notes.unsupported, NOTE.childcareSplit);
     } else if (counted.length) {
@@ -1124,6 +1158,27 @@ export function computeReturn(input: EngineInput): TaxResult {
       );
   }
 
+  // A property abroad: the split of the return, after every deduction (./abroad.ts). What the
+  // documents don't spell out fails closed, with the reason.
+  const split = abroad
+    ? abroadSplit({
+        figures: abroad,
+        icc,
+        ifd,
+        wealthItems,
+        swissWealthIncome: wealthIncome,
+        interestGiven: interest,
+        interestExtra: I.debtInterestExtra.value,
+      })
+    : undefined;
+  const abroadUnsupported: Text[] = [...(input.abroad?.unsupported ?? [])];
+  if (split?.problem) abroadUnsupported.push(ABROAD_UNSUPPORTED[split.problem]);
+  if (abroad) {
+    notes.add(notes.unverified, ABROAD_NOTE.split);
+    notes.add(notes.unverified, ABROAD_NOTE.rate);
+    notes.add(notes.unverified, ABROAD_NOTE.ifdRate);
+  }
+
   // Splitting and scales.
   let splitting: IccSplitting = 'none';
   if (couple || full > 0) splitting = 'full';
@@ -1139,8 +1194,12 @@ export function computeReturn(input: EngineInput): TaxResult {
   const scale = federalScale({ couple, full, shared, parentalScale: input.ifdParentalScale });
   for (const u of scale.unsupported) notes.add(notes.unsupported, u);
   const ifdScale = scale.scale;
-  const ifdUnsupported = scale.unsupported.length > 0;
   const ifdChildReductions = scale.childReductions;
+  // With a property abroad, the federal tax is at the rate of the whole income: how the reduction
+  // per child applies then is in no document (fail closed for the federal tax only).
+  const ifdAbroadChildren = abroad !== undefined && ifdScale !== 'single' && ifdChildReductions > 0;
+  if (ifdAbroadChildren) notes.add(notes.unsupported, ABROAD_UNSUPPORTED.ifd_children);
+  const ifdUnsupported = scale.unsupported.length > 0 || ifdAbroadChildren;
 
   // Imputations (guide p. 38 and 39): shown next to the tax, never part of it. The état des titres
   // gives them when it is there; otherwise the withholding tax of the movable inputs.
@@ -1177,7 +1236,9 @@ export function computeReturn(input: EngineInput): TaxResult {
 
   // Income other than salaries (pensions, securities, benefits...) belongs to the commune of
   // residence: the communal split is in proportion to all income (LCP art. 295A al. 2).
-  const grossIcc = incomeTotals(icc, 'ICC').grossIncome.amount;
+  // The income of a property abroad is not Geneva's (LCP art. 295A: income attributable to a
+  // commune), so it is left out of the split.
+  const grossIcc = incomeTotals(icc, 'ICC').grossIncome.amount - (abroad?.income.icc ?? 0);
   const salaries = Object.values(incomeByCommune).reduce((s, v) => s + (v ?? 0), 0);
   if (grossIcc > salaries) {
     incomeByCommune[input.commune] = (incomeByCommune[input.commune] ?? 0) + grossIcc - salaries;
@@ -1203,6 +1264,7 @@ export function computeReturn(input: EngineInput): TaxResult {
       ...(withholdingTax ? { withholdingTax } : {}),
       ...(foreignTax ? { foreignTax } : {}),
     },
+    ...(split ? { abroad: { icc: split.icc, ifd: split.ifd, wealth: split.wealth } } : {}),
   });
 
   if (Object.keys(incomeByCommune).some((c) => c !== input.commune))
@@ -1241,10 +1303,13 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (losses && result.icc.subtotal9220.amount < 0) {
     notes.add(notes.notCounted, BUSINESS_NOTE.lossCarried);
   }
-  // Self-employment beyond the simple case (the answers say so): no tax at all (fail closed).
+  // Self-employment beyond the simple case (the answers say so), or a property abroad beyond the
+  // simple case (the answers or its figures say so): no tax at all (fail closed).
   for (const u of input.unsupported ?? []) notes.add(notes.unsupported, u);
+  for (const u of abroadUnsupported) notes.add(notes.unsupported, u);
   // A household amount of childcare whose split between the children decides: no tax either.
-  const failClosed = (input.unsupported ?? []).length > 0 || careSplit;
+  const failClosed =
+    (input.unsupported ?? []).length > 0 || abroadUnsupported.length > 0 || careSplit;
 
   // Lump sums from the 2nd pillar and pillar 3a: a tax of their own (./capital.ts), with the
   // return's splitting and federal scale (LIPP art. 45 al. 3, LIFD art. 38 al. 2).
@@ -1253,7 +1318,9 @@ export function computeReturn(input: EngineInput): TaxResult {
     commune: input.commune,
     people: people.map((p) => p.id),
     splitting,
-    ifdScale: ifdUnsupported ? undefined : ifdScale,
+    // The scale alone decides it (no reduction per child: LIFD art. 38 al. 2), so a property
+    // abroad doesn't stop it.
+    ifdScale: scale.unsupported.length > 0 ? undefined : ifdScale,
   });
   for (const x of outcome.notes.unsupported) notes.add(notes.unsupported, x);
   for (const x of outcome.notes.notCounted) notes.add(notes.notCounted, x);
@@ -1285,6 +1352,7 @@ export function computeReturn(input: EngineInput): TaxResult {
       ),
     );
   }
+  incomplete.push(...incompleteAbroad);
   const lines = allLines({ icc: icc_, ifd: ifd_, ...(capital ? { capital } : {}) });
   return {
     taxYear: input.taxYear,
@@ -1308,6 +1376,22 @@ export function computeReturn(input: EngineInput): TaxResult {
     unverifiedRules: notes.unverified,
     limits: notes.limits,
     ...(sheets.length && !failClosed ? { business: sheets } : {}),
+    ...(abroad && split && !failClosed
+      ? {
+          abroad: {
+            owner: input.abroad!.owner,
+            use: input.abroad!.use,
+            ...(input.abroad!.country ? { country: input.abroad!.country } : {}),
+            icc: abroad.icc,
+            ifd: abroad.ifd,
+            wealth: abroad.wealth,
+            ...(split.debts ? { debts: split.debts } : {}),
+            ...(split.interestIcc ? { interestIcc: split.interestIcc } : {}),
+            ...(split.interestIfd ? { interestIfd: split.interestIfd } : {}),
+            shareBp: split.shareBp,
+          },
+        }
+      : {}),
   };
 }
 
@@ -1323,6 +1407,7 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd' | 'capital'>): (Line |
       i.subtotal9240,
       i.netIncome,
       i.totalIncome,
+      ...(i.exemptIncome ? [i.exemptIncome] : []),
       i.taxableIncome,
       i.rateIncome,
     );
@@ -1331,6 +1416,8 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd' | 'capital'>): (Line |
       i.wealth.grossWealth,
       i.wealth.netWealth,
       i.wealth.socialDeduction,
+      ...(i.wealth.rateWealth ? [i.wealth.rateWealth] : []),
+      ...(i.wealth.exemptWealth ? [i.wealth.exemptWealth] : []),
       i.wealth.taxableWealth,
     );
     const x = i.taxes;
@@ -1362,10 +1449,12 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd' | 'capital'>): (Line |
       f.subtotal9240,
       f.netIncome,
       f.totalIncome,
+      ...(f.exemptIncome ? [f.exemptIncome] : []),
       f.taxableIncome,
       f.scaleIncome,
       f.scaleTax,
       f.childReduction,
+      ...(f.atRate ? [f.atRate] : []),
       f.tax,
     );
   }
