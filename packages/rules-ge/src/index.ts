@@ -21,7 +21,7 @@ export {
   IFD_PROFESSIONAL_FLAT_RATE_BP,
   ifdScaleTax2026,
   ifdTax2026,
-} from './2026/ifd.js';
+} from '@taxpresso/rules-ch';
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from '@taxpresso/rules-ch';
 // The securities list (état des titres), other movable wealth and the withholding tax claimed back.

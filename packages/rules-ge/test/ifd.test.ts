@@ -1,6 +1,6 @@
 // Every row printed in Form. 58c 2026 (ch-2026-ifd-tarif-personnes-physiques p. 1), in centimes.
 import { describe, expect, it } from 'vitest';
-import { ifdScaleTax2026, ifdTax2026 } from '../src/2026/ifd.js';
+import { ifdScaleTax2026, ifdTax2026 } from '@taxpresso/rules-ch';
 const single: [number, number][] = [
   [18500, 2541],
   [19000, 2926],

@@ -7,24 +7,16 @@
 // communal centimes (ArCA-2026) and privileged shares (Conseil d'Etat, 15 October 2025) published;
 // Geneva scales and amounts are published in January 2027, so until then the 2025 values are used
 // and flagged as estimates. The LCP amounts are in the law itself (consolidated 1 January 2026).
-import type { Cited } from '@taxpresso/rules-ch';
+// The federal values are packages/rules-ch's (ifd/params.ts), the same in every canton.
+import { ifdParamsFor, type Cited, type IfdParams } from '@taxpresso/rules-ch';
 import { ICC_2025_INCOME_SCALE } from '../2025/icc.js';
 import { ICC_2025, type IccAmounts } from '../2025/icc-amounts.js';
 import { ICC_2025_WEALTH_SCALE, ICC_2025_WEALTH_SUPPLEMENTARY_SCALE } from '../2025/icc-wealth.js';
-import { IFD_2025, IFD_2025_MARRIED, IFD_2025_SINGLE, type IfdAmounts } from '../2025/ifd.js';
 import { COMMUNE_CENTIMES_2025, PRIVILEGED_SHARE_2025 } from '../2025/communes.js';
 import { COMMUNE_CENTIMES_2026, type CommuneSlug } from '../2026/communes.js';
-import { IFD_2026_MARRIED, IFD_2026_SINGLE } from '../2026/ifd.js';
-import { IFD_2026 } from '../2026/ifd-amounts.js';
 import { PRIVILEGED_SHARE_2026 } from '../2026/privileged-share.js';
 import { PERSONAL_TAX } from '../law/lcp.js';
-import {
-  estimated,
-  type BracketScale,
-  type EstimateReason,
-  type FederalStep,
-  type Param,
-} from './param.js';
+import { estimated, type BracketScale, type EstimateReason, type Param } from './param.js';
 
 export const TAX_YEARS = [2025, 2026] as const;
 export type TaxYear = (typeof TAX_YEARS)[number];
@@ -43,10 +35,7 @@ export interface YearParams {
     privilegedShare: Param<Readonly<Record<CommuneSlug, number>>>;
   };
   personalTax: Param<(typeof PERSONAL_TAX)['value']>;
-  ifd: Params<IfdAmounts> & {
-    singleScale: Param<readonly FederalStep[]>;
-    marriedScale: Param<readonly FederalStep[]>;
-  };
+  ifd: IfdParams;
 }
 
 const ICC_INCOME_SCALE_2025: Cited<BracketScale> = {
@@ -74,14 +63,14 @@ const PARAMS: Record<TaxYear, YearParams> = {
     icc: icc2025,
     communes: { centimes: COMMUNE_CENTIMES_2025, privilegedShare: PRIVILEGED_SHARE_2025 },
     personalTax: PERSONAL_TAX,
-    ifd: { ...IFD_2025, singleScale: IFD_2025_SINGLE, marriedScale: IFD_2025_MARRIED },
+    ifd: ifdParamsFor(2025),
   },
   2026: {
     taxYear: 2026,
     icc: flagged(icc2025, 'ge-2026-unpublished'),
     communes: { centimes: COMMUNE_CENTIMES_2026, privilegedShare: PRIVILEGED_SHARE_2026 },
     personalTax: PERSONAL_TAX,
-    ifd: { ...IFD_2026, singleScale: IFD_2026_SINGLE, marriedScale: IFD_2026_MARRIED },
+    ifd: ifdParamsFor(2026),
   },
 };
 

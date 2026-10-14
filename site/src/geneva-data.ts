@@ -18,7 +18,7 @@ import {
   IFD_2026_CHILD_TAX_REDUCTION,
   IFD_2026_DEDUCTIONS,
   IFD_PROFESSIONAL_FLAT_RATE_BP,
-} from '../../packages/rules-ge/src/2026/ifd.ts';
+} from '../../packages/rules-ch/src/ifd/2026.ts';
 import {
   LPP_BUYIN_FACTS,
   PILLAR3A_2025,

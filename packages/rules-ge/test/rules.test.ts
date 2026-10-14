@@ -2,10 +2,10 @@
 // (ge-2025-guide-declaration-pp, page given), otherwise against the rule as the document states it.
 import { describe, expect, it } from 'vitest';
 import { ICC_2025 } from '../src/2025/icc-amounts.js';
-import { IFD_2025 } from '../src/2025/ifd.js';
 import {
   donationDeduction,
   flatProfessional,
+  IFD_2025,
   mealsDeduction,
   medicalDeduction,
   pillar3aCapWithoutFund,

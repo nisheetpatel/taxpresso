@@ -7,8 +7,7 @@
 //   dropped) and footnote 2 (tax rounded down to 5 centimes);
 // - ge-2025-guide-declaration-pp: the flat amounts the circular leaves unchanged (p. 11, p. 19);
 // - ch-na-law-lifd: the rules (art. 26, 33, 33a, 35, 36).
-import type { Cited } from '@taxpresso/rules-ch';
-import type { FederalStep } from '../engine/param.js';
+import type { Cited, FederalStep } from '../core/cited.js';
 
 const CIRCULAR = 'ch-2025-ifd-frais-professionnels-progression';
 const GUIDE = 'ge-2025-guide-declaration-pp';

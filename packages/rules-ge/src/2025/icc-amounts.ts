@@ -6,7 +6,7 @@
 //   and the page of each rubric. LIPP (ge-na-law-lipp) states the rules with their base amounts,
 //   which the Conseil d'Etat indexes every year (LIPP art. 67): the guide gives the 2025 figures.
 import type { Cited } from '@taxpresso/rules-ch';
-import type { MealAmounts, Pillar3aAmounts } from './ifd.js';
+import type { MealAmounts, Pillar3aAmounts } from '@taxpresso/rules-ch';
 
 const GUIDE = 'ge-2025-guide-declaration-pp';
 const TARIFF = 'ge-2025-icc-tariff-pdf';

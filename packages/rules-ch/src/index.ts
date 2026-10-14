@@ -32,6 +32,65 @@ export {
   pillar3aCapWithoutFund,
   twoEarnerFederal,
 } from './core/rules.js';
+export {
+  answered,
+  francTotal,
+  mealsCosts,
+  mealsHow,
+  medicalCosts,
+  type Deduction,
+  type FormBase,
+  type RuleLimit,
+  type RuleResult,
+} from './core/items.js';
+// The federal direct tax (IFD): the constants of each year, the federal deductions keyed by
+// concept, and the tax on a taxable income.
+export {
+  IFD_2025,
+  IFD_2025_MARRIED,
+  IFD_2025_SINGLE,
+  type IfdAmounts,
+  type MealAmounts,
+  type Pillar3aAmounts,
+} from './ifd/2025.js';
+export {
+  IFD_2026_CHILD_TAX_REDUCTION,
+  IFD_2026_DEDUCTIONS,
+  IFD_2026_MARRIED,
+  IFD_2026_MINIMUM_COLLECTED,
+  IFD_2026_SINGLE,
+  IFD_PROFESSIONAL_FLAT_RATE_BP,
+  ifdScaleTax2026,
+  ifdTax2026,
+} from './ifd/2026.js';
+export { IFD_2026 } from './ifd/2026-amounts.js';
+export {
+  IFD_TAX_YEARS,
+  ifdParamsFor,
+  isIfdTaxYear,
+  type IfdParams,
+  type IfdTaxYear,
+} from './ifd/params.js';
+export {
+  childcareCosts,
+  childDeduction,
+  commuteBase,
+  commuteCosts,
+  debtInterest,
+  donations,
+  federalScale,
+  IFD_NOTE,
+  insurancePremiums,
+  marriedCouple,
+  pillar3a,
+  politicalParty,
+  professionalCosts,
+  trainingCosts,
+  twoEarner,
+  type CommuteBase,
+  type FederalConcept,
+} from './ifd/items.js';
+export { ifdTax } from './ifd/assess.js';
 // Pillar 3a and the pension fund (2nd pillar): the federal limits, the same for every canton's tax.
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './pension/pillar3a.js';
 export {

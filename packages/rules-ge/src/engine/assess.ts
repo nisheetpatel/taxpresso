@@ -14,8 +14,8 @@
 // supplementary tax, without any centimes (LIPP art. 59 al. 2); communal centimes on the base.
 // Communal tax: the commune of residence taxes its privileged share of each base tax; the rest is
 // taxed by the communes where the income is earned (ge-na-law-lcp art. 295A).
-// IFD (art. 36 LIFD, Form. 58c): the scale at the taxable income rounded down to CHF 100, the tax
-// rounded down to 5 centimes, less 263 per child on the married or parental scale, nothing under 25.
+// IFD (art. 36 LIFD, Form. 58c): the same totals on the IFD column, then the federal tax on the
+// taxable income, which every canton shares (packages/rules-ch, ifd/assess.ts).
 import type { IccSplitting } from '../2025/icc.js';
 import type { CommuneSlug } from '../2026/communes.js';
 import { COMMUNES_2026 } from '../2026/communes.js';
@@ -23,13 +23,14 @@ import { COMMUNAL_SPLIT } from '../law/lcp.js';
 import {
   bracketTax,
   chf,
-  federalScaleTax,
   floorFranc,
+  ifdTax,
   percent,
   round5,
   roundFranc,
   share5,
   Trace,
+  type IfdScale,
 } from '@taxpresso/rules-ch';
 import { paramsFor, type TaxYear, type YearParams } from './params.js';
 import { AFTER_9220, AFTER_9240, isIncomeCode, rubric, SOCIAL } from './rubrics.js';
@@ -51,7 +52,7 @@ export interface AssessInput {
   /** Married or registered partners living together. */
   couple: boolean;
   splitting: IccSplitting;
-  ifdScale: 'single' | 'married' | 'parental';
+  ifdScale: IfdScale;
   /** Children for the 263 reduction on the married or parental federal scale. */
   ifdChildReductions: number;
   /** The documents that say which scale applies, when the household's situation needs them. */
@@ -620,71 +621,14 @@ export function assess(input: AssessInput): Assessment {
   const incomeWealthTaxes = iccTotal - personalTax.amount;
   const shieldMayApply = wealthBase > 0 && incomeWealthTaxes * 10 > taxable * 6;
 
-  // IFD.
-  const F = P.ifd;
+  // IFD: the totals of the Geneva form, then the federal tax on its taxable income (rules-ch).
   const ifdTotals = incomeTotals(ifdItems, 'IFD');
-  const ifdTaxable = ifdTotals.taxableIncome.amount;
-  const scaleTrace = new Trace().from(ifdTotals.taxableIncome);
-  const rounding = scaleTrace.p(F.rounding);
-  const scaleIncome = Math.floor(ifdTaxable / rounding.incomeStep) * rounding.incomeStep;
-  const scaleIncomeLine = scaleTrace.line(
-    scaleIncome,
-    t('Income for the federal scale', 'Revenu pour le barème fédéral'),
-    t(
-      `${chf(ifdTaxable)} with the fraction under CHF 100 dropped: ${chf(scaleIncome)}.`,
-      `${chf(ifdTaxable)} sans la fraction inférieure à CHF 100${NB}: ${chf(scaleIncome)}.`,
-    ),
-  );
-  const stTrace = new Trace().from(scaleIncomeLine);
-  const steps = stTrace.p(input.ifdScale === 'single' ? F.singleScale : F.marriedScale);
-  stTrace.src(...(input.ifdScaleSources ?? []));
-  stTrace.p(F.rounding);
-  const raw = federalScaleTax(steps, scaleIncome);
-  const scaleTax = Math.floor(raw / rounding.taxStep) * rounding.taxStep;
-  const scaleName =
-    input.ifdScale === 'single'
-      ? t('single scale', 'barème de base')
-      : input.ifdScale === 'married'
-        ? t('married scale', 'barème pour personnes mariées')
-        : t('parental scale (the married scale)', 'barème parental (celui des personnes mariées)');
-  const scaleTaxLine = stTrace.line(
-    scaleTax,
-    t('Federal tax by the scale', 'Impôt fédéral selon le barème'),
-    t(
-      `The ${scaleName.en} at ${chf(scaleIncome)}: ${chf(raw)}, rounded down to 5 centimes: ${chf(scaleTax)}.`,
-      `Le ${scaleName.fr} à ${chf(scaleIncome)}${NB}: ${chf(raw)}, ramené aux 5 centimes inférieurs${NB}: ${chf(scaleTax)}.`,
-    ),
-  );
-  const crTrace = new Trace().from(scaleTaxLine).src(...(input.ifdScaleSources ?? []));
-  const reductionPerChild = crTrace.p(F.childTaxReduction);
-  const perChild = input.ifdScale === 'single' ? 0 : reductionPerChild;
-  const childReduction = -Math.min(scaleTax, perChild * input.ifdChildReductions);
-  const childReductionLine = crTrace.line(
-    childReduction,
-    t('Reduction per child', 'Réduction par enfant'),
-    input.ifdChildReductions && perChild
-      ? t(
-          `${chf(perChild)} x ${input.ifdChildReductions} child${input.ifdChildReductions === 1 ? '' : 'ren'}, at most the tax: ${chf(childReduction)}.`,
-          `${chf(perChild)} x ${input.ifdChildReductions} enfant${input.ifdChildReductions === 1 ? '' : 's'}, au plus l’impôt${NB}: ${chf(childReduction)}.`,
-        )
-      : t('No child: no reduction.', `Pas d’enfant${NB}: pas de réduction.`),
-  );
-  const minTrace = new Trace().from(scaleTaxLine, childReductionLine);
-  const minimum = minTrace.p(F.minimumCollected);
-  const due = scaleTax + childReduction;
-  const ifdTax = due < minimum ? 0 : due;
-  const ifdTaxLine = minTrace.line(
-    ifdTax,
-    t('Federal direct tax (IFD)', 'Impôt fédéral direct (IFD)'),
-    due < minimum
-      ? t(
-          `${chf(due)} is under ${chf(minimum)}: not collected.`,
-          `${chf(due)} est inférieur à ${chf(minimum)}${NB}: pas perçu.`,
-        )
-      : t(
-          `${chf(scaleTax)} by the scale${childReduction ? ` less ${chf(-childReduction)} for the children` : ''}: ${chf(ifdTax)}.`,
-          `${chf(scaleTax)} selon le barème${childReduction ? ` moins ${chf(-childReduction)} pour les enfants` : ''}${NB}: ${chf(ifdTax)}.`,
-        ),
+  const federal = ifdTax(
+    P.ifd,
+    ifdTotals.taxableIncome,
+    input.ifdScale,
+    input.ifdChildReductions,
+    input.ifdScaleSources,
   );
 
   return {
@@ -720,15 +664,7 @@ export function assess(input: AssessInput): Assessment {
       },
       credits: { ...input.credits },
     },
-    ifd: {
-      items: ifdItems,
-      ...ifdTotals,
-      scaleIncome: scaleIncomeLine,
-      scale: input.ifdScale,
-      scaleTax: scaleTaxLine,
-      childReduction: childReductionLine,
-      tax: ifdTaxLine,
-    },
+    ifd: { items: ifdItems, ...ifdTotals, ...federal },
     shieldMayApply,
   };
 }

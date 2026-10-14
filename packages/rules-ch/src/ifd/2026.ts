@@ -2,7 +2,7 @@
 // Sources: ch-2026-ifd-progression-deductions (circular of 11 September 2025): p. 4 the scales of
 // art. 36 LIFD, al. 2bis and al. 3; p. 2 the deductions. ch-2026-ifd-tarif-personnes-physiques
 // (Form. 58c 2026), footnotes 1 and 2 for rounding.
-import type { Cited } from '@taxpresso/rules-ch';
+import type { Cited } from '../core/cited.js';
 
 /** [income in CHF where the step starts, tax there in centimes, centimes per further CHF 100]. */
 type Step = readonly [number, number, number];
