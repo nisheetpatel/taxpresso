@@ -857,15 +857,6 @@ export function cantonNames(
     : names.join('');
 }
 
-/** The cantons Taxpresso prepares in full (Geneva) and those it prepares as a preview. */
-export const fullCantons = (): SupportedCanton[] =>
-  SUPPORTED_CANTONS.filter((c) => !CANTONS[c].view.preview);
-export const previewCantons = (): SupportedCanton[] =>
-  SUPPORTED_CANTONS.filter((c) => CANTONS[c].view.preview);
-/** The cantons whose official form is in German (the questions and the estimate in German too). */
-export const germanCantons = (): SupportedCanton[] =>
-  SUPPORTED_CANTONS.filter((c) => CANTONS[c].view.german);
-
 /** The canton of the year being prepared, and how Taxpresso knows it. */
 export interface CantonState {
   /** undefined: not answered yet. 'other': a canton Taxpresso doesn't cover yet. */

@@ -34,8 +34,8 @@ import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
-import { CANTONS, cantonNames, fullCantons, germanCantons, previewCantons } from './cantons.js';
-import { PILLAR3A_2026, PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
+import { CANTONS } from './cantons.js';
+import { PILLAR3A_2026, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
 import {
   ASSESSMENT_HOUSEHOLD_KEYS,
@@ -236,9 +236,9 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
     'get_status',
     {
       title: 'Get tax return status',
-      // The cantons are named from the registry: the words around them stay short so the description
-      // keeps within the 300 characters a tool's description may have (C6), with Aargau the twelfth.
-      description: `Where the user's tax return stands for the open tax year (${cantonNames(fullCantons(), 'and')}, or ${cantonNames(previewCantons(), 'and')} as a preview): year, canton, household, answers, documents, what is missing or not supported, next step. Call this first.`,
+      // No canton names in the descriptions: the result lists the cantons of each year, and the
+      // descriptions stay within the 300 characters a tool's description may have (C6) as cantons come.
+      description: `Where the user's tax return stands for the open tax year: year, canton, household, answers, documents, what is missing or not supported, next step, and the cantons and years Taxpresso prepares. Call this first.`,
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -261,7 +261,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
     'next_questions',
     {
       title: 'Get the next questions',
-      description: `The next unanswered questions about the user's situation, in English and French (German too, for ${cantonNames(germanCantons(), 'and')}) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.`,
+      description: `The next unanswered questions about the user's situation, in English and French, with their options. Ask them one at a time in the user's language, then save each answer with answer_question.`,
       inputSchema: z.object({
         limit: z.number().int().min(1).max(5).optional().describe('How many questions. Default 1.'),
       }),
@@ -935,8 +935,8 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
     'get_form_values',
     {
       title: 'Get the values to type into the declaration',
-      // The pages of each canton's form are listed in the section's own description: here, with
-      // nine cantons, they would pass the 300 characters a tool's description may have (C6).
+      // Each canton's pages come from the list of sections (no section given): named here, they
+      // would pass the 300 characters a tool's description may have (C6).
       description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label as printed, value as typed, status. No section: sections with progress. A section (a page of the form): its values.`,
       inputSchema: z.object({
         section: z
@@ -944,7 +944,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
           .max(4)
           .optional()
           .describe(
-            `A page of the form, e.g. ${SUPPORTED_CANTONS.map((c) => `"${CANTONS[c].filing.words.example}" (${CANTONS[c].name.en})`).join(', ')}. Default: the list of sections.`,
+            `A page of the form, by its code in the list of sections, e.g. "${CANTONS.GE.filing.words.example}" in Geneva. Default: the list of sections.`,
           ),
       }),
       outputSchema: z.object({
@@ -1039,7 +1039,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
     'start_geneva_tax_return',
     {
       title: 'Start my tax return',
-      description: `Begin or pick up your ${cantonNames(SUPPORTED_CANTONS, 'or')} tax return with Taxpresso.`,
+      description: 'Begin or pick up your Swiss tax return with Taxpresso.',
     },
     () => ({
       messages: [
