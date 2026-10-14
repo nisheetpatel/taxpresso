@@ -5902,5 +5902,65 @@
     "content_type": "text/html; charset=UTF-8",
     "retrieved_at": "2026-10-14T17:46:00.000Z",
     "status": "ok"
+  },
+  "ge-na-charges-deductibles-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
+    "file": "ge/files/ge-na-charges-deductibles-page.html",
+    "bytes": 119314,
+    "sha256": "4d95c6556c9fc6e593edd94c104941a5dfb098a0bc91b3b6a32242d656c1328d",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T19:17:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-information-1-2021-frais-entretien": {
+    "url": "https://www.ge.ch/document/23670/telecharger",
+    "final_url": "https://www.ge.ch/document/23670/telecharger",
+    "file": "ge/files/ge-na-information-1-2021-frais-entretien.pdf",
+    "bytes": 2493865,
+    "sha256": "6dfc7c0e0e4303cd765b8a34367400c9e911882a181a065c8ba747fc4c093f43",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-iic-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire",
+    "file": "ge/files/ge-na-iic-page.html",
+    "bytes": 114164,
+    "sha256": "fc4655474908ea8a486f900071ba28c567d4d52088a572dcb6a746861b464417",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-law-lefi": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_10.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_10.htm",
+    "file": "ge/files/ge-na-law-lefi.html",
+    "bytes": 27027,
+    "sha256": "ae54d9c174dcf9da36060f68140311c8754f6f6bd1e5482c788d738a1eb1749c",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-law-rivfi": {
+    "url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm",
+    "final_url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm",
+    "file": "ge/files/ge-na-law-rivfi.html",
+    "bytes": 34747,
+    "sha256": "d8c38fd40bc11333e173b38c8d5e2e919721e705863b5c31cc2e4c69270aa0d5",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ch-na-reforme-valeur-locative-2029": {
+    "url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
+    "final_url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
+    "file": "ch/files/ch-na-reforme-valeur-locative-2029.html",
+    "bytes": 334860,
+    "sha256": "f76e2201f462429f00360477d9ab7784dd05ba7c3e20d5dc08ea159850667c02",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
   }
 }

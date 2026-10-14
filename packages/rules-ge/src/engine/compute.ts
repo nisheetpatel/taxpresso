@@ -53,6 +53,14 @@ import {
   type BusinessNotes,
 } from './business.js';
 import { capitalTax } from './capital.js';
+import {
+  effortCheck,
+  PROPERTY_NOTE,
+  PROPERTY_UNSUPPORTED,
+  propertyItems,
+  type PropertyFigures,
+  type PropertyNotes,
+} from './property.js';
 import { ESTIMATE_TEXT, ICC_COMMUTE_PRICING, NOTE } from './explain.js';
 import { avsDeduction, lifeInsuranceCap } from './rules.js';
 import { paramsFor, type YearParams } from './params.js';
@@ -749,6 +757,8 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
   // The état des titres and the other movable wealth, as the securities rules compute them.
   const lifeExtra: Amount[] = [];
   const interestExtra: Amount[] = [];
+  /** A mortgage statement is among the debts (E1, 55.20). */
+  let mortgage = false;
   const credit = { ia: [] as WealthItemInput[], ies: [] as WealthItemInput[] };
   for (const w of input.wealthItems ?? []) {
     const tr = new Trace().src(w.source);
@@ -772,8 +782,10 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
       // 56.30 and 52.11 count within the insurance limits (52.15, 52.00); 55.10 within the
       // interest limit; the costs (56.20) in full.
       if (w.code === '56.30' || w.code === '52.11') lifeExtra.push(wealthAmount(w));
-      else if (w.code === '55.10') interestExtra.push(wealthAmount(w));
-      else if (v) {
+      else if (w.code === '55.10' || w.code === '55.20') {
+        interestExtra.push(wealthAmount(w));
+        if (w.code === '55.20') mortgage = true;
+      } else if (v) {
         const it = line(-v, t(`${as.en}: ${chf(v)}.`, `${as.fr}${NB}: ${chf(v)}.`));
         if (w.taxes.includes('icc')) icc.push(it);
         if (w.taxes.includes('ifd')) ifd.push(it);
@@ -809,6 +821,31 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
     wealthItems.push(...abroad.wealth);
     notes.add(notes.assumptions, ABROAD_NOTE.exempt);
   }
+
+  // A property in Geneva (./property.ts): its lines on annexe D, in both taxes and in wealth.
+  const incompleteProperty: Text[] = [];
+  const propertyNotes: PropertyNotes = {
+    assumption: (x) => notes.add(notes.assumptions, x),
+    notCounted: (x) => notes.add(notes.notCounted, x),
+    unverified: (x) => notes.add(notes.unverified, x),
+    incomplete: (x) => {
+      if (!incompleteProperty.some((y) => y.en === x.en)) incompleteProperty.push(x);
+    },
+    limit: (p, kind, at, given, limit, counted) => notes.limit(p, kind, at, given, limit, counted),
+  };
+  let property: PropertyFigures | undefined;
+  if (input.property) {
+    const owner = input.property.owner;
+    if (owner !== 'household' && !people.some((p) => p.id === owner)) {
+      throw new EngineInputError(`A property in Geneva for ${owner}, not in the household`);
+    }
+    property = propertyItems(P, input.property, propertyNotes);
+    icc.push(...property.icc);
+    ifd.push(...property.ifd);
+    wealthItems.push(...property.wealth);
+  }
+  /** The property's gross income, in each tax: part of the income from wealth (guide p. 37). */
+  const propertyIncome = property?.income ?? { icc: 0, ifd: 0 };
 
   // Health insurance subsidy: income for the ICC (guide p. 27); exempt for the IFD (LIFD art. 24
   // let. d), where only the premiums left to pay are deducted.
@@ -953,9 +990,22 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
   if (interest > 0) {
     const ci = new Trace().with(diTrace);
     const extra = ci.p(I.debtInterestExtra);
-    const capI = wealthIncome + extra;
+    // The income from wealth counts a property's gross income: its rental value or rents (the
+    // "rendement brut de la fortune", guide p. 37; LIFD art. 33 al. 1 let. a: art. 21 included).
+    // When that decides the limit, the line rests on the property's figures too.
+    const bound = property !== undefined && interest > wealthIncome + extra;
+    if (bound) ci.from(...property!.icc.filter((i) => i.amount > 0)).src(`${GUIDE} p. 37`);
+    const incomeIcc = wealthIncome + propertyIncome.icc;
+    const capI = incomeIcc + extra;
     const vi = Math.min(interest, capI);
     notes.limit(I.debtInterestExtra, 'cap', ['55.10', 'household', 'icc'], interest, capI, vi);
+    // With a mortgage, the line holds both kinds of interest (PG3 55.00, from E1).
+    const label = mortgage
+      ? t(
+          'Interest on your debts and mortgages (intérêts chirographaires et hypothécaires)',
+          'Intérêts chirographaires et hypothécaires',
+        )
+      : undefined;
     icc.push(
       item(
         '55.10',
@@ -963,14 +1013,21 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
         ci,
         -vi,
         t(
-          `Interest ${chf(interest)}; at most the income from wealth (${chf(wealthIncome)}) + ${chf(extra)}: ${chf(vi)}.`,
-          `Intérêts ${chf(interest)}${NB}; au plus le rendement de la fortune (${chf(wealthIncome)}) + ${chf(extra)}${NB}: ${chf(vi)}.`,
+          `Interest ${chf(interest)}; at most the income from wealth (${chf(incomeIcc)}) + ${chf(extra)}: ${chf(vi)}.`,
+          `Intérêts ${chf(interest)}${NB}; au plus le rendement de la fortune (${chf(incomeIcc)}) + ${chf(extra)}${NB}: ${chf(vi)}.`,
         ),
+        label,
       ),
     );
-    const federal = debtInterest(F, interest, wealthIncome, diTrace);
+    const fTrace = bound
+      ? new Trace().with(diTrace).from(...property!.ifd.filter((i) => i.amount > 0))
+      : diTrace;
+    const federal = debtInterest(F, interest, wealthIncome + propertyIncome.ifd, fTrace);
     notes.apply(federal, 'household', 'ifd');
-    if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
+    if (federal.deduction) {
+      const it = deductionItem(federal.deduction, 'household');
+      ifd.push(label ? { ...it, label } : it);
+    }
   }
   const fTrace = new Trace();
   const fees = total(fTrace, [hh.bankFees]);
@@ -1196,7 +1253,8 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
         icc,
         ifd,
         wealthItems,
-        swissWealthIncome: wealthIncome,
+        // A property in Geneva's rental value or rents are Swiss income from wealth.
+        swissWealthIncome: wealthIncome + propertyIncome.icc,
         interestGiven: interest,
         interestExtra: I.debtInterestExtra.value,
       })
@@ -1230,6 +1288,34 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
   const ifdAbroadChildren = abroad !== undefined && ifdScale !== 'single' && ifdChildReductions > 0;
   if (ifdAbroadChildren) notes.add(notes.unsupported, ABROAD_UNSUPPORTED.ifd_children);
   const ifdUnsupported = scale.unsupported.length > 0 || ifdAbroadChildren;
+
+  // A property in Geneva: what its figures put outside the simple case (fail closed), and the
+  // taux d'effort of one's own home, once the gross income and the splitting are known. Only the
+  // cantonal tax has it (LIPP art. 24 al. 2): when it lowers the rental value, the cantonal and
+  // communal tax is not computed, the federal tax is. A year of arrival or departure with a
+  // property in Geneva is not prepared yet (fail closed).
+  const propertyUnsupported: Text[] = [...(input.property?.unsupported ?? [])];
+  if (property?.problem) propertyUnsupported.push(PROPERTY_UNSUPPORTED[property.problem]);
+  if (input.property && input.period) propertyUnsupported.push(PROPERTY_UNSUPPORTED.partYear);
+  let effort: Line | undefined;
+  let effortFails = false;
+  if (property?.rentalIcc) {
+    const mi = input.property?.mortgageInterest;
+    const check = effortCheck(P, {
+      rentalIcc: property.rentalIcc,
+      grossIncome: incomeTotals(icc, 'ICC').grossIncome,
+      splitting,
+      ...(mi ? { mortgageInterest: mi.value } : {}),
+    });
+    effort = check.line;
+    if (check.applies === 'no') notes.add(notes.assumptions, PROPERTY_NOTE.effortChecked);
+    else if (check.applies === 'interest')
+      notes.add(notes.assumptions, PROPERTY_NOTE.effortInterest);
+    else {
+      effortFails = true;
+      notes.add(notes.unsupported, PROPERTY_UNSUPPORTED.effort);
+    }
+  }
 
   // Imputations (guide p. 38 and 39): shown next to the tax, never part of it. The état des titres
   // gives them when it is there; otherwise the withholding tax of the movable inputs.
@@ -1383,12 +1469,15 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
   // simple case (the answers or its figures say so): no tax at all (fail closed).
   for (const u of input.unsupported ?? []) notes.add(notes.unsupported, u);
   for (const u of abroadUnsupported) notes.add(notes.unsupported, u);
+  // A property in Geneva beyond the simple case (the answers or its figures say so): no tax either.
+  for (const u of propertyUnsupported) notes.add(notes.unsupported, u);
   // A year of arrival or departure with something the documents don't spell out for it.
   for (const u of partUnsupported) notes.add(notes.unsupported, u);
   // A household amount of childcare whose split between the children decides: no tax either.
   const failClosed =
     (input.unsupported ?? []).length > 0 ||
     abroadUnsupported.length > 0 ||
+    propertyUnsupported.length > 0 ||
     partUnsupported.length > 0 ||
     careSplit;
 
@@ -1416,7 +1505,9 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
   if (buyInConflict) notes.add(notes.unsupported, NOTE.capitalBuyIn);
 
   const icc_ =
-    result.shieldMayApply || buyInConflict || failClosed || partIccClosed ? null : result.icc;
+    result.shieldMayApply || buyInConflict || failClosed || effortFails || partIccClosed
+      ? null
+      : result.icc;
   const ifd_ = ifdUnsupported || buyInConflict || failClosed || partIfdClosed ? null : result.ifd;
   const capital = outcome.capital;
   const partial = (input.wealthItems ?? []).filter((w) => !w.complete);
@@ -1434,7 +1525,7 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
       ),
     );
   }
-  incomplete.push(...incompleteAbroad);
+  incomplete.push(...incompleteAbroad, ...incompleteProperty);
   const lines = allLines({ icc: icc_, ifd: ifd_, ...(capital ? { capital } : {}) });
   // A year of arrival or departure: the form's 95.00 for the rate and 97.00, in each tax computed.
   const partYear: PartYearResult | undefined = part
@@ -1473,6 +1564,25 @@ function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): Tax
     unverifiedRules: notes.unverified,
     limits: notes.limits,
     ...(sheets.length && !failClosed ? { business: sheets } : {}),
+    ...(property && !failClosed
+      ? {
+          property: {
+            owner: property.owner,
+            use: property.use,
+            ...(property.kind ? { kind: property.kind } : {}),
+            ...(property.since !== undefined ? { since: property.since } : {}),
+            icc: property.icc,
+            ifd: property.ifd,
+            wealth: property.wealth,
+            ...(property.value ? { value: property.value } : {}),
+            ...(property.abattementBp !== undefined ? { abattementBp: property.abattementBp } : {}),
+            ...(property.rentalValue ? { rentalValue: property.rentalValue } : {}),
+            upkeep: property.upkeep,
+            ...(effort ? { effort } : {}),
+            ...(property.iic ? { iic: property.iic } : {}),
+          },
+        }
+      : {}),
     ...(partYear ? { partYear } : {}),
     ...(abroad && split && !failClosed
       ? {

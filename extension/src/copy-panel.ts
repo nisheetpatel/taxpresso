@@ -9,6 +9,7 @@ import {
   annexBItems,
   annexDItems,
   buildCopyPanel,
+  COMMUNE_CODES_2025,
   ENGINE_RUBRICS_2026,
   enteredValue,
   filing as genevaFiling,
@@ -152,10 +153,27 @@ export function engineItems(ws: Workspace): FormItem[] {
       }),
     );
   }
-  // A property abroad: annexe D, its totals, and a loan on it in another currency on E1 55.20
-  // (@taxpresso/filing-ge, annex-d.ts).
-  if (r.abroad) {
-    out.push(...annexDItems({ abroad: r.abroad, debts: holdings(ws).other, status }));
+  // A property abroad or in Geneva: annexe D, their totals, and a loan abroad in another currency
+  // on E1 55.20 (@taxpresso/filing-ge, annex-d.ts). A Geneva property's line gives the commune's
+  // code (Code lieu: the commune where the household lives) and the parcel read on the avis de
+  // taxation immobilier.
+  if (r.abroad || r.property) {
+    const commune = ws.snapshot().answers.get('profile.commune|household');
+    const code =
+      typeof commune === 'string' ? COMMUNE_CODES_2025[commune as CommuneSlug] : undefined;
+    const parcel = r.property
+      ? ws.countedFacts().find((f) => f.key === 'property.parcel' && typeof f.value === 'string')
+      : undefined;
+    out.push(
+      ...annexDItems({
+        ...(r.abroad ? { abroad: r.abroad } : {}),
+        ...(r.property ? { property: r.property } : {}),
+        ...(r.property && code ? { communeCode: code } : {}),
+        ...(parcel ? { parcel: parcel.value as string } : {}),
+        debts: holdings(ws).other,
+        status,
+      }),
+    );
   }
   return out;
 }

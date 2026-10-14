@@ -184,6 +184,16 @@ const HOME_ABROAD: [string, unknown][] = [
   ['abroad_property_loan', false],
 ];
 
+/** The house the household lives in, in Geneva, its own since 2001, no mortgage. */
+const HOME_GENEVA: [string, unknown][] = [
+  ['swiss_property', 'own_house'],
+  ['swiss_property_owner', 'p1'],
+  ['swiss_property_since', 2001],
+  ['swiss_property_old', true],
+  ['swiss_property_special', []],
+  ['swiss_property_loan', false],
+];
+
 describe('the server instructions', () => {
   it(`stay within ${INSTRUCTIONS_MAX} characters, under the strictest host's cut`, () => {
     expect(INSTRUCTIONS_MAX).toBeLessThanOrEqual(1900);
@@ -380,6 +390,39 @@ const ROWS: Row[] = [
     },
   },
   {
+    guidance: 'get_status: a property in Geneva’s documents and rough figures, until they are in',
+    pattern:
+      /property in Geneva’s figures come from its documents: the AFC’s letter[\s\S]*plan\.property_value, plan\.property_rental_value[\s\S]*Never ask for the abattement/,
+    when: async () => {
+      const h = await household();
+      await retired(h, ['real_estate'], HOME_GENEVA);
+      await h.finish();
+      return h.status();
+    },
+    whenNot: async () => {
+      const h = await household();
+      await retired(h, ['property_abroad'], HOME_ABROAD);
+      await h.finish();
+      return h.status();
+    },
+  },
+  {
+    guidance: 'get_status: reading a property in Geneva’s documents',
+    pattern: /property in Geneva’s documents: from the AFC’s letter or avis de taxation immobilier/,
+    when: async () => {
+      const h = await household();
+      await retired(h, ['real_estate'], HOME_GENEVA);
+      await h.ws.addDocument(Buffer.from('%PDF-1.7 synthetic AFC'), 'afc.pdf', 'dashboard');
+      return h.status();
+    },
+    whenNot: async () => {
+      const h = await household();
+      await retired(h, []);
+      await h.ws.addDocument(Buffer.from('%PDF-1.7 synthetic letter'), 'letter.pdf', 'dashboard');
+      return h.status();
+    },
+  },
+  {
     guidance: 'get_status: reading a business’s accounts',
     pattern: /business's accounts \(business_accounts\): each line as printed/,
     when: async () => {
@@ -453,7 +496,7 @@ const ROWS: Row[] = [
       /can't prepare this yet[\s\S]*Suggest GeTax \(the canton's free software\) or a fiduciary/,
     when: async () => {
       const h = await household();
-      await retired(h, ['real_estate']);
+      await retired(h, ['inheritance_or_gift']);
       return h.status();
     },
     whenNot: async () => {
@@ -639,6 +682,31 @@ const ROWS: Row[] = [
       const h = await household();
       await retired(h, []);
       await h.finish();
+      return (await h.call('compute_tax')).text;
+    },
+  },
+  {
+    guidance: 'compute_tax: a property in Geneva, the AFC’s values, the IIC apart from the total',
+    pattern:
+      /Property in Geneva \(annexe D\)[\s\S]*impôt immobilier complémentaire \(IIC\), CHF 160\.00, is a tax of its own[\s\S]*never state a tax value, a rental value or a rate from your own knowledge/,
+    when: async () => {
+      const h = await household();
+      await retired(h, ['real_estate'], HOME_GENEVA);
+      await h.finish();
+      await h.document('property_values', 'household', [
+        ['property.tax_value', "800'000.00"],
+        ['property.rental_value', "24'000.00"],
+      ]);
+      return (await h.call('compute_tax')).text;
+    },
+    whenNot: async () => {
+      const h = await household();
+      await retired(h, ['property_abroad'], HOME_ABROAD);
+      await h.finish();
+      await h.document('foreign_property_deed', 'household', [
+        ['abroad.currency', 'EUR'],
+        ['abroad.purchase_price', "320'000.00"],
+      ]);
       return (await h.call('compute_tax')).text;
     },
   },
@@ -859,5 +927,33 @@ describe('the guidance a property abroad gives works', () => {
     // A plan before 31 December still can't be saved for a year that is over.
     const plan = await h.call('set_fact', { key: 'plan.pillar3a_paid', value: 1000 });
     expect(plan.res.isError).toBe(true);
+  });
+});
+
+describe('the guidance a property in Geneva gives works', () => {
+  it('set_fact saves its rough figures in francs, as estimates until its documents', async () => {
+    const h = await household();
+    await retired(h, ['real_estate'], HOME_GENEVA);
+    await h.finish();
+    for (const [key, value] of [
+      ['plan.property_value', 800_000],
+      ['plan.property_rental_value', 24_000],
+    ] as const) {
+      const { text, res } = await h.call('set_fact', { key, value });
+      expect(res.isError, text).toBeFalsy();
+      expect(text).toMatch(/Saved as an estimate until its document is in/);
+    }
+    const { text } = await h.call('compute_tax');
+    expect(text).toMatch(/Property in Geneva \(annexe D\)/);
+    // Once the value is known, the next step stops asking for it.
+    expect(await h.status()).not.toMatch(/property in Geneva’s figures come from its documents/);
+  });
+
+  it('for a year that is over too: they are the return’s figures, not plans', async () => {
+    const h = await household();
+    await h.call('open_tax_year', { year: 2025 });
+    await retired(h, ['real_estate'], HOME_GENEVA);
+    const { text, res } = await h.call('set_fact', { key: 'plan.property_value', value: 800_000 });
+    expect(res.isError, text).toBeFalsy();
   });
 });

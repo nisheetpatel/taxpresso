@@ -773,13 +773,17 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
             throw new WorkspaceError('Give a number or true/false.');
           }
           await ws.setPlan(person ?? 'p1', key as (typeof PLAN_KEYS)[number], value, 'chat');
+          // A property in Geneva's rough figures: estimates for the return until its documents.
+          const property = /^plan\.(property|mortgage)_/.test(key);
           return {
             content: [
               {
                 type: 'text',
                 text: abroad
                   ? 'Saved as an estimate: Taxpresso converts it at the official rate. Call compute_tax for the updated tax.'
-                  : `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
+                  : property
+                    ? 'Saved as an estimate until its document is in. Call compute_tax for the updated tax.'
+                    : `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
               },
             ],
             structuredContent: { saved: true },

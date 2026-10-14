@@ -214,6 +214,17 @@ export {
   type IfdAtRate,
   type IncomeSplit,
 } from './abroad/property.js';
+// A property in Switzerland its owner lives in or lets: the federal rules (the rental value the
+// canton sets, the upkeep, flat or actual), and the reform that ends the rental value in 2029.
+export {
+  federalUpkeep,
+  federalUpkeepLine,
+  RENTAL_VALUE_REFORM,
+  rentalValueTaxed,
+  SWISS_PROPERTY_INSTRUCTIONS,
+  SWISS_PROPERTY_RULES,
+  type FederalUpkeep,
+} from './property/swiss.js';
 // The ESTV record format of the source-tax tariff files (every canton publishes its tariffs in it).
 export {
   compactTariff,

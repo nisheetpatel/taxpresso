@@ -11,6 +11,15 @@ export const ABROAD_KINDS: ReadonlySet<DocumentKind> = new Set<DocumentKind>([
   'foreign_property_rent_statement',
 ]);
 
+/** The documents of a property in Geneva: offered only to a household that has one. */
+export const PROPERTY_KINDS: ReadonlySet<DocumentKind> = new Set<DocumentKind>([
+  'property_values',
+  'property_rent_statement',
+  'property_upkeep_invoices',
+  'ppe_charges_statement',
+  'mortgage_statement',
+]);
+
 export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string; de: string; it: string }> =
   {
     salary_certificate: {
@@ -185,5 +194,39 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string; de: str
       fr: 'Immeuble à l’étranger : compte de gestion',
       de: 'Liegenschaft im Ausland: Verwaltungsabrechnung (compte de gestion)',
       it: 'Immobile all’estero: conto di gestione (compte de gestion)',
+    },
+    // A property in Geneva (ge-na-valeur-fiscale-page, ge-na-revenu-immobilier-page,
+    // ge-2025-guide-declaration-pp p. 8, 10, 32 to 37): the AFC's letter with its tax value and
+    // rental value, or the avis de taxation immobilier; the management account of a property let;
+    // the upkeep invoices; the PPE charges statement; the mortgage statement.
+    property_values: {
+      en: 'Property in Geneva: the AFC’s letter with its tax value and rental value (or avis de taxation immobilier)',
+      fr: 'Immeuble à Genève : courrier de l’AFC (valeur fiscale, valeur locative) ou avis de taxation immobilier',
+      de: 'Liegenschaft in Genf: Schreiben der AFC mit Steuerwert und Eigenmietwert (oder avis de taxation immobilier)',
+      it: 'Immobile a Ginevra: lettera dell’AFC con valore fiscale e valore locativo (o avis de taxation immobilier)',
+    },
+    property_rent_statement: {
+      en: 'Property let in Geneva: management account (compte de gestion)',
+      fr: 'Immeuble loué à Genève : compte de gestion',
+      de: 'Vermietete Liegenschaft in Genf: Verwaltungsabrechnung (compte de gestion)',
+      it: 'Immobile affittato a Ginevra: conto di gestione (compte de gestion)',
+    },
+    property_upkeep_invoices: {
+      en: 'Upkeep invoices of a property (factures d’entretien)',
+      fr: 'Factures d’entretien d’un immeuble',
+      de: 'Unterhaltsrechnungen einer Liegenschaft (factures d’entretien)',
+      it: 'Fatture di manutenzione di un immobile (factures d’entretien)',
+    },
+    ppe_charges_statement: {
+      en: 'PPE charges statement (décompte de charges de copropriété)',
+      fr: 'Décompte de charges de copropriété (PPE)',
+      de: 'Nebenkostenabrechnung der Stockwerkeigentümer (décompte de charges PPE)',
+      it: 'Conteggio delle spese di comproprietà (décompte de charges PPE)',
+    },
+    mortgage_statement: {
+      en: 'Mortgage statement (intérêts et dettes hypothécaires)',
+      fr: 'Relevé hypothécaire (intérêts et dettes hypothécaires)',
+      de: 'Hypothekarauszug (intérêts et dettes hypothécaires)',
+      it: 'Estratto dell’ipoteca (intérêts et dettes hypothécaires)',
     },
   };

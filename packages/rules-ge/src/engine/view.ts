@@ -74,6 +74,15 @@ function lines(r: TaxResult): ViewLine[] {
       ['ifd.tax', f.tax],
     );
   }
+  // A property in Geneva: its value before the abattement, the taux d'effort check, and the impôt
+  // immobilier complémentaire, a tax of its own.
+  if (r.property) {
+    const p = r.property;
+    if (p.value) out.push(['property.value', p.value]);
+    if (p.rentalValue) out.push(['property.rentalValue', p.rentalValue]);
+    if (p.effort) out.push(['property.effort', p.effort]);
+    if (p.iic) out.push(['property.iic', p.iic]);
+  }
   if (r.capital) {
     const c = r.capital;
     out.push(['capital.amount', c.amount]);
@@ -142,7 +151,7 @@ export const view: ResultView<TaxResult> = {
   detailNote: '',
   lines,
   detailLines:
-    /incomeBase|Cantonal|Reduction|HomeCare|Supplementary|privileged|personalTax|total|scaleTax|childReduction|ifd\.tax$|^capital\./,
+    /incomeBase|Cantonal|Reduction|HomeCare|Supplementary|privileged|personalTax|total|scaleTax|childReduction|ifd\.tax$|^capital\.|^property\./,
   wealthItems: (icc) => [...icc.wealth.items, icc.wealth.socialDeduction],
   rows(r) {
     const out: ViewRow[] = [];
@@ -158,6 +167,18 @@ export const view: ResultView<TaxResult> = {
         id: 'ifd',
         label: { en: 'Federal direct tax (IFD)', fr: 'Impôt fédéral direct (IFD)' },
         line: r.ifd.tax,
+      });
+    }
+    // The impôt immobilier complémentaire of a property in Geneva: a tax of its own, not in the
+    // total (LCP art. 76).
+    if (r.property?.iic) {
+      out.push({
+        id: 'iic',
+        label: {
+          en: 'Impôt immobilier complémentaire (IIC), on your property (not in the total)',
+          fr: 'Impôt immobilier complémentaire (IIC) (non compris dans le total)',
+        },
+        line: r.property.iic,
       });
     }
     return out;
