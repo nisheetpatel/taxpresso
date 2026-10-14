@@ -119,7 +119,7 @@ export interface HouseholdInput {
    */
   known?: Pick<
     EngineInput,
-    'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale' | 'abroad'
+    'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale' | 'abroad' | 'property'
   >;
 }
 
@@ -234,6 +234,8 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
     ...(h.known?.wealthItems ? { wealthItems: h.known.wealthItems } : {}),
     // A home or land abroad: counted for the rate, so the plans' savings are at the real rate.
     ...(h.known?.abroad ? { abroad: h.known.abroad } : {}),
+    // A property in Geneva: its income and value count, so the plans' savings are at the real rate.
+    ...(h.known?.property ? { property: h.known.property } : {}),
   };
 }
 

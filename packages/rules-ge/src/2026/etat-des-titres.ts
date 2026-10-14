@@ -117,6 +117,19 @@ export const RUBRICS_2026 = {
     en: 'Interest on private debts',
     source: `${SPECIMEN} p. 3 (PG3, 55.00) and p. 19 (E1); ${GUIDE} p. 37`,
   },
+  // The mortgage on a property in Geneva, from the lender's statement (mortgage_statement).
+  mortgages: {
+    code: '55.20',
+    fr: 'Dettes hypothécaires',
+    en: 'Mortgages',
+    source: `${SPECIMEN} p. 4 (PG4, 55.00) and p. 19 (E1); ${GUIDE} p. 37`,
+  },
+  mortgageInterest: {
+    code: '55.20',
+    fr: 'Intérêts hypothécaires',
+    en: 'Mortgage interest',
+    source: `${SPECIMEN} p. 3 (PG3, 55.00) and p. 19 (E1); ${GUIDE} p. 37`,
+  },
 } as const;
 export type Rubric = keyof typeof RUBRICS_2026;
 
@@ -228,6 +241,8 @@ export interface OtherLine {
    * abroad): its currency. The amounts above are converted at the official rate.
    */
   currency?: string;
+  /** A mortgage on a property in Geneva, from the lender's statement (E1, 55.20). */
+  mortgage?: true;
   state: ValueState;
   complete: boolean;
 }
@@ -878,8 +893,13 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
         );
       }
       raws.push(raw);
-    } else if (doc.kind === 'life_insurance_attestation' || doc.kind === 'debt_interest') {
+    } else if (
+      doc.kind === 'life_insurance_attestation' ||
+      doc.kind === 'debt_interest' ||
+      doc.kind === 'mortgage_statement'
+    ) {
       const life = doc.kind === 'life_insurance_attestation';
+      const mortgage = doc.kind === 'mortgage_statement';
       const [valueKey, flowKey] = life
         ? ['life_insurance.surrender_value', 'life_insurance.premiums']
         : ['debt.balance', 'debt.interest'];
@@ -887,14 +907,15 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
       // converted at the official rate, the debt on 31 December and the interest at the year's
       // average (ge-2025-taux-donnees-fiscales); a year whose rates are not published yet takes
       // the latest year's, as an estimate, as for the property abroad it finances.
-      const inCurrency = life
-        ? []
-        : ['debt.currency', 'debt.balance_in_currency', 'debt.interest_in_currency'];
+      const inCurrency =
+        life || mortgage
+          ? []
+          : ['debt.currency', 'debt.balance_in_currency', 'debt.interest_in_currency'];
       const states = stateList([valueKey, flowKey, ...inCurrency]);
       let value = num(g(valueKey));
       let flow = num(g(flowKey));
       let complete = states.length > 0;
-      const currency = life ? undefined : str(g('debt.currency'))?.toUpperCase();
+      const currency = life || mortgage ? undefined : str(g('debt.currency'))?.toUpperCase();
       let rateEstimate = false;
       const converted = (key: string, use: 'income' | 'wealth') => {
         const printed = str(g(key));
@@ -933,6 +954,7 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
         ...(value !== undefined ? { value: roundFranc(value) } : {}),
         ...(flow !== undefined ? { flow: roundFranc(flow) } : {}),
         ...(currency && currency !== 'CHF' ? { currency } : {}),
+        ...(mortgage ? { mortgage: true as const } : {}),
         state: rateEstimate && state === 'confirmed' ? 'estimate' : state,
         complete,
       });
@@ -1274,10 +1296,14 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
         add('lifeInsurancePremiums', 'deduction', ['icc', 'ifd'], p, o.flow, est, o.complete);
       }
     } else {
+      // A mortgage on a property in Geneva goes on its own line (E1 55.20); other loans on 55.10.
+      const [debts, interest] = o.mortgage
+        ? (['mortgages', 'mortgageInterest'] as const)
+        : (['debts', 'debtInterest'] as const);
       if (o.value !== undefined)
-        add('debts', 'wealth_deduction', ['icc'], p, o.value, est, o.complete);
+        add(debts, 'wealth_deduction', ['icc'], p, o.value, est, o.complete);
       if (o.flow !== undefined)
-        add('debtInterest', 'deduction', ['icc', 'ifd'], p, o.flow, est, o.complete);
+        add(interest, 'deduction', ['icc', 'ifd'], p, o.flow, est, o.complete);
     }
   }
 

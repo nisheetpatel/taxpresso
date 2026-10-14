@@ -4,6 +4,7 @@
 // language (ui/src/dashboard/i18n-journey.ts), get_status in English (journeyText below).
 import { SUPPORTED_CANTONS, type Text } from '@taxpresso/rules-ch';
 import { abroadFacts, abroadHint, ownsPropertyAbroad } from './abroad.js';
+import { propertyFacts, propertyHint, propertyReadingHint } from './property.js';
 import { cantonNames, type CantonEntry } from './cantons.js';
 import { BARCODE_PENDING } from './barcode.js';
 import { hasFigures } from './estimate.js';
@@ -63,15 +64,17 @@ export interface Fact {
     | 'tou_mixed'
     | 'tou_geneva_only'
     | 'source_tax'
-    | 'abroad';
+    | 'abroad'
+    | 'property';
   /** Who it is about in a couple: you, your spouse or partner, or both of you. */
   who?: 'p1' | 'p2' | 'both';
   vars: Vars;
   /**
-   * source_tax and abroad: the sentence itself, in every language. Who is taxed at source, the
-   * barème and the tax withheld are worked out from the answers (the questionnaire's `derive`,
-   * whose reasons are written in four languages) and the documents (./source-tax.ts), never
-   * asked; a property abroad is counted for the rate (./abroad.ts).
+   * source_tax, abroad and property: the sentence itself, in every language. Who is taxed at
+   * source, the barème and the tax withheld are worked out from the answers (the questionnaire's
+   * `derive`, whose reasons are written in four languages) and the documents (./source-tax.ts),
+   * never asked; a property abroad is counted for the rate (./abroad.ts); a property in Geneva is
+   * declared on annexe D (./property.ts).
    */
   text?: Text;
   /** Where it comes from: manifest id and page or article. */
@@ -330,6 +333,7 @@ export function journey(ws: Workspace): Journey {
       ...sourceTaxFacts(ws),
       ...touFacts(ws, planning),
       ...abroadFacts(ws).map((f): Fact => ({ ...f, vars: {} })),
+      ...propertyFacts(ws).map((f): Fact => ({ ...f, vars: {} })),
     ],
     hasFigures: figures,
     savings,
@@ -398,6 +402,7 @@ function readingHint(ws: Workspace): string {
     ownsPropertyAbroad(ws)
       ? ' The property abroad’s documents: each amount as printed, with its currency.'
       : '',
+    propertyReadingHint(ws),
   ].join('');
 }
 
@@ -435,9 +440,9 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
     case 'assessment':
       return 'The assessment is in: go through the differences with the user in the dashboard ("Your assessment"). The deadline to object is in the card, with its legal source; the date printed on the assessment wins. Taxpresso never sends the objection.';
     case 'documents':
-      return `Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.${capitalHint(ws)}${abroadHint(ws)}`;
+      return `Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.${capitalHint(ws)}${abroadHint(ws)}${propertyHint(ws)}`;
     case 'income':
-      return `There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate.${selfEmployedInGeneva(ws) ? " For a business of their own, ask roughly what profit (bénéfice net) it makes this year, after their own AVS contributions, and save it with set_fact (plan.business_profit); or they add the business's accounts." : ''}${capitalHint(ws)}${abroadHint(ws)} Then call compute_tax.`;
+      return `There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate.${selfEmployedInGeneva(ws) ? " For a business of their own, ask roughly what profit (bénéfice net) it makes this year, after their own AVS contributions, and save it with set_fact (plan.business_profit); or they add the business's accounts." : ''}${capitalHint(ws)}${abroadHint(ws)}${propertyHint(ws)} Then call compute_tax.`;
     case 'save': {
       const then = c.then() === 'later' ? 'their documents come after 31 December' : 'file';
       const what = c.savings
@@ -446,7 +451,7 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
       return `Give the tax (compute_tax) in a line. ${what} Offer it once, as one question: "Want to see how to lower this before 31 December?" If yes, call list_optimizations and go through it. If not, move on: ${then}.`;
     }
     case 'later':
-      return `Nothing to do now: the ${ws.taxYear} documents still missing (${n}) come after 31 December. Tell the user to add them when they arrive (dashboard or Taxpresso folder, then ingest_vault). Meanwhile, compute_tax gives the tax so far.${capitalHint(ws)}${abroadHint(ws)}`;
+      return `Nothing to do now: the ${ws.taxYear} documents still missing (${n}) come after 31 December. Tell the user to add them when they arrive (dashboard or Taxpresso folder, then ingest_vault). Meanwhile, compute_tax gives the tax so far.${capitalHint(ws)}${abroadHint(ws)}${propertyHint(ws)}`;
     case 'file':
       return 'Everything is collected for now. Call compute_tax and give the user the tax it computes, with what is an estimate; then call final_check and go through it before they fill in the official form.';
   }
@@ -535,6 +540,8 @@ const FACT_TEXT: Record<Fact['id'], (f: Fact) => string> = {
   source_tax: (f) =>
     `${f.text?.en ?? ''}${f.estimate ? ' (an estimate)' : ''}${f.source ? ` [${f.source}]` : ''}`,
   abroad: (f) =>
+    `${f.text?.en ?? ''}${f.estimate ? ' (an estimate)' : ''}${f.source ? ` [${f.source}]` : ''}`,
+  property: (f) =>
     `${f.text?.en ?? ''}${f.estimate ? ' (an estimate)' : ''}${f.source ? ` [${f.source}]` : ''}`,
 };
 

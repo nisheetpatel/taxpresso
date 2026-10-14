@@ -154,6 +154,38 @@ export interface AbroadPropertyInput {
   unsupported?: readonly Text[];
 }
 
+/**
+ * A property in Geneva (annexe D), the simple case (SPEC.md section 1, decided 14 October 2026):
+ * one property, owned by one spouse or both, either the household's own home in its commune
+ * (15.10, a house or a flat in PPE) or let all year to someone else in the commune where the
+ * household lives (15.20). Its figures come from the AFC's documents for the year (the tax value,
+ * the rental value) and the owner's own (rents, upkeep), or from the user's words as estimates.
+ */
+export interface SwissPropertyInput {
+  /** Whose it is: one spouse, or both ('household'). */
+  owner: EnginePerson | 'household';
+  /** own_home: the household's home (15.10); let: let all year to someone else (15.20). */
+  use: 'own_home' | 'let';
+  /** A house (villa) or a flat owned in a building (propriété par étage, PPE). */
+  kind?: 'house' | 'flat';
+  /** Own home: the year the household started to live in it as its owners (occupé dès le). */
+  since?: number;
+  /** The building was more than 10 years old on 1 January: the flat upkeep rates. */
+  old?: boolean;
+  /** Its tax value for the year (capital selon estimation fiscale), as the AFC sets it. */
+  value?: Amount;
+  /** Own home: its rental value for the year (valeur locative), as the AFC sets it. */
+  rentalValue?: Amount;
+  /** Let: the rents received in the year (loyers encaissés). */
+  rents?: Amount;
+  /** The actual upkeep costs of the year (invoices, PPE charges, the management account). */
+  upkeep?: Amount;
+  /** The interest of the year on the mortgage that finances it (for the taux d'effort). */
+  mortgageInterest?: Amount;
+  /** What puts the household outside the simple case, read from the answers (fail closed). */
+  unsupported?: readonly Text[];
+}
+
 export interface EngineInput {
   taxYear: TaxYear;
   /** Commune of residence on 31 December. */
@@ -196,6 +228,8 @@ export interface EngineInput {
   capital?: CapitalInput;
   /** A home or land abroad: exempt, counted for the rate (./abroad.ts). */
   abroad?: AbroadPropertyInput;
+  /** A property in Geneva: the household's home, or one let all year (./property.ts). */
+  property?: SwissPropertyInput;
 }
 
 /**
@@ -329,6 +363,35 @@ export interface AbroadResult {
   shareBp: number;
 }
 
+/**
+ * A property in Geneva in the result: its lines on annexe D and what they rest on, for the copy
+ * panel, the final check and the explanations. Absent without one.
+ */
+export interface PropertyResult {
+  owner: SwissPropertyInput['owner'];
+  use: SwissPropertyInput['use'];
+  kind?: SwissPropertyInput['kind'];
+  /** Own home: the year the household moved in (occupé dès le). */
+  since?: number;
+  /** Its income (15.10 rental value or 15.20 rents) and upkeep (58.00), per tax. */
+  icc: Item[];
+  ifd: Item[];
+  /** Its value for the wealth tax: capital après abattement (15.10) or capital (15.20). */
+  wealth: Item[];
+  /** Capital selon estimation fiscale: the value before the abattement. */
+  value?: Line;
+  /** Own home: the abattement for continuous use, in basis points (4 % a year, at most 40 %). */
+  abattementBp?: number;
+  /** Own home: the rental value before the abattement (valeur locative brute, IFD). */
+  rentalValue?: Line;
+  /** Which upkeep counts in each tax: the flat rate or the actual costs. */
+  upkeep: { icc: 'flat' | 'actual' | 'none'; ifd: 'flat' | 'actual' | 'none' };
+  /** Own home: the check of the taux d'effort (LIPP art. 24 al. 2), when made. */
+  effort?: Line;
+  /** The impôt immobilier complémentaire of the year (LCP art. 76): a tax of its own. */
+  iic?: Line;
+}
+
 export interface TaxResult extends SharedTaxResult<IccResult> {
   taxYear: TaxYear;
   commune: CommuneSlug;
@@ -346,6 +409,8 @@ export interface TaxResult extends SharedTaxResult<IccResult> {
   business?: BusinessSheet[];
   /** A home or land abroad, counted for the rate (./abroad.ts). Absent without one. */
   abroad?: AbroadResult;
+  /** A property in Geneva (./property.ts). Absent without one. */
+  property?: PropertyResult;
 }
 
 /** One sheet of annexe B, for one person: its lines per column, in the form's order. */

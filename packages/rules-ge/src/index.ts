@@ -202,6 +202,16 @@ export {
   type AbroadDocumentKey,
 } from './2026/abroad-keys.js';
 export { ABROAD_CODES, ABROAD_NOTE, ABROAD_UNSUPPORTED } from './engine/abroad.js';
+// A property in Geneva, the simple case (annexe D): its keys, the notes, the reasons it fails closed
+// and the rules of Geneva's laws it applies.
+export {
+  KEYS_PROPERTY_DOCUMENTS_2026,
+  KEYS_PROPERTY_PROFILE_2026,
+  PROPERTY_FIELDS_2026,
+  type PropertyDocumentKey,
+} from './2026/property-keys.js';
+export { PROPERTY_NOTE, PROPERTY_UNSUPPORTED } from './engine/property.js';
+export { ABATTEMENT, EFFORT, IIC } from './law/property.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {
@@ -221,6 +231,7 @@ export {
   abroadFromFacts,
   capitalFromFacts,
   engineInputFromFacts,
+  propertyFromFacts,
   type LedgerInput,
 } from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';

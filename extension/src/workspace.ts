@@ -177,10 +177,25 @@ export const PLAN_KEYS = [
   // documents are in (abroad.ts): estimates for the return itself, not plans before 31 December.
   'plan.abroad_value',
   'plan.abroad_rent',
+  // Geneva: a property in Geneva's rough tax value, rental value or rent, and its mortgage, in
+  // francs, until its documents are in (property.ts): estimates for the return itself.
+  'plan.property_value',
+  'plan.property_rental_value',
+  'plan.property_rent',
+  'plan.mortgage_balance',
+  'plan.mortgage_interest',
 ] as const;
 
 /** Planning values that are rough figures for the return itself: they hold for a year that is over. */
-const RETURN_ESTIMATES: readonly string[] = ['plan.abroad_value', 'plan.abroad_rent'];
+const RETURN_ESTIMATES: readonly string[] = [
+  'plan.abroad_value',
+  'plan.abroad_rent',
+  'plan.property_value',
+  'plan.property_rental_value',
+  'plan.property_rent',
+  'plan.mortgage_balance',
+  'plan.mortgage_interest',
+];
 
 /**
  * A self-employed person's profit after their own AVS contributions, from the year's accounts when
@@ -614,6 +629,7 @@ export class Workspace {
                 ? { ifdParentalScale: known.ifdParentalScale }
                 : {}),
               ...(known.abroad ? { abroad: known.abroad } : {}),
+              ...(known.property ? { property: known.property } : {}),
             },
           }
         : {}),

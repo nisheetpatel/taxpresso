@@ -28,6 +28,7 @@ const POSITION: Record<string, FinalCheckMessageKey> = {
 const SHOWN = new Set([
   'capital',
   'abroad',
+  'property',
   'limit',
   'best_figure',
   'official_pdf',

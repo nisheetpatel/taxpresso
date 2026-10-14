@@ -8,7 +8,7 @@
 // salary certificate box of each rubric: "Revenu code 1 du CS", "code 9 du CS"...) and the guide
 // (ge-2025-guide-declaration-pp). Note: rubric 11.10 takes box 1 (salary), not box 8 (total gross
 // salary): boxes 2 to 7 have rubrics of their own, and box 8 is their sum (A1, p. 5).
-import type { Fact, FactStatus, Owner, VaultDocument } from '@taxpresso/ledger';
+import type { DocumentKind, Fact, FactStatus, Owner, VaultDocument } from '@taxpresso/ledger';
 import type { CommuneSlug, Key2026 } from '@taxpresso/rules-ge';
 import { COMMUNE_CODES_2025 } from '../2025/commune-codes.js';
 import { weakestStatus, type FormColumn, type FormItem } from '../form.js';
@@ -28,6 +28,8 @@ export interface LedgerRoute {
   line?: { issuerField?: string };
   /** Only when another value read from the same document says so. */
   when?: { key: Key2026; is: string | boolean; not?: boolean };
+  /** Only for values read on documents of these kinds, or (unless) not on these kinds. */
+  kinds?: { in?: readonly DocumentKind[]; not?: readonly DocumentKind[] };
   /** The value is the commune's code (Code lieu), not the answer itself. */
   communeCode?: boolean;
   /**
@@ -160,6 +162,7 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
     to: '55.10',
     column: 'icc_ifd',
     line: { issuerField: 'creditor' },
+    kinds: { not: ['mortgage_statement'] },
     source: `${SPEC} p. 19; ${GUIDE} p. 37`,
   },
   {
@@ -167,6 +170,25 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
     to: '55.10',
     column: 'wealth',
     line: { issuerField: 'creditor' },
+    kinds: { not: ['mortgage_statement'] },
+    source: `${SPEC} p. 19; ${GUIDE} p. 37`,
+  },
+  // The mortgage on a property in Geneva, from the lender's statement: E1 55.20, intérêts et dettes
+  // hypothécaires, one line per creditor.
+  {
+    key: 'debt.interest',
+    to: '55.20',
+    column: 'icc_ifd',
+    line: { issuerField: 'creditor' },
+    kinds: { in: ['mortgage_statement'] },
+    source: `${SPEC} p. 19; ${GUIDE} p. 37`,
+  },
+  {
+    key: 'debt.balance',
+    to: '55.20',
+    column: 'wealth',
+    line: { issuerField: 'creditor' },
+    kinds: { in: ['mortgage_statement'] },
     source: `${SPEC} p. 19; ${GUIDE} p. 37`,
   },
 ];
@@ -218,6 +240,9 @@ const FROM_ENGINE = (rubrics: string) =>
 
 const ABROAD = (what: string) =>
   `${what} (${SPEC} p. 2 to 4, 15 and 16; ${GUIDE} p. 32 to 35): the engine places the converted francs (annexe D).`;
+
+const PROPERTY = (what: string) =>
+  `${what} (${SPEC} p. 2 to 4, 15 and 16; ${GUIDE} p. 32 to 35): the engine works out the line (annexe D).`;
 
 const ETAT = (page: string, pdfPage: number) =>
   `A line of the securities list (état des titres, ${page}, ${SPEC} p. ${pdfPage}): the dashboard's securities card lists it, and its totals go to F1 and 14.00.`;
@@ -311,6 +336,22 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   ),
   'abroad.rents': ABROAD('The rents of a property let abroad, on D2 15.20 and PG2 15.00'),
   'abroad.costs': ABROAD('The upkeep costs of a property let abroad, on D2 and PG3 58.00'),
+  // A property in Geneva: the engine places its values on annexe D (./annex-d.ts), never one value
+  // at a time.
+  'property.tax_value': PROPERTY(
+    'The tax value of a property in Geneva (capital selon estimation fiscale), on D1 or D2 and, after the abattement, PG4 15.00',
+  ),
+  'property.rental_value': PROPERTY(
+    'The rental value of a home in Geneva, on D1 15.10 (valeur locative brute, IFD; after the abattement, ICC) and PG2 15.00',
+  ),
+  'property.parcel': PROPERTY('The cadastral commune and parcel number, on D1 or D2'),
+  'property.rents': PROPERTY('The rents of a property let in Geneva, on D2 15.20 and PG2 15.00'),
+  'property.costs': PROPERTY(
+    'The upkeep costs of a property let in Geneva, on D2 and PG3 58.00 (the higher of the flat rate and the actual costs, for the federal tax)',
+  ),
+  'property.upkeep': PROPERTY(
+    'The actual upkeep of a property in Geneva, on D1 or D2 and PG3 58.00 when higher than the flat deduction, each tax on its own',
+  ),
   // A loan statement in another currency: converted by the securities list's other wealth, then on
   // E1 55.20 (./annex-d.ts).
   'debt.currency': `The currency of a loan abroad: Taxpresso converts its amounts and places them on E1 55.20 (${SPEC} p. 19; ${GUIDE} p. 37).`,
@@ -365,6 +406,11 @@ export function itemsFromLedger(input: LedgerInput): {
     const doc = fact.source.docId ? docs.get(fact.source.docId) : undefined;
     let placed = false;
     for (const route of routes) {
+      if (route.kinds) {
+        const kind = doc?.kind;
+        if (route.kinds.in && !(kind && route.kinds.in.includes(kind))) continue;
+        if (route.kinds.not && kind && route.kinds.not.includes(kind)) continue;
+      }
       if (route.when) {
         const sibling = facts.find(
           (f) =>

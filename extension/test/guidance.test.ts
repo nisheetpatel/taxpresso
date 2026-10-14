@@ -381,7 +381,7 @@ const ROWS: Row[] = [
       /can't prepare this yet[\s\S]*Suggest GeTax \(the canton's free software\) or a fiduciary/,
     when: async () => {
       const h = await household();
-      await retired(h, ['real_estate']);
+      await retired(h, ['inheritance_or_gift']);
       return h.status();
     },
     whenNot: async () => {

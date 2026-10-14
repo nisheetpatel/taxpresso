@@ -420,8 +420,10 @@ export function abroadSplit(input: {
 }): AbroadSplit {
   const { figures } = input;
   const foreignGross = figures.value;
+  // The property abroad's own value is its item: a property in Geneva on the same codes (15.10,
+  // 15.20) is a Swiss asset.
   const swissGross = input.wealthItems
-    .filter((i) => isIncomeCode(i.code) && !ABROAD_CODES.has(i.code))
+    .filter((i) => isIncomeCode(i.code) && !figures.wealth.includes(i))
     .reduce((s, i) => s + Math.max(0, i.amount), 0);
   const total = swissGross + foreignGross;
   const shareBp = total > 0 ? Math.round((foreignGross * 10_000) / total) : 0;

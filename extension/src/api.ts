@@ -13,7 +13,8 @@ import { estimateView } from './estimate.js';
 import { ExtractionError } from './extraction.js';
 import { documentPerson, holdingsView, saveHolding } from './holdings.js';
 import { ownsPropertyAbroad } from './abroad.js';
-import { ABROAD_KINDS, KIND_LABELS } from './kinds.js';
+import { ABROAD_KINDS, KIND_LABELS, PROPERTY_KINDS } from './kinds.js';
+import { ownsPropertyInGeneva } from './property.js';
 import { reviewOf } from './last-year-review.js';
 import {
   decide,
@@ -100,6 +101,7 @@ const GENEVA_ONLY: ReadonlySet<string> = new Set([
   'business_accounts',
   'avs_contributions',
   ...ABROAD_KINDS,
+  ...PROPERTY_KINDS,
 ]);
 
 /** Where a question's suggestion comes from: last year's declaration, its year and page. */
@@ -216,7 +218,8 @@ export function dashboardState(
     kinds: KIND_ORDER.filter(
       (k) =>
         (canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)) &&
-        (!ABROAD_KINDS.has(k) || ownsPropertyAbroad(ws)),
+        (!ABROAD_KINDS.has(k) || ownsPropertyAbroad(ws)) &&
+        (!PROPERTY_KINDS.has(k) || ownsPropertyInGeneva(ws)),
     ).map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
     // 10.5 second view, 10.8): ./document-views.ts.

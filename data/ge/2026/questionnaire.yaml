@@ -1189,13 +1189,14 @@ questions:
   # A lump sum from the 2nd pillar or pillar 3a is supported in Geneva since 14 October 2026 (SPEC.md
   # section 1): the questions below ask who received which, and why. So is a home or land abroad,
   # the simple case (decided the same day): one property, the household's, used by it, let, or land.
-  # Real estate in Switzerland, and other income from abroad, are still not supported.
+  # So is a property in Geneva, the simple case (decided the same day): the household's home, or one
+  # property let all year (the questions below). Other income from abroad is still not supported.
   - use: special
     explain:
-      en: 'Most of these need checks that Taxpresso can’t do yet. Better to know now than in March. A lump sum from your pension fund or pillar 3a, and a home or land abroad, are the exceptions: Taxpresso computes the separate tax on the lump sum, and counts the property abroad for your rate.'
-      fr: 'La plupart de ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars. Un capital de votre caisse de pension ou du 3e pilier A, et un logement ou un terrain à l’étranger, font exception : Taxpresso calcule l’impôt séparé sur le capital, et compte l’immeuble à l’étranger pour votre taux.'
-      de: 'Die meisten davon brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März. Ein Kapitalbezug aus der Pensionskasse oder der Säule 3a und eine Wohnung oder ein Grundstück im Ausland sind die Ausnahmen: Taxpresso berechnet die separate Steuer auf dem Kapital und zählt die Liegenschaft im Ausland für deinen Steuersatz.'
-      it: 'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. Un capitale della tua cassa pensione o del pilastro 3a, e un’abitazione o un terreno all’estero, fanno eccezione: Taxpresso calcola l’imposta separata sul capitale e conta l’immobile all’estero per la tua aliquota.'
+      en: 'Most of these need checks that Taxpresso can’t do yet. Better to know now than in March. Your home in Geneva or a property you let there, a lump sum from your pension fund or pillar 3a, and a home or land abroad, are the exceptions: Taxpresso declares your property in Geneva, computes the separate tax on the lump sum, and counts the property abroad for your rate.'
+      fr: 'La plupart de ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars. Votre logement à Genève ou un bien que vous y louez, un capital de votre caisse de pension ou du 3e pilier A, et un logement ou un terrain à l’étranger, font exception : Taxpresso déclare votre immeuble à Genève, calcule l’impôt séparé sur le capital, et compte l’immeuble à l’étranger pour votre taux.'
+      de: 'Die meisten davon brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März. Deine Wohnung in Genf oder eine Liegenschaft, die du dort vermietest, ein Kapitalbezug aus der Pensionskasse oder der Säule 3a und eine Wohnung oder ein Grundstück im Ausland sind die Ausnahmen: Taxpresso deklariert deine Liegenschaft in Genf, berechnet die separate Steuer auf dem Kapital und zählt die Liegenschaft im Ausland für deinen Steuersatz.'
+      it: 'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. La tua abitazione a Ginevra o un immobile che vi affitti, un capitale della tua cassa pensione o del pilastro 3a, e un’abitazione o un terreno all’estero, fanno eccezione: Taxpresso dichiara il tuo immobile a Ginevra, calcola l’imposta separata sul capitale e conta l’immobile all’estero per la tua aliquota.'
     # ge-2025-getax-software
     learnMore:
       url: 'https://www.ge.ch/getax/telecharger-installer-getax-particuliers'
@@ -1204,6 +1205,7 @@ questions:
         fr: 'GeTax, le logiciel gratuit du canton (ge.ch)'
         it: 'GeTax, il software gratuito del Cantone (ge.ch)'
     options:
+      # ge-2025-guide-declaration-pp p. 32 to 35: annexe D; the questions below (swiss_property).
       - value: real_estate
         label:
           {
@@ -1211,13 +1213,6 @@ questions:
             fr: 'Je suis propriétaire d’un bien immobilier en Suisse',
             de: 'Ich besitze eine Liegenschaft in der Schweiz',
             it: 'Possiedo un immobile in Svizzera',
-          }
-        notSupported:
-          {
-            en: 'Real estate in Switzerland (annexe D)',
-            fr: 'Les immeubles en Suisse (annexe D)',
-            de: 'Liegenschaften in der Schweiz (annexe D)',
-            it: 'Gli immobili in Svizzera (annexe D)',
           }
       # ge-2025-guide-declaration-pp p. 32: annexe D for property "sis à Genève, en Suisse ou à
       # l'étranger"; the questions below.
@@ -1650,6 +1645,444 @@ questions:
         de: 'Hypothek im Ausland',
         it: 'Ipoteca all’estero',
       }
+
+  # A property in Geneva (immeuble à Genève), the simple case (SPEC.md section 1, decided 14 October
+  # 2026): the household's own home, a house or a flat in PPE (propriété par étage), or one property
+  # let all year to someone else, owned by one spouse or both. Declared on annexe D
+  # (ge-2025-guide-declaration-pp p. 32 to 35; ge-2025-declaration-specimen p. 15 and 16). Only what
+  # people know is asked: what it is, whose it is, since when they live there, how old the building
+  # is, what Taxpresso can't prepare yet, and whether there is a mortgage. The figures come from the
+  # AFC's letter (its tax value and rental value for the year: ge-na-valeur-fiscale-page,
+  # ge-na-revenu-immobilier-page), the management account, the upkeep invoices and the mortgage
+  # statement, or, until they are in, from what the user says, as estimates.
+  - id: swiss_property
+    key: profile.swiss_property
+    type: choice
+    when: { key: profile.special, includes: real_estate }
+    explain:
+      en: 'A home you own and live in is taxed on its rental value (valeur locative), the rent it would fetch, and on its value for the wealth tax; you deduct its upkeep and the mortgage interest. A property you let is taxed on its rents. Taxpresso prepares one property in Geneva: your home, or one you let all year.'
+      fr: 'Un logement dont vous êtes propriétaire et que vous occupez est imposé sur sa valeur locative, le loyer qu’il rapporterait, et sur sa valeur pour l’impôt sur la fortune ; vous déduisez son entretien et les intérêts hypothécaires. Un immeuble loué est imposé sur ses loyers. Taxpresso prépare un immeuble à Genève : votre logement, ou un immeuble loué toute l’année.'
+      de: 'Eine eigene Wohnung, in der du lebst, wird auf ihrem Eigenmietwert (valeur locative) besteuert, der Miete, die sie einbringen würde, und auf ihrem Wert für die Vermögenssteuer; du ziehst den Unterhalt und die Hypothekarzinsen ab. Eine vermietete Liegenschaft wird auf ihren Mieten besteuert. Taxpresso bereitet eine Liegenschaft in Genf vor: deine Wohnung oder eine, die das ganze Jahr vermietet ist.'
+      it: 'Un’abitazione di tua proprietà in cui vivi è tassata sul suo valore locativo (valeur locative), l’affitto che renderebbe, e sul suo valore per l’imposta sulla sostanza; deduci la manutenzione e gli interessi ipotecari. Un immobile affittato è tassato sugli affitti. Taxpresso prepara un immobile a Ginevra: la tua abitazione, o uno affittato tutto l’anno.'
+    # ge-2025-guide-declaration-pp p. 32
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=32'
+      label:
+        en: 'Geneva tax guide 2025, p. 32: property (annexe D)'
+        fr: 'Guide fiscal 2025, p. 32 : Immeubles'
+        de: 'Genfer Steuerwegleitung 2025, S. 32: Liegenschaften (annexe D), auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 32: immobili (annexe D), in francese'
+    text:
+      en: 'Your property in Switzerland: which is it?'
+      fr: 'Votre bien immobilier en Suisse : de quoi s’agit-il ?'
+      de: 'Deine Liegenschaft in der Schweiz: Was ist es?'
+      it: 'Il tuo immobile in Svizzera: di che cosa si tratta?'
+    help:
+      en: 'On the official form: annexe D, immeubles occupés par le propriétaire (15.10) or immeubles locatifs ou loués (15.20).'
+      fr: 'Sur le formulaire officiel : annexe D, immeubles occupés par le propriétaire (15.10) ou immeubles locatifs ou loués (15.20).'
+      de: 'Auf dem offiziellen Formular: annexe D, immeubles occupés par le propriétaire (15.10) oder immeubles locatifs ou loués (15.20).'
+      it: 'Sul modulo ufficiale: annexe D, immeubles occupés par le propriétaire (15.10) o immeubles locatifs ou loués (15.20).'
+    options:
+      - value: own_house
+        label:
+          en: 'The house we live in, in Geneva'
+          fr: 'La maison que nous habitons, à Genève'
+          de: 'Das Haus, in dem wir wohnen, in Genf'
+          it: 'La casa in cui viviamo, a Ginevra'
+        chip:
+          {
+            en: 'Own house in Geneva',
+            fr: 'Propriétaire de sa maison',
+            de: 'Eigenes Haus in Genf',
+            it: 'Casa propria a Ginevra',
+          }
+      - value: own_flat
+        label:
+          en: 'The flat we live in, in Geneva, owned in a building (propriété par étage, PPE)'
+          fr: 'L’appartement que nous habitons, à Genève, en propriété par étage (PPE)'
+          de: 'Die Wohnung, in der wir wohnen, in Genf, im Stockwerkeigentum (propriété par étage, PPE)'
+          it: 'L’appartamento in cui viviamo, a Ginevra, in proprietà per piani (propriété par étage, PPE)'
+        chip:
+          {
+            en: 'Own flat in Geneva (PPE)',
+            fr: 'Propriétaire de son appartement (PPE)',
+            de: 'Eigene Wohnung in Genf (PPE)',
+            it: 'Appartamento proprio a Ginevra (PPE)',
+          }
+      - value: let
+        label:
+          en: 'A flat or a house in Geneva, let all year to someone else (we live elsewhere)'
+          fr: 'Un appartement ou une maison à Genève, loué toute l’année à quelqu’un d’autre (nous habitons ailleurs)'
+          de: 'Eine Wohnung oder ein Haus in Genf, das ganze Jahr an jemand anderen vermietet (wir wohnen anderswo)'
+          it: 'Un appartamento o una casa a Ginevra, affittato tutto l’anno a qualcun altro (noi viviamo altrove)'
+        chip:
+          {
+            en: 'Let in Geneva',
+            fr: 'Loué à Genève',
+            de: 'In Genf vermietet',
+            it: 'Affittato a Ginevra',
+          }
+      - value: other_canton
+        label:
+          en: 'A property in another canton'
+          fr: 'Un bien dans un autre canton'
+          de: 'Eine Liegenschaft in einem anderen Kanton'
+          it: 'Un immobile in un altro Cantone'
+        notSupported:
+          en: 'A property in another canton'
+          fr: 'Un immeuble dans un autre canton'
+          de: 'Eine Liegenschaft in einem anderen Kanton'
+          it: 'Un immobile in un altro Cantone'
+      - value: several
+        label:
+          en: 'More than one property in Switzerland (a home and a flat let, for example)'
+          fr: 'Plusieurs biens en Suisse (un logement et un appartement loué, par exemple)'
+          de: 'Mehrere Liegenschaften in der Schweiz (zum Beispiel eine Wohnung und eine vermietete Wohnung)'
+          it: 'Più immobili in Svizzera (per esempio un’abitazione e un appartamento affittato)'
+        notSupported:
+          en: 'More than one property in Switzerland'
+          fr: 'Plusieurs immeubles en Suisse'
+          de: 'Mehrere Liegenschaften in der Schweiz'
+          it: 'Più immobili in Svizzera'
+      - value: other
+        label:
+          en: 'Something else: land, a building being built, business premises, a second home, owned through a company, or a usufruct or a right of residence'
+          fr: 'Autre chose : un terrain, un bâtiment en construction, des locaux commerciaux, une résidence secondaire, un bien détenu par une société, ou un usufruit ou un droit d’habitation'
+          de: 'Etwas anderes: ein Grundstück, ein Gebäude im Bau, Geschäftsräume, eine Zweitwohnung, über eine Gesellschaft gehalten, oder eine Nutzniessung oder ein Wohnrecht'
+          it: 'Altro: un terreno, un edificio in costruzione, locali commerciali, una seconda casa, detenuto tramite una società, o un usufrutto o un diritto d’abitazione'
+        notSupported:
+          en: 'This property in Switzerland (land, being built, business premises, a second home, a company, a usufruct or a right of residence)'
+          fr: 'Cet immeuble en Suisse (terrain, en construction, locaux commerciaux, résidence secondaire, société, usufruit ou droit d’habitation)'
+          de: 'Diese Liegenschaft in der Schweiz (Grundstück, im Bau, Geschäftsräume, Zweitwohnung, Gesellschaft, Nutzniessung oder Wohnrecht)'
+          it: 'Questo immobile in Svizzera (terreno, in costruzione, locali commerciali, seconda casa, società, usufrutto o diritto d’abitazione)'
+
+  # Part contribuable A / contribuable B on annexe D (ge-2025-declaration-specimen p. 15 and 16;
+  # ge-2025-guide-declaration-pp p. 32). Owned with someone outside the household: only a share is
+  # the household's, and its documents are the co-owners' (not supported).
+  - id: swiss_property_owner
+    key: profile.swiss_property_owner
+    type: choice
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house, own_flat, let] }
+    explain:
+      en: 'The form shows each owner’s share. Taxpresso prepares a property that belongs to you, to your spouse or partner, or to both of you.'
+      fr: 'Le formulaire indique la part de chaque propriétaire. Taxpresso prépare un immeuble qui vous appartient, à votre conjoint ou partenaire, ou à vous deux.'
+      de: 'Das Formular zeigt den Anteil jedes Eigentümers. Taxpresso bereitet eine Liegenschaft vor, die dir, deinem Partner oder deiner Partnerin oder euch beiden gehört.'
+      it: 'Il modulo indica la quota di ogni proprietario. Taxpresso prepara un immobile che appartiene a te, al tuo coniuge o partner, o a entrambi.'
+    # ge-2025-guide-declaration-pp p. 32
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=32'
+      label:
+        en: 'Geneva tax guide 2025, p. 32: property (annexe D)'
+        fr: 'Guide fiscal 2025, p. 32 : Immeubles'
+        de: 'Genfer Steuerwegleitung 2025, S. 32: Liegenschaften (annexe D), auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 32: immobili (annexe D), in francese'
+    text:
+      en: 'Who owns it?'
+      fr: 'À qui appartient-il ?'
+      de: 'Wem gehört es?'
+      it: 'A chi appartiene?'
+    help:
+      en: 'On the official form: part contribuable A / contribuable B.'
+      fr: 'Sur le formulaire officiel : part contribuable A / contribuable B.'
+      de: 'Auf dem offiziellen Formular: part contribuable A / contribuable B.'
+      it: 'Sul modulo ufficiale: part contribuable A / contribuable B.'
+    options:
+      - value: p1
+        label: { en: 'Me alone', fr: 'Moi seul(e)', de: 'Mir allein', it: 'Solo a me' }
+      - value: p2
+        when: { key: profile.civil_status, in: [married, registered_partnership] }
+        label:
+          en: 'My spouse or partner alone'
+          fr: 'Mon conjoint ou partenaire seul(e)'
+          de: 'Meinem Partner oder meiner Partnerin allein'
+          it: 'Solo al mio coniuge o partner'
+      - value: both
+        when: { key: profile.civil_status, in: [married, registered_partnership] }
+        label: { en: 'Both of us', fr: 'Nous deux', de: 'Uns beiden', it: 'A entrambi' }
+      - value: others
+        label:
+          en: 'Shared with someone outside the household (a sibling, a parent)'
+          fr: 'En copropriété avec quelqu’un hors du ménage (frère, sœur, parent)'
+          de: 'Gemeinsam mit jemandem ausserhalb des Haushalts (Geschwister, Eltern)'
+          it: 'In comproprietà con qualcuno fuori dall’economia domestica (fratello, sorella, genitore)'
+        notSupported:
+          en: 'A property in Switzerland shared with someone outside the household'
+          fr: 'Un immeuble en Suisse en copropriété avec quelqu’un hors du ménage'
+          de: 'Eine Liegenschaft in der Schweiz, gemeinsam mit jemandem ausserhalb des Haushalts'
+          it: 'Un immobile in Svizzera in comproprietà con qualcuno fuori dall’economia domestica'
+
+  # Occupé dès le (ge-2025-declaration-specimen p. 15): the abattement of 4 % a year of continuous
+  # use by the same owner, at most 40 %, on the tax value and on the cantonal rental value; the years
+  # of a spouse, parent or sibling it came from count too (ge-na-law-lipp art. 50 let. e;
+  # ge-2025-guide-declaration-pp p. 33, "Villa occupée de 2010 à 2025, soit 16 ans").
+  - id: swiss_property_since
+    key: profile.swiss_property_since
+    type: number
+    min: 1900
+    max: 2026
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house, own_flat] }
+    explain:
+      en: 'Each year you have lived in your home lowers its value and its rental value for the cantonal tax by 4 %, up to 40 % (the abattement).'
+      fr: 'Chaque année d’occupation de votre logement réduit de 4 % sa valeur et sa valeur locative pour l’impôt cantonal, jusqu’à 40 % (l’abattement).'
+      de: 'Jedes Jahr, in dem du in deiner Wohnung lebst, senkt ihren Wert und ihren Eigenmietwert für die Kantonssteuer um 4 %, bis 40 % (abattement).'
+      it: 'Ogni anno in cui vivi nella tua abitazione ne riduce del 4 % il valore e il valore locativo per l’imposta cantonale, fino al 40 % (abattement).'
+    # ge-2025-guide-declaration-pp p. 33
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=33'
+      label:
+        en: 'Geneva tax guide 2025, p. 33: the abattement'
+        fr: 'Guide fiscal 2025, p. 33 : Abattement'
+        de: 'Genfer Steuerwegleitung 2025, S. 33: abattement, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 33: abattement, in francese'
+    text:
+      en: 'Since which year have you lived there as its owners?'
+      fr: 'Depuis quelle année l’occupez-vous en tant que propriétaires ?'
+      de: 'Seit welchem Jahr wohnt ihr dort als Eigentümer?'
+      it: 'Da quale anno ci vivete come proprietari?'
+    help:
+      en: 'The year you moved in as its owners. If it came to you from your spouse, a parent, a brother or a sister, the year they moved in. On the official form: occupé dès le.'
+      fr: 'L’année où vous y avez emménagé comme propriétaires. S’il vous vient de votre conjoint, d’un parent, d’un frère ou d’une sœur, l’année où il ou elle y a emménagé. Sur le formulaire officiel : occupé dès le.'
+      de: 'Das Jahr, in dem ihr als Eigentümer eingezogen seid. Stammt es von deinem Partner, einem Elternteil oder Geschwistern, das Jahr, in dem diese eingezogen sind. Auf dem offiziellen Formular: occupé dès le.'
+      it: 'L’anno in cui ci siete entrati come proprietari. Se vi viene dal coniuge, da un genitore, da un fratello o una sorella, l’anno in cui vi è entrato lui o lei. Sul modulo ufficiale: occupé dès le.'
+
+  # The flat upkeep deduction (forfait) by the building's age on 1 January: your home, 15 % or 25 %
+  # of the cantonal rental value (ge-2025-guide-declaration-pp p. 33; ge-na-law-lipp art. 34
+  # let. d) and 10 % or 20 % of the rental value for the federal tax; a property let, 10 % or 20 % of
+  # the rents, federal tax only (guide p. 35; ch-2026-ifd-instructions-personnes-physiques p. 6).
+  - id: swiss_property_old
+    key: profile.swiss_property_old
+    type: yesno
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house, own_flat, let] }
+    explain:
+      en: 'The flat deduction for upkeep (forfait) depends on it: for your home, 15 % or 25 % of its rental value for the Geneva tax, 10 % or 20 % for the federal tax; for a property you let, 10 % or 20 % of the rents, for the federal tax. Your actual costs count instead when they are higher.'
+      fr: 'Le forfait pour frais d’entretien en dépend : pour votre logement, 15 % ou 25 % de sa valeur locative pour l’impôt genevois, 10 % ou 20 % pour l’impôt fédéral ; pour un immeuble loué, 10 % ou 20 % des loyers, pour l’impôt fédéral. Vos frais effectifs comptent à la place quand ils sont plus élevés.'
+      de: 'Der Pauschalabzug für den Unterhalt (forfait) hängt davon ab: für deine Wohnung 15 % oder 25 % des Eigenmietwerts für die Genfer Steuer, 10 % oder 20 % für die Bundessteuer; für eine vermietete Liegenschaft 10 % oder 20 % der Mieten, für die Bundessteuer. Deine effektiven Kosten zählen stattdessen, wenn sie höher sind.'
+      it: 'Ne dipende la deduzione forfettaria per la manutenzione (forfait): per la tua abitazione, il 15 % o il 25 % del valore locativo per l’imposta ginevrina, il 10 % o il 20 % per l’imposta federale; per un immobile affittato, il 10 % o il 20 % degli affitti, per l’imposta federale. Le tue spese effettive contano invece quando sono più alte.'
+    # ge-2025-guide-declaration-pp p. 33
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=33'
+      label:
+        en: 'Geneva tax guide 2025, p. 33: upkeep costs, flat or actual'
+        fr: 'Guide fiscal 2025, p. 33 : Frais d’entretien ICC et IFD'
+        de: 'Genfer Steuerwegleitung 2025, S. 33: Unterhaltskosten, pauschal oder effektiv, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 33: spese di manutenzione, forfettarie o effettive, in francese'
+    text:
+      en: 'On 1 January {year}, was the building more than 10 years old?'
+      fr: 'Au 1er janvier {year}, le bâtiment avait-il plus de 10 ans ?'
+      de: 'War das Gebäude am 1. Januar {year} älter als 10 Jahre?'
+      it: 'Al 1° gennaio {year} l’edificio aveva più di 10 anni?'
+    help:
+      en: 'Counted from its construction or its last major renovation. On the official form: âge du bâtiment au 1er janvier.'
+      fr: 'Compté depuis sa construction ou sa dernière rénovation lourde. Sur le formulaire officiel : âge du bâtiment au 1er janvier.'
+      de: 'Gezählt ab dem Bau oder der letzten umfassenden Renovation. Auf dem offiziellen Formular: âge du bâtiment au 1er janvier.'
+      it: 'Contato dalla costruzione o dall’ultima ristrutturazione importante. Sul modulo ufficiale: âge du bâtiment au 1er janvier.'
+    chip:
+      {
+        en: 'Building over 10 years old',
+        fr: 'Bâtiment de plus de 10 ans',
+        de: 'Gebäude älter als 10 Jahre',
+        it: 'Edificio di oltre 10 anni',
+      }
+
+  # A property let in another Geneva commune than the household's: the communal tax is then split
+  # between the communes by the income and wealth attributable to each (ge-na-law-lcp art. 293 let. A
+  # ch. 1 let. a and ch. 2 let. a, art. 295A al. 1 and 2), and no document says whether gross or net:
+  # not supported, as for a business in another commune.
+  - id: swiss_property_other_commune
+    key: profile.swiss_property_other_commune
+    type: yesno
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [let] }
+    explain:
+      en: 'A property in another commune than your home shares your communal tax between the two communes. Taxpresso prepares a property let in the commune where you live.'
+      fr: 'Un immeuble dans une autre commune que celle de votre domicile partage votre impôt communal entre les deux communes. Taxpresso prépare un immeuble loué dans la commune où vous habitez.'
+      de: 'Eine Liegenschaft in einer anderen Gemeinde als deiner Wohngemeinde teilt deine Gemeindesteuer zwischen den beiden Gemeinden auf. Taxpresso bereitet eine vermietete Liegenschaft in deiner Wohngemeinde vor.'
+      it: 'Un immobile in un altro Comune rispetto a quello in cui vivi ripartisce la tua imposta comunale tra i due Comuni. Taxpresso prepara un immobile affittato nel Comune in cui vivi.'
+    # ge-na-law-lcp art. 293 and 295A
+    learnMore:
+      url: 'https://silgeneve.ch/legis/data/rsg_d3_05.htm'
+      label:
+        en: 'Geneva’s law on public contributions (LCP), art. 293 and 295A: the communal tax, in French'
+        fr: 'Loi générale sur les contributions publiques (LCP), art. 293 et 295A'
+        de: 'Genfer Gesetz über die öffentlichen Abgaben (LCP), Art. 293 und 295A: Gemeindesteuer, auf Französisch'
+        it: 'Legge ginevrina sui contributi pubblici (LCP), art. 293 e 295A: l’imposta comunale, in francese'
+    text:
+      en: 'Is it in another commune than the one you live in?'
+      fr: 'Se trouve-t-il dans une autre commune que celle où vous habitez ?'
+      de: 'Liegt es in einer anderen Gemeinde als der, in der du wohnst?'
+      it: 'Si trova in un altro Comune rispetto a quello in cui vivi?'
+    help:
+      en: 'On the official form: code lieu (the commune of the property).'
+      fr: 'Sur le formulaire officiel : code lieu (la commune de l’immeuble).'
+      de: 'Auf dem offiziellen Formular: code lieu (die Gemeinde der Liegenschaft).'
+      it: 'Sul modulo ufficiale: code lieu (il Comune dell’immobile).'
+    yesNotSupported:
+      en: 'A property let in another Geneva commune than your home (the communal tax is shared between the communes)'
+      fr: 'Un immeuble loué dans une autre commune genevoise que celle du domicile (l’impôt communal est réparti entre les communes)'
+      de: 'Eine vermietete Liegenschaft in einer anderen Genfer Gemeinde als deiner Wohngemeinde (die Gemeindesteuer wird zwischen den Gemeinden aufgeteilt)'
+      it: 'Un immobile affittato in un altro Comune ginevrino rispetto a quello di domicilio (l’imposta comunale è ripartita tra i Comuni)'
+
+  # What Taxpresso can't prepare yet for a property in Geneva (SPEC.md section 1): each is said
+  # plainly. A part let or a holiday let, a business use, works that add value, demolition or a
+  # listed building (ge-na-law-lipp art. 34 let. e and f), a subsidy (15.13) or subsidised housing
+  # (15.40, 15.50), costs carried over (58.01), a usufruct or a right of residence, and a purchase,
+  # a sale or a move during the year (the rental value counts from the move; a gain is taxed apart).
+  - id: swiss_property_special
+    key: profile.swiss_property_special
+    type: multi
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house, own_flat, let] }
+    explain:
+      en: 'These need checks that Taxpresso can’t do yet. Better to know now than in March.'
+      fr: 'Ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars.'
+      de: 'Diese Situationen brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März.'
+      it: 'Queste situazioni richiedono verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo.'
+    # ge-2025-guide-declaration-pp p. 35
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=35'
+      label:
+        en: 'Geneva tax guide 2025, p. 35: subsidies, the impôt immobilier complémentaire, costs carried over'
+        fr: 'Guide fiscal 2025, p. 35 : Subventions, impôt immobilier complémentaire, report de frais'
+        de: 'Genfer Steuerwegleitung 2025, S. 35: Subventionen, Liegenschaftssteuer, vorgetragene Kosten, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 35: sussidi, imposta immobiliare complementare, spese riportate, in francese'
+    text:
+      en: 'Did any of these apply to it in {year}?'
+      fr: 'Une de ces situations le concerne-t-elle en {year} ?'
+      de: 'Traf {year} etwas davon darauf zu?'
+      it: 'Nel {year} lo riguarda una di queste situazioni?'
+    none: { en: 'None of these', fr: 'Aucune', de: 'Nichts davon', it: 'Nessuna di queste' }
+    options:
+      - value: moved
+        label:
+          en: 'Bought, sold, moved in or moved out during {year}'
+          fr: 'Acheté, vendu, emménagé ou déménagé en {year}'
+          de: '{year} gekauft, verkauft, eingezogen oder ausgezogen'
+          it: 'Comprato, venduto, entrati o usciti nel {year}'
+        notSupported:
+          en: 'A property bought, sold, moved into or out of during the year'
+          fr: 'Un immeuble acheté, vendu, emménagé ou quitté dans l’année'
+          de: 'Eine im Jahr gekaufte, verkaufte, bezogene oder verlassene Liegenschaft'
+          it: 'Un immobile comprato, venduto, abitato o lasciato durante l’anno'
+      - value: part_let
+        when: { key: profile.swiss_property, in: [own_house, own_flat] }
+        label:
+          en: 'A part of it let (a room, a studio), or let for holidays or short stays'
+          fr: 'Une partie louée (une chambre, un studio), ou loué pour les vacances ou de courts séjours'
+          de: 'Ein Teil vermietet (ein Zimmer, ein Studio) oder als Ferien- oder Kurzzeitwohnung vermietet'
+          it: 'Una parte affittata (una camera, un monolocale), o affittata per vacanze o soggiorni brevi'
+        notSupported:
+          en: 'A home partly let, or let for holidays'
+          fr: 'Un logement loué en partie, ou en location de vacances'
+          de: 'Eine teilweise oder als Ferienwohnung vermietete Wohnung'
+          it: 'Un’abitazione affittata in parte, o per vacanze'
+      - value: business
+        label:
+          en: 'Used in part for a business, or part of a business’s assets'
+          fr: 'Utilisé en partie pour une activité, ou dans la fortune commerciale'
+          de: 'Teilweise geschäftlich genutzt oder im Geschäftsvermögen'
+          it: 'Usato in parte per un’attività, o nel patrimonio commerciale'
+        notSupported:
+          en: 'A property used for a business'
+          fr: 'Un immeuble utilisé pour une activité'
+          de: 'Eine geschäftlich genutzte Liegenschaft'
+          it: 'Un immobile usato per un’attività'
+      - value: works
+        label:
+          en: 'Works that add to its value (an extension, a pool), a demolition, or works on a listed building'
+          fr: 'Des travaux à plus-value (agrandissement, piscine), une démolition, ou des travaux sur un monument historique'
+          de: 'Wertvermehrende Arbeiten (Anbau, Pool), ein Abbruch oder Arbeiten an einem Baudenkmal'
+          it: 'Lavori che ne aumentano il valore (ampliamento, piscina), una demolizione, o lavori su un monumento storico'
+        notSupported:
+          en: 'Works that add value, a demolition or a listed building'
+          fr: 'Des travaux à plus-value, une démolition ou un monument historique'
+          de: 'Wertvermehrende Arbeiten, ein Abbruch oder ein Baudenkmal'
+          it: 'Lavori che ne aumentano il valore, una demolizione o un monumento storico'
+      - value: subsidy
+        label:
+          en: 'A subsidy for works (such as the chèque bâtiment énergie), or a subsidised home (HLM, HBM, HM, épargne logement)'
+          fr: 'Une subvention pour travaux (par exemple le chèque bâtiment énergie), ou un logement subventionné (HLM, HBM, HM, épargne logement)'
+          de: 'Eine Subvention für Arbeiten (etwa der chèque bâtiment énergie) oder eine subventionierte Wohnung (HLM, HBM, HM, épargne logement)'
+          it: 'Un sussidio per lavori (per esempio il chèque bâtiment énergie), o un’abitazione sussidiata (HLM, HBM, HM, épargne logement)'
+        notSupported:
+          en: 'A subsidy for works, or subsidised housing'
+          fr: 'Une subvention pour travaux, ou un logement subventionné'
+          de: 'Eine Subvention für Arbeiten oder eine subventionierte Wohnung'
+          it: 'Un sussidio per lavori, o un’abitazione sussidiata'
+      - value: carried
+        label:
+          en: 'Costs carried over from earlier years (frais immobiliers reportés)'
+          fr: 'Des frais reportés des années précédentes (frais immobiliers reportés)'
+          de: 'Kosten aus früheren Jahren vorgetragen (frais immobiliers reportés)'
+          it: 'Spese riportate dagli anni precedenti (frais immobiliers reportés)'
+        notSupported:
+          en: 'Property costs carried over from earlier years'
+          fr: 'Des frais immobiliers reportés'
+          de: 'Vorgetragene Liegenschaftskosten'
+          it: 'Spese immobiliari riportate'
+      - value: usufruct
+        label:
+          en: 'A usufruct (usufruit) or a right of residence (droit d’habitation) on it'
+          fr: 'Un usufruit ou un droit d’habitation'
+          de: 'Eine Nutzniessung (usufruit) oder ein Wohnrecht (droit d’habitation)'
+          it: 'Un usufrutto (usufruit) o un diritto d’abitazione (droit d’habitation)'
+        notSupported:
+          en: 'A usufruct or a right of residence'
+          fr: 'Un usufruit ou un droit d’habitation'
+          de: 'Eine Nutzniessung oder ein Wohnrecht'
+          it: 'Un usufrutto o un diritto d’abitazione'
+
+  # The mortgage: the lender's statement (annexe E, intérêts et dettes hypothécaires, 55.20:
+  # ge-2025-declaration-specimen p. 19; ge-2025-guide-declaration-pp p. 37).
+  - id: swiss_property_loan
+    key: profile.swiss_property_loan
+    type: yesno
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house, own_flat, let] }
+    explain:
+      en: 'The mortgage interest is deducted from your income, and what you owe from your wealth.'
+      fr: 'Les intérêts hypothécaires sont déduits de votre revenu, et la dette de votre fortune.'
+      de: 'Die Hypothekarzinsen werden von deinem Einkommen abgezogen, die Schuld von deinem Vermögen.'
+      it: 'Gli interessi ipotecari si deducono dal tuo reddito, e il debito dalla tua sostanza.'
+    # ge-2025-guide-declaration-pp p. 37
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=37'
+      label:
+        en: 'Geneva tax guide 2025, p. 37: interest and debts'
+        fr: 'Guide fiscal 2025, p. 37 : Intérêts et dettes'
+        de: 'Genfer Steuerwegleitung 2025, S. 37: Zinsen und Schulden, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 37: interessi e debiti, in francese'
+    text:
+      en: 'Is there a mortgage on it?'
+      fr: 'Y a-t-il une hypothèque dessus ?'
+      de: 'Gibt es darauf eine Hypothek?'
+      it: 'C’è un’ipoteca su di esso?'
+    help:
+      en: 'On the official form: intérêts et dettes hypothécaires (annexe E, 55.20).'
+      fr: 'Sur le formulaire officiel : intérêts et dettes hypothécaires (annexe E, 55.20).'
+      de: 'Auf dem offiziellen Formular: intérêts et dettes hypothécaires (annexe E, 55.20).'
+      it: 'Sul modulo ufficiale: intérêts et dettes hypothécaires (annexe E, 55.20).'
+    chip: { en: 'Mortgage', fr: 'Hypothèque', de: 'Hypothek', it: 'Ipoteca' }
 
 # What the "still missing" list asks for. Labels use the guide's words (p. 8 and p. 10).
 requirements:
@@ -2146,6 +2579,208 @@ requirements:
       de: 'Vom Kreditgeber.'
       it: 'Dal creditore.'
     source: 'ge-2025-guide-declaration-pp p. 37'
+
+  # A property in Geneva. Its tax value and, for your home, its rental value: the AFC sets them and
+  # sends them before 31 March each year; they are also on the avis de taxation immobilier sent with
+  # the tax bill (ge-na-valeur-fiscale-page; ge-na-revenu-immobilier-page; ge-2025-guide-declaration-pp
+  # p. 32 and 33). Taxpresso never computes them (ge-na-law-lefi; ge-na-law-rivfi).
+  - id: property_values_home
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house, own_flat] }
+    expects: { kinds: [property_values] }
+    label:
+      en: 'Your home: the AFC’s letter with its tax value and rental value (valeur fiscale, valeur locative)'
+      fr: 'Votre logement : courrier de l’AFC avec sa valeur fiscale et sa valeur locative'
+      de: 'Deine Wohnung: Schreiben der AFC mit Steuerwert und Eigenmietwert (valeur fiscale, valeur locative)'
+      it: 'La tua abitazione: lettera dell’AFC con valore fiscale e valore locativo (valeur fiscale, valeur locative)'
+    explain:
+      en: 'The AFC sends owners their property’s tax value and rental value for the year before 31 March. Your last avis de taxation immobilier, sent with your tax bill, shows them too.'
+      fr: 'L’AFC envoie aux propriétaires la valeur fiscale et la valeur locative de leur bien pour l’année avant le 31 mars. Votre dernier avis de taxation immobilier, joint à votre bordereau, les indique aussi.'
+      de: 'Die AFC schickt den Eigentümern Steuerwert und Eigenmietwert ihrer Liegenschaft für das Jahr vor dem 31. März. Auch dein letzter avis de taxation immobilier, der mit der Steuerrechnung kommt, zeigt sie.'
+      it: 'L’AFC invia ai proprietari il valore fiscale e il valore locativo del loro immobile per l’anno prima del 31 marzo. Anche il tuo ultimo avis de taxation immobilier, allegato alla fattura d’imposta, li indica.'
+    # ge-na-valeur-fiscale-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune'
+      label:
+        en: 'The tax value of a property in Geneva (ge.ch), in French'
+        fr: 'La valeur fiscale (impôt sur la fortune) (ge.ch)'
+        de: 'Der Steuerwert einer Liegenschaft in Genf (ge.ch), auf Französisch'
+        it: 'Il valore fiscale di un immobile a Ginevra (ge.ch), in francese'
+    reason:
+      en: 'From the AFC, before 31 March.'
+      fr: 'De l’AFC, avant le 31 mars.'
+      de: 'Von der AFC, vor dem 31. März.'
+      it: 'Dall’AFC, prima del 31 marzo.'
+    source: 'ge-na-valeur-fiscale-page (Votre bien est situé dans le canton de Genève); ge-na-revenu-immobilier-page (Votre bien est situé dans le canton de Genève); ge-2025-guide-declaration-pp p. 32 and 33'
+
+  - id: property_value_let
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [let] }
+    expects: { kinds: [property_values] }
+    label:
+      en: 'Property let in Geneva: the AFC’s letter with its tax value (valeur fiscale)'
+      fr: 'Immeuble loué à Genève : courrier de l’AFC avec sa valeur fiscale'
+      de: 'Vermietete Liegenschaft in Genf: Schreiben der AFC mit dem Steuerwert (valeur fiscale)'
+      it: 'Immobile affittato a Ginevra: lettera dell’AFC con il valore fiscale (valeur fiscale)'
+    explain:
+      en: 'The AFC sends owners their property’s tax value for the year before 31 March. Your last avis de taxation immobilier, sent with your tax bill, shows it too.'
+      fr: 'L’AFC envoie aux propriétaires la valeur fiscale de leur bien pour l’année avant le 31 mars. Votre dernier avis de taxation immobilier, joint à votre bordereau, l’indique aussi.'
+      de: 'Die AFC schickt den Eigentümern den Steuerwert ihrer Liegenschaft für das Jahr vor dem 31. März. Auch dein letzter avis de taxation immobilier zeigt ihn.'
+      it: 'L’AFC invia ai proprietari il valore fiscale del loro immobile per l’anno prima del 31 marzo. Anche il tuo ultimo avis de taxation immobilier lo indica.'
+    # ge-na-valeur-fiscale-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune'
+      label:
+        en: 'The tax value of a property in Geneva (ge.ch), in French'
+        fr: 'La valeur fiscale (impôt sur la fortune) (ge.ch)'
+        de: 'Der Steuerwert einer Liegenschaft in Genf (ge.ch), auf Französisch'
+        it: 'Il valore fiscale di un immobile a Ginevra (ge.ch), in francese'
+    reason:
+      en: 'From the AFC, before 31 March.'
+      fr: 'De l’AFC, avant le 31 mars.'
+      de: 'Von der AFC, vor dem 31. März.'
+      it: 'Dall’AFC, prima del 31 marzo.'
+    source: 'ge-na-valeur-fiscale-page (Votre bien est situé dans le canton de Genève); ge-2025-guide-declaration-pp p. 34 and 35'
+
+  # Its rents: a management account (compte de gestion), attached to the declaration
+  # (ge-na-revenu-immobilier-page, "Si vous louez votre bien").
+  - id: property_rents
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [let] }
+    expects: { kinds: [property_rent_statement] }
+    label:
+      en: 'Property let in Geneva: management account (compte de gestion)'
+      fr: 'Immeuble loué à Genève : compte de gestion'
+      de: 'Vermietete Liegenschaft in Genf: Verwaltungsabrechnung (compte de gestion)'
+      it: 'Immobile affittato a Ginevra: conto di gestione (compte de gestion)'
+    explain:
+      en: 'The rents received in {year} and the upkeep, insurance and management costs paid, from you or your agent. It is attached to the declaration. Mortgage interest goes with the mortgage statement; taxes don’t count.'
+      fr: 'Les loyers encaissés en {year} et les frais d’entretien, d’assurance et de gérance payés, de vous ou de votre gérance. Il est joint à la déclaration. Les intérêts hypothécaires vont avec le relevé de l’hypothèque ; les impôts ne comptent pas.'
+      de: 'Die {year} eingenommenen Mieten und die bezahlten Unterhalts-, Versicherungs- und Verwaltungskosten, von dir oder deiner Verwaltung. Sie wird der Steuererklärung beigelegt. Hypothekarzinsen gehören zum Hypothekarauszug; Steuern zählen nicht.'
+      it: 'Gli affitti incassati nel {year} e le spese di manutenzione, assicurazione e gestione pagate, da te o dalla tua amministrazione. Si allega alla dichiarazione. Gli interessi ipotecari vanno con l’estratto dell’ipoteca; le imposte non contano.'
+    # ge-na-revenu-immobilier-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu'
+      label:
+        en: 'The income of a property let in Geneva (ge.ch), in French'
+        fr: 'Le revenu immobilier, si vous louez votre bien (ge.ch)'
+        de: 'Der Ertrag einer vermieteten Liegenschaft in Genf (ge.ch), auf Französisch'
+        it: 'Il reddito di un immobile affittato a Ginevra (ge.ch), in francese'
+    reason:
+      en: 'From you or your letting agent.'
+      fr: 'De vous ou de votre gérance.'
+      de: 'Von dir oder deiner Verwaltung.'
+      it: 'Da te o dalla tua amministrazione.'
+    source: 'ge-na-revenu-immobilier-page (Si vous louez votre bien); ge-2025-guide-declaration-pp p. 35'
+
+  # The actual upkeep costs, when they are higher than the flat deduction: the invoices dated in the
+  # year, kept, not attached (ge-2025-guide-declaration-pp p. 8, 10 and 34; ge-na-information-1-2021-
+  # frais-entretien p. 2 to 5). For a flat in PPE, the charges statement (appels de charges) gives the
+  # renovation fund and the costs of the common parts. Optional: the flat deduction needs nothing.
+  - id: property_upkeep_house
+    optional: true
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house] }
+    expects: { kinds: [property_upkeep_invoices] }
+    label:
+      en: 'Upkeep invoices of your home, if they are above the flat deduction'
+      fr: 'Factures d’entretien de votre logement, si elles dépassent le forfait'
+      de: 'Unterhaltsrechnungen deiner Wohnung, wenn sie über dem Pauschalabzug liegen'
+      it: 'Fatture di manutenzione della tua abitazione, se superano la deduzione forfettaria'
+    explain:
+      en: 'Only if you paid more for upkeep in {year} than the flat deduction: repairs that keep its value, energy-saving work, building insurance, the impôt immobilier complémentaire. Not heating, water or works that add value. You keep them; they are shown only on request.'
+      fr: 'Seulement si vos frais d’entretien de {year} dépassent le forfait : réparations qui maintiennent sa valeur, travaux d’économie d’énergie, assurance du bâtiment, impôt immobilier complémentaire. Ni chauffage, ni eau, ni travaux à plus-value. Vous les gardez ; elles ne sont montrées que sur demande.'
+      de: 'Nur wenn du {year} mehr für den Unterhalt bezahlt hast als den Pauschalabzug: Reparaturen, die den Wert erhalten, Energiesparmassnahmen, Gebäudeversicherung, die impôt immobilier complémentaire. Nicht Heizung, Wasser oder wertvermehrende Arbeiten. Du bewahrst sie auf; sie werden nur auf Verlangen gezeigt.'
+      it: 'Solo se nel {year} hai pagato per la manutenzione più della deduzione forfettaria: riparazioni che ne mantengono il valore, lavori di risparmio energetico, assicurazione dello stabile, l’impôt immobilier complémentaire. Non il riscaldamento, l’acqua o i lavori che ne aumentano il valore. Le conservi; si mostrano solo su richiesta.'
+    # ge-na-charges-deductibles-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles'
+      label:
+        en: 'Deductible charges and costs of a property (ge.ch), in French'
+        fr: 'Les charges et frais déductibles (ge.ch)'
+        de: 'Abziehbare Kosten einer Liegenschaft (ge.ch), auf Französisch'
+        it: 'Le spese deducibili di un immobile (ge.ch), in francese'
+    reason:
+      en: 'Only if above the flat deduction.'
+      fr: 'Seulement si elles dépassent le forfait.'
+      de: 'Nur wenn sie über dem Pauschalabzug liegen.'
+      it: 'Solo se superano la deduzione forfettaria.'
+    source: 'ge-2025-guide-declaration-pp p. 8, 10, 33 and 34; ge-na-information-1-2021-frais-entretien p. 2 to 5'
+
+  - id: property_upkeep_flat
+    optional: true
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_flat] }
+    expects: { kinds: [ppe_charges_statement, property_upkeep_invoices] }
+    label:
+      en: 'Your flat: the PPE charges statement (appels de charges) and upkeep invoices, if above the flat deduction'
+      fr: 'Votre appartement : décompte de charges de la PPE (appels de charges) et factures d’entretien, s’ils dépassent le forfait'
+      de: 'Deine Wohnung: Nebenkostenabrechnung der Stockwerkeigentümer (appels de charges) und Unterhaltsrechnungen, wenn über dem Pauschalabzug'
+      it: 'Il tuo appartamento: conteggio delle spese della PPE (appels de charges) e fatture di manutenzione, se superano la deduzione forfettaria'
+    explain:
+      en: 'Only if your upkeep in {year} was more than the flat deduction: the PPE’s renovation fund and the upkeep of the common parts, building insurance, the impôt immobilier complémentaire and your own repairs. Not heating or hot water. You keep them; they are shown only on request.'
+      fr: 'Seulement si votre entretien de {year} dépasse le forfait : fonds de rénovation de la PPE et entretien des parties communes, assurance du bâtiment, impôt immobilier complémentaire et vos propres réparations. Ni chauffage, ni eau chaude. Vous les gardez ; ils ne sont montrés que sur demande.'
+      de: 'Nur wenn dein Unterhalt {year} über dem Pauschalabzug lag: Erneuerungsfonds der Stockwerkeigentümer und Unterhalt der gemeinsamen Teile, Gebäudeversicherung, die impôt immobilier complémentaire und deine eigenen Reparaturen. Nicht Heizung oder Warmwasser. Du bewahrst sie auf; sie werden nur auf Verlangen gezeigt.'
+      it: 'Solo se nel {year} la manutenzione ha superato la deduzione forfettaria: fondo di rinnovo della PPE e manutenzione delle parti comuni, assicurazione dello stabile, l’impôt immobilier complémentaire e le tue riparazioni. Non il riscaldamento o l’acqua calda. Li conservi; si mostrano solo su richiesta.'
+    # ge-na-charges-deductibles-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles'
+      label:
+        en: 'Deductible charges and costs of a property (ge.ch), in French'
+        fr: 'Les charges et frais déductibles (ge.ch)'
+        de: 'Abziehbare Kosten einer Liegenschaft (ge.ch), auf Französisch'
+        it: 'Le spese deducibili di un immobile (ge.ch), in francese'
+    reason:
+      en: 'Only if above the flat deduction.'
+      fr: 'Seulement s’ils dépassent le forfait.'
+      de: 'Nur wenn über dem Pauschalabzug.'
+      it: 'Solo se superano la deduzione forfettaria.'
+    source: 'ge-2025-guide-declaration-pp p. 8, 10, 33 and 34; ge-na-information-1-2021-frais-entretien p. 2 to 5'
+
+  # The mortgage: the lender's statement of the interest paid in the year and the debt on 31
+  # December (annexe E, 55.20; ge-2025-guide-declaration-pp p. 8 and 37).
+  - id: property_mortgage
+    when:
+      all:
+        - { key: profile.special, includes: real_estate }
+        - { key: profile.swiss_property, in: [own_house, own_flat, let] }
+        - { key: profile.swiss_property_loan, is: true }
+    expects: { kinds: [mortgage_statement] }
+    label:
+      en: 'Mortgage statement (intérêts et dettes hypothécaires)'
+      fr: 'Relevé hypothécaire (intérêts et dettes hypothécaires)'
+      de: 'Hypothekarauszug (intérêts et dettes hypothécaires)'
+      it: 'Estratto dell’ipoteca (intérêts et dettes hypothécaires)'
+    explain:
+      en: 'The lender’s statement of the interest paid in {year} and what you still owed on 31 December, usually sent in January.'
+      fr: 'Le relevé du prêteur indiquant les intérêts payés en {year} et le solde dû au 31 décembre, envoyé en général en janvier.'
+      de: 'Der Auszug des Kreditgebers über die {year} bezahlten Zinsen und die Schuld per 31. Dezember, meist im Januar verschickt.'
+      it: 'L’estratto del creditore con gli interessi pagati nel {year} e quanto dovevi ancora al 31 dicembre, di solito inviato a gennaio.'
+    # ge-2025-guide-declaration-pp p. 37
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=37'
+      label:
+        en: 'Geneva tax guide 2025, p. 37: interest and debts'
+        fr: 'Guide fiscal 2025, p. 37 : Intérêts et dettes'
+        de: 'Genfer Steuerwegleitung 2025, S. 37: Zinsen und Schulden, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 37: interessi e debiti, in francese'
+    reason:
+      en: 'From the lender.'
+      fr: 'Du prêteur.'
+      de: 'Vom Kreditgeber.'
+      it: 'Dal creditore.'
+    source: 'ge-2025-guide-declaration-pp p. 8 and 37'
 
   - id: prior_declaration
     optional: true

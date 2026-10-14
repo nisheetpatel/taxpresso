@@ -22,6 +22,7 @@ import {
   KEYS_ABROAD_DOCUMENTS_2026,
 } from './abroad-keys.js';
 import { BUSINESS_FIELDS_2026, KEYS_BUSINESS_DOCUMENTS_2026 } from './business-keys.js';
+import { KEYS_PROPERTY_DOCUMENTS_2026, PROPERTY_FIELDS_2026 } from './property-keys.js';
 
 const GE_GUIDE = 'ge-2025-guide-declaration-pp';
 /** Up to CHF 100 million, in centimes. A sanity bound, not a tax constant. */
@@ -204,6 +205,10 @@ export const DOCUMENT_KEYS_2026 = {
   // A property abroad: the country's tax notice, the deed, the management account, and a loan
   // statement in another currency (./abroad-keys.ts).
   ...KEYS_ABROAD_DOCUMENTS_2026,
+
+  // A property in Geneva: the AFC's letter or avis de taxation immobilier, the management account of
+  // a property let, the upkeep invoices and the PPE charges statement (./property-keys.ts).
+  ...KEYS_PROPERTY_DOCUMENTS_2026,
 } as const satisfies KeyRegistry;
 
 export type DocumentKey2026 = keyof typeof DOCUMENT_KEYS_2026;
@@ -241,6 +246,10 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
   ...ABROAD_FIELDS_2026,
   // A loan statement: in francs, or in the loan's own currency (a mortgage abroad).
   debt_interest: [...ATTESTATION_FIELDS_2026.debt_interest, ...DEBT_CURRENCY_FIELDS_2026],
+  ...PROPERTY_FIELDS_2026,
+  // The mortgage on a property in Geneva: the lender's statement, like any loan statement in
+  // francs, on E1 55.20 (intérêts et dettes hypothécaires).
+  mortgage_statement: ATTESTATION_FIELDS_2026.debt_interest,
 };
 
 /** The keys a document of this kind can give, or none. */
