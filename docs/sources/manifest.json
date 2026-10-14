@@ -195,6 +195,22 @@
       "notes": "Cover label GUIDE; file guide-pp-2025_1.pdf, about 60 pages. Web page: https://www.ge.ch/document/guide-fiscal-2025-particuliers"
     },
     {
+      "id": "ge-na-law-lcacant",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi sur les centimes additionnels cantonaux (LCACant), rsGE D 3 07",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_07.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2019-11-09",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The cantonal centimes on every cantonal tax on the income and wealth of individuals (art. 2: 47.5 centimes, plus 1 centime for home care), the separate tax on pension capital (LIPP art. 45) included.",
+      "notes": "Adopted 13 September 2019, in force 9 November 2019, no amendment (Modification: néant). Applies LCP art. 289. The page is windows-1252 encoded."
+    },
+    {
       "id": "ge-na-law-lcp",
       "canton": "GE",
       "doc_type": "law",
@@ -209,6 +225,22 @@
       "priority": "core",
       "why_needed": "Communal tax: centimes additionnels on the cantonal base tax and the split between the commune of residence (part privilégiée) and the communes of work (art. 293 to 299, art. 295A); the taxe personnelle (art. 374 to 377).",
       "notes": "rsGE D 3 05, adopted 9 November 1887, consolidated text with modifications up to 1 January 2026. Art. 295A al. 2: the privileged share (20% to 80%) of each cantonal tax on income and wealth goes to the commune of residence, the rest to the communes concerned in proportion to the income and wealth attributable to each. Art. 375: taxe personnelle of 25 francs; art. 377: exemptions."
+    },
+    {
+      "id": "ge-na-law-ldirpp",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi relative à la diminution de l'impôt sur le revenu des personnes physiques (LDIRPP), rsGE D 3 06",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "1999-10-16",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The 12% reduction of the cantonal income tax (art. 1: the direct tax on the income of individuals, except the communal centimes, is reduced by 12%), which also applies to the separate tax on pension capital (LIPP art. 45).",
+      "notes": "Adopted 26 September 1999 (popular initiative IN 111), in force 16 October 1999, no amendment (Modification: néant). Art. 2 phases the 12% in three steps, the last from 1 January 2005 at the latest. The 2025 tariff (ge-2025-icc-tariff-pdf p. 2 and 4) refers to it as the loi du 26 septembre 1999. The page is windows-1252 encoded."
     },
     {
       "id": "ge-na-law-lipp",
@@ -339,6 +371,22 @@
       "notes": "Sub-page of ge-2025-dris-tou-page, last updated 13 March 2026. Lists one compulsory case (spouse without activity) that ge-2026-source-directives p. 51 does not: see ge/NOTES.md."
     },
     {
+      "id": "ge-2026-source-capital-icc-tariff",
+      "canton": "GE",
+      "doc_type": "tariff",
+      "title": "Barème 2026 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/41804/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2025-11-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The official 2026 rates of the cantonal and communal tax on pension capital at a fifth of the LIPP scale (art. 45), centimes included: used to check the engine's separate capital tax for 2026.",
+      "notes": "4 pages, footer 'Barème LPP 2026, Part ICC, novembre 2025'. The rates include the cantonal centimes (48.5%) and a flat average of the communal centimes (43.44%). Page: https://www.ge.ch/document/bareme-icc-impot-source-prestations-capital-2026"
+    },
+    {
       "id": "ge-2026-source-tariff-ascii",
       "canton": "GE",
       "doc_type": "tariff",
@@ -385,6 +433,22 @@
       "priority": "core",
       "why_needed": "Cantonal and communal income and wealth tax tables for 2025.",
       "notes": "Base tables with examples; surcharges come from the communal centimes files. Federal tax not included. HTML page: https://www.ge.ch/document/baremes-icc-impots-revenu-fortune-avec-exemples-calcul-2025"
+    },
+    {
+      "id": "ge-2025-source-capital-icc-tariff",
+      "canton": "GE",
+      "doc_type": "tariff",
+      "title": "Barème 2025 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/38083/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2024-12-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The official rates of the cantonal and communal tax on pension capital at a fifth of the LIPP scale (art. 45), for a single person without splitting, centimes included: used to check the engine's separate capital tax for 2025 (base tax, 47.5% cantonal centimes, 12% reduction, 1% home care, communal centimes).",
+      "notes": "4 pages, footer 'Barème LPP 2025, Part ICC, décembre 2024'. The rates include the cantonal centimes (48.5%: 47.5% and 1% home care) and a flat average of the communal centimes (43.69%), as LISP art. 11 and 12 ask for people living abroad; residents are taxed with their own commune's centimes. The federal part is a separate tariff. Page: https://www.ge.ch/document/bareme-icc-impot-source-prestations-capital-2025"
     },
     {
       "id": "ge-2025-source-tariff-ascii",

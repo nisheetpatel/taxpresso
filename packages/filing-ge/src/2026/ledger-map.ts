@@ -29,6 +29,11 @@ export interface LedgerRoute {
   when?: { key: Key2026; is: string | boolean; not?: boolean };
   /** The value is the commune's code (Code lieu), not the answer itself. */
   communeCode?: boolean;
+  /**
+   * A per-person value the form asks as one amount for the household, the spouses' added up (98.12
+   * has a single "Montant" box): no part per taxpayer.
+   */
+  together?: boolean;
   /** Where the form asks for it: manifest id and page. */
   source: string;
 }
@@ -107,6 +112,15 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
     when: { key: 'pension.type', is: 'other' },
     source: `${SPEC} p. 11; ${GUIDE} p. 26`,
   },
+  // PG2, information the form asks for (renseignements): the lump sums from the 2nd pillar and
+  // pillar 3a, both spouses' in one amount, taxed apart (the engine's items take over when it
+  // computes them: ENGINE_RUBRICS_2026.info).
+  {
+    key: 'capital.amount',
+    to: '98.12',
+    together: true,
+    source: `${SPEC} p. 2; ${GUIDE} p. 13`,
+  },
   // Annexes C2, C3, C4 and the summary page PG3.
   { key: 'health.subsidy', to: '16.30', source: `${SPEC} p. 12; ${GUIDE} p. 27` },
   { key: 'health.premiums', to: '52.21', source: `${SPEC} p. 13; ${GUIDE} p. 27 and 29` },
@@ -141,7 +155,12 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
 export const ENGINE_RUBRICS_2026 = {
   icc: ['31.50', '41.50', '31.60', '41.60', '31.70', '41.70', '31.95', '41.95', '61.25', '61.30'],
   ifd: ['31.20', '41.20', '31.60', '41.60', '31.71', '41.71', '31.90', '41.90', '59.20', '61.20'],
-  source: `${SPEC} p. 3, 5 and 6; ${GUIDE} p. 15, 16, 19 to 22 and 31`,
+  /**
+   * The lump sums from the 2nd pillar and pillar 3a the engine counts for the year (98.12, PG2 p. 2;
+   * guide p. 13): one paid another year belongs to that year's tax (ch-na-law-lifd art. 38 al. 1bis).
+   */
+  info: ['98.12'],
+  source: `${SPEC} p. 2, 3, 5 and 6; ${GUIDE} p. 13, 15, 16, 19 to 22 and 31`,
 } as const;
 
 const FROM_ENGINE = (rubrics: string) =>
@@ -169,6 +188,8 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'replacement.type': 'Says what kind of benefit it is; the amount is what goes on the form.',
   'replacement.paid_to_employer': 'Says whether the benefit is already in the salary (box 7).',
   'pension.type': 'Says which rubric the pension goes to (17.10, 13.20 or 13.40).',
+  'capital.date': `Decides the year the lump sum is taxed (ch-na-law-lifd art. 38 al. 1bis); the form asks for the amount only (98.12, ${SPEC} p. 2).`,
+  'capital.reason': `Decides whether Taxpresso can tax the lump sum (leaving Switzerland is taxed at source); the form asks for the amount only (98.12, ${SPEC} p. 2).`,
   'assessment.tax': 'The tax office’s assessment is checked, never typed into the declaration.',
   'assessment.notification_date': 'The tax office’s assessment is checked, never typed.',
   'assessment.taxable_income': 'The tax office’s assessment is checked, never typed.',

@@ -220,6 +220,47 @@ describe('the next step and the stages', () => {
     );
   });
 
+  it('show the tax on a lump sum of pension capital as its own line, never in the total', async () => {
+    const call = await connect();
+    for (const [id, value] of [
+      ['canton', 'GE'],
+      ['civil_status', 'single'],
+      ['children', 0],
+      ['commune', 'Carouge'],
+      ['moved', 'no'],
+      ['income_sources:p1', ['pension']],
+      ['special', ['pension_capital']],
+      ['pension_capital:p1', ['pillar3a']],
+    ] as const) {
+      await call('answer_question', { id, value });
+    }
+    // Only the lump sum, nothing else yet: still a tax to show.
+    const { document } = await ws.addDocument(
+      Buffer.from('%PDF-1.7 synthetic pillar 3a capital attestation'),
+      'capital.pdf',
+      'dashboard',
+    );
+    await ws.proposeExtraction(
+      document.id,
+      { kind: 'pillar3a_capital_attestation', taxYear: 2026, person: 'p1' },
+      [
+        { key: 'capital.amount', value: "85'000.00", page: 1 },
+        { key: 'capital.date', value: '2026-06-30', page: 1 },
+        { key: 'capital.reason', value: 'retirement', page: 1 },
+      ],
+    );
+    await ws.confirmDocument(document.id, 'dashboard');
+    const s = await state();
+    expect(s.journey.hasFigures).toBe(true);
+    const tax = s.journey.stages.find((x) => x.id === 'tax')!;
+    expect(tax.vars.capital).toBeGreaterThan(0);
+    expect(tax.vars.amount).toBe(s.estimate!.computed ? s.estimate!.total : undefined);
+    const lines = text(await call('get_status')).split('\n');
+    expect(lines.find((l) => l.startsWith('Stages'))).toMatch(
+      /Your tax: [^·]*the tax on pension capital, apart from it: CHF [\d,]+/,
+    );
+  });
+
   it('offer no saving before 31 December once the year has ended', async () => {
     const call = await connect('2027-01-15');
     for (const [id, value] of KELLER) await ws.answer(id, value, 'chat');

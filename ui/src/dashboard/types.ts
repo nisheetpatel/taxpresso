@@ -107,6 +107,8 @@ export interface JourneyVars {
   /** YYYY-MM-DD. */
   date?: string;
   year?: number;
+  /** Centimes: the separate tax on pension capital, never in the total (`amount`). */
+  capital?: number;
 }
 
 export interface Journey {

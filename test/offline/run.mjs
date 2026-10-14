@@ -1778,6 +1778,111 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Geneva couple with two lump sums of pension capital: the tax apart, offline', async () => {
+    // Pierre and Anne Rochat, Vernier (made-up): his pension fund capital and her pillar 3a in the
+    // same year, added up for one tax (packages/rules-ge/test/capital.test.ts works it out by hand).
+    const gVault = path.join(work, 'Rochat');
+    const gTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: gVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    gTransport.stderr?.on('data', (d) => (stderr += d));
+    const ge = new Client({ name: 'taxpresso-offline-test-capital', version: '0.0.0' });
+    await ge.connect(gTransport);
+    try {
+      const answers = [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Vernier'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['pension']],
+        ['income_sources:p2', ['pension']],
+        ['special', ['pension_capital']],
+        ['pension_capital:p1', ['pillar2']],
+        ['pension_capital:p2', ['pillar3a']],
+      ];
+      for (const [id, value] of answers) {
+        const res = await ge.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      // Two attestations the couple put in their folder (synthetic bytes).
+      const files = [
+        [
+          'Caisse de pension, capital 2026.pdf',
+          'lpp_capital_attestation',
+          'p1',
+          "300'000.00",
+          '30.09.2026',
+        ],
+        [
+          'Fondation 3a, capital 2026.pdf',
+          'pillar3a_capital_attestation',
+          'p2',
+          "60'000.00",
+          '15.11.2026',
+        ],
+      ];
+      for (const [name] of files) {
+        writeFileSync(path.join(gVault, '2026', name), `%PDF-1.7 synthetic Rochat ${name}`);
+      }
+      const ingest = await ge.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+      const listed = await ge.callTool({ name: 'list_documents', arguments: {} });
+      const missing = listed.structuredContent.missing.join('; ');
+      assert.match(missing, /Pension capital attestation, 2nd pillar/);
+      assert.match(missing, /Pension capital attestation, pillar 3a/);
+      for (const [name, kind, person, amount, date] of files) {
+        const doc = listed.structuredContent.documents.find((d) => d.filename === name);
+        const res = await ge.callTool({
+          name: 'propose_extraction',
+          arguments: {
+            id: doc.id,
+            document: { kind, person, taxYear: 2026 },
+            values: [
+              { key: 'capital.amount', value: amount, page: 1 },
+              { key: 'capital.date', value: date, page: 1 },
+              { key: 'capital.reason', value: 'retirement', page: 1 },
+            ],
+          },
+        });
+        assert.ok(!res.isError, res.content?.[0]?.text);
+      }
+
+      const tax = await ge.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.deepEqual(tax.structuredContent.capital, {
+        amount: 36_000_000,
+        items: [
+          { code: '98.12', person: 'p1', amount: 30_000_000 },
+          { code: '98.12', person: 'p2', amount: 6_000_000 },
+        ],
+        icc: 1_593_080,
+        ifd: 653_600,
+        total: 2_246_680,
+      });
+      assert.match(tax.content[0].text, /never in the total/);
+      assert.match(tax.content[0].text, /rest on values that still need the user's OK/);
+
+      const form = await ge.callTool({ name: 'get_form_values', arguments: { section: 'PG2' } });
+      const row = form.structuredContent.rows.find((r) => r.ref === '98.12');
+      assert.equal(row.copy, '360000');
+
+      const check = await ge.callTool({ name: 'final_check', arguments: {} });
+      const ids = check.structuredContent.know.map((i) => i.id);
+      assert.ok(ids.includes('capital:taxed_apart') && ids.includes('capital:buy_ins'), ids.join());
+    } finally {
+      await ge.close();
+    }
+  });
+
   test('no outbound network attempt was made (C2)', () => {
     const attempts = existsSync(guardLog) ? readFileSync(guardLog, 'utf8').trim() : '';
     assert.equal(attempts, '', `outbound attempts:\n${attempts}`);

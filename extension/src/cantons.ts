@@ -284,8 +284,33 @@ export function sharedLedger<Cantonal extends object>(
     communeOf: (answer, taxYear) => reading.commune(answer, taxYear),
     estimate(ctx) {
       const { input, missing, notes } = household(ctx);
-      return { result: input ? rules.computeReturn(input) : null, missing, notes };
+      const result = input ? rules.computeReturn(input) : null;
+      return { result: result && capitalRefused(result, ctx), missing, notes };
     },
+  };
+}
+
+/**
+ * A lump sum from the 2nd pillar or pillar 3a in a canton whose tax on it Taxpresso doesn't compute
+ * (every canton but Geneva so far): said, never left out silently. Its questionnaire says it is not
+ * supported; an attestation added anyway is caught here.
+ */
+function capitalRefused(result: TaxResult, ctx: LedgerContext): TaxResult {
+  const lumpSum = ctx.facts.some(
+    (f) => f.key === 'capital.amount' && typeof f.value === 'number' && f.value > 0,
+  );
+  if (!lumpSum) return result;
+  return {
+    ...result,
+    unsupported: [
+      ...result.unsupported,
+      {
+        en: 'Tax on pension capital (a lump sum from the 2nd pillar or pillar 3a) not computed: Taxpresso computes it for Geneva only so far. It is taxed apart from your income; your canton’s free software or a fiduciary can compute it.',
+        fr: 'Impôt sur les prestations en capital (un capital du 2e pilier ou du 3e pilier A) non calculé\u00a0: Taxpresso ne le calcule pour l’instant que pour Genève. Il est imposé à part de vos revenus\u00a0; le logiciel gratuit de votre canton ou une fiduciaire peuvent le calculer.',
+        de: 'Steuer auf Kapitalleistungen (Kapital aus der 2. Säule oder der Säule 3a) nicht berechnet: Taxpresso berechnet sie bisher nur für Genf. Sie wird getrennt vom Einkommen besteuert; die kostenlose Software deines Kantons oder eine Treuhand kann sie berechnen.',
+        it: 'Imposta sulle prestazioni in capitale (un capitale del 2° pilastro o del pilastro 3a) non calcolata: per ora Taxpresso la calcola solo per Ginevra. È tassata a parte dal reddito; il software gratuito del tuo Cantone o una fiduciaria possono calcolarla.',
+      },
+    ],
   };
 }
 

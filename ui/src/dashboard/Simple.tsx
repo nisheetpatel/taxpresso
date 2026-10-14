@@ -37,6 +37,7 @@ function words(
       ? { amount: rounded ? aboutChf(vars.amount, lang) : francs(vars.amount, lang) }
       : {}),
     ...(vars.date !== undefined ? { date: day(vars.date, lang) } : {}),
+    ...(vars.capital !== undefined ? { capital: francs(vars.capital, lang) } : {}),
   };
 }
 
@@ -84,6 +85,8 @@ export function stageLine(state: State, id: StageId, lang: Language): string {
   }
   let key = `line.${id}.${s.status}`;
   if (id === 'about' && s.status === 'open' && s.vars.n === 1) key = 'line.about.openOne';
+  // The tax on pension capital is its own line, never in the total.
+  if (id === 'tax' && s.vars.capital !== undefined) key += 'Capital';
   return isJourneyKey(key) ? tj(lang, key, words(s.vars, lang, id === 'save')) : '';
 }
 

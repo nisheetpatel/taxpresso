@@ -189,6 +189,29 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://www.ge.ch/document/38036/annexe/file/374849',
     pdf: true,
   },
+  'ge-na-law-ldirpp': {
+    title:
+      "Loi relative à la diminution de l'impôt sur le revenu des personnes physiques (LDIRPP), rsGE D 3 06",
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_06.htm',
+    pdf: false,
+  },
+  'ge-na-law-lcacant': {
+    title: 'Loi sur les centimes additionnels cantonaux (LCACant), rsGE D 3 07',
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_07.htm',
+    pdf: false,
+  },
+  'ge-2025-source-capital-icc-tariff': {
+    title:
+      "Barème 2025 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+    url: 'https://www.ge.ch/document/38083/telecharger',
+    pdf: true,
+  },
+  'ge-2026-source-capital-icc-tariff': {
+    title:
+      "Barème 2026 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+    url: 'https://www.ge.ch/document/41804/telecharger',
+    pdf: true,
+  },
   'ch-2026-ifd-progression-deductions': {
     title:
       "Compensation des effets de la progression à froid et taux d'intérêt pour l'impôt fédéral direct pour l'année fiscale 2026",

@@ -793,7 +793,12 @@ export class Workspace {
           later.push(v.key);
           continue;
         }
-        const def = this.keys[v.key]!;
+        const def = this.keys[v.key];
+        if (!def) {
+          throw new ExtractionError(
+            `${v.key} is not a value Taxpresso reads in this canton yet: tell the user this part of their return isn't supported here.`,
+          );
+        }
         let person: Owner = 'household';
         if (def.perPerson) {
           const who =

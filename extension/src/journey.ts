@@ -39,6 +39,8 @@ export interface Vars {
   /** YYYY-MM-DD. */
   date?: string;
   year?: number;
+  /** Centimes: the separate tax on pension capital, never in the total (`amount`). */
+  capital?: number;
 }
 
 export interface StageView {
@@ -258,7 +260,11 @@ export function journey(ws: Workspace): Journey {
       ? {
           id: 'tax',
           status: result.estimates.length || !result.complete ? 'estimate' : 'computed',
-          vars: { amount: result.total },
+          vars: {
+            amount: result.total,
+            // The tax on a lump sum of pension capital: its own line, never in the total.
+            ...(result.capital?.total ? { capital: result.capital.total.amount } : {}),
+          },
         }
       : { id: 'tax', status: 'waiting', vars: {} };
   const saveStage: StageView = ws.yearOver()
@@ -367,6 +373,12 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
 
 // --- For Claude: the stages in one line each (get_status) ----------------------------------------
 
+/** The tax on pension capital, said apart from the total. */
+const apart = (s: StageView) =>
+  s.vars.capital !== undefined
+    ? `; the tax on pension capital, apart from it: ${chf(s.vars.capital)}`
+    : '';
+
 const STAGE_NAME: Record<StageId, string> = {
   about: 'About you',
   documents: 'Your documents',
@@ -405,9 +417,9 @@ function stageLine(s: StageView): string {
     case 'documents.empty':
       return 'none yet';
     case 'tax.estimate':
-      return `about ${chf(s.vars.amount ?? 0)} (estimate)`;
+      return `about ${chf(s.vars.amount ?? 0)} (estimate)${apart(s)}`;
     case 'tax.computed':
-      return chf(s.vars.amount ?? 0);
+      return `${chf(s.vars.amount ?? 0)}${apart(s)}`;
     case 'tax.waiting':
       return 'no income figure yet';
     case 'save.total':
