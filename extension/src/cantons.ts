@@ -8,10 +8,12 @@ import {
   type FormItem,
   type FormMap,
 } from '@taxpresso/filing-ge';
+import { filing as bernFiling } from '@taxpresso/filing-be';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
 import {
+  beQuestionnaire2026,
   geQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
@@ -20,7 +22,9 @@ import {
 } from '@taxpresso/questionnaire';
 import {
   cantonInputFromFacts,
+  isSupportedCanton,
   KEYS_CANTON_2026,
+  KEYS_HOUSEHOLD_2026,
   SUPPORTED_CANTONS,
   type CantonAnswer,
   type CantonCode,
@@ -53,6 +57,16 @@ import {
   type ZhTaxResult,
   type ZurichCantonal,
 } from '@taxpresso/rules-zh';
+import {
+  BE_TERMS,
+  beParamsFor,
+  BERN_READING,
+  communeOptions as bernCommunes,
+  rules as bernRules,
+  view as bernView,
+  type BernCantonal,
+  type BeTaxResult,
+} from '@taxpresso/rules-be';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -232,7 +246,47 @@ const ZURICH: CantonEntry = {
   tou: false,
 };
 
-export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = { GE: GENEVA, ZH: ZURICH };
+const BERN: CantonEntry = {
+  code: 'BE',
+  name: { en: 'Bern', fr: 'Berne', de: 'Bern' },
+  software: 'TaxMe-Online',
+  rules: bernRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? beQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...bernRules.keys(taxYear) }),
+  communes: (taxYear) => bernCommunes(taxYear),
+  // Form 4.1 takes cash, gold, vehicles and other valuables together: no note needed.
+  ...sharedLedger(BERN_READING, bernRules),
+  view: bernView,
+  filing: bernFiling,
+  terms: BE_TERMS,
+  plan: {
+    computeReturn: (input) => bernRules.computeReturn(input as HouseholdInput<BernCantonal>),
+    incomeTax: (r) => bernView.incomeTax(r as BeTaxResult),
+    // The City of Bern, by its BFS number.
+    defaultCommune: 351,
+    communeName: { en: 'City of Bern', fr: 'Ville de Berne', de: 'Stadt Bern' },
+    sources(taxYear) {
+      // The documents a Bern household's income tax rests on, for the year.
+      const P = beParamsFor(taxYear);
+      return [
+        P.incomeTariff.married.source,
+        P.cantonalRate.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'be_preview', communeDefault: 'be_commune_default' },
+    // Bern's rule for a 3a catch-up from 2026 (be-na-deductions-taxinfo-saeule-3a, chapter 3).
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
+export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
+  GE: GENEVA,
+  ZH: ZURICH,
+  BE: BERN,
+};
 
 /** The canton of the year being prepared, and how Taxpresso knows it. */
 export interface CantonState {
@@ -264,7 +318,7 @@ export class CantonRegistry {
   /** What the canton of the ledger's year is, from the answer or, before it, the other answers. */
   state(ledger: Ledger): CantonState {
     const answer = stated(ledger, 'profile.canton');
-    if (answer === 'GE' || answer === 'ZH') {
+    if (isSupportedCanton(answer)) {
       return { answer, canton: CANTONS[answer], from: 'answer', because: [] };
     }
     if (answer === 'other') return { answer, canton: undefined, from: 'answer', because: [] };
@@ -291,7 +345,13 @@ export class CantonRegistry {
       engine =
         file && canton
           ? new QuestionnaireEngine(file, canton.keys(this.taxYear), canton.communes(this.taxYear))
-          : new QuestionnaireEngine(sharedQuestionnaire2026(), this.ledgerKeys, []);
+          : // The shared questions read the shared keys: a canton may offer more values (Bern's
+            // payments to political parties), which the shared question doesn't ask about.
+            new QuestionnaireEngine(
+              sharedQuestionnaire2026(),
+              { ...this.ledgerKeys, ...KEYS_HOUSEHOLD_2026 },
+              [],
+            );
       this.#engines.set(id, engine);
     }
     return engine;

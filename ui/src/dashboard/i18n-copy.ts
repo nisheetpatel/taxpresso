@@ -38,6 +38,10 @@ const messages = {
       'Type each value into ZHprivateTax or the paper form, page by page in the form’s order: first the Berufsauslagen and Versicherungsprämien forms, whose totals carry to page 3. Amounts are whole francs (CHF ohne Rappen), without separators. Tick each value once it is in.',
     coupleZh:
       'On the Zurich form, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
+    leadBe:
+      'Type each value into TaxMe-Online or the paper form, form by form in the form’s order. Amounts are whole francs, without separators. TaxMe works out the limits and two summaries (Zusammenzug): check them against the last two sections. Tick each value once it is in.',
+    coupleBe:
+      'On the Bern form, the column Mann is {a} and the column Frau is {b}, registered partners included. If your form has them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -68,6 +72,8 @@ const messages = {
     split: `Pour tout le ménage${NB}: sur le formulaire, répartissez-le entre {parts}, comme sur votre document.`,
     leadZh: `Recopiez chaque valeur dans ZHprivateTax ou le formulaire papier, page par page dans l’ordre du formulaire${NB}: d’abord les formulaires Berufsauslagen et Versicherungsprämien, dont les totaux sont reportés en page 3. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. Cochez chaque valeur une fois saisie.`,
     coupleZh: `Sur le formulaire zurichois, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadBe: `Recopiez chaque valeur dans TaxMe-Online ou le formulaire papier, formule par formule dans l’ordre du formulaire. Les montants sont en francs entiers, sans séparateurs. TaxMe calcule les limites et deux récapitulatifs (Zusammenzug)${NB}: comparez-les avec les deux dernières sections. Cochez chaque valeur une fois saisie.`,
+    coupleBe: `Sur le formulaire bernois, la colonne Mann est {a} et la colonne Frau est {b}, partenaires enregistrés compris. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
     title: 'Fülle deine Steuererklärung aus',
@@ -102,6 +108,10 @@ const messages = {
       'Tippe jeden Wert in ZHprivateTax oder ins Papierformular, Seite für Seite in der Reihenfolge des Formulars: zuerst die Formulare Berufsauslagen und Versicherungsprämien, deren Totale auf Seite 3 übertragen werden. Beträge in ganzen Franken (CHF ohne Rappen), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
     coupleZh:
       'Auf dem Zürcher Formular ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadBe:
+      'Tippe jeden Wert in TaxMe-Online oder ins Papierformular, Formular für Formular in der Reihenfolge der Steuererklärung. Beträge in ganzen Franken, ohne Trennzeichen. TaxMe rechnet die Höchstbeträge und zwei Zusammenzüge aus: Vergleiche sie mit den letzten beiden Abschnitten. Hake jeden Wert ab, sobald er drin ist.',
+    coupleBe:
+      'Auf dem Berner Formular ist die Spalte Mann {a} und die Spalte Frau {b}, auch bei eingetragenen Partnerschaften. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
 } as const;
 

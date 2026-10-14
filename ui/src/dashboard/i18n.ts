@@ -155,6 +155,12 @@ export const messages = {
     planSavingSplitZh: 'Zurich {icc} · federal {ifd}',
     planExplainZh:
       'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
+    'assume.be_commune_default': 'Commune not answered yet: City of Bern assumed.',
+    'assume.be_preview':
+      'Bern is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    planSavingSplitBe: 'Bern {icc} · federal {ifd}',
+    planExplainBe:
+      'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
   },
   fr: {
     docTitle: 'Taxpresso · Vos impôts, le temps d’un espresso.',
@@ -305,6 +311,11 @@ export const messages = {
     planSavingSplitZh: 'Zurich {icc} · fédéral {ifd}',
     planExplainZh:
       'Le 3e pilier A (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
+    'assume.be_commune_default': `Commune pas encore indiquée${NB}: Ville de Berne par défaut.`,
+    'assume.be_preview': `Berne est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    planSavingSplitBe: 'Berne {icc} · fédéral {ifd}',
+    planExplainBe:
+      'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
   },
   de: {
     docTitle: 'Taxpresso · Deine Steuern, erledigt bei einem Espresso.',
@@ -459,6 +470,12 @@ export const messages = {
       'Zürich ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
     planSavingSplitZh: 'Zürich {icc} · Bund {ifd}',
     planExplainZh:
+      'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+    'assume.be_commune_default': 'Gemeinde noch nicht angegeben: Stadt Bern angenommen.',
+    'assume.be_preview':
+      'Bern ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    planSavingSplitBe: 'Bern {icc} · Bund {ifd}',
+    planExplainBe:
       'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
   },
 } as const;

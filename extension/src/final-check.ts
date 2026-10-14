@@ -419,7 +419,8 @@ const cite = (s: FinalCheckItemView['sources'], titles: boolean) =>
     ? ` [${s.map((x) => `${x.id} ${x.where}${titles && x.title ? ` (${x.title})` : ''}${x.url ? `: ${x.url}` : ''}`).join('; ')}]`
     : '';
 
-export function finalCheckText(v: FinalCheckView, detail: boolean): string {
+/** `office`: the canton's tax office as its form names it, when it is not Geneva's AFC. */
+export function finalCheckText(v: FinalCheckView, detail: boolean, office?: string): string {
   const out = [
     `Final check before filling in the official form (tax year ${v.taxYear}), re-run on the current values: ${v.verdict === 'ready' ? 'READY TO FILL IN' : 'NOT READY'}. Fix before filing: ${v.fix.length}. Good to know: ${v.know.length}.`,
   ];
@@ -445,7 +446,7 @@ export function finalCheckText(v: FinalCheckView, detail: boolean): string {
     });
     if (v.moreTime) {
       out.push(
-        `If a document won't arrive in time, the user can ask the AFC for more time to file (official page: ${v.moreTime}); Taxpresso doesn't do it for them.`,
+        `If a document won't arrive in time, the user can ask ${office ? `the tax office (${office})` : 'the AFC'} for more time to file (official page: ${v.moreTime}); Taxpresso doesn't do it for them.`,
       );
     }
   }
@@ -517,7 +518,12 @@ export function registerFinalCheckTool(server: McpServer, ws: Workspace): void {
       await declarationCheckReady(ws);
       const view = finalCheckView(ws, 'en');
       return {
-        content: [{ type: 'text', text: finalCheckText(view, detail === true) }],
+        content: [
+          {
+            type: 'text',
+            text: finalCheckText(view, detail === true, ws.canton().canton?.terms?.taxOffice),
+          },
+        ],
         structuredContent: { ...view },
       };
     },
