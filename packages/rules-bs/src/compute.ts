@@ -28,6 +28,7 @@ import {
 import { bsParamsFor, type BsYearParams } from './params.js';
 import {
   FORM_B,
+  FORM_W,
   INCOME,
   PERSON_CODES,
   RUBRICS,
@@ -672,16 +673,23 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     const tr = new Trace().with(incomeTr);
     const fees = hh.bankFees ? total(tr, [hh.bankFees]) : 0;
     const net = grossYield - fees;
+    // Form W, page 4: line 1 (gross income), line 6 (the costs of keeping them), line 10 = 369.
     items.push(
-      item(
-        '369',
-        'household',
-        tr,
-        net,
-        t(
-          `Gross income of the accounts and securities ${chf(grossYield)}${fees ? ` less the costs of keeping them ${chf(fees)}` : ''}: ${chf(net)}.`,
-          `Rendement brut des avoirs et titres ${chf(grossYield)}${fees ? ` moins leurs frais de gestion ${chf(fees)}` : ''}${NB}: ${chf(net)}.`,
+      withParts(
+        item(
+          '369',
+          'household',
+          tr,
+          net,
+          t(
+            `Gross income of the accounts and securities ${chf(grossYield)}${fees ? ` less the costs of keeping them ${chf(fees)}` : ''}: ${chf(net)}.`,
+            `Rendement brut des avoirs et titres ${chf(grossYield)}${fees ? ` moins leurs frais de gestion ${chf(fees)}` : ''}${NB}: ${chf(net)}.`,
+          ),
         ),
+        [
+          { code: FORM_W.grossIncome, amount: grossYield },
+          ...(fees ? [{ code: FORM_W.fees, amount: fees }] : []),
+        ],
       ),
     );
   }
@@ -944,15 +952,23 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
     const factor = tr.p(A.securitiesFactor);
     const v = securitiesValue(market, grossYield, factor);
     if (v.value < market) notes.add(notes.assumptions, NOTE.securitiesMean);
+    // Form W, page 4: line 11 (market value), 14 (yield value), 16 (the mean); 800 the lower.
     wealthItems.push(
-      wealthItem(
-        '800',
-        tr,
-        v.value,
-        t(
-          `Market value ${chf(market)}; yield value: gross income ${chf(grossYield)} x ${factor} = ${chf(v.yieldValue)}; mean ${chf(v.mean)}; ${v.value < market ? 'the mean, lower' : 'the market value, not higher than the mean'}: ${chf(v.value)}.`,
-          `Valeur vénale ${chf(market)}${NB}; valeur de rendement${NB}: rendement brut ${chf(grossYield)} x ${factor} = ${chf(v.yieldValue)}${NB}; moyenne ${chf(v.mean)}${NB}; ${v.value < market ? 'la moyenne, plus basse' : 'la valeur vénale, pas plus élevée que la moyenne'}${NB}: ${chf(v.value)}.`,
+      withParts(
+        wealthItem(
+          '800',
+          tr,
+          v.value,
+          t(
+            `Market value ${chf(market)}; yield value: gross income ${chf(grossYield)} x ${factor} = ${chf(v.yieldValue)}; mean ${chf(v.mean)}; ${v.value < market ? 'the mean, lower' : 'the market value, not higher than the mean'}: ${chf(v.value)}.`,
+            `Valeur vénale ${chf(market)}${NB}; valeur de rendement${NB}: rendement brut ${chf(grossYield)} x ${factor} = ${chf(v.yieldValue)}${NB}; moyenne ${chf(v.mean)}${NB}; ${v.value < market ? 'la moyenne, plus basse' : 'la valeur vénale, pas plus élevée que la moyenne'}${NB}: ${chf(v.value)}.`,
+          ),
         ),
+        [
+          { code: FORM_W.market, amount: market },
+          { code: FORM_W.yieldValue, amount: v.yieldValue },
+          { code: FORM_W.mean, amount: v.mean },
+        ],
       ),
     );
   }

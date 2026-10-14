@@ -34,6 +34,7 @@ export {
   DEBTS,
   DEDUCTIONS,
   FORM_B,
+  FORM_W,
   INCOME,
   INCOME_BASED,
   PERSON_CODES,

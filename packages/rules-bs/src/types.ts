@@ -198,8 +198,10 @@ export interface Item extends Line {
   code: string;
   person: ItemPerson;
   /**
-   * The lines of form B (Berufskosten) that make up a person's professional costs (519/539), in the
-   * column of the item's tax: what you type on the form, which carries its total to the main form.
+   * The lines of an annex form that make up the item, in the column of the item's tax: form B
+   * (Berufskosten) for a person's professional costs (519/539), form W (Wertschriftenverzeichnis)
+   * for the accounts and securities (369, 800). What you type on the form, which carries its total
+   * to the main form.
    */
   parts?: readonly ItemPart[];
 }

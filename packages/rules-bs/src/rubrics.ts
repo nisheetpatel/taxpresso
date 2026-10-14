@@ -350,6 +350,20 @@ export const FORM_B = {
   p2: { flat: '520', travel: '523', meals: '524', other: '534', side: '536' },
 } as const;
 
+/**
+ * The lines of page 4 of form W (Wertschriftenverzeichnis, bs-2025-form-w-wertschriftenverzeichnis
+ * p. 4) Taxpresso fills from the totals of the accounts and securities: the gross income (line 1),
+ * the costs of keeping them (line 6), the market value (line 11), the yield value (line 14) and the
+ * mean (line 16); line 10 is 369 and the lower of 11 and 16 is 800.
+ */
+export const FORM_W = {
+  grossIncome: 'W-1',
+  fees: 'W-6',
+  market: 'W-11',
+  yieldValue: 'W-14',
+  mean: 'W-16',
+} as const;
+
 /** Income lines (Einkünfte, 100 to 489): their total is 499. */
 export const INCOME = new Set<string>([
   '100',
