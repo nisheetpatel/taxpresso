@@ -27,6 +27,8 @@ export interface Condition {
   is?: boolean;
   /** For a per-person key: true if it holds for anyone in the household. */
   anyPerson?: boolean;
+  /** The question being asked is this person's (alone, or with other conditions in any/all). */
+  person?: 'p1' | 'p2';
   any?: Condition[];
   all?: Condition[];
 }
@@ -42,12 +44,32 @@ export const Condition: z.ZodType<Condition> = z.lazy(() =>
       gt: z.number().optional(),
       is: z.boolean().optional(),
       anyPerson: z.boolean().optional(),
+      person: z.enum(['p1', 'p2']).optional(),
       any: z.array(Condition).optional(),
       all: z.array(Condition).optional(),
     })
     .strict()
-    .refine((c) => (c.any || c.all ? !c.key : !!c.key), 'a condition needs a key, or any/all'),
+    .refine(
+      (c) => (c.any || c.all ? !c.key && !c.person : !!c.key !== !!c.person),
+      'a condition needs a key, a person, or any/all',
+    ),
 );
+
+/**
+ * A rule that answers a question from the other answers, when the law settles it: the first rule
+ * whose condition holds gives the value, which is never asked (and the user can't answer over
+ * it). No rule holds: the question is asked. `because` says it in plain words, `source` cites
+ * the law or the official document (manifest id and article or page).
+ */
+export const Derivation = z
+  .object({
+    when: Condition,
+    value: z.union([z.string(), z.number(), z.boolean()]),
+    because: Text,
+    source: z.string().min(1),
+  })
+  .strict();
+export type Derivation = z.infer<typeof Derivation>;
 
 /** Government sites whose pages are listed in docs/sources/<canton>/manifest.json (each opened and checked). */
 export const OFFICIAL_HOSTS = [
@@ -138,6 +160,8 @@ export const Question = z
      */
     perChild: z.boolean().optional(),
     when: Condition.optional(),
+    /** Answers taken from the other answers where the law settles them (see Derivation). */
+    derive: z.array(Derivation).optional(),
     text: z.union([Text, PerPersonText]),
     help: Text.optional(),
     /** Plain-language "what is this?", shown on hover and given to Claude. */

@@ -40,7 +40,7 @@ const SINGLE_IN_ZURICH = {
   'church:p1': 'none',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'pillar3a:p1': true,
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -211,7 +211,7 @@ describe('Zurich questionnaire 2026', () => {
       'church:p1': 'none',
       'income_sources:p1': ['salary', 'self_employment'],
       'employers:p1': 1,
-      'taxed_at_source:p1': true,
+      'residence:p1': 'permit_other',
     });
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.de)).toEqual([
       'Ein Zuzug aus dem Ausland während des Jahres',
@@ -219,6 +219,18 @@ describe('Zurich questionnaire 2026', () => {
       'Die Quellensteuer im Kanton Zürich und die nachträgliche ordentliche Veranlagung (NOV)',
     ]);
     expect(e.notSupportedMessage('en')).toMatch(/ZHprivateTax/);
+    // Not asked: without a C permit, a salary is taxed at source (LIFD art. 83), derived.
+    const snap = e.snapshot(ledger);
+    expect(snap.slots.map((s) => s.id)).not.toContain('taxed_at_source:p1');
+    expect(snap.derived.find((s) => s.id === 'taxed_at_source:p1')).toMatchObject({
+      value: true,
+      derived: { source: 'ch-na-law-lifd p. 49 (art. 83 al. 1, art. 84 al. 2 let. a and b)' },
+    });
+    expect(() => e.answer(ledger, 'taxed_at_source:p1', false, USER)).toThrow(
+      /follows from the other answers/,
+    );
+    // With a legitimation card the law doesn't settle it: asked, and yes is not supported.
+    e.answer(ledger, 'residence:p1', 'other', USER);
     const slot = e.snapshot(ledger).slots.find((s) => s.id === 'taxed_at_source:p1')!;
     expect(e.render(slot, e.snapshot(ledger), 'en').options).toEqual([
       { value: 'yes', label: 'Yes', notSupported: true },

@@ -315,14 +315,21 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
     async ({ id, value }) => {
       const ws = years.current;
       try {
+        await ws.ready();
+        // What follows from the answers (taxed at source, from the permit): new consequences of
+        // this answer are said with it.
+        const derivedBefore = new Set(ws.engine.notSupported(ws.snapshot()).map((n) => n.slotId));
         const { added } = await ws.answer(id, value, 'chat');
         const snap = ws.snapshot();
         const slot = snap.slots.find((s) => s.id === id);
         const saved = slot ? ws.engine.describe(slot, 'en') : String(value);
         const newlyMissing = added.filter((r) => r.status === 'missing').map((r) => r.label.en);
+        const derivedIds = new Set(snap.derived.map((s) => s.id));
         const notSupported = ws.engine
           .notSupported(snap)
-          .filter((n) => n.slotId === id)
+          .filter(
+            (n) => n.slotId === id || (derivedIds.has(n.slotId) && !derivedBefore.has(n.slotId)),
+          )
           .map((n) => n.what.en);
         const nextSlot = ws.next();
         const next = nextSlot ? questionOut(ws, nextSlot) : undefined;

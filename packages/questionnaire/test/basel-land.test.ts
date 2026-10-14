@@ -55,7 +55,7 @@ const SINGLE_IN_LIESTAL = {
   'church:p1': 'none',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'pillar3a:p1': true,
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -92,6 +92,7 @@ describe('Basel-Landschaft questionnaire 2026', () => {
       'income_sources',
       'pension_kind',
       'employers',
+      'residence',
       'taxed_at_source',
       'pillar3a',
       'lpp_buyin',
@@ -164,9 +165,10 @@ describe('Basel-Landschaft questionnaire 2026', () => {
       const { url, label } = item.learnMore!;
       expect(label.it, item.id).toBeTruthy();
       // Basel-Landschaft's own documents; the canton question keeps its federal page (shared).
-      expect(item.id === 'canton' ? ALL_URLS : BL_URLS, item.id).toContain(
-        url.replace(/#page=\d+$/, ''),
-      );
+      expect(
+        item.id === 'canton' || item.id === 'residence' ? ALL_URLS : BL_URLS,
+        item.id,
+      ).toContain(url.replace(/#page=\d+$/, ''));
       // A page of the guide is named by the page the link opens.
       if (url.startsWith(`${GUIDE}#page=`)) {
         const page = url.slice(`${GUIDE}#page=`.length);
@@ -338,7 +340,7 @@ describe('Basel-Landschaft questionnaire 2026', () => {
       'church:p1': 'none',
       'income_sources:p1': ['salary', 'self_employment'],
       'employers:p1': 1,
-      'taxed_at_source:p1': true,
+      'residence:p1': 'permit_other',
     });
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.de)).toEqual([
       'Ein Zuzug aus dem Ausland während des Jahres',

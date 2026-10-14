@@ -139,7 +139,43 @@ function useSave(lang: Language, act: Act) {
     void act(() => api.planning(person, field, value, lang));
 }
 
-/** The TOU card: shown to people taxed at source, before everything else ("Decide first"). */
+/** Tax at source as facts (extension/src/source-tax.ts): plain sentences, each with its source. */
+function SourceTaxFacts({ state, lang }: { state: PlannedState; lang: Language }) {
+  const lines = state.sourceTax?.lines ?? [];
+  if (!lines.length) return null;
+  const couple = state.people.length > 1;
+  return (
+    <div class="pl-facts">
+      <h3 class="pl-facts-title">{tp(lang, 'touSourceTax')}</h3>
+      <ul>
+        {lines.map((l, i) => (
+          <li key={i}>
+            {couple && l.person ? (
+              <span class="muted">
+                {whoLabel(l.person, couple, lang)}
+                {' · '}
+              </span>
+            ) : null}
+            {l.text}
+            {l.estimate ? (
+              <>
+                {' '}
+                <span class="chip chip-estimate">{tp(lang, 'estimate')}</span>
+              </>
+            ) : null}
+            {l.source ? <span class="pl-source tnum"> ({l.source})</span> : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * The TOU card, for households taxed at source. TOU already in place, or compulsory, is a fact:
+ * the card says so, with what to do, and asks nothing. Only when TOU is a real choice does it show
+ * the comparison, that a request can't be withdrawn, and the decision ("Decide first").
+ */
 export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   const planning: PlanningState = state.planning;
   const tou = planning.tou;
@@ -147,7 +183,7 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   const [changing, setChanging] = useState(false);
   const save = useSave(lang, act);
   if (!tou.applies) {
-    // Zurich: TOU is Geneva's; say so to someone who said they are taxed at source.
+    // Zurich: TOU is Geneva's; say so to someone who is taxed at source.
     if (planning.touGenevaOnly && planning.inputs.some((i) => i.taxedAtSource)) {
       return (
         <section class="card pl-card" aria-labelledby="tou-title">
@@ -158,6 +194,8 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
     }
     return null;
   }
+  const mode = tou.mode ?? 'choice';
+  const fact = mode === 'in_place' || mode === 'compulsory';
   const couple = state.people.length > 1;
   const deadline = day(tou.deadline, lang);
   const diff = tou.differenceCentimes;
@@ -181,10 +219,10 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   const atSource = planning.inputs.filter((i) => i.taxedAtSource);
 
   let decision: JSX.Element;
-  if (tou.compulsory === 'yes') {
-    decision = <p class="pl-next">{tp(lang, 'touNextCompulsory', { date: deadline })}</p>;
-  } else if (tou.deadlinePassed) {
+  if (fact || tou.deadlinePassed) {
     decision = <></>;
+  } else if (mode === 'unknown') {
+    decision = <p class="muted small-text">{tp(lang, 'touAnswerFirst')}</p>;
   } else if (tou.decision && !changing) {
     const date = day(tou.decision.decidedAt, lang);
     decision = (
@@ -234,28 +272,55 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
     );
   }
 
+  const problem =
+    tou.problem === 'mixed_couple'
+      ? 'touMixed'
+      : tou.problem === 'benefits_unknown'
+        ? 'touBenefitsUnknown'
+        : tou.problem === 'income_not_counted'
+          ? 'touIncomeNotCounted'
+          : undefined;
+
   return (
-    <section class="card pl-tou" aria-labelledby="tou-title">
+    <section class={`card ${fact ? 'pl-card' : 'pl-tou'}`} aria-labelledby="tou-title">
       <div class="pl-tou-head">
         <div class="pl-tou-intro">
-          <span class="pl-eyebrow">{tp(lang, 'touWhen')}</span>
-          <h2 id="tou-title">{tp(lang, 'touTitle')}</h2>
+          <span class="pl-eyebrow">{tp(lang, fact ? 'touFacts' : 'touWhen')}</span>
+          <h2 id="tou-title">
+            {tp(
+              lang,
+              mode === 'in_place'
+                ? 'touTitleInPlace'
+                : mode === 'compulsory'
+                  ? 'touTitleCompulsory'
+                  : 'touTitle',
+            )}
+          </h2>
           <p class="muted">
-            <i>{tp(lang, 'touOfficial')}</i>. {tp(lang, 'touLead')}
+            <i>{tp(lang, 'touOfficial')}</i>.{' '}
+            {tp(
+              lang,
+              mode === 'in_place'
+                ? 'touInPlaceLead'
+                : mode === 'compulsory'
+                  ? 'touCompulsoryLead'
+                  : 'touLead',
+              { date: deadline },
+            )}
           </p>
         </div>
-        <span class={`chip ${tou.deadlinePassed ? 'chip-fix' : 'chip-estimate'}`}>
-          {tp(lang, tou.deadlinePassed ? 'touDeadlinePassed' : 'touDeadline', { date: deadline })}
-        </span>
-      </div>
-
-      {tou.compulsory === 'yes' || tou.compulsory === 'check' ? (
-        <div class={`banner ${tou.compulsory === 'yes' ? 'banner-estimate' : 'banner-fix'}`}>
-          <strong>
-            {tp(lang, tou.compulsory === 'yes' ? 'touCompulsoryYes' : 'touCompulsoryCheck', {
+        {!fact ? (
+          <span class={`chip ${tou.deadlinePassed ? 'chip-fix' : 'chip-estimate'}`}>
+            {tp(lang, tou.deadlinePassed ? 'touDeadlinePassed' : 'touDeadline', {
               date: deadline,
             })}
-          </strong>
+          </span>
+        ) : null}
+      </div>
+
+      {mode === 'compulsory' || mode === 'check' ? (
+        <div class={`banner ${mode === 'compulsory' ? 'banner-estimate' : 'banner-fix'}`}>
+          {mode === 'check' ? <strong>{tp(lang, 'touCompulsoryCheck')}</strong> : null}
           <ul class="pl-reasons">
             {reasons.map((r) => (
               <li key={r.id}>
@@ -266,28 +331,21 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </div>
       ) : null}
 
-      {tou.problem === 'mixed_couple' ? (
-        <p class="banner banner-fix">{tp(lang, 'touMixed')}</p>
+      <SourceTaxFacts state={state} lang={lang} />
+
+      {fact ? null : problem ? (
+        <p class="banner banner-fix">{tp(lang, problem)}</p>
       ) : (
         <div class="pl-figures">
           <div class="pl-figure">
             <span>{tp(lang, 'touWithheld')}</span>
             <strong class="tnum">
-              {tou.withheld ? chf(tou.withheld.totalCentimes, lang) : '?'}
+              {tou.withheld && !tou.missingWithheld.length
+                ? chf(tou.withheld.totalCentimes, lang)
+                : '?'}
             </strong>
-            {tou.withheld ? (
-              <span class="pl-hint">
-                {tou.withheld.people
-                  .map(
-                    (p) =>
-                      `${couple ? `${whoLabel(p.person, couple, lang)}${lang === 'fr' ? ' : ' : ': '}` : ''}${tp(
-                        lang,
-                        `from.${p.from}`,
-                        { tariff: p.tariff ?? '' },
-                      )}`,
-                  )
-                  .join(' · ')}
-              </span>
+            {tou.withheld?.people.some((p) => p.from === 'tariff') ? (
+              <span class="chip chip-estimate">{tp(lang, 'estimate')}</span>
             ) : null}
           </div>
           <div class="pl-figure">
@@ -318,56 +376,40 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </div>
       )}
 
-      {atSource.some(
-        (i) => tou.withheld?.people.find((w) => w.person === i.person)?.from !== 'certificate',
-      ) ? (
-        <div class="pl-inputs">
-          {tou.missingWithheld.length ? (
-            <p class="small-text">{tp(lang, 'touNeedWithheld')}</p>
-          ) : null}
-          {atSource.map((i) =>
-            tou.withheld?.people.find((w) => w.person === i.person)?.from ===
-            'certificate' ? null : (
-              <fieldset class="pl-person" key={i.person}>
-                {couple ? <legend>{whoLabel(i.person, couple, lang)}</legend> : null}
-                <MoneyField
-                  key={`w-${i.withheld ?? ''}`}
-                  id={`tou-withheld-${i.person}`}
-                  label={tp(lang, 'touWithheldLabel')}
-                  centimes={i.withheld}
-                  onSave={(v) => save(i.person, 'withheld', v)}
-                />
-                <div class="pl-field">
-                  <label for={`tou-tariff-${i.person}`}>{tp(lang, 'touTariffLabel')}</label>
-                  <select
-                    id={`tou-tariff-${i.person}`}
-                    class="select"
-                    value={i.tariff ?? ''}
-                    onChange={(e) =>
-                      save(i.person, 'tariff', (e.target as HTMLSelectElement).value)
-                    }
-                  >
-                    <option value="" disabled>
-                      {tp(lang, 'touTariffNone')}
-                    </option>
-                    {planning.tariffs.map((code) => (
-                      <option key={code} value={code}>
-                        {code}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </fieldset>
-            ),
-          )}
-        </div>
+      {/* A barème read from a payslip wins over the one worked out: never asked, only noted. */}
+      {atSource.length && planning.tariffs.length ? (
+        <details class="pl-how">
+          <summary>{tp(lang, 'touPayslip')}</summary>
+          <p class="small-text muted">{tp(lang, 'touPayslipHint')}</p>
+          {atSource.map((i) => (
+            <div class="pl-field" key={i.person}>
+              <label for={`tou-tariff-${i.person}`}>
+                {couple ? `${whoLabel(i.person, couple, lang)} · ` : ''}
+                {tp(lang, 'touTariffLabel')}
+              </label>
+              <select
+                id={`tou-tariff-${i.person}`}
+                class="select"
+                value={i.tariff ?? ''}
+                onChange={(e) => save(i.person, 'tariff', (e.target as HTMLSelectElement).value)}
+              >
+                <option value="" disabled>
+                  {tp(lang, 'touTariffNone')}
+                </option>
+                {planning.tariffs.map((code) => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </details>
       ) : null}
 
-      {tou.compulsory !== 'yes' ? (
+      {!fact ? (
         <div class="pl-questions">
-          {tou.compulsory === 'unknown' ? (
-            <p class="small-text">{tp(lang, 'touCompulsoryUnknown')}</p>
-          ) : null}
+          {mode === 'unknown' ? <p class="small-text">{tp(lang, 'touCompulsoryUnknown')}</p> : null}
           {(
             [
               ['other_income', 'otherIncome', planning.otherIncome],
@@ -393,9 +435,11 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </div>
       ) : null}
 
-      <p class="banner banner-fix pl-warn" role="note">
-        <strong>{tp(lang, 'touIrrevocable')}</strong>
-      </p>
+      {!fact ? (
+        <p class="banner banner-fix pl-warn" role="note">
+          <strong>{tp(lang, 'touIrrevocable')}</strong>
+        </p>
+      ) : null}
 
       {decision}
 

@@ -521,6 +521,10 @@ questions:
           it: '{n} mesi di lavoro',
         }
 
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
+
   # Tax at source (imposta alla fonte) and its ordinary assessment afterwards (TOU): not supported in
   # Ticino yet (docs/sources/ti/NOTES.md, Source tax).
   - use: taxed_at_source

@@ -63,7 +63,7 @@ export const messages = {
     touBack: '≈ {amount} back',
     touMore: '≈ {amount} more',
     touSame: 'About the same',
-    'from.certificate': 'from your salary certificate',
+    'from.certificate': 'from your documents',
     'from.stated': 'your figure',
     'from.tariff': 'estimated with tariff {tariff}',
     touNeedWithheld:
@@ -73,11 +73,12 @@ export const messages = {
     touTariffNone: 'Choose',
     touNeedSalary: 'Add a rough salary in the 3a card to compare.',
     touMixed:
-      'Only one of you is taxed at source. Taxpresso can’t compare this case: ask the tax office (AFC).',
+      'Only one of you is taxed at source: the other isn’t, and has income of their own (for example as an international civil servant). Taxpresso can’t compare TOU for you: ask the tax office (AFC).',
     touCompulsoryYes: 'TOU is compulsory for you: announce it by {date}.',
     touCompulsoryCheck: 'TOU may be compulsory for you. Ask the tax office (AFC) before deciding.',
     touCompulsoryUnknown: 'Two questions decide whether TOU is compulsory for you:',
-    'reason.gross': 'A gross salary of {amount} or more in the year',
+    'reason.gross':
+      'A gross income taxed at source (salary and benefits) of {amount} or more in the year',
     'reason.other_income':
       'Other income not taxed at source of {amount} or more in the year: interest, dividends, alimony received, rent…',
     'reason.taxable_wealth':
@@ -98,6 +99,22 @@ export const messages = {
       'Next: send the DRIS/TOU form from your e-démarches tax space by {date}. Taxpresso doesn’t send it for you.',
     touNextCompulsory:
       'Announce it with the DRIS/TOU form from your e-démarches tax space by {date}.',
+    touFacts: 'Your situation',
+    touTitleInPlace: 'You’re taxed ordinarily after tax at source (TOU)',
+    touTitleCompulsory: 'TOU is compulsory for you',
+    touInPlaceLead:
+      'It stays every year while you’re taxed at source, your spouse included. The tax office sends you a tax declaration each year: there is no form to send. The tax taken at source counts towards your tax.',
+    touCompulsoryLead:
+      'Announce it by {date} with the DRIS/TOU form in your e-démarches tax space. Then you fill in a normal declaration, and the tax taken at source counts towards your tax.',
+    touAnswerFirst:
+      'Answer these questions first: they decide whether TOU is compulsory for you, or your choice.',
+    touSourceTax: 'Tax at source, worked out for you',
+    touPayslip: 'Does a payslip show another barème?',
+    touPayslipHint: 'The barème on a payslip wins over the one Taxpresso works out.',
+    touBenefitsUnknown:
+      'Taxpresso compares once it has the attestation of your benefits: the amount and the tax taken at source.',
+    touIncomeNotCounted:
+      'A pension is part of your income, and this comparison doesn’t count pensions yet. The tax office (AFC) can tell you which is better.',
     touNeedComparison: 'You can record your choice here once the comparison is shown.',
     'assume.income_tax_only':
       'The ordinary tax here is income tax only (cantonal, communal and federal). Wealth tax isn’t counted: with taxable wealth, TOU is compulsory anyway.',
@@ -248,7 +265,7 @@ export const messages = {
     touBack: '≈ {amount} remboursés',
     touMore: '≈ {amount} de plus',
     touSame: 'À peu près pareil',
-    'from.certificate': 'selon votre certificat de salaire',
+    'from.certificate': 'selon vos documents',
     'from.stated': 'votre chiffre',
     'from.tariff': 'estimé avec le barème {tariff}',
     touNeedWithheld: `Combien d’impôt a été retenu à la source cette année${NB}? C’est sur vos fiches de salaire, puis au chiffre 12 de votre certificat de salaire.`,
@@ -256,12 +273,13 @@ export const messages = {
     touTariffLabel: 'Ou votre barème, sur une fiche de salaire',
     touTariffNone: 'Choisir',
     touNeedSalary: 'Indiquez un salaire approximatif dans la carte du 3e pilier A pour comparer.',
-    touMixed: `Un seul de vous deux est imposé à la source. Taxpresso ne peut pas comparer ce cas${NB}: demandez à l’administration fiscale (AFC).`,
+    touMixed: `Un seul de vous deux est imposé à la source${NB}: l’autre ne l’est pas et a ses propres revenus (par exemple comme fonctionnaire international). Taxpresso ne peut pas comparer la TOU pour vous${NB}: demandez à l’administration fiscale (AFC).`,
     touCompulsoryYes: `La TOU est obligatoire pour vous${NB}: annoncez-la d’ici au {date}.`,
     touCompulsoryCheck:
       'La TOU est peut-être obligatoire pour vous. Demandez à l’administration fiscale (AFC) avant de décider.',
     touCompulsoryUnknown: `Deux questions décident si la TOU est obligatoire pour vous${NB}:`,
-    'reason.gross': 'Un salaire brut de {amount} ou plus dans l’année',
+    'reason.gross':
+      'Un revenu brut imposé à la source (salaire et indemnités) de {amount} ou plus dans l’année',
     'reason.other_income': `D’autres revenus non imposés à la source de {amount} ou plus dans l’année${NB}: intérêts, dividendes, pension alimentaire reçue, loyers…`,
     'reason.taxable_wealth': `Une fortune imposable au 31 décembre${NB}: plus de {single} pour une personne seule, {couple} pour un couple ou une famille monoparentale, plus {child} par enfant`,
     'reason.previous_tou': 'Vous avez déjà été taxé de façon ordinaire (TOU)',
@@ -277,6 +295,19 @@ export const messages = {
     touNextRequest: `Ensuite${NB}: envoyez le formulaire DRIS/TOU depuis votre espace fiscal e-démarches d’ici au {date}. Taxpresso ne l’envoie pas à votre place.`,
     touNextCompulsory:
       'Annoncez-la avec le formulaire DRIS/TOU depuis votre espace fiscal e-démarches d’ici au {date}.',
+    touFacts: 'Votre situation',
+    touTitleInPlace: 'Vous êtes en taxation ordinaire ultérieure (TOU)',
+    touTitleCompulsory: 'La TOU est obligatoire pour vous',
+    touInPlaceLead: `Elle continue chaque année tant que vous êtes imposé à la source, votre conjoint compris. L’administration fiscale vous envoie une déclaration d’impôt chaque année${NB}: aucun formulaire à envoyer. L’impôt retenu à la source est imputé sur votre impôt.`,
+    touCompulsoryLead:
+      'Annoncez-la d’ici au {date} avec le formulaire DRIS/TOU de votre espace fiscal e-démarches. Vous remplissez ensuite une déclaration normale, et l’impôt retenu à la source est imputé sur votre impôt.',
+    touAnswerFirst: `Répondez d’abord à ces questions${NB}: elles décident si la TOU est obligatoire pour vous ou à votre choix.`,
+    touSourceTax: 'L’impôt à la source, déduit pour vous',
+    touPayslip: `Une fiche de salaire indique un autre barème${NB}?`,
+    touPayslipHint: 'Le barème d’une fiche de salaire l’emporte sur celui que Taxpresso déduit.',
+    touBenefitsUnknown: `Taxpresso compare dès qu’il a l’attestation de vos indemnités${NB}: le montant et l’impôt retenu à la source.`,
+    touIncomeNotCounted:
+      'Une rente fait partie de vos revenus, et cette comparaison ne compte pas encore les rentes. L’administration fiscale (AFC) peut vous dire ce qui est le plus avantageux.',
     touNeedComparison: 'Vous pourrez enregistrer votre choix ici une fois la comparaison affichée.',
     'assume.income_tax_only': `L’impôt ordinaire est ici l’impôt sur le revenu seul (cantonal, communal et fédéral). L’impôt sur la fortune n’est pas compté${NB}: avec une fortune imposable, la TOU est de toute façon obligatoire.`,
     'assume.withheld_from_tariff':
@@ -412,7 +443,7 @@ export const messages = {
     touBack: '≈ {amount} zurück',
     touMore: '≈ {amount} mehr',
     touSame: 'Etwa gleich',
-    'from.certificate': 'aus deinem Lohnausweis',
+    'from.certificate': 'aus deinen Unterlagen',
     'from.stated': 'deine Zahl',
     'from.tariff': 'geschätzt mit Tarif {tariff}',
     touNeedWithheld:
@@ -422,12 +453,13 @@ export const messages = {
     touTariffNone: 'Wählen',
     touNeedSalary: 'Gib in der Karte zur Säule 3a einen ungefähren Lohn an, um zu vergleichen.',
     touMixed:
-      'Nur eine Person von euch ist quellenbesteuert. Taxpresso kann diesen Fall nicht vergleichen: Frag das Steueramt (AFC).',
+      'Nur eine oder einer von euch wird an der Quelle besteuert: Die andere Person nicht, und sie hat eigene Einkünfte (zum Beispiel als internationale Beamtin oder internationaler Beamter). Taxpresso kann die TOU für euch nicht vergleichen: Frag die Steuerverwaltung (AFC).',
     touCompulsoryYes: 'Die TOU ist für dich obligatorisch: Melde sie bis {date} an.',
     touCompulsoryCheck:
       'Die TOU könnte für dich obligatorisch sein. Frag das Steueramt (AFC), bevor du entscheidest.',
     touCompulsoryUnknown: 'Zwei Fragen entscheiden, ob die TOU für dich obligatorisch ist:',
-    'reason.gross': 'Ein Bruttolohn von {amount} oder mehr im Jahr',
+    'reason.gross':
+      'Ein an der Quelle besteuertes Bruttoeinkommen (Lohn und Taggelder) von {amount} oder mehr im Jahr',
     'reason.other_income':
       'Andere Einkünfte ohne Quellensteuer von {amount} oder mehr im Jahr: Zinsen, Dividenden, erhaltene Unterhaltsbeiträge, Mieten…',
     'reason.taxable_wealth':
@@ -448,6 +480,22 @@ export const messages = {
       'Als Nächstes: Schick das Formular DRIS/TOU bis {date} aus deinem Steuerbereich bei e-démarches. Taxpresso schickt es nicht für dich.',
     touNextCompulsory:
       'Melde sie bis {date} mit dem Formular DRIS/TOU aus deinem Steuerbereich bei e-démarches an.',
+    touFacts: 'Deine Situation',
+    touTitleInPlace: 'Du wirst nach der Quellensteuer ordentlich veranlagt (TOU)',
+    touTitleCompulsory: 'Die TOU ist für dich obligatorisch',
+    touInPlaceLead:
+      'Sie gilt jedes Jahr, solange du an der Quelle besteuert wirst, auch für deinen Partner oder deine Partnerin. Die Steuerverwaltung schickt dir jedes Jahr eine Steuererklärung: Du musst kein Formular senden. Die abgezogene Quellensteuer wird an deine Steuer angerechnet.',
+    touCompulsoryLead:
+      'Melde sie bis {date} mit dem Formular DRIS/TOU aus deinem Steuerbereich bei e-démarches an. Dann füllst du eine normale Steuererklärung aus, und die abgezogene Quellensteuer wird an deine Steuer angerechnet.',
+    touAnswerFirst:
+      'Beantworte zuerst diese Fragen: Sie entscheiden, ob die TOU für dich obligatorisch ist oder deine Wahl.',
+    touSourceTax: 'Die Quellensteuer, für dich abgeleitet',
+    touPayslip: 'Zeigt eine Lohnabrechnung einen anderen Tarif?',
+    touPayslipHint: 'Der Tarif auf einer Lohnabrechnung geht dem von Taxpresso abgeleiteten vor.',
+    touBenefitsUnknown:
+      'Taxpresso vergleicht, sobald die Bescheinigung deiner Taggelder da ist: der Betrag und die abgezogene Quellensteuer.',
+    touIncomeNotCounted:
+      'Eine Rente gehört zu deinen Einkünften, und dieser Vergleich zählt Renten noch nicht. Die Steuerverwaltung (AFC) kann dir sagen, was günstiger ist.',
     touNeedComparison: 'Du kannst deine Wahl hier festhalten, sobald der Vergleich angezeigt wird.',
     'assume.income_tax_only':
       'Die ordentliche Steuer ist hier nur die Einkommenssteuer (Kanton, Gemeinde und Bund). Die Vermögenssteuer ist nicht gezählt: Mit steuerbarem Vermögen ist die TOU ohnehin obligatorisch.',
@@ -605,7 +653,7 @@ export const messages = {
     touBack: '≈ {amount} rimborsati',
     touMore: '≈ {amount} in più',
     touSame: 'Più o meno uguale',
-    'from.certificate': 'dal tuo certificato di salario',
+    'from.certificate': 'dai tuoi documenti',
     'from.stated': 'la tua cifra',
     'from.tariff': 'stimato con la tariffa {tariff}',
     touNeedWithheld:
@@ -616,12 +664,13 @@ export const messages = {
     touNeedSalary:
       'Inserisci un salario approssimativo nella scheda del pilastro 3a per fare il confronto.',
     touMixed:
-      'Solo una persona della coppia paga l’imposta alla fonte. Taxpresso non può confrontare questo caso: chiedi all’amministrazione fiscale (AFC).',
+      'Solo uno di voi paga l’imposta alla fonte: l’altro no, e ha redditi propri (per esempio come funzionario internazionale). Taxpresso non può confrontare la TOU per voi: chiedi all’amministrazione fiscale (AFC).',
     touCompulsoryYes: 'Per te la TOU è obbligatoria: annunciala entro il {date}.',
     touCompulsoryCheck:
       'Per te la TOU potrebbe essere obbligatoria. Chiedi all’amministrazione fiscale (AFC) prima di decidere.',
     touCompulsoryUnknown: 'Due domande decidono se per te la TOU è obbligatoria:',
-    'reason.gross': 'Un salario lordo di {amount} o più nell’anno',
+    'reason.gross':
+      'Un reddito lordo tassato alla fonte (salario e indennità) di {amount} o più nell’anno',
     'reason.other_income':
       'Altri redditi non soggetti all’imposta alla fonte di {amount} o più nell’anno: interessi, dividendi, alimenti ricevuti, affitti…',
     'reason.taxable_wealth':
@@ -642,6 +691,22 @@ export const messages = {
       'Poi: invia il modulo DRIS/TOU dal tuo spazio fiscale e-démarches entro il {date}. Taxpresso non lo invia al posto tuo.',
     touNextCompulsory:
       'Annunciala con il modulo DRIS/TOU dal tuo spazio fiscale e-démarches entro il {date}.',
+    touFacts: 'La tua situazione',
+    touTitleInPlace: 'Sei in tassazione ordinaria ulteriore (TOU)',
+    touTitleCompulsory: 'La TOU è obbligatoria per te',
+    touInPlaceLead:
+      'Continua ogni anno finché paghi l’imposta alla fonte, anche per il tuo coniuge. L’amministrazione fiscale ti manda ogni anno una dichiarazione d’imposta: nessun modulo da inviare. L’imposta trattenuta alla fonte viene computata nella tua imposta.',
+    touCompulsoryLead:
+      'Annunciala entro il {date} con il modulo DRIS/TOU del tuo spazio fiscale e-démarches. Poi compili una dichiarazione normale, e l’imposta trattenuta alla fonte viene computata nella tua imposta.',
+    touAnswerFirst:
+      'Rispondi prima a queste domande: decidono se la TOU è obbligatoria per te o a tua scelta.',
+    touSourceTax: 'L’imposta alla fonte, dedotta per te',
+    touPayslip: 'Una busta paga indica un’altra tariffa?',
+    touPayslipHint: 'La tariffa di una busta paga prevale su quella che Taxpresso deduce.',
+    touBenefitsUnknown:
+      'Taxpresso confronta appena ha l’attestazione delle tue indennità: l’importo e l’imposta trattenuta alla fonte.',
+    touIncomeNotCounted:
+      'Una rendita fa parte dei tuoi redditi, e questo confronto non conta ancora le rendite. L’amministrazione fiscale (AFC) può dirti cosa conviene.',
     touNeedComparison: 'Potrai registrare qui la tua scelta quando sarà visibile il confronto.',
     'assume.income_tax_only':
       'Qui l’imposta ordinaria è solo l’imposta sul reddito (cantonale, comunale e federale). L’imposta sulla sostanza non è conteggiata: con una sostanza imponibile, la TOU è comunque obbligatoria.',

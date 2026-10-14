@@ -5,6 +5,7 @@ import { CURRENT_TAX_YEAR, UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
+import { sourceTaxLines, sourceTaxOf } from './source-tax.js';
 import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import type { Workspace } from './workspace.js';
 import { TaxYears } from './years.js';
@@ -98,6 +99,12 @@ export const StatusSchema = z.object({
     .describe(
       "Last year's declaration, read by Taxpresso: suggested answers and figures to compare.",
     ),
+  sourceTax: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'Tax at source, worked out by Taxpresso (never ask for it): who is taxed at source, the barème, the tax withheld or what gives it, with sources. Geneva, when someone is.',
+    ),
   nextStep: z.string(),
   vault: z.object({ path: z.string(), exists: z.boolean(), problem: z.string().optional() }),
   dashboard: z.object({ running: z.boolean() }),
@@ -161,6 +168,12 @@ export function buildStatus(
   const holdingsText = holdingsStatusText(holdings(ws));
   const lastYear = ws.lastYear('en');
   const priorText = priorStatusText(lastYear);
+  const st = sourceTaxOf(ws);
+  const sourceTax = st?.any
+    ? sourceTaxLines(st, 'en').map(
+        (l) => `${l.text}${l.estimate ? ' (an estimate)' : ''}${l.source ? ` [${l.source}]` : ''}`,
+      )
+    : undefined;
   const estimates = securitiesView?.rows.some((r) => r.estimate)
     ? [
         "Securities values at the broker's prices and rates, until the official ESTV price list (Kursliste) for the year is available.",
@@ -248,6 +261,7 @@ export function buildStatus(
     ...(securities ? { securities } : {}),
     ...(holdingsText ? { holdings: holdingsText } : {}),
     ...(priorText ? { lastYear: priorText } : {}),
+    ...(sourceTax ? { sourceTax } : {}),
     nextStep,
     vault,
     dashboard: { running: opts.dashboardRunning },
@@ -318,6 +332,11 @@ export function statusText(s: Status): string {
   if (s.securities) lines.push(s.securities);
   if (s.holdings) lines.push(s.holdings);
   if (s.lastYear) lines.push(s.lastYear);
+  if (s.sourceTax) {
+    lines.push(
+      `Tax at source, worked out by Taxpresso (don't ask the user for it; TOU details: list_optimizations): ${s.sourceTax.join(' ')}`,
+    );
+  }
   lines.push(
     `Folder: ${s.vault.path}${s.vault.exists ? '' : ' (created with the first answer or document)'}`,
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,

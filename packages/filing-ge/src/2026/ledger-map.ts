@@ -168,6 +168,7 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'salary.remarks': `Box 15 holds remarks, not an amount for the form (${SPEC} p. 5).`,
   'replacement.type': 'Says what kind of benefit it is; the amount is what goes on the form.',
   'replacement.paid_to_employer': 'Says whether the benefit is already in the salary (box 7).',
+  'replacement.source_tax': `Tax withheld at source is not declared on the form (${SPEC} p. 5); the tax office deducts it (${GUIDE} p. 52).`,
   'pension.type': 'Says which rubric the pension goes to (17.10, 13.20 or 13.40).',
   'assessment.tax': 'The tax office’s assessment is checked, never typed into the declaration.',
   'assessment.notification_date': 'The tax office’s assessment is checked, never typed.',

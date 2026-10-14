@@ -7,7 +7,7 @@ import type { CopyPanelState } from './types-copy';
 import type { FinalCheckState } from './types-final-check';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
-import type { PlanningState } from './types-planning';
+import type { PlanningState, SourceTaxState } from './types-planning';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune';
 export type Value = string | number | boolean | string[];
@@ -154,6 +154,11 @@ export interface State extends DocumentsState {
   } | null;
   /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. Null for a year that is over. */
   planning: PlanningState | null;
+  /**
+   * Tax at source as facts, never asked (extension/src/source-tax.ts): who is taxed at source, the
+   * barème and the tax withheld, in plain words with their sources. Geneva, when someone is.
+   */
+  sourceTax?: SourceTaxState;
   notSupported: string[];
   /** The values to type into the official declaration, in the form's order (SPEC.md 10.5). */
   copyPanel: CopyPanelState;

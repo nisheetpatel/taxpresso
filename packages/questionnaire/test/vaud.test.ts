@@ -60,7 +60,7 @@ const SINGLE_IN_LAUSANNE = {
   moved: 'no',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'commute:p1': 'public_transport',
   'commute_transit_cost:p1': 860,
   'meal_days:p1': 200,
@@ -99,6 +99,7 @@ describe('Vaud questionnaire 2026', () => {
       'moved',
       'income_sources',
       'employers',
+      'residence',
       'taxed_at_source',
       'commute',
       'commute_transit_cost',
@@ -186,9 +187,10 @@ describe('Vaud questionnaire 2026', () => {
       const { url, label } = item.learnMore!;
       expect(label.it, item.id).toBeTruthy();
       // Vaud's own documents; the canton question keeps its federal page (shared).
-      expect(item.id === 'canton' ? ALL_URLS : VAUD_URLS, item.id).toContain(
-        url.replace(/#page=\d+$/, ''),
-      );
+      expect(
+        item.id === 'canton' || item.id === 'residence' ? ALL_URLS : VAUD_URLS,
+        item.id,
+      ).toContain(url.replace(/#page=\d+$/, ''));
       // A page of the guide is named by the page the link opens.
       const page = url.startsWith(`${GUIDE}#page=`) ? url.slice(GUIDE.length + 6) : undefined;
       if (page) {
@@ -488,7 +490,7 @@ describe('Vaud questionnaire 2026', () => {
       moved: 'from_abroad',
       'income_sources:p1': ['salary', 'self_employment'],
       'employers:p1': 1,
-      'taxed_at_source:p1': true,
+      'residence:p1': 'permit_other',
     });
     expect(ledger.get('profile.commune')?.value).toBe('yverdon-les-bains');
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.de)).toEqual([

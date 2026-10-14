@@ -706,6 +706,10 @@ questions:
       de: 'Jeder gibt dir einen Lohnausweis.'
       it: 'Ognuno ti dà un certificato di salario (Lohnausweis).'
 
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
+
   # People taxed at source (Quellensteuer) file an ordinary return only in the cases the guide lists,
   # or when they ask for it by 31 March of the next year (nachträgliche ordentliche Veranlagung,
   # NOV): zg-2025-guide-wegleitung p. 8; zg-na-source-tax-nov-antrag. Not covered by rules-zg.

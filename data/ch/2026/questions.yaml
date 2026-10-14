@@ -615,17 +615,136 @@ questions:
           it: '{n} datori di lavoro',
         }
 
-  # ch-na-is-faq-circulaire-45 (tax at source on employment income)
+  # Who is taxed at source (impôt à la source, Quellensteuer): workers without a settlement permit
+  # (C), on their pay and on the benefits that replace it (unemployment, sickness, accident,
+  # maternity); spouses living together are not when one of them is Swiss or holds a C permit
+  # (ch-na-law-lifd p. 49, art. 83 al. 1 and 2, art. 84 al. 2 let. a and b). The user says the
+  # plain fact; "taxed at source" below follows from it. Asked once someone in the household has a
+  # salary, benefits or a pension; of the spouse only when the first person is neither Swiss nor
+  # holds a C permit (otherwise neither of them is taxed at source).
+  - id: residence
+    key: profile.residence
+    type: choice
+    perPerson: true
+    when:
+      all:
+        - key: profile.income_sources
+          includesAny: [salary, replacement_income, pension]
+          anyPerson: true
+        - any:
+            - { person: p1 }
+            - { key: profile.residence, in: [permit_other, other], anyPerson: true }
+    explain:
+      en: 'People living in Switzerland without a C permit have tax taken from their salary, and from benefits such as unemployment pay, before they receive it: tax at source (impôt à la source). Swiss citizens and C permit holders don’t, and neither does someone married to one of them. From this and your income, Taxpresso works out who is taxed at source.'
+      fr: 'Les personnes domiciliées en Suisse sans permis C paient l’impôt sur leur salaire, et sur les indemnités comme celles du chômage, avant de les recevoir : c’est l’impôt à la source. Pas les Suisses ni les titulaires d’un permis C, ni la personne mariée avec l’un d’eux. Avec vos revenus, Taxpresso en déduit qui est imposé à la source.'
+      de: 'Wer in der Schweiz wohnt und keine Niederlassungsbewilligung C hat, dem wird die Steuer vom Lohn und von Taggeldern wie der Arbeitslosenentschädigung abgezogen, bevor er sie erhält: die Quellensteuer (impôt à la source). Nicht bei Schweizerinnen und Schweizern oder Personen mit Ausweis C, und auch nicht bei Personen, die mit einer von ihnen verheiratet sind. Daraus und aus deinen Einkünften leitet Taxpresso ab, wer an der Quelle besteuert wird.'
+      it: 'Chi vive in Svizzera senza permesso C paga l’imposta sul salario, e sulle indennità come quelle di disoccupazione, prima di riceverli: è l’imposta alla fonte (impôt à la source). Non la pagano i cittadini svizzeri né i titolari di un permesso C, e nemmeno chi è sposato con uno di loro. Da questo e dai tuoi redditi, Taxpresso deduce chi paga l’imposta alla fonte.'
+    learnMore:
+      url: 'https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf#page=49'
+      label:
+        en: 'Federal tax law (LIFD), art. 83: who is taxed at source, in French'
+        fr: 'LIFD, art. 83 : Travailleurs soumis à l’impôt à la source'
+        de: 'Bundessteuergesetz (DBG, LIFD), Art. 83: wer an der Quelle besteuert wird, auf Französisch'
+        it: 'Legge sull’imposta federale diretta (LIFD), art. 83: chi paga l’imposta alla fonte, in francese'
+    text:
+      p1:
+        en: 'On 31 December {year}, were you Swiss, or which permit did you have?'
+        fr: 'Au 31 décembre {year}, étiez-vous suisse, ou quel permis aviez-vous ?'
+        de: 'Warst du am 31. Dezember {year} Schweizerin oder Schweizer, oder welche Bewilligung hattest du?'
+        it: 'Al 31 dicembre {year} eri cittadino svizzero, o quale permesso avevi?'
+      p2:
+        en: 'On 31 December {year}, was your spouse or partner Swiss, or which permit did they have?'
+        fr: 'Au 31 décembre {year}, votre conjoint ou partenaire était-il suisse, ou quel permis avait-il ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember {year} Schweizer oder Schweizerin, oder welche Bewilligung hatte er oder sie?'
+        it: 'Al 31 dicembre {year} il tuo coniuge o partner era cittadino svizzero, o quale permesso aveva?'
+    help:
+      en: 'With Swiss citizenship and another one, choose Swiss. A permit received during the year counts too: what you had on 31 December decides.'
+      fr: 'Avec la nationalité suisse et une autre, choisissez suisse. Un permis obtenu en cours d’année compte aussi : c’est votre situation au 31 décembre qui décide.'
+      de: 'Mit dem Schweizer Bürgerrecht und einem weiteren wähl Schweiz. Eine während des Jahres erhaltene Bewilligung zählt auch: Entscheidend ist der 31. Dezember.'
+      it: 'Con la cittadinanza svizzera e un’altra, scegli svizzera. Conta anche un permesso ottenuto durante l’anno: decide la tua situazione al 31 dicembre.'
+    options:
+      - value: swiss
+        label:
+          { en: 'Swiss', fr: 'Suisse', de: 'Schweizer Bürgerrecht', it: 'Cittadinanza svizzera' }
+      - value: permit_c
+        label:
+          {
+            en: 'A C permit (settlement permit)',
+            fr: 'Un permis C (autorisation d’établissement)',
+            de: 'Eine Niederlassungsbewilligung (Ausweis C)',
+            it: 'Un permesso C (permesso di domicilio)',
+          }
+      - value: permit_other
+        label:
+          {
+            en: 'Another permit: B, L, F, N, S or Ci',
+            fr: 'Un autre permis : B, L, F, N, S ou Ci',
+            de: 'Eine andere Bewilligung: B, L, F, N, S oder Ci',
+            it: 'Un altro permesso: B, L, F, N, S o Ci',
+          }
+        chip:
+          {
+            en: 'Permit B, L, F, N, S or Ci',
+            fr: 'Permis B, L, F, N, S ou Ci',
+            de: 'Ausweis B, L, F, N, S oder Ci',
+            it: 'Permesso B, L, F, N, S o Ci',
+          }
+      - value: other
+        label:
+          {
+            en: 'Something else, such as a legitimation card from the FDFA',
+            fr: 'Autre chose, par exemple une carte de légitimation du DFAE',
+            de: 'Etwas anderes, zum Beispiel eine Legitimationskarte des EDA',
+            it: 'Altro, per esempio una carta di legittimazione del DFAE',
+          }
+        chip:
+          {
+            en: 'Legitimation card or other',
+            fr: 'Carte de légitimation ou autre',
+            de: 'Legitimationskarte oder anderes',
+            it: 'Carta di legittimazione o altro',
+          }
+
+  # Taxed at source: worked out from the permit and the income where the law settles it (derive),
+  # asked only where it doesn't: someone with a legitimation card or another status, or without a
+  # C permit whose only such income is a pension (a partial disability pension is taxed at source,
+  # an old-age pension isn't: for Geneva ge-na-law-risp art. 3, ge-2026-source-directives p. 11).
+  # Not asked before the permit is known.
   - id: taxed_at_source
     key: profile.taxed_at_source
     type: yesno
     perPerson: true
-    when: { key: profile.income_sources, includes: salary }
+    when:
+      all:
+        - { key: profile.income_sources, includesAny: [salary, replacement_income, pension] }
+        - any:
+            - { key: profile.residence, in: [permit_other, other] }
+            - { key: profile.residence, in: [swiss, permit_c], anyPerson: true }
+    derive:
+      - when: { key: profile.residence, in: [swiss, permit_c], anyPerson: true }
+        value: false
+        because:
+          en: 'Swiss citizens and C permit holders are not taxed at source, and neither is someone married to one of them.'
+          fr: 'Les Suisses et les titulaires d’un permis C ne sont pas imposés à la source, ni la personne mariée avec l’un d’eux.'
+          de: 'Schweizerinnen und Schweizer und Personen mit Ausweis C werden nicht an der Quelle besteuert, und auch nicht, wer mit einer von ihnen verheiratet ist.'
+          it: 'I cittadini svizzeri e i titolari di un permesso C non pagano l’imposta alla fonte, e nemmeno chi è sposato con uno di loro.'
+        source: 'ch-na-law-lifd p. 49 (art. 83 al. 1 and 2)'
+      - when:
+          all:
+            - { key: profile.residence, in: [permit_other] }
+            - { key: profile.income_sources, includesAny: [salary, replacement_income] }
+        value: true
+        because:
+          en: 'Without a C permit, tax is taken at source from a salary and from the benefits that replace it (unemployment, sickness, accident, maternity).'
+          fr: 'Sans permis C, l’impôt est retenu à la source sur le salaire et sur les indemnités qui le remplacent (chômage, maladie, accident, maternité).'
+          de: 'Ohne Ausweis C wird die Steuer an der Quelle abgezogen, vom Lohn und von den Taggeldern, die ihn ersetzen (Arbeitslosigkeit, Krankheit, Unfall, Mutterschaft).'
+          it: 'Senza permesso C, l’imposta è trattenuta alla fonte sul salario e sulle indennità che lo sostituiscono (disoccupazione, malattia, infortunio, maternità).'
+        source: 'ch-na-law-lifd p. 49 (art. 83 al. 1, art. 84 al. 2 let. a and b)'
     explain:
-      en: 'Your employer took tax off your salary before paying you. Common with a B or L permit. Your salary certificate shows it.'
-      fr: 'Votre employeur a retenu l’impôt sur votre salaire avant de vous le verser. Fréquent avec un permis B ou L. Votre certificat de salaire l’indique.'
-      de: 'Dein Arbeitgeber hat die Steuer vom Lohn abgezogen, bevor er ihn dir bezahlt hat. Häufig mit einer Bewilligung B oder L. Dein Lohnausweis zeigt es.'
-      it: 'Il tuo datore di lavoro ha trattenuto l’imposta dal tuo salario prima di versartelo. Succede spesso con un permesso B o L. Lo indica il tuo certificato di salario.'
+      en: 'Taxpresso can’t tell from your permit alone, for example with a legitimation card, or with a pension as your only income. Your statements say whether tax was taken at source.'
+      fr: 'Taxpresso ne peut pas le savoir avec votre seul permis, par exemple avec une carte de légitimation, ou si une rente est votre seul revenu. Vos attestations disent si l’impôt a été retenu à la source.'
+      de: 'Das kann Taxpresso nicht allein aus deiner Bewilligung ableiten, zum Beispiel mit einer Legitimationskarte oder wenn eine Rente dein einziges Einkommen ist. Deine Bescheinigungen zeigen, ob die Steuer an der Quelle abgezogen wurde.'
+      it: 'Taxpresso non può saperlo dal solo permesso, per esempio con una carta di legittimazione, o se una rendita è il tuo unico reddito. Le tue attestazioni dicono se l’imposta è stata trattenuta alla fonte.'
     learnMore:
       url: 'https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf'
       label:
@@ -635,20 +754,20 @@ questions:
         it: 'Imposta alla fonte sul reddito da attività lucrativa: domande e risposte federali, in francese'
     text:
       p1:
-        en: 'Was your salary taxed at source in {year}?'
-        fr: 'Votre salaire était-il imposé à la source en {year} ?'
-        de: 'Wurde dein Lohn {year} an der Quelle besteuert?'
-        it: 'Nel {year} il tuo salario era soggetto all’imposta alla fonte?'
+        en: 'In {year}, was tax taken at source from your income?'
+        fr: 'En {year}, l’impôt a-t-il été retenu à la source sur vos revenus ?'
+        de: 'Wurde dir {year} die Steuer an der Quelle vom Einkommen abgezogen?'
+        it: 'Nel {year} l’imposta è stata trattenuta alla fonte sui tuoi redditi?'
       p2:
-        en: 'Was your spouse or partner’s salary taxed at source in {year}?'
-        fr: 'Le salaire de votre conjoint ou partenaire était-il imposé à la source en {year} ?'
-        de: 'Wurde der Lohn deines Partners oder deiner Partnerin {year} an der Quelle besteuert?'
-        it: 'Nel {year} il salario del tuo coniuge o partner era soggetto all’imposta alla fonte?'
+        en: 'In {year}, was tax taken at source from your spouse or partner’s income?'
+        fr: 'En {year}, l’impôt a-t-il été retenu à la source sur les revenus de votre conjoint ou partenaire ?'
+        de: 'Wurde deinem Partner oder deiner Partnerin {year} die Steuer an der Quelle vom Einkommen abgezogen?'
+        it: 'Nel {year} l’imposta è stata trattenuta alla fonte sui redditi del tuo coniuge o partner?'
     help:
-      en: 'If so, it shows on the salary certificate.'
-      fr: 'Si c’est le cas, cela figure sur le certificat de salaire.'
-      de: 'Wenn ja, steht es auf dem Lohnausweis.'
-      it: 'Se sì, è indicato sul certificato di salario.'
+      en: 'Your salary certificate (box 12), payslips, or benefit and pension statements show it.'
+      fr: 'Votre certificat de salaire (chiffre 12), vos fiches de salaire, ou vos attestations d’indemnités et de rente l’indiquent.'
+      de: 'Dein Lohnausweis (Ziffer 12), deine Lohnabrechnungen oder deine Taggeld- und Rentenbescheinigungen zeigen es.'
+      it: 'Lo indicano il tuo certificato di salario (cifra 12), le tue buste paga o le attestazioni di indennità e di rendita.'
     chip:
       {
         en: 'Taxed at source',

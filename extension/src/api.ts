@@ -27,6 +27,7 @@ import type { Slot } from '@taxpresso/questionnaire';
 import { exportFolder, exportView } from './export.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import { finalCheckView } from './final-check.js';
+import { sourceTaxLines, sourceTaxOf } from './source-tax.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 import { CANTONS } from './cantons.js';
 import { TaxYears } from './years.js';
@@ -231,6 +232,9 @@ export function dashboardState(
         },
     // Pension fund buy-in, 3a catch-up and TOU (SPEC.md section 8, groups B and C): ./planning.ts.
     planning: ws.yearOver() ? null : planningView(ws),
+    // Tax at source as facts, never asked (./source-tax.ts): Geneva, when someone is taxed at
+    // source, in plain words with their sources, estimates flagged.
+    ...sourceTaxState(ws, lang),
     notSupported: ws.engine.notSupported(snap).map((n) => say(n.what, lang)),
     securities: ws.securities(content) ?? null,
     // The tax from the rules engine (./estimate.ts).
@@ -262,6 +266,29 @@ export function dashboardState(
 }
 
 export type DashboardState = ReturnType<typeof dashboardState>;
+
+/** The `sourceTax` part of the state, only for a household with someone taxed at source. */
+function sourceTaxState(ws: Workspace, lang: Lang) {
+  const st = sourceTaxOf(ws);
+  if (!st?.any) return {};
+  return {
+    sourceTax: {
+      lines: sourceTaxLines(st, lang),
+      people: st.people.map((p) => ({
+        person: p.person,
+        atSource: p.atSource ?? null,
+        how: p.how,
+        tariff: p.tariff ?? null,
+        derivedTariff: p.derivedTariff?.code ?? null,
+        documentTariff: p.documentTariff ?? null,
+        withheld: p.withheld
+          ? { centimes: p.withheld.centimes, from: p.withheld.from, estimate: p.withheld.estimate }
+          : null,
+        missing: p.missing,
+      })),
+    },
+  };
+}
 
 const parse = <T>(schema: z.ZodType<T>, body: Buffer): T => {
   try {
