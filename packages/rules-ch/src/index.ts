@@ -178,9 +178,22 @@ export {
 export {
   OFFICIAL_RATES,
   officialChf,
+  officialChfOrLatest,
   type Conversion,
   type OfficialRate,
 } from './withholding/exchange-rates.js';
+// Real estate abroad: exempt, counted for the rate; debts and interest split by where the assets
+// lie; the federal tax at the rate of the whole income (every canton's).
+export {
+  ABROAD_RULES,
+  exemptPart,
+  IFD_UPKEEP_FLAT,
+  ifdTaxAtRate,
+  shareAbroad,
+  splitProblem,
+  type IfdAtRate,
+  type IncomeSplit,
+} from './abroad/property.js';
 // The ESTV record format of the source-tax tariff files (every canton publishes its tariffs in it).
 export {
   compactTariff,

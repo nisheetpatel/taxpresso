@@ -38,6 +38,7 @@ import {
   iaClaim,
   iaOn,
   officialChf,
+  officialChfOrLatest,
   residualRate,
   roundFrancExact as roundFranc,
   splitForeignTax,
@@ -222,6 +223,11 @@ export interface OtherLine {
   value?: number;
   /** Premiums paid (52.11) or interest paid (55.10) in the year, whole francs in centimes. */
   flow?: number;
+  /**
+   * A debt whose statement is in another currency (a loan abroad, such as a mortgage on a property
+   * abroad): its currency. The amounts above are converted at the official rate.
+   */
+  currency?: string;
   state: ValueState;
   complete: boolean;
 }
@@ -877,10 +883,46 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
       const [valueKey, flowKey] = life
         ? ['life_insurance.surrender_value', 'life_insurance.premiums']
         : ['debt.balance', 'debt.interest'];
-      const states = stateList([valueKey, flowKey]);
-      const value = num(g(valueKey));
-      const flow = num(g(flowKey));
+      // A loan statement in another currency (a mortgage abroad): its amounts as printed,
+      // converted at the official rate, the debt on 31 December and the interest at the year's
+      // average (ge-2025-taux-donnees-fiscales); a year whose rates are not published yet takes
+      // the latest year's, as an estimate, as for the property abroad it finances.
+      const inCurrency = life
+        ? []
+        : ['debt.currency', 'debt.balance_in_currency', 'debt.interest_in_currency'];
+      const states = stateList([valueKey, flowKey, ...inCurrency]);
+      let value = num(g(valueKey));
+      let flow = num(g(flowKey));
+      let complete = states.length > 0;
+      const currency = life ? undefined : str(g('debt.currency'))?.toUpperCase();
+      let rateEstimate = false;
+      const converted = (key: string, use: 'income' | 'wealth') => {
+        const printed = str(g(key));
+        if (printed === undefined) return undefined;
+        const parsed = parseMoney(printed);
+        const c =
+          parsed.ok && currency ? officialChfOrLatest(parsed.value, currency, taxYear, use) : null;
+        if (!c?.ok) {
+          complete = false;
+          issue(
+            'rate_missing',
+            'missing',
+            {
+              en: `${name}: "${printed}"${currency ? ` in ${currency}` : ''} can’t be converted into francs (no official rate or no currency). Give the amount in francs.`,
+              fr: `${name} : « ${printed} »${currency ? ` en ${currency}` : ''} ne peut pas être converti en francs (pas de cours officiel ou pas de monnaie). Indiquez le montant en francs.`,
+            },
+            doc.id,
+            `ge-2025-taux-donnees-fiscales; ${GUIDE} p. 37`,
+          );
+          return undefined;
+        }
+        if (c.estimate) rateEstimate = true;
+        return c.centimes;
+      };
+      if (!life && value === undefined) value = converted('debt.balance_in_currency', 'wealth');
+      if (!life && flow === undefined) flow = converted('debt.interest_in_currency', 'income');
       const owner = ownerFor(doc.id, name, docOwner());
+      const state = states.length ? worst(states) : 'needs_ok';
       other.push({
         rubric: life ? 'lifeInsurance' : 'debts',
         id: doc.id,
@@ -890,8 +932,9 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
         ...(owner ? { owner } : {}),
         ...(value !== undefined ? { value: roundFranc(value) } : {}),
         ...(flow !== undefined ? { flow: roundFranc(flow) } : {}),
-        state: states.length ? worst(states) : 'needs_ok',
-        complete: states.length > 0,
+        ...(currency && currency !== 'CHF' ? { currency } : {}),
+        state: rateEstimate && state === 'confirmed' ? 'estimate' : state,
+        complete,
       });
     }
   }

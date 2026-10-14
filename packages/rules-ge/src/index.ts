@@ -72,7 +72,12 @@ export {
   type ForeignIncomeKind,
   type ResidualRate,
 } from '@taxpresso/rules-ch';
-export { OFFICIAL_RATES, officialChf, type Conversion } from '@taxpresso/rules-ch';
+export {
+  OFFICIAL_RATES,
+  officialChf,
+  officialChfOrLatest,
+  type Conversion,
+} from '@taxpresso/rules-ch';
 export {
   KEYS_PRIOR_2026,
   parsePriorInstance,
@@ -186,6 +191,17 @@ export {
   type BusinessDocumentKey,
 } from './2026/business-keys.js';
 export { BUSINESS_NOTE } from './engine/business.js';
+// A home or land abroad, the simple case (annexe D): its keys, the notes and the reasons it fails
+// closed, and how the ledger is read into it.
+export {
+  ABROAD_COUNTRIES,
+  ABROAD_FIELDS_2026,
+  KEYS_ABROAD_DOCUMENTS_2026,
+  KEYS_ABROAD_PROFILE_2026,
+  type AbroadCountry,
+  type AbroadDocumentKey,
+} from './2026/abroad-keys.js';
+export { ABROAD_CODES, ABROAD_NOTE, ABROAD_UNSUPPORTED } from './engine/abroad.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {
@@ -201,7 +217,12 @@ export { pillar3aCapWithoutFund } from '@taxpresso/rules-ch';
 export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
 export { bracketTax, federalScaleTax, chf } from '@taxpresso/rules-ch';
 export type * from './engine/types.js';
-export { capitalFromFacts, engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
+export {
+  abroadFromFacts,
+  capitalFromFacts,
+  engineInputFromFacts,
+  type LedgerInput,
+} from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';
 export {
   finalCheck,

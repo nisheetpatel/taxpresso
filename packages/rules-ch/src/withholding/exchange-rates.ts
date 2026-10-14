@@ -55,3 +55,23 @@ export function officialChf(
   const centimes = Number(rounded) * (hundredths < 0 ? -1 : 1);
   return { ok: true, centimes, rate, source: table.source };
 }
+
+/**
+ * The official rate of `year`, or, for a later year whose rates are not published yet (they are
+ * known only after 31 December), the latest year's official rate, flagged as an estimate until the
+ * year's own is in Taxpresso (SPEC.md section 9). For figures that only set a rate (a property
+ * abroad, counted for the rate: ../abroad/property.ts), never for an amount taxed here.
+ */
+export function officialChfOrLatest(
+  hundredths: number,
+  currency: string,
+  year: number,
+  use: 'income' | 'wealth',
+): Conversion & { estimate?: { year: number } } {
+  const own = officialChf(hundredths, currency, year, use);
+  if (own.ok || own.reason !== 'no_rates_for_year') return own;
+  const latest = Math.max(...Object.keys(OFFICIAL_RATES).map(Number));
+  if (!(latest < year)) return own;
+  const c = officialChf(hundredths, currency, latest, use);
+  return c.ok ? { ...c, estimate: { year: latest } } : c;
+}

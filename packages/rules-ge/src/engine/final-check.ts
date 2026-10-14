@@ -19,7 +19,7 @@ import {
 import { chf, type CapitalTax } from '@taxpresso/rules-ch';
 import { ESTIMATE_TEXT } from './explain.js';
 import { rubric } from './rubrics.js';
-import type { EstimateReason, LimitApplied, TaxResult } from './types.js';
+import type { AbroadResult, EstimateReason, LimitApplied, TaxResult } from './types.js';
 
 const NB = '\u00a0';
 const t = (en: string, fr: string): Text => ({ en, fr });
@@ -109,6 +109,8 @@ export type FinalCheckResult = Pick<
   limits: readonly LimitApplied[];
   /** The separate tax on pension capital, in a canton that computes it (Geneva). */
   capital?: CapitalTax;
+  /** A property abroad, counted for the rate (Geneva). */
+  abroad?: AbroadResult;
 };
 
 /**
@@ -177,6 +179,7 @@ export type FinalCheckKind =
   | 'official_pdf'
   | 'limit'
   | 'capital'
+  | 'abroad'
   | 'best_figure'
   | 'holding_check'
   | 'not_counted'
@@ -232,6 +235,7 @@ const FIX_ORDER: FinalCheckKind[] = [
 ];
 const KNOW_ORDER: FinalCheckKind[] = [
   'capital',
+  'abroad',
   'limit',
   'best_figure',
   'holding_check',
@@ -537,6 +541,99 @@ function capitalItems(input: FinalCheckInput): FinalCheckItem[] {
         'Si vous avez fait un tel rachat, demandez à l’AFC ce que cela implique pour vous.',
       ),
       sources: links('ge-2025-guide-declaration-pp p. 18; ch-na-law-lpp art. 79b al. 3 (p. 66)'),
+    });
+  }
+  return out;
+}
+
+/**
+ * A property abroad: an unusual item, with the rules that govern it (SPEC.md 10.0). It is on annexe
+ * D and counted only for the rate; the debts and their interest are shared with it.
+ */
+function abroadItems(input: FinalCheckInput): FinalCheckItem[] {
+  const a = input.result?.abroad;
+  if (!a) return [];
+  const links = (source: string) => officialLinks(source, input.canton?.documents);
+  const code = a.use === 'own_use' ? '15.10' : '15.20';
+  const value = a.wealth.find((i) => i.code === code)?.amount;
+  const icc = a.icc.find((i) => i.code === code)?.amount;
+  const ifd = a.ifd.find((i) => i.code === code)?.amount;
+  const where = a.country ? t(` in ${a.country.en}`, ` en ${a.country.fr}`) : t('', '');
+  const figures = t(
+    [
+      value !== undefined ? `its value ${chf(value)}` : '',
+      icc !== undefined ? `its ${a.use === 'own_use' ? 'rental value' : 'rents'} ${chf(icc)}` : '',
+    ]
+      .filter(Boolean)
+      .join(', '),
+    [
+      value !== undefined ? `sa valeur ${chf(value)}` : '',
+      icc !== undefined
+        ? `${a.use === 'own_use' ? 'sa valeur locative' : 'ses loyers'} ${chf(icc)}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(', '),
+  );
+  const out: FinalCheckItem[] = [
+    {
+      id: 'abroad:rate',
+      kind: 'abroad',
+      code,
+      title: t(
+        `${code} Your property abroad${where.en}, counted for the rate only (exemption avec réserve de progression)`,
+        `${code} Votre immeuble à l’étranger${where.fr}, compté seulement pour le taux (exemption avec réserve de progression)`,
+      ),
+      detail: t(
+        `It is taxed where it lies. Declare it on annexe D with its country${figures.en ? `: ${figures.en}` : ''}${ifd !== undefined && ifd !== icc ? ` (federal ${chf(ifd)})` : ''}. Geneva and the federal tax set your rate on your whole income and wealth (95.00), and tax only the rest (99.00): its share is 97.00.`,
+        `Il est imposé là où il se trouve. Déclarez-le à l’annexe D avec son pays${figures.fr ? `${NB}: ${figures.fr}` : ''}${ifd !== undefined && ifd !== icc ? ` (fédéral ${chf(ifd)})` : ''}. Genève et l’impôt fédéral fixent votre taux sur l’ensemble de votre revenu et de votre fortune (95.00), et n’imposent que le reste (99.00)${NB}: sa part est le 97.00.`,
+      ),
+      todo: t(
+        a.use === 'let'
+          ? 'Attach the country’s tax value attestation or the deed, and the management account (compte de gestion).'
+          : 'Attach the country’s tax value attestation or the deed, and the document of its rental value (in France the taxe d’habitation or taxes foncières), if any.',
+        a.use === 'let'
+          ? 'Joignez l’attestation de valeur fiscale du pays ou l’acte d’acquisition, et le compte de gestion.'
+          : 'Joignez l’attestation de valeur fiscale du pays ou l’acte d’acquisition, et le justificatif de sa valeur locative (en France la taxe d’habitation ou les taxes foncières), s’il y en a un.',
+      ),
+      sources: links(
+        `ge-2025-guide-declaration-pp p. 32 and 33; ge-2025-declaration-specimen p. 3, 4, 15 and 16; ge-na-revenu-immobilier-page (Votre bien est situé à l’étranger); ge-na-valeur-fiscale-page (Votre bien est situé à l’étranger); ge-na-law-lipp art. 5 and 6; ch-na-law-lifd art. 6 al. 1 and art. 7 al. 1 (p. 4 and 5)`,
+      ),
+    },
+  ];
+  if (a.debts || a.interestIcc) {
+    const pct = `${(a.shareBp / 100).toFixed(2)}`;
+    const parts = (lang: 'en' | 'fr') =>
+      [
+        a.debts ? chf(a.debts.amount) + (lang === 'en' ? ' of your debts' : ' de vos dettes') : '',
+        a.interestIcc
+          ? chf(a.interestIcc.amount) + (lang === 'en' ? ' of your interest' : ' de vos intérêts')
+          : '',
+      ]
+        .filter(Boolean)
+        .join(lang === 'en' ? ' and ' : ' et ');
+    out.push({
+      id: 'abroad:debts',
+      kind: 'abroad',
+      code: '55.00',
+      title: t(
+        '55.00 Your debts and interest, shared with your property abroad',
+        '55.00 Vos dettes et intérêts, répartis avec votre immeuble à l’étranger',
+      ),
+      detail: t(
+        `${parts('en')} go abroad, in proportion to where your gross assets lie (${pct} % abroad), wherever the loan was taken out. They come out of what is taxed here through 97.00.`,
+        `${parts('fr')} sont attribués à l’étranger, au prorata de la situation de vos actifs bruts (${pct.replace('.', ',')}${NB}% à l’étranger), où que l’emprunt ait été contracté. Ils sortent de ce qui est imposé ici par le 97.00.`,
+      ),
+      todo: t(
+        'Declare every debt on annexe E as usual, the mortgage abroad included (55.20): the form does the split.',
+        'Déclarez toutes vos dettes à l’annexe E comme d’habitude, l’hypothèque à l’étranger comprise (55.20)${NB}: le formulaire fait la répartition.'.replace(
+          '${NB}',
+          NB,
+        ),
+      ),
+      sources: links(
+        'ge-na-law-lipp art. 57 and 58 al. 3; ch-na-law-lifd art. 6 al. 3 (p. 4); zh-na-zstb-5-3 p. 1',
+      ),
     });
   }
   return out;
@@ -849,6 +946,7 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
   // Good to know: the lump sums taxed apart, limits, what the engine doesn't count, assumes or
   // can't verify.
   know.push(...capitalItems(input));
+  know.push(...abroadItems(input));
   know.push(...limitItems(input));
   (r?.notCounted ?? []).forEach((n, i) =>
     know.push({

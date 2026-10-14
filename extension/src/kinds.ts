@@ -4,6 +4,13 @@
 // instructions' terms where they have them (certificato di salario, ti-2025-guide-istruzioni-pf-pdf).
 import type { DocumentKind } from '@taxpresso/ledger';
 
+/** The documents of a property abroad (Geneva): offered only to a household that has one. */
+export const ABROAD_KINDS: ReadonlySet<DocumentKind> = new Set<DocumentKind>([
+  'foreign_property_tax_notice',
+  'foreign_property_deed',
+  'foreign_property_rent_statement',
+]);
+
 export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string; de: string; it: string }> =
   {
     salary_certificate: {
@@ -157,5 +164,26 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string; de: str
       fr: 'Relevé des cotisations AVS',
       de: 'AHV-Beitragsabrechnung',
       it: 'Conteggio dei contributi AVS',
+    },
+    // A property abroad (ge-na-valeur-fiscale-page, ge-na-revenu-immobilier-page): the country's
+    // attestation of its tax value or rental value, or its tax notice (France: taxe d'habitation,
+    // taxes foncières); the deed of purchase; the management account of a property let.
+    foreign_property_tax_notice: {
+      en: 'Property abroad: tax notice or attestation from the country',
+      fr: 'Immeuble à l’étranger : avis d’impôt ou attestation du pays',
+      de: 'Liegenschaft im Ausland: Steuerbescheid oder Bescheinigung des Landes',
+      it: 'Immobile all’estero: avviso d’imposta o attestazione del Paese',
+    },
+    foreign_property_deed: {
+      en: 'Property abroad: deed of purchase (acte d’acquisition)',
+      fr: 'Immeuble à l’étranger : acte d’acquisition',
+      de: 'Liegenschaft im Ausland: Kaufvertrag (acte d’acquisition)',
+      it: 'Immobile all’estero: atto d’acquisto (acte d’acquisition)',
+    },
+    foreign_property_rent_statement: {
+      en: 'Property abroad: management account (compte de gestion)',
+      fr: 'Immeuble à l’étranger : compte de gestion',
+      de: 'Liegenschaft im Ausland: Verwaltungsabrechnung (compte de gestion)',
+      it: 'Immobile all’estero: conto di gestione (compte de gestion)',
     },
   };

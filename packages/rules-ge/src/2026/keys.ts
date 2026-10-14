@@ -9,6 +9,7 @@ import {
   KEYS_SECURITIES_2026,
   KEYS_WEALTH_2026,
 } from '@taxpresso/rules-ch';
+import { KEYS_ABROAD_PROFILE_2026 } from './abroad-keys.js';
 import { KEYS_BUSINESS_PROFILE_2026 } from './business-keys.js';
 import { COMMUNES_2026 } from './communes.js';
 import { DOCUMENT_KEYS_2026 } from './document-keys.js';
@@ -104,7 +105,16 @@ export const KEYS_2026 = {
   'profile.banks': H['profile.banks'],
   'profile.crypto': H['profile.crypto'],
   'profile.payments': H['profile.payments'],
-  'profile.special': H['profile.special'],
+  // A home or land abroad is Geneva's own option (data/ge/2026/questionnaire.yaml, special): the
+  // other cantons keep the shared list, where real estate anywhere is not supported.
+  'profile.special': {
+    ...H['profile.special'],
+    values: [...H['profile.special'].values, 'property_abroad'],
+  },
+  // A home or land abroad (immeuble à l'étranger, annexe D), the simple case: what it is and how it
+  // is used, whose it is, its country and its age, and the household's rough figures until its
+  // documents are in (./abroad-keys.ts; ../engine/abroad.ts).
+  ...KEYS_ABROAD_PROFILE_2026,
   // A lump sum from the 2nd pillar (pension fund, vested benefits) or pillar 3a, taxed apart at a
   // fifth of the scale (ge-na-law-lipp art. 45; ch-na-law-lifd art. 38, p. 32), declared at 98.12
   // (ge-2025-guide-declaration-pp p. 13): who received which (../engine/capital.ts). The amount, the

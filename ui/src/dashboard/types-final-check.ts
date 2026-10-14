@@ -17,6 +17,7 @@ export type FinalCheckKind =
   | 'official_pdf'
   | 'limit'
   | 'capital'
+  | 'abroad'
   | 'best_figure'
   | 'holding_check'
   | 'not_counted'

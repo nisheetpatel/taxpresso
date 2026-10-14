@@ -20,6 +20,7 @@ export {
   type UnplacedValue,
 } from './2026/ledger-map.js';
 export { annexBItems, selfEmployed3a, type AnnexBInput } from './2026/annex-b.js';
+export { annexDItems, type AnnexDInput } from './2026/annex-d.js';
 export {
   buildCopyPanel,
   COLUMN_LABELS,

@@ -1145,13 +1145,15 @@ questions:
         it: 'Guida fiscale di Ginevra 2025, p. 11: le principali deduzioni'
 
   # A lump sum from the 2nd pillar or pillar 3a is supported in Geneva since 14 October 2026 (SPEC.md
-  # section 1): the questions below ask who received which, and why.
+  # section 1): the questions below ask who received which, and why. So is a home or land abroad,
+  # the simple case (decided the same day): one property, the household's, used by it, let, or land.
+  # Real estate in Switzerland, and other income from abroad, are still not supported.
   - use: special
     explain:
-      en: 'Most of these need checks that Taxpresso can’t do yet. Better to know now than in March. A lump sum from your pension fund or pillar 3a is the exception: Taxpresso computes the separate tax on it.'
-      fr: 'La plupart de ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars. Un capital de votre caisse de pension ou du 3e pilier A fait exception : Taxpresso calcule l’impôt séparé sur ce capital.'
-      de: 'Die meisten davon brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März. Ein Kapitalbezug aus der Pensionskasse oder der Säule 3a ist die Ausnahme: Taxpresso berechnet die separate Steuer darauf.'
-      it: 'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. Un capitale della tua cassa pensione o del pilastro 3a fa eccezione: Taxpresso calcola l’imposta separata su di esso.'
+      en: 'Most of these need checks that Taxpresso can’t do yet. Better to know now than in March. A lump sum from your pension fund or pillar 3a, and a home or land abroad, are the exceptions: Taxpresso computes the separate tax on the lump sum, and counts the property abroad for your rate.'
+      fr: 'La plupart de ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars. Un capital de votre caisse de pension ou du 3e pilier A, et un logement ou un terrain à l’étranger, font exception : Taxpresso calcule l’impôt séparé sur le capital, et compte l’immeuble à l’étranger pour votre taux.'
+      de: 'Die meisten davon brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März. Ein Kapitalbezug aus der Pensionskasse oder der Säule 3a und eine Wohnung oder ein Grundstück im Ausland sind die Ausnahmen: Taxpresso berechnet die separate Steuer auf dem Kapital und zählt die Liegenschaft im Ausland für deinen Steuersatz.'
+      it: 'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. Un capitale della tua cassa pensione o del pilastro 3a, e un’abitazione o un terreno all’estero, fanno eccezione: Taxpresso calcola l’imposta separata sul capitale e conta l’immobile all’estero per la tua aliquota.'
     # ge-2025-getax-software
     learnMore:
       url: 'https://www.ge.ch/getax/telecharger-installer-getax-particuliers'
@@ -1163,15 +1165,27 @@ questions:
       - value: real_estate
         label:
           {
-            en: 'I own real estate, in Switzerland or abroad',
-            fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
-            it: 'Possiedo un immobile, in Svizzera o all’estero',
+            en: 'I own real estate in Switzerland',
+            fr: 'Je suis propriétaire d’un bien immobilier en Suisse',
+            de: 'Ich besitze eine Liegenschaft in der Schweiz',
+            it: 'Possiedo un immobile in Svizzera',
           }
         notSupported:
           {
-            en: 'Real estate (annexe D)',
-            fr: 'Les immeubles (annexe D)',
-            it: 'Gli immobili (annexe D)',
+            en: 'Real estate in Switzerland (annexe D)',
+            fr: 'Les immeubles en Suisse (annexe D)',
+            de: 'Liegenschaften in der Schweiz (annexe D)',
+            it: 'Gli immobili in Svizzera (annexe D)',
+          }
+      # ge-2025-guide-declaration-pp p. 32: annexe D for property "sis à Genève, en Suisse ou à
+      # l'étranger"; the questions below.
+      - value: property_abroad
+        label:
+          {
+            en: 'I own a home or land outside Switzerland',
+            fr: 'Je suis propriétaire d’un logement ou d’un terrain hors de Suisse',
+            de: 'Ich besitze eine Wohnung oder ein Grundstück ausserhalb der Schweiz',
+            it: 'Possiedo un’abitazione o un terreno fuori dalla Svizzera',
           }
       - value: inheritance_or_gift
         label:
@@ -1186,15 +1200,24 @@ questions:
             fr: 'Un héritage ou une donation',
             it: 'Un’eredità o una donazione',
           }
+      # A salary for work abroad, a foreign pension, a business abroad: who taxes them depends on
+      # the double tax treaty with the country, which no Geneva or federal document spells out on its
+      # own. Rent from a property abroad goes with the property (property_abroad).
       - value: foreign_income
         label:
           {
-            en: 'I had income from abroad (salary, pension, rent)',
-            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
-            it: 'Ho avuto redditi dall’estero (salario, rendita, affitto)',
+            en: 'I had other income from abroad (a salary for work done abroad, a foreign pension)',
+            fr: 'J’ai eu d’autres revenus de l’étranger (salaire pour un travail à l’étranger, rente étrangère)',
+            de: 'Ich hatte andere Einkünfte aus dem Ausland (Lohn für Arbeit im Ausland, ausländische Rente)',
+            it: 'Ho avuto altri redditi dall’estero (salario per un lavoro all’estero, rendita estera)',
           }
         notSupported:
-          { en: 'Income from abroad', fr: 'Des revenus de l’étranger', it: 'Redditi dall’estero' }
+          {
+            en: 'Income from abroad',
+            fr: 'Des revenus de l’étranger',
+            de: 'Einkünfte aus dem Ausland',
+            it: 'Redditi dall’estero',
+          }
       # 98.12, Prestations en capital du 2e et 3e pilier A (ge-2025-guide-declaration-pp p. 13).
       - value: pension_capital
         label:
@@ -1282,6 +1305,309 @@ questions:
             de: 'Kapital Säule 3a',
             it: 'Capitale pilastro 3a',
           }
+
+  # A home or land abroad (immeuble à l'étranger), the simple case (SPEC.md section 1, decided 14
+  # October 2026). It is declared on annexe D like any property (ge-2025-guide-declaration-pp p. 32),
+  # taxed where it lies, and counted only for the rate (ge-na-law-lipp art. 5 al. 1 and art. 6 al. 1;
+  # ch-na-law-lifd art. 6 al. 1, p. 4, and art. 7 al. 1, p. 5). Only what people know is asked: how
+  # it is used, whose it is, where, how old, and whether a loan is on it. The figures come from its
+  # documents (its rental value by country and its rents: ge-na-revenu-immobilier-page; its value:
+  # ge-na-valeur-fiscale-page) or, until they are in, from what the user says, as estimates.
+  - id: abroad_property
+    key: profile.abroad_property
+    type: choice
+    when: { key: profile.special, includes: property_abroad }
+    explain:
+      en: 'A home or land outside Switzerland is taxed in the country where it is. Switzerland doesn’t tax it, but counts its income and its value to set your rate (exemption avec réserve de progression). How it is used decides its income: for a home you use, its rental value (valeur locative); for one you let, the rents.'
+      fr: 'Un logement ou un terrain hors de Suisse est imposé dans le pays où il se trouve. La Suisse ne l’impose pas, mais compte son revenu et sa valeur pour fixer votre taux (exemption avec réserve de progression). Son usage décide de son revenu : pour un logement que vous occupez, sa valeur locative ; pour un logement loué, les loyers.'
+      de: 'Eine Wohnung oder ein Grundstück ausserhalb der Schweiz wird im Land besteuert, in dem es liegt. Die Schweiz besteuert es nicht, zählt aber Ertrag und Wert für deinen Steuersatz (exemption avec réserve de progression, Progressionsvorbehalt). Die Nutzung bestimmt den Ertrag: bei einer selbst genutzten Wohnung der Eigenmietwert (valeur locative), bei einer vermieteten die Mieten.'
+      it: 'Un’abitazione o un terreno fuori dalla Svizzera è tassato nel Paese in cui si trova. La Svizzera non lo tassa, ma ne conta il reddito e il valore per stabilire la tua aliquota (exemption avec réserve de progression). L’uso ne decide il reddito: per un’abitazione che usi, il valore locativo (valeur locative); per una affittata, gli affitti.'
+    # ge-na-revenu-immobilier-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu'
+      label:
+        en: 'The income of a property, in Geneva or abroad (ge.ch), in French'
+        fr: 'Le revenu immobilier, bien situé à l’étranger (ge.ch)'
+        de: 'Der Ertrag einer Liegenschaft, in Genf oder im Ausland (ge.ch), auf Französisch'
+        it: 'Il reddito di un immobile, a Ginevra o all’estero (ge.ch), in francese'
+    text:
+      en: 'Your home or land outside Switzerland: what is it, and how is it used?'
+      fr: 'Votre logement ou terrain hors de Suisse : de quoi s’agit-il, et comment est-il utilisé ?'
+      de: 'Deine Wohnung oder dein Grundstück ausserhalb der Schweiz: Was ist es, und wie wird es genutzt?'
+      it: 'La tua abitazione o il tuo terreno fuori dalla Svizzera: di che cosa si tratta, e come viene usato?'
+    help:
+      en: 'Kept for you or your family counts as your own use, even if nobody lives there all year. On the official form: annexe D, immeubles occupés par le propriétaire (15.10) or immeubles locatifs ou loués (15.20).'
+      fr: 'Gardé à votre disposition ou à celle de vos proches compte comme occupé par vous, même si personne n’y vit toute l’année. Sur le formulaire officiel : annexe D, immeubles occupés par le propriétaire (15.10) ou immeubles locatifs ou loués (15.20).'
+      de: 'Für dich oder deine Familie bereitgehalten zählt als selbst genutzt, auch wenn niemand das ganze Jahr dort wohnt. Auf dem offiziellen Formular: annexe D, immeubles occupés par le propriétaire (15.10) oder immeubles locatifs ou loués (15.20).'
+      it: 'Tenuta a disposizione tua o dei tuoi familiari conta come usata da te, anche se nessuno ci vive tutto l’anno. Sul modulo ufficiale: annexe D, immeubles occupés par le propriétaire (15.10) o immeubles locatifs ou loués (15.20).'
+    options:
+      - value: own_use
+        label:
+          en: 'A home we use ourselves, or keep for our use or our family’s (a holiday or second home)'
+          fr: 'Un logement que nous occupons, ou gardons à notre disposition ou à celle de nos proches (résidence secondaire ou de vacances)'
+          de: 'Eine Wohnung, die wir selbst nutzen oder für uns oder unsere Familie bereithalten (Ferien- oder Zweitwohnung)'
+          it: 'Un’abitazione che usiamo noi, o teniamo a disposizione nostra o dei nostri familiari (casa di vacanza o seconda casa)'
+        chip:
+          {
+            en: 'Home abroad',
+            fr: 'Logement à l’étranger',
+            de: 'Wohnung im Ausland',
+            it: 'Abitazione all’estero',
+          }
+      - value: let
+        label:
+          en: 'A home or flat let to tenants'
+          fr: 'Un logement loué à des locataires'
+          de: 'Eine Wohnung, die an Mieter vermietet ist'
+          it: 'Un’abitazione affittata a inquilini'
+        chip:
+          {
+            en: 'Let abroad',
+            fr: 'Loué à l’étranger',
+            de: 'Im Ausland vermietet',
+            it: 'Affittata all’estero',
+          }
+      - value: land
+        label:
+          en: 'Land with no home on it'
+          fr: 'Un terrain sans logement'
+          de: 'Ein Grundstück ohne Wohnung'
+          it: 'Un terreno senza abitazione'
+        chip:
+          {
+            en: 'Land abroad',
+            fr: 'Terrain à l’étranger',
+            de: 'Grundstück im Ausland',
+            it: 'Terreno all’estero',
+          }
+      - value: several
+        label:
+          en: 'More than one home or plot abroad'
+          fr: 'Plusieurs logements ou terrains à l’étranger'
+          de: 'Mehrere Wohnungen oder Grundstücke im Ausland'
+          it: 'Più abitazioni o terreni all’estero'
+        notSupported:
+          en: 'More than one property abroad'
+          fr: 'Plusieurs immeubles à l’étranger'
+          de: 'Mehrere Liegenschaften im Ausland'
+          it: 'Più immobili all’estero'
+      - value: other
+        label:
+          en: 'Something else: let only part of the year, owned through a company, being built, or a business'
+          fr: 'Autre chose : loué une partie de l’année seulement, détenu par une société, en construction, ou une activité commerciale'
+          de: 'Etwas anderes: nur einen Teil des Jahres vermietet, über eine Gesellschaft gehalten, im Bau oder ein Geschäft'
+          it: 'Altro: affittata solo per una parte dell’anno, detenuta tramite una società, in costruzione, o un’attività commerciale'
+        notSupported:
+          en: 'This property abroad (let part of the year, owned through a company, being built, or a business)'
+          fr: 'Cet immeuble à l’étranger (loué une partie de l’année, détenu par une société, en construction, ou une activité)'
+          de: 'Diese Liegenschaft im Ausland (teilweise vermietet, über eine Gesellschaft gehalten, im Bau oder ein Geschäft)'
+          it: 'Questo immobile all’estero (affittato per una parte dell’anno, detenuto tramite una società, in costruzione, o un’attività)'
+
+  # Part contribuable A / contribuable B on annexe D (ge-2025-declaration-specimen p. 15;
+  # ge-2025-guide-declaration-pp p. 32). Owned with someone outside the household: only a share is
+  # the household's, which its documents don't give (not supported).
+  - id: abroad_property_owner
+    key: profile.abroad_property_owner
+    type: choice
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [own_use, let, land] }
+    explain:
+      en: 'The form shows each owner’s share. Taxpresso prepares a property that belongs to you, to your spouse or partner, or to both of you.'
+      fr: 'Le formulaire indique la part de chaque propriétaire. Taxpresso prépare un immeuble qui vous appartient, à votre conjoint ou partenaire, ou à vous deux.'
+      de: 'Das Formular zeigt den Anteil jedes Eigentümers. Taxpresso bereitet eine Liegenschaft vor, die dir, deinem Partner oder deiner Partnerin oder euch beiden gehört.'
+      it: 'Il modulo indica la quota di ogni proprietario. Taxpresso prepara un immobile che appartiene a te, al tuo coniuge o partner, o a entrambi.'
+    # ge-2025-guide-declaration-pp p. 32
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=32'
+      label:
+        en: 'Geneva tax guide 2025, p. 32: property (annexe D)'
+        fr: 'Guide fiscal 2025, p. 32 : Immeubles'
+        de: 'Genfer Steuerwegleitung 2025, S. 32: Liegenschaften (annexe D), auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 32: immobili (annexe D), in francese'
+    text:
+      en: 'Who owns it?'
+      fr: 'À qui appartient-il ?'
+      de: 'Wem gehört es?'
+      it: 'A chi appartiene?'
+    help:
+      en: 'On the official form: part contribuable A / contribuable B.'
+      fr: 'Sur le formulaire officiel : part contribuable A / contribuable B.'
+      de: 'Auf dem offiziellen Formular: part contribuable A / contribuable B.'
+      it: 'Sul modulo ufficiale: part contribuable A / contribuable B.'
+    options:
+      - value: p1
+        label: { en: 'Me alone', fr: 'Moi seul(e)', de: 'Mir allein', it: 'Solo a me' }
+      - value: p2
+        when: { key: profile.civil_status, in: [married, registered_partnership] }
+        label:
+          en: 'My spouse or partner alone'
+          fr: 'Mon conjoint ou partenaire seul(e)'
+          de: 'Meinem Partner oder meiner Partnerin allein'
+          it: 'Solo al mio coniuge o partner'
+      - value: both
+        when: { key: profile.civil_status, in: [married, registered_partnership] }
+        label: { en: 'Both of us', fr: 'Nous deux', de: 'Uns beiden', it: 'A entrambi' }
+      - value: others
+        label:
+          en: 'Shared with someone outside the household (a sibling, a parent)'
+          fr: 'En copropriété avec quelqu’un hors du ménage (frère, sœur, parent)'
+          de: 'Gemeinsam mit jemandem ausserhalb des Haushalts (Geschwister, Eltern)'
+          it: 'In comproprietà con qualcuno fuori dall’economia domestica (fratello, sorella, genitore)'
+        notSupported:
+          en: 'A property abroad shared with someone outside the household'
+          fr: 'Un immeuble à l’étranger en copropriété avec quelqu’un hors du ménage'
+          de: 'Eine Liegenschaft im Ausland, gemeinsam mit jemandem ausserhalb des Haushalts'
+          it: 'Un immobile all’estero in comproprietà con qualcuno fuori dall’economia domestica'
+
+  # The country: its name is the form's Situation (guide p. 32: "le nom du canton ou du pays"), and
+  # it decides which document gives the rental value (France: the taxe d'habitation or the taxes
+  # foncières; elsewhere the country's attestation, or 4.5 % of the value: ge-na-revenu-immobilier-page)
+  # and the currency of its documents.
+  - id: abroad_property_country
+    key: profile.abroad_property_country
+    type: choice
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [own_use, let, land] }
+    explain:
+      en: 'The country decides which document gives the figures: in France the taxe d’habitation or taxes foncières notice, elsewhere the country’s own attestation.'
+      fr: 'Le pays décide quel document donne les montants : en France l’avis de taxe d’habitation ou de taxes foncières, ailleurs l’attestation du pays.'
+      de: 'Das Land bestimmt, welches Dokument die Beträge gibt: in Frankreich der Bescheid der taxe d’habitation oder der taxes foncières, anderswo die Bescheinigung des Landes.'
+      it: 'Il Paese decide quale documento dà gli importi: in Francia l’avviso della taxe d’habitation o delle taxes foncières, altrove l’attestazione del Paese.'
+    # ge-na-revenu-immobilier-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu'
+      label:
+        en: 'The rental value of a property abroad, by country (ge.ch), in French'
+        fr: 'La valeur locative d’un bien situé à l’étranger (ge.ch)'
+        de: 'Der Eigenmietwert einer Liegenschaft im Ausland, nach Land (ge.ch), auf Französisch'
+        it: 'Il valore locativo di un immobile all’estero, per Paese (ge.ch), in francese'
+    text:
+      en: 'In which country is it?'
+      fr: 'Dans quel pays se trouve-t-il ?'
+      de: 'In welchem Land liegt es?'
+      it: 'In quale Paese si trova?'
+    help:
+      en: 'On the official form: situation (nom du pays).'
+      fr: 'Sur le formulaire officiel : situation (nom du pays).'
+      de: 'Auf dem offiziellen Formular: situation (nom du pays).'
+      it: 'Sul modulo ufficiale: situation (nom du pays).'
+    options:
+      - { value: france, label: { en: 'France', fr: 'France', de: 'Frankreich', it: 'Francia' } }
+      - { value: italy, label: { en: 'Italy', fr: 'Italie', de: 'Italien', it: 'Italia' } }
+      - { value: spain, label: { en: 'Spain', fr: 'Espagne', de: 'Spanien', it: 'Spagna' } }
+      - value: portugal
+        label: { en: 'Portugal', fr: 'Portugal', de: 'Portugal', it: 'Portogallo' }
+      - value: germany
+        label: { en: 'Germany', fr: 'Allemagne', de: 'Deutschland', it: 'Germania' }
+      - value: united_kingdom
+        label:
+          {
+            en: 'United Kingdom',
+            fr: 'Royaume-Uni',
+            de: 'Vereinigtes Königreich',
+            it: 'Regno Unito',
+          }
+      - value: united_states
+        label:
+          { en: 'United States', fr: 'États-Unis', de: 'Vereinigte Staaten', it: 'Stati Uniti' }
+      - value: other
+        label:
+          {
+            en: 'Another country',
+            fr: 'Un autre pays',
+            de: 'Ein anderes Land',
+            it: 'Un altro Paese',
+          }
+
+  # The flat upkeep deduction (forfait) by the building's age on 1 January: a home you use, 15 % or
+  # 25 % of its rental value (Geneva tax: ge-2025-guide-declaration-pp p. 33; ge-na-law-lipp art. 34
+  # let. d), 10 % or 20 % (federal: p. 33; ch-2026-ifd-instructions-personnes-physiques p. 6); a home
+  # let, 10 % or 20 % of the rents, federal tax only (guide p. 35).
+  - id: abroad_property_old
+    key: profile.abroad_property_old
+    type: yesno
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [own_use, let] }
+    explain:
+      en: 'The flat deduction for upkeep (forfait) depends on it: for a home you use, 15 % or 25 % of its rental value for the Geneva tax, 10 % or 20 % for the federal tax; for a home you let, 10 % or 20 % of the rents, for the federal tax.'
+      fr: 'Le forfait pour frais d’entretien en dépend : pour un logement que vous occupez, 15 % ou 25 % de sa valeur locative pour l’impôt genevois, 10 % ou 20 % pour l’impôt fédéral ; pour un logement loué, 10 % ou 20 % des loyers, pour l’impôt fédéral.'
+      de: 'Der Pauschalabzug für den Unterhalt (forfait) hängt davon ab: bei einer selbst genutzten Wohnung 15 % oder 25 % des Eigenmietwerts für die Genfer Steuer, 10 % oder 20 % für die Bundessteuer; bei einer vermieteten Wohnung 10 % oder 20 % der Mieten, für die Bundessteuer.'
+      it: 'Ne dipende la deduzione forfettaria per la manutenzione (forfait): per un’abitazione che usi, il 15 % o il 25 % del valore locativo per l’imposta ginevrina, il 10 % o il 20 % per l’imposta federale; per una affittata, il 10 % o il 20 % degli affitti, per l’imposta federale.'
+    # ge-2025-guide-declaration-pp p. 33
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=33'
+      label:
+        en: 'Geneva tax guide 2025, p. 33: upkeep costs, flat or actual'
+        fr: 'Guide fiscal 2025, p. 33 : Frais d’entretien ICC et IFD'
+        de: 'Genfer Steuerwegleitung 2025, S. 33: Unterhaltskosten, pauschal oder effektiv, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 33: spese di manutenzione, forfettarie o effettive, in francese'
+    text:
+      en: 'On 1 January {year}, was the building more than 10 years old?'
+      fr: 'Au 1er janvier {year}, le bâtiment avait-il plus de 10 ans ?'
+      de: 'War das Gebäude am 1. Januar {year} älter als 10 Jahre?'
+      it: 'Al 1° gennaio {year} l’edificio aveva più di 10 anni?'
+    help:
+      en: 'On the official form: âge du bâtiment au 1er janvier.'
+      fr: 'Sur le formulaire officiel : âge du bâtiment au 1er janvier.'
+      de: 'Auf dem offiziellen Formular: âge du bâtiment au 1er janvier.'
+      it: 'Sul modulo ufficiale: âge du bâtiment au 1er janvier.'
+    chip:
+      {
+        en: 'Over 10 years old',
+        fr: 'Plus de 10 ans',
+        de: 'Älter als 10 Jahre',
+        it: 'Più di 10 anni',
+      }
+
+  # A loan on it (a mortgage abroad): its statement is a debt like any other (annexe E,
+  # ge-2025-guide-declaration-pp p. 37), split with the others by where the assets lie
+  # (ge-na-law-lipp art. 57).
+  - id: abroad_property_loan
+    key: profile.abroad_property_loan
+    type: yesno
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [own_use, let, land] }
+    explain:
+      en: 'Your debts and their interest are shared between Switzerland and abroad in proportion to where your assets are, wherever the loan was taken out.'
+      fr: 'Vos dettes et leurs intérêts sont répartis entre la Suisse et l’étranger au prorata de la situation de vos actifs, où que l’emprunt ait été contracté.'
+      de: 'Deine Schulden und ihre Zinsen werden zwischen der Schweiz und dem Ausland im Verhältnis zur Lage deiner Vermögenswerte aufgeteilt, wo auch immer der Kredit aufgenommen wurde.'
+      it: 'I tuoi debiti e i loro interessi sono ripartiti tra la Svizzera e l’estero in proporzione a dove si trovano i tuoi beni, ovunque sia stato contratto il prestito.'
+    # ge-2025-guide-declaration-pp p. 37
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=37'
+      label:
+        en: 'Geneva tax guide 2025, p. 37: interest and debts'
+        fr: 'Guide fiscal 2025, p. 37 : Intérêts et dettes'
+        de: 'Genfer Steuerwegleitung 2025, S. 37: Zinsen und Schulden, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 37: interessi e debiti, in francese'
+    text:
+      en: 'Is there a loan or mortgage on it?'
+      fr: 'Y a-t-il un emprunt ou une hypothèque dessus ?'
+      de: 'Gibt es darauf einen Kredit oder eine Hypothek?'
+      it: 'C’è un prestito o un’ipoteca su di esso?'
+    help:
+      en: 'On the official form: intérêts et dettes hypothécaires (annexe E).'
+      fr: 'Sur le formulaire officiel : intérêts et dettes hypothécaires (annexe E).'
+      de: 'Auf dem offiziellen Formular: intérêts et dettes hypothécaires (annexe E).'
+      it: 'Sul modulo ufficiale: intérêts et dettes hypothécaires (annexe E).'
+    chip:
+      {
+        en: 'Mortgage abroad',
+        fr: 'Hypothèque à l’étranger',
+        de: 'Hypothek im Ausland',
+        it: 'Ipoteca all’estero',
+      }
 
 # What the "still missing" list asks for. Labels use the guide's words (p. 8 and p. 10).
 requirements:
@@ -1608,6 +1934,176 @@ requirements:
     source:
       - 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ge-2025-guide-declaration-pp p. 13'
       - 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13'
+
+  # A home or land abroad. Its value: the tax value set by the country, with its tax office's
+  # attestation; where the country sets none, the purchase price, with a copy of the deed
+  # (ge-na-valeur-fiscale-page). Its rental value (a home used by the household): in France the taxe
+  # d'habitation or taxes foncières notice; elsewhere the country's attestation, where it sets one;
+  # otherwise 4.5 % of the value, nothing to add (ge-na-revenu-immobilier-page). Its rents (let):
+  # a management account (compte de gestion), the same page.
+  - id: abroad_value
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [own_use, let, land] }
+    expects: { kinds: [foreign_property_tax_notice, foreign_property_deed] }
+    label:
+      en: 'Property abroad: the country’s tax value, or the deed of purchase'
+      fr: 'Immeuble à l’étranger : attestation de valeur fiscale ou acte d’acquisition'
+      de: 'Liegenschaft im Ausland: Steuerwert des Landes oder Kaufvertrag'
+      it: 'Immobile all’estero: valore fiscale del Paese o atto d’acquisto'
+    explain:
+      en: 'If the country sets a tax value for property, its tax office’s attestation (attestation de valeur fiscale). If it sets none, the deed of purchase (acte d’acquisition): the purchase price is the value. Taxpresso converts it into francs at the official rate of 31 December.'
+      fr: 'Si le pays fixe une valeur fiscale aux immeubles, l’attestation de son administration fiscale (attestation de valeur fiscale). S’il n’en fixe pas, l’acte d’acquisition : le prix d’achat est la valeur. Taxpresso la convertit en francs au cours officiel du 31 décembre.'
+      de: 'Wenn das Land einen Steuerwert für Liegenschaften festlegt, die Bescheinigung seiner Steuerbehörde (attestation de valeur fiscale). Wenn nicht, der Kaufvertrag (acte d’acquisition): Der Kaufpreis ist der Wert. Taxpresso rechnet ihn zum offiziellen Kurs vom 31. Dezember in Franken um.'
+      it: 'Se il Paese fissa un valore fiscale per gli immobili, l’attestazione della sua amministrazione fiscale (attestation de valeur fiscale). Se non lo fissa, l’atto d’acquisto (acte d’acquisition): il prezzo d’acquisto è il valore. Taxpresso lo converte in franchi al cambio ufficiale del 31 dicembre.'
+    # ge-na-valeur-fiscale-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune'
+      label:
+        en: 'The tax value of a property abroad (ge.ch), in French'
+        fr: 'La valeur fiscale, bien situé à l’étranger (ge.ch)'
+        de: 'Der Steuerwert einer Liegenschaft im Ausland (ge.ch), auf Französisch'
+        it: 'Il valore fiscale di un immobile all’estero (ge.ch), in francese'
+    reason:
+      en: 'From the country’s tax office, or your deed.'
+      fr: 'De l’administration fiscale du pays, ou votre acte d’acquisition.'
+      de: 'Von der Steuerbehörde des Landes oder dein Kaufvertrag.'
+      it: 'Dall’amministrazione fiscale del Paese, o il tuo atto d’acquisto.'
+    source: 'ge-na-valeur-fiscale-page (Votre bien est situé à l’étranger); ge-2025-guide-declaration-pp p. 32 and 33'
+
+  - id: abroad_rental_value_france
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [own_use] }
+        - { key: profile.abroad_property_country, in: [france] }
+    expects: { kinds: [foreign_property_tax_notice] }
+    label:
+      en: 'Home in France: taxe d’habitation or taxes foncières notice'
+      fr: 'Logement en France : avis de taxe d’habitation ou de taxes foncières'
+      de: 'Wohnung in Frankreich: Bescheid der taxe d’habitation oder der taxes foncières'
+      it: 'Abitazione in Francia: avviso della taxe d’habitation o delle taxes foncières'
+    explain:
+      en: 'For a second home, the taxe d’habitation notice shows its rental value as “Base d’imposition (valeur locative brute)”. Without it, the taxes foncières notice: Taxpresso takes the “Base” line in the “Commune” column, times 2.'
+      fr: 'Pour une résidence secondaire, l’avis de taxe d’habitation indique sa valeur locative sous « Base d’imposition (valeur locative brute) ». Sinon, l’avis de taxes foncières : Taxpresso prend la ligne « Base » de la colonne « Commune », multipliée par 2.'
+      de: 'Für eine Zweitwohnung zeigt der Bescheid der taxe d’habitation den Eigenmietwert unter «Base d’imposition (valeur locative brute)». Sonst der Bescheid der taxes foncières: Taxpresso nimmt die Zeile «Base» in der Spalte «Commune», mal 2.'
+      it: 'Per una seconda casa, l’avviso della taxe d’habitation indica il valore locativo alla voce «Base d’imposition (valeur locative brute)». Altrimenti l’avviso delle taxes foncières: Taxpresso prende la riga «Base» della colonna «Commune», moltiplicata per 2.'
+    # ge-na-revenu-immobilier-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu'
+      label:
+        en: 'The rental value of a home in France (ge.ch), in French'
+        fr: 'La valeur locative, bien situé en France (ge.ch)'
+        de: 'Der Eigenmietwert einer Wohnung in Frankreich (ge.ch), auf Französisch'
+        it: 'Il valore locativo di un’abitazione in Francia (ge.ch), in francese'
+    reason:
+      en: 'From the French tax office.'
+      fr: 'De l’administration fiscale française.'
+      de: 'Von der französischen Steuerverwaltung.'
+      it: 'Dall’amministrazione fiscale francese.'
+    source: 'ge-na-revenu-immobilier-page (Bien situé en France)'
+
+  - id: abroad_rental_value
+    optional: true
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [own_use] }
+        - {
+            key: profile.abroad_property_country,
+            in: [italy, spain, portugal, germany, united_kingdom, united_states, other],
+          }
+    expects: { kinds: [foreign_property_tax_notice] }
+    label:
+      en: 'Home abroad: the country’s rental value, if it sets one'
+      fr: 'Logement à l’étranger : attestation de valeur locative, si le pays en fixe une'
+      de: 'Wohnung im Ausland: Eigenmietwert des Landes, falls es einen festlegt'
+      it: 'Abitazione all’estero: valore locativo del Paese, se ne fissa uno'
+    explain:
+      en: 'If the country sets a rental value like Switzerland’s, its attestation from the country’s tax office. If it sets none, nothing to add: the rental value is 4.5 % of the tax value, with no upkeep costs deducted.'
+      fr: 'Si le pays fixe une valeur locative comme celle de la Suisse, son attestation par l’autorité du pays. S’il n’en fixe pas, rien à ajouter : la valeur locative est de 4,5 % de la valeur fiscale, sans déduction de frais d’entretien.'
+      de: 'Wenn das Land einen Eigenmietwert wie die Schweiz festlegt, dessen Bescheinigung der Behörde des Landes. Wenn nicht, nichts beizulegen: Der Eigenmietwert beträgt 4,5 % des Steuerwerts, ohne Abzug von Unterhaltskosten.'
+      it: 'Se il Paese fissa un valore locativo come quello svizzero, la sua attestazione dell’autorità del Paese. Se non lo fissa, nulla da aggiungere: il valore locativo è il 4,5 % del valore fiscale, senza deduzione delle spese di manutenzione.'
+    # ge-na-revenu-immobilier-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu'
+      label:
+        en: 'The rental value of a property abroad (ge.ch), in French'
+        fr: 'La valeur locative, bien situé à l’étranger (ge.ch)'
+        de: 'Der Eigenmietwert einer Liegenschaft im Ausland (ge.ch), auf Französisch'
+        it: 'Il valore locativo di un immobile all’estero (ge.ch), in francese'
+    reason:
+      en: 'Only if the country sets one.'
+      fr: 'Seulement si le pays en fixe une.'
+      de: 'Nur wenn das Land einen festlegt.'
+      it: 'Solo se il Paese ne fissa uno.'
+    source: 'ge-na-revenu-immobilier-page (Votre bien est situé à l’étranger)'
+
+  - id: abroad_rents
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property, in: [let] }
+    expects: { kinds: [foreign_property_rent_statement] }
+    label:
+      en: 'Property let abroad: management account (compte de gestion)'
+      fr: 'Immeuble loué à l’étranger : compte de gestion'
+      de: 'Im Ausland vermietete Liegenschaft: Verwaltungsabrechnung (compte de gestion)'
+      it: 'Immobile affittato all’estero: conto di gestione (compte de gestion)'
+    explain:
+      en: 'The rents received in {year} and the upkeep, insurance and management costs paid, from you or your agent. Loan interest goes with the loan statement; taxes don’t count.'
+      fr: 'Les loyers encaissés en {year} et les frais d’entretien, d’assurance et de gérance payés, de vous ou de votre gérant. Les intérêts d’emprunt vont avec le relevé d’emprunt ; les impôts ne comptent pas.'
+      de: 'Die {year} eingenommenen Mieten und die bezahlten Unterhalts-, Versicherungs- und Verwaltungskosten, von dir oder deiner Verwaltung. Schuldzinsen gehören zum Kreditauszug; Steuern zählen nicht.'
+      it: 'Gli affitti incassati nel {year} e le spese di manutenzione, assicurazione e gestione pagate, da te o dal tuo amministratore. Gli interessi del prestito vanno con l’estratto del prestito; le imposte non contano.'
+    # ge-na-revenu-immobilier-page
+    learnMore:
+      url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu'
+      label:
+        en: 'The income of a property let abroad (ge.ch), in French'
+        fr: 'Le revenu immobilier, si vous louez votre bien (ge.ch)'
+        de: 'Der Ertrag einer vermieteten Liegenschaft im Ausland (ge.ch), auf Französisch'
+        it: 'Il reddito di un immobile affittato all’estero (ge.ch), in francese'
+    reason:
+      en: 'From you or your letting agent.'
+      fr: 'De vous ou de votre gérant.'
+      de: 'Von dir oder deiner Verwaltung.'
+      it: 'Da te o dal tuo amministratore.'
+    source: 'ge-na-revenu-immobilier-page (Si vous louez votre bien); ge-2025-guide-declaration-pp p. 35'
+
+  # The loan on it: a loan statement like any other (annexe E, ge-2025-guide-declaration-pp p. 37),
+  # in the loan's own currency if it isn't in francs.
+  - id: abroad_loan
+    when:
+      all:
+        - { key: profile.special, includes: property_abroad }
+        - { key: profile.abroad_property_loan, is: true }
+    expects: { kinds: [debt_interest] }
+    label:
+      en: 'Loan statement of the mortgage abroad'
+      fr: 'Relevé de l’hypothèque à l’étranger'
+      de: 'Auszug der Hypothek im Ausland'
+      it: 'Estratto dell’ipoteca all’estero'
+    explain:
+      en: 'The lender’s statement of the interest paid in {year} and what you still owed on 31 December, in the loan’s currency.'
+      fr: 'Le relevé du prêteur indiquant les intérêts payés en {year} et le solde dû au 31 décembre, dans la monnaie de l’emprunt.'
+      de: 'Der Auszug des Kreditgebers über die {year} bezahlten Zinsen und die Schuld per 31. Dezember, in der Währung des Kredits.'
+      it: 'L’estratto del creditore con gli interessi pagati nel {year} e quanto dovevi ancora al 31 dicembre, nella valuta del prestito.'
+    # ge-2025-guide-declaration-pp p. 37
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=37'
+      label:
+        en: 'Geneva tax guide 2025, p. 37: interest and debts'
+        fr: 'Guide fiscal 2025, p. 37 : Intérêts et dettes'
+        de: 'Genfer Steuerwegleitung 2025, S. 37: Zinsen und Schulden, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 37: interessi e debiti, in francese'
+    reason:
+      en: 'From the lender.'
+      fr: 'Du prêteur.'
+      de: 'Vom Kreditgeber.'
+      it: 'Dal creditore.'
+    source: 'ge-2025-guide-declaration-pp p. 37'
 
   - id: prior_declaration
     optional: true

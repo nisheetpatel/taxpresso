@@ -86,6 +86,24 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://silgeneve.ch/legis/data/rsg_d3_08.htm',
     pdf: false,
   },
+  // A property abroad: its rental value and rents, its tax value (engine/abroad.ts), and the
+  // federal rules on the split between Switzerland and abroad as the Zurich tax manual sets them out.
+  'ge-na-revenu-immobilier-page': {
+    title: "L'impôt des propriétaires immobiliers: le revenu immobilier (impôt sur le revenu)",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu',
+    pdf: false,
+  },
+  'ge-na-valeur-fiscale-page': {
+    title: "L'impôt des propriétaires immobiliers: la valeur fiscale (impôt sur la fortune)",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune',
+    pdf: false,
+  },
+  'zh-na-zstb-5-3': {
+    title:
+      'Zürcher Steuerbuch Nr. 5.3: Internationale Steuerausscheidung bei Grundstücken, Geschäftsbetrieben und Betriebsstätten',
+    url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf',
+    pdf: true,
+  },
   'ge-na-law-lisp': {
     title:
       "Loi sur l'imposition à la source des personnes physiques et morales (LISP), rsGE D 3 20",
