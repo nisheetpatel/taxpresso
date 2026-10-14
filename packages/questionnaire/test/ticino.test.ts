@@ -52,7 +52,7 @@ const SINGLE_IN_LUGANO = {
   'employers:p1': 1,
   'work_rate:p1': 100,
   'full_year:p1': true,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'commute:p1': 'public_transport',
   'commute_transit_cost:p1': 790,
   'meal_days:p1': 200,
@@ -90,6 +90,7 @@ describe('Ticino questionnaire 2026', () => {
       'work_rate',
       'full_year',
       'months_worked',
+      'residence',
       'taxed_at_source',
       'commute',
       'commute_transit_cost',
@@ -255,7 +256,8 @@ describe('Ticino questionnaire 2026', () => {
     walk(e, ledger, { canton: 'TI', civil_status: 'single', children: 0, commune: 'Bellinzona' });
     e.answer(ledger, 'moved', 'from_abroad', USER);
     e.answer(ledger, 'income_sources:p1', ['salary'], USER);
-    e.answer(ledger, 'taxed_at_source:p1', true, USER);
+    // Without a C permit, a salary is taxed at source: derived, then not supported in Ticino.
+    e.answer(ledger, 'residence:p1', 'permit_other', USER);
     const what = e.notSupported(e.snapshot(ledger)).map((n) => n.what.it);
     expect(what).toEqual([
       'Un arrivo dall’estero nel corso dell’anno',

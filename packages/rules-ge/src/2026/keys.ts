@@ -35,16 +35,45 @@ export const KEYS_2026 = {
   },
   'profile.income_sources': H['profile.income_sources'],
   'profile.employers': H['profile.employers'],
-  'profile.taxed_at_source': H['profile.taxed_at_source'],
-  'profile.tou': {
-    type: 'enum',
-    values: ['already', 'considering', 'no'],
+  'profile.residence': H['profile.residence'],
+  // Paid by an employer in Switzerland (or its Swiss branch, or the Swiss company in the end): a
+  // salary paid directly from abroad is taxed ordinarily (ge-na-law-risp art. 5).
+  'profile.employer_in_switzerland': {
+    type: 'boolean',
     perPerson: true,
     label: {
-      en: 'Ordinary taxation instead of source tax',
-      fr: 'Taxation ordinaire ultérieure (TOU)',
+      en: 'Salary paid by an employer in Switzerland',
+      fr: 'Salaire versé par un employeur en Suisse',
+    },
+    official: 'débiteur de la prestation imposable (DPI)',
+    source: 'ge-na-law-risp art. 5; ge-2026-source-directives p. 6 (ch. 1.1.2)',
+  },
+  'profile.taxed_at_source': H['profile.taxed_at_source'],
+  // Already taxed ordinarily after source tax (TOU) before this year: a fact, which keeps TOU every
+  // year while taxed at source (ge-na-law-lisp art. 4 al. 5, art. 5 al. 5). Whether to ask for it is
+  // the TOU card's decision, not an answer ('considering' was one until October 2026: asked again).
+  'profile.tou': {
+    type: 'enum',
+    values: ['already', 'no'],
+    perPerson: true,
+    label: {
+      en: 'Already taxed ordinarily after source tax (TOU)',
+      fr: 'Déjà en taxation ordinaire ultérieure (TOU)',
     },
     official: 'taxation ordinaire ultérieure (TOU)',
+    source: 'ge-na-law-lisp art. 4 al. 5, art. 5 al. 5',
+  },
+  // A single parent taxed at source living with the children's other parent: barème A0, not H
+  // (./../source-tax/tariff.ts).
+  'profile.lives_with_other_parent': {
+    type: 'boolean',
+    perPerson: false,
+    label: {
+      en: 'Lives with the children’s other parent, unmarried',
+      fr: 'Vit en couple avec l’autre parent des enfants, sans être marié(e)',
+    },
+    official: 'concubins avec enfant(s) à charge',
+    source: 'ge-2026-source-directives p. 30 (ch. 5.5.1)',
   },
   // Self-employment (annexe B), the simple case: how the business is run, its year, its place,
   // what Taxpresso can't prepare yet, earlier losses, and the year's expected profit for the plans

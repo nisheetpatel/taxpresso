@@ -183,11 +183,16 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   };
   const atSource = planning.inputs.filter((i) => i.taxedAtSource);
 
+  // TOU already in place or compulsory is a fact ("About you"), never a choice (docs/design/simple.md).
+  const fact = tou.mode === 'in_place' || tou.mode === 'compulsory';
   let decision: JSX.Element;
-  if (tou.compulsory === 'yes') {
+  if (fact) {
     decision = <p class="pl-next">{tp(lang, 'touNextCompulsory', { date: deadline })}</p>;
   } else if (tou.deadlinePassed) {
     decision = <></>;
+  } else if (tou.mode === 'unknown' && !tou.decision) {
+    // Whether TOU is compulsory isn't known yet: the questions below come first.
+    decision = <p class="muted small-text">{tp(lang, 'touAnswerFirst')}</p>;
   } else if (tou.decision && !changing) {
     const date = day(tou.decision.decidedAt, lang);
     decision = (
@@ -252,10 +257,10 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </span>
       </div>
 
-      {tou.compulsory === 'yes' || tou.compulsory === 'check' ? (
-        <div class={`banner ${tou.compulsory === 'yes' ? 'banner-estimate' : 'banner-fix'}`}>
+      {fact || tou.mode === 'check' ? (
+        <div class={`banner ${fact ? 'banner-estimate' : 'banner-fix'}`}>
           <strong>
-            {tp(lang, tou.compulsory === 'yes' ? 'touCompulsoryYes' : 'touCompulsoryCheck', {
+            {tp(lang, fact ? 'touCompulsoryYes' : 'touCompulsoryCheck', {
               date: deadline,
             })}
           </strong>
@@ -269,8 +274,17 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </div>
       ) : null}
 
-      {tou.problem === 'mixed_couple' ? (
-        <p class="banner banner-fix">{tp(lang, 'touMixed')}</p>
+      {tou.problem && tou.problem !== 'no_income' ? (
+        <p class="banner banner-fix">
+          {tp(
+            lang,
+            tou.problem === 'mixed_couple'
+              ? 'touMixed'
+              : tou.problem === 'benefits_unknown'
+                ? 'touBenefitsUnknown'
+                : 'touIncomeNotCounted',
+          )}
+        </p>
       ) : (
         <div class="pl-figures">
           <div class="pl-figure">
@@ -374,9 +388,9 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
         </details>
       ) : null}
 
-      {tou.compulsory !== 'yes' ? (
+      {!fact ? (
         <div class="pl-questions">
-          {tou.compulsory === 'unknown' ? (
+          {tou.mode === 'unknown' ? (
             <p class="small-text">{tp(lang, 'touCompulsoryUnknown')}</p>
           ) : null}
           {(

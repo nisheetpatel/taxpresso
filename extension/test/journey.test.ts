@@ -90,11 +90,17 @@ const KELLER: [string, unknown][] = [
   ['income_sources:p2', ['salary']],
   ['employers:p1', 1],
   ['employers:p2', 1],
-  ['taxed_at_source:p1', true],
-  ['taxed_at_source:p2', true],
+  // Both with a B permit, paid by employers in Switzerland: taxed at source, worked out.
+  ['residence:p1', 'permit_other'],
+  ['residence:p2', 'permit_other'],
+  ['employer_in_switzerland:p1', true],
+  ['employer_in_switzerland:p2', true],
   ['tou:p1', 'already'],
   ['tou:p2', 'already'],
 ];
+
+/** The facts of "About you" besides the tax-at-source sentences (./source-tax.test.ts). */
+const touFacts = (about: { id: string }[]) => about.filter((f) => f.id !== 'source_tax');
 
 /** Every other question, answered with its first plain option (no, none, zero). */
 async function answerTheRest() {
@@ -153,14 +159,15 @@ describe('the next step and the stages', () => {
     const call = await connect();
     for (const [id, value] of KELLER) await ws.answer(id, value, 'chat');
     let status = structured<Status>(await call('get_status'));
-    expect(status.about).toEqual(['tou_already']);
+    expect(status.about.filter((id) => id !== 'source_tax')).toEqual(['tou_already']);
+    expect(status.about).toContain('source_tax');
     expect(status.next.id).toBe('questions');
     await answerTheRest();
     status = structured<Status>(await call('get_status'));
     expect(status.next).toMatchObject({ id: 'income', stage: 'tax' });
     expect(status.nextStep).toMatch(/Never|plan\.gross_salary/);
     const s = await state();
-    expect(s.journey.about).toEqual([{ id: 'tou_already', who: 'both', vars: {} }]);
+    expect(touFacts(s.journey.about)).toEqual([{ id: 'tou_already', who: 'both', vars: {} }]);
     expect(s.journey.touChoice).toBe(false);
     expect(s.journey.hasFigures).toBe(false);
     expect(s.journey.savings).toBeNull();
@@ -286,8 +293,9 @@ describe('the next step and the stages', () => {
       ['moved', 'no'],
       ['income_sources:p1', ['salary']],
       ['employers:p1', 1],
-      ['taxed_at_source:p1', true],
-      ['tou:p1', 'considering'],
+      ['residence:p1', 'permit_other'],
+      ['employer_in_switzerland:p1', true],
+      ['tou:p1', 'no'],
     ] as const) {
       await ws.answer(id, value, 'chat');
     }
@@ -298,12 +306,14 @@ describe('the next step and the stages', () => {
     await planningReady(ws);
     let s = await state();
     expect(s.journey.touChoice).toBe(true);
-    expect(s.journey.about).toEqual([]);
+    expect(touFacts(s.journey.about)).toEqual([]);
     // A gross salary over the limit makes TOU compulsory: a fact, no card.
     await call('set_fact', { key: 'plan.gross_salary', value: 150_000 });
     s = await state();
     expect(s.journey.touChoice).toBe(false);
-    expect(s.journey.about).toMatchObject([{ id: 'tou_compulsory', vars: { date: '2027-03-31' } }]);
+    expect(touFacts(s.journey.about)).toMatchObject([
+      { id: 'tou_compulsory', vars: { date: '2027-03-31' } },
+    ]);
   });
 });
 

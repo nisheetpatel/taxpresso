@@ -62,7 +62,7 @@ const SINGLE_EMPLOYEE = {
   moved: 'no',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': 'no',
+  'residence:p1': 'swiss',
   'pillar3a:p1': 'yes',
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -246,7 +246,7 @@ describe('Geneva questionnaire 2026', () => {
       moved: 'no',
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
-      'taxed_at_source:p1': false,
+      'residence:p1': 'permit_c',
       'pillar3a:p1': false,
       'lpp_buyin:p1': false,
     };
@@ -299,7 +299,7 @@ describe('Geneva questionnaire 2026', () => {
       moved: 'no',
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
-      'taxed_at_source:p1': false,
+      'residence:p1': 'permit_c',
       'pillar3a:p1': false,
       'lpp_buyin:p1': false,
       'commute:p1': 'public_transport_long',
@@ -494,6 +494,8 @@ describe('pension capital (prestations en capital, 98.12)', () => {
     moved: 'no',
     'income_sources:p1': ['pension'],
     'income_sources:p2': ['pension'],
+    // Swiss: not taxed at source; the spouse is not asked.
+    'residence:p1': 'swiss',
     banks: 0,
     crypto: false,
     payments: [],
@@ -736,5 +738,215 @@ describe('the questions every canton shares', () => {
     const answered = e.snapshot(ledger, { 'profile.canton': 'ZH' });
     expect(answered.slots.find((s) => s.id === 'canton')).toMatchObject({ value: 'GE' });
     expect(answered.slots.find((s) => s.id === 'canton')?.assumed).toBeUndefined();
+  });
+});
+
+describe('tax at source, worked out from plain facts (never asked where the law settles it)', () => {
+  /** Where the Geneva household lives (synthetic). */
+  const START = { commune: 'Vernier', moved: 'no' };
+  const derived = (e: QuestionnaireEngine, ledger: Ledger, id: string) =>
+    e.snapshot(ledger).derived.find((s) => s.id === id);
+
+  it('both spouses with a B permit, one salaried, the other on unemployment: both at source', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['replacement_income'],
+      'employers:p1': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+      'residence:p2': 'permit_other',
+      'employer_in_switzerland:p2': true,
+    });
+    // The spouse on benefits is asked the permit too; "taxed at source?" is never asked.
+    expect(asked).toContain('residence:p2');
+    expect(asked.filter((id) => id.startsWith('taxed_at_source'))).toEqual([]);
+    for (const p of ['p1', 'p2']) {
+      expect(derived(e, ledger, `taxed_at_source:${p}`)).toMatchObject({
+        value: true,
+        derived: {
+          source:
+            'ge-na-law-lisp art. 1 al. 1, art. 2 al. 2 let. a and b; ge-na-law-risp art. 3 and 5',
+        },
+      });
+    }
+    expect(e.snapshot(ledger).answers.get('profile.taxed_at_source|p2')).toBe(true);
+    // Next: whether TOU is already in place, a fact (never "thinking about it").
+    const next = e.next(e.snapshot(ledger))!;
+    expect(next.id).toBe('tou:p1');
+    expect(e.render(next, e.snapshot(ledger), 'en').options?.map((o) => o.value)).toEqual([
+      'already',
+      'no',
+    ]);
+    expect(e.chips(e.snapshot(ledger), 'en')).toEqual(
+      expect.arrayContaining(['Taxed at source', 'Partner: Taxed at source']),
+    );
+  });
+
+  it('one spouse Swiss, the other with a B permit: neither at source, the spouse not asked', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 1,
+      children_custody: 'with_household',
+      childcare: 'none',
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+      'residence:p1': 'swiss',
+    });
+    expect(asked).not.toContain('residence:p2');
+    for (const p of ['p1', 'p2']) {
+      const slot = derived(e, ledger, `taxed_at_source:${p}`)!;
+      expect(slot.value).toBe(false);
+      expect(slot.derived?.because.en).toMatch(/married to one of them/);
+    }
+    expect(e.next(e.snapshot(ledger))?.id).toBe('pillar3a:p1');
+    // A question that follows from the others can't be answered over them.
+    expect(() => e.answer(ledger, 'taxed_at_source:p2', true, USER)).toThrow(
+      /follows from the other answers/,
+    );
+  });
+
+  it('a single parent with a B permit and two children: at source, then who lives with whom', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 2,
+      children_custody: 'with_household',
+      childcare: 'creche_or_daycare',
+      ...START,
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+      'tou:p1': 'no',
+    });
+    expect(derived(e, ledger, 'taxed_at_source:p1')?.value).toBe(true);
+    const next = e.next(e.snapshot(ledger))!;
+    expect(next.id).toBe('lives_with_other_parent');
+    expect(e.render(next, e.snapshot(ledger), 'fr').text).toBe(
+      `En 2026, viviez-vous en couple avec l’autre parent des enfants, sans être mariés${NBSP}?`,
+    );
+  });
+
+  it('a couple already in TOU says so once each, as a fact', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+      'residence:p2': 'permit_other',
+      'employer_in_switzerland:p2': true,
+      'tou:p1': 'already',
+      'tou:p2': 'already',
+    });
+    expect(e.chips(e.snapshot(ledger), 'en')).toEqual(
+      expect.arrayContaining(['TOU', 'Partner: TOU']),
+    );
+    expect(e.next(e.snapshot(ledger))?.id).toBe('pillar3a:p1');
+  });
+
+  it('asks where the law leaves it open: a legitimation card, or a pension as the only income', () => {
+    const e = engine();
+    const card = new Ledger(2026, KEYS_2026);
+    walk(e, card, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'residence:p1': 'other',
+    });
+    expect(e.next(e.snapshot(card))?.id).toBe('taxed_at_source:p1');
+    e.answer(card, 'taxed_at_source:p1', false, USER);
+    expect(e.snapshot(card).answers.get('profile.taxed_at_source|p1')).toBe(false);
+
+    // A salary paid directly by an employer abroad is taxed ordinarily (RISP art. 5): asked.
+    const abroad = new Ledger(2026, KEYS_2026);
+    walk(e, abroad, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': false,
+    });
+    expect(e.next(e.snapshot(abroad))?.id).toBe('taxed_at_source:p1');
+
+    const pension = new Ledger(2026, KEYS_2026);
+    walk(e, pension, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['pension'],
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+    });
+    const slot = e.next(e.snapshot(pension))!;
+    expect(slot.id).toBe('taxed_at_source:p1');
+    expect(e.render(slot, e.snapshot(pension), 'en').text).toBe(
+      'In 2026, was tax taken at source from your income?',
+    );
+    // No salary, benefits or pension: no permit question at all.
+    const none = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, none, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['alimony'],
+    });
+    expect(asked).not.toContain('residence:p1');
+    expect(e.snapshot(none).answers.has('profile.taxed_at_source|p1')).toBe(false);
+  });
+
+  it('asks the spouse only when the first person is neither Swiss nor holds a C permit', () => {
+    const e = engine();
+    const answers = (p1: string) => ({
+      canton: 'GE',
+      civil_status: 'registered_partnership',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+      'residence:p1': p1,
+    });
+    for (const [p1, askedSpouse] of [
+      ['swiss', false],
+      ['permit_c', false],
+      ['permit_other', true],
+      ['other', true],
+    ] as const) {
+      const ledger = new Ledger(2026, KEYS_2026);
+      walk(e, ledger, answers(p1));
+      const ids = e.snapshot(ledger).slots.map((s) => s.id);
+      expect(ids.includes('residence:p2'), p1).toBe(askedSpouse);
+    }
   });
 });

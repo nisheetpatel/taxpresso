@@ -19,22 +19,21 @@ import {
   touPlan,
   type TouWithheld,
 } from '@taxpresso/optimizer';
-import {
-  sourceTax,
-  SourceTaxError,
-  sourceTaxTariffs,
-  TOU_FACTS,
-  touDeadline,
-} from '@taxpresso/rules-ge';
+import { SOURCE_TAX_FACTS, sourceTaxTariffs, TOU_FACTS, touDeadline } from '@taxpresso/rules-ge';
 import { LPP_BUYIN_FACTS, PILLAR3A_CATCHUP_FACTS } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
 import { CANTONS, type CantonEntry } from './cantons.js';
+import { type SourceTax, sourceTaxLines, sourceTaxOf } from './source-tax.js';
 import { PLAN_KEYS, WorkspaceError, type Via, type Workspace } from './workspace.js';
 import { isYearOver } from './year-over.js';
 import { CURRENT_TAX_YEAR } from './config.js';
 
 type Who = 'p1' | 'p2';
 const WORK = ['salary', 'replacement_income', 'self_employment'];
+/** Income of one's own, for a spouse not taxed at source (a mixed couple). */
+const OWN_INCOME = ['salary', 'replacement_income', 'pension', 'self_employment'];
+/** Income the comparison's ordinary tax doesn't count yet: no comparison rather than a wrong one. */
+const UNCOUNTED = ['pension', 'self_employment'];
 
 export interface StoredDecision extends Decision {
   via: Via;
@@ -286,28 +285,16 @@ function touViewOf(ws: Workspace, today: string): TouView {
   }
   const snap = ws.snapshot();
   const answer = (key: string, person: Who) => snap.answers.get(`${key}|${person}`);
+  // Who is taxed at source, the barème and the tax withheld: facts, never asked (./source-tax.ts).
+  const st = sourceTaxOf(ws);
   let unconfirmed = householdUnconfirmed;
   const deductions: Deduction[] = [];
   const people: TouPerson[] = h.people.map((p) => {
     const sources = answer('profile.income_sources', p.person);
-    const certGross = fromDocuments(ws, 'salary.gross', p.person);
-    const gross = certGross?.centimes ?? planMoney(ws, 'plan.gross_salary', p.person);
-    const certTax = fromDocuments(ws, 'salary.source_tax', p.person);
-    unconfirmed ||= Boolean(certGross?.unconfirmed || certTax?.unconfirmed);
-    let withheld: TouWithheld | undefined;
-    const stated = planMoney(ws, 'plan.source_tax_withheld', p.person);
-    const tariff = ws.ledger.get('plan.source_tax_tariff', p.person)?.value;
-    if (certTax) withheld = { centimes: certTax.centimes, from: 'certificate' };
-    else if (stated !== undefined) withheld = { centimes: stated, from: 'stated' };
-    else if (typeof tariff === 'string' && gross !== undefined) {
-      try {
-        const t = sourceTax(ws.engine.taxYear, tariff, gross, 'year');
-        withheld = { centimes: t.taxCentimes, from: 'tariff', tariff: t.tariff };
-      } catch (err) {
-        // Outside the published tables: no estimate rather than a guess.
-        if (!(err instanceof SourceTaxError)) throw err;
-      }
-    }
+    const s = st?.people.find((x) => x.person === p.person);
+    const atSource = answer('profile.taxed_at_source', p.person) === true;
+    if (atSource) unconfirmed ||= s?.unconfirmed === true;
+    const list = Array.isArray(sources) ? sources : [];
     // Deductions that only count with TOU: what was paid into 3a, pension fund buy-ins.
     if (p.paidCentimes > 0) {
       deductions.push({ person: p.person, kind: 'pillar3a', centimes: p.paidCentimes });
@@ -317,21 +304,46 @@ function touViewOf(ws: Workspace, today: string): TouView {
       planMoney(ws, 'plan.lpp_buyin_amount', p.person);
     if (buyIn) deductions.push({ person: p.person, kind: 'lpp_buyin', centimes: buyIn });
     const tou = answer('profile.tou', p.person);
+    const w = s?.withheld;
     return {
       person: p.person,
-      taxedAtSource: answer('profile.taxed_at_source', p.person) === true,
-      ...(tou === 'already' || tou === 'considering' || tou === 'no' ? { tou } : {}),
-      ...(gross !== undefined ? { grossCentimes: gross } : {}),
-      ...(Array.isArray(sources) ? { working: sources.some((s) => WORK.includes(s)) } : {}),
-      ...(withheld ? { withheld } : {}),
+      taxedAtSource: atSource,
+      ...(tou === 'already' || tou === 'no' ? { tou } : {}),
+      ...(s?.grossCentimes !== undefined ? { grossCentimes: s.grossCentimes } : {}),
+      ...(s && s.grossAtLeastCentimes > 0 ? { grossAtLeastCentimes: s.grossAtLeastCentimes } : {}),
+      ...(Array.isArray(sources) ? { working: list.some((x) => WORK.includes(x)) } : {}),
+      // Not taxed at source, with income of their own: Taxpresso doesn't compare such a couple.
+      ...(!atSource && list.some((x) => OWN_INCOME.includes(x)) ? { ownIncome: true } : {}),
+      // A pension or self-employment: the ordinary tax of the comparison doesn't count them yet.
+      ...(list.some((x) => UNCOUNTED.includes(x)) ? { uncounted: true } : {}),
+      ...(list.includes('replacement_income') && !s?.benefitsDocumented
+        ? { benefitsUnknown: true }
+        : {}),
+      ...(atSource && w
+        ? {
+            withheld: {
+              centimes: w.centimes,
+              from: w.from,
+              ...(w.tariff ? { tariff: w.tariff } : {}),
+            } satisfies TouWithheld,
+          }
+        : {}),
     };
   });
+  // The ordinary tax counts the benefits the insurance paid itself (rubric 11.50).
+  const withBenefits: HouseholdInput = {
+    ...h,
+    people: h.people.map((p) => {
+      const b = st?.people.find((x) => x.person === p.person)?.benefits?.centimes;
+      return b ? { ...p, replacementCentimes: b } : p;
+    }),
+  };
   const otherIncome = planFlag(ws, 'plan.tou_other_income');
   const taxableWealth = planFlag(ws, 'plan.tou_taxable_wealth');
   const result = touPlan({
     taxYear: ws.engine.taxYear,
     today,
-    household: h,
+    household: withBenefits,
     people,
     ...(otherIncome !== undefined ? { otherIncome } : {}),
     ...(taxableWealth !== undefined ? { taxableWealth } : {}),
@@ -400,9 +412,19 @@ export async function decide(
         `The deadline (${tou.deadline}) has passed: there is nothing to decide.`,
       );
     }
-    if (tou.compulsory === 'yes') {
+    if (tou.mode === 'in_place') {
+      throw new WorkspaceError(
+        `TOU is already in place for this household: it stays every year while taxed at source, and the tax office sends the declaration (${SOURCE_TAX_FACTS.inPlace}). There is no choice to record.`,
+      );
+    }
+    if (tou.mode === 'compulsory') {
       throw new WorkspaceError(
         `TOU is compulsory here: it must be announced by ${tou.deadline}. There is no choice to record.`,
+      );
+    }
+    if (tou.mode === 'unknown') {
+      throw new WorkspaceError(
+        `Taxpresso needs to know first whether TOU is compulsory: ${stillOpen(tou).join('; ')}. Then the user decides.`,
       );
     }
     if (tou.differenceCentimes === undefined) {
@@ -444,6 +466,7 @@ export function planningView(ws: Workspace) {
 function planningViewOf(ws: Workspace) {
   const snap = ws.snapshot();
   const tou = touView(ws);
+  const st = sourceTaxOf(ws);
   const canton = ws.canton().canton;
   // TOU is Geneva's: another canton's taxation at source is not supported yet.
   const genevaOnly = canton !== undefined && !canton.tou;
@@ -469,9 +492,15 @@ function planningViewOf(ws: Workspace) {
     catchUp: catchUpView(ws),
     tou,
     /** Taxed at source without a compulsory TOU: 3a and buy-ins lower the tax only with TOU. */
-    needsTou: tou.applies && tou.compulsory !== 'yes' && tou.decision?.choice !== 'request',
+    needsTou:
+      tou.applies &&
+      tou.mode !== 'in_place' &&
+      tou.mode !== 'compulsory' &&
+      tou.decision?.choice !== 'request',
     /** Another canton: TOU is Geneva's, and taxation at source is not supported there yet. */
     ...(genevaOnly ? { touGenevaOnly: true as const } : {}),
+    /** Who is taxed at source, the barème and the tax withheld (./source-tax.ts): Geneva, when someone is. */
+    ...(st?.any ? { sourceTax: st } : {}),
   };
 }
 
@@ -562,7 +591,8 @@ const WHO: Record<string, string> = { p1: 'you', p2: 'your spouse or partner' };
 const chf = (centimes: number) => `CHF ${Math.round(centimes / 100).toLocaleString('en-US')}`;
 const about = (centimes: number) => chf(Math.round(centimes / 1000) * 1000);
 const TOU_REASON_TEXT: Record<string, string> = {
-  gross: 'gross salary taxed at source of CHF 120,000 or more for one person',
+  gross:
+    'gross income taxed at source (salary, and benefits paid by an insurance) of CHF 120,000 or more for one person in the year',
   other_income: 'other income not taxed at source of CHF 3,000 or more (plan.tou_other_income)',
   taxable_wealth: 'taxable wealth on 31 December (plan.tou_taxable_wealth)',
   previous_tou: 'already taxed ordinarily (TOU) before',
@@ -603,16 +633,24 @@ export function cantonAssumptionText(a: string): string | undefined {
   }
   return undefined;
 }
-const STATUS_TEXT: Record<string, string> = {
-  yes: 'yes',
-  no: 'no',
-  unknown: 'not known yet',
-  check: 'to check with the AFC',
+/** What decides each compulsory case not known yet, and how Taxpresso learns it: plain facts. */
+const OPEN_HOW: Record<string, string> = {
+  gross:
+    'the gross taxed at source of each person (the salary certificate, the benefits attestation, or a rough salary saved with set_fact plan.gross_salary)',
+  other_income:
+    'whether the household had CHF 3,000 or more of income not taxed at source, such as interest, dividends, alimony received or rent (ask yes or no; set_fact plan.tou_other_income, or the TOU card)',
+  taxable_wealth:
+    'whether its wealth on 31 December was over the limits the TOU card shows (ask yes or no; set_fact plan.tou_taxable_wealth, or the TOU card)',
+  previous_tou:
+    'whether the tax office already taxed them ordinarily (TOU) before (the TOU question)',
+  spouse_without_activity: 'the income of each spouse (the income question)',
 };
+const stillOpen = (tou: TouView) =>
+  tou.reasons.filter((r) => r.status === 'unknown').map((r) => OPEN_HOW[r.id] ?? r.id);
 
 const withheldFrom = (p: { from: string; tariff?: string }) =>
   p.from === 'certificate'
-    ? 'salary certificates'
+    ? 'the documents (salary certificate box 12, benefits attestation)'
     : p.from === 'stated'
       ? 'what the user said'
       : `the ${p.tariff} tariff on the gross salary`;
@@ -683,24 +721,59 @@ function catchUpText(cu: CatchUpResult, year: number, canton: CantonEntry | unde
   return lines;
 }
 
-function touText(tou: TouView): string[] {
-  const lines = ['', 'TOU (taxation ordinaire ultérieure), for people taxed at source:'];
-  if (tou.withheld) {
-    const parts = tou.withheld.people.map(
-      (p) => `${WHO[p.person]} ${chf(p.centimes)} from ${withheldFrom(p)}`,
-    );
+function touText(tou: TouView, st: SourceTax | undefined): string[] {
+  const lines = [
+    '',
+    'Tax at source (impôt à la source): facts Taxpresso worked out, never ask for them:',
+  ];
+  for (const l of st ? sourceTaxLines(st, 'en') : []) {
     lines.push(
-      `- Tax withheld at source: ${chf(tou.withheld.totalCentimes)} (${parts.join('; ')})`,
+      `- ${l.text}${l.estimate ? ' Say it is an estimate.' : ''}${l.source ? ` (${l.source})` : ''}`,
     );
   }
   if (tou.missingWithheld.length) {
     lines.push(
-      `- Tax withheld not known for ${tou.missingWithheld.map((p) => WHO[p]).join(' and ')}: salary certificate box 12, or the user's figure (plan.source_tax_withheld), or the tariff code on the payslip (plan.source_tax_tariff).`,
+      `- What gives the tax withheld for ${tou.missingWithheld.map((p) => WHO[p]).join(' and ')}: the documents above. If a payslip shows another barème, save it with set_fact (plan.source_tax_tariff); if an official statement (attestation-quittance) shows the year's tax, save it (plan.source_tax_withheld). Never ask the user for either.`,
+    );
+  }
+  lines.push('', 'TOU (taxation ordinaire ultérieure):');
+  const reasons = tou.reasons
+    .filter((r) => r.status === 'yes' || r.status === 'check')
+    .map((r) => `${TOU_REASON_TEXT[r.id]} (${r.source})`);
+  const credited = `the tax withheld at source counts towards the ordinary tax (${tou.facts.withheldCredited})`;
+  if (tou.mode === 'in_place') {
+    lines.push(
+      `- A fact, not a choice: TOU is already in place and stays every year while taxed at source, the spouse included; the tax office sends the declaration each year, no DRIS/TOU form needed (${SOURCE_TAX_FACTS.inPlace}); ${credited}. Nothing to compare or decide: prepare the ordinary return.`,
+    );
+    return lines;
+  }
+  if (tou.mode === 'compulsory') {
+    lines.push(
+      `- A fact, not a choice: TOU is compulsory (${reasons.join('; ')}). The user announces it by ${tou.deadline}${tou.deadlinePassed ? ' (passed)' : ''} with the DRIS/TOU form in their e-démarches space (${tou.facts.howToRequest}); ${credited}. Nothing to compare or decide: prepare the ordinary return.`,
+    );
+    return lines;
+  }
+  if (tou.mode === 'unknown') {
+    lines.push(
+      `- Whether TOU is compulsory isn't known yet (${tou.facts.compulsoryCases}): ${stillOpen(tou).join('; ')}. No decision before that.`,
+    );
+  }
+  if (tou.mode === 'check') {
+    lines.push(
+      `- TOU may be compulsory: ${reasons.join('; ')}. Suggest asking the tax office (AFC) before deciding.`,
     );
   }
   if (tou.problem === 'mixed_couple') {
     lines.push(
-      '- Only one of the couple is taxed at source: no comparison; suggest asking the AFC.',
+      `- Only one of the couple is taxed at source; the other isn't and has income of their own (for example an international civil servant). Taxpresso doesn't compare TOU for this household: suggest asking the AFC (${SOURCE_TAX_FACTS.mixedCouple}).`,
+    );
+  } else if (tou.problem === 'benefits_unknown') {
+    lines.push(
+      '- No comparison yet: the benefits attestation (amount and tax taken at source) is missing, and the ordinary tax would leave the benefits out.',
+    );
+  } else if (tou.problem === 'income_not_counted') {
+    lines.push(
+      '- No comparison: there is a pension (or self-employment income) in the household, which the comparison does not count yet. The tax office (AFC) can say which is better.',
     );
   }
   if (tou.ordinary) {
@@ -708,7 +781,10 @@ function touText(tou: TouView): string[] {
       `- Ordinary tax, estimated: ${chf(tou.ordinary.totalCentimes)}. Assumptions: ${tou.assumptions.map((a) => TOU_ASSUMPTION_TEXT[a] ?? cantonAssumptionText(a) ?? a).join(' ')}`,
     );
   }
-  if (tou.differenceCentimes !== undefined) {
+  if (tou.withheld && tou.differenceCentimes !== undefined) {
+    lines.push(
+      `- Tax withheld at source: ${chf(tou.withheld.totalCentimes)} (${tou.withheld.people.map((p) => `${WHO[p.person]} ${chf(p.centimes)} from ${withheldFrom(p)}`).join('; ')}).`,
+    );
     const d = tou.differenceCentimes;
     lines.push(
       d >= 0
@@ -716,12 +792,8 @@ function touText(tou: TouView): string[] {
         : `- With TOU: about ${about(-d)} more to pay. Say it is an estimate.`,
     );
   }
-  const reasons = tou.reasons
-    .filter((r) => r.status !== 'no')
-    .map((r) => `${TOU_REASON_TEXT[r.id]}: ${STATUS_TEXT[r.status]}`);
   lines.push(
-    `- Compulsory: ${STATUS_TEXT[tou.compulsory]} (${reasons.join('; ') || 'none of the cases applies'}; ${tou.facts.compulsoryCases})`,
-    `- Deadline: ${tou.deadline}${tou.deadlinePassed ? ' (passed)' : ''} (${tou.facts.deadline}). A request can't be withdrawn, even if the result is worse (${tou.facts.irrevocable}), and it applies every year after while taxed at source, the spouse included (${tou.facts.everyYearAfter}).`,
+    `- A choice only once none of the compulsory cases applies (${tou.facts.compulsoryCases}). Deadline: ${tou.deadline}${tou.deadlinePassed ? ' (passed)' : ''} (${tou.facts.deadline}). A request can't be withdrawn, even if the result is worse (${tou.facts.irrevocable}), and it applies every year after while taxed at source, the spouse included (${tou.facts.everyYearAfter}).`,
     tou.decision
       ? `- Decision recorded: ${tou.decision.choice === 'request' ? 'will request TOU' : 'not this year'} (${tou.decision.decidedAt.slice(0, 10)}).`
       : '- No decision yet. Record only what the user explicitly chooses, with decide_optimization.',
@@ -744,7 +816,7 @@ export function planningText(view: PlanningView, year: number, canton?: CantonEn
       : []),
     ...lppText(view.lpp, year, other),
     ...catchUpText(view.catchUp, year, other),
-    ...(view.tou.applies ? touText(view.tou) : []),
+    ...(view.tou.applies ? touText(view.tou, view.sourceTax) : []),
     ...(other
       ? [
           '',

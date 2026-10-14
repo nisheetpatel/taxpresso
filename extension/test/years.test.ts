@@ -204,7 +204,7 @@ const GIVEN: Record<string, unknown> = {
   moved: 'no',
   income_sources: ['salary'],
   employers: 1,
-  taxed_at_source: false,
+  residence: 'swiss',
   pillar3a: true,
   lpp_buyin: false,
   commute: 'public_transport',

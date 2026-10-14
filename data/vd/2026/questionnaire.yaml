@@ -553,6 +553,10 @@ questions:
       de: 'Jeder gibt dir einen Lohnausweis (certificat de salaire), den die Waadt mit der Steuererklärung verlangt. Auf dem Anhang 03: relevé des certificats de salaire (Liste der Lohnausweise).'
       it: 'Ognuno ti dà un certificato di salario (certificat de salaire), che Vaud chiede con la dichiarazione. Nell’allegato 03: relevé des certificats de salaire.'
 
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
+
   # People taxed at source file an ordinary return when they must, or ask for it in writing by
   # 31 March of the next year (taxation ordinaire ultérieure, TOU): vd-2025-guide p. 8 and 9;
   # vd-na-tou-request. Not covered by rules-vd.

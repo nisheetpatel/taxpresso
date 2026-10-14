@@ -113,6 +113,18 @@ export const KEYS_ATTESTATIONS_2026 = {
     official: 'indemnités versées par l’employeur',
     source: `${WAGE_GUIDE} p. 13 (Cm 34, 35)`,
   },
+  // Benefits paid by the insurance fund itself are taxed at source by the fund, which states the tax
+  // it withheld (ch-na-law-lifd p. 50, art. 88 al. 1 let. b; ge-2026-source-directives p. 28 and
+  // p. 50, ch. 5.2.2.5 and 8.1.3.4).
+  'replacement.source_tax': money(
+    true,
+    {
+      en: 'Tax withheld at source from the benefits',
+      fr: 'Impôt retenu à la source sur les indemnités',
+    },
+    'Impôt à la source retenu',
+    'ch-na-law-lifd p. 50 (art. 88 al. 1 let. b)',
+  ),
   'pension.amount': money(
     true,
     { en: 'Pension received', fr: 'Rente reçue' },
@@ -159,6 +171,7 @@ export const ATTESTATION_FIELDS_2026 = {
     'replacement.amount',
     'replacement.type',
     'replacement.paid_to_employer',
+    'replacement.source_tax',
   ],
   pension_certificate: ['pension.amount', 'pension.type'],
 } as const satisfies Partial<Record<DocumentKind, readonly AttestationKey[]>>;

@@ -58,13 +58,22 @@ export interface Slot {
    * its commune): it counts as the answer until the user answers the question themselves.
    */
   assumed?: boolean;
+  /**
+   * Never asked: the law settles it from the other answers (the question's `derive`), with why in
+   * plain words and the source. The user changes the answers it follows from, not this one.
+   */
+  derived?: { because: Text; source: string };
 }
 
 export interface Snapshot {
   people: Person[];
-  /** Questions that apply, in order, with their current answers. */
+  /** Questions that apply and are asked, in order, with their current answers. */
   slots: Slot[];
-  /** Effective answers: only those of questions that still apply. */
+  /** Questions answered from the other answers (Slot.derived), never asked. */
+  derived: Slot[];
+  /** Both, in the questionnaire's order. */
+  all: Slot[];
+  /** Effective answers: only those of questions that still apply, the derived ones included. */
   answers: ReadonlyMap<string, FactValue>;
 }
 
@@ -177,6 +186,11 @@ export class QuestionnaireEngine {
         }
       }
       checkCondition(q.when, q.id);
+      for (const [i, rule] of (q.derive ?? []).entries()) {
+        checkCondition(rule.when, `${q.id} derive ${i}`);
+        const why = invalidValue(def, rule.value);
+        if (why) problems.push(`${q.id} derive ${i}: ${why}`);
+      }
     }
     for (const r of this.file.requirements) {
       checkCondition(r.when, `requirement ${r.id}`);
@@ -206,7 +220,7 @@ export class QuestionnaireEngine {
         (_, i) => `child${i + 1}` as const,
       );
     };
-    const slots: Slot[] = [];
+    const all: Slot[] = [];
     for (const question of this.file.questions) {
       const owners: Owner[] = question.perPerson
         ? people()
@@ -215,6 +229,21 @@ export class QuestionnaireEngine {
           : ['household'];
       for (const person of owners) {
         if (question.when && !this.#holds(question.when, person, answers, people())) continue;
+        const id =
+          question.perPerson || question.perChild ? `${question.id}:${person}` : question.id;
+        // Settled by the law from the answers so far: never asked, whatever was stored before.
+        const rule = question.derive?.find((r) => this.#holds(r.when, person, answers, people()));
+        if (rule) {
+          answers.set(slotKey(question.key, person), rule.value);
+          all.push({
+            id,
+            question,
+            person,
+            value: rule.value,
+            derived: { because: rule.because, source: rule.source },
+          });
+          continue;
+        }
         const stored = ledger.get(question.key, person);
         // An answer the key no longer accepts (an option that was replaced) is asked again.
         const def = this.keys[question.key];
@@ -242,7 +271,7 @@ export class QuestionnaireEngine {
               : assumed[question.key]
             : undefined;
         const slot: Slot = {
-          id: question.perPerson || question.perChild ? `${question.id}:${person}` : question.id,
+          id,
           question,
           person,
           ...(answer ? { value: answer.value, fact: answer } : {}),
@@ -251,10 +280,16 @@ export class QuestionnaireEngine {
         };
         if (answer) answers.set(slotKey(question.key, person), answer.value);
         else if (taken !== undefined) answers.set(slotKey(question.key, person), taken);
-        slots.push(slot);
+        all.push(slot);
       }
     }
-    return { people: people(), slots, answers };
+    return {
+      people: people(),
+      slots: all.filter((s) => !s.derived),
+      derived: all.filter((s) => s.derived),
+      all,
+      answers,
+    };
   }
 
   /** The next question: the first unanswered one, skipped ones last. */
@@ -265,7 +300,14 @@ export class QuestionnaireEngine {
 
   /** Stores an answer as a "stated" fact. The question must apply right now. */
   answer(ledger: Ledger, slotId: string, raw: unknown, source: FactSource): Fact {
-    const slot = this.snapshot(ledger).slots.find((s) => s.id === slotId);
+    const snapshot = this.snapshot(ledger);
+    const derived = snapshot.derived.find((s) => s.id === slotId);
+    if (derived?.derived) {
+      throw new QuestionnaireError(
+        `${slotId} follows from the other answers: ${derived.derived.because.en} Change those answers instead.`,
+      );
+    }
+    const slot = snapshot.slots.find((s) => s.id === slotId);
     if (!slot) throw new QuestionnaireError(`Question ${slotId} doesn't apply now.`);
     const value = this.#coerce(slot.question, raw);
     try {
@@ -342,7 +384,7 @@ export class QuestionnaireEngine {
   /** Answers that put the return outside what Taxpresso supports (SPEC.md section 1). */
   notSupported(snapshot: Snapshot): { slotId: string; what: Text }[] {
     const out: { slotId: string; what: Text }[] = [];
-    for (const slot of snapshot.slots) {
+    for (const slot of snapshot.all) {
       const q = slot.question;
       if (q.type === 'yesno' && slot.value === true && q.yesNotSupported) {
         out.push({ slotId: slot.id, what: q.yesNotSupported });
@@ -357,7 +399,7 @@ export class QuestionnaireEngine {
   /** Short summaries of the answers, like the chips on screen 1. */
   chips(snapshot: Snapshot, lang: Lang): string[] {
     const chips: string[] = [];
-    for (const slot of snapshot.slots) {
+    for (const slot of snapshot.all) {
       if (slot.value === undefined) continue;
       const q = slot.question;
       let texts: string[] = [];
@@ -474,6 +516,7 @@ export class QuestionnaireEngine {
   ): boolean {
     if (c.any) return c.any.some((x) => this.#holds(x, person, answers, people));
     if (c.all) return c.all.every((x) => this.#holds(x, person, answers, people));
+    if (c.person) return person === c.person;
     const key = c.key!;
     const def = this.keys[key];
     if (!def) return false;

@@ -282,10 +282,17 @@ export function Facts({
   if (!facts.length) return null;
   return (
     <ul class="facts">
-      {facts.map((f) => {
+      {facts.map((f, i) => {
         const key = `fact.${f.id}`;
-        const text =
-          f.id === 'tou_already'
+        // A tax-at-source fact comes worded in every language, with its source.
+        const own = f.text
+          ? lang === 'de' || lang === 'it'
+            ? (f.text[lang] ?? f.text.en)
+            : f.text[lang]
+          : '';
+        const text = own
+          ? own
+          : f.id === 'tou_already'
             ? tj(lang, `fact.tou_already.${f.who ?? 'p1'}`)
             : f.id === 'tou_geneva_only'
               ? tp(lang, pck('touGenevaOnly', state.canton?.code))
@@ -294,8 +301,10 @@ export function Facts({
                 : '';
         if (!text) return null;
         return (
-          <li key={f.id} class="fact">
+          <li key={`${f.id}-${i}`} class="fact">
             <span>{text}</span>
+            {f.estimate ? <span class="chip chip-estimate">{tp(lang, 'estimate')}</span> : null}
+            {f.source ? <span class="muted small-text tnum">{f.source}</span> : null}
             {f.id === 'tou_chosen_request' || f.id === 'tou_chosen_decline' ? (
               <button type="button" class="link" onClick={() => onOpen('save')}>
                 {tj(lang, 'changeChoice')}

@@ -116,8 +116,19 @@ export interface Journey {
   /** The stage open by default. */
   stage: StageId;
   stages: { id: StageId; status: string; vars: JourneyVars }[];
-  /** Facts that need no decision, shown as sentences in "About you". */
-  about: { id: string; who?: 'p1' | 'p2' | 'both'; vars: JourneyVars }[];
+  /**
+   * Facts that need no decision, shown as sentences in "About you". A tax-at-source fact
+   * (source_tax) carries its sentence in every language, where it comes from, and whether it is
+   * an estimate.
+   */
+  about: {
+    id: string;
+    who?: 'p1' | 'p2' | 'both';
+    vars: JourneyVars;
+    text?: { en: string; fr: string; de?: string; it?: string };
+    source?: string;
+    estimate?: true;
+  }[];
   /** At least one income or wealth figure: only then is there a tax to show. */
   hasFigures: boolean;
   /** All the plans before 31 December together, or null. */

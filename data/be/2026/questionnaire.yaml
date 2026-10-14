@@ -1101,6 +1101,10 @@ questions:
       de: 'Jeder gibt dir einen Lohnausweis. Ein Arbeitgeber im Kanton Bern schickt ihn auch der Steuerverwaltung; einer ausserhalb des Kantons gibt dir zwei Exemplare.'
       it: 'Ognuno ti dà un certificato di salario (Lohnausweis). Un datore di lavoro nel Cantone di Berna lo manda anche all’amministrazione fiscale; uno fuori dal Cantone te ne dà due copie.'
 
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
+
   # People taxed at source (Quellensteuer) file an ordinary return only when they must or ask for
   # it by 31 March of the next year (nachträgliche ordentliche Veranlagung, NOV): be-2025-nov-info-de
   # p. 1; be-2025-wegleitung-np-de p. 15 (Seite 6). Not covered by rules-be.

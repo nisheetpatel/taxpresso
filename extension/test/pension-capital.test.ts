@@ -113,6 +113,8 @@ async function favre() {
     ['commune', 'Carouge'],
     ['moved', 'no'],
     ['income_sources:p1', ['pension']],
+    // Swiss: not taxed at source (a pension is asked about since it can be, ge-na-law-risp art. 3).
+    ['residence:p1', 'swiss'],
     ['special', ['pension_capital']],
     ['pension_capital:p1', ['pillar3a']],
   ]);
@@ -300,7 +302,7 @@ describe('a 2nd pillar lump sum for a home (Morel)', () => {
       ['moved', 'no'],
       ['income_sources:p1', ['salary']],
       ['employers:p1', 1],
-      ['taxed_at_source:p1', false],
+      ['residence:p1', 'swiss'],
       ['special', special],
       ['pension_capital:p1', ['pillar2']],
     ]);

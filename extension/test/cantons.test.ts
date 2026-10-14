@@ -227,11 +227,15 @@ describe('the canton question', () => {
     const s = await state(ws, 'fr');
     expect(s.canton).toMatchObject({ code: 'ZH', name: 'Zurich' });
     expect(s.question?.id).toBe('income_sources:p1');
-    // Taxed at source: not covered in Zurich yet, said plainly with Zurich's own software.
+    // Taxed at source: not covered in Zurich yet, said plainly with Zurich's own software. The user
+    // says the plain fact (a B permit); that a salary is then taxed at source follows from it.
     await call('answer_question', { id: 'income_sources:p1', value: ['salary'] });
     await call('answer_question', { id: 'employers:p1', value: 1 });
-    const source = await call('answer_question', { id: 'taxed_at_source:p1', value: true });
+    const source = await call('answer_question', { id: 'residence:p1', value: 'permit_other' });
     expect(text(source)).toMatch(/Not supported yet: Tax at source in Zurich .*ZHprivateTax/);
+    expect((await call('next_questions')).structuredContent).not.toMatchObject({
+      questions: [{ id: 'taxed_at_source:p1' }],
+    });
   });
 });
 

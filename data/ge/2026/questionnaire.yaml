@@ -235,57 +235,226 @@ questions:
         fr: 'Guide fiscal 2025, p. 17 : Activité dépendante'
         it: 'Guida fiscale di Ginevra 2025, p. 17: reddito da attività dipendente'
 
+  # Swiss, a C permit or another permit: who is taxed at source follows from it and the income
+  # (ge-na-law-lisp art. 1 and 2; ge-<year>-source-directives p. 6, ch. 1.1.1 and 1.1.2, the same
+  # page in 2025 and 2026). Taxpresso never asks whether someone is taxed at source when the law
+  # settles it.
+  - use: residence
+    learnMore:
+      - year: 2026
+        url: 'https://www.ge.ch/document/42009/annexe/file/580297#page=6'
+        label:
+          en: 'Directives on tax at source 2026, p. 6: who is taxed at source'
+          fr: 'Directives sur l’imposition à la source 2026, p. 6 : Assujettissement'
+          de: 'Weisungen zur Quellensteuer 2026, S. 6: wer an der Quelle besteuert wird, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2026, p. 6: chi paga l’imposta alla fonte, in francese'
+      - year: 2025
+        url: 'https://www.ge.ch/document/38036/annexe/file/374849#page=6'
+        label:
+          en: 'Directives on tax at source 2025, p. 6: who is taxed at source'
+          fr: 'Directives sur l’imposition à la source 2025, p. 6 : Assujettissement'
+          de: 'Weisungen zur Quellensteuer 2025, S. 6: wer an der Quelle besteuert wird, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2025, p. 6: chi paga l’imposta alla fonte, in francese'
+
+  # A salary paid directly by an employer abroad is taxed ordinarily, not at source, unless a Swiss
+  # branch, the Swiss company of a secondment or a Swiss hirer pays it in the end (ge-na-law-risp
+  # art. 5; ge-<year>-source-directives p. 6, ch. 1.1.2). Asked of a salaried person without a C
+  # permit only.
+  - id: employer_in_switzerland
+    key: profile.employer_in_switzerland
+    type: yesno
+    perPerson: true
+    when:
+      all:
+        - { key: profile.residence, in: [permit_other] }
+        - { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'An employer in Switzerland takes the tax from your salary at source. A salary paid directly from abroad is taxed through a normal declaration instead.'
+      fr: 'Un employeur en Suisse retient l’impôt à la source sur votre salaire. Un salaire versé directement depuis l’étranger est imposé par une déclaration normale.'
+      de: 'Ein Arbeitgeber in der Schweiz zieht die Steuer an der Quelle vom Lohn ab. Ein Lohn, der direkt aus dem Ausland bezahlt wird, wird über eine normale Steuererklärung besteuert.'
+      it: 'Un datore di lavoro in Svizzera trattiene l’imposta alla fonte dal tuo salario. Un salario versato direttamente dall’estero è tassato con una dichiarazione normale.'
+    learnMore:
+      - year: 2026
+        url: 'https://www.ge.ch/document/42009/annexe/file/580297#page=6'
+        label:
+          en: 'Directives on tax at source 2026, p. 6: who is taxed at source'
+          fr: 'Directives sur l’imposition à la source 2026, p. 6 : Assujettissement'
+          de: 'Weisungen zur Quellensteuer 2026, S. 6: wer an der Quelle besteuert wird, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2026, p. 6: chi paga l’imposta alla fonte, in francese'
+      - year: 2025
+        url: 'https://www.ge.ch/document/38036/annexe/file/374849#page=6'
+        label:
+          en: 'Directives on tax at source 2025, p. 6: who is taxed at source'
+          fr: 'Directives sur l’imposition à la source 2025, p. 6 : Assujettissement'
+          de: 'Weisungen zur Quellensteuer 2025, S. 6: wer an der Quelle besteuert wird, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2025, p. 6: chi paga l’imposta alla fonte, in francese'
+    text:
+      p1:
+        en: 'In {year}, did an employer in Switzerland pay your salary?'
+        fr: 'En {year}, votre salaire était-il versé par un employeur en Suisse ?'
+        de: 'Hat dir {year} ein Arbeitgeber in der Schweiz den Lohn bezahlt?'
+        it: 'Nel {year} il tuo salario era versato da un datore di lavoro in Svizzera?'
+      p2:
+        en: 'In {year}, did an employer in Switzerland pay your spouse or partner’s salary?'
+        fr: 'En {year}, le salaire de votre conjoint ou partenaire était-il versé par un employeur en Suisse ?'
+        de: 'Hat deinem Partner oder deiner Partnerin {year} ein Arbeitgeber in der Schweiz den Lohn bezahlt?'
+        it: 'Nel {year} il salario del tuo coniuge o partner era versato da un datore di lavoro in Svizzera?'
+    help:
+      en: 'Yes if at least one employer is in Switzerland, or if a Swiss branch or the Swiss company you work for pays your salary in the end. No if only an employer abroad paid you directly.'
+      fr: 'Oui si au moins un employeur est en Suisse, ou si une succursale suisse ou l’entreprise suisse pour laquelle vous travaillez paie finalement votre salaire. Non si seul un employeur à l’étranger vous a payé directement.'
+      de: 'Ja, wenn mindestens ein Arbeitgeber in der Schweiz ist oder eine Schweizer Niederlassung oder die Schweizer Firma, für die du arbeitest, deinen Lohn letztlich bezahlt. Nein, wenn dich nur ein Arbeitgeber im Ausland direkt bezahlt hat.'
+      it: 'Sì se almeno un datore di lavoro è in Svizzera, o se una succursale svizzera o l’azienda svizzera per cui lavori paga alla fine il tuo salario. No se ti ha pagato direttamente solo un datore di lavoro all’estero.'
+
+  # Taxed at source, worked out with Geneva's own law: LISP art. 1 (foreign workers without a C
+  # permit; not spouses of a Swiss or a C permit holder), LISP art. 2 al. 2 and RISP art. 3 (the
+  # benefits that replace pay: unemployment, sickness, accident, invalidity, maternity), RISP art.
+  # 5 (a salary paid from abroad). Asked only where they don't settle it: a legitimation card, a
+  # pension as the only income, a salary paid directly from abroad (data/ch/2026/questions.yaml).
   - use: taxed_at_source
+    derive:
+      - when: { key: profile.residence, in: [swiss, permit_c], anyPerson: true }
+        value: false
+        because:
+          en: 'Swiss citizens and C permit holders are not taxed at source, and neither is someone married to one of them.'
+          fr: 'Les Suisses et les titulaires d’un permis C ne sont pas imposés à la source, ni la personne mariée avec l’un d’eux.'
+          de: 'Schweizerinnen und Schweizer und Personen mit Ausweis C werden nicht an der Quelle besteuert, und auch nicht, wer mit einer von ihnen verheiratet ist.'
+          it: 'I cittadini svizzeri e i titolari di un permesso C non pagano l’imposta alla fonte, e nemmeno chi è sposato con uno di loro.'
+        source: 'ge-na-law-lisp art. 1 al. 1 and 2; ch-na-law-lifd p. 49 (art. 83 al. 1 and 2)'
+      - when:
+          all:
+            - { key: profile.residence, in: [permit_other] }
+            - any:
+                - { key: profile.income_sources, includes: replacement_income }
+                - { key: profile.employer_in_switzerland, is: true }
+        value: true
+        because:
+          en: 'Without a C permit, tax is taken at source from a salary and from the benefits that replace it (unemployment, sickness, accident, maternity).'
+          fr: 'Sans permis C, l’impôt est retenu à la source sur le salaire et sur les indemnités qui le remplacent (chômage, maladie, accident, maternité).'
+          de: 'Ohne Ausweis C wird die Steuer an der Quelle abgezogen, vom Lohn und von den Taggeldern, die ihn ersetzen (Arbeitslosigkeit, Krankheit, Unfall, Mutterschaft).'
+          it: 'Senza permesso C, l’imposta è trattenuta alla fonte sul salario e sulle indennità che lo sostituiscono (disoccupazione, malattia, infortunio, maternità).'
+        source: 'ge-na-law-lisp art. 1 al. 1, art. 2 al. 2 let. a and b; ge-na-law-risp art. 3 and 5'
     # ge-2025-dris-tou-page
     learnMore:
       url: 'https://www.ge.ch/demande-rectification-taxation-ordinaire-ulterieure'
       label:
         en: 'Tax at source: correction or TOU (ge.ch)'
         fr: 'Demande de rectification ou taxation ordinaire ultérieure (ge.ch)'
+        de: 'Quellensteuer: Berichtigung oder TOU (ge.ch), auf Französisch'
         it: 'Imposta alla fonte: rettifica o TOU (ge.ch)'
     help:
-      en: 'If so, it shows on the salary certificate. On the official form: impôt à la source.'
-      fr: 'Si c’est le cas, cela figure sur le certificat de salaire.'
-      it: 'Se sì, è indicato sul certificato di salario. Sul modulo ufficiale: impôt à la source.'
+      en: 'Your salary certificate (box 12), payslips, or benefit and pension statements show it. On the official form: impôt à la source.'
+      fr: 'Votre certificat de salaire (chiffre 12), vos fiches de salaire, ou vos attestations d’indemnités et de rente l’indiquent.'
+      de: 'Dein Lohnausweis (Ziffer 12), deine Lohnabrechnungen oder deine Taggeld- und Rentenbescheinigungen zeigen es. Auf dem offiziellen Formular: impôt à la source.'
+      it: 'Lo indicano il tuo certificato di salario (cifra 12), le tue buste paga o le attestazioni di indennità e di rendita. Sul modulo ufficiale: impôt à la source.'
 
+  # TOU already in place is a fact, not a choice: once taxed ordinarily after source tax, a person
+  # stays so every year while taxed at source, the spouse included, and the tax office sends the
+  # declaration each year (ge-na-law-lisp art. 4 al. 5, art. 5 al. 5; ge-<year>-source-directives
+  # p. 51 and 52 in 2026, p. 50 and 51 in 2025). Whether to ask for TOU is decided on the TOU card,
+  # with the comparison, only when it is a choice.
   - id: tou
     key: profile.tou
     type: choice
     perPerson: true
     when: { key: profile.taxed_at_source, is: true }
     explain:
-      en: 'TOU (taxation ordinaire ultérieure): instead of the tax taken from your salary being final, you file a normal declaration and can claim deductions. Once you ask for it, you can’t go back.'
-      fr: 'TOU (taxation ordinaire ultérieure) : au lieu que l’impôt retenu sur votre salaire soit définitif, vous remplissez une déclaration normale et pouvez faire valoir des déductions. Une fois demandée, on ne peut plus revenir en arrière.'
-      it: 'TOU (taxation ordinaire ultérieure): l’imposta trattenuta dal tuo salario non è più definitiva, compili una dichiarazione normale e puoi far valere le deduzioni. Una volta chiesta, non si torna indietro.'
-    # ge-2025-guide-declaration-pp p. 52
+      en: 'Once the tax office has taxed you ordinarily after tax at source (TOU, taxation ordinaire ultérieure), it does so every year while you are taxed at source: it sends you a tax declaration each year, and the tax taken at source counts towards the tax.'
+      fr: 'Une fois que l’administration fiscale vous a taxé ordinairement après l’impôt à la source (TOU, taxation ordinaire ultérieure), elle le fait chaque année tant que vous êtes imposé à la source : elle vous envoie une déclaration d’impôt chaque année, et l’impôt retenu à la source est imputé.'
+      de: 'Hat dich die Steuerverwaltung einmal nach der Quellensteuer ordentlich veranlagt (TOU, taxation ordinaire ultérieure), tut sie es jedes Jahr, solange du an der Quelle besteuert wirst: Sie schickt dir jedes Jahr eine Steuererklärung, und die abgezogene Quellensteuer wird angerechnet.'
+      it: 'Una volta che l’amministrazione fiscale ti ha tassato in via ordinaria dopo l’imposta alla fonte (TOU, taxation ordinaire ultérieure), lo fa ogni anno finché paghi l’imposta alla fonte: ti manda una dichiarazione d’imposta ogni anno, e l’imposta trattenuta alla fonte viene computata.'
     learnMore:
-      year: 2025
-      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=52'
-      label:
-        en: 'Geneva tax guide 2025, p. 52: TOU for people taxed at source'
-        fr: 'Guide fiscal 2025, p. 52 : La TOU pour les contribuables imposés à la source'
-        it: 'Guida fiscale di Ginevra 2025, p. 52: la TOU per chi paga l’imposta alla fonte'
+      - year: 2026
+        url: 'https://www.ge.ch/document/42009/annexe/file/580297#page=51'
+        label:
+          en: 'Directives on tax at source 2026, p. 51: compulsory TOU'
+          fr: 'Directives sur l’imposition à la source 2026, p. 51 : TOU obligatoire'
+          de: 'Weisungen zur Quellensteuer 2026, S. 51: obligatorische TOU, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2026, p. 51: TOU obbligatoria, in francese'
+      - year: 2025
+        url: 'https://www.ge.ch/document/38036/annexe/file/374849#page=50'
+        label:
+          en: 'Directives on tax at source 2025, p. 50: compulsory TOU'
+          fr: 'Directives sur l’imposition à la source 2025, p. 50 : TOU obligatoire'
+          de: 'Weisungen zur Quellensteuer 2025, S. 50: obligatorische TOU, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2025, p. 50: TOU obbligatoria, in francese'
     text:
       p1:
-        en: 'Are you taxed ordinarily instead (TOU), or thinking about it?'
-        fr: 'Êtes-vous en taxation ordinaire ultérieure (TOU), ou y songez-vous ?'
-        it: 'Sei invece in tassazione ordinaria (TOU), o ci stai pensando?'
+        en: 'Before {year}, did the tax office already tax you ordinarily (TOU) and send you a tax declaration to fill in?'
+        fr: 'Avant {year}, l’administration fiscale vous a-t-elle déjà taxé ordinairement (TOU) en vous envoyant une déclaration d’impôt à remplir ?'
+        de: 'Hat dich die Steuerverwaltung vor {year} schon ordentlich veranlagt (TOU) und dir eine Steuererklärung zum Ausfüllen geschickt?'
+        it: 'Prima del {year}, l’amministrazione fiscale ti ha già tassato in via ordinaria (TOU) mandandoti una dichiarazione d’imposta da compilare?'
       p2:
-        en: 'Is your spouse or partner taxed ordinarily instead (TOU), or thinking about it?'
-        fr: 'Votre conjoint ou partenaire est-il en taxation ordinaire ultérieure (TOU), ou y songe-t-il ?'
-        it: 'Il tuo coniuge o partner è invece in tassazione ordinaria (TOU), o ci sta pensando?'
+        en: 'Before {year}, did the tax office already tax your spouse or partner ordinarily (TOU) and send them a tax declaration to fill in?'
+        fr: 'Avant {year}, l’administration fiscale a-t-elle déjà taxé ordinairement (TOU) votre conjoint ou partenaire en lui envoyant une déclaration d’impôt à remplir ?'
+        de: 'Hat die Steuerverwaltung deinen Partner oder deine Partnerin vor {year} schon ordentlich veranlagt (TOU) und eine Steuererklärung zum Ausfüllen geschickt?'
+        it: 'Prima del {year}, l’amministrazione fiscale ha già tassato in via ordinaria (TOU) il tuo coniuge o partner mandandogli una dichiarazione d’imposta da compilare?'
     help:
-      en: 'Taxpresso will show you both cases, with their amounts, before you decide.'
-      fr: 'Taxpresso vous montrera les deux cas, avec leurs montants, avant que vous décidiez.'
-      it: 'Taxpresso ti mostrerà i due casi, con i loro importi, prima che tu decida.'
+      en: 'If you never asked for it and never received a tax declaration, answer no. Whether to ask for it now, Taxpresso shows you with the amounts.'
+      fr: 'Si vous ne l’avez jamais demandée et n’avez jamais reçu de déclaration d’impôt, répondez non. S’il vaut la peine de la demander maintenant, Taxpresso vous le montre avec les montants.'
+      de: 'Wenn du sie nie beantragt und nie eine Steuererklärung erhalten hast, antworte nein. Ob es sich lohnt, sie jetzt zu beantragen, zeigt dir Taxpresso mit den Beträgen.'
+      it: 'Se non l’hai mai chiesta e non hai mai ricevuto una dichiarazione d’imposta, rispondi no. Se conviene chiederla ora, Taxpresso te lo mostra con gli importi.'
     options:
       - value: already
-        label: { en: 'Yes, already', fr: 'Oui, déjà', it: 'Sì, già' }
-        chip: { en: 'TOU', fr: 'TOU', it: 'TOU' }
-      - value: considering
-        label: { en: 'I’m thinking about it', fr: 'J’y songe', it: 'Ci sto pensando' }
-        chip: { en: 'Considering TOU', fr: 'Envisage la TOU', it: 'Valuta la TOU' }
-      - { value: 'no', label: { en: 'No', fr: 'Non', it: 'No' } }
+        label:
+          {
+            en: 'Yes, already in TOU',
+            fr: 'Oui, déjà en TOU',
+            de: 'Ja, schon in der TOU',
+            it: 'Sì, già in TOU',
+          }
+        chip: { en: 'TOU', fr: 'TOU', de: 'TOU', it: 'TOU' }
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein', it: 'No' } }
+
+  # The barème a single parent's employer takes the tax at: the single-parent rate (H) for children
+  # in main custody, the single person's (A0) when the parents live together without being married
+  # (ge-<year>-source-directives ch. 5.2.1.4 and 5.5.1: 2026 p. 26 and 30, 2025 p. 25 and 29).
+  # Asked only of a single parent taxed at source whose children live with them: Taxpresso uses it to
+  # estimate the tax taken at source when no salary certificate shows it.
+  - id: lives_with_other_parent
+    key: profile.lives_with_other_parent
+    type: yesno
+    when:
+      all:
+        - { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+        - { key: profile.children_custody, in: [with_household] }
+        - { key: profile.taxed_at_source, is: true, anyPerson: true }
+    explain:
+      en: 'It decides the rate your employer takes tax at: the rate for a single parent (barème H), or the rate for a single person (barème A0) when you live with the children’s other parent. Taxpresso uses it to estimate the tax taken from your salary.'
+      fr: 'Cela décide du barème que votre employeur applique : celui des familles monoparentales (barème H), ou celui des personnes seules (barème A0) si vous vivez avec l’autre parent des enfants. Taxpresso s’en sert pour estimer l’impôt retenu sur votre salaire.'
+      de: 'Davon hängt der Tarif ab, zu dem dein Arbeitgeber die Steuer abzieht: der für Alleinerziehende (barème H) oder der für Alleinstehende (barème A0), wenn du mit dem anderen Elternteil der Kinder zusammenlebst. Taxpresso schätzt damit die vom Lohn abgezogene Steuer.'
+      it: 'Decide la tariffa con cui il tuo datore di lavoro trattiene l’imposta: quella per le famiglie monoparentali (barème H), o quella per le persone sole (barème A0) se vivi con l’altro genitore dei figli. Taxpresso la usa per stimare l’imposta trattenuta sul tuo salario.'
+    learnMore:
+      - year: 2026
+        url: 'https://www.ge.ch/document/42009/annexe/file/580297#page=30'
+        label:
+          en: 'Directives on tax at source 2026, p. 30: unmarried parents living together'
+          fr: 'Directives sur l’imposition à la source 2026, p. 30 : Concubins avec enfant(s) à charge'
+          de: 'Weisungen zur Quellensteuer 2026, S. 30: unverheiratete Eltern, die zusammenleben, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2026, p. 30: genitori conviventi non sposati, in francese'
+      - year: 2025
+        url: 'https://www.ge.ch/document/38036/annexe/file/374849#page=29'
+        label:
+          en: 'Directives on tax at source 2025, p. 29: unmarried parents living together'
+          fr: 'Directives sur l’imposition à la source 2025, p. 29 : Concubins avec enfant(s) à charge'
+          de: 'Weisungen zur Quellensteuer 2025, S. 29: unverheiratete Eltern, die zusammenleben, auf Französisch'
+          it: 'Direttive sull’imposta alla fonte 2025, p. 29: genitori conviventi non sposati, in francese'
+    text:
+      en: 'In {year}, did you live with the children’s other parent, as a couple without being married?'
+      fr: 'En {year}, viviez-vous en couple avec l’autre parent des enfants, sans être mariés ?'
+      de: 'Hast du {year} mit dem anderen Elternteil der Kinder als Paar zusammengelebt, ohne verheiratet zu sein?'
+      it: 'Nel {year} vivevi in coppia con l’altro genitore dei figli, senza essere sposati?'
+    help:
+      en: 'Living with a new partner who isn’t the children’s parent counts as no.'
+      fr: 'Vivre avec un nouveau partenaire qui n’est pas le parent des enfants compte comme non.'
+      de: 'Mit einem neuen Partner zusammenzuleben, der nicht Elternteil der Kinder ist, zählt als nein.'
+      it: 'Vivere con un nuovo partner che non è genitore dei figli conta come no.'
+    chip:
+      {
+        en: 'Lives with the other parent',
+        fr: 'Vit avec l’autre parent',
+        de: 'Lebt mit dem anderen Elternteil',
+        it: 'Vive con l’altro genitore',
+      }
 
   # Self-employment, the simple case (SPEC.md section 1, decided 14 October 2026): a sole proprietor
   # (raison individuelle) with one business in their commune of residence, whose result comes from

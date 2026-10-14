@@ -2,11 +2,12 @@
 // (get_status) and the dashboard. Derived from the workspace on every read, never stored. Ids and
 // numbers only, plus Claude's instruction in English: the dashboard words each id in the page's
 // language (ui/src/dashboard/i18n-journey.ts), get_status in English (journeyText below).
-import { SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
+import { SUPPORTED_CANTONS, type Text } from '@taxpresso/rules-ch';
 import { cantonNames, type CantonEntry } from './cantons.js';
 import { BARCODE_PENDING } from './barcode.js';
 import { hasFigures } from './estimate.js';
 import { planningView, savingsTotal, type SavingsTotal } from './planning.js';
+import { sourceTaxLines, sourceTaxOf } from './source-tax.js';
 import type { Workspace } from './workspace.js';
 
 export const STAGES = ['about', 'documents', 'tax', 'save', 'file'] as const;
@@ -59,10 +60,21 @@ export interface Fact {
     | 'tou_chosen_decline'
     | 'tou_passed'
     | 'tou_mixed'
-    | 'tou_geneva_only';
+    | 'tou_geneva_only'
+    | 'source_tax';
   /** Who it is about in a couple: you, your spouse or partner, or both of you. */
   who?: 'p1' | 'p2' | 'both';
   vars: Vars;
+  /**
+   * source_tax only: the sentence itself, in every language. Who is taxed at source, the barème
+   * and the tax withheld are worked out from the answers (the questionnaire's `derive`, whose
+   * reasons are written in four languages) and the documents (./source-tax.ts), never asked.
+   */
+  text?: Text;
+  /** Where it comes from: manifest id and page or article. */
+  source?: string;
+  /** An estimate, flagged wherever it shows (SPEC.md section 9). */
+  estimate?: true;
 }
 
 export interface Journey {
@@ -121,17 +133,13 @@ function touFacts(ws: Workspace, planning: ReturnType<typeof planningView> | nul
   }
   const tou = planning.tou;
   if (!tou.applies) return [];
-  if (tou.problem === 'mixed_couple') return [{ id: 'tou_mixed', vars: {} }];
-  if (tou.compulsory === 'yes') {
-    // In TOU already (asked for in an earlier year): it goes on every year (TOU_FACTS.everyYearAfter).
-    const only = tou.reasons.filter((r) => r.status === 'yes').map((r) => r.id);
-    const already = only.length > 0 && only.every((r) => r === 'previous_tou');
-    return [
-      already
-        ? { id: 'tou_already', who: who(), vars: {} }
-        : { id: 'tou_compulsory', who: who(), vars: { date: tou.deadline } },
-    ];
+  // In TOU already (asked for or compulsory in an earlier year): it goes on every year
+  // (TOU_FACTS.everyYearAfter). Compulsory: announced by 31 March. Facts, not choices.
+  if (tou.mode === 'in_place') return [{ id: 'tou_already', who: who(), vars: {} }];
+  if (tou.mode === 'compulsory') {
+    return [{ id: 'tou_compulsory', who: who(), vars: { date: tou.deadline } }];
   }
+  if (tou.problem === 'mixed_couple') return [{ id: 'tou_mixed', vars: {} }];
   if (tou.decision) {
     return [
       {
@@ -142,6 +150,34 @@ function touFacts(ws: Workspace, planning: ReturnType<typeof planningView> | nul
   }
   if (tou.deadlinePassed) return [{ id: 'tou_passed', vars: { date: tou.deadline } }];
   return [];
+}
+
+/**
+ * Tax at source as facts (./source-tax.ts): who is taxed at source and why, the barème, the tax
+ * withheld or what gives it, each with its source. Geneva, for any year, when someone is taxed at
+ * source or had tax taken at source in an ordinary year.
+ */
+function sourceTaxFacts(ws: Workspace): Fact[] {
+  const st = sourceTaxOf(ws);
+  if (!st || (!st.any && !st.credited)) return [];
+  const langs = ['en', 'fr', 'de', 'it'] as const;
+  const lines = Object.fromEntries(langs.map((l) => [l, sourceTaxLines(st, l)])) as Record<
+    (typeof langs)[number],
+    ReturnType<typeof sourceTaxLines>
+  >;
+  return lines.en.map((line, i) => ({
+    id: 'source_tax' as const,
+    ...(line.person && st.couple ? { who: line.person } : {}),
+    vars: {},
+    text: {
+      en: line.text,
+      fr: lines.fr[i]!.text,
+      de: lines.de[i]!.text,
+      it: lines.it[i]!.text,
+    },
+    ...(line.source ? { source: line.source } : {}),
+    ...(line.estimate ? { estimate: true as const } : {}),
+  }));
 }
 
 export function journey(ws: Workspace): Journey {
@@ -178,7 +214,8 @@ export function journey(ws: Workspace): Journey {
     planning &&
     !planning.touGenevaOnly &&
     tou?.applies &&
-    tou.compulsory !== 'yes' &&
+    tou.mode !== 'in_place' &&
+    tou.mode !== 'compulsory' &&
     !tou.deadlinePassed &&
     tou.problem !== 'mixed_couple' &&
     !tou.decision,
@@ -286,7 +323,7 @@ export function journey(ws: Workspace): Journey {
     next: { id, stage: STAGE_OF[id], vars },
     stage,
     stages,
-    about: touFacts(ws, planning),
+    about: [...sourceTaxFacts(ws), ...touFacts(ws, planning)],
     hasFigures: figures,
     savings,
     touChoice,
@@ -461,6 +498,8 @@ const FACT_TEXT: Record<Fact['id'], (f: Fact) => string> = {
   tou_mixed: () => 'Only one of the couple is taxed at source: no TOU comparison; suggest the AFC.',
   tou_geneva_only: () =>
     'Taxed at source in a canton other than Geneva: not supported yet (TOU is Geneva’s).',
+  source_tax: (f) =>
+    `${f.text?.en ?? ''}${f.estimate ? ' (an estimate)' : ''}${f.source ? ` [${f.source}]` : ''}`,
 };
 
 /** get_status's lines for the journey: the stages and the facts, concise. */

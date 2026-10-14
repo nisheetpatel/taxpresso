@@ -42,6 +42,12 @@ export interface PersonInput {
   businessCentimes?: number;
   hasPensionFund: boolean;
   paidCentimes: number;
+  /**
+   * Benefits replacing pay for the year that are not in the salary (unemployment, sickness,
+   * accident, maternity, paid by the insurance itself): rubric 11.50. Only the TOU comparison sets
+   * it (./tou.ts), from the benefits attestations.
+   */
+  replacementCentimes?: number;
 }
 
 /** The cantons other than Geneva, by the prefix of their assumptions ("zh_preview"). */
@@ -205,6 +211,9 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
         ...(p.businessCentimes !== undefined
           ? { selfEmploymentProfit: { value: p.businessCentimes, status: 'estimate' } }
           : {}),
+        ...(p.replacementCentimes
+          ? { replacementIncome: { value: p.replacementCentimes, status: 'estimate' } }
+          : {}),
       };
     }),
     children: Array.from({ length: kids }, () => ({
@@ -269,7 +278,8 @@ export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (h.other) return cantonEstimator(h, h.other);
   const nets = h.people.map(netOf);
   const earned = h.people.map(earnedOf);
-  if (earned.every((n) => n === undefined)) return undefined;
+  const noIncome = (i: number) => earned[i] === undefined && !h.people[i]!.replacementCentimes;
+  if (h.people.every((_, i) => noIncome(i))) return undefined;
   const base = engineInput(h, nets);
   const first = incomeTax(computeReturn(base));
   if (!first) return undefined;
@@ -278,7 +288,7 @@ export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (!Object.keys(h.known?.household ?? {}).length) assumptions.push('flat_deductions_only');
   if (h.people.some((p) => p.netCentimes === undefined && p.grossCentimes !== undefined))
     assumptions.push('net_from_gross');
-  if (earned.some((n) => n === undefined)) assumptions.push('no_income_for_some');
+  if (h.people.some((_, i) => noIncome(i))) assumptions.push('no_income_for_some');
   if (!h.commune) assumptions.push('commune_default');
   return {
     assumptions,

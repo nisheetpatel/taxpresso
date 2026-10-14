@@ -785,7 +785,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -864,7 +864,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -946,7 +946,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1036,7 +1036,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['moved', 'no'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'walk'],
@@ -1121,7 +1121,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
         ['work_rate:p1', 100],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1205,7 +1205,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['citizen_of:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1296,7 +1296,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1389,7 +1389,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church_area', 'st-gallen:St. Gallen Tablat (O)'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['commute:p1', 'public_transport'],
         ['commute_transit_cost:p1', 800],
         ['meal_days:p1', 0],
@@ -1479,7 +1479,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'catholic'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['commute:p1', 'public_transport'],
         ['commute_transit_cost:p1', 800],
         ['meal_days:p1', 0],
@@ -1563,7 +1563,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['employers:p1', 1],
         ['work_rate:p1', 100],
         ['full_year:p1', true],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['commute:p1', 'public_transport'],
         ['commute_transit_cost:p1', 800],
         ['meal_days:p1', 0],
@@ -1624,6 +1624,102 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('tax at source in Geneva: worked out from plain facts, never asked, offline', async () => {
+    // A couple with B permits in its own folder, in its own server process with the same guard:
+    // one salaried, the other on unemployment benefits (synthetic). Who is taxed at source, the
+    // barème and where the tax withheld comes from follow from plain answers.
+    const sVault = path.join(work, 'Source');
+    const sTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: sVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    sTransport.stderr?.on('data', (d) => (stderr += d));
+    const st = new Client({ name: 'taxpresso-offline-test-source', version: '0.0.0' });
+    await st.connect(sTransport);
+    try {
+      const answers = {
+        canton: 'GE',
+        civil_status: 'married',
+        children: 0,
+        commune: 'Carouge',
+        moved: 'no',
+        'income_sources:p1': ['salary'],
+        'income_sources:p2': ['replacement_income'],
+        'employers:p1': 1,
+        'residence:p1': 'permit_other',
+        'employer_in_switzerland:p1': true,
+        'residence:p2': 'permit_other',
+        'employer_in_switzerland:p2': true,
+        'tou:p1': 'no',
+        'tou:p2': 'no',
+        'pillar3a:p1': false,
+        'pillar3a:p2': false,
+        'lpp_buyin:p1': false,
+        'commute:p1': 'walk',
+        'meal_days:p1': 0,
+        banks: 0,
+        crypto: false,
+        payments: [],
+        special: [],
+      };
+      const asked = [];
+      for (let i = 0; i < 40; i++) {
+        const next = await st.callTool({ name: 'next_questions', arguments: {} });
+        const q = next.structuredContent.questions[0];
+        if (!q) break;
+        assert.ok(q.id in answers, `asked ${q.id}`);
+        asked.push(q.id);
+        const res = await st.callTool({
+          name: 'answer_question',
+          arguments: { id: q.id, value: answers[q.id] },
+        });
+        assert.ok(!res.isError, `${q.id}: ${res.content?.[0]?.text}`);
+      }
+      assert.ok(asked.includes('residence:p2'), asked.join(' '));
+      assert.ok(!asked.some((id) => id.startsWith('taxed_at_source')), asked.join(' '));
+      for (const [key, value] of [
+        ['plan.gross_salary', 72_000],
+        ['plan.tou_other_income', false],
+        ['plan.tou_taxable_wealth', false],
+      ]) {
+        const res = await st.callTool({ name: 'set_fact', arguments: { key, value } });
+        assert.ok(!res.isError, res.content?.[0]?.text);
+      }
+      const status = await st.callTool({ name: 'get_status', arguments: {} });
+      const told = status.structuredContent.journey.join('\n');
+      assert.match(told, /You are taxed at source\. Without a C permit/);
+      assert.match(told, /Your spouse or partner is taxed at source\./);
+      assert.match(told, /Barème C0N: married, both of you with income/);
+      assert.match(told, /estimated with barème C0N[^[]*\(an estimate\)/);
+      const list = await st.callTool({ name: 'list_optimizations', arguments: {} });
+      assert.match(list.content[0].text, /attestation of the fund that paid your benefits/);
+      assert.doesNotMatch(list.content[0].text, /Only one of the couple/);
+      assert.match(list.content[0].text, /benefits attestation \(amount and tax taken at source\)/);
+      // The same facts in the dashboard, in French, through the view's own API.
+      const { contents } = await st.readResource({ uri: VIEW_URI });
+      const key = /<meta name="taxpresso-view-key" content="([^"]+)">/.exec(contents[0].text)?.[1];
+      assert.ok(key, 'the view carries its key');
+      const view = await st.callTool({
+        name: 'dashboard_api',
+        arguments: { key, method: 'GET', path: '/state', query: { lang: 'fr' } },
+      });
+      const body = view.structuredContent.body;
+      const fact = body.journey.about.find((f) => f.id === 'source_tax');
+      assert.match(fact.text.fr, /^Vous êtes imposé à la source/);
+      assert.equal(body.planning.tou.problem, 'benefits_unknown');
+      assert.equal(body.planning.sourceTax.people[0].derivedTariff.code, 'C0N');
+    } finally {
+      await st.close();
+    }
+  });
+
   test('a Geneva return for 2025: the year switch, its own folder and its texts, offline', async () => {
     // The Dupont couple prepares 2025 in its own folder, in its own server process with the same
     // guard: the year is chosen in the chat and in the dashboard, which write the same record.
@@ -1681,7 +1777,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         moved: 'no',
         income_sources: ['salary'],
         employers: 1,
-        taxed_at_source: false,
+        residence: 'swiss',
         pillar3a: false,
         lpp_buyin: false,
         commute: 'public_transport',
@@ -2014,7 +2110,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['moved', 'no'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['income_sources:p2', ['self_employment']],
         ...BUSINESS('p2'),
         ['business_losses:p2', false],
@@ -2068,7 +2164,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['moved', 'no'],
         ['income_sources:p1', ['salary', 'self_employment']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ...BUSINESS('p1'),
         ['business_losses:p1', true],
         ['business_losses_icc:p1', 2_000],

@@ -109,11 +109,30 @@ export {
   type SourceTaxYear,
 } from './source-tax/index.js';
 export {
+  deriveTariffs,
+  TARIFF_MAX_CHILDREN,
+  tariffSources,
+  TariffYearError,
+  type DerivedTariff,
+  type TariffAssumption,
+  type TariffHousehold,
+  type TariffOpen,
+  type TariffPerson,
+  type TariffWhy,
+} from './source-tax/tariff.js';
+export {
+  SOURCE_TAX_FACTS,
+  SOURCE_TAX_SUBJECT,
+  TOU_2025_GROSS_THRESHOLD,
+  TOU_2025_OTHER_INCOME_THRESHOLD,
+  TOU_2025_WEALTH_FREE,
   TOU_2026_GROSS_THRESHOLD,
   TOU_2026_OTHER_INCOME_THRESHOLD,
   TOU_2026_WEALTH_FREE,
   TOU_FACTS,
   touDeadline,
+  touThresholds,
+  type TouThresholds,
 } from './2026/tou.js';
 export {
   LPP_BUYIN_FACTS,
