@@ -70,6 +70,23 @@ const MASKS: readonly [string, string][] = [
     'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. Un capitale della tua cassa pensione o del pilastro 3a, e un’abitazione o un terreno all’estero, fanno eccezione: Taxpresso calcola l’imposta separata sul capitale e conta l’immobile all’estero per la tua aliquota.',
     '<SPECIAL_EXPLAIN>',
   ],
+  // The same explanation after the change, which names the property in Geneva.
+  [
+    'Most of these need checks that Taxpresso can’t do yet. Better to know now than in March. Your home in Geneva or a property you let there, a lump sum from your pension fund or pillar 3a, and a home or land abroad, are the exceptions: Taxpresso declares your property in Geneva, computes the separate tax on the lump sum, and counts the property abroad for your rate.',
+    '<SPECIAL_EXPLAIN>',
+  ],
+  [
+    'La plupart de ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars. Votre logement à Genève ou un bien que vous y louez, un capital de votre caisse de pension ou du 3e pilier A, et un logement ou un terrain à l’étranger, font exception : Taxpresso déclare votre immeuble à Genève, calcule l’impôt séparé sur le capital, et compte l’immeuble à l’étranger pour votre taux.',
+    '<SPECIAL_EXPLAIN>',
+  ],
+  [
+    'Die meisten davon brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März. Deine Wohnung in Genf oder eine Liegenschaft, die du dort vermietest, ein Kapitalbezug aus der Pensionskasse oder der Säule 3a und eine Wohnung oder ein Grundstück im Ausland sind die Ausnahmen: Taxpresso deklariert deine Liegenschaft in Genf, berechnet die separate Steuer auf dem Kapital und zählt die Liegenschaft im Ausland für deinen Steuersatz.',
+    '<SPECIAL_EXPLAIN>',
+  ],
+  [
+    'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. La tua abitazione a Ginevra o un immobile che vi affitti, un capitale della tua cassa pensione o del pilastro 3a, e un’abitazione o un terreno all’estero, fanno eccezione: Taxpresso dichiara il tuo immobile a Ginevra, calcola l’imposta separata sul capitale e conta l’immobile all’estero per la tua aliquota.',
+    '<SPECIAL_EXPLAIN>',
+  ],
 ];
 
 /** A number in [0, 1) from the household's seed and a label: the same label, the same number. */

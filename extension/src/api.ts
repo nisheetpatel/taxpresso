@@ -94,8 +94,8 @@ const LineOwnerChange = z.object({
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
 /**
- * Kinds only Geneva reads so far: self-employment, the simple case, and a property abroad (SPEC.md
- * section 1).
+ * Kinds only Geneva reads so far: self-employment, the simple case, a property abroad and a property
+ * in Geneva (SPEC.md section 1).
  */
 const GENEVA_ONLY: ReadonlySet<string> = new Set([
   'business_accounts',
@@ -214,7 +214,7 @@ export function dashboardState(
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
     })),
-    // A property abroad's documents only for a household that has one (simple first).
+    // A property's documents, abroad or in Geneva, only for a household that has one (simple first).
     kinds: KIND_ORDER.filter(
       (k) =>
         (canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)) &&
