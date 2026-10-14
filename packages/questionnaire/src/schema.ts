@@ -61,6 +61,7 @@ export const OFFICIAL_HOSTS = [
   'vd.ch', // www.vd.ch (guide, forms, tables), prestations.vd.ch (BLV, VaudTax)
   'bs.ch', // www.bs.ch, media.bs.ch (guides, forms), www.gesetzessammlung.bs.ch (laws)
   'zg.ch', // zg.ch (eTax.zug), cdn.zg.ch (Zug's guides and tables), bgs.zg.ch (laws)
+  'lu.ch', // steuern.lu.ch (Lucerne's guides, tables and leaflets), srl.lu.ch (laws), steuerbuch.lu.ch
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
 ] as const;

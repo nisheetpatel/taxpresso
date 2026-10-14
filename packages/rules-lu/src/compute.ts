@@ -1,8 +1,10 @@
 // The one entry point: computeReturn(input) gives the lines of the Lucerne return by Ziffer and
-// person, the subtotals and the state, communal, (when asked for) church and personal tax, each
-// line explained with its sources. First stage here (household figures to the lines of the return,
-// every cap, floor and threshold of the Lucerne documents), second stage in ./assess.ts (lines to
-// taxes). The same two stages, with the same names, as packages/rules-be/src/compute.ts.
+// person, the subtotals and the state, communal, (when asked for) church and personal tax, and the
+// federal tax as the canton's Ergänzungsblatt derives it from the return (./ifd.ts), each line
+// explained with its sources. First stage here (household figures to the lines of the return,
+// every cap, floor and threshold of the Lucerne documents, with the limits each applied for the
+// final check), second stage in ./assess.ts (lines to taxes). The same two stages, with the same
+// names, as packages/rules-be/src/compute.ts.
 import {
   answered,
   chf,
@@ -10,9 +12,11 @@ import {
   roundFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import { assess, communeOf, communeRef, LuInputError, LuUnsupported } from './assess.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import { familyTariff, sharedChildren } from './law.js';
 import { luParamsFor, type LuYearParams } from './params.js';
 import {
@@ -51,13 +55,65 @@ import type {
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = ' ';
 
+/**
+ * The lines whose federal amount is the cantonal one (lu-2025-guide-wegleitung p. 54: the federal
+ * income and deductions are the cantonal ones but for the differences listed): a limit applied on
+ * them applies to both taxes. Travel (208t, 209t), insurance (270) and the additional and social
+ * deductions differ, and the federal ones are on the Ergänzungsblatt (./ifd.ts).
+ */
+const BOTH_TAXES = new Set<string>([
+  '212',
+  '213',
+  '214',
+  '215',
+  '220',
+  '221',
+  '236',
+  '237',
+  '248',
+  '249',
+  '252',
+  '260',
+  '261',
+]);
+
 class Notes {
   readonly assumptions: Text[] = [];
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A limit a cantonal rule applied (SPEC.md 10.0), on `code` for `person`, cited by the constant
+   * that sets it: `given` before the rule, `counted` after it. `rule` names it as the federal
+   * concepts are (packages/rules-ch, ifd/items.ts). On a line the federal tax takes as it is, the
+   * limit is both taxes'.
+   */
+  limit(
+    rule: string,
+    p: { source: string; estimate?: unknown },
+    code: string,
+    person: LimitApplied['person'],
+    given: number,
+    limit: number,
+    counted: number,
+    kind: LimitApplied['kind'] = 'cap',
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: BOTH_TAXES.has(code) ? 'both' : 'icc',
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      ...(p.estimate ? { estimate: true } : {}),
+      rule,
+    });
   }
 }
 
@@ -250,6 +306,17 @@ function personItems(P: LuYearParams, p: PersonInput, items: Item[], notes: Note
     const tv = travel(A, p, main, trTravel, notes);
     const cap = trTravel.p(A.commuteMax);
     const travelCost = Math.min(tv.cost, cap);
+    if (tv.cost > 0) {
+      notes.limit(
+        'commute',
+        A.commuteMax,
+        own(PERSON_CODES.commute, p.id),
+        p.id,
+        tv.cost,
+        cap,
+        travelCost,
+      );
+    }
     const travelHow =
       tv.cost > cap
         ? t(`${tv.how.en}, at most ${chf(cap)}`, `${tv.how.fr}, au plus ${chf(cap)}`)
@@ -276,6 +343,15 @@ function personItems(P: LuYearParams, p: PersonInput, items: Item[], notes: Note
       const meals = mealsDeduction(p.mealDays ?? 0, canteen, m);
       const [perDay, perYear] = canteen ? [m.halfPerDay, m.halfPerYear] : [m.perDay, m.perYear];
       if (meals > 0) {
+        notes.limit(
+          'meals',
+          A.meals,
+          own(canteen ? PERSON_CODES.mealsReduced : PERSON_CODES.meals, p.id),
+          p.id,
+          (p.mealDays ?? 0) * perDay,
+          perYear,
+          meals,
+        );
         items.push(
           item(
             own(canteen ? PERSON_CODES.mealsReduced : PERSON_CODES.meals, p.id),
@@ -305,8 +381,23 @@ function personItems(P: LuYearParams, p: PersonInput, items: Item[], notes: Note
     );
     if (replacement.value) notes.add(notes.assumptions, NOTE.flatReplacement);
     if (p.otherProfessionalCosts) {
-      const actual = total(trOther, [p.otherProfessionalCosts]);
+      // The actual costs count, and so whether they still need the user's OK, only when used.
+      const trActual = new Trace();
+      const actual = total(trActual, [p.otherProfessionalCosts]);
+      if (actual) {
+        notes.limit(
+          'professional.flat',
+          A.professionalFlat,
+          own(PERSON_CODES.otherCosts, p.id),
+          p.id,
+          actual,
+          flat,
+          Math.max(actual, flat),
+          'choice',
+        );
+      }
       if (actual > flat) {
+        trOther.with(trActual);
         other = actual;
         otherHow = t(`Actual costs: ${chf(actual)}.`, `Frais effectifs${NB}: ${chf(actual)}.`);
         notes.add(notes.assumptions, NOTE.actualCosts);
@@ -346,6 +437,15 @@ function personItems(P: LuYearParams, p: PersonInput, items: Item[], notes: Note
     const paid = total(tr, [p.trainingCosts]);
     const cap = tr.p(A.trainingMax);
     training = Math.min(paid, cap);
+    notes.limit(
+      'training',
+      A.trainingMax,
+      own(PERSON_CODES.training, p.id),
+      p.id,
+      paid,
+      cap,
+      training,
+    );
     if (training > 0) {
       items.push(
         item(
@@ -379,15 +479,29 @@ function personItems(P: LuYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limit(
+      'pillar3a',
+      l.param,
+      own(PERSON_CODES.pillar3a, p.id),
+      p.id,
+      l.given,
+      l.limit,
+      l.counted,
+      l.kind,
+    );
+  }
   if (r3a.limits.some((l) => l.given > l.counted)) notes.add(notes.notCounted, NOTE.pillar3aAbove);
-  if (r3a.deduction && r3a.deduction.amount < 0) {
-    pillar3a = -r3a.deduction.amount;
+  // The line even when nothing is deducted (no earned income): the payment given still needs the
+  // user's OK, as on the other cantons' forms.
+  if (r3a.deduction) {
+    pillar3a = -r3a.deduction.amount || 0;
     items.push(
       item(
         own(PERSON_CODES.pillar3a, p.id),
         p.id,
         r3a.deduction.trace,
-        r3a.deduction.amount,
+        -pillar3a || 0,
         r3a.deduction.how,
       ),
     );
@@ -445,7 +559,7 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
   notes.add(notes.assumptions, NOTE.personalTax);
 
   // Children: who counts them (StG § 42 Abs. 2), and the tariff (§ 57 Abs. 2).
-  const children = input.children ?? [];
+  const children = withHouseholdChildcare(input, P, couple, notes);
   if (input.church?.children && input.church.children.length > children.length) {
     throw new LuInputError('church.children has more entries than children');
   }
@@ -559,6 +673,7 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     const extra = tr.p(A.debtInterestExtra);
     const cap = movableIncome + extra;
     const ded = Math.min(paid, cap);
+    notes.limit('debt_interest', A.debtInterestExtra, '252', 'household', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -589,6 +704,9 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     const paid = Math.max(0, total(tr, premiums) - total(tr, [hh.healthSubsidy]));
     const contributing = figures.some((f) => f.contributes);
     const ins = insuranceDeduction(tr.p(A.insurance), { couple, contributing, childWeight, paid });
+    if (paid > 0) {
+      notes.limit('insurance', A.insurance, '270', 'household', paid, ins.cap, ins.deduction);
+    }
     if (counted.some((ch) => ch.weight === 0.5)) tr.src(sharedChildren(y).source);
     const kids = childWeight
       ? ` + ${String(childWeight)} x ${chf(A.insurance.value.perChild)} for children`
@@ -627,20 +745,34 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     const m = medicalDeduction(costs, net310, rate);
     if (medicalDeduction(costs, lawBase, rate).deduction !== m.deduction) {
       notes.add(notes.unsupported, NOTE.trainingBase);
-    } else if (m.deduction > 0) {
-      items.push(
-        item(
+    } else {
+      if (costs > 0) {
+        notes.limit(
+          'medical',
+          A.medicalThresholdBp,
           '320',
           'household',
-          tr,
-          -m.deduction,
-          t(
-            `${chf(costs)} less 5 % of the Nettoeinkommen ${chf(net310)} (${chf(m.threshold)}): ${chf(m.deduction)}.`,
-            `${chf(costs)} moins 5${NB}% du revenu net ${chf(net310)} (${chf(m.threshold)})${NB}: ${chf(m.deduction)}.`,
+          costs,
+          m.threshold,
+          m.deduction,
+          'threshold',
+        );
+      }
+      if (m.deduction > 0) {
+        items.push(
+          item(
+            '320',
+            'household',
+            tr,
+            -m.deduction,
+            t(
+              `${chf(costs)} less 5 % of the Nettoeinkommen ${chf(net310)} (${chf(m.threshold)}): ${chf(m.deduction)}.`,
+              `${chf(costs)} moins 5${NB}% du revenu net ${chf(net310)} (${chf(m.threshold)})${NB}: ${chf(m.deduction)}.`,
+            ),
           ),
-        ),
-      );
-    } else if (costs > 0) notes.add(notes.notCounted, NOTE.medicalBelow);
+        );
+      } else if (costs > 0) notes.add(notes.notCounted, NOTE.medicalBelow);
+    }
   }
   if (hh.donations) {
     const tr = new Trace();
@@ -649,20 +781,37 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     const d = donationDeduction(gifts, net310, dp.shareBp, dp.min);
     if (donationDeduction(gifts, lawBase, dp.shareBp, dp.min).deduction !== d.deduction) {
       notes.add(notes.unsupported, NOTE.trainingBase);
-    } else if (d.deduction > 0) {
-      items.push(
-        item(
+    } else {
+      if (gifts > 0) {
+        notes.limit(
+          'donations',
+          A.donations,
           '324',
           'household',
-          tr,
-          -d.deduction,
-          t(
-            `${chf(gifts)}, at most 20 % of the Nettoeinkommen ${chf(net310)} (${chf(d.cap)}): ${chf(d.deduction)}.`,
-            `${chf(gifts)}, au plus 20${NB}% du revenu net ${chf(net310)} (${chf(d.cap)})${NB}: ${chf(d.deduction)}.`,
+          gifts,
+          dp.min,
+          d.deduction,
+          'minimum',
+        );
+        if (gifts >= dp.min) {
+          notes.limit('donations', A.donations, '324', 'household', gifts, d.cap, d.deduction);
+        }
+      }
+      if (d.deduction > 0) {
+        items.push(
+          item(
+            '324',
+            'household',
+            tr,
+            -d.deduction,
+            t(
+              `${chf(gifts)}, at most 20 % of the Nettoeinkommen ${chf(net310)} (${chf(d.cap)}): ${chf(d.deduction)}.`,
+              `${chf(gifts)}, au plus 20${NB}% du revenu net ${chf(net310)} (${chf(d.cap)})${NB}: ${chf(d.deduction)}.`,
+            ),
           ),
-        ),
-      );
-    } else if (gifts > 0) notes.add(notes.notCounted, NOTE.donationsMin);
+        );
+      } else if (gifts > 0) notes.add(notes.notCounted, NOTE.donationsMin);
+    }
   }
 
   // Political parties (325): at most CHF 5,600 for the return.
@@ -671,6 +820,7 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     const paid = total(tr, [hh.politicalParty]);
     const max = tr.p(A.partyMax);
     const ded = Math.min(paid, max);
+    notes.limit('party', A.partyMax, '325', 'household', paid, max, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -768,7 +918,6 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
 
   // Own care (353) and childcare by others (360) of each child under 14 living with you.
   {
-    const home = counted.filter((ch) => ch.livesWithYou);
     const careWorking = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)
       : figures.some((f) => f.earned > 0);
@@ -779,13 +928,20 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     const ownParts: string[] = [];
     const thirdParts: string[] = [];
     let capReached = false;
-    for (const ch of home) {
+    for (const ch of counted) {
+      if (!ch.livesWithYou) {
+        if (ch.child.childcare?.value) notes.add(notes.notCounted, NOTE.childcareNotCounted);
+        continue;
+      }
       const under14 = ch.child.under14 ?? (ch.child.childcare ? true : undefined);
       if (under14 === undefined) {
         notes.add(notes.unsupported, NOTE.under14);
         continue;
       }
-      if (!under14) continue;
+      if (!under14) {
+        if (ch.child.childcare?.value) notes.add(notes.notCounted, NOTE.childcareNotCounted);
+        continue;
+      }
       const shared = ch.weight === 0.5;
       const limits = shared
         ? trOwn.p(A.sharedCare)
@@ -798,6 +954,17 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
         else trThird.p(A.childcareMax);
       }
       const care = careDeduction(limits, { childcare: paid, childcareAllowed: careWorking });
+      if (paid > 0 && careWorking) {
+        notes.limit(
+          'childcare',
+          shared ? A.sharedCare : A.childcareMax,
+          '360',
+          `child${ch.index + 1}`,
+          paid,
+          care.thirdPartyCap,
+          care.thirdParty,
+        );
+      }
       ownTotal += care.own;
       ownParts.push(chf(care.own));
       if (paid > 0 && !careWorking) notes.add(notes.notCounted, NOTE.childcareWork);
@@ -931,7 +1098,6 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     canton: 'LU' as const,
     taxYear: y,
     commune: communeRef(commune),
-    ifd: null,
     estimates: allLines.some((l) => l.estimates?.includes('input-estimate'))
       ? [{ id: 'input-estimate', what: ESTIMATE_TEXT['input-estimate'] }]
       : [],
@@ -941,12 +1107,14 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     assumptions: notes.assumptions,
     notCounted: notes.notCounted,
   };
-  const unsupported = () => ({
+  const unsupported = (): LuTaxResult => ({
     ...base,
     unsupported: notes.unsupported,
     icc: null,
+    ifd: null,
     total: null,
     unverifiedRules: [],
+    limits: notes.limits,
   });
   if (notes.unsupported.length) return unsupported();
 
@@ -967,12 +1135,43 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
     });
     const unverified = [NOTE.rounding, ...notes.unverified];
     if (icc.taxes.incomeCap || icc.taxes.wealthCap) unverified.push(NOTE.capShare);
+    const federal = federalReturn({
+      input,
+      couple,
+      icc,
+      ...federalChildren(input, children, couple),
+      persons: people.map((p) => {
+        const id = p.id;
+        const mine = (codes: readonly (readonly [string, string])[]) => {
+          const set = new Set(codes.map((c) => c[id === 'p1' ? 0 : 1]));
+          return icc.items.filter((i) => i.person === id && set.has(i.code));
+        };
+        const C = PERSON_CODES;
+        return {
+          input: p,
+          earnings: mine([C.salary, C.side, C.replacement]),
+          costs: mine([
+            C.commute,
+            C.meals,
+            C.mealsReduced,
+            C.otherCosts,
+            C.sideCosts,
+            C.pillar3a,
+            C.buyIn,
+          ]),
+        };
+      }),
+    });
+    for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
+    const ifd = federal.ifd;
     return {
       ...base,
-      unsupported: [],
+      unsupported: [...federal.notes.unsupported],
       icc,
-      total: icc.taxes.total.amount,
-      unverifiedRules: unverified,
+      ifd,
+      total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
+      unverifiedRules: [...unverified, ...federal.notes.unverified],
+      limits: [...notes.limits, ...federal.notes.limits],
     };
   } catch (e) {
     if (!(e instanceof LuUnsupported)) throw e;
@@ -981,9 +1180,107 @@ export function computeReturn(input: LuEngineInput): LuTaxResult {
   }
 }
 
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+
+/**
+ * The children as the federal tax counts them (circular 30): in full, half in shared custody without
+ * child support, not for the parent who pays it; and where that attribution comes from.
+ */
+function federalChildren(
+  input: LuEngineInput,
+  children: readonly ChildInput[],
+  couple: boolean,
+): { children: FederalChild[]; childSources: string[] } {
+  const sharedAlone = !couple && children.some((ch) => ch.custody === 'shared');
+  const support = sharedAlone ? input.childSupport : undefined;
+  const childSources =
+    support === 'receives'
+      ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+      : support === 'pays'
+        ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'none' && input.ifdParentalScale !== undefined
+          ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 13.4.2, 14.4)`]
+          : [];
+  const out: FederalChild[] = [];
+  for (const ch of children) {
+    const child = {
+      livesWithYou: ch.livesWithYou ?? true,
+      ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
+      ...(ch.childcare ? { childcare: ch.childcare } : {}),
+    };
+    if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
+      out.push({ weight: 1, ...child });
+    } else if (input.childSupport === 'none') {
+      out.push({ weight: 0.5, ...child });
+    }
+  }
+  return { children: out, childSources };
+}
+
+/**
+ * Childcare paid for the household as a whole (the invoices of a crèche, say): the limit is per
+ * child under 14 living with you, on top of the deduction for own care (StG § 42 Abs. 1 lit. b; StV
+ * § 14b for a child living with each parent in turn). It is that child's when one child can have
+ * it; with several, any split gives the same when the whole amount is within the smallest of their
+ * limits; otherwise how it splits decides the deduction, and the tax is not computed without it
+ * (fail closed).
+ */
+function withHouseholdChildcare(
+  input: LuEngineInput,
+  P: LuYearParams,
+  couple: boolean,
+  notes: Notes,
+): readonly ChildInput[] {
+  const children = input.children ?? [];
+  const care = input.household?.childcare;
+  if (!care) return children;
+  if (children.some((ch) => ch.childcare)) {
+    throw new LuInputError('Childcare: give it per child or for the household, not both.');
+  }
+  const A = P.amounts;
+  const capOf = (ch: ChildInput): number | undefined => {
+    if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
+      return A.childcareMax.value - A.ownCare.value;
+    }
+    if (input.childSupport === 'none') return A.sharedCare.value.max - A.sharedCare.value.own;
+    return undefined;
+  };
+  const eligible = children
+    .map((ch, i) => ({ ch, i, cap: capOf(ch) }))
+    .filter(
+      (x): x is { ch: ChildInput; i: number; cap: number } =>
+        x.cap !== undefined && (x.ch.livesWithYou ?? true) && x.ch.under14 !== false,
+    );
+  const paid = total(new Trace(), [care]);
+  const smallest = Math.min(...eligible.map((x) => x.cap));
+  if (eligible.length === 1 || (eligible.length > 1 && paid <= smallest)) {
+    const at = eligible[0]!.i;
+    return children.map((ch, i) => (i === at ? { ...ch, childcare: care } : ch));
+  }
+  if (eligible.length > 1) notes.add(notes.unsupported, NOTE.childcareSplit);
+  else if (paid > 0) notes.add(notes.notCounted, NOTE.childcareNotCounted);
+  return children;
+}
+
 /** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<LuTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+export function allLines(r: Pick<LuTaxResult, 'icc'> & { ifd?: LuTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.subtotal,
+        f.incomeAfterDeductions,
+        f.netIncome,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
@@ -1008,5 +1305,6 @@ export function allLines(r: Pick<LuTaxResult, 'icc'>): Line[] {
     ...(x.taxes.wealthCap ? [x.taxes.wealthCap] : []),
     x.taxes.personal,
     x.taxes.total,
+    ...federal,
   ];
 }

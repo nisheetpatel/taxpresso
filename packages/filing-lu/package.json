@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-lu",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Lucerne return (pages 2 to 4, form B, the securities list summary) and the optional Ergänzungsblatt Direkte Bundessteuer, and the values to type on them, in the form's order (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
+    "@taxpresso/rules-lu": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -1267,6 +1267,98 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Lucerne return: its questions, its tax and the values to type, offline', async () => {
+    // Another household in its own folder, in its own server process with the same guard: Anna
+    // Huber, single, in Luzern, a member of no church, with the synthetic salary certificate read
+    // from its barcode.
+    const luVault = path.join(work, 'Luzern');
+    const luTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: luVault,
+        TAXPRESSO_UI_LANGUAGE: 'de',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    luTransport.stderr?.on('data', (d) => (stderr += d));
+    const lu = new Client({ name: 'taxpresso-offline-test-lu', version: '0.0.0' });
+    await lu.connect(luTransport);
+    try {
+      const answers = [
+        ['canton', 'LU'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Luzern'],
+        ['moved', 'no'],
+        ['church:p1', 'none'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 900],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await lu.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await lu.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'LU');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(luVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await lu.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await lu.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'LU');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'Luzern');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.equal(tax.structuredContent.icc.personal, 5000);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /Staats- und Gemeindesteuern/);
+
+      const sections = await lu.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['B', 'S2', 'S3', 'EB'],
+      );
+      const deductions = await lu.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'S3' },
+      });
+      assert.match(
+        deductions.content[0].text,
+        /- 238 Total Berufsauslagen Person 1 \(Formular B\) /,
+      );
+
+      const check = await lu.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await lu.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await lu.close();
+    }
+  });
+
   test('no outbound network attempt was made (C2)', () => {
     const attempts = existsSync(guardLog) ? readFileSync(guardLog, 'utf8').trim() : '';
     assert.equal(attempts, '', `outbound attempts:\n${attempts}`);

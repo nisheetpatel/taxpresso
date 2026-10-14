@@ -2,13 +2,20 @@
 // (SPEC.md section 13, item 8b): each manifest id in a citation has status "ok" in
 // docs/sources/lock.json and is followed by where to look (page, paragraph). The citations written
 // into the rules (the form's lines, the law's rules) too.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { ifdParamsFor } from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   churchShares,
+  ESTIMATE_TEXT,
+  FEDERAL_NOTE,
+  FEDERAL_RUBRICS,
   familyTariff,
   FORM_ORDER,
+  LU_OFFICIAL_DOCUMENTS,
+  LU_TERMS,
+  luKeys,
+  NOTE,
   luParamsFor,
   maxBurden,
   multipliers,
@@ -75,8 +82,8 @@ describe('citations', () => {
     });
   }
 
-  it('every line of the return, and the form’s order has each line once', () => {
-    for (const [code, r] of Object.entries({ ...RUBRICS, ...WEALTH_RUBRICS })) {
+  it('every line of the return and of the Ergänzungsblatt, and the form’s order has each line once', () => {
+    for (const [code, r] of Object.entries({ ...RUBRICS, ...WEALTH_RUBRICS, ...FEDERAL_RUBRICS })) {
       expectCited(r.source, code);
     }
     expect([...FORM_ORDER].sort()).toEqual(
@@ -118,5 +125,54 @@ describe('citations', () => {
     expect(b.sharedCare.value.thirdPartyTotal).toBe(
       2 * (b.sharedCare.value.max - b.sharedCare.value.own),
     );
+  });
+});
+
+describe('the keys, the terms and the texts', () => {
+  it('every key Lucerne defines, and the page to ask for more time', () => {
+    for (const year of [2025, 2026] as const) {
+      for (const [key, def] of Object.entries(luKeys(year))) {
+        if (key.startsWith('lu.') || key === 'profile.commune' || key === 'profile.moved') {
+          expectCited(def.source ?? '', `${year} key ${key}`);
+        }
+      }
+    }
+    expectCited(LU_TERMS.moreTimeSource, 'more time');
+  });
+
+  it('the texts shown to the user have no en or em dash (CLAUDE.md, user-facing copy)', () => {
+    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT, ...FEDERAL_NOTE })) {
+      expect(`${text.en} ${text.fr}`, name).not.toMatch(/[–—]/);
+    }
+    for (const [code, r] of Object.entries(FEDERAL_RUBRICS)) {
+      expect(`${r.label.en} ${r.label.fr} ${r.label.de}`, code).not.toMatch(/[–—]/);
+    }
+  });
+});
+
+describe('the official Lucerne documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/lu/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    expect(Object.keys(LU_OFFICIAL_DOCUMENTS).sort()).toEqual(manifest.map((m) => m.id).sort());
+    for (const [id, doc] of Object.entries(LU_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id)!;
+      expect(doc, id).toEqual({ title: m.title, url: m.url, pdf: m.format === 'pdf' });
+    }
+  });
+
+  it('cover every Lucerne document the rules cite', () => {
+    const dir = new URL('../src/', import.meta.url);
+    const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    for (const f of files) {
+      const text = readFileSync(new URL(f, dir), 'utf8');
+      for (const id of text.match(/\blu-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]\b/g) ?? []) {
+        expect(Object.keys(LU_OFFICIAL_DOCUMENTS), `${f}: ${id}`).toContain(id);
+      }
+    }
   });
 });

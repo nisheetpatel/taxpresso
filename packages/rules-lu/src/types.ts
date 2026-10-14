@@ -3,7 +3,15 @@
 // the same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items
 // carry the Ziffer of the line on the Lucerne return (./rubrics.ts), deductions negative, income
 // and assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { LuTaxYear } from './params.js';
 
 export type {
@@ -11,6 +19,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -111,6 +120,12 @@ export interface LuEngineInput {
    */
   childSupport?: 'receives' | 'pays' | 'none';
   /**
+   * The federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). Unknown, the federal tax is not
+   * computed. The cantonal tax doesn't read it.
+   */
+  ifdParentalScale?: boolean;
+  /**
    * Shared custody without child support, a child living with you: whether the family tariff is
    * yours, by the guide's rules (you care for the children longer, or as long and earn more; living
    * with the other parent, you bear more of their costs).
@@ -126,6 +141,11 @@ export interface LuEngineInput {
     children?: readonly (Confession | undefined)[];
   };
   household?: {
+    /**
+     * 360: childcare by others paid for the household as a whole (the invoices of a crèche, say),
+     * when not given per child: it counts where it can be told apart per child (./compute.ts).
+     */
+    childcare?: Amount;
     /** 270: health insurance premiums paid (the premium subsidy given apart or netted). */
     healthPremiums?: Amount;
     /** 270: private accident insurance premiums. */
@@ -241,17 +261,36 @@ export interface LuIccResult {
   };
 }
 
+/**
+ * The federal direct tax (direkte Bundessteuer) as the canton's Ergänzungsblatt derives it from the
+ * return (./ifd.ts): the Nettoeinkommen of Ziffer 310 with the cantonal travel costs and insurance
+ * deduction added back (Ziffer 1 to 7), the federal ones taken off (8 to 12), the additional
+ * deductions (13 to 19) and the social deductions (20 to 23). `items` are the sheet's lines, each
+ * with its Ziffer as "E1" to "E22"; they add up to the taxable income.
+ */
+export interface LuIfdResult extends IfdResult {
+  items: Item[];
+  /** Ziffer 7, Zwischentotal: the Nettoeinkommen of 310 with the cantonal amounts added back. */
+  subtotal: Line;
+  /** Ziffer 12, Nettoeinkommen: the base of the medical costs (13) and the donations (15). */
+  incomeAfterDeductions: Line;
+}
+
 export interface LuTaxResult {
   canton: 'LU';
   taxYear: LuTaxYear;
   commune: CommuneRef;
   icc: LuIccResult | null;
   /**
-   * The federal tax is packages/rules-ch's. The Lucerne return has no federal column: the
-   * authority derives it (an optional Ergänzungsblatt states the differences), so `ifd` is null.
+   * The federal tax of the Ergänzungsblatt Direkte Bundessteuer (./ifd.ts, packages/rules-ch's
+   * rules), or null. The return itself has no federal column: the authority derives the federal
+   * tax from it.
    */
-  ifd: null;
-  /** The state, communal (and church, when asked for) tax and the Personalsteuer, when computed. */
+  ifd: LuIfdResult | null;
+  /**
+   * The state, communal (and church, when asked for) tax and the Personalsteuer, and the federal
+   * tax, when both are computed.
+   */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -261,4 +300,6 @@ export interface LuTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes. */
+  limits: LimitApplied[];
 }
