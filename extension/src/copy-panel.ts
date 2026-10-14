@@ -18,7 +18,7 @@ import {
   type FormColumn,
   type FormItem,
 } from '@taxpresso/filing-ge';
-import type { Line } from '@taxpresso/rules-ge';
+import type { Line } from '@taxpresso/rules-ch';
 import type { Lang } from '@taxpresso/questionnaire';
 import { WorkspaceError, type Workspace } from './workspace.js';
 

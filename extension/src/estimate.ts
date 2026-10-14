@@ -1,16 +1,10 @@
 // The tax estimate, for Claude (compute_tax) and for the dashboard ("Your estimate"). Every figure
-// comes from the rules engine (@taxpresso/rules-ge, SPEC.md section 7); nothing is computed here.
+// comes from the rules engine (@taxpresso/rules-ge, with the federal tax and the shared shapes of
+// @taxpresso/rules-ch, SPEC.md section 7); nothing is computed here.
 // Concise by default (C6), the explanation tree with `detail`.
 import type { Lang } from '@taxpresso/questionnaire';
-import {
-  chf,
-  compareWithLastYear,
-  type Item,
-  type LastYearRow,
-  type Line,
-  type TaxResult,
-  type Text,
-} from '@taxpresso/rules-ge';
+import { chf, type Item, type Line, type Text } from '@taxpresso/rules-ch';
+import { compareWithLastYear, type LastYearRow, type TaxResult } from '@taxpresso/rules-ge';
 import type { Workspace } from './workspace.js';
 
 const WHO: Record<string, Text> = {

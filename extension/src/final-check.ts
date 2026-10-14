@@ -8,6 +8,7 @@ import type { McpServer } from '@modelcontextprotocol/server';
 import { FORM_2025, FORM_2026, LEDGER_ROUTES_2026 } from '@taxpresso/filing-ge';
 import type { Fact } from '@taxpresso/ledger';
 import type { Lang } from '@taxpresso/questionnaire';
+import type { Text } from '@taxpresso/rules-ch';
 import {
   allLines,
   finalCheck,
@@ -16,7 +17,6 @@ import {
   type FinalCheckInput,
   type FinalCheckItem,
   type PendingValue,
-  type Text,
 } from '@taxpresso/rules-ge';
 import * as z from 'zod/v4';
 import { BARCODE_PENDING } from './barcode.js';

@@ -2,7 +2,7 @@
 // the fund allows comes from the user's pension certificate (the fund states it: LPP art. 79b
 // al. 1); the tax saved for the amount they choose is the engine run with and without it, on top
 // of the 3a they already paid. An amount above what the fund allows gets no figure.
-import { LPP_BUYIN_FACTS } from '@taxpresso/rules-ge';
+import { LPP_BUYIN_FACTS } from '@taxpresso/rules-ch';
 import {
   type Assumption,
   type Deduction,

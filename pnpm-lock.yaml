@@ -235,6 +235,9 @@ importers:
       '@taxpresso/questionnaire':
         specifier: workspace:*
         version: link:../packages/questionnaire
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../packages/rules-ch
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../packages/rules-ge
@@ -313,6 +316,9 @@ importers:
 
   packages/optimizer:
     dependencies:
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../rules-ge
