@@ -93,6 +93,26 @@ export const RUBRICS = {
     'p. 2 and p. 21',
     'p. 38',
   ),
+  // Property, annexe D: a home or land abroad (specimen p. 15 and 16; guide p. 32 to 35), its
+  // income and value (15.10, 15.20) and its upkeep costs (58.00, carried to PG3).
+  '15.10': r(
+    'Immeubles occupés par le propriétaire',
+    'Property abroad you use yourselves',
+    'p. 15 (D1)',
+    'p. 32 and 33',
+  ),
+  '15.20': r(
+    'Immeubles locatifs ou loués',
+    'Property abroad you let, or land',
+    'p. 16 (D2)',
+    'p. 34 and 35',
+  ),
+  '58.00': r(
+    'Charges et frais d’entretien d’immeuble(s)',
+    'Upkeep costs of the property abroad',
+    'p. 3 and p. 15',
+    'p. 33 to 35',
+  ),
   '16.30': r('Subsides d’assurance-maladie', 'Health insurance subsidy', 'p. 12', 'p. 27'),
   '17.10': r('Rentes AVS/AI', 'AVS/AI pensions', 'p. 11', 'p. 25'),
   // Employment deductions, taxpayer A (B: 4x.xx).

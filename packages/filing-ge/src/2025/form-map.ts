@@ -13,8 +13,10 @@
 //
 // Self-employment (annexe B): the simple case of SPEC.md section 1 (a sole proprietorship), one
 // sheet per taxpayer; its lines for partnerships and the cases Taxpresso doesn't prepare are listed,
-// not supported. Property (annexe D) is out of scope for now: its pages are listed, its totals on
-// the main form are marked unsupported, its own rubrics come with its phase.
+// not supported. Property (annexe D): a home or land abroad, the simple case of SPEC.md section 1,
+// on D1 (15.10, a home the owner uses) and D2 (15.20, let, or land), with its totals on the main
+// form (PG2 15.00, PG3 58.00, PG4 15.00) and 97.00, the share not taxed in Geneva; property in
+// Switzerland, D3 and D4 (subsidised housing, the detail of upkeep invoices) are not supported.
 import type {
   FormColumn,
   FormMap,
@@ -147,9 +149,9 @@ const PG2 = [
   pg2(
     '15.00',
     'Revenu brut immobilier',
-    'Income from property (from D)',
-    'Revenus des immeubles (de D)',
-    { supported: false },
+    'Income from property (from D), a property abroad included',
+    'Revenus des immeubles (de D), immeuble à l’étranger compris',
+    { guide: 32 },
   ),
   pg2('16.00', 'Autres revenus', 'Other income (from C2)', 'Autres revenus (de C2)'),
   pg2('17.00', 'Rentes AVS/AI', 'AVS/AI pensions (from C1)', 'Rentes AVS/AI (de C1)'),
@@ -311,7 +313,7 @@ const PG3 = [
     'Charges et frais d’entretien d’immeuble(s)',
     'Property costs (from D)',
     'Frais d’immeubles (de D)',
-    { supported: false },
+    { guide: 33 },
   ),
   pg3(
     '58.01',
@@ -418,8 +420,8 @@ const PG3 = [
   pg3(
     '97.00',
     'Part proportionnelle du revenu non imposable',
-    'Share of income not taxable in Geneva',
-    'Part du revenu non imposable à Genève',
+    'Share of income not taxable here: a property abroad’s part, after its share of the deductions',
+    'Part du revenu non imposable ici: celle d’un immeuble à l’étranger, après sa part des déductions',
     { role: 'computed', nature: 'income' },
   ),
   pg3('99.00', 'Revenu imposable', 'Taxable income', 'Revenu imposable', {
@@ -447,9 +449,13 @@ const PG4 = [
     'Accounts and securities on 31 December (from F1)',
     'Comptes et titres au 31 décembre (de F1)',
   ),
-  pg4('15.00', 'Fortune brute immobilière', 'Property (from D)', 'Immeubles (de D)', {
-    supported: false,
-  }),
+  pg4(
+    '15.00',
+    'Fortune brute immobilière',
+    'Property (from D), a property abroad included',
+    'Immeubles (de D), immeuble à l’étranger compris',
+    { guide: 32 },
+  ),
   pg4(
     '16.70',
     'Valeur de rachat des assurances-vie',
@@ -510,8 +516,8 @@ const PG4 = [
   pg4d(
     '97.00',
     'Part proportionnelle de la fortune non-imposable',
-    'Share of wealth not taxable in Geneva',
-    'Part de la fortune non imposable à Genève',
+    'Share of wealth not taxable here: a property abroad’s part, after its share of the debts',
+    'Part de la fortune non imposable ici: celle d’un immeuble à l’étranger, après sa part des dettes',
     { role: 'computed' },
   ),
   pg4d('99.00', 'Fortune imposable', 'Taxable wealth', 'Fortune imposable', { role: 'computed' }),
@@ -1426,6 +1432,71 @@ const C4 = [
   c4a('59.00', 'Total', 'Total other deductions', 'Total des autres déductions', { role: 'total' }),
 ];
 
+// --- Annexe D: property. A home or land abroad, the simple case -----------------------------------
+
+/** What each line of D1 and D2 asks about the property, as printed (specimen p. 15 and 16). */
+const PROPERTY_LINE = (pdfPage: number, own: boolean): readonly LineField[] => [
+  {
+    id: 'lieu',
+    label: 'Code lieu',
+    format: 'text',
+    hint: g(
+      'The code of the country; the online form and GeTax list it',
+      'Le code du pays; le formulaire en ligne et GeTax le proposent',
+    ),
+    source: `${SPEC} p. ${pdfPage}; ${GUIDE} p. 32`,
+  },
+  {
+    id: 'situation',
+    label: 'Situation (adresse exacte)',
+    format: 'text',
+    hint: g(
+      'For a property abroad, the name of the country',
+      'Pour un immeuble à l’étranger, le nom du pays',
+    ),
+    source: `${SPEC} p. ${pdfPage}; ${GUIDE} p. 32`,
+  },
+  { id: 'partA', label: 'Part contr. A', format: 'percent' },
+  { id: 'partB', label: 'Part contr. B', format: 'percent' },
+  own
+    ? { id: 'capital', label: 'Capital selon estimation fiscale', format: 'count' }
+    : {
+        id: 'capital',
+        label: 'Etat des loyers capitalisés ou capital selon estimation',
+        format: 'count',
+      },
+  ...(own
+    ? [
+        { id: 'vlBrute', label: 'Valeur locative brute', format: 'count' } as const,
+        { id: 'vlApres', label: 'Valeur locative après abattement', format: 'count' } as const,
+      ]
+    : []),
+  { id: 'chargesIfd', label: 'Charges et frais d’entretien (IFD)', format: 'count' },
+  { id: 'chargesIcc', label: 'Charges et frais d’entretien (ICC)', format: 'count' },
+];
+
+/** The property's columns as headed on D1 and D2: ICC fortune, IFD revenu, ICC revenu. */
+const PROPERTY_COLUMNS: readonly FormColumn[] = ['wealth', 'ifd', 'icc'];
+
+const d1 = on('D1', 15, 'occupes', { columns: PROPERTY_COLUMNS, guide: '32 and 33' });
+const d2 = on('D2', 16, 'loues', { columns: PROPERTY_COLUMNS, guide: '34 and 35' });
+const D = [
+  d1(
+    '15.10',
+    'Immeubles occupés par le propriétaire',
+    'A home you use yourselves, or keep for your use or your family’s: its value, its rental value and its upkeep',
+    'Un logement que vous occupez ou gardez à votre disposition ou à celle de vos proches: sa valeur, sa valeur locative et son entretien',
+    { repeats: 2, lineFields: PROPERTY_LINE(15, true) },
+  ),
+  d2(
+    '15.20',
+    'Immeubles locatifs ou loués',
+    'A property let, or land: its value, the rents received and its upkeep',
+    'Un immeuble loué, ou un terrain: sa valeur, les loyers encaissés et son entretien',
+    { repeats: 2, lineFields: PROPERTY_LINE(16, false) },
+  ),
+];
+
 // --- Annexe E: debts and interest --------------------------------------------------------------
 
 const CREDITOR_LINE: readonly LineField[] = [
@@ -1438,12 +1509,7 @@ const CREDITOR_LINE: readonly LineField[] = [
 ];
 const DEBT: readonly FormColumn[] = ['icc_ifd', 'wealth'];
 const e1 = on('E1', 19, 'chirographaires', { nature: 'deduction', columns: DEBT, guide: 37 });
-const e1h = on('E1', 19, 'hypothecaires', {
-  nature: 'deduction',
-  columns: DEBT,
-  guide: 37,
-  supported: false,
-});
+const e1h = on('E1', 19, 'hypothecaires', { nature: 'deduction', columns: DEBT, guide: 37 });
 const e2 = on('E2', 20, 'exoneres', { nature: 'deduction', columns: DEBT, supported: false });
 const e2t = on('E2', 20, 'totaux', { nature: 'deduction', columns: DEBT, role: 'total' });
 const E = [
@@ -1457,8 +1523,8 @@ const E = [
   e1h(
     '55.20',
     'Intérêts et dettes hypothécaires',
-    'Mortgages: interest and debt',
-    'Hypothèques: intérêts et dette',
+    'Mortgages, such as a loan on a property abroad: interest and debt',
+    'Hypothèques, par exemple un emprunt sur un immeuble à l’étranger: intérêts et dette',
     { repeats: 3, lineFields: CREDITOR_LINE },
   ),
   e1(
@@ -1931,10 +1997,10 @@ export const FORM_PAGES_2025: readonly FormPage[] = [
       [
         'occupes',
         'Immeubles occupés par le propriétaire',
-        g('Homes you live in', 'Logements que vous occupez'),
+        g('Homes you live in or keep for your use', 'Logements que vous occupez'),
       ],
     ],
-    { supported: false, guide: 32 },
+    { guide: 32 },
   ),
   page(
     'D2',
@@ -1949,7 +2015,7 @@ export const FORM_PAGES_2025: readonly FormPage[] = [
         g('Commercial property', 'Immeubles commerciaux'),
       ],
     ],
-    { supported: false, guide: 34 },
+    { guide: 34 },
   ),
   page(
     'D3',
@@ -2085,6 +2151,7 @@ export const FORM_RUBRICS_2025: readonly FormRubric[] = [
   ...C2,
   ...C3,
   ...C4,
+  ...D,
   ...E,
   ...F,
   ...G,

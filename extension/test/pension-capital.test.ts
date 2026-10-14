@@ -342,7 +342,7 @@ describe('a 2nd pillar lump sum for a home (Morel)', () => {
       ws()
         .engine.notSupported(ws().snapshot())
         .map((x) => x.what.en),
-    ).toEqual(['Real estate (annexe D)']);
+    ).toEqual(['Real estate in Switzerland (annexe D)']);
     const out = (await call('compute_tax')).structuredContent as { capital: { total: number } };
     expect(out.capital.total).toBe(391_680);
   });

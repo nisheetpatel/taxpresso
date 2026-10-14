@@ -339,6 +339,38 @@
       "notes": "Initial deadline 31 March. Requests from 1 January to 31 October online, by phone or by post; from 1 November to 31 December by post only. Fees of CHF 20, 40 or 60 by length of extension. Page does not give 2025 dates."
     },
     {
+      "id": "ge-na-revenu-immobilier-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: le revenu immobilier (impôt sur le revenu)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The page the guide sends to for the rental value of property abroad (ge-2025-guide-declaration-pp p. 33, 'Le revenu immobilier'): a home in France (the taxe d'habitation's 'Base d'imposition (valeur locative brute)', or the 'Base' of the 'Commune' column of the taxes foncières times 2), a country with a rental value like Switzerland's (its value, with the country's attestation), a country without one (4.5 % of the tax value, a net flat amount, no upkeep costs), and a property let abroad (the rents received, with a management account, compte de gestion).",
+      "notes": "Sections 'Votre bien est situé dans le canton de Genève', 'dans un autre canton', 'à l'étranger' (France, a country with an equivalent of the Swiss rental value, a country without one), each with 'Si vous occupez votre bien immobilier, qu'il est à votre disposition ou à celles de vos proches' and 'Si vous louez votre bien'. Last updated 27 April 2026. Added 14 October 2026 by the property abroad agent."
+    },
+    {
+      "id": "ge-na-valeur-fiscale-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: la valeur fiscale (impôt sur la fortune)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The wealth value of property abroad: the tax value set by the country, with its attestation, or, where the country sets none, the purchase price, with a copy of the deed (acte d'acquisition); a value in a foreign currency converted into francs on 31 December of the tax year. A foreign value that is extremely low is replaced by a Geneva-style estimate.",
+      "notes": "Section 'Votre bien est situé à l'étranger'. Last updated 27 April 2026. Added 14 October 2026 by the property abroad agent."
+    },
+    {
       "id": "ge-2026-source-directives",
       "canton": "GE",
       "doc_type": "source_tax",
@@ -5857,6 +5889,22 @@
       "priority": "core",
       "why_needed": "Consolidated cantonal income and wealth tax law; sets the Staatssteuer tariffs in sections 35 and 47.",
       "notes": "Nachtragsnummer 132 is marked aktuell. The PDF on notes.zh.ch could not be fetched; this is the HTML ZH-Lex entry."
+    },
+    {
+      "id": "zh-na-zstb-5-3",
+      "canton": "ZH",
+      "doc_type": "other",
+      "title": "Zürcher Steuerbuch Nr. 5.3: Internationale Steuerausscheidung bei Grundstücken, Geschäftsbetrieben und Betriebsstätten",
+      "tax_year": null,
+      "language": "de",
+      "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf",
+      "format": "pdf",
+      "publisher": "Kantonales Steueramt Zürich (Zürcher Steuerbuch Nr. 5.3)",
+      "published": "2026-03-05",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "How income, deductions, debts and debt interest are split between Switzerland and abroad for a person living in Switzerland with real estate abroad, for the federal tax (DBG art. 6 al. 3, art. 7 al. 1, art. 35 al. 3) and the cantonal tax, with the Federal Supreme Court decisions: property income and costs by object, debts and debt interest in proportion to where all gross assets lie, general deductions by their link to an income or else by net income, social deductions by net income, losses abroad only for the rate, the rate of the whole worldwide income.",
+      "notes": "8 pages, dated 5 March 2026 (PDF created 23 March 2026). Section 1.1 (Grundstück im Ausland, natürliche Personen) p. 1 and 2; 1.2 (Geschäftsbetrieb im Ausland) p. 3 and 4; 2 (no residence in Switzerland) p. 5 to 8. Page https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-nr-5-3.html. Cited for the federal rules, which every canton applies; the Geneva documents don't spell them out (ge/NOTES.md, Property abroad). Added 14 October 2026 by the property abroad agent."
     },
     {
       "id": "zh-2026-source-tax-grundlagen-parameter",

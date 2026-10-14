@@ -320,6 +320,65 @@ describe('checking the official PDF against the values to type', () => {
   });
 });
 
+describe('annexe D in the PDF: a property abroad, and the share not taxed here', () => {
+  // A flat let abroad (packages/rules-ge/test/abroad.test.ts): D2 15.20 with its three columns
+  // (ICC fortune, IFD revenu, ICC revenu), the loan on E1 55.20, the totals on PG2, PG3 and PG4, and
+  // 97.00, the share not taxed in Geneva, which the form computes like 99.00.
+  const items = [
+    item('15.20', 'household', chf(139_575), {
+      column: 'wealth',
+      instance: 'abroad',
+      fields: { situation: 'Portugal', partA: '100', capital: '139575' },
+    }),
+    item('15.20', 'household', chf(8_374), { column: 'ifd', instance: 'abroad' }),
+    item('15.20', 'household', chf(8_374), { column: 'icc', instance: 'abroad' }),
+    item('15.00', 'household', chf(8_374), { column: 'icc' }),
+    item('15.00', 'household', chf(8_374), { column: 'ifd' }),
+    item('15.00', 'household', chf(139_575), { column: 'wealth' }),
+    item('58.00', 'household', chf(1_256), { column: 'icc' }),
+    item('58.00', 'household', chf(1_256), { column: 'ifd' }),
+    item('55.20', 'household', chf(2_100), { column: 'icc_ifd', instance: 'loan' }),
+    item('55.20', 'household', chf(60_000), { column: 'wealth', instance: 'loan' }),
+  ];
+
+  it('matches the property’s line column by column, and shows the share not taxed here', () => {
+    const c = check(items, [
+      at('D2', '15.20', 'household', { amounts: [chf(139_575), chf(8_374), chf(8_374)] }, 16),
+      at('E1', '55.20', 'household', { amounts: [chf(2_100), chf(60_000)] }, 19),
+      at('PG3', '97.00', 'household', { icc: chf(6_709), ifd: chf(6_612) }, 3),
+      at('PG4', '97.00', 'household', { icc: chf(118_000) }, 4),
+      at('PG3', '99.00', 'household', { icc: chf(70_000), ifd: chf(75_000) }, 3),
+    ]);
+    // The first of the page's lines for a property: 15.20-1.
+    expect(lineOf(c, 'D2', '15.20-1')).toMatchObject({
+      outcome: 'match',
+      cells: [
+        { column: 'icc', taxpresso: 8_374, pdf: 8_374 },
+        { column: 'ifd', taxpresso: 8_374, pdf: 8_374 },
+        { column: 'wealth', taxpresso: 139_575, pdf: 139_575 },
+      ],
+    });
+    expect(lineOf(c, 'E1', '55.20-1')).toMatchObject({ outcome: 'match' });
+    const computed = (page: string, ref: string) =>
+      c.sections.find((s) => s.page === page)!.computed.find((l) => l.ref === ref);
+    expect(computed('PG3', '97.00')).toMatchObject({ check: 'shown' });
+    expect(computed('PG4', '97.00')).toMatchObject({ check: 'shown' });
+    expect(c.counts).toMatchObject({ toFix: 0, computedOff: 0 });
+  });
+
+  it('says when the property’s value differs on the PDF', () => {
+    const c = check(items, [
+      at('D2', '15.20', 'household', { amounts: [chf(140_000), chf(8_374), chf(8_374)] }, 16),
+    ]);
+    expect(lineOf(c, 'D2', '15.20-1')).toMatchObject({
+      outcome: 'differs',
+      cells: [{}, {}, { column: 'wealth', taxpresso: 139_575, pdf: 140_000 }],
+    });
+    // The value differs; the loan on E1, not printed here, is Taxpresso's only.
+    expect(c.counts).toMatchObject({ differs: 1, taxpressoOnly: 1, toFix: 2 });
+  });
+});
+
 describe('annexe B in the PDF: one sheet per self-employed taxpayer, the same codes for both', () => {
   // The reader can't tell whose a sheet is (its codes are the same for A and B, and the ticked box
   // is not kept): it gives the lines to the household. Taxpresso gives them to the person whose

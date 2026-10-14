@@ -25,7 +25,14 @@ const POSITION: Record<string, FinalCheckMessageKey> = {
 };
 
 /** Kinds shown first under "Good to know"; the others fold away. */
-const SHOWN = new Set(['capital', 'limit', 'best_figure', 'official_pdf', 'optional_document']);
+const SHOWN = new Set([
+  'capital',
+  'abroad',
+  'limit',
+  'best_figure',
+  'official_pdf',
+  'optional_document',
+]);
 
 function Sources({ sources, lang }: { sources: FinalCheckSource[]; lang: Language }) {
   if (!sources.length) return null;

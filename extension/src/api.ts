@@ -12,7 +12,8 @@ import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import { estimateView } from './estimate.js';
 import { ExtractionError } from './extraction.js';
 import { documentPerson, holdingsView, saveHolding } from './holdings.js';
-import { KIND_LABELS } from './kinds.js';
+import { ownsPropertyAbroad } from './abroad.js';
+import { ABROAD_KINDS, KIND_LABELS } from './kinds.js';
 import { reviewOf } from './last-year-review.js';
 import {
   decide,
@@ -91,8 +92,15 @@ const LineOwnerChange = z.object({
 });
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
-/** Kinds only Geneva reads so far: self-employment, the simple case (SPEC.md section 1). */
-const GENEVA_ONLY: ReadonlySet<string> = new Set(['business_accounts', 'avs_contributions']);
+/**
+ * Kinds only Geneva reads so far: self-employment, the simple case, and a property abroad (SPEC.md
+ * section 1).
+ */
+const GENEVA_ONLY: ReadonlySet<string> = new Set([
+  'business_accounts',
+  'avs_contributions',
+  ...ABROAD_KINDS,
+]);
 
 /** Where a question's suggestion comes from: last year's declaration, its year and page. */
 function suggestedFrom(ws: Workspace, slot: Slot) {
@@ -204,9 +212,12 @@ export function dashboardState(
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
     })),
-    kinds: KIND_ORDER.filter((k) => canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)).map(
-      (k) => ({ value: k, label: say(KIND_LABELS[k], lang) }),
-    ),
+    // A property abroad's documents only for a household that has one (simple first).
+    kinds: KIND_ORDER.filter(
+      (k) =>
+        (canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)) &&
+        (!ABROAD_KINDS.has(k) || ownsPropertyAbroad(ws)),
+    ).map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
     // 10.5 second view, 10.8): ./document-views.ts.
     cards: documentCards(ws, content),

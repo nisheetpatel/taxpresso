@@ -7,6 +7,7 @@
 import type { FactStatus, Owner } from '@taxpresso/ledger';
 import {
   annexBItems,
+  annexDItems,
   buildCopyPanel,
   ENGINE_RUBRICS_2026,
   enteredValue,
@@ -23,6 +24,7 @@ import type { Line } from '@taxpresso/rules-ch';
 import type { CommuneSlug } from '@taxpresso/rules-ge';
 import { CANTONS } from './cantons.js';
 import { hasFigures } from './estimate.js';
+import { holdings } from './holdings.js';
 import type { ContentLang as Lang } from './lang.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
@@ -78,11 +80,21 @@ export function engineItems(ws: Workspace): FormItem[] {
       );
     }
     add('95.00', 'household', icc.totalIncome, 'icc', icc.totalIncome.amount, true);
+    // With a property abroad, the share of the income not taxed in Geneva (97.00).
+    if (icc.exemptIncome) add('97.00', 'household', icc.exemptIncome, 'icc');
     add('99.00', 'household', icc.taxableIncome, 'icc', icc.taxableIncome.amount, true);
     // The wealth page only when there is wealth to declare.
     if (icc.wealth.grossWealth.amount > 0) {
       add('51.50', 'household', icc.wealth.socialDeduction, 'wealth');
-      add('95.00', 'household', icc.wealth.taxableWealth, 'wealth', undefined, true);
+      add(
+        '95.00',
+        'household',
+        icc.wealth.rateWealth ?? icc.wealth.taxableWealth,
+        'wealth',
+        undefined,
+        true,
+      );
+      if (icc.wealth.exemptWealth) add('97.00', 'household', icc.wealth.exemptWealth, 'wealth');
       add('99.00', 'household', icc.wealth.taxableWealth, 'wealth', undefined, true);
     }
   }
@@ -90,6 +102,7 @@ export function engineItems(ws: Workspace): FormItem[] {
     const insurance = ifd.items.find((i) => i.code === '52.00');
     if (insurance) add('52.00', 'household', insurance, 'ifd');
     add('95.00', 'household', ifd.totalIncome, 'ifd', ifd.totalIncome.amount, true);
+    if (ifd.exemptIncome) add('97.00', 'household', ifd.exemptIncome, 'ifd');
     add('99.00', 'household', ifd.taxableIncome, 'ifd', ifd.taxableIncome.amount, true);
   }
   // The lump sums from the 2nd pillar and pillar 3a counted for the year (98.12, one amount for
@@ -107,6 +120,11 @@ export function engineItems(ws: Workspace): FormItem[] {
         status,
       }),
     );
+  }
+  // A property abroad: annexe D, its totals, and a loan on it in another currency on E1 55.20
+  // (@taxpresso/filing-ge, annex-d.ts).
+  if (r.abroad) {
+    out.push(...annexDItems({ abroad: r.abroad, debts: holdings(ws).other, status }));
   }
   return out;
 }

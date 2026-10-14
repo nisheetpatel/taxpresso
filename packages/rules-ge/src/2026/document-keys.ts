@@ -16,6 +16,11 @@ import {
   KEYS_SALARY_CERTIFICATE_2026,
   SALARY_CERTIFICATE_FIELDS_2026,
 } from '@taxpresso/rules-ch';
+import {
+  ABROAD_FIELDS_2026,
+  DEBT_CURRENCY_FIELDS_2026,
+  KEYS_ABROAD_DOCUMENTS_2026,
+} from './abroad-keys.js';
 import { BUSINESS_FIELDS_2026, KEYS_BUSINESS_DOCUMENTS_2026 } from './business-keys.js';
 
 const GE_GUIDE = 'ge-2025-guide-declaration-pp';
@@ -195,6 +200,10 @@ export const DOCUMENT_KEYS_2026 = {
 
   // Self-employment: the business's accounts and the AVS statements (./business-keys.ts).
   ...KEYS_BUSINESS_DOCUMENTS_2026,
+
+  // A property abroad: the country's tax notice, the deed, the management account, and a loan
+  // statement in another currency (./abroad-keys.ts).
+  ...KEYS_ABROAD_DOCUMENTS_2026,
 } as const satisfies KeyRegistry;
 
 export type DocumentKey2026 = keyof typeof DOCUMENT_KEYS_2026;
@@ -229,6 +238,9 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
   lpp_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
   pillar3a_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
   ...BUSINESS_FIELDS_2026,
+  ...ABROAD_FIELDS_2026,
+  // A loan statement: in francs, or in the loan's own currency (a mortgage abroad).
+  debt_interest: [...ATTESTATION_FIELDS_2026.debt_interest, ...DEBT_CURRENCY_FIELDS_2026],
 };
 
 /** The keys a document of this kind can give, or none. */

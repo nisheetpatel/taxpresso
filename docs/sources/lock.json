@@ -5872,5 +5872,35 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-14T19:00:11.088Z",
     "status": "ok"
+  },
+  "ge-na-valeur-fiscale-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
+    "file": "ge/files/ge-na-valeur-fiscale-page.html",
+    "bytes": 116001,
+    "sha256": "8432cf61fc27e64803f488c8ef6e828340849ea0a3da732b151bb85280d1825f",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T17:40:45.406Z",
+    "status": "ok"
+  },
+  "zh-na-zstb-5-3": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf",
+    "file": "zh/files/zh-na-zstb-5-3.pdf",
+    "bytes": 109532,
+    "sha256": "024e11eb9ff58b2e9c6a28699a94847026c40d06e83d671c86e3bef2afd7a8dd",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T17:40:45.488Z",
+    "status": "ok"
+  },
+  "ge-na-revenu-immobilier-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
+    "file": "ge/files/ge-na-revenu-immobilier-page.html",
+    "bytes": 114679,
+    "sha256": "33fe00e82621188066c546532bdbedac9c7e628a2114adaa0675aa419bcf063d",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T17:46:00.000Z",
+    "status": "ok"
   }
 }

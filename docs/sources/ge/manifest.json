@@ -622,5 +622,37 @@
     "priority": "core",
     "why_needed": "The official 2026 rates of the cantonal and communal tax on pension capital at a fifth of the LIPP scale (art. 45), centimes included: used to check the engine's separate capital tax for 2026.",
     "notes": "4 pages, footer 'Barème LPP 2026, Part ICC, novembre 2025'. The rates include the cantonal centimes (48.5%) and a flat average of the communal centimes (43.44%). Page: https://www.ge.ch/document/bareme-icc-impot-source-prestations-capital-2026"
+  },
+  {
+    "id": "ge-na-revenu-immobilier-page",
+    "canton": "GE",
+    "doc_type": "other",
+    "title": "L'impôt des propriétaires immobiliers: le revenu immobilier (impôt sur le revenu)",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
+    "format": "html",
+    "publisher": "Administration fiscale cantonale (AFC), Genève",
+    "published": "2026-04-27",
+    "verified_on": "2026-10-14",
+    "priority": "core",
+    "why_needed": "The page the guide sends to for the rental value of property abroad (ge-2025-guide-declaration-pp p. 33, 'Le revenu immobilier'): a home in France (the taxe d'habitation's 'Base d'imposition (valeur locative brute)', or the 'Base' of the 'Commune' column of the taxes foncières times 2), a country with a rental value like Switzerland's (its value, with the country's attestation), a country without one (4.5 % of the tax value, a net flat amount, no upkeep costs), and a property let abroad (the rents received, with a management account, compte de gestion).",
+    "notes": "Sections 'Votre bien est situé dans le canton de Genève', 'dans un autre canton', 'à l'étranger' (France, a country with an equivalent of the Swiss rental value, a country without one), each with 'Si vous occupez votre bien immobilier, qu'il est à votre disposition ou à celles de vos proches' and 'Si vous louez votre bien'. Last updated 27 April 2026. Added 14 October 2026 by the property abroad agent."
+  },
+  {
+    "id": "ge-na-valeur-fiscale-page",
+    "canton": "GE",
+    "doc_type": "other",
+    "title": "L'impôt des propriétaires immobiliers: la valeur fiscale (impôt sur la fortune)",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
+    "format": "html",
+    "publisher": "Administration fiscale cantonale (AFC), Genève",
+    "published": "2026-04-27",
+    "verified_on": "2026-10-14",
+    "priority": "core",
+    "why_needed": "The wealth value of property abroad: the tax value set by the country, with its attestation, or, where the country sets none, the purchase price, with a copy of the deed (acte d'acquisition); a value in a foreign currency converted into francs on 31 December of the tax year. A foreign value that is extremely low is replaced by a Geneva-style estimate.",
+    "notes": "Section 'Votre bien est situé à l'étranger'. Last updated 27 April 2026. Added 14 October 2026 by the property abroad agent."
   }
 ]
