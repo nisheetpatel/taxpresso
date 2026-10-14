@@ -51,6 +51,22 @@
       "notes": "No separate file. Summary page about p. 11 of the guide PDF above. Deduction caps were not extracted."
     },
     {
+      "id": "ge-na-information-1-2021-frais-entretien",
+      "canton": "GE",
+      "doc_type": "deductions",
+      "title": "Information N° 1/2021: Déductibilité des frais d'entretien des immeubles privés",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/23670/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2021-02-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The AFC's rules on the upkeep costs of private property for the ICC and the IFD (LIFD art. 32, LIPP art. 34 let. d and e): the actual costs that count (upkeep, the PPE renovation fund, running costs, insurance, management, energy-saving investments, demolition), the flat deduction and its table (ICC 15 % or 25 % of the rental value after the abattement and limited to the taux d'effort; IFD 10 % or 20 % of the gross rental value or rents), the choice made for each property, each year and each tax, the costs that never count, the invoice date, and the carry-forward of energy-saving and demolition costs.",
+      "notes": "6 pages. Landing page https://www.ge.ch/document/information-fiscale-1/2021-deductibilite-frais-entretien-immeubles-prives. The table of p. 4 carries a note 'Nouvelle disposition à partir de la période fiscale 2024' (LIPP art. 34 let. d from 2024). Applies from tax period 2020. Added 14 October 2026 by the property agent."
+    },
+    {
       "id": "ge-na-efiling-espace-fiscal",
       "canton": "GE",
       "doc_type": "efiling_rules",
@@ -259,6 +275,22 @@
       "notes": "Adopted 26 September 1999 (popular initiative IN 111), in force 16 October 1999, no amendment (Modification: néant). Art. 2 phases the 12% in three steps, the last from 1 January 2005 at the latest. The 2025 tariff (ge-2025-icc-tariff-pdf p. 2 and 4) refers to it as the loi du 26 septembre 1999. The page is windows-1252 encoded."
     },
     {
+      "id": "ge-na-law-lefi",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi sur les estimations fiscales de certains immeubles (LEFI), rsGE D 3 10",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_10.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2025-02-28",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "Why the tax value of a villa or a flat in PPE comes from the AFC and not from a calculation: the estimates are extended without limit (art. 1), raised by 12 % for the first tax period after 1 January 2025 (art. 2 al. 1) with exceptions (art. 4); the yearly indexation of art. 2 al. 2 was annulled by the Federal Supreme Court (9C_606/2024) and is now set by the RIVFI.",
+      "notes": "Adopted 4 November 2022, in force 1 January 2025; art. 2 al. 2 annulled (arrêt TF 9C_606/2024, 28 February 2025). Added 14 October 2026 by the property agent."
+    },
+    {
       "id": "ge-na-law-lipp",
       "canton": "GE",
       "doc_type": "law",
@@ -321,6 +353,38 @@
       "priority": "core",
       "why_needed": "Tariff groups (art. 1), compulsory TOU threshold for residents (art. 7) and TOU on request: 31 March deadline, cannot be withdrawn (art. 8 al. 1).",
       "notes": "Adopted 30 September 2020, in force 1 January 2021, last amended 1 January 2024. The page is windows-1252 encoded."
+    },
+    {
+      "id": "ge-na-charges-deductibles-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: les charges et frais déductibles",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "What the owner of a property may deduct for its upkeep, ICC and IFD: the flat deduction (forfait) or the actual costs (frais effectifs), the costs that count (upkeep, PPE charges, building insurance, the impôt immobilier complémentaire, management of a property let), the year of the invoice, and that the invoices are kept, not attached.",
+      "notes": "Its 'déduction forfaitaire' paragraph gives 10 % and 20 % for the ICC and the IFD alike, while the law (ge-na-law-lipp art. 34 let. d), the guide (ge-2025-guide-declaration-pp p. 33) and the AFC's information 1/2021 (ge-na-information-1-2021-frais-entretien p. 4) give 15 % and 25 % of the rental value for the ICC of one's own home: Taxpresso follows the law (see ge/NOTES.md). Links the information 1/2021 and its notice. Added 14 October 2026 by the property agent."
+    },
+    {
+      "id": "ge-na-iic-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: l'impôt immobilier complémentaire",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The yearly tax on property in Geneva (impôt immobilier complémentaire, LCP art. 76 to 79) for individuals: 1 per mille of the tax value, 0.2 per mille for one's main home, without the 4 % abattement and without deducting debts, due by the owner on 31 December; the 20-year exemption of buildings with a high energy performance standard (HPE, THPE, LCP art. 78).",
+      "notes": "Sections 'Vous êtes un particulier', 'Vous êtes une entreprise, une association ou une fondation', 'Obtenir une exonération'. ge.ch answered with a maintenance page on some tries on 14 October 2026: check that the saved file is the page. Added 14 October 2026 by the property agent."
     },
     {
       "id": "ge-na-other-demander-delai",
@@ -593,6 +657,22 @@
       "priority": "useful",
       "why_needed": "Entry hub for the filling, sending and extension sub-pages for individuals.",
       "notes": "Deadline 31 March unless an exception applies. A paper form can be obtained by phone or at the Hôtel des Finances."
+    },
+    {
+      "id": "ge-na-law-rivfi",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Règlement fixant l'indexation de la valeur fiscale de certains immeubles (RIVFI), rsGE D 3 10.03",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2025-12-17",
+      "verified_on": "2026-10-14",
+      "priority": "reference",
+      "why_needed": "From tax period 2026, the tax value of villas and PPE flats is indexed each year by a coefficient built from federal and cantonal price indices (art. 3 to 7): the value for the year is the AFC's, as its letter gives it, never computed by Taxpresso.",
+      "notes": "In force 1 January 2026. Added 14 October 2026 by the property agent."
     },
     {
       "id": "ge-2025-taux-donnees-fiscales",
@@ -9057,6 +9137,22 @@
       "priority": "core",
       "why_needed": "Official pillar 3a maximum table (section 9), legal basis OPP 3 art. 7 para. 1",
       "notes": "Marked 2026. Extraction shows the same values in both year columns, so confirm the 2025 values in the PDF before use."
+    },
+    {
+      "id": "ch-na-reforme-valeur-locative-2029",
+      "canton": "CH",
+      "doc_type": "other",
+      "title": "Le Conseil fédéral met en vigueur l'abolition de l'imposition de la valeur locative (communiqué de presse, 1er avril 2026)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
+      "format": "html",
+      "publisher": "Administration fédérale des contributions (AFC)",
+      "published": "2026-04-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "When the reform of the taxation of owner-occupied homes voted in September 2025 applies: the Federal Council set its entry into force on 1 January 2029, when the rental value (valeur locative) of homes occupied by their owner stops being taxed and the deduction of upkeep costs ends except for property let; so tax years 2025 and 2026 keep the rental value and the upkeep deduction, as the 2025 and 2026 federal instructions say.",
+      "notes": "Press release of the ESTV, Berne, 1 April 2026. Added 14 October 2026 by the property agent."
     },
     {
       "id": "ch-na-remboursement-impot-anticipe",
