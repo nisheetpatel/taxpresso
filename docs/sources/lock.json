@@ -5722,5 +5722,45 @@
     "content_type": "application/pdf;charset=UTF-8",
     "retrieved_at": "2026-10-14T01:49:49.131Z",
     "status": "ok"
+  },
+  "fr-2026-parish-coefficients-reformed-opendata": {
+    "url": "https://opendata.fr.ch/api/explore/v2.1/catalog/datasets/18_03_coefficients_impots_reformes/exports/csv?refine=annee:2026&delimiter=%3B",
+    "final_url": "https://opendata.fr.ch/api/explore/v2.1/catalog/datasets/18_03_coefficients_impots_reformes/exports/csv?refine=annee:2026&delimiter=%3B",
+    "file": "fr/files/fr-2026-parish-coefficients-reformed-opendata.csv",
+    "bytes": 10470,
+    "sha256": "83fc3ac1afa6600157a3423cbceb1a784dba231728ef705d62a87597d8773dc8",
+    "content_type": "text/csv; charset=utf-8",
+    "retrieved_at": "2026-10-14T02:47:05.868Z",
+    "status": "ok"
+  },
+  "fr-2026-parish-coefficients-catholic-opendata": {
+    "url": "https://opendata.fr.ch/api/explore/v2.1/catalog/datasets/18_03_coefficients_impots_catholiques/exports/csv?refine=annee:2026&delimiter=%3B",
+    "final_url": "https://opendata.fr.ch/api/explore/v2.1/catalog/datasets/18_03_coefficients_impots_catholiques/exports/csv?refine=annee:2026&delimiter=%3B",
+    "file": "fr/files/fr-2026-parish-coefficients-catholic-opendata.csv",
+    "bytes": 12107,
+    "sha256": "d97b684abe8a507cc35273b9be5c7b976496deefec9b84ad288ae4dfead6c1d3",
+    "content_type": "text/csv; charset=utf-8",
+    "retrieved_at": "2026-10-14T02:47:05.938Z",
+    "status": "ok"
+  },
+  "fr-2025-parish-coefficients-catholic": {
+    "url": "https://www.fr.ch/document/570376",
+    "final_url": "https://www.fr.ch/sites/default/files/2025-09/coefficients-paroisses-catholiques-2025.pdf?v=1757923932",
+    "file": "fr/files/fr-2025-parish-coefficients-catholic.pdf",
+    "bytes": 225987,
+    "sha256": "be05bea491c519cb4984615caea87cdfcd48b8519fdcf911f59e3dffe0348e42",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T02:47:06.026Z",
+    "status": "ok"
+  },
+  "fr-2025-parish-coefficients-reformed": {
+    "url": "https://www.fr.ch/document/570381",
+    "final_url": "https://www.fr.ch/sites/default/files/2025-09/Coefficients_impots_reformes_2025.pdf?v=1757924202",
+    "file": "fr/files/fr-2025-parish-coefficients-reformed.pdf",
+    "bytes": 203701,
+    "sha256": "28bbafa7d4c5e2f148ac63028821cd3e22dbbcc9b5687dabcb7dcb7a4591efc7",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T02:47:06.172Z",
+    "status": "ok"
   }
 }
