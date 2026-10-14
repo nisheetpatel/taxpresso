@@ -3,6 +3,7 @@
 // 300 (2025) 12.25, zh-2025-form-steuererklaerung-hauptformular): p. 2 income, p. 3 deductions,
 // p. 4 wealth. The full-year 2026 form is not published yet (docs/sources/zh/NOTES.md, Gaps);
 // the 2026 forms published so far carry the same codes (zh-2026-guide-unterjaehrig p. 37).
+import { roundFranc } from '@taxpresso/rules-ch';
 import type { EnginePerson, Text } from './types.js';
 
 const FORM = 'zh-2025-form-steuererklaerung-hauptformular';
@@ -294,3 +295,86 @@ export const SOCIAL = new Set<string>(['370', '372', '365']);
 /** Vermögenswerte (460) and Schulden (470). */
 export const ASSETS = new Set<string>(['400', '404', '406', '412', '416', '421']);
 export const DEBTS = new Set<string>(['470']);
+
+// ---- The annex forms whose lines make up an item ----------------------------------------------
+
+/**
+ * The Berufsauslagen form (StA Form. 360), person 1 and person 2: zh-2025-form-berufsauslagen
+ * p. 1 and 2. The 2026 form (zh-2026-deductions-form-berufsauslagen) has the same lines.
+ */
+const BERUFSAUSLAGEN = {
+  transit: ['201', '221'],
+  bike: ['202', '222'],
+  car: ['204', '224'],
+  travel: ['205', '225'],
+  mealsReduced: ['206', '226'],
+  meals: ['208', '228'],
+  flat: ['212', '232'],
+  actual: ['213', '233'],
+  sideFlat: ['216', '236'],
+} as const;
+
+export type BerufsauslagenLine = keyof typeof BERUFSAUSLAGEN;
+
+export function annexCode(what: BerufsauslagenLine, person: EnginePerson): string {
+  return BERUFSAUSLAGEN[what][person === 'p1' ? 0 : 1];
+}
+
+/** The line of the Berufsauslagen form a person's travel goes on (1.1, 1.2 or 1.3). */
+export function travelLine(p: {
+  commuteCost?: unknown;
+  commuteMode?: { by: string };
+}): 'transit' | 'bike' | 'car' | undefined {
+  if (p.commuteCost) return 'transit';
+  const by = p.commuteMode?.by;
+  if (by === 'bike') return 'bike';
+  if (by === 'car' || by === 'motorbike') return 'car';
+  return undefined;
+}
+
+/**
+ * The Versicherungsprämien form (StA Form. 365): zh-2025-deductions-form-versicherungspraemien
+ * p. 1. Part A (601 to 606) is the same for both taxes; part B's total (616) is each tax's limit.
+ */
+/** A code of the Versicherungsprämien form. */
+export type ItemPartCode = (typeof VERSICHERUNG)[keyof typeof VERSICHERUNG];
+
+export const VERSICHERUNG = {
+  health: '601',
+  accident: '602',
+  life: '603',
+  savings: '604',
+  subtotal: '607',
+  subsidy: '605',
+  paid: '606',
+  max: '616',
+} as const;
+
+/** Part A and the limit of the Versicherungsprämien form, in whole francs. */
+export function insuranceParts(
+  hh: {
+    healthPremiums?: { value: number };
+    accidentPremiums?: { value: number };
+    lifeInsurancePremiums?: { value: number };
+    savingsInterest?: { value: number };
+    healthSubsidy?: { value: number };
+  },
+  paid: number,
+  cap: number,
+): { code: string; amount: number }[] {
+  const franc = (a?: { value: number }) => roundFranc(a?.value ?? 0);
+  const lines = [
+    { code: VERSICHERUNG.health, amount: franc(hh.healthPremiums) },
+    { code: VERSICHERUNG.accident, amount: franc(hh.accidentPremiums) },
+    { code: VERSICHERUNG.life, amount: franc(hh.lifeInsurancePremiums) },
+    { code: VERSICHERUNG.savings, amount: franc(hh.savingsInterest) },
+  ];
+  const subsidy = franc(hh.healthSubsidy);
+  return [
+    ...lines.filter((l) => l.amount > 0),
+    { code: VERSICHERUNG.subtotal, amount: lines.reduce((s, l) => s + l.amount, 0) },
+    ...(subsidy > 0 ? [{ code: VERSICHERUNG.subsidy, amount: subsidy }] : []),
+    { code: VERSICHERUNG.paid, amount: paid },
+    { code: VERSICHERUNG.max, amount: cap },
+  ];
+}

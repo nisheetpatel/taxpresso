@@ -313,6 +313,48 @@ describe('a Zurich return', () => {
     expect(texts(decided)).toMatch(/TOU is Geneva’s procedure/);
   });
 
+  it('gives the values to type in the Zurich form’s order, in the chat and the dashboard', async () => {
+    await muster();
+    const list = await call('get_form_values');
+    const out = list.structuredContent as { sections: { page: string }[]; provisional: boolean };
+    expect(out.sections.map((s) => s.page)).toEqual(['S2', 'BA1', 'BA2', 'VP', 'S3']);
+    expect(out.provisional).toBe(true);
+    expect(texts(list)).toMatch(/ZHprivateTax/);
+    expect(texts(list)).toMatch(/Person 1 is you \(p1\)/);
+    const s2 = await call('get_form_values', { section: 'S2' });
+    expect(texts(s2)).toMatch(/- 100 Haupterwerb, Person 1 \(.*\) \[CHF ohne Rappen\]: 83720\./);
+    const s3 = await call('get_form_values', { section: 's3' });
+    expect(texts(s3)).toMatch(
+      /- 260 Beiträge an anerkannte Formen der geb\. Selbstvorsorge \(3\. Säule a\), Person 1 .*\[Staatssteuer \+ Bundessteuer\]: 7258\./,
+    );
+    expect(texts(s3)).toMatch(/- 365 Abzug für Ehegatten \/ Partn\. .*\[Bundessteuer\]: 2800\./);
+
+    // The dashboard's copy panel: the same rows, each with the document it was read from.
+    const panel = (await state('fr')).copyPanel;
+    expect(panel.unplaced).toEqual([]);
+    const row = panel.sections[0]!.groups[0]!.rows[0]!;
+    expect(row).toMatchObject({ ref: '100', label: 'Haupterwerb, Person 1', copy: '83720' });
+    expect(row.columns[0]!.label).toBe('CHF ohne Rappen');
+    expect(row.documents[0]!.filename).toMatch(/^salary_certificate-\d+\.pdf$/);
+    // Ticked as typed, then kept while the value doesn't change.
+    const api = createApi(ws);
+    const res = await api({
+      method: 'POST',
+      path: '/form/entered',
+      query: new URLSearchParams('lang=en'),
+      headers: {},
+      body: Buffer.from(JSON.stringify({ id: row.id, entered: true })),
+      csrf: 'csrf-token',
+    });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect((await state()).copyPanel.entered).toBe(1);
+
+    // The PDF check is Geneva's only: said plainly, in both places.
+    const pdf = await call('reconcile_official_pdf');
+    expect(texts(pdf)).toMatch(/reads Geneva declarations only/);
+    expect((await state()).declarationCheck.status).toBe('not_available');
+  });
+
   it('gives the 3a catch-up no Zurich saving: no Zurich document gives its rule yet', async () => {
     await beispiel();
     await ws.setPlan('p1', 'plan.pillar3a_paid_2025', 2_000, 'chat');

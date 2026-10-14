@@ -241,6 +241,16 @@ export function Reconcile({
   const [over, setOver] = useState(false);
   if (!view) return null;
   if (view.status === 'none' && state.copyPanel.sections.length === 0) return null;
+  if (view.status === 'not_available') {
+    return (
+      <section class="card rc-card" aria-labelledby="rc-title">
+        <div class="section-head">
+          <h2 id="rc-title">{tr(lang, 'title')}</h2>
+        </div>
+        <p class="muted rc-lead">{tr(lang, 'notAvailable')}</p>
+      </section>
+    );
+  }
 
   const add = async (files: FileList | null) => {
     const file = files?.[0];

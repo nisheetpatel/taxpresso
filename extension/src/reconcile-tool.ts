@@ -22,7 +22,7 @@ export function registerDeclarationCheckTool(server: McpServer, ws: Workspace): 
     {
       title: 'Check the declaration PDF',
       description:
-        "Compares the PDF of this year's declaration (from GeTax or the online declaration, added by the user) with the values to type, rubric by rubric, in whole francs: what differs, what is missing. Read-only. The user transmits the declaration themselves.",
+        "Geneva only for now. Compares the PDF of this year's declaration (from GeTax or the online declaration, added by the user) with the values to type, rubric by rubric, in whole francs: what differs, what is missing. Read-only. The user transmits the declaration themselves.",
       inputSchema: z.object({
         detail: z
           .boolean()

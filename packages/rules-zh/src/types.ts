@@ -177,6 +177,17 @@ export interface Item extends Line {
   /** The line code printed on the return, e.g. '220'. */
   code: string;
   person: ItemPerson;
+  /**
+   * The lines of an annex form that make up the item (Berufsauslagen 201 to 237 for 220 and 240,
+   * Versicherungsprämien 601 to 616 for 270), in whole francs, for the values to type.
+   */
+  parts?: readonly ItemPart[];
+}
+
+/** A line of an annex form: its code as printed and its amount in centimes (whole francs). */
+export interface ItemPart {
+  code: string;
+  amount: number;
 }
 
 /** Just the amount of an item, as an assessment or a filled-in return shows it. */
@@ -234,6 +245,7 @@ export interface ZhIccResult {
 
 /** The Bundessteuer column of the Zurich return: the federal tax (packages/rules-ch). */
 export interface ZhIfdResult extends IfdResult {
+  items: Item[];
   /** 299, Total der Abzüge, federal (negative). */
   totalDeductions: Line;
   /** 310, Nettoeinkommen, federal: the base of the federal medical costs and donations. */

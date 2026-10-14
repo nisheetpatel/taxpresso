@@ -51,7 +51,8 @@ export interface DeclarationCheckView {
    * none: no PDF of this year's declaration yet. pending: not read yet. unreadable: Taxpresso
    * can't read it as a Geneva declaration. other_year: it is for another year. checked: compared.
    */
-  status: 'none' | 'pending' | 'unreadable' | 'other_year' | 'checked';
+  /** not_available: the check reads Geneva declarations only, and this return is another canton's. */
+  status: 'none' | 'pending' | 'unreadable' | 'other_year' | 'checked' | 'not_available';
   document?: {
     id: string;
     filename: string;
@@ -73,6 +74,9 @@ export interface DeclarationCheckView {
 
 export function declarationCheckView(ws: Workspace, lang: Lang): DeclarationCheckView {
   const taxYear = ws.engine.taxYear;
+  if (ws.canton().canton?.code === 'ZH') {
+    return { taxYear, status: 'not_available', older: 0, warnings: [] };
+  }
   const [doc, ...older] = officialDocuments(ws);
   if (!doc) return { taxYear, status: 'none', older: 0, warnings: [] };
   const decl = rememberedDeclaration(doc.sha256);
@@ -182,7 +186,7 @@ export function declarationCheckResult(
 ): DeclarationCheckResult {
   const year = view.taxYear;
   const doc = view.document;
-  const found = view.status !== 'none';
+  const found = view.status !== 'none' && view.status !== 'not_available';
   const base = {
     found,
     status: view.status,
@@ -197,6 +201,12 @@ export function declarationCheckResult(
         }
       : {}),
   };
+  if (view.status === 'not_available') {
+    return {
+      text: `The check of the declaration PDF reads Geneva declarations only for now, and this is a Zurich return. Tell the user plainly; they compare what they typed in ZHprivateTax with the values to type (get_form_values) themselves. ${TRANSMIT}`,
+      structured: base,
+    };
+  }
   if (view.status === 'none') {
     return {
       text: `No PDF of the ${year} declaration yet. Once the user has typed everything, they download the PDF of their declaration from GeTax or the online declaration (e-démarches) and add it in the dashboard ("Check before you transmit"), or put it in the Taxpresso folder and you call ingest_vault. Then call this again. ${TRANSMIT}`,

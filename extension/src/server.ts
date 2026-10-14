@@ -838,13 +838,15 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     {
       title: 'Get the values to type into the declaration',
       description:
-        'The values the user types by hand into the official Geneva declaration, in the form\'s order, as in the dashboard\'s copy panel: rubric code, French label, value as typed, status. No section: the sections with progress. A section (e.g. "A1"): its values.',
+        'The values the user types by hand into the official declaration of their canton, in the form\'s order, as in the dashboard\'s copy panel: line code, official label (Geneva: French; Zurich: German), value as typed, status. No section: the sections with progress. A section (e.g. "A1" in Geneva, "S2" in Zurich): its values.',
       inputSchema: z.object({
         section: z
           .string()
           .max(4)
           .optional()
-          .describe('A page of the form, e.g. "PG1", "A1", "C3". Default: the list of sections.'),
+          .describe(
+            'A page of the form, e.g. "PG1", "A1", "C3" (Geneva) or "S2", "BA1", "VP" (Zurich). Default: the list of sections.',
+          ),
       }),
       outputSchema: z.object({
         provisional: z.boolean(),

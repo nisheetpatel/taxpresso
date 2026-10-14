@@ -11,7 +11,6 @@ import {
   type FormColumn,
   type FormItem,
   type FormMap,
-  type FormPageId,
   type FormPart,
   type FormPerson,
   type FormRubric,
@@ -106,7 +105,7 @@ export interface CopyGroup {
 }
 
 export interface CopySection {
-  page: FormPageId;
+  page: string;
   title: string;
   gloss: string;
   person?: FormPerson;
@@ -132,10 +131,18 @@ export interface CopyPanel {
   unplaced: { code: string; person: Owner }[];
 }
 
+/** How a form heads its columns and parts: Geneva's by default (COLUMN_LABELS, PART_LABELS). */
+export interface CopyLabels {
+  columns: Record<FormColumn, { label: string; gloss: Gloss }>;
+  parts: Record<FormPart, { label: string; gloss: Gloss }>;
+}
+
 export interface CopyPanelInput {
-  form: FormMap;
+  form: FormMap<string>;
   items: readonly FormItem[];
   lang: Lang;
+  /** Another canton's column and part headings (packages/filing-zh). */
+  labels?: CopyLabels;
   /** What the user's tick stored for this row id (the value when ticked), if ticked. */
   entered?: (rowId: string) => string | undefined;
 }
@@ -152,11 +159,11 @@ const PART_ORDER: (FormPart | undefined)[] = ['A', 'B', 'children', undefined];
 
 /** Where an item goes: every rubric entry with its code that fits its person and column. */
 function placements(
-  form: FormMap,
+  form: FormMap<string>,
   item: FormItem,
-): { rubric: FormRubric; part?: FormPart; columns: FormColumn[] }[] {
+): { rubric: FormRubric<string>; part?: FormPart; columns: FormColumn[] }[] {
   const who = formPersonOf(item.person);
-  const out: { rubric: FormRubric; part?: FormPart; columns: FormColumn[] }[] = [];
+  const out: { rubric: FormRubric<string>; part?: FormPart; columns: FormColumn[] }[] = [];
   const candidates = form.rubrics.filter((r) => r.key === item.code && r.supported);
   // Without a column, an item fills the income columns; a rubric with only a wealth column (or
   // none) takes it when no entry of the code has income columns.
@@ -201,9 +208,20 @@ const combine = (a: FormItem, b: FormItem): FormItem => ({
 });
 
 /** Builds the copy panel: the form's pages in order, only those with something on them. */
-export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): CopyPanel {
+export function buildCopyPanel({
+  form,
+  items,
+  lang,
+  entered,
+  labels = { columns: COLUMN_LABELS, parts: PART_LABELS },
+}: CopyPanelInput): CopyPanel {
   // One cell per rubric entry, part, columns and line; items for the same cell add up.
-  type Cell = { rubric: FormRubric; part?: FormPart; columns: FormColumn[]; item: FormItem };
+  type Cell = {
+    rubric: FormRubric<string>;
+    part?: FormPart;
+    columns: FormColumn[];
+    item: FormItem;
+  };
   const cells = new Map<string, Cell>();
   const unplaced: CopyPanel['unplaced'] = [];
   for (const item of items) {
@@ -225,7 +243,7 @@ export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): 
 
   // Lines of a repeating rubric are numbered in the order their first value comes.
   const lineOf = new Map<string, number>();
-  const lineNumber = (rubric: FormRubric, instance: string | undefined) => {
+  const lineNumber = (rubric: FormRubric<string>, instance: string | undefined) => {
     if (!rubric.repeats || instance === undefined) return undefined;
     const k = `${rubric.page}|${rubric.key}|${rubric.person}|${instance}`;
     if (!lineOf.has(k)) {
@@ -244,7 +262,7 @@ export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): 
     return PART_ORDER.indexOf(a.part) - PART_ORDER.indexOf(b.part);
   });
 
-  const rows = new Map<FormRubric, CopyRow[]>();
+  const rows = new Map<FormRubric<string>, CopyRow[]>();
   const linesWithFields = new Set<string>();
   for (const [id, cell] of sorted) {
     const { rubric, item } = cell;
@@ -268,13 +286,21 @@ export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): 
     const columns =
       cell.columns.length === 2 && cell.columns[0] === 'icc' && cell.columns[1] === 'ifd'
         ? [
-            { id: 'icc' as const, label: 'ICC', gloss: COLUMN_LABELS.icc.gloss[lang] },
-            { id: 'ifd' as const, label: 'IFD', gloss: COLUMN_LABELS.ifd.gloss[lang] },
+            {
+              id: 'icc' as const,
+              label: labels.columns.icc.label,
+              gloss: labels.columns.icc.gloss[lang],
+            },
+            {
+              id: 'ifd' as const,
+              label: labels.columns.ifd.label,
+              gloss: labels.columns.ifd.gloss[lang],
+            },
           ]
         : cell.columns.map((c) => ({
             id: c,
-            label: COLUMN_LABELS[c].label,
-            gloss: COLUMN_LABELS[c].gloss[lang],
+            label: labels.columns[c].label,
+            gloss: labels.columns[c].gloss[lang],
           }));
     const row: CopyRow = {
       id,
@@ -288,8 +314,8 @@ export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): 
         ? {
             part: {
               id: cell.part,
-              label: PART_LABELS[cell.part].label,
-              gloss: PART_LABELS[cell.part].gloss[lang],
+              label: labels.parts[cell.part].label,
+              gloss: labels.parts[cell.part].gloss[lang],
             },
           }
         : {}),
@@ -305,8 +331,8 @@ export function buildCopyPanel({ form, items, lang, entered }: CopyPanelInput): 
       ...(rubric.parts && !cell.part
         ? {
             splitInto: rubric.parts.map((p) => ({
-              label: PART_LABELS[p].label,
-              gloss: PART_LABELS[p].gloss[lang],
+              label: labels.parts[p].label,
+              gloss: labels.parts[p].gloss[lang],
             })),
           }
         : {}),

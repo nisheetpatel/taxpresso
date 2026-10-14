@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-zh",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Zurich form map and the values to type on the Zurich return, in the form's order (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
+    "@taxpresso/rules-zh": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

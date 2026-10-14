@@ -37,11 +37,14 @@ import {
 import {
   DEDUCTIONS,
   EXTRA,
+  annexCode,
   FORM_ORDER,
   INCOME,
+  insuranceParts,
   personCode,
   RUBRICS,
   SOCIAL,
+  travelLine,
   type RubricCode,
 } from './rubrics.js';
 import type {
@@ -49,6 +52,7 @@ import type {
   ChildInput,
   EmploymentInput,
   Item,
+  ItemPart,
   ItemPerson,
   Line,
   PersonInput,
@@ -223,6 +227,8 @@ function federalPerson(
     const way = commuteBase(F, p, costTrace);
     const other = francTotal(costTrace, [p.otherProfessionalCosts]);
     const parts: Deduction<FederalConcept>[] = [];
+    // The lines of the Berufsauslagen form, Bundessteuer column.
+    const annex: ItemPart[] = [];
     const prof = professionalCosts(F, net, other, [gTrace, sTrace, lTrace], costTrace);
     apply(notes, prof, p.id);
     if (prof.deduction) parts.push(prof.deduction);
@@ -231,15 +237,35 @@ function federalPerson(
       const travel = commuteCosts(F, p, way, costTrace);
       apply(notes, travel, p.id);
       if (travel.deduction) parts.push(travel.deduction);
+      const line = travelLine(p);
+      if (line && travel.deduction) {
+        annex.push(
+          { code: annexCode(line, p.id), amount: way.cost },
+          { code: annexCode('travel', p.id), amount: -travel.deduction.amount },
+        );
+      }
     }
     const home = p.commuteMode?.by === 'home';
+    const canteen = jobs.some((e) => e.canteen === true);
     const meals = mealsCosts(F.meals, {
       days: home ? 0 : (p.mealDays ?? 0),
-      canteen: jobs.some((e) => e.canteen === true),
+      canteen,
       ...(p.mealFacts ? { facts: p.mealFacts } : {}),
     });
     apply(notes, meals, p.id);
-    if (meals.deduction) parts.push(meals.deduction);
+    if (meals.deduction) {
+      parts.push(meals.deduction);
+      annex.push({
+        code: annexCode(canteen ? 'mealsReduced' : 'meals', p.id),
+        amount: -meals.deduction.amount,
+      });
+    }
+    if (prof.deduction) {
+      annex.push({
+        code: annexCode(prof.deduction.concept === 'professional.other' ? 'actual' : 'flat', p.id),
+        amount: -prof.deduction.amount,
+      });
+    }
     const professional = -parts.reduce((s, d) => s + d.amount, 0);
     const tr = new Trace()
       .with(...parts.map((d) => d.trace))
@@ -258,6 +284,7 @@ function federalPerson(
           `${parts.map((d) => d.how.fr.replace(/\.$/, '')).join(`${NB}; `)}. Total${NB}: ${chf(professional)}.`,
         ),
       ),
+      parts: annex,
     });
   }
 
@@ -427,7 +454,15 @@ export function federalReturn(
     inputs: [hTrace, lifeTrace, subTrace],
   });
   apply(notes, insurance, 'household');
-  if (insurance.deduction) items.push(deductionItem(insurance.deduction, 'household'));
+  if (insurance.deduction) {
+    // Part A paid and part B's limit, as the rule applied them.
+    const applied = insurance.limits[0];
+    const counted = -insurance.deduction.amount;
+    items.push({
+      ...deductionItem(insurance.deduction, 'household'),
+      parts: insuranceParts(hh, applied?.given ?? counted, applied?.limit ?? counted),
+    });
+  }
 
   // Alimony, child support and the costs of managing securities: in full, as in the cantonal tax.
   items.push(...f.inFull);

@@ -18,12 +18,8 @@ import {
   type FinalCheckItem,
   type PendingValue,
 } from '@taxpresso/rules-ge';
-import {
-  allLines as zurichLines,
-  formPlace,
-  ZH_FINAL_CHECK,
-  ZH_FORM_NOTE,
-} from '@taxpresso/rules-zh';
+import { zurichFormMap, zurichLineOf } from '@taxpresso/filing-zh';
+import { allLines as zurichLines, ZH_FINAL_CHECK, ZH_FORM_NOTE } from '@taxpresso/rules-zh';
 import * as z from 'zod/v4';
 import { BARCODE_PENDING } from './barcode.js';
 import { ENUM_LABELS } from './extraction.js';
@@ -77,7 +73,8 @@ const FINAL_DOCUMENT_ZH = t(
 );
 
 /** The rubric a ledger value goes to, for this person (@taxpresso/filing-ge's routes). */
-function rubricOf(key: string, person: string): string | undefined {
+function rubricOf(key: string, person: string, zh = false): string | undefined {
+  if (zh) return zurichLineOf(key, person);
   const route = LEDGER_ROUTES_2026.find((r) => r.key === key);
   if (!route) return undefined;
   if (typeof route.to === 'string') return /^\d{2}\.\d{2}$/.test(route.to) ? route.to : undefined;
@@ -93,7 +90,7 @@ function pending(
 ): PendingValue {
   const def = ws.keys[f.key];
   const doc = f.source.docId ? ws.documents.find((d) => d.id === f.source.docId) : undefined;
-  const code = rubricOf(f.key, f.person);
+  const code = rubricOf(f.key, f.person, ws.canton().canton?.code === 'ZH');
   const v = f.value;
   const text: Text | undefined =
     typeof v === 'boolean'
@@ -195,6 +192,13 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
   }
 
   if (zh) {
+    // The form's order: the main form's lines first (p. 2 to 4), then the annexes' own lines.
+    const form = zurichFormMap(taxYear);
+    const main = form.rubrics.filter((r) => r.page.startsWith('S'));
+    const zhOrder = new Map<string, number>();
+    [...main, ...form.rubrics.filter((r) => !main.includes(r))].forEach((r, i) => {
+      if (!zhOrder.has(r.key)) zhOrder.set(r.key, i);
+    });
     return {
       ...shared(ws, snap, docs, read, values, etat),
       canton: ZH_FINAL_CHECK,
@@ -202,15 +206,13 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
       missing,
       ledgerNotes: notes,
       officialPdf: { status: 'not_available' },
-      formOrder: (code) => {
-        const at = formPlace(code);
-        return at < 0 ? undefined : at;
-      },
+      formOrder: (code) => zhOrder.get(code),
       formNote: ZH_FORM_NOTE,
     };
   }
   const pdf = declarationCheckView(ws, 'en');
   const file = pdf.document?.filename ?? '';
+  // (Zurich returns earlier, with the PDF check not available.)
   const officialPdf: FinalCheckInput['officialPdf'] =
     pdf.status === 'checked' && pdf.check
       ? {

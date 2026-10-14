@@ -70,7 +70,8 @@ export interface CheckSection {
 
 export interface DeclarationCheckState {
   taxYear: number;
-  status: 'none' | 'pending' | 'unreadable' | 'other_year' | 'checked';
+  /** not_available: the check reads Geneva declarations only (a Zurich return). */
+  status: 'none' | 'pending' | 'unreadable' | 'other_year' | 'checked' | 'not_available';
   document?: {
     id: string;
     filename: string;

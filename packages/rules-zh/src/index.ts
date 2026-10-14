@@ -57,7 +57,16 @@ export {
 } from './from-ledger.js';
 // The federal tax on the Zurich return (the Bundessteuer column).
 export { federalReturn } from './ifd.js';
-export { FORM_ORDER, formPlace } from './rubrics.js';
+export {
+  ASSETS,
+  DEBTS,
+  FORM_ORDER,
+  formPlace,
+  INCOME,
+  VERSICHERUNG,
+  type ItemPartCode,
+} from './rubrics.js';
+export type { ItemPart } from './types.js';
 // Zurich's ledger keys and the communes as its questionnaire offers them.
 export {
   communeOfAnswer,

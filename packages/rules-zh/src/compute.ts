@@ -9,7 +9,16 @@ import { pick } from './communes.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
 import { tariffRule } from './law.js';
 import { zhParamsFor, type ZhYearParams } from './params.js';
-import { FORM_ORDER, INCOME, personCode, RUBRICS, type RubricCode } from './rubrics.js';
+import {
+  annexCode,
+  FORM_ORDER,
+  INCOME,
+  insuranceParts,
+  personCode,
+  RUBRICS,
+  travelLine,
+  type RubricCode,
+} from './rubrics.js';
 import {
   donationDeduction,
   drivingCost,
@@ -27,6 +36,7 @@ import type {
   Confession,
   EmploymentInput,
   Item,
+  ItemPart,
   ItemPerson,
   Line,
   PersonInput,
@@ -222,6 +232,8 @@ function personItems(P: ZhYearParams, p: PersonInput, items: Item[], notes: Note
   if (main.length || side.length) {
     const tr = new Trace();
     const parts: Text[] = [];
+    // The lines of the Berufsauslagen form the total is made of.
+    const annex: ItemPart[] = [];
     if (main.length) {
       tr.with(mainSalary.tr);
       const tv = travel(A, p, main, tr, notes);
@@ -230,6 +242,13 @@ function personItems(P: ZhYearParams, p: PersonInput, items: Item[], notes: Note
       const code = personCode('professional', p.id);
       if (tv.cost > 0)
         notes.limit('commute', A.commuteMax, 'cap', code, p.id, tv.cost, cap, travelCost);
+      const line = travelLine(p);
+      if (tv.cost > 0 && line) {
+        annex.push(
+          { code: annexCode(line, p.id), amount: tv.cost },
+          { code: annexCode('travel', p.id), amount: travelCost },
+        );
+      }
       parts.push(
         tv.cost > cap
           ? t(`${tv.how.en}, at most ${chf(cap)}`, `${tv.how.fr}, au plus ${chf(cap)}`)
@@ -245,6 +264,9 @@ function personItems(P: ZhYearParams, p: PersonInput, items: Item[], notes: Note
         meals = mealsDeduction(p.mealDays ?? 0, canteen, m);
         const [day, year] = canteen ? [m.halfPerDay, m.halfPerYear] : [m.perDay, m.perYear];
         notes.limit('meals', A.meals, 'cap', code, p.id, (p.mealDays ?? 0) * day, year, meals);
+        if (meals > 0) {
+          annex.push({ code: annexCode(canteen ? 'mealsReduced' : 'meals', p.id), amount: meals });
+        }
         parts.push(
           t(
             `meals ${chf(meals)} (${p.mealDays} days${canteen ? ', canteen' : ''})`,
@@ -279,6 +301,7 @@ function personItems(P: ZhYearParams, p: PersonInput, items: Item[], notes: Note
             )
           : t(`other costs ${chf(other)} (actual)`, `autres frais ${chf(other)} (effectifs)`),
       );
+      annex.push({ code: annexCode(other === flat ? 'flat' : 'actual', p.id), amount: other });
       professional += travelCost + meals + other;
     }
     if (side.length) {
@@ -290,10 +313,11 @@ function personItems(P: ZhYearParams, p: PersonInput, items: Item[], notes: Note
           `activité accessoire ${chf(sideFlat)} (20${NB}% de ${chf(sideSalary.net)}, entre CHF 800 et 2’400)`,
         ),
       );
+      annex.push({ code: annexCode('sideFlat', p.id), amount: sideFlat });
       professional += sideFlat;
     }
-    items.push(
-      item(
+    items.push({
+      ...item(
         personCode('professional', p.id),
         p.id,
         tr,
@@ -303,7 +327,8 @@ function personItems(P: ZhYearParams, p: PersonInput, items: Item[], notes: Note
           `${parts.map((x) => x.fr).join(`${NB}; `)}. Total${NB}: ${chf(professional)}.`,
         ),
       ),
-    );
+      parts: annex,
+    });
   }
 
   // Pensions and other income of the person.
@@ -572,8 +597,8 @@ export function computeReturn(input: ZhEngineInput): ZhTaxResult {
     const ded = Math.min(paid, cap);
     notes.limit('insurance', A.insurance, 'cap', '270', 'household', paid, cap, ded);
     if (ded > 0) {
-      items.push(
-        item(
+      items.push({
+        ...item(
           '270',
           'household',
           tr,
@@ -583,7 +608,8 @@ export function computeReturn(input: ZhEngineInput): ZhTaxResult {
             `Payé ${chf(paid)}${NB}; plafond ${chf(cap)} (${couple ? 'époux' : 'personne seule'}${contributing ? '' : ', majoré de moitié sans caisse de pension ni 3a'}${full ? `, ${full} enfant${full > 1 ? 's' : ''}` : ''}${half ? `, ${half} demi-déduction${half > 1 ? 's' : ''} pour enfant` : ''})${NB}: ${chf(ded)}.`,
           ),
         ),
-      );
+        parts: insuranceParts(hh, paid, cap),
+      });
     }
   }
   householdGiven('283', hh.bankFees, -1);
