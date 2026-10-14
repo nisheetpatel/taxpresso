@@ -37,6 +37,8 @@ const messages = {
       'A document won’t arrive in time? Ask the tax office (kantonales Steueramt) for more time to file (Fristerstreckung)',
     moreTimeBe:
       'A document won’t arrive in time? Ask the tax office (Steuerverwaltung des Kantons Bern) for more time to file (Fristverlängerung), online in TaxMe',
+    moreTimeBs:
+      'A document won’t arrive in time? Ask the tax office (Steuerverwaltung Basel-Stadt) for more time to file (Fristerstreckung), online in the eSteuern.BS portal',
   },
   fr: {
     title: 'Vérification finale',
@@ -68,6 +70,7 @@ const messages = {
     colon: `${NB}: `,
     moreTimeZh: `Un document n’arrivera pas à temps${NB}? Demandez un délai (Fristerstreckung) à l’administration fiscale (kantonales Steueramt)`,
     moreTimeBe: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) à l’Intendance des impôts du canton de Berne, en ligne dans TaxMe`,
+    moreTimeBs: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristerstreckung) à l’administration fiscale (Steuerverwaltung Basel-Stadt), en ligne dans le portail eSteuern.BS`,
   },
   de: {
     title: 'Schlusskontrolle',
@@ -103,6 +106,8 @@ const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Bitte das kantonale Steueramt um eine Fristerstreckung',
     moreTimeBe:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung des Kantons Bern eine Fristverlängerung, online in TaxMe',
+    moreTimeBs:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der Steuerverwaltung Basel-Stadt eine Fristerstreckung, online im Portal eSteuern.BS',
   },
 } as const;
 
