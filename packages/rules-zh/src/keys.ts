@@ -128,6 +128,20 @@ function zurichOwn(taxYear: number): KeyRegistry {
       official: 'Konfession',
       source: `${law} § 201 and § 202 (p. 74)`,
     }),
+    // Childcare paid for each child: asked only when the invoices for the household pass one
+    // child's limit and there are several children, since the limit is per child and the split
+    // then decides the deduction (§ 31 Abs. 1 lit. j).
+    'zh.child_care': {
+      type: 'money',
+      perPerson: true,
+      label: {
+        en: 'Childcare paid for this child',
+        fr: 'Frais de garde payés pour cet enfant',
+        de: 'Für dieses Kind bezahlte Kinderbetreuungskosten',
+      },
+      official: 'Kosten für fremdbetreute Kinder',
+      source: `${law} § 31 Abs. 1 lit. j (p. 18); ${GUIDE} p. 18`,
+    },
     'zh.parish': choice({
       values: ['1', '2'],
       perPerson: false,

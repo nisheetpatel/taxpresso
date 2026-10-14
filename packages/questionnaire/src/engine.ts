@@ -127,12 +127,34 @@ export class QuestionnaireEngine {
   readonly keys: KeyRegistry;
   readonly communes: readonly CommuneOption[];
 
+  /**
+   * The household money keys a condition reads that no question asks (a document's amount, such as
+   * the childcare invoices' `childcare.costs`): they stand for what the ledger holds, added up, so a
+   * question can wait until the documents show it is needed.
+   */
+  readonly #held: readonly string[];
+
   constructor(file: QuestionnaireFile, keys: KeyRegistry, communes: readonly CommuneOption[]) {
     this.file = file;
     this.keys = keys;
     this.communes = communes;
     const problems = this.check();
     if (problems.length) throw new QuestionnaireError(problems.join('\n'));
+    const asked = new Set(file.questions.map((q) => q.key));
+    const read = new Set<string>();
+    const walk = (c: Condition | undefined): void => {
+      if (!c) return;
+      if (c.key) read.add(c.key);
+      c.any?.forEach(walk);
+      c.all?.forEach(walk);
+    };
+    for (const q of file.questions) {
+      walk(q.when);
+      q.derive?.forEach((r) => walk(r.when));
+    }
+    this.#held = [...read].filter(
+      (k) => !asked.has(k) && keys[k]?.type === 'money' && !keys[k]?.perPerson,
+    );
   }
 
   get taxYear(): number {
@@ -208,6 +230,17 @@ export class QuestionnaireEngine {
    */
   snapshot(ledger: Ledger, assumed: Readonly<Record<string, FactValue>> = {}): Snapshot {
     const answers = new Map<string, FactValue>();
+    const held = new Map<string, FactValue>();
+    for (const key of this.#held) {
+      const facts = ledger
+        .view()
+        .filter((f) => f.key === key && f.person === 'household' && typeof f.value === 'number');
+      if (facts.length)
+        held.set(
+          key,
+          facts.reduce((s, f) => s + (f.value as number), 0),
+        );
+    }
     const people = (): Person[] =>
       COUPLE.has(String(answers.get(slotKey('profile.civil_status', 'household'))))
         ? ['p1', 'p2']
@@ -228,11 +261,13 @@ export class QuestionnaireEngine {
           ? children()
           : ['household'];
       for (const person of owners) {
-        if (question.when && !this.#holds(question.when, person, answers, people())) continue;
+        if (question.when && !this.#holds(question.when, person, answers, people(), held)) continue;
         const id =
           question.perPerson || question.perChild ? `${question.id}:${person}` : question.id;
         // Settled by the law from the answers so far: never asked, whatever was stored before.
-        const rule = question.derive?.find((r) => this.#holds(r.when, person, answers, people()));
+        const rule = question.derive?.find((r) =>
+          this.#holds(r.when, person, answers, people(), held),
+        );
         if (rule) {
           answers.set(slotKey(question.key, person), rule.value);
           all.push({
@@ -513,9 +548,10 @@ export class QuestionnaireEngine {
     person: Owner,
     answers: ReadonlyMap<string, FactValue>,
     people: Person[],
+    held: ReadonlyMap<string, FactValue> = new Map(),
   ): boolean {
-    if (c.any) return c.any.some((x) => this.#holds(x, person, answers, people));
-    if (c.all) return c.all.every((x) => this.#holds(x, person, answers, people));
+    if (c.any) return c.any.some((x) => this.#holds(x, person, answers, people, held));
+    if (c.all) return c.all.every((x) => this.#holds(x, person, answers, people, held));
     if (c.person) return person === c.person;
     const key = c.key!;
     const def = this.keys[key];
@@ -531,7 +567,7 @@ export class QuestionnaireEngine {
       if (c.is !== undefined && v !== c.is) return false;
       return true;
     };
-    if (!def.perPerson) return test(answers.get(slotKey(key, 'household')));
+    if (!def.perPerson) return test(answers.get(slotKey(key, 'household')) ?? held.get(key));
     if (c.anyPerson || person === 'household') {
       return people.some((p) => test(answers.get(slotKey(key, p))));
     }

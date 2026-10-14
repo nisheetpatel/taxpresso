@@ -4,8 +4,14 @@
 // parish) as the official tables need them. Synthetic answers only.
 import { readFileSync } from 'node:fs';
 import { Ledger } from '@taxpresso/ledger';
-import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
-import { communeOfAnswer, communeOptions, parishChoices, zurichKeys } from '@taxpresso/rules-zh';
+import { ifdParamsFor, KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
+import {
+  communeOfAnswer,
+  communeOptions,
+  parishChoices,
+  zhParamsFor,
+  zurichKeys,
+} from '@taxpresso/rules-zh';
 import { describe, expect, it } from 'vitest';
 import {
   NBSP,
@@ -62,7 +68,13 @@ describe('Zurich questionnaire 2026', () => {
     const shared = new Set(sharedQuestionnaire2026().questions.map((q) => q.id));
     const ids = file.questions.map((q) => q.id);
     expect(ids[0]).toBe('canton');
-    expect(ids.filter((id) => !shared.has(id))).toEqual(['commune', 'moved', 'church', 'parish']);
+    expect(ids.filter((id) => !shared.has(id))).toEqual([
+      'child_care',
+      'commune',
+      'moved',
+      'church',
+      'parish',
+    ]);
     // Zurich's way to work has no "over 2 hours" choice: only Geneva's meal rule needs it.
     const commute = file.questions.find((q) => q.id === 'commute')!;
     expect(commute.options?.map((o) => o.value)).not.toContain('public_transport_long');
@@ -240,5 +252,71 @@ describe('Zurich questionnaire 2026', () => {
     e.answer(ledger, 'moved', 'from_other_canton', USER);
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.slotId)).not.toContain('moved');
     expect(() => e.answer(ledger, 'moved', 'within_geneva', USER)).toThrow(QuestionnaireError);
+  });
+});
+
+describe('childcare per child (Abzug für fremdbetreute Kinder, the limit is per child)', () => {
+  const invoice = (ledger: Ledger, id: string, francs: number) =>
+    ledger.append({
+      key: 'childcare.costs',
+      person: 'household',
+      instance: id,
+      value: francs * 100,
+      status: 'verified',
+      source: { method: 'claude', docId: id, page: 1 },
+    });
+  const ids = (e: QuestionnaireEngine, ledger: Ledger) => e.snapshot(ledger).slots.map((s) => s.id);
+
+  it('is asked only once the invoices pass one child’s limit, 25,300, with several children', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS);
+    walk(e, ledger, {
+      canton: 'ZH',
+      civil_status: 'married',
+      children: 2,
+      children_custody: 'with_household',
+      childcare: 'nanny',
+    });
+    invoice(ledger, 'nanny-1', 25_300);
+    expect(ids(e, ledger)).not.toContain('child_care:child1');
+    invoice(ledger, 'nanny-2', 1);
+    expect(ids(e, ledger)).toEqual(
+      expect.arrayContaining(['child_care:child1', 'child_care:child2']),
+    );
+  });
+
+  it('in shared custody without child support, once they pass half of it, 12,650', () => {
+    const e = engine();
+    const shared = (support: string) => {
+      const ledger = new Ledger(2026, KEYS);
+      walk(e, ledger, {
+        canton: 'ZH',
+        civil_status: 'divorced',
+        children: 2,
+        children_custody: 'shared',
+        child_support: support,
+        childcare: 'creche_or_daycare',
+      });
+      invoice(ledger, 'creche-1', 13_000);
+      return ids(e, ledger);
+    };
+    expect(shared('none_i_earn_more')).toContain('child_care:child1');
+    expect(shared('i_receive')).not.toContain('child_care:child1');
+  });
+
+  it('keeps the limits in step with the engines’', () => {
+    const q = zhQuestionnaire2026().questions.find((x) => x.id === 'child_care')!;
+    const amounts: number[] = [];
+    const collect = (c: Condition) => {
+      if (c.key === 'childcare.costs' && c.gt !== undefined) amounts.push(c.gt);
+      c.any?.forEach(collect);
+      c.all?.forEach(collect);
+    };
+    collect(q.when!);
+    const limit = Math.min(
+      zhParamsFor(2026).amounts.childcareMax.value,
+      ifdParamsFor(2026).childcareMax.value,
+    );
+    expect(amounts).toEqual([limit, limit / 2]);
   });
 });

@@ -18,6 +18,10 @@ const PerPersonText = z.object({ p1: Text, p2: Text });
 const Plural = z.object({ zero: Text.optional(), one: Text, other: Text });
 
 export interface Condition {
+  /**
+   * An answer's key; or a household money key no question asks (a document's amount, such as
+   * `childcare.costs`), which stands for what the ledger holds for it, added up.
+   */
   key?: string;
   eq?: string | number | boolean;
   in?: string[];

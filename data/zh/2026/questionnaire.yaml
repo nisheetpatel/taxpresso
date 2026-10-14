@@ -105,6 +105,53 @@ questions:
       de: 'Kita, Hort, Tagesstruktur oder Nanny. Auf dem Formular: Abzug für fremdbetreute Kinder.'
       it: 'Asilo nido, struttura diurna, doposcuola o una tata. Sul modulo: Abzug für fremdbetreute Kinder.'
 
+  # The limit is per child ("höchstens Fr. 25 300, für die Drittbetreuung jedes Kindes",
+  # zh-2026-law-steuergesetz-631-1-stand-2026 p. 18, § 31 Abs. 1 lit. j; half of it for a child
+  # whose deduction the parents share, zh-2026-tariff-weisung-sozialabzuege p. 7), as the federal
+  # one (25,800, ch-2026-ifd-instructions-personnes-physiques p. 8). Invoices for the household
+  # (childcare.costs) above the smallest limit of a child, 25,300 (2,530,000 centimes) or 12,650
+  # (1,265,000) in shared custody without child support, with several children: how they split
+  # decides the deduction, so it is asked per child, and only then (packages/rules-zh, the
+  # engine's NOTE.childcareSplit; a test keeps these amounts equal to the engine's).
+  - id: child_care
+    key: zh.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+        - any:
+            - { key: childcare.costs, gt: 2530000 }
+            - all:
+                - { key: profile.children_custody, eq: shared }
+                - key: profile.child_support
+                  in: [none_i_earn_more, none_other_earns_more, none_unsure]
+                - { key: childcare.costs, gt: 1265000 }
+    explain:
+      en: 'Your childcare invoices come to more than one child’s limit, and the limit is per child (Abzug für fremdbetreute Kinder), so how they split between your children changes the deduction. Until Taxpresso knows it, the tax is not computed.'
+      fr: 'Vos factures de frais de garde dépassent la limite d’un enfant, et la limite est par enfant (Abzug für fremdbetreute Kinder) : leur répartition entre vos enfants change la déduction. Tant que Taxpresso ne la connaît pas, l’impôt n’est pas calculé.'
+      de: 'Deine Rechnungen für die Kinderbetreuung übersteigen den Höchstbetrag für ein Kind, und der Abzug für fremdbetreute Kinder gilt pro Kind: Die Aufteilung auf deine Kinder ändert den Abzug. Solange Taxpresso sie nicht kennt, wird die Steuer nicht berechnet.'
+      it: 'Le tue fatture per la custodia dei figli superano il limite per un figlio, e il limite vale per ogni figlio (Abzug für fremdbetreute Kinder): la ripartizione tra i tuoi figli cambia la deduzione. Finché Taxpresso non la conosce, l’imposta non è calcolata.'
+    learnMore:
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/natuerlichepersonen/2025/est-wegleitungen/305_Wegleitung_ZH_2025_HA%20bf%20DEF.pdf#page=18'
+      label:
+        en: 'Zurich tax guide 2025, p. 18: childcare costs'
+        fr: 'Guide fiscal zurichois 2025, p. 18 : Frais de garde des enfants'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 18: fremdbetreute Kinder'
+        it: 'Guida fiscale di Zurigo 2025, p. 18: spese di custodia dei figli'
+    text:
+      en: 'How much of the childcare you paid in 2026 was for child {n}?'
+      fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
+      de: 'Wie viel der 2026 bezahlten Kinderbetreuungskosten war für Kind {n}?'
+      it: 'Quanto delle spese di custodia che hai pagato nel 2026 era per il figlio {n}?'
+    help:
+      en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the eldest.'
+      fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
+
   # The commune of 31 December taxes the whole year (StG § 190, zh-2026-law-steuergesetz-631-1-
   # stand-2026 p. 73). The list is Zurich's 160 communes of 2026 (packages/rules-zh, from
   # zh-na-communal-steuerfuesse-seit-2012 sheet STFUSS2026); a commune whose parts have different
