@@ -1,6 +1,6 @@
 # Several cantons: design note
 
-Milestone 0.3.0 adds Zurich, Bern and Vaud. This note says how, with the least duplication. It is a plan: nothing here is wired yet except `packages/rules-zh` (Zurich's cantonal and communal tax, not used by the extension).
+Milestone 0.3.0 adds Zurich, Bern and Vaud. This note says how, with the least duplication. It is a plan. Done so far: `packages/rules-zh` (Zurich's cantonal and communal tax, not used by the extension) and step 1, the federal split into `packages/rules-ch` with the canton interface types and the Geneva and Zurich adapters (section 1, "As built"); nothing is wired into the extension for a second canton yet.
 
 ## 1. What stays Geneva and what is Swiss
 
@@ -26,6 +26,26 @@ What stays in `rules-ge`: the ICC scales and amounts, splitting, the communal ce
 Federal items are keyed by concept, not by Geneva rubric: `rules-ch` returns `{ concept: 'professional.flat', person, amount, ... }` and each canton maps a concept to its form code (`31.20` in Geneva, `220` in the Bundessteuer column in Zurich).
 
 Acceptance for the split: not one number changes. `packages/rules-ge/test/households.test.ts`, `ifd.test.ts`, `scales.test.ts` and the private golden cases pass unchanged, and `pnpm check:bundle` shows the same bundle contents.
+
+### As built (step 1)
+
+How the split was checked: every call of `computeReturn`, `assess` and `engineInputFromFacts` (Geneva) and of `computeReturn` and `assess` (Zurich) made by the whole test suite, plus a seeded fuzz of 4,000 Geneva and 2,500 Zurich households, was recorded before the split and after each step: all 15,532 results are byte-identical (items, lines, texts, sources, notes and limits in the same order). The tests pass with only import paths changed; `pnpm check:bundle` lists the same packages and built-ins, and the shipped files are the same (only workspace code moved); the built website is byte-identical; `scripts/source-tax-tables.mjs --check` and `scripts/zh-communes.mjs --check` still match the official files.
+
+Where the table was too coarse, or the code asked for another boundary:
+
+- `engine/from-ledger.ts` stays in `rules-ge` for now. It reads Geneva's commune list and Geneva's état des titres (`etat-des-titres.ts`, which stays); it moves with step 2, when it gives a `HouseholdInput` for any canton with Geneva's extras under `cantonal`.
+- `2026/ifd.ts` and `2026/ifd-amounts.ts` stay two files, `ifd/2026.ts` and `ifd/2026-amounts.ts`: the website imports `ifd/2026.ts` one module at a time with Node's type stripping, which cannot follow a value import, and the amounts import the 3a limits. New: `ifd/params.ts` (`ifdParamsFor(year)`, the federal constants of a year, which Geneva's `paramsFor` now takes as its `ifd`).
+- `2026/pillar3a.ts` is `pension/pillar3a.ts`; `2026/pension.ts` is `pension/buy-ins.ts` (LPP buy-ins and the 3a catch-up).
+- `withholding/withholding.ts` has its own exact rounding to the franc (BigInt, safe integers only), different from `core/calc.ts`'s `roundFranc`: `rules-ch` exports it as `roundFrancExact`, `rules-ge` still exports it as `roundFranc`.
+- `engine/rules.ts`: the six shared rules moved to `core/rules.ts`; `lifeInsuranceCap` (ICC 52.15) and `avsDeduction` (ICC 61.30) are Geneva's and stay. Zurich's `mealsDeduction` and `medicalDeduction` were the same code and now come from `rules-ch`.
+- The IFD half of `engine/compute.ts` is `ifd/items.ts`: one function per federal deduction (pillar 3a, professional costs, travel and its pricing, training, two earners, insurance, debt interest, childcare, the couple and child deductions, donations, parties) and `federalScale` (the scale and the reductions per child, circular 30). Each returns a deduction keyed by concept (`FederalConcept`) with its trace, the limits it applied and its notes; Geneva calls each at the same place as before and puts it on its rubric (`RUBRIC_OF` in `compute.ts`). Not one function that computes every federal item at once: Geneva interleaves ICC and IFD items, and the order of the result's notes and limits would change. Meals and medical costs have the same rule in both taxes, so they are shared helpers (`core/items.ts`, `mealsCosts`, `medicalCosts`) that Geneva's ICC uses too. The base of the medical and donation shares is named by the canton (`FormBase`: Geneva's subtotals 92.20 and 92.40).
+- The IFD half of `engine/assess.ts` is `ifd/assess.ts` (`ifdTax`), from the taxable income on. The subtotals (91.00 to 99.00) follow the canton's form and stay in `rules-ge` (`incomeTotals`).
+- The LIFD half of the objection deadline is `ifd/objection.ts` (`IFD_OBJECTION`); Geneva's half moved to `rules-ge/src/2026/objection.ts`, so the website still imports both one module at a time.
+- Types (`core/types.ts`): the shared shapes, `IfdTax` and `IfdResult` (the federal part; Geneva's adds 92.20, 92.40 and 95.00), `CantonalResult` and `TaxResult` (the shared top level, typed by the canton's `icc`). `Param` takes the estimate reason as a type parameter (Geneva: `'ge-2026-unpublished'`). `HouseholdInput` is the union of the facts both engines read, each field saying which canton reads it, with `cantonal` for what only one canton asks for. Geneva's `EngineInput` keeps its shape: the household input without Zurich's facts, plus `splitting` and `wealthItems`. Zurich's `ZhEngineInput` is unchanged.
+- The salary certificate keys are `keys/salary-certificate.ts` (`KEYS_SALARY_CERTIFICATE_2026` and the field list `SALARY_CERTIFICATE_FIELDS_2026`); Geneva's `DOCUMENT_KEYS_2026` spreads them first, same keys in the same order.
+- `rules-zh` keeps `src/calc.ts` as a re-export of `rules-ch`'s helpers (its exports and one test import it); `src/cited.ts` is gone.
+- The federal tests stay where they were (`rules-ge/test/ifd.test.ts`, `scales.test.ts`, `rules.test.ts`, `withholding.test.ts`, `source-tax-ascii.test.ts`), importing from `rules-ch`. `rules-ch` has its own citation test (`test/sources.test.ts`: every constant, fact and key source, and the citations written into the federal rules, are `ok` in `docs/sources/lock.json`). Moving the federal tests next to their code is a follow-up.
+- Workspace: nothing to add. `pnpm-workspace.yaml` (`packages/*`), `vitest.config.ts`, ESLint and Prettier cover every package by glob, and there is no root `tsconfig.json` with references; each package has its own `tsconfig.json`. `extension/allowed-dependencies.json` is unchanged: workspace code is bundled, not an npm package.
 
 ## 2. The canton interface
 
@@ -65,6 +85,18 @@ export interface CantonFiling {
 - The extension gets one registry, `extension/src/cantons.ts`: `{ GE: { rules, filing, questionnaire }, ZH: ... }`. `main.ts` stops importing `COMMUNES_2026` and `KEYS_2026` from `rules-ge` and asks the registry for the canton of the year being prepared.
 - Prior-return parsing (`packages/intake/src/prior/`) and the état des titres are form-specific: they move behind `CantonFiling` when a second canton needs them; until then Zurich has none.
 
+### As built (step 1)
+
+`packages/rules-ch/src/canton.ts` has the types; `rules-ge` and `rules-zh` each export `rules`, an adapter tested to give exactly what the engine gives (`test/canton.test.ts` in each: about 200 households each, through the interface and directly). Differences from the sketch above:
+
+- `CantonRules<Cantonal, Result>` takes the canton's `cantonal` part and its own result as type parameters; with the defaults it is the interface above, and a canton's `rules` is assignable to it. `CantonCode` names the four cantons.
+- `Commune` is `{ bfs, slug, name, rates }` with `bfs: number | null` and `rates: Cited<readonly number[]>` (Geneva: the centimes additionnels in hundredths; Zurich: the Steuerfuss without church tax, one per part of the commune). Geneva's communes have `bfs: null`: no document in the library gives Geneva's federal commune numbers (the guide prints a "code lieu" per commune, p. 59, without calling it that). Zurich's slug is its folded name.
+- `DocumentRule` is `{ kind, keys }`: what a kind of document gives, the schema Claude reads it against (today's `documentFields`). What to attach, with the guide's page, stays in the questionnaire's requirements (`data/ge/2026/questionnaire.yaml`), which already cite the guide.
+- `CantonFiling<FormMap, FormValues, Reconciliation>` takes the filing package's shapes; `LedgerView` is the current facts and documents. Nothing implements it yet.
+- Geneva's adapter puts `splitting` and `wealthItems` under `cantonal`; Zurich's puts `communeVariant`, `marriedTariff` and `church` there. Each adapter refuses a fact that would change its tax but that its engine does not read, rather than drop it: Geneva refuses `unemploymentBenefits` (Geneva counts them in `replacementIncome`), a side job, a child who does not live with you, Zurich's household amounts (child support paid or received, other income, cash, life insurance value, vehicles) and a commune given by BFS number; Zurich refuses a 3a catch-up, childcare for the household, accounts owned by a child and a commune given by name. Zurich leaves aside the facts only Geneva's rules use (age band, Geneva's meal rule, the commune of work, the withholding tax credit shown next to the tax).
+- `keys(taxYear)`: Geneva gives `KEYS_2026` for both its years; Zurich gives the shared keys only (salary certificate, securities, eCH-0196) until it has a questionnaire.
+- Zurich's `computeReturn` gives `ifd: null`: the federal rules are in `rules-ch`, but the federal column of the Zurich form is not mapped yet (step 3: each `FederalConcept` to its Zurich line). Zurich is not wired into the extension.
+
 ## 3. Choosing the canton
 
 - The canton is the one you lived in on 31 December of the tax year. That canton taxes the whole year, cantonal, communal and federal tax, when you moved from another canton during the year (zh-2025-guide-natuerliche-personen p. 5 and 6; ge-2025-guide-declaration-pp p. 53). The rates are those in force at the end of the year (Zurich: StG § 53, zh-2026-law-steuergesetz-631-1-stand-2026 p. 27).
@@ -89,8 +121,8 @@ No per-canton folder. One tax year has one canton, so `~/Documents/Taxpresso/<ye
 
 ## 6. Order of work
 
-1. `packages/rules-ch` split (section 1), Geneva unchanged to the centime.
-2. `CantonRules`, `HouseholdInput`, the registry with Geneva only, and `profile.canton`.
+1. `packages/rules-ch` split (section 1), Geneva unchanged to the centime. Done, with the `CantonRules` types and the Geneva and Zurich adapters.
+2. `from-ledger` for any canton (`HouseholdInput`), the registry with Geneva only, and `profile.canton`.
 3. Zurich: `packages/rules-zh` (started: tax years 2025 and 2026, cantonal, communal, church tax opt-in, Personalsteuer), then its questionnaire, `packages/filing-zh` and the German UI.
 4. Bern: reuses the German UI and the Zurich work on German forms.
 5. Vaud: reuses the French UI; first a person opens the communal coefficient tables and the consolidated LI and RDVE in a browser, which the collecting tool could not read (docs/sources/README.md, known conflicts).
@@ -100,3 +132,6 @@ No per-canton folder. One tax year has one canton, so `~/Documents/Taxpresso/<ye
 - The Zurich communal table gives two or three multipliers for some communes (Uster and Turbenthal in 2025 and 2026: two school districts) without naming the parts. `rules-zh` asks for the variant and does not compute without it. The questionnaire needs the area names from the commune or the canton.
 - Zurich's rounding of taxable amounts and of the tax is not in the documents in the library (`docs/sources/zh/NOTES.md`, "Open points for the rules"); `rules-zh` reports what it assumed in `unverifiedRules`. One official tax example (the online calculator's printout or an assessment) would settle it.
 - The 2026 Staatssteuerfuss: the Kantonsrat decision says 95 %, the 2026 source-tax parameter sheet says 98 % (see `docs/sources/zh/NOTES.md`). `rules-zh` uses the decision.
+- Some household input fields mean slightly different things in the two engines, and step 2's `from-ledger` must settle them: `replacementIncome` holds unemployment benefits in Geneva (11.50) but not in Zurich (`unemploymentBenefits`, 140/141); child support paid is part of Geneva's `alimonyPaid` (53.10) but its own field in Zurich (`childSupportPaid`, 255).
+- Geneva's federal commune numbers: a document of the library that gives them would let Geneva's communes carry `bfs` like Zurich's.
+- SPEC.md section 16 (repo layout) does not list `packages/rules-ch` yet.
