@@ -162,7 +162,7 @@ function quotientCapFor(
   return { cap: { baseParts, threshold: row[0], max: row[1] } };
 }
 
-export function assess(input: VdAssessInput): VdIccResult {
+export function assess(input: VdAssessInput): Omit<VdIccResult, 'declared'> {
   const P = vdParamsFor(input.taxYear);
   const A = P.amounts;
   const C = communeOf(input.taxYear, input.commune);

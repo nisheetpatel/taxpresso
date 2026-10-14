@@ -51,6 +51,7 @@ import type {
   PersonInput,
   Text,
   VdEngineInput,
+  VdIccResult,
   VdTaxResult,
 } from './types.js';
 
@@ -618,6 +619,15 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
       : t('', '');
 
   const items: Item[] = [];
+  const declared: VdIccResult['declared'] = {};
+  /** An amount as declared next to a line (`code`'s page and the guide), from the given values. */
+  const asDeclared = (code: RubricCode, amounts: readonly (Amount | undefined)[], label: Text) => {
+    const tr = new Trace().src(RUBRICS[code].source);
+    const value = total(tr, amounts);
+    return value > 0
+      ? tr.line(value, label, t(`As given: ${chf(value)}.`, `Tel que donné${NB}: ${chf(value)}.`))
+      : undefined;
+  };
   const figures = people.map((p) => personItems(P, p, items, notes));
 
   // Both spouses work (235): from the lower income, at most that income after its costs (140 to
@@ -643,8 +653,21 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     }
   }
 
-  // Insurance premiums (300): health, accident and life, less subsidies, at most the limit.
+  // Insurance premiums (300): health, accident and life, less subsidies, at most the limit. Page 4
+  // (item 10) asks the premiums before the subsidies and the subsidies.
   const premiums = [hh.healthPremiums, hh.accidentPremiums, hh.lifeInsurancePremiums];
+  const gross = asDeclared(
+    '300',
+    premiums,
+    t('Gross premiums (montant des primes brutes)', 'Montant des primes brutes selon police(s)'),
+  );
+  if (gross) declared.premiums = gross;
+  const subsidy = asDeclared(
+    '300',
+    [hh.healthSubsidy],
+    t('Premium subsidies (montant des subsides)', 'Montant des subsides'),
+  );
+  if (subsidy) declared.subsidy = subsidy;
   if (premiums.some(Boolean)) {
     const tr = new Trace();
     const paid = Math.max(0, total(tr, premiums) - total(tr, [hh.healthSubsidy]));
@@ -819,8 +842,10 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
       let paidAll = 0;
       let capAll = 0;
       const parts: string[] = [];
+      const counted: Amount[] = [];
       for (const ch of withCare) {
         if (ch.under14 === false || ch.livesWithYou === false) continue;
+        counted.push(ch.childcare);
         if (ch.under14 === undefined) notes.add(notes.assumptions, NOTE.under14);
         const cap = ch.custody === 'shared' ? care.sharedPerParent : care.perChild;
         if (ch.custody === 'shared') {
@@ -836,6 +861,13 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
       }
       if (paidAll > 0) {
         notes.limit('childcare', A.childcare, 'cap', '670', 'household', paidAll, capAll, ded);
+        // The box before 670: what was actually paid ("Montant effectif").
+        const effective = asDeclared(
+          '670',
+          counted,
+          t('Childcare actually paid (montant effectif)', 'Montant effectif'),
+        );
+        if (effective) declared.childcarePaid = effective;
       }
       if (ded > 0) {
         items.push(
@@ -860,6 +892,13 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   else {
     const tr = new Trace();
     const rent = total(tr, [input.rent]);
+    // The box before 660: the yearly net rent.
+    const rentLine = asDeclared(
+      '660',
+      [input.rent],
+      t('Yearly net rent (loyer annuel net)', 'Loyer annuel net'),
+    );
+    if (rentLine) declared.rent = rentLine;
     const h = tr.p(A.housing);
     const caps = tr.p(A.rentCap);
     const certainFamily = couple || fam.family.base === 'singleParent';
@@ -1051,6 +1090,16 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
     if (share > deduction) {
       if (A.furniture.floorOnly) notes.add(notes.unsupported, NOTE.furniture2026);
       else {
+        // The box before 440: 30 % of the fire insurance value.
+        const str = new Trace().src(WEALTH_RUBRICS['440'].source).with(tr);
+        declared.contentsShare = str.line(
+          share,
+          t('30 % of the fire insurance value (30% valeur d’assurance)', '30% valeur d’assurance'),
+          t(
+            `30 % of the fire insurance value ${chf(insured)}: ${chf(share)}.`,
+            `30${NB}% de la valeur d’assurance incendie ${chf(insured)}${NB}: ${chf(share)}.`,
+          ),
+        );
         wealthItems.push(
           wealthItem(
             '440',
@@ -1106,15 +1155,18 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   const wealthOrder = Object.keys(WEALTH_RUBRICS).sort();
   wealthItems.sort((x, y) => wealthOrder.indexOf(x.code) - wealthOrder.indexOf(y.code));
   try {
-    const icc = assess({
-      taxYear: input.taxYear,
-      commune: input.commune,
-      ...(input.communePart !== undefined ? { communePart: input.communePart } : {}),
-      family: fam.family,
-      partsSources: fam.sources,
-      incomeItems: items,
-      wealthItems,
-    });
+    const icc: VdIccResult = {
+      ...assess({
+        taxYear: input.taxYear,
+        commune: input.commune,
+        ...(input.communePart !== undefined ? { communePart: input.communePart } : {}),
+        family: fam.family,
+        partsSources: fam.sources,
+        incomeItems: items,
+        wealthItems,
+      }),
+      declared,
+    };
     if (partsOf(fam.family) !== icc.parts) throw new Error('parts');
     const unverified = [NOTE.rounding, ...notes.unverified];
     if (P.amounts.yearDays.carriedFrom) unverified.push(NOTE.guide2026);

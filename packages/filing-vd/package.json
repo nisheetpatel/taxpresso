@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-vd",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vaud form map and the values to type on the Vaud return, in the form's order, and the guide's worksheet for the federal tax (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
+    "@taxpresso/rules-vd": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

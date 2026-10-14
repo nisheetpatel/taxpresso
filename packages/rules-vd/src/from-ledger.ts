@@ -42,6 +42,9 @@ export const VAUD_READING: CantonLedgerReading<VaudCantonal> = {
     paid: t('630', '630'),
   },
   unemploymentApart: true,
+  // Code 200: unemployment and the allowances for military service (APG) paid directly; 210: the
+  // daily allowances of sickness and accident insurance (vd-2025-guide p. 26).
+  unemploymentKinds: ['unemployment', 'apg_service'],
   cantonal({ taxYear, input, answer, amount }) {
     const couple = input.civilStatus === 'married';
     const out: VaudCantonal = {};

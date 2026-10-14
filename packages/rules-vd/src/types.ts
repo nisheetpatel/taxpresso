@@ -253,6 +253,19 @@ export interface VdIccResult {
   parts: number;
   /** 820, revenu déterminant pour le taux. */
   rateIncome: Line;
+  /**
+   * What the form asks next to a line, as declared: the yearly net rent before 660, the childcare
+   * paid before 670 ("Montant effectif"), 30 % of the household contents' fire insurance value
+   * before 440, and on page 4 (item 10) the premiums before the subsidies and the subsidies. Not
+   * deductions: the amounts the lines rest on, when there are some.
+   */
+  declared: {
+    rent?: Line;
+    childcarePaid?: Line;
+    contentsShare?: Line;
+    premiums?: Line;
+    subsidy?: Line;
+  };
   wealth: {
     items: Item[];
     /** The assets added up. */
