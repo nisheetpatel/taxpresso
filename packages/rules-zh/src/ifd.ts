@@ -14,8 +14,10 @@ import {
   commuteCosts,
   debtInterest,
   donations,
+  federalChildcare,
   federalScale,
   francTotal,
+  IFD_NOTE,
   ifdParamsFor,
   ifdTax,
   insurancePremiums,
@@ -477,8 +479,10 @@ export function federalReturn(
   }
 
   // Childcare (LIFD art. 33 al. 3): children under 14; spouses must both work.
+  // The costs given for a child of 14 or more are left out (federalChildcare).
   const ccTrace = new Trace();
-  const care = francTotal(ccTrace, [...f.children.map((c) => c.childcare), hh.childcare]);
+  const { care, older } = federalChildcare(f.children, hh.childcare, ccTrace);
+  if (older) add(notes.notCounted, IFD_NOTE.childcareAge);
   if (care > 0) {
     const eligible = couple ? figures.length === 2 && figures.every((x) => x.earns) : true;
     const young = f.children.filter((c) => c.under14 !== false);

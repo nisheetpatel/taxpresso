@@ -46,6 +46,10 @@ export const IFD_NOTE = {
     en: 'Bike or moped: the federal flat amount is for a year of trips; the federal instructions reduce it for part of a year or part-time work without saying how (Form. 2a 2026 p. 6), so it is counted in full.',
     fr: `Vélo ou cyclomoteur${NB}: le forfait fédéral vaut pour une année de trajets${NB}; les instructions fédérales le réduisent pour une partie de l’année ou un temps partiel sans dire comment (formule 2a 2026 p. 6), il est donc compté en entier.`,
   },
+  childcareAge: {
+    en: 'Childcare, federal tax: only the care of a child up to their 14th birthday counts (LIFD art. 33 al. 3; ESTV circular 30). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Frais de garde, impôt fédéral${NB}: seule compte la garde d’un enfant jusqu’à ses 14 ans (LIFD art. 33 al. 3${NB}; circulaire AFC n° 30). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
   ifdShared: {
     en: 'Federal tax not computed: with shared custody, the parental scale (barème parental) goes to the parent who receives child support or, without child support, to the parent who earns more (ESTV circular 30). Answer the question on child support so Taxpresso knows which parent you are.',
     fr: `Impôt fédéral non calculé${NB}: en garde alternée, le barème parental revient au parent qui reçoit la contribution d’entretien ou, sans contribution, au parent qui gagne le plus (circulaire AFC n° 30). Répondez à la question sur la contribution d’entretien pour que Taxpresso sache quel parent vous êtes.`,
@@ -531,6 +535,38 @@ export function debtInterest(
     ],
     notCounted: [],
     unverified: [],
+  };
+}
+
+/** A child as the federal childcare deduction sees it. */
+export interface CaredChild {
+  /** Under 14 at the end of the year; not given, taken as under 14. */
+  under14?: boolean;
+  /** The childcare paid for this child. */
+  childcare?: Amount;
+}
+
+/**
+ * The childcare the federal deduction counts, before its maximum: the costs of each child under 14
+ * (LIFD art. 33 al. 3, ch-na-law-lifd p. 27: "si l’enfant a moins de 14 ans"; Form. 2a,
+ * ch-2025-ifd-instructions-personnes-physiques and ch-2026-ifd-instructions-personnes-physiques
+ * p. 8: "chaque enfant (jusqu’à 14 ans)"), with a household amount that can't be split by child.
+ * The costs given for a child of 14 or more at the end of the year are left out, and `older` says
+ * there were some (IFD_NOTE.childcareAge): the care before a 14th birthday in the year would count
+ * (ch-na-circulaire-30-epoux-famille p. 13, 8.2), but only the age at the end of the year is known.
+ */
+export function federalChildcare(
+  children: readonly CaredChild[],
+  household: Amount | undefined,
+  tr: Trace,
+): { care: number; older: boolean } {
+  const isOlder = (c: CaredChild) => c.under14 === false && (c.childcare?.value ?? 0) > 0;
+  return {
+    care: francTotal(tr, [
+      ...children.map((c) => (isOlder(c) ? undefined : c.childcare)),
+      household,
+    ]),
+    older: children.some(isOlder),
   };
 }
 

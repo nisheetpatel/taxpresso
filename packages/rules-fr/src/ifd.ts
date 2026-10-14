@@ -24,6 +24,7 @@ import {
   donations,
   federalScale,
   francTotal,
+  IFD_NOTE,
   ifdParamsFor,
   ifdTax,
   insurancePremiums,
@@ -340,6 +341,9 @@ export function federalReturn(f: FederalInput): { ifd: FrIfdResult | null; notes
     const cared = f.children.filter(
       (c) => c.livesWithYou && c.under14 !== false && (c.childcare?.value ?? 0) > 0,
     );
+    if (f.children.some((c) => c.under14 === false && (c.childcare?.value ?? 0) > 0)) {
+      add(notes.notCounted, IFD_NOTE.childcareAge);
+    }
     if (cared.length) {
       const eligible = couple ? earned.length === 2 && earned.every((x) => x.earns) : true;
       if (!eligible) add(notes.notCounted, FEDERAL_NOTE.childcareWork);
