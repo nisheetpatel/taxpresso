@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-fr",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Fribourg return (the codes 1.110 to 7.910 the guide explains, annexes 01 to 06) and the values to type on it, in the form's order (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
+    "@taxpresso/rules-fr": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
