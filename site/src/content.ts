@@ -221,7 +221,7 @@ const fr = {
       ],
       [
         `Et les autres cantons${NB}?`,
-        `Genève d’abord. Zurich et Berne fonctionnent aussi, en avant-première. Vaud, Bâle, Fribourg, le Tessin, Lucerne, Argovie, Saint-Gall et Zoug sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
+        `Genève d’abord. Zurich, Berne, Vaud, Bâle-Ville et Bâle-Campagne fonctionnent aussi, en avant-première. Fribourg, le Tessin, Lucerne, Argovie, Saint-Gall et Zoug sont prévus ensuite. [Votez pour votre canton](${ISSUE_URL.canton}).`,
       ],
       [
         `Taxpresso transmet-il ma déclaration${NB}?`,
@@ -498,7 +498,7 @@ const en: Copy = {
       ],
       [
         'What about other cantons?',
-        `Geneva comes first. Zurich and Bern work too, as a preview. Vaud, Basel, Fribourg, Ticino, Lucerne, Aargau, St. Gallen and Zug are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
+        `Geneva comes first. Zurich, Bern, Vaud, Basel-Stadt and Basel-Landschaft work too, as a preview. Fribourg, Ticino, Lucerne, Aargau, St. Gallen and Zug are planned next. [Vote for your canton](${ISSUE_URL.canton}).`,
       ],
       [
         'Does Taxpresso file my return?',
@@ -790,7 +790,7 @@ const de: Copy = {
       ],
       [
         'Und die anderen Kantone?',
-        `Genf kommt zuerst. Zürich und Bern funktionieren auch, als Vorschau. Waadt, Basel, Freiburg, Tessin, Luzern, Aargau, St. Gallen und Zug sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
+        `Genf kommt zuerst. Zürich, Bern, Waadt, Basel-Stadt und Basel-Landschaft funktionieren auch, als Vorschau. Freiburg, Tessin, Luzern, Aargau, St. Gallen und Zug sind als Nächstes geplant. [Stimm für deinen Kanton ab](${ISSUE_URL.canton}).`,
       ],
       [
         'Übermittelt Taxpresso meine Erklärung?',
@@ -1075,7 +1075,7 @@ const it: Copy = {
       ],
       [
         'E gli altri cantoni?',
-        `Prima Ginevra. Anche Zurigo e Berna funzionano, in anteprima. Poi sono previsti Vaud, Basilea, Friburgo, Ticino, Lucerna, Argovia, San Gallo e Zugo. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
+        `Prima Ginevra. Anche Zurigo, Berna, Vaud, Basilea Città e Basilea Campagna funzionano, in anteprima. Poi sono previsti Friburgo, Ticino, Lucerna, Argovia, San Gallo e Zugo. [Vota il tuo cantone](${ISSUE_URL.canton}).`,
       ],
       [
         'Taxpresso trasmette la mia dichiarazione?',
@@ -1355,7 +1355,7 @@ const es: Copy = {
       ],
       [
         '¿Y los demás cantones?',
-        `Primero Ginebra. Zúrich y Berna también funcionan, como versión preliminar. Después están previstos Vaud, Basilea, Friburgo, Tesino, Lucerna, Argovia, San Galo y Zug. [Vota por tu cantón](${ISSUE_URL.canton}).`,
+        `Primero Ginebra. Zúrich, Berna, Vaud, Basilea-Ciudad y Basilea-Campiña también funcionan, como versión preliminar. Después están previstos Friburgo, Tesino, Lucerna, Argovia, San Galo y Zug. [Vota por tu cantón](${ISSUE_URL.canton}).`,
       ],
       [
         '¿Taxpresso presenta mi declaración?',
@@ -1643,7 +1643,7 @@ const pt: Copy = {
       ],
       [
         'E os outros cantões?',
-        `Primeiro Genebra. Zurique e Berna também funcionam, em pré-visualização. A seguir estão previstos Vaud, Basileia, Friburgo, Ticino, Lucerna, Argóvia, São Galo e Zug. [Vota no teu cantão](${ISSUE_URL.canton}).`,
+        `Primeiro Genebra. Zurique, Berna, Vaud, Basileia-Cidade e Basileia-Campo também funcionam, em pré-visualização. A seguir estão previstos Friburgo, Ticino, Lucerna, Argóvia, São Galo e Zug. [Vota no teu cantão](${ISSUE_URL.canton}).`,
       ],
       [
         'O Taxpresso envia a minha declaração?',
