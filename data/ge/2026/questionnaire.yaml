@@ -210,6 +210,8 @@ questions:
             fr: 'Arrivé(e) d’un autre canton',
             it: 'Arrivo da un altro Cantone',
           }
+      # A year of departure abroad: Geneva taxes the income from 1 January to the day of departure,
+      # at the rate of a full year's income, and the wealth on that day (guide p. 54).
       - value: leaving_switzerland
         label:
           {
@@ -217,12 +219,89 @@ questions:
             fr: 'J’ai quitté ou je quitte la Suisse',
             it: 'Ho lasciato o sto lasciando la Svizzera',
           }
-        notSupported:
+        chip:
           {
-            en: 'Leaving Switzerland',
-            fr: 'Un départ de Suisse',
-            it: 'Una partenza dalla Svizzera',
+            en: 'Leaving Switzerland in {year}',
+            fr: 'Départ de Suisse en {year}',
+            de: 'Wegzug aus der Schweiz {year}',
+            it: 'Partenza dalla Svizzera nel {year}',
           }
+
+  # The day of an arrival from abroad or of a departure abroad, per person: Geneva taxes the income
+  # of the period of tax liability at the rate of a full year's income (ge-2025-guide-declaration-pp
+  # p. 53 and 54; ge-na-law-lipp art. 7, 62, 64 and 65; ch-na-law-lifd art. 8 and 40). A couple
+  # taxed together gives the same day; a spouse who came or left on another day is not supported
+  # (the engine says so). The form asks the day of arrival on its first page (date d'arrivée,
+  # ge-2025-declaration-specimen p. 1).
+  - id: arrival_date
+    key: profile.arrival_date
+    type: date
+    perPerson: true
+    when: { key: profile.moved, eq: from_abroad }
+    explain:
+      en: 'Geneva taxes your income from the day you arrived to 31 December, at the rate of a full year’s income. Your arrival attestation (attestation d’arrivée) or your permit shows the day; a salary certificate that starts in {year} shows when your job started.'
+      fr: 'Genève impose votre revenu du jour de votre arrivée au 31 décembre, au taux d’un revenu annuel. Votre attestation d’arrivée ou votre permis indique ce jour ; un certificat de salaire qui commence en {year} indique le début de votre emploi.'
+      de: 'Genf besteuert dein Einkommen vom Tag deiner Ankunft bis zum 31. Dezember, zum Satz eines ganzen Jahreseinkommens. Deine Ankunftsbestätigung (attestation d’arrivée) oder dein Ausweis zeigt den Tag; ein Lohnausweis, der {year} beginnt, zeigt den Beginn deiner Stelle.'
+      it: 'Ginevra tassa il tuo reddito dal giorno del tuo arrivo al 31 dicembre, all’aliquota di un reddito annuo. La tua attestazione d’arrivo (attestation d’arrivée) o il tuo permesso indica il giorno; un certificato di salario che inizia nel {year} indica l’inizio del tuo impiego.'
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
+      label:
+        en: 'Geneva tax guide 2025, p. 53: arriving in Geneva from abroad'
+        fr: 'Guide fiscal 2025, p. 53 : Arrivée dans le canton de Genève, de l’étranger'
+        de: 'Genfer Wegleitung 2025, S. 53: Zuzug aus dem Ausland, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 53: arrivo a Ginevra dall’estero, in francese'
+    text:
+      p1:
+        en: 'On what date did you arrive in Switzerland?'
+        fr: 'À quelle date êtes-vous arrivé en Suisse ?'
+        de: 'An welchem Tag bist du in die Schweiz gezogen?'
+        it: 'In che giorno sei arrivato in Svizzera?'
+      p2:
+        en: 'On what date did your spouse or partner arrive in Switzerland?'
+        fr: 'À quelle date votre conjoint ou partenaire est-il arrivé en Suisse ?'
+        de: 'An welchem Tag ist dein Partner oder deine Partnerin in die Schweiz gezogen?'
+        it: 'In che giorno il tuo coniuge o partner è arrivato in Svizzera?'
+    help:
+      en: 'The day you took up residence in Switzerland. On the official form: date d’arrivée.'
+      fr: 'Le jour où vous avez pris domicile en Suisse. Sur le formulaire officiel : date d’arrivée.'
+      de: 'Der Tag, an dem du in der Schweiz Wohnsitz genommen hast. Auf dem offiziellen Formular: date d’arrivée.'
+      it: 'Il giorno in cui hai preso domicilio in Svizzera. Sul modulo ufficiale: date d’arrivée.'
+
+  - id: departure_date
+    key: profile.departure_date
+    type: date
+    perPerson: true
+    when: { key: profile.moved, eq: leaving_switzerland }
+    explain:
+      en: 'Geneva taxes your income from 1 January to the day you leave, at the rate of a full year’s income, and your wealth on that day. The tax office asks you to come by at least 15 days before you leave, with its departure form (questionnaire de départ).'
+      fr: 'Genève impose votre revenu du 1er janvier au jour de votre départ, au taux d’un revenu annuel, et votre fortune à ce jour. L’administration fiscale vous demande de passer au moins 15 jours avant votre départ, avec son questionnaire de départ.'
+      de: 'Genf besteuert dein Einkommen vom 1. Januar bis zum Tag deines Wegzugs, zum Satz eines ganzen Jahreseinkommens, und dein Vermögen an diesem Tag. Die Steuerverwaltung bittet dich, mindestens 15 Tage vor dem Wegzug mit ihrem Wegzugsformular (questionnaire de départ) vorbeizukommen.'
+      it: 'Ginevra tassa il tuo reddito dal 1° gennaio al giorno della partenza, all’aliquota di un reddito annuo, e la tua sostanza a quel giorno. L’amministrazione fiscale ti chiede di presentarti almeno 15 giorni prima della partenza, con il suo questionario di partenza (questionnaire de départ).'
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=54'
+      label:
+        en: 'Geneva tax guide 2025, p. 54: leaving Geneva for abroad'
+        fr: 'Guide fiscal 2025, p. 54 : Départ du canton de Genève pour l’étranger'
+        de: 'Genfer Wegleitung 2025, S. 54: Wegzug ins Ausland, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 54: partenza da Ginevra per l’estero, in francese'
+    text:
+      p1:
+        en: 'On what date did you leave Switzerland, or will you leave?'
+        fr: 'À quelle date avez-vous quitté la Suisse, ou la quitterez-vous ?'
+        de: 'An welchem Tag hast du die Schweiz verlassen, oder wirst du sie verlassen?'
+        it: 'In che giorno hai lasciato la Svizzera, o la lascerai?'
+      p2:
+        en: 'On what date did your spouse or partner leave Switzerland, or will they leave?'
+        fr: 'À quelle date votre conjoint ou partenaire a-t-il quitté la Suisse, ou la quittera-t-il ?'
+        de: 'An welchem Tag hat dein Partner oder deine Partnerin die Schweiz verlassen, oder wird sie verlassen?'
+        it: 'In che giorno il tuo coniuge o partner ha lasciato la Svizzera, o la lascerà?'
+    help:
+      en: 'The last day you live in Switzerland (date de départ, as the guide calls it).'
+      fr: 'Le dernier jour où vous habitez en Suisse (la date de votre départ, dans les mots du guide).'
+      de: 'Der letzte Tag, an dem du in der Schweiz wohnst (date de départ, wie die Wegleitung sagt).'
+      it: 'L’ultimo giorno in cui abiti in Svizzera (date de départ, come dice la guida).'
 
   - use: income_sources
     # ge-2025-guide-declaration-pp p. 25

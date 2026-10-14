@@ -167,6 +167,7 @@ export type CheckRow = Pick<
   | 'tick'
   | 'status'
   | 'final'
+  | 'noCheck'
 >;
 
 export interface ReconcileInput {
@@ -405,7 +406,7 @@ export function reconcileDeclaration({
       const money =
         (row.format === 'money' || row.format === 'money_cents') && row.centimes !== undefined;
       if (row.role !== 'input') {
-        if (!money || !columns) continue;
+        if (!money || !columns || row.noCheck) continue;
         const k = `${section.page}|${rubric.key}|${rubric.person}`;
         const cells = expectedComputed.get(k) ?? new Map<CheckColumn, number>();
         for (const c of columns) cells.set(c, (cells.get(c) ?? 0) + roundToFranc(row.centimes!));

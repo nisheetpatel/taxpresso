@@ -113,6 +113,21 @@ export {
   type FederalConcept,
 } from './ifd/items.js';
 export { ifdTax } from './ifd/assess.js';
+// A year of arrival from abroad or of departure abroad: the days of tax liability, the conversion
+// of periodic income to a year, the federal deductions reduced in proportion, the tax at the rate.
+export {
+  days360,
+  forDays,
+  ifdPartYearParams,
+  ifdTaxPartYear,
+  partYear,
+  PartYearError,
+  partYearSources,
+  toYear,
+  type IfdPartYearTax,
+  type PartYear,
+  type PartYearKind,
+} from './ifd/part-year.js';
 // The federal tax on lump sums from the 2nd pillar and pillar 3a (art. 38 LIFD).
 export { IFD_CAPITAL_FIFTH, IFD_CAPITAL_NOTE, ifdCapitalTax } from './ifd/capital.js';
 export { IFD_OBJECTION, type ObjectionRule } from './ifd/objection.js';

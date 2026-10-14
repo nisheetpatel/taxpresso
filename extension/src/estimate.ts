@@ -17,6 +17,7 @@ import {
 } from '@taxpresso/rules-ch';
 import { contentLang, say, type UiLang } from './lang.js';
 import type { Workspace } from './workspace.js';
+import { partYearGuide } from './part-year.js';
 
 const WHO: Record<string, Text> = {
   p1: { en: 'you', fr: 'vous', de: 'du', it: 'tu' },
@@ -172,6 +173,9 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
       'Property abroad: Taxpresso counts it only to set the rate (exemption avec réserve de progression) and shares the debts, their interest and the deductions with it (97.00). Give these figures as they are, and say the rules it lists as not spelled out in the documents.',
     );
   }
+  // A year of arrival from abroad or of departure abroad (Geneva): the period, at a full year's rate.
+  const partYear = partYearGuide(r as Parameters<typeof partYearGuide>[0]);
+  if (partYear) say.push(partYear);
   const items = icc ? mainItems(icc.items, 8) : [];
   if (items.length) {
     say.push(

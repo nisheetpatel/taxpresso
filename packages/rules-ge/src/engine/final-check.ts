@@ -19,7 +19,14 @@ import {
 import { chf, type CapitalTax } from '@taxpresso/rules-ch';
 import { ESTIMATE_TEXT } from './explain.js';
 import { rubric } from './rubrics.js';
-import type { AbroadResult, EstimateReason, LimitApplied, TaxResult } from './types.js';
+import { dayText } from './part-year.js';
+import type {
+  AbroadResult,
+  EstimateReason,
+  LimitApplied,
+  PartYearResult,
+  TaxResult,
+} from './types.js';
 
 const NB = '\u00a0';
 const t = (en: string, fr: string): Text => ({ en, fr });
@@ -111,6 +118,8 @@ export type FinalCheckResult = Pick<
   capital?: CapitalTax;
   /** A property abroad, counted for the rate (Geneva). */
   abroad?: AbroadResult;
+  /** A year of arrival from abroad or of departure abroad (Geneva). */
+  partYear?: PartYearResult;
 };
 
 /**
@@ -180,6 +189,7 @@ export type FinalCheckKind =
   | 'limit'
   | 'capital'
   | 'abroad'
+  | 'part_year'
   | 'best_figure'
   | 'holding_check'
   | 'not_counted'
@@ -234,6 +244,7 @@ const FIX_ORDER: FinalCheckKind[] = [
   'official_pdf',
 ];
 const KNOW_ORDER: FinalCheckKind[] = [
+  'part_year',
   'capital',
   'abroad',
   'limit',
@@ -544,6 +555,61 @@ function capitalItems(input: FinalCheckInput): FinalCheckItem[] {
     });
   }
   return out;
+}
+
+/**
+ * A year of arrival from abroad or of departure abroad: an unusual item (SPEC.md 10.0). The income
+ * of the period (99.00) is taxed at the rate of a full year's income (95.00, revenu net pour le
+ * taux; 97.00 the rest), with the documents that govern it.
+ */
+function partYearItems(input: FinalCheckInput): FinalCheckItem[] {
+  const p = input.result?.partYear;
+  if (!p) return [];
+  const arrival = p.kind === 'arrival';
+  const day = dayText(arrival ? p.from : p.to);
+  const rates = (lang: 'en' | 'fr') =>
+    [
+      p.icc ? `${chf(p.icc.rateTotal.amount)} ${lang === 'en' ? 'cantonal' : 'cantonal'}` : '',
+      p.ifd ? `${chf(p.ifd.rateTotal.amount)} ${lang === 'en' ? 'federal' : 'fédéral'}` : '',
+    ]
+      .filter(Boolean)
+      .join(lang === 'en' ? ' and ' : ' et ');
+  const r = { en: rates('en'), fr: rates('fr') };
+  return [
+    {
+      id: 'part_year:period',
+      kind: 'part_year',
+      title: arrival
+        ? t(
+            `You arrived on ${day.en}: your income from then, at the rate of a full year (date d’arrivée)`,
+            `Arrivée le ${day.fr}${NB}: votre revenu dès cette date, au taux d’une année entière (date d’arrivée)`,
+          )
+        : t(
+            `You leave on ${day.en}: your income until then, at the rate of a full year`,
+            `Départ le ${day.fr}${NB}: votre revenu jusqu’à cette date, au taux d’une année entière`,
+          ),
+      detail: t(
+        `Geneva and the federal tax tax the income of your ${p.days} of 360 days (99.00) at the rate of a full year’s income${r.en ? `: the net income for the rate (95.00, revenu net pour le taux) is ${r.en}, and 97.00 is the part not taxed here` : ''}.`,
+        `Genève et l’impôt fédéral imposent le revenu de vos ${p.days} jours sur 360 (99.00) au taux d’un revenu annuel${r.fr ? `${NB}: le revenu net pour le taux (95.00) est de ${r.fr}, et le 97.00 est la part non imposable ici` : ''}.`,
+      ),
+      todo: arrival
+        ? t(
+            'Write the day you arrived on the first page of the declaration (date d’arrivée), and declare only your income from that day.',
+            'Inscrivez le jour de votre arrivée en première page de la déclaration (date d’arrivée), et ne déclarez que vos revenus dès ce jour.',
+          )
+        : t(
+            'Go to the tax office at least 15 days before you leave, with the departure form (questionnaire de départ), last year’s declaration if it isn’t sent, and this year’s, filled in up to the day you leave (GeTax: Fichier > Déclaration Départ/Décès).',
+            'Présentez-vous à l’administration fiscale au moins 15 jours avant votre départ, avec le questionnaire de départ, la déclaration de l’an dernier si elle n’est pas envoyée, et celle de cette année, remplie jusqu’au jour du départ (GeTax${NB}: Fichier > Déclaration Départ/Décès).'.replace(
+              '${NB}',
+              NB,
+            ),
+          ),
+      sources: officialLinks(
+        `${arrival ? 'ge-2025-guide-declaration-pp p. 53' : 'ge-2025-guide-declaration-pp p. 54'}; ge-2025-declaration-specimen p. 1 and 3; ge-na-law-lipp art. 62 al. 3 and 4, art. 64 and 65; ch-na-law-lifd art. 40 al. 3 (p. 33); ch-2026-afc-guide-futur-contribuable p. 30`,
+        input.canton?.documents,
+      ),
+    },
+  ];
 }
 
 /**
@@ -947,6 +1013,7 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
   // can't verify.
   know.push(...capitalItems(input));
   know.push(...abroadItems(input));
+  know.push(...partYearItems(input));
   know.push(...limitItems(input));
   (r?.notCounted ?? []).forEach((n, i) =>
     know.push({

@@ -31,6 +31,11 @@ export interface LedgerRoute {
   /** The value is the commune's code (Code lieu), not the answer itself. */
   communeCode?: boolean;
   /**
+   * The household's day of arrival from abroad (the same for a couple, or not supported): taken
+   * from taxpayer A's answer, only while the answers say the household arrived from abroad.
+   */
+  arrivalDay?: boolean;
+  /**
    * A per-person value the form asks as one amount for the household, the spouses' added up (98.12
    * has a single "Montant" box): no part per taxpayer.
    */
@@ -49,6 +54,13 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
     to: 'PG1-COMMUNE',
     communeCode: true,
     source: `${SPEC} p. 1; ${GUIDE} p. 12 and 59`,
+  },
+  {
+    key: 'profile.arrival_date',
+    to: 'PG1-ARRIVEE',
+    arrivalDay: true,
+    together: true,
+    source: `${SPEC} p. 1; ${GUIDE} p. 53`,
   },
   // Annexe A: salary certificate boxes, as the form names them.
   {
@@ -359,9 +371,13 @@ export function itemsFromLedger(input: LedgerInput): {
   >();
   const unplaced: UnplacedValue[] = [];
 
+  const arrived = facts.some(
+    (f) => f.key === 'profile.moved' && f.person === 'household' && f.value === 'from_abroad',
+  );
   for (const fact of facts) {
     const routes = LEDGER_ROUTES_2026.filter((r) => r.key === fact.key);
     if (routes.length === 0) continue;
+    if (routes.some((r) => r.arrivalDay) && (!arrived || fact.person === 'p2')) continue;
     const doc = fact.source.docId ? docs.get(fact.source.docId) : undefined;
     let placed = false;
     for (const route of routes) {
@@ -377,6 +393,7 @@ export function itemsFromLedger(input: LedgerInput): {
       let person: Owner = fact.person;
       if (person === 'household' && doc?.person) person = doc.person;
       if (person === 'household' && single) person = 'p1';
+      if (route.arrivalDay) person = 'household';
       let code: string;
       if (typeof route.to === 'string') code = route.to;
       else if (person === 'p1' || person === 'p2') code = person === 'p1' ? route.to.A : route.to.B;
@@ -387,6 +404,9 @@ export function itemsFromLedger(input: LedgerInput): {
         const commune = COMMUNE_CODES_2025[fact.value as CommuneSlug];
         if (!commune) continue;
         value = { text: commune };
+      } else if (route.arrivalDay) {
+        if (typeof fact.value !== 'string') continue;
+        value = { text: fact.value };
       } else if (typeof fact.value === 'number') value = { amount: fact.value };
       else if (fact.value === true) value = { tick: true };
       else continue; // an unticked box: nothing to enter

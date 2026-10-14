@@ -9,7 +9,15 @@
 
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { inflateRawSync } from 'node:zlib';
 import http from 'node:http';
 import os from 'node:os';
@@ -2404,6 +2412,156 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       assert.match(tax.structuredContent.unsupported.join(' '), /a loss abroad/);
     } finally {
       await ferri.ab.close();
+    }
+  });
+
+  test('a Geneva arrival from abroad (2026) and a departure abroad (2025), offline', async () => {
+    // Lena Brandt, single, Genève, back from abroad on 1 April 2026; Jonas Lindqvist, single,
+    // Carouge, left on 30 September 2025 (packages/rules-ge/test/part-year.test.ts, derived by hand
+    // from the official documents). Each in its own folder and server process with the same guard.
+    const run = async (folder, year, answers, docs) => {
+      const pyVault = path.join(work, folder);
+      const pyTransport = new StdioClientTransport({
+        command: process.execPath,
+        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        env: {
+          ...process.env,
+          TAXPRESSO_VAULT_PATH: pyVault,
+          TAXPRESSO_UI_LANGUAGE: 'fr',
+          TAXPRESSO_NET_GUARD_LOG: guardLog,
+        },
+        stderr: 'pipe',
+      });
+      pyTransport.stderr?.on('data', (d) => (stderr += d));
+      const py = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
+      await py.connect(pyTransport);
+      const call = async (name, args = {}) => {
+        const res = await py.callTool({ name, arguments: args });
+        assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+        return res;
+      };
+      if (year !== 2026) await call('open_tax_year', { year });
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      mkdirSync(path.join(pyVault, String(year)), { recursive: true });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(pyVault, String(year), name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values, period]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: {
+            kind,
+            taxYear: year,
+            person,
+            ...(period ? { periodFrom: period[0], periodTo: period[1] } : {}),
+          },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      return { py, call };
+    };
+    const common = (moved, day, commune) => [
+      ['canton', 'GE'],
+      ['civil_status', 'single'],
+      ['children', 0],
+      ['commune', commune],
+      ['moved', moved],
+      [moved === 'from_abroad' ? 'arrival_date:p1' : 'departure_date:p1', day],
+      ['income_sources:p1', ['salary']],
+      ['employers:p1', 1],
+      ['residence:p1', 'swiss'],
+      ['pillar3a:p1', true],
+      ['lpp_buyin:p1', false],
+      ['commute:p1', 'walk'],
+      ['meal_days:p1', 0],
+      ['banks', 1],
+      ['crypto', false],
+      ['payments', []],
+      ['special', []],
+    ];
+    const certificate = (gross, social, lpp, period) => [
+      'salary_certificate',
+      'p1',
+      [
+        ['salary.base', gross],
+        ['salary.gross', gross],
+        ['salary.social_contributions', social],
+        ['salary.lpp_ordinary', lpp],
+      ],
+      period,
+    ];
+    const brandt = await run(
+      'Arrivee-Brandt',
+      2026,
+      common('from_abroad', '2026-04-01', 'Genève'),
+      {
+        'certificat-2026.pdf': certificate("72'000.00", "4'608.00", "3'600.00", [
+          '2026-04-01',
+          '2026-12-31',
+        ]),
+        '3a-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "7'258.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "4'500.00"]]],
+        'banque-2026.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "12'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await brandt.call('compute_tax');
+      // Without the transport to work (walk): ICC 50,222 at the rate of 69,986; IFD 53,270.
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      assert.equal(tax.structuredContent.icc.taxableIncome, 5_022_200);
+      assert.match(tax.content[0].text, /A year of arrival from abroad/);
+      const pg1 = await brandt.call('get_form_values', { section: 'PG1' });
+      assert.match(pg1.content[0].text, /Date d’arrivée[\s\S]*01\.04\.2026/);
+      const status = await brandt.call('get_status');
+      assert.match(status.content[0].text, /You arrived on 1 April 2026/);
+      const check = await brandt.call('final_check');
+      assert.ok(check.structuredContent.know.some((i) => i.id === 'part_year:period'));
+    } finally {
+      await brandt.py.close();
+    }
+
+    const lindqvist = await run(
+      'Depart-Lindqvist',
+      2025,
+      common('leaving_switzerland', '2025-09-30', 'Carouge'),
+      {
+        'certificat-2025.pdf': certificate("90'000.00", "5'760.00", "4'500.00", [
+          '2025-01-01',
+          '2025-09-30',
+        ]),
+        '3a-2025.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "7'258.00"]]],
+        'lamal-2025.pdf': ['health_premiums', 'household', [['health.premiums', "3'600.00"]]],
+        'banque-2025.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "20'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await lindqvist.call('compute_tax');
+      assert.equal(tax.structuredContent.taxYear, 2025);
+      assert.equal(tax.structuredContent.icc.total, 1_132_120);
+      assert.equal(tax.structuredContent.ifd.tax, 167_510);
+      const status = await lindqvist.call('get_status');
+      assert.match(status.content[0].text, /You leave Switzerland on 30 September 2025/);
+    } finally {
+      await lindqvist.py.close();
     }
   });
 

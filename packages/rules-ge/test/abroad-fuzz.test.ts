@@ -92,6 +92,13 @@ function household(seed: number): Case {
   const moved = r() < 0.05 ? pick(['from_abroad', 'leaving_switzerland']) : 'no';
   if (moved !== 'no') outside = true;
   put('profile.moved', 'household', moved);
+  // A year of arrival or departure asks each person's day (a part year: not with a property abroad).
+  if (moved !== 'no') {
+    const key = moved === 'from_abroad' ? 'profile.arrival_date' : 'profile.departure_date';
+    for (const p of couple ? (['p1', 'p2'] as const) : (['p1'] as const)) {
+      put(key, p, `${taxYear}-07-01`);
+    }
+  }
   for (const p of couple ? (['p1', 'p2'] as const) : (['p1'] as const)) {
     const self = r() < 0.04;
     if (self) outside = true;
