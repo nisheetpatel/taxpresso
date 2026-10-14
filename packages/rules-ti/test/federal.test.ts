@@ -11,7 +11,13 @@ import {
   rules as baselLand,
   type BaselLandCantonal,
 } from '@taxpresso/rules-bl';
-import type { HouseholdInput, IfdTax, Line, PersonInput } from '@taxpresso/rules-ch';
+import {
+  IFD_NOTE,
+  type HouseholdInput,
+  type IfdTax,
+  type Line,
+  type PersonInput,
+} from '@taxpresso/rules-ch';
 import { COMMUNES_2026, rules as geneva } from '@taxpresso/rules-ge';
 import {
   communesFor as stGallenCommunes,
@@ -24,6 +30,7 @@ import { describe, expect, it } from 'vitest';
 import {
   communesFor,
   federalTotals,
+  NOTE,
   rules as ticino,
   type Item,
   type TicinoCantonal,
@@ -507,5 +514,42 @@ describe('where Ticino’s documents take a federal deduction as Geneva’s form
     expect(ded(t.items, '24')).toBe(ded(g.items, '73.00'));
     expect(ded(zh.items, '324') - ded(t.items, '24')).toBe(chf(560));
     expect(t.tax.amount).toBe(g.tax.amount);
+  });
+});
+
+describe('childcare of a child of 14 or more', () => {
+  it('counts for neither tax, and the result says so', () => {
+    // Two children: the younger under 14 with childcare of 8,000, the elder 14 or more at the end
+    // of the year with 5,000. Only the younger child’s counts: cantonal 8,000 (20, at most 26,200,
+    // LT art. 32a); federal 8,000 (at most 25,800, Form. 2a 2026 p. 8), where the federal sum used
+    // to take both, 13,000, within the cap of the one child under 14.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(8_000) } },
+        { custody: 'full', under14: false, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = ticino.computeReturn({
+      ...h,
+      commune: 'Lugano',
+      cantonal: {
+        workRate: { p1: 100, p2: 100 },
+        monthsWorked: { p1: 12, p2: 12 },
+        childrenMinor: [true, true],
+      },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '20')).toBe(chf(8_000));
+    expect(ded(r.ifd!.items, '20')).toBe(chf(8_000));
+    expect(r.notCounted).toContainEqual(NOTE.childcareAway);
+    expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
   });
 });

@@ -3,13 +3,14 @@
 // and Zurich's. Checked on seeded synthetic households through the three cantons' interfaces; then
 // TaxMe's federal summary of the official specimen, line by line; then the places where Bern's form
 // takes a federal deduction differently, each pinned with its documents.
-import type { HouseholdInput, PersonInput } from '@taxpresso/rules-ch';
+import { IFD_NOTE, type HouseholdInput, type PersonInput } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, rules as geneva } from '@taxpresso/rules-ge';
 import { communesFor as zurichCommunes, rules as zurich } from '@taxpresso/rules-zh';
 import { describe, expect, it } from 'vitest';
 import {
   communesFor,
   federalTotals,
+  NOTE,
   rules as bern,
   type BernCantonal,
   type ItemAmount,
@@ -357,5 +358,38 @@ describe('where Bern’s form takes a federal deduction differently (open points
     const diff = med(be.items, '5.4') - med(zh.items, '320');
     expect(diff).toBeGreaterThanOrEqual(0);
     expect(diff).toBeLessThanOrEqual(chf(1));
+  });
+});
+
+describe('childcare of a child of 14 or more', () => {
+  it('counts for neither tax, and the result says so', () => {
+    // Two children: the younger under 14 with childcare of 8,000, the elder 14 or more at the end
+    // of the year with 5,000. Only the younger child’s counts: cantonal 8,000 (2.1, at most 16,000,
+    // StG Art. 38 Abs. 1 lit. l); federal 8,000 (at most 25,800, Form. 2a 2026 p. 8), where the
+    // federal sum used to take both, 13,000, within the cap of the one child under 14.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(8_000) } },
+        { custody: 'full', under14: false, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = bern.computeReturn({
+      ...h,
+      commune: 351,
+      cantonal: { church: { p1: 'none', p2: 'none' } },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '2.1-betreuung')).toBe(chf(8_000));
+    expect(ded(r.ifd!.items, '2.1-betreuung')).toBe(chf(8_000));
+    expect(r.notCounted).toContainEqual(NOTE.childcareAge);
+    expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
   });
 });

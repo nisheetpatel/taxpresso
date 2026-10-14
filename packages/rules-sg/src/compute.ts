@@ -870,7 +870,13 @@ export function computeReturn(input: SgEngineInput): SgTaxResult {
         notes.add(notes.notCounted, NOTE.childcareOtherParent);
         continue;
       }
-      if (!ch.lives || ch.input.under14 === false) continue;
+      if (!ch.lives) continue;
+      // The care counts up to the 14th birthday ("Kindern unter 14 Jahren": sg-2025-law-steuergesetz
+      // and sg-2026-law-steuergesetz p. 24; sg-na-deductions-kinderbetreuungskosten p. 3).
+      if (ch.input.under14 === false) {
+        if ((ch.input.childcare?.value ?? 0) > 0) notes.add(notes.notCounted, NOTE.childcareAge);
+        continue;
+      }
       if (!working) {
         notes.add(notes.notCounted, NOTE.childcareWork);
         continue;

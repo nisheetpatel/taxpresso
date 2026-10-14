@@ -152,6 +152,10 @@ export const NOTE = {
     en: 'Childcare is counted for children under 14, as you gave it.',
     fr: `Les frais de garde sont comptés pour les enfants de moins de 14 ans, tels que donnés.`,
   },
+  childcareAge: {
+    en: 'Childcare (Kinderbetreuungskosten, 16.2) counts only up to the child’s 14th birthday (StG Art. 45 Abs. 1 lit. h). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Les frais de garde (Kinderbetreuungskosten, 16.2) ne comptent que jusqu’aux 14 ans de l’enfant (StG art. 45 al. 1 let. h). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
   // What is not in the calculation (notCounted).
   churchNotAsked: {
     en: 'Church tax (Kirchensteuer) is not included: say whether you are a member of a church to add it.',

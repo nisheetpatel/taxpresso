@@ -15,6 +15,7 @@ import {
   debtInterest,
   donationDeduction,
   donations,
+  federalChildcare,
   federalScale,
   flatProfessional,
   francTotal as total,
@@ -954,11 +955,16 @@ export function computeReturn(input: EngineInput): TaxResult {
       ),
     );
 
-  // Childcare (59.10 ICC, 59.12 IFD): children under 14; spouses must both work.
+  // Childcare (59.10 ICC, 59.12 IFD): children under 14; spouses must both work. Both taxes count
+  // the care of each child up to the month of the 14th birthday (ge-2025-guide-declaration-pp p. 30;
+  // ICC: LIPP art. 35, ge-na-law-lipp, "si l'enfant a moins de 14 ans"; IFD: LIFD art. 33 al. 3),
+  // so the costs given for a child of 14 or more at the end of the year are left out of both; an
+  // amount for the household is taken for the children under 14.
   const eligible = couple ? figures.length === 2 && figures.every((f) => f.earns) : true;
   const perChild = children.filter((c) => (c.childcare?.value ?? 0) > 0);
   const ccTrace = new Trace();
-  const care = total(ccTrace, [...children.map((c) => c.childcare), hh.childcare]);
+  const { care, older } = federalChildcare(children, hh.childcare, ccTrace);
+  if (older) notes.add(notes.notCounted, NOTE.childcareAge);
   const caredFor = new Set<ChildInput>();
   if (care > 0) {
     const young = children.filter((c) => c.under14 !== false);

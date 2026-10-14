@@ -3,11 +3,17 @@
 // tax, to the centime, and Zurich's. Checked on seeded synthetic households through the cantons'
 // interfaces; then the worksheet's lines and order; then the places where the worksheet takes a
 // federal deduction differently from Geneva's form, each pinned with its document.
-import type { HouseholdInput, PersonInput } from '@taxpresso/rules-ch';
+import { IFD_NOTE, type HouseholdInput, type PersonInput } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, rules as geneva } from '@taxpresso/rules-ge';
 import { communesFor as zurichCommunes, rules as zurich } from '@taxpresso/rules-zh';
 import { describe, expect, it } from 'vitest';
-import { communesFor, federalTotals, rules as vaud, type VaudCantonal } from '../src/index.js';
+import {
+  communesFor,
+  federalTotals,
+  NOTE,
+  rules as vaud,
+  type VaudCantonal,
+} from '../src/index.js';
 
 /** A household as every canton takes it, without what only one asks for. */
 type Shared = Omit<HouseholdInput, 'cantonal'>;
@@ -397,5 +403,34 @@ describe('where the worksheet takes a federal deduction differently from Genevaâ
     expect(gift).toBe(Math.round((v.intermediateIncome1.amount * 2_000) / 10_000 / 100) * 100);
     const g = ge(h);
     expect(v.taxableIncome.amount).not.toBe(g.taxableIncome.amount);
+  });
+});
+
+describe('childcare of a child of 14 or more', () => {
+  it('counts for neither tax, and the result says so', () => {
+    // Two children: the younger under 14 with childcare of 8,000, the elder 14 or more at the end
+    // of the year with 5,000. Only the younger childâ€™s counts: cantonal 8,000 (670, at most 15,200,
+    // LI art. 37 al. 1 let. k); federal 8,000 (at most 25,800, Form. 2a 2026 p. 8), where the
+    // federal sum used to take both, 13,000, within the cap of the one child under 14.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(8_000) } },
+        { custody: 'full', under14: false, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = vaud.computeReturn({ ...h, commune: 'Lausanne', cantonal: { rent: { value: 0 } } });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '670')).toBe(chf(8_000));
+    expect(ded(r.ifd!.items, '670')).toBe(chf(8_000));
+    expect(r.notCounted).toContainEqual(NOTE.childcareAge);
+    expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
   });
 });

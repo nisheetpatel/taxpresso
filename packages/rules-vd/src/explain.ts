@@ -132,6 +132,10 @@ export const NOTE = {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,
   },
+  childcareAge: {
+    en: 'Childcare (déduction pour frais de garde, code 670) counts only for a child under 14 (LI art. 37 al. 1 let. k). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `La déduction pour frais de garde (code 670) ne vaut que pour un enfant de moins de 14 ans (LI art. 37 al. 1 let. k). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
   childSupportPaid: {
     en: 'You pay child support: the children count for the parent who receives it, and you deduct the support instead (code 630).',
     fr: `Vous versez une contribution d’entretien${NB}: les enfants comptent pour le parent qui la reçoit, et vous déduisez la contribution à la place (code 630).`,

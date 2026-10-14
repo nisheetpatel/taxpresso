@@ -3,8 +3,12 @@
 // of households walked through the questions, documents and plans in every canton, normalized for
 // random ids, tokens, times and temporary paths. Run before and after a change, then compare the
 // two files. Skipped unless TAXPRESSO_RECORD names the output file (it takes a few minutes).
+// TAXPRESSO_RECORD_HASH=1 keeps each record small on disk: a sha256 of its normalized content in
+// place of the content. To see a difference, rerun the households that differ without it, named in
+// TAXPRESSO_RECORD_ONLY (ids separated by commas; the others are skipped, their seeds kept).
 //
 //   TAXPRESSO_RECORD=/tmp/before.jsonl TAXPRESSO_RECORD_N=20 pnpm vitest run extension/test/record-years.test.ts
+import { createHash } from 'node:crypto';
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
@@ -18,6 +22,8 @@ import { makeUiDir, makeWorkspace } from './helpers.js';
 
 const OUT = process.env.TAXPRESSO_RECORD;
 const N = Number(process.env.TAXPRESSO_RECORD_N ?? 20);
+const HASH = process.env.TAXPRESSO_RECORD_HASH === '1';
+const ONLY = process.env.TAXPRESSO_RECORD_ONLY?.split(',');
 const CANTONS = (process.env.TAXPRESSO_RECORD_CANTONS ?? 'GE,ZH,BE,BL,VD,BS,ZG,LU,SG').split(',');
 /** Another tax year than the default, opened first with open_tax_year (only once it exists). */
 const YEAR = process.env.TAXPRESSO_RECORD_YEAR
@@ -132,12 +138,15 @@ async function run(h: Household): Promise<void> {
   const random = rng(h.seed);
   const pick = <T>(xs: readonly T[]): T => xs[Math.floor(random() * xs.length)]!;
   let n = 0;
-  const record = (kind: string, name: string, args: unknown, result: unknown) =>
+  const record = (kind: string, name: string, args: unknown, result: unknown) => {
+    const line = normalize({ h: h.id, n: n++, kind, name, args, result }, root);
+    const sha = HASH && createHash('sha256').update(line).digest('hex').slice(0, 16);
     appendFileSync(
       OUT!,
-      normalize({ h: h.id, n: n++, kind, name, args, result }, root) + '\n',
+      (sha ? JSON.stringify({ h: h.id, n: n - 1, kind, name, sha }) : line) + '\n',
       'utf8',
     );
+  };
   const call = async (name: string, args: Record<string, unknown> = {}) => {
     let result: unknown;
     try {
@@ -264,11 +273,15 @@ async function run(h: Household): Promise<void> {
 describe.skipIf(!OUT)('record tool results and dashboard states', () => {
   it('records the synthetic households and the fuzz', { timeout: 3_600_000 }, async () => {
     writeFileSync(OUT!, '', 'utf8');
-    for (const h of YEAR === 2025 ? SCENARIOS_2025 : SCENARIOS) await run(h);
+    for (const h of YEAR === 2025 ? SCENARIOS_2025 : SCENARIOS) {
+      if (!ONLY || ONLY.includes(h.id)) await run(h);
+    }
     let seed = 1000;
     for (const canton of CANTONS) {
       for (let i = 0; i < N; i++) {
-        await run({ id: `${canton}-${i}`, canton, seed: seed++, documents: [] });
+        const id = `${canton}-${i}`;
+        const h = { id, canton, seed: seed++, documents: [] };
+        if (!ONLY || ONLY.includes(id)) await run(h);
       }
     }
   });

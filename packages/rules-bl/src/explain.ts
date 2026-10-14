@@ -152,6 +152,10 @@ export const NOTE = {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,
   },
+  childcareAge: {
+    en: 'Childcare (Kinderbetreuung durch Dritte, 640) counts only up to the child’s 14th birthday (StG § 29 Abs. 1 lit. c). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Les frais de garde (Kinderbetreuung durch Dritte, 640) ne comptent que jusqu’aux 14 ans de l’enfant (StG § 29 al. 1 let. c). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
   listedSecurities: {
     en: 'Accounts and securities are counted at the value and gross income you gave (the ESTV price list on 31 December).',
     fr: `Les titres et avoirs sont comptés à la valeur et au rendement brut indiqués (cours de l’AFC au 31 décembre).`,
