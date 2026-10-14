@@ -45,6 +45,11 @@ export interface CantonReading {
    * replacing a salary (Geneva, 11.50).
    */
   unemploymentApart?: boolean;
+  /**
+   * With `unemploymentApart`, the kinds of benefits (replacement.type) on that line: unemployment
+   * alone by default; Vaud's 200 also takes the allowances for military service (APG).
+   */
+  unemploymentKinds?: readonly string[];
 }
 
 const statusOf = (s: FactStatus): InputStatus => (s === 'computed' ? 'verified' : s);
@@ -261,9 +266,10 @@ export function householdFromFacts(
     const benefits = of('replacement.amount', id).filter((f) => !viaEmployer.has(f.instance));
     if (canton.unemploymentApart) {
       // Unemployment benefits paid directly have their own line; the other benefits theirs.
+      const kinds = canton.unemploymentKinds ?? ['unemployment'];
       const unemployment = new Set(
         of('replacement.type', id)
-          .filter((f) => f.value === 'unemployment')
+          .filter((f) => kinds.includes(String(f.value)))
           .map((f) => f.instance),
       );
       const fromFund = amountOf(benefits.filter((f) => unemployment.has(f.instance)));

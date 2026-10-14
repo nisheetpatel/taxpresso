@@ -1,15 +1,16 @@
 // Vaud behind the canton interface (packages/rules-ch, canton.ts; docs/design/cantons.md,
 // section 2): the household input becomes Vaud's engine input, and computeReturn gives exactly what
-// the engine gives (the cantonal and communal tax; the federal column of the Vaud form is not mapped
-// yet, so `ifd` is null). Not wired into the extension. A fact that changes the tax and that Vaud's
-// engine does not read is refused, never dropped (fail closed); facts only Geneva's rules use (a
-// person's age band, Geneva's meal rule, the commune of work, the withholding tax credit shown next
-// to the tax) and the federal parental scale don't change Vaud's tax and are left aside.
+// the engine gives (the cantonal and communal tax, and the federal tax on the guide's worksheet,
+// ./ifd.ts). The extension reads it through its canton registry. A fact that changes the tax and
+// that Vaud's engine does not read is refused, never dropped (fail closed); facts only Geneva's rules
+// use (a person's age band, Geneva's meal rule, the commune of work, the withholding tax credit shown
+// next to the tax) don't change Vaud's tax and are left aside.
+import type { DocumentKind } from '@taxpresso/ledger';
 import {
-  KEYS_ECH0196_2026,
-  KEYS_SALARY_CERTIFICATE_2026,
-  KEYS_SECURITIES_2026,
+  ATTESTATION_FIELDS_2026,
+  DOCUMENT_FIELDS_WEALTH_2026,
   SALARY_CERTIFICATE_FIELDS_2026,
+  type Amount,
   type CantonRules,
   type Commune,
   type DocumentRule,
@@ -19,21 +20,27 @@ import {
 import { VdInputError } from './assess.js';
 import { communesFor, slugOf } from './communes.js';
 import { computeReturn } from './compute.js';
+import { vaudKeys } from './keys.js';
 import { VD_TAX_YEARS, vdParamsFor, type VdTaxYear } from './params.js';
-import type { MovableOwner, PersonInput, VdEngineInput, VdTaxResult } from './types.js';
+import type { ChildInput, MovableOwner, PersonInput, VdEngineInput, VdTaxResult } from './types.js';
 
 /** What only Vaud asks for. */
-export type VaudCantonal = Pick<
+export interface VaudCantonal extends Pick<
   VdEngineInput,
-  'communePart' | 'ownHousehold' | 'mainUpkeep' | 'rent' | 'furnitureInsurance'
->;
-
-/** The shared keys: the salary certificate, the securities and the e-tax statements. */
-const KEYS = {
-  ...KEYS_SALARY_CERTIFICATE_2026,
-  ...KEYS_SECURITIES_2026,
-  ...KEYS_ECH0196_2026,
-} as const;
+  'communePart' | 'ownHousehold' | 'mainUpkeep' | 'rent' | 'furnitureInsurance' | 'furnitureWithin'
+> {
+  /**
+   * Childcare paid, by child, in the order of `children` (the limit is per child, code 670):
+   * replaces childcare given for the household as a whole.
+   */
+  childcare?: readonly (Amount | undefined)[];
+  /**
+   * The interest on savings (code 480) as you gave it: savings and current accounts, bonds, cash
+   * bonds, loans (vd-2025-guide p. 40). Replaces the household's savings interest read from the
+   * accounts.
+   */
+  savingsInterest?: Amount;
+}
 
 function refuse(what: string): never {
   throw new VdInputError(`${what}: Vaud's engine does not read it, so the tax would be wrong.`);
@@ -66,16 +73,25 @@ export function vaudInput(input: HouseholdInput<VaudCantonal>): VdEngineInput {
       `Vaud communes are given by their name (the official tables carry no BFS number), not ${input.commune}.`,
     );
   }
-  if (input.household?.childcare) {
-    refuse('Childcare for the household (household.childcare; give it per child)');
+  const c = input.cantonal ?? {};
+  const care = c.childcare ?? [];
+  if (care.length > (input.children?.length ?? 0)) {
+    refuse('Childcare for a child not in children (cantonal.childcare)');
   }
-  const children = input.children?.map((ch) => without(ch, ['age']));
+  const children: ChildInput[] | undefined = input.children?.map((ch, i) => ({
+    ...without(ch, ['age']),
+    ...(care[i] ? { childcare: care[i] } : {}),
+  }));
+  // Childcare split per child replaces the household's total; savings interest given replaces the
+  // accounts' own.
+  let household = input.household;
+  if (household && c.childcare) household = without(household, ['childcare']);
+  if (c.savingsInterest) household = { ...household, savingsInterest: c.savingsInterest };
   const movable = input.movable?.map((m) => {
     const owner: string = m.owner;
     if (!isOwner(owner)) refuse(`Accounts or securities of ${owner} (movable[].owner)`);
     return { ...without(m, ['owner', 'withholdingSwiss']), owner };
   });
-  const c = input.cantonal ?? {};
   return {
     taxYear: input.taxYear as VdTaxYear,
     commune: input.commune,
@@ -83,12 +99,14 @@ export function vaudInput(input: HouseholdInput<VaudCantonal>): VdEngineInput {
     people: input.people.map(person),
     ...(children ? { children } : {}),
     ...(input.childSupport ? { childSupport: input.childSupport } : {}),
+    ...(input.ifdParentalScale !== undefined ? { ifdParentalScale: input.ifdParentalScale } : {}),
     ...(c.communePart !== undefined ? { communePart: c.communePart } : {}),
     ...(c.ownHousehold !== undefined ? { ownHousehold: c.ownHousehold } : {}),
     ...(c.mainUpkeep !== undefined ? { mainUpkeep: c.mainUpkeep } : {}),
     ...(c.rent !== undefined ? { rent: c.rent } : {}),
     ...(c.furnitureInsurance !== undefined ? { furnitureInsurance: c.furnitureInsurance } : {}),
-    ...(input.household ? { household: without(input.household, ['childcare']) } : {}),
+    ...(c.furnitureWithin !== undefined ? { furnitureWithin: c.furnitureWithin } : {}),
+    ...(household ? { household } : {}),
     ...(movable ? { movable } : {}),
   };
 }
@@ -111,10 +129,22 @@ function communes(taxYear: number): Commune[] {
   }));
 }
 
-/** What each kind of document gives: so far the salary certificate, the same in every canton. */
+/**
+ * What each kind of document gives: the documents every canton asks for (packages/rules-ch keys/),
+ * the salary certificate, the attestations and the bank and wealth documents. The tax assessment
+ * is Geneva's only for now.
+ */
 function documents(taxYear: number): DocumentRule[] {
   vdParamsFor(taxYear);
-  return [{ kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 }];
+  const fields: Partial<Record<DocumentKind, readonly string[]>> = {
+    salary_certificate: SALARY_CERTIFICATE_FIELDS_2026,
+    ...ATTESTATION_FIELDS_2026,
+    ...DOCUMENT_FIELDS_WEALTH_2026,
+  };
+  return (Object.entries(fields) as [DocumentKind, readonly string[]][]).map(([kind, keys]) => ({
+    kind,
+    keys,
+  }));
 }
 
 export const rules: CantonRules<VaudCantonal, VdTaxResult> = {
@@ -124,7 +154,7 @@ export const rules: CantonRules<VaudCantonal, VdTaxResult> = {
   computeReturn: (input) => computeReturn(vaudInput(input)),
   keys: (taxYear) => {
     vdParamsFor(taxYear);
-    return KEYS;
+    return vaudKeys(taxYear);
   },
   documents,
   sourcesIndex: 'docs/sources/vd',

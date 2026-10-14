@@ -7,6 +7,7 @@ import be2026 from '../../../data/be/2026/questionnaire.yaml';
 import bl2026 from '../../../data/bl/2026/questionnaire.yaml';
 import ch2026 from '../../../data/ch/2026/questions.yaml';
 import ge2026 from '../../../data/ge/2026/questionnaire.yaml';
+import vd2026 from '../../../data/vd/2026/questionnaire.yaml';
 import zh2026 from '../../../data/zh/2026/questionnaire.yaml';
 import { parseQuestionnaire, type QuestionnaireFile } from './schema.js';
 
@@ -39,4 +40,12 @@ export function beQuestionnaire2026(): QuestionnaireFile {
 /** The Basel-Landschaft questionnaire for tax year 2026, validated. */
 export function blQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(bl2026, ch2026);
+}
+
+/**
+ * The Vaud questionnaire for tax year 2026, validated. Its wording follows the 2025 guide: the 2026
+ * guide and form are not published yet (data/vd/2026/questionnaire.yaml).
+ */
+export function vdQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(vd2026, ch2026);
 }

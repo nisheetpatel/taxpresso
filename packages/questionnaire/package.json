@@ -16,6 +16,7 @@
     "@taxpresso/rules-bl": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",
+    "@taxpresso/rules-vd": "workspace:*",
     "@taxpresso/rules-zh": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",

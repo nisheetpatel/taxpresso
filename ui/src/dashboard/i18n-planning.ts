@@ -137,6 +137,13 @@ const messages = {
     cuRuleIncomeBl: 'You must have had earned income subject to AHV in 2025.',
     touGenevaOnlyBl:
       'TOU is Geneva’s procedure. For Basel-Landschaft, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
+    splitVd: 'Vaud {icc} · federal {ifd}',
+    lppOfficialVd: 'Rachats d’années d’assurance (2e pilier)',
+    lppAttestationVd:
+      'Your fund confirms the payment with an official attestation of the buy-in: keep it for your return.',
+    cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
+    touGenevaOnlyVd:
+      'Taxpresso’s TOU comparison follows Geneva’s rules. For Vaud, Taxpresso doesn’t support taxation at source (impôt à la source) and its TOU (taxation ordinaire ultérieure) yet.',
   },
   fr: {
     when: 'Avant le 31 décembre',
@@ -251,6 +258,11 @@ const messages = {
     cuOfficialBl: 'Nachträglicher Einkauf in die Säule 3a',
     cuRuleIncomeBl: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
     touGenevaOnlyBl: `La TOU est une procédure genevoise. Pour Bâle-Campagne, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
+    splitVd: 'Vaud {icc} · fédéral {ifd}',
+    lppOfficialVd: 'Rachats d’années d’assurance (2e pilier)',
+    lppAttestationVd: `Votre caisse confirme le versement par une attestation officielle de rachat${NB}: gardez-la pour votre déclaration.`,
+    cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
+    touGenevaOnlyVd: `La comparaison TOU de Taxpresso suit les règles genevoises. Pour Vaud, Taxpresso ne prend pas encore en charge l’impôt à la source ni sa taxation ordinaire ultérieure (TOU).`,
   },
   de: {
     when: 'Vor dem 31. Dezember',
@@ -387,6 +399,13 @@ const messages = {
     cuRuleIncomeBl: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
     touGenevaOnlyBl:
       'Die TOU ist ein Genfer Verfahren. Für Basel-Landschaft unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
+    splitVd: 'Waadt {icc} · Bund {ifd}',
+    lppOfficialVd: 'Rachats d’années d’assurance (2e pilier)',
+    lppAttestationVd:
+      'Deine Pensionskasse bestätigt die Zahlung mit einer offiziellen Bescheinigung (attestation de rachat): Bewahre sie für deine Steuererklärung auf.',
+    cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
+    touGenevaOnlyVd:
+      'Der TOU-Vergleich von Taxpresso folgt den Genfer Regeln. Für die Waadt unterstützt Taxpresso die Quellensteuer (impôt à la source) und ihre nachträgliche ordentliche Veranlagung (TOU, taxation ordinaire ultérieure) noch nicht.',
   },
 } as const;
 

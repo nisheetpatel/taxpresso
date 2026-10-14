@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   communesFor,
   computeReturn,
+  FEDERAL_NOTE,
   rules,
   VdInputError,
   type VaudCantonal,
@@ -17,13 +18,22 @@ const amt = (francs: number) => ({ value: chf(francs) });
 
 /** The same household as the canton interface takes it: Vaud's extras under `cantonal`. */
 function household(e: VdEngineInput): HouseholdInput<VaudCantonal> {
-  const { communePart, ownHousehold, mainUpkeep, rent, furnitureInsurance, ...shared } = e;
+  const {
+    communePart,
+    ownHousehold,
+    mainUpkeep,
+    rent,
+    furnitureInsurance,
+    furnitureWithin,
+    ...shared
+  } = e;
   const cantonal: VaudCantonal = {
     ...(communePart !== undefined ? { communePart } : {}),
     ...(ownHousehold !== undefined ? { ownHousehold } : {}),
     ...(mainUpkeep !== undefined ? { mainUpkeep } : {}),
     ...(rent !== undefined ? { rent } : {}),
     ...(furnitureInsurance !== undefined ? { furnitureInsurance } : {}),
+    ...(furnitureWithin !== undefined ? { furnitureWithin } : {}),
   };
   return { ...shared, ...(Object.keys(cantonal).length ? { cantonal } : {}) };
 }
@@ -119,6 +129,7 @@ const HOUSEHOLDS: VdEngineInput[] = [
     commune: 'Morges',
     civilStatus: 'divorced',
     childSupport: 'none',
+    ifdParentalScale: false,
     ownHousehold: true,
     mainUpkeep: true,
     rent: amt(13_000),
@@ -187,22 +198,30 @@ describe('Vaud through the canton interface', () => {
     expect(computed).toBeLessThan(all.length);
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not mapped yet', () => {
+  it('computes the cantonal and communal tax and the federal tax of each household', () => {
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
+      expect(r.icc).not.toBeNull();
+      // A side job in 2025: no 2025 document gives its federal flat, so the federal tax fails closed.
+      const side = e.taxYear === 2025 && e.people.some((p) => p.employments?.some((x) => x.side));
+      if (side) {
+        expect(r.unsupported).toEqual([FEDERAL_NOTE.sideJob2025]);
+        expect(r.ifd).toBeNull();
+        expect(r.total).toBeNull();
+        continue;
+      }
       expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     }
   });
 
-  it('leaves aside the facts only Geneva uses, and the federal parental scale', () => {
+  it('leaves aside the facts only Geneva uses', () => {
     const e = HOUSEHOLDS[0]!;
     const h = household(e);
     const p1 = h.people[0]!;
     const genevaFacts: HouseholdInput<VaudCantonal> = {
       ...h,
-      ifdParentalScale: true,
       people: [
         {
           ...p1,
@@ -219,7 +238,7 @@ describe('Vaud through the canton interface', () => {
   it('refuses a fact Vaud does not read, and a commune given by number', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<VaudCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
+      { ...h, cantonal: { ...h.cantonal, childcare: [amt(5_000)] } },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, commune: 5586 },
       { ...h, commune: 'Bern' },
@@ -249,11 +268,28 @@ describe('Vaud through the canton interface', () => {
     expect(rules.canton).toBe('VD');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2026))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'vd.commune_part',
+        'vd.own_household',
+        'vd.main_upkeep',
+        'vd.rent',
+        'vd.contents_high',
+        'vd.contents_value',
+        'vd.child_care',
+        'vd.savings_interest',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.documents(2026)).toContainEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(rules.documents(2026).map((d) => d.kind)).toEqual(
+      expect.arrayContaining(['pillar3a_attestation', 'health_premiums', 'bank_attestation']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/vd');
   });
 });
