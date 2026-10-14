@@ -635,7 +635,9 @@ export class Workspace {
       if (!PLAN_KEYS.includes(key)) throw new WorkspaceError(`Not a planning value: ${key}`);
       // The plans before 31 December and TOU can't be acted on for a year that is over.
       if (this.yearOver()) throw new WorkspaceError(yearOverPlans(this.taxYear));
-      const def = this.keys[key]!;
+      const def = this.keys[key];
+      // TOU and taxation at source are Geneva's: another canton's keys don't have them.
+      if (!def) throw new WorkspaceError(`Not a planning value in this canton: ${key}`);
       const owner: Owner = def.perPerson ? (person as 'p1' | 'p2') : 'household';
       if (def.perPerson && !this.snapshot().people.includes(person as 'p1' | 'p2')) {
         throw new WorkspaceError(`No ${person} in this household.`);
