@@ -395,6 +395,19 @@ importers:
         specifier: ^2.9.1
         version: 2.9.1
 
+  packages/rules-ag:
+    dependencies:
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/rules-be:
     dependencies:
       '@taxpresso/rules-ch':
