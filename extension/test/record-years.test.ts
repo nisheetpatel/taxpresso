@@ -45,19 +45,23 @@ function rng(seed: number) {
 
 /** Random ids, tokens, times and temporary paths out of a record. */
 function normalize(value: unknown, root: string): string {
-  return JSON.stringify(value)
-    .split(root)
-    .join('<ROOT>')
-    .replace(/\/(private\/)?var\/folders\/[^"\\ ]+?taxpresso-(ws|ui)-[A-Za-z0-9]+/g, '<TMP>')
-    .replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z\b/g, '<TIME>')
-    .replace(/\bf_[A-Za-z0-9_-]{6,}\b/g, '<FACT>')
-    .replace(/"csrf":"[^"]*"/g, '"csrf":"<CSRF>"')
-    .replace(/http:\/\/127\.0\.0\.1:\d+\/[^"\\ ]*/g, '<URL>')
-    .replace(
-      /Taxpresso-(\d{4})-export-\d{4}-\d{2}-\d{2}(-\d+)?\.zip/g,
-      'Taxpresso-$1-export-<DAY>.zip',
-    )
-    .replace(/"etag":"[^"]*"/g, '"etag":"<ETAG>"');
+  return (
+    JSON.stringify(value)
+      .split(root)
+      .join('<ROOT>')
+      .replace(/\/(private\/)?var\/folders\/[^"\\ ]+?taxpresso-(ws|ui)-[A-Za-z0-9]+/g, '<TMP>')
+      // A temporary folder elsewhere (TMPDIR set to a scratch folder): the same, wherever it is.
+      .replace(/[^"\\ ]*?taxpresso-(ws|ui)-[A-Za-z0-9]+/g, '<TMP>')
+      .replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z\b/g, '<TIME>')
+      .replace(/\bf_[A-Za-z0-9_-]{6,}\b/g, '<FACT>')
+      .replace(/"csrf":"[^"]*"/g, '"csrf":"<CSRF>"')
+      .replace(/http:\/\/127\.0\.0\.1:\d+\/[^"\\ ]*/g, '<URL>')
+      .replace(
+        /Taxpresso-(\d{4})-export-\d{4}-\d{2}-\d{2}(-\d+)?\.zip/g,
+        'Taxpresso-$1-export-<DAY>.zip',
+      )
+      .replace(/"etag":"[^"]*"/g, '"etag":"<ETAG>"')
+  );
 }
 
 interface Household {
@@ -207,7 +211,11 @@ async function run(h: Household): Promise<void> {
         value = Math.min(question.max ?? 3, (question.min ?? 0) + Math.floor(random() * 3));
       else if (question.type === 'money') value = String(Math.floor(random() * 5000));
       else if (question.type === 'commune') value = pick(cur.engine.communes).name;
-      else if (question.type === 'multi') {
+      else if (question.type === 'date') {
+        // A day of the open year (an arrival or a departure date).
+        const two = (x: number) => String(x).padStart(2, '0');
+        value = `${YEAR ?? 2026}-${two(1 + Math.floor(random() * 12))}-${two(1 + Math.floor(random() * 28))}`;
+      } else if (question.type === 'multi') {
         const opts = (question.options ?? []).map((o) => o.value);
         value = opts.filter(() => random() < 0.35);
       } else value = pick((question.options ?? []).map((o) => o.value));
