@@ -304,7 +304,7 @@ const fr = {
       ],
       [
         `Dans quelles langues${NB}?`,
-        'Claude vous répond dans la langue où vous écrivez. L’application est en français, en anglais et en allemand, puis viendront l’italien, l’espagnol et le portugais. Les termes officiels restent dans la langue du formulaire de votre canton.',
+        'Claude vous répond dans la langue où vous écrivez. L’application est en français, en anglais, en allemand et en italien, puis viendront l’espagnol et le portugais. Les termes officiels restent dans la langue du formulaire de votre canton.',
       ],
     ] as [string, string][],
   },
@@ -578,7 +578,7 @@ const en: Copy = {
       ],
       [
         'Which languages?',
-        'Claude answers in the language you write in. The app is in English, French and German, with Italian, Spanish and Portuguese to come. Official terms stay in the language of your canton’s form.',
+        'Claude answers in the language you write in. The app is in English, French, German and Italian, with Spanish and Portuguese to come. Official terms stay in the language of your canton’s form.',
       ],
     ],
   },
@@ -867,7 +867,7 @@ const de: Copy = {
       ],
       [
         'In welchen Sprachen?',
-        'Claude antwortet in der Sprache, in der du schreibst. Die App gibt es auf Deutsch, Französisch und Englisch. Italienisch, Spanisch und Portugiesisch kommen noch. Offizielle Begriffe bleiben in der Sprache des Formulars deines Kantons.',
+        'Claude antwortet in der Sprache, in der du schreibst. Die App gibt es auf Deutsch, Französisch, Englisch und Italienisch. Spanisch und Portugiesisch kommen noch. Offizielle Begriffe bleiben in der Sprache des Formulars deines Kantons.',
       ],
     ],
   },
@@ -1149,7 +1149,7 @@ const it: Copy = {
       ],
       [
         'In quali lingue?',
-        'Claude ti risponde nella lingua in cui scrivi. L’app è in francese, inglese e tedesco, poi arriveranno italiano, spagnolo e portoghese. I termini ufficiali restano nella lingua del modulo del tuo cantone.',
+        'Claude ti risponde nella lingua in cui scrivi. L’app è in italiano, francese, inglese e tedesco, poi arriveranno spagnolo e portoghese. I termini ufficiali restano nella lingua del modulo del tuo cantone.',
       ],
     ],
   },
@@ -1426,7 +1426,7 @@ const es: Copy = {
       ],
       [
         '¿En qué idiomas?',
-        'Claude te responde en el idioma en el que escribes. La aplicación está en francés, inglés y alemán, y después llegarán el italiano, el español y el portugués. Los términos oficiales se quedan en el idioma del formulario de tu cantón.',
+        'Claude te responde en el idioma en el que escribes. La aplicación está en francés, inglés, alemán e italiano, y después llegarán el español y el portugués. Los términos oficiales se quedan en el idioma del formulario de tu cantón.',
       ],
     ],
   },
@@ -1711,7 +1711,7 @@ const pt: Copy = {
       ],
       [
         'Em que línguas?',
-        'O Claude responde-te na língua em que escreves. A aplicação está em francês, inglês e alemão, e depois virão o italiano, o espanhol e o português. Os termos oficiais ficam na língua do formulário do teu cantão.',
+        'O Claude responde-te na língua em que escreves. A aplicação está em francês, inglês, alemão e italiano, e depois virão o espanhol e o português. Os termos oficiais ficam na língua do formulário do teu cantão.',
       ],
     ],
   },

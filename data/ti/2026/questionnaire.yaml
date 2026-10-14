@@ -1,0 +1,819 @@
+# Ticino questionnaire for tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data, not code:
+# packages/questionnaire reads it, and every key and value must exist in Ticino's keys
+# (packages/rules-ti, src/keys.ts; a test checks).
+#
+# The questions every canton asks come from data/ch/2026/questions.yaml (`use: <id>`), in the order
+# of Ticino's return (Modulo 1: page 1 personal details and children, page 2 income, page 3
+# deductions with Modulo 4, 5 and 6, page 4 wealth), with Ticino's own explanations and official
+# pages. The questions only Ticino asks are written out here, as packages/rules-ti reads them
+# (TicinoCantonal): a divorce, separation or death of a spouse during the year, whether each child
+# was under 18, the childcare paid for each child (the limit is per child), the commune and the
+# move, each person's work rate and whether they worked the whole year (and if not, how many months).
+#
+# Wording and documents follow the Ticino instructions for 2025 (ti-2025-guide-istruzioni-pf-pdf):
+# the 2026 instructions are not published yet (docs/sources/ti/NOTES.md, Gaps), so the questions say
+# "2026" and link the 2025 instructions, whose cifre the return keeps until it appears. "p." is the
+# page of the PDF file, as in the links, and the instructions print the same page numbers. The
+# return and the instructions are in Italian: the questions give the Italian term next to the gloss.
+#
+# Italian: informal "tu", the official Italian terms of the return. German: informal "du", Swiss
+# spelling (ss). French: write plain spaces before ? ! : ; and the loader makes them non-breaking.
+
+taxYear: 2026
+
+place: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino' }
+
+people:
+  p1: { en: 'You', fr: 'Vous', de: 'Du', it: 'Tu' }
+  p2:
+    {
+      en: 'Your spouse or partner',
+      fr: 'Votre conjoint ou partenaire',
+      de: 'Dein Partner oder deine Partnerin',
+      it: 'Il tuo coniuge o partner',
+    }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner', it: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}', it: 'Figlio {n}' }
+
+# eTax PF is the canton's free program for the return, for Windows, macOS and Linux, downloaded at
+# www.ti.ch/etax (docs/sources/ti/NOTES.md, Filing channels; ti-2025-efiling-etax-pf;
+# ti-2025-guide-istruzioni-pf-pdf p. 8).
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. eTax PF, the canton’s free program (www.ti.ch/etax), or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. eTax PF, le programme gratuit du canton (www.ti.ch/etax), ou une fiduciaire le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. eTax PF, das kostenlose Programm des Kantons (www.ti.ch/etax), oder eine Treuhand kann es.'
+  it: 'Taxpresso non può ancora preparare questa parte. eTax PF, il programma gratuito del Cantone (www.ti.ch/etax), o una fiduciaria possono farlo.'
+
+questions:
+  - use: canton
+
+  # ti-2025-guide-istruzioni-pf-pdf p. 11 (Matrimonio, separazione o divorzio: married during the
+  # year, taxed together for the whole year; separated or divorced, apart for the whole year).
+  - use: civil_status
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=11'
+      label:
+        en: 'Ticino tax instructions 2025, p. 11: marriage, separation or divorce, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 11 : Mariage, séparation ou divorce, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 11: Heirat, Trennung oder Scheidung, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 11: matrimonio, separazione o divorzio'
+    help:
+      en: 'A registered partnership files like a married couple, on one return. Married during 2026: you file together for the whole year.'
+      fr: 'Un partenariat enregistré déclare comme un couple marié, sur une seule déclaration. Mariés en 2026 : vous déclarez ensemble pour toute l’année.'
+      de: 'Eine eingetragene Partnerschaft reicht wie ein Ehepaar eine gemeinsame Steuererklärung ein. 2026 geheiratet: Dann reicht ihr für das ganze Jahr gemeinsam ein.'
+      it: 'Un’unione domestica registrata presenta la dichiarazione come una coppia sposata, su un’unica dichiarazione. Sposati nel 2026: presentate un’unica dichiarazione per tutto l’anno.'
+
+  # A divorce or separation during the year: taxed apart for the whole year, by the family tariff
+  # (aliquota per coniugati) for that year (LT art. 35 cpv. 5; ti-2025-guide-istruzioni-pf-pdf p. 11).
+  # The death of a spouse during the year: taxed together up to that day, the survivor apart after
+  # it (LT art. 53 cpv. 3; p. 11): part of a year, which packages/rules-ti does not compute
+  # (NOTE.widowedThisYear).
+  - id: status_change
+    key: ti.status_change
+    type: yesno
+    when: { key: profile.civil_status, in: [separated, divorced, widowed] }
+    explain:
+      en: 'In the year of a divorce or separation, Ticino still taxes you at the rate for married couples and families (aliquota per coniugati). In the year a spouse dies, the couple is taxed together up to that day and the survivor apart after it, each for part of the year.'
+      fr: 'L’année d’un divorce ou d’une séparation, le Tessin vous impose encore au taux des couples mariés et des familles (aliquota per coniugati). L’année du décès d’un conjoint, le couple est imposé ensemble jusqu’à ce jour et le survivant séparément ensuite, chacun pour une partie de l’année.'
+      de: 'Im Jahr einer Scheidung oder Trennung besteuert dich das Tessin noch zum Satz für Verheiratete und Familien (aliquota per coniugati). Im Todesjahr eines Ehegatten wird das Paar bis zu diesem Tag gemeinsam und der überlebende Ehegatte danach getrennt besteuert, je für einen Teil des Jahres.'
+      it: 'Nell’anno di un divorzio o di una separazione, il Ticino ti tassa ancora con l’aliquota per coniugati. Nell’anno del decesso di un coniuge, la coppia è tassata insieme fino a quel giorno e il coniuge superstite separatamente dopo, ciascuno per una parte dell’anno.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=11'
+      label:
+        en: 'Ticino tax instructions 2025, p. 11: death of a spouse, separation or divorce in the year, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 11 : Décès d’un conjoint, séparation ou divorce dans l’année, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 11: Tod eines Ehegatten, Trennung oder Scheidung im Jahr, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 11: decesso di un coniuge, separazione o divorzio nell’anno'
+    text:
+      en: 'Did you divorce or separate, or did your spouse die, during 2026?'
+      fr: 'Avez-vous divorcé ou vous êtes-vous séparé, ou votre conjoint est-il décédé, en 2026 ?'
+      de: 'Hast du dich 2026 scheiden lassen oder getrennt, oder ist dein Ehegatte 2026 gestorben?'
+      it: 'Nel 2026 hai divorziato o ti sei separato o separata, oppure è deceduto il tuo coniuge?'
+    help:
+      en: 'Answer no if it happened in an earlier year.'
+      fr: 'Répondez non si c’est arrivé une année précédente.'
+      de: 'Antworte mit Nein, wenn es in einem früheren Jahr war.'
+      it: 'Rispondi no se è successo in un anno precedente.'
+    chip:
+      {
+        en: 'Changed in 2026',
+        fr: 'Changement en 2026',
+        de: 'Änderung 2026',
+        it: 'Cambiamento nel 2026',
+      }
+
+  # ti-2025-guide-istruzioni-pf-pdf p. 30 (25.1: each child you provide for, a minor or in
+  # apprenticeship or studies up to 28) and p. 12 (page 1 of Modulo 1 lists them).
+  - use: children
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=30'
+      label:
+        en: 'Ticino tax instructions 2025, p. 30: deduction for each child, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 30 : Déduction pour chaque enfant, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 30: Abzug für jedes Kind, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 30: deduzione per ogni figlio a carico'
+    help:
+      en: 'Children you provide for (figli a carico): minors, and adult children up to 28 still in apprenticeship or studies. Page 1 of the return (Modulo 1) lists them.'
+      fr: 'Les enfants à votre charge (figli a carico) : les mineurs, et les enfants majeurs jusqu’à 28 ans encore en apprentissage ou aux études. La page 1 de la déclaration (Modulo 1) les liste.'
+      de: 'Kinder, für die du aufkommst (figli a carico): Minderjährige und volljährige Kinder bis 28, die noch in der Lehre oder im Studium sind. Seite 1 der Steuererklärung (Modulo 1) listet sie auf.'
+      it: 'I figli a carico: i minorenni, e i figli maggiorenni fino a 28 anni ancora in apprendistato o agli studi. La pagina 1 della dichiarazione (Modulo 1) li elenca.'
+
+  # Parents taxed apart with joint parental authority: the child deduction is shared half and half
+  # when no child support is paid (LT art. 34 cpv. 1 lett. a; ti-2025-guide-istruzioni-pf-pdf p. 30).
+  - use: children_custody
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=30'
+      label:
+        en: 'Ticino tax instructions 2025, p. 30: parents taxed apart, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 30 : Parents imposés séparément, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 30: getrennt besteuerte Eltern, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 30: genitori tassati separatamente'
+    help:
+      en: 'Parents taxed apart with joint parental authority (autorità parentale congiunta) share the child deduction half and half when no child support is paid.'
+      fr: 'Des parents imposés séparément avec l’autorité parentale conjointe (autorità parentale congiunta) se partagent la déduction pour enfant par moitié quand aucune contribution d’entretien n’est versée.'
+      de: 'Getrennt besteuerte Eltern mit gemeinsamer elterlicher Sorge (autorità parentale congiunta) teilen sich den Kinderabzug je zur Hälfte, wenn keine Unterhaltsbeiträge bezahlt werden.'
+      it: 'I genitori tassati separatamente con autorità parentale congiunta si dividono a metà la deduzione per figli quando non sono versati alimenti.'
+
+  # Parents taxed apart with joint parental authority: the parent who receives child support counts
+  # the children, the one who pays it deducts it (14.2); without child support the child deduction
+  # is half each (LT art. 34 cpv. 1 lett. a; ti-2025-guide-istruzioni-pf-pdf p. 28 and 30); for the
+  # federal tax, the parental scale to the one who earns more (ch-na-circulaire-30-epoux-famille
+  # p. 24).
+  - use: child_support
+    explain:
+      en: 'With shared custody, child support (alimenti) decides who counts the children. The parent who receives it counts them, and the one who pays it deducts it instead (14.2); without child support, Ticino gives each parent half the child deduction, and the federal tax gives the parental scale, a lower rate, to the one who earns more.'
+      fr: 'En garde partagée, la contribution d’entretien (alimenti) décide qui compte les enfants. Le parent qui la reçoit les compte, et celui qui la verse la déduit à la place (14.2) ; sans contribution, le Tessin donne à chacun la moitié de la déduction pour enfant, et l’impôt fédéral donne le barème parental, un taux plus bas, à celui qui gagne le plus.'
+      de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge (alimenti), wer die Kinder zählt. Wer sie erhält, zählt die Kinder, und wer sie bezahlt, zieht sie stattdessen ab (14.2); ohne Unterhaltsbeiträge gibt das Tessin jedem Elternteil den halben Kinderabzug, und die Bundessteuer gibt den Elterntarif, einen tieferen Satz, dem, der mehr verdient.'
+      it: 'In custodia alternata, gli alimenti decidono chi conta i figli. Il genitore che li riceve li conta, e quello che li versa li deduce invece (14.2); senza alimenti, il Ticino dà a ciascun genitore metà della deduzione per figli, e l’imposta federale dà la tariffa per i genitori, un’aliquota più bassa, a chi guadagna di più.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=28'
+      label:
+        en: 'Ticino tax instructions 2025, p. 28: alimony and child support, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 28 : Pensions et contributions d’entretien, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 28: Unterhaltsbeiträge, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 28: alimenti'
+    help:
+      en: 'Child support (alimenti per i figli) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
+      fr: 'La contribution d’entretien (alimenti per i figli) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
+      de: 'Unterhaltsbeiträge (alimenti per i figli) sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+      it: 'Gli alimenti per i figli sono un importo regolare per i figli, fissato da una sentenza o da una convenzione. Guadagnare di più significa avere un reddito netto più alto.'
+
+  # The wealth deduction for each minor child (35.2; LT art. 48 lett. b; ti-2025-guide-istruzioni-pf-pdf
+  # p. 36): under 18 on 31 December. packages/rules-ti asks rather than guess (NOTE.wealthChild).
+  - id: child_minor
+    key: ti.child_minor
+    type: yesno
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+    explain:
+      en: 'For each minor child, part of your wealth is tax-free (deduzione sociale per ogni figlio minorenne, 35.2). An adult child in apprenticeship or studies still gives the child deduction.'
+      fr: 'Pour chaque enfant mineur, une partie de votre fortune est exonérée (deduzione sociale per ogni figlio minorenne, 35.2). Un enfant majeur en apprentissage ou aux études donne quand même droit à la déduction pour enfant.'
+      de: 'Für jedes minderjährige Kind ist ein Teil deines Vermögens steuerfrei (deduzione sociale per ogni figlio minorenne, 35.2). Ein volljähriges Kind in Lehre oder Studium gibt trotzdem den Kinderabzug.'
+      it: 'Per ogni figlio minorenne una parte della tua sostanza è esente (deduzione sociale per ogni figlio minorenne, 35.2). Un figlio maggiorenne in apprendistato o agli studi dà comunque diritto alla deduzione per figli.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=36'
+      label:
+        en: 'Ticino tax instructions 2025, p. 36: social deductions on wealth, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 36 : Déductions sociales sur la fortune, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 36: Sozialabzüge beim Vermögen, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 36: deduzioni sociali sulla sostanza'
+    text:
+      en: 'Was child {n} a minor (under 18) on 31 December 2026?'
+      fr: 'L’enfant {n} était-il mineur (moins de 18 ans) au 31 décembre 2026 ?'
+      de: 'War Kind {n} am 31. Dezember 2026 minderjährig (unter 18)?'
+      it: 'Il figlio {n} era minorenne (meno di 18 anni) al 31 dicembre 2026?'
+    help:
+      en: 'Number your children the same way in every answer, for example from the oldest.'
+      fr: 'Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
+
+  # ti-2025-guide-istruzioni-pf-pdf p. 29 (20, deduzione cure prestate da terzi a figli di età
+  # inferiore ai 14 anni: up to a limit per child, while you work, train or cannot work; LT art. 32a);
+  # Modulo 6 lists the costs child by child (ti-2025-form-modulo-6 p. 1).
+  - use: childcare
+    explain:
+      en: 'What you paid so someone else looks after a child under 14 while you work, train or can’t work; for a couple, while both of you do. On the return: 20, deduzione cure prestate da terzi, with Modulo 6.'
+      fr: 'Ce que vous avez payé pour faire garder un enfant de moins de 14 ans pendant que vous travaillez, êtes en formation ou ne pouvez pas travailler ; pour un couple, cela vaut pour vous deux. Sur la déclaration : 20, deduzione cure prestate da terzi (frais de garde par des tiers), avec le Modulo 6.'
+      de: 'Was du bezahlt hast, damit jemand anderes ein Kind unter 14 betreut, während du arbeitest, in Ausbildung bist oder nicht erwerbsfähig bist; bei einem Paar gilt das für euch beide. Auf der Steuererklärung: 20, deduzione cure prestate da terzi (Drittbetreuung), mit dem Modulo 6.'
+      it: 'Quello che hai pagato perché qualcuno si occupi di un figlio di età inferiore ai 14 anni mentre lavori, sei in formazione o non puoi lavorare; per una coppia, mentre lo fanno entrambi. Nella dichiarazione: cifra 20, deduzione cure prestate da terzi, con il Modulo 6.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=29'
+      label:
+        en: 'Ticino tax instructions 2025, p. 29: childcare by others, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 29 : Frais de garde par des tiers, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 29: Kinderbetreuung durch Dritte, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 29: deduzione cure prestate da terzi'
+    help:
+      en: 'A crèche (asilo nido), day care, a day family or a nanny. On Modulo 6, each child with the name and address of whoever looked after them.'
+      fr: 'Une crèche (asilo nido), une garderie, une famille de jour ou une nounou. Sur le Modulo 6, chaque enfant avec le nom et l’adresse de la personne qui l’a gardé.'
+      de: 'Eine Kita (asilo nido), ein Hort, eine Tagesfamilie oder eine Nanny. Auf dem Modulo 6 jedes Kind mit Name und Adresse der betreuenden Person.'
+      it: 'Un asilo nido, un centro extrascolastico, una famiglia diurna o una tata. Sul Modulo 6, ogni figlio con il nome e l’indirizzo di chi se ne è occupato.'
+
+  # The limit is per child under 14 (LT art. 32a; ti-2025-guide-istruzioni-pf-pdf p. 29), and Modulo
+  # 6 lists the childcare child by child (ti-2025-form-modulo-6 p. 1): with several children, how the
+  # invoices' total splits can decide the deduction, so it is asked per child.
+  - id: child_care
+    key: ti.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+    explain:
+      en: 'Ticino’s limit on childcare is per child (20), and Modulo 6 lists the costs child by child, so the split between your children can change the deduction. Your invoices give the total.'
+      fr: 'La limite tessinoise pour les frais de garde est par enfant (20), et le Modulo 6 liste les frais enfant par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
+      de: 'Der Höchstbetrag für die Kinderbetreuung gilt im Tessin pro Kind (20), und das Modulo 6 listet die Kosten Kind für Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+      it: 'Il limite ticinese per le spese di custodia vale per ogni figlio (20), e il Modulo 6 elenca le spese figlio per figlio: la ripartizione tra i tuoi figli può cambiare la deduzione. Le tue fatture danno il totale.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod6_A4.pdf#page=1'
+      label:
+        en: 'Ticino Modulo 6 2025: childcare by others, child by child, in Italian'
+        fr: 'Modulo 6 tessinois 2025 : Garde par des tiers, enfant par enfant, en italien'
+        de: 'Tessiner Modulo 6 2025: Drittbetreuung, Kind für Kind, auf Italienisch'
+        it: 'Modulo 6 2025: cura prestata da terzi a figli di età inferiore ai 14 anni'
+    text:
+      en: 'How much of the childcare you paid in 2026 was for child {n}?'
+      fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
+      de: 'Wie viel der 2026 bezahlten Kinderbetreuungskosten war für Kind {n}?'
+      it: 'Quanta parte delle spese di custodia pagate nel 2026 era per il figlio {n}?'
+    help:
+      en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
+      fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
+
+  # The commune of 31 December taxes the whole year (LT art. 277 cpv. 1; ti-2025-guide-istruzioni-pf-pdf
+  # p. 10), at its multiplier of the cantonal base tax (art. 276 cpv. 2). The list is Ticino's
+  # communes by their name in the official table of multipliers (packages/rules-ti, from
+  # ti-2026-communal-rates; the table has no BFS numbers).
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own multiplier (moltiplicatore d’imposta comunale), a percentage of the cantonal base tax (imposta cantonale base).'
+      fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année. Chaque commune fixe son propre coefficient (moltiplicatore d’imposta comunale), un pourcentage de l’impôt cantonal de base (imposta cantonale base).'
+      de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr. Jede Gemeinde legt ihren eigenen Steuerfuss fest (moltiplicatore d’imposta comunale), einen Prozentsatz der kantonalen Grundsteuer (imposta cantonale base).'
+      it: 'Il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno. Ogni Comune fissa il proprio moltiplicatore d’imposta comunale, una percentuale dell’imposta cantonale base.'
+    learnMore:
+      url: 'https://www4.ti.ch/dfe/dc/sportello/moltiplicatori-comunali'
+      label:
+        en: 'Communal multipliers of the Ticino communes (moltiplicatori comunali), in Italian'
+        fr: 'Coefficients des communes tessinoises (moltiplicatori comunali), en italien'
+        de: 'Steuerfüsse der Tessiner Gemeinden (moltiplicatori comunali), auf Italienisch'
+        it: 'Moltiplicatori d’imposta comunali'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale Comune abitavi il 31 dicembre 2026?'
+    help:
+      en: 'The official name, such as Lugano, Bellinzona or Locarno.'
+      fr: 'Le nom officiel, par exemple Lugano, Bellinzona ou Locarno.'
+      de: 'Der offizielle Name, zum Beispiel Lugano, Bellinzona oder Locarno.'
+      it: 'Il nome ufficiale, per esempio Lugano, Bellinzona o Locarno.'
+
+  # Who files in Ticino: arriving from another canton, Ticino taxes the whole year; arriving from
+  # abroad or leaving for abroad means a return for part of the year (ti-2025-guide-istruzioni-pf-pdf
+  # p. 10, Inizio di assoggettamento in Ticino; p. 11): not covered by rules-ti. A move within the
+  # canton: the commune of 31 December (LT art. 277 cpv. 1).
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Ticino taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
+      fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : le Tessin vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Das Tessin besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+      it: 'Un trasloco all’interno del Cantone non cambia nulla: il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno. Neanche arrivare da un altro Cantone cambia qualcosa: il Ticino ti tassa per tutto l’anno, come se ci avessi abitato da gennaio. Arrivare dall’estero, o lasciare la Svizzera, significa che qui eri assoggettato o assoggettata solo per una parte dell’anno.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=10'
+      label:
+        en: 'Ticino tax instructions 2025, p. 10: arriving and leaving during the year, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 10 : Arrivée et départ en cours d’année, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 10: Beginn und Ende der Steuerpflicht, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 10: inizio e cessazione dell’assoggettamento'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+      de: 'Bist du 2026 umgezogen?'
+      it: 'Hai traslocato nel 2026?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein', it: 'No' } }
+      - value: within_ti
+        label:
+          {
+            en: 'Yes, within the canton of Ticino',
+            fr: 'Oui, dans le canton du Tessin',
+            de: 'Ja, innerhalb des Kantons Tessin',
+            it: 'Sì, all’interno del Cantone Ticino',
+          }
+        chip:
+          {
+            en: 'Moved in the canton',
+            fr: 'Déménagé dans le canton',
+            de: 'Umzug im Kanton',
+            it: 'Trasloco nel Cantone',
+          }
+      - value: from_other_canton
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            de: 'Ja, aus einem anderen Kanton',
+            it: 'Sì, da un altro Cantone',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            de: 'Zuzug aus einem anderen Kanton',
+            it: 'Arrivo da un altro Cantone',
+          }
+      - value: from_abroad
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            de: 'Ja, ich bin aus dem Ausland zugezogen',
+            it: 'Sì, dall’estero',
+          }
+        notSupported:
+          {
+            en: 'Arriving from abroad during the year (arrivo dall’estero)',
+            fr: 'Une arrivée de l’étranger en cours d’année (arrivo dall’estero)',
+            de: 'Ein Zuzug aus dem Ausland während des Jahres (arrivo dall’estero)',
+            it: 'Un arrivo dall’estero nel corso dell’anno',
+          }
+      - value: leaving_switzerland
+        label:
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+            it: 'Ho lasciato o sto lasciando la Svizzera',
+          }
+        notSupported:
+          {
+            en: 'Leaving Switzerland (partenza per l’estero)',
+            fr: 'Un départ de Suisse (partenza per l’estero)',
+            de: 'Ein Wegzug ins Ausland (partenza per l’estero)',
+            it: 'Una partenza per l’estero',
+          }
+
+  - use: income_sources
+
+  # ti-2025-guide-istruzioni-pf-pdf p. 13 (1.1, the net salary from the salary certificate).
+  - use: employers
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=13'
+      label:
+        en: 'Ticino tax instructions 2025, p. 13: employment income, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 13 : Revenu d’une activité dépendante, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 13: Einkommen aus unselbständiger Erwerbstätigkeit, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 13: reddito da attività dipendente'
+    help:
+      en: 'Each one gives you a salary certificate (certificato di salario).'
+      fr: 'Chacun vous remet un certificat de salaire (certificato di salario).'
+      de: 'Jeder gibt dir einen Lohnausweis (certificato di salario).'
+      it: 'Ognuno ti dà un certificato di salario.'
+
+  # Modulo 4, the top left: "Per gradi di occupazione inferiori al 100% indicarne la percentuale"
+  # (ti-2025-form-modulo-4 p. 1). Under 50 %, the flat amount for other professional costs is halved
+  # (ti-2025-tariff-decreto-esecutivo-pf art. 7 cpv. 3, p. 3; from 2026 LT art. 25 cpv. 2).
+  - id: work_rate
+    key: ti.work_rate
+    type: number
+    perPerson: true
+    min: 1
+    max: 100
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'Ticino deducts a flat amount for your other professional costs (altre spese professionali, forfait), halved when you work less than half of full time. Modulo 4 asks for your work rate (grado di occupazione).'
+      fr: 'Le Tessin déduit un forfait pour vos autres frais professionnels (altre spese professionali, forfait), réduit de moitié si vous travaillez moins qu’à mi-temps. Le Modulo 4 demande votre taux d’activité (grado di occupazione).'
+      de: 'Das Tessin zieht für deine übrigen Berufskosten eine Pauschale ab (altre spese professionali, forfait), halbiert, wenn du weniger als die Hälfte einer Vollzeitstelle arbeitest. Das Modulo 4 fragt nach deinem Beschäftigungsgrad (grado di occupazione).'
+      it: 'Il Ticino deduce un forfait per le tue altre spese professionali, dimezzato se lavori meno della metà di un tempo pieno. Il Modulo 4 chiede il tuo grado di occupazione.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod4_A4.pdf#page=1'
+      label:
+        en: 'Ticino Modulo 4 2025: professional costs, in Italian'
+        fr: 'Modulo 4 tessinois 2025 : Frais professionnels, en italien'
+        de: 'Tessiner Modulo 4 2025: Berufskosten, auf Italienisch'
+        it: 'Modulo 4 2025: spese professionali'
+    text:
+      p1:
+        en: 'What was your work rate in 2026, as a percentage of full time (grado di occupazione)?'
+        fr: 'Quel était votre taux d’activité en 2026, en pour-cent d’un plein temps (grado di occupazione) ?'
+        de: 'Wie hoch war 2026 dein Beschäftigungsgrad, in Prozent einer Vollzeitstelle (grado di occupazione)?'
+        it: 'Qual era il tuo grado di occupazione nel 2026, in percentuale di un tempo pieno?'
+      p2:
+        en: 'What was your spouse or partner’s work rate in 2026, as a percentage of full time (grado di occupazione)?'
+        fr: 'Quel était le taux d’activité de votre conjoint ou partenaire en 2026, en pour-cent d’un plein temps (grado di occupazione) ?'
+        de: 'Wie hoch war 2026 der Beschäftigungsgrad deines Partners oder deiner Partnerin, in Prozent einer Vollzeitstelle (grado di occupazione)?'
+        it: 'Qual era il grado di occupazione del tuo coniuge o partner nel 2026, in percentuale di un tempo pieno?'
+    help:
+      en: '100 for full time. With several jobs, add them up, at most 100.'
+      fr: '100 pour un plein temps. Avec plusieurs emplois, additionnez-les, au plus 100.'
+      de: '100 für Vollzeit. Bei mehreren Stellen zähl sie zusammen, höchstens 100.'
+      it: '100 per un tempo pieno. Con più impieghi, sommali, al massimo 100.'
+    chip:
+      one: { en: 'Works 1 %', fr: 'Travaille à 1 %', de: 'Arbeitet 1 %', it: 'Lavora all’1 %' }
+      other:
+        { en: 'Works {n} %', fr: 'Travaille à {n} %', de: 'Arbeitet {n} %', it: 'Lavora al {n} %' }
+
+  # Modulo 4, 1. Durata dell'attività professionale: annuale, or inferiore all'anno with its dates
+  # (ti-2025-form-modulo-4 p. 1): for part of the year the flat amounts are in proportion, and halved
+  # under 6 months (ti-2025-guide-istruzioni-pf-pdf p. 23), a combination the documents don't spell
+  # out: packages/rules-ti does not compute part of a year (NOTE.partYear).
+  - id: full_year
+    key: ti.full_year
+    type: yesno
+    perPerson: true
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'The flat amounts for professional costs are for a whole year of work; for part of the year they are smaller (durata dell’attività professionale, Modulo 4, 1.). Taxpresso doesn’t compute part of a year yet.'
+      fr: 'Les forfaits des frais professionnels valent pour une année entière de travail ; pour une partie de l’année, ils sont plus petits (durata dell’attività professionale, Modulo 4, 1.). Taxpresso ne calcule pas encore une partie d’année.'
+      de: 'Die Pauschalen für Berufskosten gelten für ein ganzes Arbeitsjahr; für einen Teil des Jahres sind sie kleiner (durata dell’attività professionale, Modulo 4, 1.). Taxpresso berechnet einen Teil des Jahres noch nicht.'
+      it: 'Gli importi forfettari delle spese professionali valgono per un anno intero di lavoro; per una parte dell’anno sono più bassi (durata dell’attività professionale, Modulo 4, 1.). Taxpresso non calcola ancora una parte dell’anno.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=23'
+      label:
+        en: 'Ticino tax instructions 2025, p. 23: professional costs of employees, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 23 : Frais professionnels des salariés, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 23: Berufskosten der Unselbständigerwerbenden, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 23: spese professionali dei dipendenti'
+    text:
+      p1:
+        en: 'Did you work the whole of 2026?'
+        fr: 'Avez-vous travaillé toute l’année 2026 ?'
+        de: 'Hast du das ganze Jahr 2026 gearbeitet?'
+        it: 'Hai lavorato per tutto il 2026?'
+      p2:
+        en: 'Did your spouse or partner work the whole of 2026?'
+        fr: 'Votre conjoint ou partenaire a-t-il travaillé toute l’année 2026 ?'
+        de: 'Hat dein Partner oder deine Partnerin das ganze Jahr 2026 gearbeitet?'
+        it: 'Il tuo coniuge o partner ha lavorato per tutto il 2026?'
+    help:
+      en: 'Yes if you had a job from January to December, even with holidays or a change of employer.'
+      fr: 'Oui si vous aviez un emploi de janvier à décembre, même avec des vacances ou un changement d’employeur.'
+      de: 'Ja, wenn du von Januar bis Dezember eine Stelle hattest, auch mit Ferien oder einem Stellenwechsel.'
+      it: 'Sì se hai avuto un impiego da gennaio a dicembre, anche con vacanze o un cambio di datore di lavoro.'
+    chip:
+      {
+        en: 'Worked the whole year',
+        fr: 'Toute l’année',
+        de: 'Ganzes Jahr gearbeitet',
+        it: 'Tutto l’anno',
+      }
+
+  # Modulo 4, 1., inferiore all'anno: durata dal ... al ... (ti-2025-form-modulo-4 p. 1).
+  - id: months_worked
+    key: ti.months_worked
+    type: number
+    perPerson: true
+    min: 1
+    max: 11
+    when: { key: ti.full_year, is: false }
+    explain:
+      en: 'For part of the year, the flat amounts for professional costs are in proportion to the time worked, and halved under 6 months. The documents don’t say how the two rules combine, so Taxpresso doesn’t compute the tax: eTax PF or a fiduciary can.'
+      fr: 'Pour une partie de l’année, les forfaits des frais professionnels sont au prorata du temps travaillé, et réduits de moitié sous 6 mois. Les documents ne disent pas comment combiner les deux règles : Taxpresso ne calcule donc pas l’impôt, eTax PF ou une fiduciaire le peuvent.'
+      de: 'Für einen Teil des Jahres sind die Pauschalen für Berufskosten im Verhältnis zur gearbeiteten Zeit, und unter 6 Monaten halbiert. Die Dokumente sagen nicht, wie die beiden Regeln zusammenspielen: Taxpresso berechnet die Steuer deshalb nicht, eTax PF oder eine Treuhand kann es.'
+      it: 'Per una parte dell’anno, gli importi forfettari delle spese professionali sono in proporzione al tempo lavorato, e dimezzati sotto i 6 mesi. I documenti non dicono come combinare le due regole: Taxpresso quindi non calcola l’imposta, eTax PF o una fiduciaria possono farlo.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=23'
+      label:
+        en: 'Ticino tax instructions 2025, p. 23: professional costs of employees, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 23 : Frais professionnels des salariés, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 23: Berufskosten der Unselbständigerwerbenden, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 23: spese professionali dei dipendenti'
+    text:
+      p1:
+        en: 'How many months did you work in 2026?'
+        fr: 'Combien de mois avez-vous travaillé en 2026 ?'
+        de: 'Wie viele Monate hast du 2026 gearbeitet?'
+        it: 'Quanti mesi hai lavorato nel 2026?'
+      p2:
+        en: 'How many months did your spouse or partner work in 2026?'
+        fr: 'Combien de mois votre conjoint ou partenaire a-t-il travaillé en 2026 ?'
+        de: 'Wie viele Monate hat dein Partner oder deine Partnerin 2026 gearbeitet?'
+        it: 'Quanti mesi ha lavorato il tuo coniuge o partner nel 2026?'
+    help:
+      en: 'Whole months, from 1 to 11.'
+      fr: 'En mois entiers, de 1 à 11.'
+      de: 'In ganzen Monaten, von 1 bis 11.'
+      it: 'In mesi interi, da 1 a 11.'
+    chip:
+      one:
+        {
+          en: '1 month of work',
+          fr: '1 mois de travail',
+          de: '1 Monat Arbeit',
+          it: '1 mese di lavoro',
+        }
+      other:
+        {
+          en: '{n} months of work',
+          fr: '{n} mois de travail',
+          de: '{n} Monate Arbeit',
+          it: '{n} mesi di lavoro',
+        }
+
+  # Tax at source (imposta alla fonte) and its ordinary assessment afterwards (TOU): not supported in
+  # Ticino yet (docs/sources/ti/NOTES.md, Source tax).
+  - use: taxed_at_source
+    yesNotSupported:
+      en: 'Tax at source in Ticino (imposta alla fonte) and the ordinary assessment that follows it (tassazione ordinaria ulteriore, TOU)'
+      fr: 'L’impôt à la source au Tessin (imposta alla fonte) et la taxation ordinaire ultérieure qui suit (tassazione ordinaria ulteriore, TOU)'
+      de: 'Die Quellensteuer im Kanton Tessin (imposta alla fonte) und die nachträgliche ordentliche Veranlagung (tassazione ordinaria ulteriore, TOU)'
+      it: 'L’imposta alla fonte in Ticino e la tassazione ordinaria ulteriore (TOU) che la segue'
+    learnMore:
+      url: 'https://www4.ti.ch/dfe/dc/dichiarazione/imposte-alla-fonte-1/tabelle-di-calcolo-dellimposta-alla-fonte'
+      label:
+        en: 'Tax at source in Ticino: the tables (tabelle di calcolo dell’imposta alla fonte), in Italian'
+        fr: 'Impôt à la source au Tessin : les barèmes (tabelle di calcolo dell’imposta alla fonte), en italien'
+        de: 'Quellensteuer im Kanton Tessin: die Tarife (tabelle di calcolo dell’imposta alla fonte), auf Italienisch'
+        it: 'Tabelle di calcolo dell’imposta alla fonte'
+    help:
+      en: 'If so, it shows on the salary certificate (certificato di salario, cifra 12).'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire (certificato di salario, cifra 12).'
+      de: 'Wenn ja, steht es auf dem Lohnausweis (certificato di salario, cifra 12).'
+      it: 'Se è così, lo trovi sul certificato di salario (cifra 12).'
+
+  # Travel to work (Modulo 4, 2. Spese di trasporto dal domicilio al luogo di lavoro,
+  # ti-2025-form-modulo-4 p. 1; ti-2025-guide-istruzioni-pf-pdf p. 23 and 24), each tax up to its own
+  # rule. No "over 2 hours a day" choice: only Geneva's meal rule needs it.
+  - use: commute
+    explain:
+      en: 'Getting to work is deducted as travel costs (spese di trasporto), for the cantonal and the federal tax, each by its own rule. How you get there decides how they are counted.'
+      fr: 'Le trajet pour le travail se déduit comme frais de déplacement (spese di trasporto), pour l’impôt cantonal et pour l’impôt fédéral, chacun selon sa propre règle. Votre moyen de transport décide comment ils sont comptés.'
+      de: 'Der Arbeitsweg wird als Fahrkosten abgezogen (spese di trasporto), bei der Kantons- und bei der Bundessteuer, jeweils nach eigener Regel. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+      it: 'Il tragitto per andare al lavoro si deduce come spese di trasporto, per l’imposta cantonale e per l’imposta federale, ognuna con la propria regola. Il mezzo che usi decide come vengono calcolate.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=24'
+      label:
+        en: 'Ticino tax instructions 2025, p. 24: travel to work, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 24 : Frais de déplacement, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 24: Fahrkosten, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 24: spese di trasporto'
+    help:
+      en: 'Choose how you went on most work days. On Modulo 4 (spese professionali): 2. Spese di trasporto dal domicilio al luogo di lavoro.'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le Modulo 4 (spese professionali, frais professionnels) : 2. Spese di trasporto dal domicilio al luogo di lavoro (frais de déplacement).'
+      de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf dem Modulo 4 (spese professionali, Berufskosten): 2. Spese di trasporto dal domicilio al luogo di lavoro (Fahrkosten).'
+      it: 'Scegli come ci andavi nella maggior parte dei giorni di lavoro. Sul Modulo 4 (spese professionali): 2. Spese di trasporto dal domicilio al luogo di lavoro.'
+    options:
+      - value: public_transport
+        label:
+          {
+            en: 'Public transport',
+            fr: 'Transports publics',
+            de: 'Öffentlicher Verkehr',
+            it: 'Trasporti pubblici',
+          }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto', it: 'Auto' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+            de: 'Motorrad oder Roller mit weissem Kontrollschild',
+            it: 'Moto o scooter con targa bianca',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+            de: 'Velo, E-Bike oder Motorfahrrad mit gelbem Kontrollschild',
+            it: 'Bicicletta, bici elettrica o ciclomotore con targa gialla',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss', it: 'A piedi' } }
+      - value: mostly_home
+        label:
+          {
+            en: 'From home, almost every day',
+            fr: 'Depuis chez moi, presque tous les jours',
+            de: 'Von zu Hause aus, fast jeden Tag',
+            it: 'Da casa, quasi ogni giorno',
+          }
+
+  - use: commute_transit_cost
+
+  - use: commute_transit_usable
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, I could use public transport',
+            fr: 'Oui, je pouvais utiliser les transports publics',
+            de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+            it: 'Sì, potevo usare i trasporti pubblici',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No, there is no public transport I can use',
+            fr: 'Non, il n’y a pas de transport public que je peux utiliser',
+            de: 'Nein, es gibt keinen öffentlichen Verkehr, den ich nutzen kann',
+            it: 'No, non ci sono trasporti pubblici che posso usare',
+          }
+
+  - use: commute_transit_equivalent
+  - use: commute_distance
+  - use: commute_drive_days
+
+  # Modulo 4, 3.1 (per ogni pasto principale fuori casa; ti-2025-guide-istruzioni-pf-pdf p. 24).
+  - use: meal_days
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=24'
+      label:
+        en: 'Ticino tax instructions 2025, p. 24: meals away from home, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 24 : Repas hors du domicile, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 24: auswärtige Verpflegung, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 24: pasti fuori casa'
+
+  # ti-2025-guide-istruzioni-pf-pdf p. 25 (11, previdenza individuale vincolata, 3° pilastro A).
+  - use: pillar3a
+    explain:
+      en: 'Pillar 3a (previdenza individuale vincolata, 3° pilastro A) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.'
+      fr: 'Le pilier 3a (previdenza individuale vincolata, 3° pilastro A) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année réduit votre revenu imposable, jusqu’à une limite annuelle.'
+      de: 'Die Säule 3a (previdenza individuale vincolata, 3° pilastro A) ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.'
+      it: 'Il pilastro 3a (previdenza individuale vincolata, 3° pilastro A) è un conto previdenziale in una banca o un’assicurazione. Quello che ci versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=25'
+      label:
+        en: 'Ticino tax instructions 2025, p. 25: pillar 3a, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 25 : Pilier 3a, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 25: Säule 3a, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 25: previdenza individuale vincolata'
+
+  # ti-2025-guide-istruzioni-pf-pdf p. 25 (10.3, riscatti di anni di assicurazione).
+  - use: lpp_buyin
+    explain:
+      en: 'Your pension fund at work (2nd pillar) takes contributions from your salary every month. A buy-in (riscatto di anni di assicurazione) is an extra payment you chose to make on top. Most people never make one.'
+      fr: 'Votre caisse de pension (2e pilier) prélève chaque mois des cotisations sur votre salaire. Un rachat (riscatto di anni di assicurazione) est un versement supplémentaire que vous avez choisi de faire. La plupart des gens n’en font jamais.'
+      de: 'Deine Pensionskasse (2. Säule) zieht jeden Monat Beiträge von deinem Lohn ab. Ein Einkauf (riscatto di anni di assicurazione) ist eine zusätzliche Zahlung, die du freiwillig leistest. Die meisten machen nie einen.'
+      it: 'La tua cassa pensione (2° pilastro) trattiene ogni mese dei contributi dal tuo salario. Un riscatto di anni di assicurazione è un versamento in più che hai scelto di fare. La maggior parte delle persone non ne fa mai.'
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=25'
+      label:
+        en: 'Ticino tax instructions 2025, p. 25: pension fund buy-ins, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 25 : Rachats dans la prévoyance professionnelle, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 25: Einkäufe in die berufliche Vorsorge, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 25: riscatti nella previdenza professionale'
+
+  - use: payments
+  - use: banks
+
+  # ti-2025-guide-istruzioni-pf-pdf p. 34 (29.5, altri elementi della sostanza mobiliare).
+  - use: crypto
+    explain:
+      en: 'Coins or tokens you owned on 31 December count as part of your wealth (sostanza), like money in a bank.'
+      fr: 'Les monnaies ou jetons que vous possédiez au 31 décembre font partie de votre fortune (sostanza), comme l’argent en banque.'
+      de: 'Coins oder Token, die du am 31. Dezember besessen hast, gehören zu deinem Vermögen (sostanza), wie Geld auf der Bank.'
+      it: 'Le monete o i token che possedevi al 31 dicembre fanno parte della tua sostanza, come i soldi in banca.'
+
+  - use: special
+
+requirements:
+  - use: salary_certificate
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=13'
+      label:
+        en: 'Ticino tax instructions 2025, p. 13: employment income, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 13 : Revenu d’une activité dépendante, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 13: Einkommen aus unselbständiger Erwerbstätigkeit, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 13: reddito da attività dipendente'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 8, p. 13'
+
+  - use: replacement_income
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=16'
+      label:
+        en: 'Ticino tax instructions 2025, p. 16: allowances and daily allowances, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 16 : Indemnités et indemnités journalières, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 16: Erwerbsausfallentschädigungen und Taggelder, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 16: indennità per perdita di guadagno e indennità giornaliere'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 16'
+
+  - use: pension
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=16'
+      label:
+        en: 'Ticino tax instructions 2025, p. 16: pensions, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 16 : Rentes, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 16: Renten und Pensionen, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 16: pensioni e rendite'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 16'
+
+  - use: pillar3a
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=25'
+      label:
+        en: 'Ticino tax instructions 2025, p. 25: pillar 3a, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 25 : Pilier 3a, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 25: Säule 3a, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 25: previdenza individuale vincolata'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 25'
+
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=25'
+      label:
+        en: 'Ticino tax instructions 2025, p. 25: pension fund buy-ins, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 25 : Rachats dans la prévoyance professionnelle, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 25: Einkäufe in die berufliche Vorsorge, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 25: riscatti nella previdenza professionale'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 25'
+
+  - use: health_premiums
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=26'
+      label:
+        en: 'Ticino tax instructions 2025, p. 26: insurance premiums and savings interest, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 26 : Primes d’assurances et intérêts d’épargne, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 26: Versicherungsprämien und Sparzinsen, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 26: oneri assicurativi e interessi di capitali a risparmio'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 26'
+
+  - use: banks
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=33'
+      label:
+        en: 'Ticino tax instructions 2025, p. 33: securities and accounts, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 33 : Titres et avoirs, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 33: Wertschriften und Guthaben, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 33: titoli e crediti'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 8, p. 17, p. 33'
+
+  - use: crypto
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=34'
+      label:
+        en: 'Ticino tax instructions 2025, p. 34: other movable assets, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 34 : Autres éléments de fortune mobilière, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 34: übriges bewegliches Vermögen, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 34: altri elementi della sostanza mobiliare'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 34'
+
+  - use: childcare
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=29'
+      label:
+        en: 'Ticino tax instructions 2025, p. 29: childcare by others, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 29 : Frais de garde par des tiers, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 29: Kinderbetreuung durch Dritte, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 29: deduzione cure prestate da terzi'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 29'
+
+  - use: medical
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=30'
+      label:
+        en: 'Ticino tax instructions 2025, p. 30: illness and accident costs, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 30 : Frais de maladie et d’accident, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 30: Krankheits- und Unfallkosten, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 30: spese per malattia e infortunio'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 8, p. 30'
+
+  - use: donations
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=30'
+      label:
+        en: 'Ticino tax instructions 2025, p. 30: donations, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 30 : Dons, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 30: Zuwendungen, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 30: liberalità a enti di pubblica utilità'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 8, p. 29, p. 30'
+
+  - use: loan_interest
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=27'
+      label:
+        en: 'Ticino tax instructions 2025, p. 27: private debt interest, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 27 : Intérêts de dettes privées, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 27: private Schuldzinsen, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 27: interessi passivi privati'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 27, p. 36'
+
+  - use: alimony
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=28'
+      label:
+        en: 'Ticino tax instructions 2025, p. 28: alimony and child support, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 28 : Pensions et contributions d’entretien, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 28: Unterhaltsbeiträge, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 28: alimenti'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 16, p. 28'
+
+  - use: separation_judgment
+    learnMore:
+      url: 'https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Istruzioni/Istruzioni_PF_2025.pdf#page=28'
+      label:
+        en: 'Ticino tax instructions 2025, p. 28: the divorce judgment or separation agreement, in Italian'
+        fr: 'Instructions fiscales du Tessin 2025, p. 28 : Le jugement de divorce ou la convention de séparation, en italien'
+        de: 'Wegleitung zur Steuererklärung 2025 des Kantons Tessin, S. 28: Scheidungsurteil oder Trennungsvereinbarung, auf Italienisch'
+        it: 'Istruzioni per la dichiarazione d’imposta 2025, p. 28: sentenza di divorzio o convenzione di separazione'
+    source: 'ti-2025-guide-istruzioni-pf-pdf p. 11, p. 28'

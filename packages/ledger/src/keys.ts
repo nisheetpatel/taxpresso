@@ -19,7 +19,7 @@ export interface KeyDef {
   multiple?: boolean;
   min?: number;
   max?: number;
-  label: { en: string; fr: string; de?: string };
+  label: { en: string; fr: string; de?: string; it?: string };
   /** The term used on the official French form or guide, shown next to the gloss. */
   official?: string;
   /** For values read from a document: the box (chiffre) or letter on it, e.g. '8' or 'E'. */

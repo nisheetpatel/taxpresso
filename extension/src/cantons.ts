@@ -15,6 +15,7 @@ import { filing as baselFiling } from '@taxpresso/filing-bs';
 import { filing as fribourgFiling } from '@taxpresso/filing-fr';
 import { filing as lucerneFiling } from '@taxpresso/filing-lu';
 import { filing as stGallenFiling } from '@taxpresso/filing-sg';
+import { filing as ticinoFiling } from '@taxpresso/filing-ti';
 import { filing as zugFiling } from '@taxpresso/filing-zg';
 import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
@@ -29,6 +30,7 @@ import {
   sgQuestionnaire2026,
   QuestionnaireEngine,
   sharedQuestionnaire2026,
+  tiQuestionnaire2026,
   vdQuestionnaire2026,
   zgQuestionnaire2026,
   zhQuestionnaire2026,
@@ -159,11 +161,23 @@ import {
   type FribourgCantonal,
   type FrTaxResult,
 } from '@taxpresso/rules-fr';
+import {
+  communeOptions as ticinoCommunes,
+  NOTE_VALUABLES as TI_NOTE_VALUABLES,
+  rules as ticinoRules,
+  TI_TERMS,
+  TICINO_READING,
+  tiParamsFor,
+  view as ticinoView,
+  type TicinoCantonal,
+  type TiTaxResult,
+} from '@taxpresso/rules-ti';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
 export interface CantonName extends Text {
   de: string;
+  it: string;
 }
 
 /** What a canton's tax is computed from: the values that count, for the tax year. */
@@ -276,7 +290,7 @@ const stated = (ledger: Ledger, key: string): FactValue | undefined => {
 
 const GENEVA: CantonEntry = {
   code: 'GE',
-  name: { en: 'Geneva', fr: 'Genève', de: 'Genf' },
+  name: { en: 'Geneva', fr: 'Genève', de: 'Genf', it: 'Ginevra' },
   software: 'GeTax',
   rules: genevaRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? geQuestionnaire2026() : undefined),
@@ -308,7 +322,7 @@ const GENEVA: CantonEntry = {
 
 const ZURICH: CantonEntry = {
   code: 'ZH',
-  name: { en: 'Zurich', fr: 'Zurich', de: 'Zürich' },
+  name: { en: 'Zurich', fr: 'Zurich', de: 'Zürich', it: 'Zurigo' },
   software: 'ZHprivateTax',
   rules: zurichRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? zhQuestionnaire2026() : undefined),
@@ -344,7 +358,7 @@ const ZURICH: CantonEntry = {
 
 const BERN: CantonEntry = {
   code: 'BE',
-  name: { en: 'Bern', fr: 'Berne', de: 'Bern' },
+  name: { en: 'Bern', fr: 'Berne', de: 'Bern', it: 'Berna' },
   software: 'TaxMe-Online',
   rules: bernRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? beQuestionnaire2026() : undefined),
@@ -380,7 +394,12 @@ const BERN: CantonEntry = {
 
 const BASEL_LAND: CantonEntry = {
   code: 'BL',
-  name: { en: 'Basel-Landschaft', fr: 'Bâle-Campagne', de: 'Basel-Landschaft' },
+  name: {
+    en: 'Basel-Landschaft',
+    fr: 'Bâle-Campagne',
+    de: 'Basel-Landschaft',
+    it: 'Basilea Campagna',
+  },
   software: 'E-Tax BL',
   rules: baselLandRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? blQuestionnaire2026() : undefined),
@@ -417,7 +436,7 @@ const BASEL_LAND: CantonEntry = {
 
 const VAUD: CantonEntry = {
   code: 'VD',
-  name: { en: 'Vaud', fr: 'Vaud', de: 'Waadt' },
+  name: { en: 'Vaud', fr: 'Vaud', de: 'Waadt', it: 'Vaud' },
   software: 'VaudTax',
   rules: vaudRules,
   questionnaire: (taxYear) => (taxYear === 2026 ? vdQuestionnaire2026() : undefined),
@@ -455,7 +474,7 @@ const VAUD: CantonEntry = {
 
 const BASEL: CantonEntry = {
   code: 'BS',
-  name: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' },
+  name: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt', it: 'Basilea Città' },
   // The canton's official software, in the eSteuern.BS portal (bs-2025-efiling-baltax-tipps p. 1).
   software: 'BalTax Online',
   rules: baselRules,
@@ -492,7 +511,7 @@ const BASEL: CantonEntry = {
 
 const ZUG: CantonEntry = {
   code: 'ZG',
-  name: { en: 'Zug', fr: 'Zoug', de: 'Zug' },
+  name: { en: 'Zug', fr: 'Zoug', de: 'Zug', it: 'Zugo' },
   // eTax.zug, the canton's online return, in the browser with an AGOV login (zg-na-efiling-etax-zug).
   software: 'eTax.zug',
   rules: zugRules,
@@ -530,7 +549,7 @@ const ZUG: CantonEntry = {
 
 const LUCERNE: CantonEntry = {
   code: 'LU',
-  name: { en: 'Lucerne', fr: 'Lucerne', de: 'Luzern' },
+  name: { en: 'Lucerne', fr: 'Lucerne', de: 'Luzern', it: 'Lucerna' },
   // eSteuern.LU, the canton's online return, in the browser with your own eSteuern account and the
   // PersID and Zugangscode eFiling printed on your return (lu-2025-efiling-merkblatt-esteuern).
   software: 'eSteuern.LU',
@@ -569,7 +588,7 @@ const LUCERNE: CantonEntry = {
 
 const ST_GALLEN: CantonEntry = {
   code: 'SG',
-  name: { en: 'St. Gallen', fr: 'Saint-Gall', de: 'St. Gallen' },
+  name: { en: 'St. Gallen', fr: 'Saint-Gall', de: 'St. Gallen', it: 'San Gallo' },
   // E-Tax SG, the canton's online return, in the browser with the cantonal E-Login on AGOV
   // (sg-na-efiling-etax-sg; sg-2025-efiling-faltblatt-etax).
   software: 'E-Tax SG',
@@ -611,7 +630,7 @@ const ST_GALLEN: CantonEntry = {
 
 const FRIBOURG: CantonEntry = {
   code: 'FR',
-  name: { en: 'Fribourg', fr: 'Fribourg', de: 'Freiburg' },
+  name: { en: 'Fribourg', fr: 'Fribourg', de: 'Freiburg', it: 'Friburgo' },
   // FriTax, the SCC's free program installed on the computer, the only one that files
   // electronically (fr-2025-fritax-accueil; fr-na-efiling-ordonnance-631-15 art. 2 al. 2). A desktop
   // program: no browser filling, the copy panel is the way (@taxpresso/filing-fr).
@@ -654,6 +673,47 @@ const FRIBOURG: CantonEntry = {
   tou: false,
 };
 
+const TICINO: CantonEntry = {
+  code: 'TI',
+  name: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino' },
+  // eTax PF, the canton's free program for Windows, macOS and Linux (ti-2025-efiling-etax-pf;
+  // ti-2025-guide-istruzioni-pf-pdf p. 8).
+  software: 'eTax PF',
+  rules: ticinoRules,
+  questionnaire: (taxYear) => (taxYear === 2026 ? tiQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...ticinoRules.keys(taxYear) }),
+  communes: (taxYear) => ticinoCommunes(taxYear).map((c) => ({ slug: c.slug, name: c.name })),
+  // The return has lines of its own for cash and gold (29.2) and vehicles (29.4): say they are
+  // together.
+  ...sharedLedger(TICINO_READING, ticinoRules, TI_NOTE_VALUABLES),
+  view: ticinoView,
+  filing: ticinoFiling,
+  terms: TI_TERMS,
+  plan: {
+    computeReturn: (input) => ticinoRules.computeReturn(input as HouseholdInput<TicinoCantonal>),
+    incomeTax: (r) => ticinoView.incomeTax(r as TiTaxResult),
+    // Lugano, the largest commune, by its name in the canton's table (which has no BFS numbers).
+    defaultCommune: 'LUGANO',
+    communeName: { en: 'Lugano', fr: 'Lugano', de: 'Lugano', it: 'Lugano' },
+    sources(taxYear) {
+      // The documents a Ticino household's income tax rests on, for the year.
+      const P = tiParamsFor(taxYear);
+      return [
+        ...new Set([P.income.single.source, P.income.family.source]),
+        P.amounts.coefficient.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'ti_preview', communeDefault: 'ti_commune_default' },
+    // Ticino follows the federal rules for pillar 3a (LT art. 32 cpv. 1 lett. e), so the 3a
+    // catch-up from 2026 too, on 10.3 with the buy-ins (ti-2025-form-modulo-1-de p. 3: "Säule 2 +
+    // 3a").
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
@@ -665,6 +725,7 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   LU: LUCERNE,
   SG: ST_GALLEN,
   FR: FRIBOURG,
+  TI: TICINO,
 };
 
 /**
@@ -674,12 +735,12 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
 export function cantonNames(
   codes: readonly SupportedCanton[],
   join: 'and' | 'or',
-  lang: 'en' | 'fr' | 'de' = 'en',
+  lang: 'en' | 'fr' | 'de' | 'it' = 'en',
 ): string {
   const names = codes.map((c) => CANTONS[c].name[lang]);
   const word = {
-    and: { en: 'and', fr: 'et', de: 'und' },
-    or: { en: 'or', fr: 'ou', de: 'oder' },
+    and: { en: 'and', fr: 'et', de: 'und', it: 'e' },
+    or: { en: 'or', fr: 'ou', de: 'oder', it: 'o' },
   }[join][lang];
   return names.length > 1
     ? `${names.slice(0, -1).join(', ')} ${word} ${names.at(-1)}`

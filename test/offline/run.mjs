@@ -1533,6 +1533,251 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Ticino return: its questions, its tax and the values to type, offline, in Italian', async () => {
+    // Another household in its own folder, in its own server process with the same guard, its
+    // dashboard in Italian: Giulia Ferrari, single, in Lugano, with the synthetic salary
+    // certificate read from its barcode.
+    const tiVault = path.join(work, 'Ticino');
+    const tiTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: tiVault,
+        TAXPRESSO_UI_LANGUAGE: 'it',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    tiTransport.stderr?.on('data', (d) => (stderr += d));
+    const ti = new Client({ name: 'taxpresso-offline-test-ti', version: '0.0.0' });
+    await ti.connect(tiTransport);
+    try {
+      const answers = [
+        ['canton', 'TI'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Lugano'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['work_rate:p1', 100],
+        ['full_year:p1', true],
+        ['taxed_at_source:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 800],
+        ['meal_days:p1', 0],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['payments', []],
+        ['banks', 0],
+        ['crypto', false],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await ti.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await ti.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'TI');
+      assert.equal(status.structuredContent.uiLanguage, 'it');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(tiVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await ti.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await ti.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'TI');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'LUGANO');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.equal(tax.structuredContent.icc.personal, 4000);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /imposta cantonale e comunale/);
+
+      const sections = await ti.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['M4-1', 'P2', 'P3'],
+      );
+      const modulo4 = await ti.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'M4-1' },
+      });
+      assert.match(modulo4.content[0].text, /- 438 7\. Totale delle spese professionali/);
+
+      const check = await ti.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await ti.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await ti.close();
+    }
+  });
+
+  test('a Geneva return for 2025: the year switch, its own folder and its texts, offline', async () => {
+    // The Dupont couple prepares 2025 in its own folder, in its own server process with the same
+    // guard: the year is chosen in the chat and in the dashboard, which write the same record.
+    const yVault = path.join(work, 'Years');
+    const yTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: yVault,
+        TAXPRESSO_UI_LANGUAGE: 'en',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    yTransport.stderr?.on('data', (d) => (stderr += d));
+    const y = new Client({ name: 'taxpresso-offline-test-years', version: '0.0.0' });
+    await y.connect(yTransport);
+    try {
+      // 2026 opens by default, and 2026's first answer stays in 2026's folder.
+      const start = await y.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(start.structuredContent.taxYear, 2026);
+      assert.deepEqual(
+        start.structuredContent.years.map((x) => [x.year, x.open, x.cantons.length > 1]),
+        [
+          [2026, true, true],
+          [2025, false, false],
+        ],
+      );
+      await y.callTool({ name: 'answer_question', arguments: { id: 'canton', value: 'GE' } });
+
+      // In the chat: open 2025.
+      const opened = await y.callTool({ name: 'open_tax_year', arguments: { year: 2025 } });
+      assert.ok(!opened.isError, opened.content?.[0]?.text);
+      assert.deepEqual(opened.structuredContent.cantons, ['GE']);
+      assert.equal(opened.structuredContent.over, true);
+      const kept = JSON.parse(readFileSync(path.join(yVault, 'open-year.json'), 'utf8'));
+      assert.deepEqual([kept.taxYear, kept.via], [2025, 'chat']);
+      const refused = await y.callTool({ name: 'open_tax_year', arguments: { year: 2019 } });
+      assert.ok(refused.isError);
+
+      const status = await y.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.taxYear, 2025);
+      assert.equal(status.structuredContent.canton, null, 'the canton is asked again for 2025');
+      assert.match(status.content[0].text, /Tax year 2025 is open/);
+      const q = await y.callTool({ name: 'next_questions', arguments: {} });
+      assert.match(q.content[0].text, /31 décembre 2025/);
+      assert.match(q.content[0].text, /ZH = Canton of Zurich \[not supported yet\]/);
+      // Ana-like single household in Meyrin, answered question by question as Claude asks them.
+      const given = {
+        canton: 'GE',
+        civil_status: 'single',
+        children: 0,
+        commune: 'Meyrin',
+        moved: 'no',
+        income_sources: ['salary'],
+        employers: 1,
+        taxed_at_source: false,
+        pillar3a: false,
+        lpp_buyin: false,
+        commute: 'public_transport',
+        commute_transit_cost: 800,
+        commute_transit_usable: false,
+        meal_days: 0,
+        banks: 0,
+        crypto: false,
+        payments: [],
+        special: [],
+      };
+      for (let i = 0; i < 40; i++) {
+        const next = await y.callTool({ name: 'next_questions', arguments: {} });
+        const question = next.structuredContent.questions[0];
+        if (!question) break;
+        const id = question.id.split(':')[0];
+        assert.ok(id in given, `an unexpected question: ${question.id}`);
+        const res = await y.callTool({
+          name: 'answer_question',
+          arguments: { id: question.id, value: given[id] },
+        });
+        assert.ok(!res.isError, `${question.id}: ${res.content?.[0]?.text}`);
+      }
+      // The years never mix: 2026 keeps its one answer, 2025 has its own.
+      const ledger = (year) =>
+        JSON.parse(readFileSync(path.join(yVault, String(year), 'ledger.json'), 'utf8')).facts;
+      assert.deepEqual(
+        ledger(2026).map((f) => [f.key, f.value]),
+        [['profile.canton', 'GE']],
+      );
+      assert.ok(ledger(2025).every((f) => f.taxYear === 2025));
+      assert.equal(ledger(2025).filter((f) => f.key === 'profile.commune').length, 1);
+
+      // 2025's figures are from published values only: no estimate flags.
+      const tax = await y.callTool({ name: 'compute_tax', arguments: {} });
+      assert.equal(tax.structuredContent.taxYear, 2025);
+      assert.match(tax.content[0].text, /^Tax year 2025, /);
+
+      // The plans before 31 December are 2026's, one step away.
+      const plans = await y.callTool({ name: 'list_optimizations', arguments: {} });
+      assert.equal(plans.structuredContent.yearOver.plansIn, 2026);
+      assert.match(plans.content[0].text, /open_tax_year with year 2026/);
+      const planFigure = await y.callTool({
+        name: 'set_fact',
+        arguments: { key: 'plan.gross_salary', value: 90000 },
+      });
+      assert.ok(planFigure.isError);
+      assert.match(planFigure.content[0].text, /2025 is over/);
+
+      // The dashboard shows 2025, and switches back to 2026 the same way the chat does.
+      const dash = await y.callTool({ name: 'open_dashboard', arguments: {} });
+      const url = dash.structuredContent.url;
+      const origin = new URL(url).origin;
+      const host = new URL(url).host;
+      const page = await get(url, { headers: { Host: host } });
+      const cookie = page.headers['set-cookie'][0].split(';')[0];
+      const state = JSON.parse(
+        (await get(`${origin}/api/state`, { headers: { Host: host, Cookie: cookie } })).body,
+      );
+      assert.equal(state.taxYear, 2025);
+      assert.equal(state.yearOver.plansIn, 2026);
+      assert.equal(state.plan, null);
+      const post = (p, body, csrf) =>
+        get(origin, {
+          method: 'POST',
+          path: p,
+          body: JSON.stringify(body),
+          headers: {
+            Host: host,
+            Cookie: cookie,
+            'X-Taxpresso-CSRF': csrf,
+            'Content-Type': 'application/json',
+          },
+        });
+      // A change from a page that still shows 2026 doesn't land in 2025.
+      const stale = await post('/api/answer?year=2026', { id: 'children', value: 1 }, state.csrf);
+      assert.equal(stale.status, 409, stale.body);
+
+      const zip = await y.callTool({ name: 'export_bundle', arguments: {} });
+      assert.match(zip.structuredContent.file, /^Taxpresso-2025-export-\d{4}-\d{2}-\d{2}\.zip$/);
+
+      const back = await post('/api/year', { year: 2026 }, state.csrf);
+      assert.equal(back.status, 200, back.body);
+      assert.equal(JSON.parse(back.body).taxYear, 2026);
+      assert.equal(
+        JSON.parse(readFileSync(path.join(yVault, 'open-year.json'), 'utf8')).via,
+        'dashboard',
+      );
+      const after2026 = await y.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(after2026.structuredContent.taxYear, 2026);
+      assert.equal(after2026.structuredContent.canton, 'GE');
+    } finally {
+      await y.close();
+    }
+  });
+
   /**
    * A self-employed Geneva household (packages/rules-ge/test/self-employment.test.ts, derived by
    * hand from the official documents) in its own folder and server process with the same guard:

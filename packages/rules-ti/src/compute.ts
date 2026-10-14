@@ -1,21 +1,25 @@
 // The one entry point: computeReturn(input) gives the lines of the Ticino return (Modulo 1) by
-// number and person, the subtotals and the cantonal and communal tax, each line explained with its
-// sources. First stage here (household figures to the lines of the return, every cap, flat amount
-// and threshold of the Ticino documents, in the order of the form), second stage in ./assess.ts
-// (lines to taxes). The same two stages, with the same names, as packages/rules-bs, rules-vd,
-// rules-zh and rules-be.
+// number and person, the subtotals and the cantonal and communal tax, and the federal tax the
+// authority derives from the same return (./ifd.ts), each line explained with its sources. First
+// stage here (household figures to the lines of the return, every cap, flat amount and threshold of
+// the Ticino documents, in the order of the form, with the limits each applied for the final check,
+// and Modulo 4 line by line), second stage in ./assess.ts (lines to taxes). The same two stages,
+// with the same names, as packages/rules-bs, rules-vd, rules-zh and rules-be.
 import {
   answered,
   chf,
   donationDeduction,
   medicalDeduction,
+  ifdParamsFor,
   pillar3a as federalPillar3a,
   roundFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import { assess, communeOf, communeRef, subtotals, TiInputError, TiUnsupported } from './assess.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import {
   childRule,
   familyTaxation,
@@ -26,6 +30,9 @@ import {
 } from './law.js';
 import { tiParamsFor, type TiTaxYear, type TiYearParams } from './params.js';
 import {
+  INCOME,
+  MODULO4,
+  MODULO4_CODES,
   PERSON_CODES,
   RUBRICS,
   WEALTH_RUBRICS,
@@ -43,6 +50,7 @@ import {
 } from './rules.js';
 import { categoryTax } from './tariff.js';
 import type {
+  ChildInput,
   EmploymentInput,
   Item,
   ItemPerson,
@@ -50,25 +58,64 @@ import type {
   PersonInput,
   Text,
   TiEngineInput,
+  TiIccResult,
   TiTaxResult,
 } from './types.js';
 
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = ' ';
 
+/** A sentence's first letter in capitals. */
+const capital = (s: string) => `${s[0]!.toUpperCase()}${s.slice(1)}`;
+
 class Notes {
   readonly assumptions: Text[] = [];
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A limit a cantonal rule applied (SPEC.md 10.0), on `code` for `person`, cited by the constant
+   * that sets it: `given` before the rule, `counted` after it. `rule` names it as the federal
+   * concepts are (packages/rules-ch, ifd/items.ts).
+   */
+  limit(
+    rule: string,
+    p: { source: string },
+    code: string,
+    person: LimitApplied['person'],
+    given: number,
+    limit: number,
+    counted: number,
+    kind: LimitApplied['kind'] = 'cap',
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: 'icc',
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      rule,
+    });
   }
 }
 
 /** An item for this line and person; its label and the form's page come from the catalogue. */
 function item(code: RubricCode, person: ItemPerson, tr: Trace, amount: number, how: Text): Item {
   const r = RUBRICS[code];
+  tr.src(r.source);
+  return { code, person, ...tr.line(amount, r.label, how) };
+}
+
+/** A line of Modulo 4, a part of 9.1 or 9.2 (./rubrics.ts, MODULO4). */
+function m4Item(code: string, person: ItemPerson, tr: Trace, amount: number, how: Text): Item {
+  const r = MODULO4[code]!;
   tr.src(r.source);
   return { code, person, ...tr.line(amount, r.label, how) };
 }
@@ -121,6 +168,9 @@ function salary(employments: readonly EmploymentInput[]): Salary {
   };
 }
 
+/** The line of Modulo 4 the way to work goes on: 2.1, 2.2 or 2.3. */
+type Way = 'transit' | 'vehicle' | 'bike';
+
 /** Travel to work (Modulo 4, 2) and how it was found (no final full stop). */
 function travel(
   P: TiYearParams,
@@ -128,7 +178,7 @@ function travel(
   employments: readonly EmploymentInput[],
   tr: Trace,
   notes: Notes,
-): { cost: number; how: Text } {
+): { cost: number; how: Text; way?: Way } {
   const A = P.amounts;
   const mode = p.commuteMode;
   if (mode) tr.with(answered(mode.facts, mode.status));
@@ -147,8 +197,10 @@ function travel(
     const max = tr.p(A.commute).bikeMax;
     const claimed = total(tr, [p.commuteCost]);
     const cost = Math.min(claimed, max);
+    notes.limit('commute', A.commute, MODULO4_CODES.bike[p.id], p.id, claimed, max, cost);
     return {
       cost,
+      way: 'bike',
       how: t(
         `travel by bike or moped ${chf(claimed)}, at most ${chf(max)}: ${chf(cost)}`,
         `transport à vélo ou cyclomoteur ${chf(claimed)}, au plus ${chf(max)}${NB}: ${chf(cost)}`,
@@ -173,6 +225,7 @@ function travel(
     const what = mode.by === 'car' ? t('car', 'voiture') : t('motorbike', 'moto');
     return {
       cost,
+      way: 'vehicle',
       how: t(
         `travel ${chf(cost)} (${what.en}: ${mode.kmOneWay} km x 2 x ${days} days x ${chf(perKm)})`,
         `transport ${chf(cost)} (${what.fr}${NB}: ${mode.kmOneWay} km x 2 x ${days} jours x ${chf(perKm)})`,
@@ -185,6 +238,7 @@ function travel(
     const paid = total(tr, [p.commuteCost]);
     return {
       cost: paid,
+      way: 'transit',
       how: t(
         `travel ${chf(paid)} (public transport)`,
         `transport ${chf(paid)} (transports publics)`,
@@ -209,7 +263,13 @@ interface PersonFigures {
   avs: number;
 }
 
-function personItems(P: TiYearParams, p: PersonInput, items: Item[], notes: Notes): PersonFigures {
+function personItems(
+  P: TiYearParams,
+  p: PersonInput,
+  items: Item[],
+  professional: Item[],
+  notes: Notes,
+): PersonFigures {
   const A = P.amounts;
   const y = P.taxYear;
   const codes = (k: keyof typeof PERSON_CODES) => PERSON_CODES[k][p.id];
@@ -238,14 +298,25 @@ function personItems(P: TiYearParams, p: PersonInput, items: Item[], notes: Note
   let costs = 0;
   if (employments.length) {
     const tr = new Trace().with(mainSalary.tr, sideSalary.tr).src(professionalRule(y).source);
+    // Each part on its own line of Modulo 4 (its own trace), and all of them on 9.1 or 9.2.
+    const part = (key: keyof typeof MODULO4_CODES, pt: Trace, amount: number, how: Text) => {
+      tr.with(pt).src(...pt.sources);
+      if (amount > 0) {
+        const line = new Trace().with(pt).src(...pt.sources, professionalRule(y).source);
+        const sentence = t(`${capital(how.en)}.`, `${capital(how.fr)}.`);
+        professional.push(m4Item(MODULO4_CODES[key][p.id], p.id, line, -amount, sentence));
+      }
+    };
     const parts: Text[] = [];
-    const tv = travel(P, p, employments, tr, notes);
+    const tvTr = new Trace();
+    const tv = travel(P, p, employments, tvTr, notes);
+    part(tv.way ?? 'transit', tvTr, tv.cost, tv.how);
     parts.push(tv.how);
     let meals = 0;
     if (p.commuteMode?.by === 'home') notes.add(notes.assumptions, NOTE.workFromHome);
     else if ((p.mealDays ?? 0) > 0) {
-      tr.with(answered(p.mealFacts));
-      const m = tr.p(A.meals);
+      const mt = new Trace().with(answered(p.mealFacts));
+      const m = mt.p(A.meals);
       const canteen = employments.some((e) => e.canteen);
       if (canteen) notes.add(notes.assumptions, NOTE.canteen);
       const [perDay, perYear] = canteen
@@ -253,34 +324,60 @@ function personItems(P: TiYearParams, p: PersonInput, items: Item[], notes: Note
         : [m.perDay, m.perYear];
       const days = p.mealDays ?? 0;
       meals = mealsCost(days, perDay, perYear);
-      parts.push(
-        t(
-          `meals ${days} days x ${chf(perDay)}, at most ${chf(perYear)}: ${chf(meals)}`,
-          `repas ${days} jours x ${chf(perDay)}, au plus ${chf(perYear)}${NB}: ${chf(meals)}`,
-        ),
+      notes.limit('meals', A.meals, MODULO4_CODES.meals[p.id], p.id, days * perDay, perYear, meals);
+      const how = t(
+        `meals ${days} days x ${chf(perDay)}, at most ${chf(perYear)}: ${chf(meals)}`,
+        `repas ${days} jours x ${chf(perDay)}, au plus ${chf(perYear)}${NB}: ${chf(meals)}`,
       );
+      part('meals', mt, meals, how);
+      parts.push(how);
     }
     let other = 0;
     if (main.length) {
-      const actual = p.otherProfessionalCosts ? total(tr, [p.otherProfessionalCosts]) : 0;
-      const fp = tr.p(A.otherFlat);
+      const ot = new Trace();
+      const actual = p.otherProfessionalCosts ? total(ot, [p.otherProfessionalCosts]) : 0;
+      const fp = ot.p(A.otherFlat);
       if (actual >= fp.amount) {
         other = actual;
-        parts.push(
-          t(
-            `other costs, actual ${chf(actual)} (not less than the flat amount ${chf(fp.amount)})`,
-            `autres frais, effectifs ${chf(actual)} (pas moins que le forfait ${chf(fp.amount)})`,
-          ),
+        notes.limit(
+          'professional.flat',
+          A.otherFlat,
+          MODULO4_CODES.otherActual[p.id],
+          p.id,
+          actual,
+          fp.amount,
+          other,
+          'choice',
         );
+        const how = t(
+          `other costs, actual ${chf(actual)} (not less than the flat amount ${chf(fp.amount)})`,
+          `autres frais, effectifs ${chf(actual)} (pas moins que le forfait ${chf(fp.amount)})`,
+        );
+        part('otherActual', ot, other, how);
+        parts.push(how);
       } else if (p.workRate === undefined) {
+        tr.with(ot).src(...ot.sources);
         notes.add(notes.unsupported, NOTE.workRate);
-      } else if (p.monthsWorked !== undefined && p.monthsWorked < 12) {
+      } else if (p.partYear === true || (p.monthsWorked !== undefined && p.monthsWorked < 12)) {
+        tr.with(ot).src(...ot.sources);
         notes.add(notes.unsupported, NOTE.partYear);
       } else {
         if (p.monthsWorked === undefined) notes.add(notes.assumptions, NOTE.fullYear);
         const flat = otherFlat(fp, p.workRate, p.monthsWorked ?? 12);
         other = Math.max(flat, actual);
-        parts.push(
+        if (actual) {
+          notes.limit(
+            'professional.flat',
+            A.otherFlat,
+            other === flat ? MODULO4_CODES.otherFlat[p.id] : MODULO4_CODES.otherActual[p.id],
+            p.id,
+            actual,
+            flat,
+            other,
+            'choice',
+          );
+        }
+        const how =
           other === flat
             ? t(
                 `other costs, flat amount ${chf(flat)}${flat < fp.amount ? ` (half of ${chf(fp.amount)}: work rate ${p.workRate} %)` : ''}`,
@@ -289,20 +386,22 @@ function personItems(P: TiYearParams, p: PersonInput, items: Item[], notes: Note
             : t(
                 `other costs, actual ${chf(actual)} (more than the flat amount ${chf(flat)})`,
                 `autres frais, effectifs ${chf(actual)} (plus que le forfait ${chf(flat)})`,
-              ),
-        );
+              );
+        part(other === flat ? 'otherFlat' : 'otherActual', ot, other, how);
+        parts.push(how);
       }
     }
     let sideFlat = 0;
     if (side.length) {
-      sideFlat = tr.p(A.sideJobFlat);
+      const st = new Trace();
+      sideFlat = st.p(A.sideJobFlat);
       if (sideFlat > sideSalary.net) notes.add(notes.unsupported, NOTE.costsAboveSalary);
-      parts.push(
-        t(
-          `side job, flat amount ${chf(sideFlat)}`,
-          `activité accessoire, forfait ${chf(sideFlat)}`,
-        ),
+      const how = t(
+        `side job, flat amount ${chf(sideFlat)}`,
+        `activité accessoire, forfait ${chf(sideFlat)}`,
       );
+      part('sideFlat', st, sideFlat, how);
+      parts.push(how);
     }
     costs = tv.cost + meals + other + sideFlat;
     if (costs > earned) notes.add(notes.unsupported, NOTE.costsAboveSalary);
@@ -389,6 +488,20 @@ function personItems(P: TiYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limits.push({
+      code: codes('pillar3a'),
+      person: p.id,
+      tax: 'icc',
+      kind: l.kind,
+      given: l.given,
+      limit: l.limit,
+      counted: l.counted,
+      source: l.param.source,
+      ...(l.param.estimate ? { estimate: true } : {}),
+      rule: 'pillar3a',
+    });
+  }
   if (r3a.deduction && r3a.deduction.amount < 0) {
     items.push(
       item(codes('pillar3a'), p.id, r3a.deduction.trace, r3a.deduction.amount, r3a.deduction.how),
@@ -401,6 +514,7 @@ function personItems(P: TiYearParams, p: PersonInput, items: Item[], notes: Note
     const paid = total(tr, [p.trainingCosts]);
     const cap = tr.p(A.training);
     const ded = Math.min(paid, cap);
+    notes.limit('training', A.training, codes('training'), p.id, paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -562,6 +676,7 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
   notes.add(notes.notCounted, NOTE.church);
   notes.add(notes.assumptions, NOTE.adults);
 
+  const kids = withHouseholdChildcare(input, couple, P, notes);
   const fam = family(input, P, couple, notes);
   const ref = communeRef(y, input.commune);
   const unsupportedResult = (rest: Partial<TiTaxResult> = {}): TiTaxResult => ({
@@ -579,6 +694,7 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
     notCounted: notes.notCounted,
     unsupported: notes.unsupported,
     unverifiedRules: [],
+    limits: notes.limits,
     ...rest,
   });
   if (notes.unsupported.length) {
@@ -588,7 +704,8 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
   }
 
   const items: Item[] = [];
-  const figures = people.map((p) => personItems(P, p, items, notes));
+  const professional: Item[] = [];
+  const figures = people.map((p) => personItems(P, p, items, professional, notes));
   const unverified: Text[] = [NOTE.tariffLine, NOTE.rounding];
   if (fam.sharedTariff) unverified.push(NOTE.sharedTariff);
 
@@ -652,6 +769,7 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
       unverified.push(NOTE.sharedInsurance);
     }
     const ded = Math.min(paid, cap);
+    notes.limit('insurance', A.insurance, '12', 'household', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -677,6 +795,15 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
     const paid = total(tr, [hh.debtInterest]);
     const extra = tr.p(A.debtInterestExtra);
     const d = debtInterestDeduction(paid, wealthIncome, extra);
+    notes.limit(
+      'debt_interest',
+      A.debtInterestExtra,
+      '13.2',
+      'household',
+      paid,
+      d.cap,
+      d.deduction,
+    );
     if (d.deduction > 0) {
       items.push(
         item(
@@ -701,6 +828,7 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
     const paid = total(tr, [hh.politicalParty]);
     const max = tr.p(A.party);
     const ded = Math.min(paid, max);
+    notes.limit('party', A.party, '15.2', 'household', paid, max, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -757,13 +885,15 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
   }
 
   // Childcare (20): per child under 14 living with you, at most the limit.
-  const withCare = (input.children ?? []).filter((ch) => Boolean(ch.childcare));
+  const withCare = kids
+    .map((ch, i) => ({ ch, n: i + 1 }))
+    .filter(({ ch }) => Boolean(ch.childcare));
   if (withCare.length) {
     const tr = new Trace();
     const cap = tr.p(A.childcare);
     let ded = 0;
     const parts: string[] = [];
-    for (const ch of withCare) {
+    for (const { ch, n } of withCare) {
       if (ch.under14 === false || ch.livesWithYou === false) {
         notes.add(notes.notCounted, NOTE.childcareAway);
         continue;
@@ -786,6 +916,7 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
         continue;
       }
       const one = Math.min(paid, cap);
+      notes.limit('childcare', A.childcare, '20', `child${n}`, paid, cap, one);
       ded += one;
       parts.push(chf(one));
     }
@@ -806,11 +937,65 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
   }
 
   // Illness costs (22.1): above 5 % of the net income II (21).
+  let medical: TiIccResult['medical'] = null;
   if (hh.medicalCosts) {
     const net2 = subtotals(items).net2;
     const tr = new Trace();
     const costs = total(tr, [hh.medicalCosts]);
     const m = medicalDeduction(costs, net2, tr.p(A.medicalThresholdBp));
+    notes.limit(
+      'medical',
+      A.medicalThresholdBp,
+      '22.1',
+      'household',
+      costs,
+      m.threshold,
+      m.deduction,
+      'threshold',
+    );
+    if (costs > 0) {
+      // 22.1 as the return lays it out: a. the costs (Modulo 6, back), b. the threshold, c. the
+      // deduction (the item).
+      const r = RUBRICS['22.1'];
+      const costTrace = new Trace();
+      total(costTrace, [hh.medicalCosts]);
+      const threshold = new Trace();
+      threshold.p(A.medicalThresholdBp);
+      medical = {
+        costs: costTrace
+          .src(`${FORM1} p. 3 (Ziffer 22.1 a)`, 'ti-2025-form-modulo-6 p. 2', r.source)
+          .line(
+            costs,
+            {
+              ...t(
+                'Illness and accident costs you bore (22.1 a, spese per malattia e infortunio)',
+                'Frais de maladie et d’accident à votre charge (22.1 a, spese per malattia e infortunio)',
+              ),
+              it: '22.1 a) Spese per malattia e infortunio',
+            },
+            t(
+              `The costs you bore yourself (Modulo 6): ${chf(costs)}.`,
+              `Les frais restés à votre charge (Modulo 6)${NB}: ${chf(costs)}.`,
+            ),
+          ),
+        threshold: threshold
+          .src(`${FORM1} p. 3 (Ziffer 22.1 b)`, 'ti-2025-form-modulo-6 p. 2')
+          .line(
+            m.threshold,
+            {
+              ...t(
+                'Threshold, 5 % of the net income II (22.1 b, franchigia)',
+                'Franchise, 5 % du revenu net II (22.1 b, franchigia)',
+              ),
+              it: '22.1 b) Franchigia del 5% del reddito netto intermedio II (cifra 21)',
+            },
+            t(
+              `5 % of the net income II (21), ${chf(net2)}: ${chf(m.threshold)}.`,
+              `5${NB}% du revenu net II (21), ${chf(net2)}${NB}: ${chf(m.threshold)}.`,
+            ),
+          ),
+      };
+    }
     if (m.deduction > 0) {
       items.push(
         item(
@@ -834,6 +1019,10 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
     const gifts = total(tr, [hh.donations]);
     const p = tr.p(A.donations);
     const d = donationDeduction(gifts, net3, p.shareBp, p.min);
+    notes.limit('donations', A.donations, '24', 'household', gifts, p.min, d.deduction, 'minimum');
+    if (gifts >= p.min) {
+      notes.limit('donations', A.donations, '24', 'household', gifts, d.cap, d.deduction);
+    }
     if (d.deduction > 0) {
       items.push(
         item(
@@ -990,21 +1179,70 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
       incomeTariff: fam.tariff,
       adults: couple ? 2 : 1,
       familySources: fam.sources,
+      professional,
+      medical,
       incomeItems: items,
       wealthItems,
     });
+
+    // The federal tax the authority derives from the same return (./ifd.ts): the same income
+    // lines, the federal deductions. Who counts the children follows the federal rules (circular
+    // 30): in full, half in shared custody without child support, not for the parent who pays it.
+    const sharedAlone = !couple && kids.some((ch) => ch.custody === 'shared');
+    const support = sharedAlone ? input.childSupport : undefined;
+    const childSources =
+      support === 'receives'
+        ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'pays'
+          ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+          : support === 'none' && input.ifdParentalScale !== undefined
+            ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 14.4)`]
+            : [];
+    const federalChildren: FederalChild[] = [];
+    for (const ch of kids) {
+      const child = {
+        livesWithYou: ch.livesWithYou ?? true,
+        ...(ch.under14 !== undefined ? { under14: ch.under14 } : {}),
+        ...(ch.childcare ? { childcare: ch.childcare } : {}),
+      };
+      if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
+        federalChildren.push({ weight: 1, ...child });
+      } else if (input.childSupport === 'none') {
+        federalChildren.push({ weight: 0.5, ...child });
+      }
+    }
+    const earning = new Set<string>(['1.1', '1.2', '3.4', '3.5']);
+    const federal = federalReturn(
+      {
+        input,
+        couple,
+        incomeItems: icc.items.filter((i) => INCOME.has(i.code)),
+        inFull: icc.items.filter((i) => IN_FULL.has(i.code)),
+        children: federalChildren,
+        childSources,
+        wealthIncome,
+      },
+      people.map((p) => ({
+        input: p,
+        earnings: icc.items.filter((i) => i.person === p.id && earning.has(i.code)),
+        buyIns: icc.items.filter((i) => i.person === p.id && i.code === '10.3'),
+      })),
+    );
+    const ifd = federal.ifd;
+    for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
     return {
       canton: 'TI',
       taxYear: y,
       commune: ref,
       icc,
-      ifd: null,
-      total: icc.taxes.total.amount,
+      ifd,
+      total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
       ...base,
       assumptions: notes.assumptions,
       notCounted: notes.notCounted,
-      unsupported: [],
-      unverifiedRules: [...unverified, ...notes.unverified],
+      unsupported: [...federal.notes.unsupported],
+      unverifiedRules: [...unverified, ...notes.unverified, ...federal.notes.unverified],
+      limits: bothTaxes(notes.limits, federal.notes.limits),
     };
   } catch (e) {
     if (!(e instanceof TiUnsupported)) throw e;
@@ -1013,16 +1251,111 @@ export function computeReturn(input: TiEngineInput): TiTaxResult {
   }
 }
 
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+const FORM1 = 'ti-2025-form-modulo-1-de';
+/**
+ * Deductions in full for both taxes: the buy-ins into the pension fund and, from 2026, pillar 3a
+ * (10.3), the costs of keeping securities (13.1), alimony and child support paid (14.1, 14.2).
+ */
+const IN_FULL = new Set(['10.3', '13.1', '14.1', '14.2']);
+
+/**
+ * The limits of both taxes, a limit applied alike in each (same line, rule kind and amounts, as
+ * the pillar 3a cap) said once for both: the final check then shows it once (SPEC.md 10.0).
+ */
+function bothTaxes(icc: readonly LimitApplied[], ifd: readonly LimitApplied[]): LimitApplied[] {
+  const out = icc.map((l) => ({ ...l }));
+  for (const f of ifd) {
+    const same = out.find(
+      (l) =>
+        l.tax === 'icc' &&
+        l.code === f.code &&
+        l.person === f.person &&
+        l.kind === f.kind &&
+        l.given === f.given &&
+        l.limit === f.limit &&
+        l.counted === f.counted &&
+        l.rule === f.rule &&
+        Boolean(l.estimate) === Boolean(f.estimate),
+    );
+    if (same) same.tax = 'both';
+    else out.push(f);
+  }
+  return out;
+}
+
+/**
+ * Childcare paid for the household as a whole (the invoices of a crèche, say): the limit is per
+ * child under 14 (LT art. 32a; Modulo 6 lists it child by child). It is that child's when one child
+ * can have it; with several, any split gives the same when the whole amount is within one child's
+ * limit, half of it for a child in shared custody without child support, the federal one included;
+ * otherwise how it splits decides the deduction, and the tax is not computed without it (fail
+ * closed).
+ */
+function withHouseholdChildcare(
+  input: TiEngineInput,
+  couple: boolean,
+  P: TiYearParams,
+  notes: Notes,
+): readonly ChildInput[] {
+  const children = input.children ?? [];
+  const care = input.household?.childcare;
+  if (!care) return children;
+  if (children.some((ch) => ch.childcare)) {
+    throw new TiInputError('Childcare: give it per child or for the household, not both.');
+  }
+  // The children whose childcare counts here: in full for you, or shared without child support.
+  const countsHere = (ch: ChildInput) =>
+    ch.custody === 'full' ||
+    couple ||
+    input.childSupport === 'receives' ||
+    input.childSupport === 'none';
+  const eligible = children
+    .map((ch, i) => ({ ch, i }))
+    .filter(({ ch }) => countsHere(ch) && (ch.livesWithYou ?? true) && ch.under14 !== false);
+  const paid = total(new Trace(), [care]);
+  const shared = eligible.some(({ ch }) => ch.custody === 'shared');
+  const cantonal = P.amounts.childcare.value / (shared ? 2 : 1);
+  const within = Math.min(cantonal, ifdParamsFor(P.taxYear).childcareMax.value);
+  if (eligible.length === 1 || (eligible.length > 1 && paid <= within)) {
+    const at = eligible[0]!.i;
+    return children.map((ch, i) => (i === at ? { ...ch, childcare: care } : ch));
+  }
+  if (eligible.length > 1) notes.add(notes.unsupported, NOTE.childcareSplit);
+  else if (paid > 0) notes.add(notes.notCounted, NOTE.childcareNoChild);
+  return children;
+}
+
 /** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<TiTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+export function allLines(r: Pick<TiTaxResult, 'icc'> & { ifd?: TiTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.totalDeductions,
+        f.netIncome,
+        f.netIncome2,
+        f.netIncome3,
+        f.netIncome4,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
+    ...x.professional,
     x.grossIncome,
     x.totalDeductions,
     x.netIncome,
     x.netIncome2,
+    ...(x.medical ? [x.medical.costs, x.medical.threshold] : []),
     x.netIncome3,
     x.netIncome4,
     x.taxableIncome,
@@ -1038,6 +1371,7 @@ export function allLines(r: Pick<TiTaxResult, 'icc'>): Line[] {
     x.taxes.communalWealth,
     x.taxes.personal,
     x.taxes.total,
+    ...federal,
   ];
 }
 

@@ -101,6 +101,11 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
       pt: 'Friburgo',
     },
   },
+  {
+    code: 'TI',
+    status: 'preview',
+    name: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino', es: 'Tesino', pt: 'Ticino' },
+  },
 ];
 
 /** When a canton that doesn't work yet should come: the next ones, then the ones after. */
@@ -119,11 +124,6 @@ export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
       es: 'Argovia',
       pt: 'Argóvia',
     },
-  },
-  {
-    code: 'TI',
-    when: 'then',
-    name: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino', es: 'Tesino', pt: 'Ticino' },
   },
 ];
 

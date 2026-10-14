@@ -2,6 +2,7 @@
 // the chat with Claude is the same thing (SPEC.md section 6).
 import { DOCUMENT_KINDS, LedgerError, VaultError } from '@taxpresso/ledger';
 import { NBSP, QuestionnaireError } from '@taxpresso/questionnaire';
+import { isUiLanguage } from './config.js';
 import { contentLang, say, type UiLang as Lang } from './lang.js';
 import * as z from 'zod/v4';
 import { copyPanelView, setRowEntered } from './copy-panel.js';
@@ -258,8 +259,7 @@ const parse = <T>(schema: z.ZodType<T>, body: Buffer): T => {
 export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiResponse> {
   return async (req) => {
     const asked = req.query.get('lang');
-    const lang: Lang =
-      asked === 'fr' || asked === 'en' || asked === 'de' ? asked : ws.config.uiLanguage;
+    const lang: Lang = isUiLanguage(asked) ? asked : ws.config.uiLanguage;
     const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf) });
     try {
       await ws.ready();
