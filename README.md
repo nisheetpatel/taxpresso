@@ -2,13 +2,13 @@
 
 Your taxes, done over an espresso. Vos impôts, le temps d’un espresso.
 
-Taxpresso helps you prepare your Geneva tax return with Claude, inside Claude Desktop. It runs on your own computer: the extension makes no network requests, and your documents stay in your Taxpresso folder. You review the official declaration and transmit it yourself.
+Taxpresso helps you prepare your Swiss tax return with Claude, inside Claude Desktop: Geneva in full, and more cantons as a preview. It runs on your own computer: the extension makes no network requests, and your documents stay in your Taxpresso folder. You review the official declaration and transmit it yourself.
 
 Taxes should be painless, simple and free. Taxpresso is free and open source, and owned by its community.
 
 ## Status
 
-Early preview for tax year 2026 (returns filed in early 2027).
+Early preview for tax year 2026 (returns filed in early 2027), and for tax year 2025 in Geneva: if you haven't filed it yet, or to check the return you filed and your assessment.
 
 - Works today, in the chat or in a local dashboard:
   - the questions that matter for your return, for you and your partner;
@@ -18,6 +18,7 @@ Early preview for tax year 2026 (returns filed in early 2027).
   - Zurich, as a preview: the canton is the first question; Zurich's own questions (commune, church tax), your cantonal, communal, church and federal tax (Staats- und Gemeindesteuern, direkte Bundessteuer), and the values to type in the Zurich form's order, its annexes included, with the few rules the documents don't spell out shown to you;
   - Bern, as a preview: Bern's own questions in English, French and German (your own household, church tax and parish, shared custody, payments to political parties, education costs per child), your cantonal, communal, church and federal tax (Kantons-, Gemeinde- und Kirchensteuern, direkte Bundessteuer) laid out as TaxMe's summaries, and the values to type form by form, with the few rules the documents don't spell out shown to you;
   - the dashboard in English, French, German or Italian;
+  - the tax year, chosen in the chat or in the dashboard: each year keeps its own answers, documents and checks;
   - your securities list (état des titres): bank accounts, broker exports (Interactive Brokers, DEGIRO), crypto and bank tax statements, with the Swiss withholding tax you get back and the foreign tax credit;
   - before 31 December: a pillar 3a payment, a pension fund buy-in and the 3a catch-up, each with what it saves on your actual tax;
   - for people taxed at source: source tax next to the ordinary tax (TOU), with the 31 March deadline;
@@ -67,6 +68,8 @@ Taxpresso costs nothing. If you’d like to say thanks or support a good cause, 
 Taxpresso is an independent, free and open-source software project. It is not affiliated with, sponsored by or associated with any accounting firm, fiduciary or tax-services company, in Switzerland or elsewhere, nor with the Geneva cantonal tax administration (AFC) or Anthropic. It isn’t tax advice: you remain responsible for your return. Claude is a trademark of Anthropic.
 
 ## License
+
+Taxpresso is free and open source, under the GNU Affero General Public License, version 3 or later (AGPL-3.0-or-later). The copyright notice below is the one the license itself asks for: it is what lets the license keep Taxpresso free.
 
 Copyright (C) 2026 Nisheet Patel and the Taxpresso contributors.
 
