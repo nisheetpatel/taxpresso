@@ -445,6 +445,8 @@ taxpresso/
                         Bundessteuer column (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
                         worksheet (wired into the extension as a preview)
+    rules-ag/           Aargau's cantonal, communal and church tax, and the federal tax the tax office
+                        works out from its one-column return (wired into the extension as a preview)
     optimizer/
     filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation; the form shapes
                         and the copy panel every canton's form uses
@@ -453,6 +455,8 @@ taxpresso/
     filing-bl/          the Basel-Landschaft return (pages 2 to 4, two columns) and the values to type
     filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
                         worksheet for the federal tax, to check
+    filing-ag/          the Aargau return as the guide numbers it (the main form 101.01 is not
+                        published: provisional, codes to check against the form or eTAX AARGAU)
   ui/                   Vite app; views reused as MCP Apps resources
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
@@ -466,6 +470,8 @@ taxpresso/
   data/vd/2026/         Vaud's questionnaire: the shared questions, its own (commune and its part,
                         household alone with the children, upkeep, rent, household contents,
                         childcare per child, savings interest)
+  data/ag/2026/         Aargau's questionnaire: the shared questions, its own (commune by name, church
+                        and further parish, each child's age band and childcare, shared custody)
   test/golden/          households + GeTax expected outputs
   test/fixtures/        sample PDFs (synthetic only, never real data)
   docs/                 privacy policy, support, example prompts
