@@ -2,7 +2,7 @@
 // rules (packages/rules-<c>), its questionnaire (data/<c>/<year>) and its communes, and the questions
 // every canton shares, which are all Taxpresso asks until it knows the canton. The canton is the
 // answer to the first question (profile.canton); one tax year has one canton.
-import type { FactValue, KeyRegistry, Ledger } from '@taxpresso/ledger';
+import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import {
   geQuestionnaire2026,
   QuestionnaireEngine,
@@ -11,19 +11,55 @@ import {
   type QuestionnaireFile,
 } from '@taxpresso/questionnaire';
 import {
+  cantonInputFromFacts,
   KEYS_CANTON_2026,
   SUPPORTED_CANTONS,
   type CantonAnswer,
   type CantonCode,
+  type CantonLedgerInput,
+  type CantonLedgerReading,
+  type CantonRules,
   type SupportedCanton,
+  type TaxResult,
   type Text,
 } from '@taxpresso/rules-ch';
-import { COMMUNES_2026, rules as genevaRules } from '@taxpresso/rules-ge';
-import { communeOptions, rules as zurichRules } from '@taxpresso/rules-zh';
+import {
+  COMMUNES_2026,
+  computeReturn as genevaReturn,
+  engineInputFromFacts,
+  rules as genevaRules,
+} from '@taxpresso/rules-ge';
+import {
+  communeOptions,
+  NOTE_VALUABLES,
+  rules as zurichRules,
+  ZURICH_READING,
+} from '@taxpresso/rules-zh';
+import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
 export interface CantonName extends Text {
   de: string;
+}
+
+/** What a canton's tax is computed from: the values that count, for the tax year. */
+export interface LedgerContext {
+  taxYear: number;
+  /** The ledger's current facts, without those of documents replaced or gone. */
+  facts: readonly Fact[];
+  /** The documents that count. */
+  documents: readonly VaultDocument[];
+  /** The people of the household. */
+  people: readonly ('p1' | 'p2')[];
+}
+
+/** The tax of the year from the ledger: null while answers it needs are missing. */
+export interface LedgerEstimate {
+  result: TaxResult | null;
+  /** What must be answered before anything can be computed. */
+  missing: Text[];
+  /** How the ledger was read: what was left out or assumed. */
+  notes: Text[];
 }
 
 export interface CantonEntry {
@@ -44,6 +80,40 @@ export interface CantonEntry {
    * asks, in words, when there are some (then the return is taken as this canton's).
    */
   inferFrom?(ledger: Ledger): Text[];
+  /** The tax of the year: the ledger read into the canton's household input, then its engine. */
+  estimate(ctx: LedgerContext): LedgerEstimate;
+  /**
+   * Every canton but Geneva (whose engine reads its own input, with the état des titres): the
+   * ledger read into the shared household input, with the canton's own part (`cantonal`).
+   */
+  household?(ctx: LedgerContext): CantonLedgerInput<unknown>;
+}
+
+/**
+ * A canton read through the shared ledger reading (rules-ch, cantonInputFromFacts) and computed by
+ * its rules behind the canton interface: everything but its own answers is generic.
+ * `valuables`: the note when the canton's form has its own lines for cash, gold and vehicles.
+ */
+export function sharedLedger<Cantonal extends object>(
+  reading: CantonLedgerReading<Cantonal>,
+  rules: CantonRules<Cantonal, TaxResult>,
+  valuables?: Text,
+): Pick<CantonEntry, 'estimate' | 'household'> {
+  const household = (ctx: LedgerContext) =>
+    cantonInputFromFacts(
+      ctx.taxYear,
+      ctx.facts,
+      ctx.documents,
+      reading,
+      movableWealth(ctx.taxYear, ctx.people, ctx.facts, ctx.documents, valuables),
+    );
+  return {
+    household,
+    estimate(ctx) {
+      const { input, missing, notes } = household(ctx);
+      return { result: input ? rules.computeReturn(input) : null, missing, notes };
+    },
+  };
 }
 
 /** An answer the user gave (stated), not a suggestion read from a document. */
@@ -74,6 +144,11 @@ const GENEVA: CantonEntry = {
     }
     return why;
   },
+  // Geneva's engine reads its own input, with the état des titres (@taxpresso/rules-ge).
+  estimate(ctx) {
+    const { input, missing, notes } = engineInputFromFacts(ctx.taxYear, ctx.facts, ctx.documents);
+    return { result: input ? genevaReturn(input) : null, missing, notes };
+  },
 };
 
 const ZURICH: CantonEntry = {
@@ -84,6 +159,7 @@ const ZURICH: CantonEntry = {
   questionnaire: (taxYear) => (taxYear === 2026 ? zhQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zurichRules.keys(taxYear) }),
   communes: (taxYear) => communeOptions(taxYear),
+  ...sharedLedger(ZURICH_READING, zurichRules, NOTE_VALUABLES),
 };
 
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = { GE: GENEVA, ZH: ZURICH };

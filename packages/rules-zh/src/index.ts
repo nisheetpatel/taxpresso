@@ -51,6 +51,8 @@ export { rules, zurichInput, type ZurichCantonal } from './canton.js';
 export {
   NOTE_CHURCH,
   NOTE_MARRIED_TARIFF,
+  NOTE_VALUABLES,
+  ZURICH_READING,
   zurichInputFromFacts,
   type ZurichLedgerInput,
   type ZurichWealth,

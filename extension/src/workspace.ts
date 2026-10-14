@@ -19,7 +19,6 @@ import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpres
 import type { ContentLang } from './lang.js';
 import {
   assessmentViews,
-  computeReturn,
   consistencyChecks,
   documentFields,
   engineInputFromFacts,
@@ -29,16 +28,10 @@ import {
   type ConsistencyCheck,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import type { Text } from '@taxpresso/rules-ch';
-import {
-  communeOfAnswer,
-  rules as zurichRules,
-  zurichInputFromFacts,
-  type ZhTaxResult,
-} from '@taxpresso/rules-zh';
-import { zurichWealth } from './zurich-wealth.js';
+import type { HouseholdInput as HouseholdInputOf, Text } from '@taxpresso/rules-ch';
+import { communeOfAnswer, type ZhTaxResult, type ZurichCantonal } from '@taxpresso/rules-zh';
 import type { SecuritiesSummary } from '@taxpresso/intake';
-import type { CantonRegistry, CantonState } from './cantons.js';
+import type { CantonRegistry, CantonState, LedgerContext } from './cantons.js';
 import { displayPath, type Config } from './config.js';
 import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';
 import {
@@ -297,29 +290,8 @@ export class Workspace {
    */
   estimate(): CantonEstimate {
     const canton = this.canton().canton;
-    const taxYear = this.engine.taxYear;
-    if (canton?.code === 'GE') {
-      const { input, missing, notes } = engineInputFromFacts(
-        taxYear,
-        this.countedFacts(),
-        this.activeDocuments(),
-      );
-      return { canton: 'GE', result: input ? computeReturn(input) : null, missing, notes };
-    }
-    if (canton?.code === 'ZH') {
-      const facts = this.countedFacts();
-      const docs = this.activeDocuments();
-      const people = this.snapshot().people.filter(
-        (p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2',
-      );
-      const wealth = zurichWealth(taxYear, people, facts, docs);
-      const { input, missing, notes } = zurichInputFromFacts(taxYear, facts, docs, wealth);
-      return {
-        canton: 'ZH',
-        result: input ? zurichRules.computeReturn(input) : null,
-        missing,
-        notes,
-      };
+    if (canton) {
+      return { canton: canton.code, ...canton.estimate(this.ledgerContext()) } as CantonEstimate;
     }
     return {
       canton: undefined,
@@ -331,6 +303,16 @@ export class Workspace {
         },
       ],
       notes: [],
+    };
+  }
+
+  /** What a canton's tax is computed from: the values that count, for the year's household. */
+  ledgerContext(): LedgerContext {
+    return {
+      taxYear: this.engine.taxYear,
+      facts: this.countedFacts(),
+      documents: this.activeDocuments(),
+      people: this.snapshot().people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2'),
     };
   }
 
@@ -538,12 +520,8 @@ export class Workspace {
     const docs = this.activeDocuments();
     const people = snap.people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2');
     const where = communeOfAnswer(taxYear, answer('profile.commune'));
-    const known = zurichInputFromFacts(
-      taxYear,
-      facts,
-      docs,
-      zurichWealth(taxYear, people, facts, docs),
-    ).input;
+    const known = this.canton().canton!.household!({ taxYear, facts, documents: docs, people })
+      .input as HouseholdInputOf<ZurichCantonal> | null;
     const custody = answer('profile.children_custody');
     return {
       canton: 'ZH',
