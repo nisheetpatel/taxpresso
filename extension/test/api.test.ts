@@ -110,12 +110,16 @@ describe('dashboard API', () => {
     await api(req('POST', '/answer', { id: 'civil_status', value: 'single' }));
     let state = (await api(req('POST', '/plan', { person: 'p1', field: 'gross', value: 95_000 })))
       .body as DashboardState;
-    expect(state.plan.inputs[0]).toMatchObject({ gross: 9_500_000, hasPensionFund: true, paid: 0 });
-    expect(state.plan.result.saving?.totalCentimes).toBeGreaterThan(0);
+    expect(state.plan!.inputs[0]).toMatchObject({
+      gross: 9_500_000,
+      hasPensionFund: true,
+      paid: 0,
+    });
+    expect(state.plan!.result.saving?.totalCentimes).toBeGreaterThan(0);
     state = (await api(req('POST', '/plan', { person: 'p1', field: 'paid', value: 7_258 })))
       .body as DashboardState;
-    expect(state.plan.result.roomCentimes).toBe(0);
-    expect(state.plan.result.saving?.totalCentimes).toBe(0);
+    expect(state.plan!.result.roomCentimes).toBe(0);
+    expect(state.plan!.result.saving?.totalCentimes).toBe(0);
     expect(
       await api(req('POST', '/plan', { person: 'p2', field: 'gross', value: 1 })),
     ).toMatchObject({ status: 400 });

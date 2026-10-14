@@ -33,10 +33,17 @@ import {
   type ConsistencyCheck,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import type { SupportedCanton, TaxResult as SharedTaxResult, Text } from '@taxpresso/rules-ch';
+import {
+  businessYear,
+  type PersonInput as SharedPerson,
+  type SupportedCanton,
+  type TaxResult as SharedTaxResult,
+  type Text,
+} from '@taxpresso/rules-ch';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import type { CantonEntry, CantonRegistry, CantonState, LedgerContext } from './cantons.js';
-import { displayPath, type Config } from './config.js';
+import { CURRENT_TAX_YEAR, displayPath, type Config } from './config.js';
+import { isoToday, isYearOver } from './year-over.js';
 import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';
 import {
   applyReports,
@@ -94,7 +101,9 @@ export interface ActivityEntry {
     | 'confirm'
     | 'check'
     | 'replace'
-    | 'decide';
+    | 'decide'
+    /** The user opened this tax year (./years.ts); detail: the year. */
+    | 'year';
   /** Language-neutral: a question slot id, a document kind, a file name or a count. */
   detail?: string;
 }
@@ -106,6 +115,10 @@ interface Prefs {
 }
 
 export class WorkspaceError extends Error {}
+
+/** Why planning figures are refused for a year that is over (./planning.ts, yearOverView). */
+export const yearOverPlans = (year: number) =>
+  `${year} is over: what is paid now into 3a or a pension fund counts for ${CURRENT_TAX_YEAR}, not ${year}, so the plans are ${CURRENT_TAX_YEAR}'s. Offer to open ${CURRENT_TAX_YEAR} (open_tax_year) and save the figure there. The ${year} return takes what was paid in ${year}, from the attestations.`;
 
 /** Ticks the user set on the document cards ("Entered"): local, in the vault, never in the ledger. */
 interface Entered {
@@ -145,6 +158,20 @@ export const PLAN_KEYS = [
   // Geneva: a self-employed person's expected profit for the year, for the 3a room.
   'plan.business_profit',
 ] as const;
+
+/**
+ * A self-employed person's profit after their own AVS contributions, from the year's accounts when
+ * they are read (Geneva, annexe B): what the 3a room without a pension fund is a share of.
+ */
+function profitOf(
+  people: readonly SharedPerson[] | undefined,
+  person: 'p1' | 'p2',
+): number | undefined {
+  const business = people?.find((p) => p.id === person)?.business;
+  if (!business) return undefined;
+  const year = businessYear(business);
+  return year.hasAccounts ? year.earned.amount : undefined;
+}
 export type PlanKey = (typeof PLAN_KEYS)[number];
 
 export class Workspace {
@@ -166,6 +193,21 @@ export class Workspace {
     this.config = config;
     this.cantons = cantons;
     this.vault = new Vault(config.vaultPath, cantons.taxYear);
+  }
+
+  /** The tax year of this workspace: its folder, its ledger and its questions (./years.ts). */
+  get taxYear(): number {
+    return this.cantons.taxYear;
+  }
+
+  /** Today's date, YYYY-MM-DD: the configured clock, or the computer's. */
+  today(): string {
+    return this.config.today?.() ?? isoToday();
+  }
+
+  /** A year that is over (before the default year): its plans before 31 December are gone. */
+  yearOver(): boolean {
+    return isYearOver(this.taxYear);
   }
 
   /**
@@ -303,9 +345,25 @@ export class Workspace {
    * (./cantons.ts), with the federal tax; nothing without the canton.
    */
   estimate(): CantonEstimate {
-    const canton = this.canton().canton;
+    const state = this.canton();
+    const canton = state.canton;
     if (canton) {
       return { canton: canton.code, entry: canton, ...canton.estimate(this.ledgerContext()) };
+    }
+    // A canton Taxpresso covers, but not for this year: nothing is computed (fail closed).
+    if (state.notOffered) {
+      const year = this.taxYear;
+      return {
+        canton: undefined,
+        result: null,
+        missing: [
+          {
+            en: `a canton it prepares ${year} returns for (${state.notOffered.name.en} isn't one yet)`,
+            fr: `un canton pour lequel il prépare les déclarations ${year} (${state.notOffered.name.fr} n’en fait pas encore partie)`,
+          },
+        ],
+        notes: [],
+      };
     }
     return {
       canton: undefined,
@@ -518,7 +576,10 @@ export class Workspace {
         const sources = snap.answers.get(`profile.income_sources|${person}`);
         const self = Array.isArray(sources) && sources.includes('self_employment');
         const salaried = Array.isArray(sources) && sources.includes('salary');
-        const business = self ? money('plan.business_profit', person) : undefined;
+        // The profit the user gave in the chat, or else the year's accounts once they are read.
+        const business = self
+          ? (money('plan.business_profit', person) ?? profitOf(known?.people, person))
+          : undefined;
         const fund = this.ledger.get('plan.has_pension_fund', person)?.value;
         return {
           person,
@@ -605,6 +666,8 @@ export class Workspace {
     return this.#write(async () => {
       this.#usable();
       if (!PLAN_KEYS.includes(key)) throw new WorkspaceError(`Not a planning value: ${key}`);
+      // The plans before 31 December and TOU can't be acted on for a year that is over.
+      if (this.yearOver()) throw new WorkspaceError(yearOverPlans(this.taxYear));
       const def = this.keys[key];
       // A figure only some cantons plan with (Geneva's business profit).
       if (!def) throw new WorkspaceError(`Not a planning value in this canton: ${key}`);
@@ -673,7 +736,7 @@ export class Workspace {
         details.taxYear !== undefined &&
         (!Number.isInteger(details.taxYear) || details.taxYear < 2000 || details.taxYear > 2100)
       ) {
-        throw new ExtractionError('document.taxYear: expected a year such as 2026.');
+        throw new ExtractionError(`document.taxYear: expected a year such as ${this.taxYear}.`);
       }
       const period = (raw: string | undefined, what: string) => {
         if (raw === undefined) return undefined;

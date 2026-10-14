@@ -57,6 +57,26 @@ describe('self-employment in the questionnaires', () => {
     );
   });
 
+  it('serves 2025 and 2026: each year named, the earlier losses of the seven years before it', () => {
+    const text = (year: number, id: string) => {
+      const t = Q.geQuestionnaire(year).questions.find((q) => q.id === id)!.text;
+      return 'p1' in t ? t.p1.en : t.en;
+    };
+    expect(text(2025, 'business_year')).toBe('Which accounts of your business close in 2025?');
+    expect(text(2026, 'business_year')).toBe('Which accounts of your business close in 2026?');
+    expect(text(2025, 'business_losses')).toBe(
+      'Do you have business losses from the seven years before 2025 not deducted yet?',
+    );
+    // The federal losses: each year's federal instructions, page 3.
+    const ifd = (year: number) =>
+      Q.geQuestionnaire(year).questions.find((q) => q.id === 'business_losses_ifd')!.learnMore?.url;
+    expect(ifd(2025)).toMatch(/dbst-wgl-02a-2025-fr\.pdf#page=3$/);
+    expect(ifd(2026)).toMatch(/2a-2026-fr\.pdf#page=3$/);
+    // The accounts and AVS statement of the year asked for.
+    const accounts = Q.geQuestionnaire(2025).requirements.find((r) => r.id === 'business_accounts');
+    expect(accounts?.explain?.en).toMatch(/business year closed in 2025:/);
+  });
+
   it('is still not supported in every other canton', () => {
     expect(others.length).toBeGreaterThanOrEqual(9);
     for (const [canton, file] of others) {

@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url';
 // Replaced by esbuild at build time (scripts/build.mjs) and by vitest (vitest.config.ts).
 declare const __TAXPRESSO_VERSION__: string | undefined;
 
-/** The tax year this release prepares (SPEC.md section 1). Product scope, not a tax constant. */
+/**
+ * The tax year this release prepares by default (SPEC.md section 1): the year that opens when the
+ * user hasn't chosen another one (./years.ts). Product scope, not a tax constant.
+ */
 export const CURRENT_TAX_YEAR = 2026;
 
 export const UI_LANGUAGES = ['en', 'fr', 'de', 'it'] as const;
@@ -13,12 +16,18 @@ export type UiLanguage = (typeof UI_LANGUAGES)[number];
 
 export interface Config {
   version: string;
+  /** The default tax year (CURRENT_TAX_YEAR); the open one is the user's choice (./years.ts). */
   taxYear: number;
   /** User-visible folder holding documents and the ledger (manifest user_config `vault_path`). */
   vaultPath: string;
   uiLanguage: UiLanguage;
   /** Folder with the built UI: `dashboard/` (localhost page) and `views/` (MCP Apps resources). */
   uiDir: string;
+  /**
+   * Today's date as YYYY-MM-DD, for what depends on it (a year that is over, the TOU deadline).
+   * Absent: the computer's date. Tests give a fixed one.
+   */
+  today?: () => string;
 }
 
 export function defaultVaultPath(): string {

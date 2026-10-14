@@ -9,6 +9,8 @@ export { ApiError };
 
 let transport: Transport | undefined;
 let csrf = '';
+/** The tax year the page shows: every change says it, so none lands in another year. */
+let shownYear: number | undefined;
 
 /** How this page reaches the extension: set once at start (main.tsx, or the MCP Apps view). */
 /** Whether the dashboard runs inside the conversation rather than in the browser. */
@@ -23,12 +25,19 @@ async function call<T>(req: Omit<ApiRequest, 'csrf'>): Promise<T> {
   return (await transport.send(req.method === 'POST' ? { ...req, csrf } : req)) as T;
 }
 
+/** The page's language, and the year it shows (extension/src/api.ts refuses another year's change). */
+const changeQuery = (lang: Language): Record<string, string> => ({
+  lang,
+  ...(shownYear !== undefined ? { year: String(shownYear) } : {}),
+});
+
 async function post(path: string, lang: Language, body: Record<string, unknown>): Promise<State> {
-  return remember(await call<State>({ method: 'POST', path, query: { lang }, body }));
+  return remember(await call<State>({ method: 'POST', path, query: changeQuery(lang), body }));
 }
 
 function remember(state: State): State {
   csrf = state.csrf;
+  shownYear = state.taxYear;
   return state;
 }
 
@@ -38,13 +47,15 @@ export const api = {
     remember(await call<State>({ method: 'GET', path: '/state', query: lang ? { lang } : {} })),
   question: (id: string, lang: Language) =>
     call<Question>({ method: 'GET', path: '/question', query: { id, lang } }),
+  /** Opens a tax year: the same choice as asking Claude in the chat (open_tax_year). */
+  year: (year: number, lang: Language) => post('/year', lang, { year }),
   answer: (id: string, value: Value, lang: Language) => post('/answer', lang, { id, value }),
   skip: (id: string, lang: Language) => post('/skip', lang, { id }),
   waive: (id: string, waived: boolean, lang: Language) => post('/waive', lang, { id, waived }),
   scan: (lang: Language) => post('/scan', lang, {}),
   plan: (
     person: string,
-    field: 'gross' | 'net' | 'pensionFund' | 'paid' | 'business',
+    field: 'gross' | 'net' | 'pensionFund' | 'paid',
     value: number | boolean,
     lang: Language,
   ) => post('/plan', lang, { person, field, value }),
@@ -66,7 +77,7 @@ export const api = {
     /** The document this file replaces, if any. */
     replace?: string,
   ) => {
-    const query: Record<string, string> = { lang };
+    const query: Record<string, string> = changeQuery(lang);
     if (preset) {
       query.kind = preset.kind;
       if (preset.person) query.person = preset.person;

@@ -18,7 +18,16 @@ import { LastYear } from './LastYear';
 import { MoreBeforeDecember, TouCard } from './Planning';
 import { Reconcile } from './Reconcile';
 import { Review } from './Review';
-import type { OfficialLink, Question, RequirementView, State, Value } from './types';
+import { YearOverCard, YearSwitch } from './Years';
+import {
+  isPlanned,
+  type OfficialLink,
+  type PlannedState,
+  type Question,
+  type RequirementView,
+  type State,
+  type Value,
+} from './types';
 
 const POLL_MS = 2000;
 
@@ -83,6 +92,8 @@ export function App(): JSX.Element {
       return true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t(L, 'lost'));
+      // The page may show another year than the open one (switched in the chat): show it now.
+      void refresh();
       return false;
     } finally {
       setBusy('');
@@ -100,7 +111,13 @@ export function App(): JSX.Element {
 
   return (
     <>
-      <Header state={state} lang={L} onLang={(l) => (saveLang(l), setLang(l))} />
+      <Header
+        state={state}
+        lang={L}
+        onLang={(l) => (saveLang(l), setLang(l))}
+        act={act}
+        busy={busy !== ''}
+      />
       <main class="page">
         <div class="columns">
           <div class="main-col">
@@ -114,9 +131,16 @@ export function App(): JSX.Element {
                   <strong>{t(L, 'folderProblem')}</strong> {state.vault.problem}
                 </div>
               ) : null}
-              <TouCard state={state} lang={L} act={act} />
-              <Plan3a state={state} lang={L} act={act} />
-              <MoreBeforeDecember state={state} lang={L} act={act} />
+              {state.yearOver || !isPlanned(state) ? (
+                // A year that is over: the plans are the default year's, one click away.
+                <YearOverCard state={state} lang={L} act={act} busy={busy !== ''} />
+              ) : (
+                <>
+                  <TouCard state={state} lang={L} act={act} />
+                  <Plan3a state={state} lang={L} act={act} />
+                  <MoreBeforeDecember state={state} lang={L} act={act} />
+                </>
+              )}
               {state.chips.length ? (
                 <div class="chips">
                   {state.chips.map((c) => (
@@ -252,7 +276,7 @@ function money(centimes: number, lang: Language): string {
 }
 
 /** "Before 31 December": pillar 3a room and the estimated saving (SPEC.md section 8, group B). */
-function Plan3a({ state, lang, act }: { state: State; lang: Language; act: Act }) {
+function Plan3a({ state, lang, act }: { state: PlannedState; lang: Language; act: Act }) {
   const { inputs, result } = state.plan;
   const year = state.taxYear;
   const anyMax = result.people.some((p) => p.capIsMaximum);
@@ -355,7 +379,7 @@ function PlanPerson({
   lang,
   act,
 }: {
-  input: State['plan']['inputs'][number];
+  input: PlannedState['plan']['inputs'][number];
   two: boolean;
   lang: Language;
   act: Act;
@@ -363,8 +387,7 @@ function PlanPerson({
   const shown = (c: number | null) => (c ? String(Math.round(c / 100)) : '');
   const [gross, setGross] = useState(shown(input.gross));
   const [paid, setPaid] = useState(shown(input.paid));
-  const [business, setBusiness] = useState(shown(input.business ?? null));
-  const save = (field: 'gross' | 'paid' | 'business', text: string, current: number | null) => {
+  const save = (field: 'gross' | 'paid', text: string, current: number | null) => {
     const value = parseChf(text);
     if (value === undefined || value * 100 === (current ?? 0)) return;
     void act(() => api.plan(input.person, field, value, lang));
@@ -384,23 +407,6 @@ function PlanPerson({
         onBlur={() => save('gross', gross, input.gross)}
         onKeyDown={(e) => e.key === 'Enter' && save('gross', gross, input.gross)}
       />
-      {input.selfEmployed ? (
-        <>
-          <label for={`${id}-business`}>{t(lang, 'planBusiness')}</label>
-          <input
-            id={`${id}-business`}
-            class="tnum"
-            inputMode="numeric"
-            placeholder="CHF"
-            value={business}
-            onInput={(e) => setBusiness((e.target as HTMLInputElement).value)}
-            onBlur={() => save('business', business, input.business ?? null)}
-            onKeyDown={(e) =>
-              e.key === 'Enter' && save('business', business, input.business ?? null)
-            }
-          />
-        </>
-      ) : null}
       <label for={`${id}-paid`}>{t(lang, 'planPaid')}</label>
       <input
         id={`${id}-paid`}
@@ -438,21 +444,30 @@ function Header({
   state,
   lang,
   onLang,
+  act,
+  busy,
 }: {
   state: State;
   lang: Language;
   onLang: (l: Language) => void;
+  act: Act;
+  busy: boolean;
 }) {
   const steps = [t(lang, 'step1'), t(lang, 'step2'), t(lang, 'step3')];
   return (
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark" dangerouslySetInnerHTML={{ __html: wordmark(true) }} />
-        <span class="pill">
-          {state.canton
-            ? t(lang, 'yearPill', { year: state.taxYear, canton: state.canton.name })
-            : t(lang, 'yearPillNoCanton', { year: state.taxYear })}
-        </span>
+        {state.years.length > 1 ? (
+          // The year switch: the same choice as asking Claude (open_tax_year).
+          <YearSwitch state={state} lang={lang} act={act} busy={busy} />
+        ) : (
+          <span class="pill">
+            {state.canton
+              ? t(lang, 'yearPill', { year: state.taxYear, canton: state.canton.name })
+              : t(lang, 'yearPillNoCanton', { year: state.taxYear })}
+          </span>
+        )}
       </div>
       <nav aria-label={t(lang, 'steps')} class="steps">
         {steps.map((label, i) => (

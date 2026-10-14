@@ -12,6 +12,7 @@ import * as z from 'zod/v4';
 import { UI_LANGUAGES } from './config.js';
 import type { ApiResponse, Dashboard } from './dashboard.js';
 import type { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 /** MCP Apps (SEP-1865): the dashboard view shown with open_dashboard where the host supports it. */
 export const DASHBOARD_VIEW_URI = 'ui://taxpresso/dashboard.html';
@@ -44,6 +45,11 @@ const Query = z
     kind: z.string().max(80).optional(),
     person: z.string().max(20).optional(),
     replace: z.string().max(80).optional(),
+    /** The tax year the view shows: a change for another year than the open one is refused. */
+    year: z
+      .string()
+      .regex(/^\d{4}$/)
+      .optional(),
   })
   .strict();
 
@@ -103,9 +109,10 @@ function reply(res: ApiResponse, etag?: string) {
 
 export function registerDashboardView(
   server: McpServer,
-  ws: Workspace,
+  given: Workspace | TaxYears,
   dashboard: Dashboard,
 ): void {
+  const { config } = TaxYears.of(given);
   // A new key each time the extension starts. It is only in the view's HTML, which the host
   // renders and the model never reads: a call without it (the model's own, if a host ignored
   // `visibility`) is refused, so nothing is ever confirmed "from the dashboard" by Claude (C7).
@@ -131,7 +138,7 @@ export function registerDashboardView(
           uri: uri.href,
           mimeType: MCP_APP_MIME_TYPE,
           text: withKey(
-            await readFile(path.join(ws.config.uiDir, 'views', 'dashboard.html'), 'utf8'),
+            await readFile(path.join(config.uiDir, 'views', 'dashboard.html'), 'utf8'),
             viewKey,
           ),
           _meta: { ui: VIEW_META },

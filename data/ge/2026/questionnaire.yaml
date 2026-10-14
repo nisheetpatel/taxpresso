@@ -1,5 +1,6 @@
-# Questionnaire for tax year 2026 (SPEC.md section 6). Data, not code: packages/questionnaire reads
-# it, and every key and value must exist in packages/rules-ge/src/2026/keys.ts (a test checks).
+# Questionnaire for tax years 2025 and 2026 (SPEC.md section 6; docs/design/tax-years.md). Data, not
+# code: packages/questionnaire reads it once per tax year, and every key and value must exist in
+# packages/rules-ge/src/2026/keys.ts (a test checks).
 # Every question changes what we ask for or compute; otherwise it doesn't belong here.
 #
 # The questions every canton asks are written once (data/ch/2026/questions.yaml): this file takes
@@ -10,10 +11,16 @@
 # ge-2025-guide-declaration-pp p. 8 (documents to gather) and p. 10 (attachments).
 # Re-check everything against the 2026 guide when it is published (January 2027).
 #
+# One file for both years: {year} is the tax year being prepared, and each citation of the guide
+# carries its year (2025), so it is cited for 2025 and, until the 2026 guide is out, for 2026. A
+# question that cites the 2026 federal instructions cites the 2025 guide's page for 2025 instead
+# (the 2025 federal instructions are not in the library). Adding a year means adding its citations
+# here, next to these, each with its `year` (docs/design/tax-years.md, section 6).
+#
 # French: write plain spaces before ? ! : ; and the loader makes them non-breaking.
 # Texts per person (p1, p2) where the grammar differs; {n} is replaced by the number.
 
-taxYear: 2026
+taxYears: [2025, 2026]
 
 place: { en: 'Geneva', fr: 'Genève', de: 'Genf', it: 'Ginevra' }
 
@@ -31,6 +38,7 @@ questions:
   - use: civil_status
     # ge-2025-guide-declaration-pp p. 53
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
       label:
         en: 'Geneva tax guide 2025, p. 53: changes of situation'
@@ -44,6 +52,7 @@ questions:
   - use: children
     # ge-2025-guide-declaration-pp p. 46
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=46'
       label:
         en: 'Geneva tax guide 2025, p. 46: children you support'
@@ -57,6 +66,7 @@ questions:
   - use: children_custody
     # ge-2025-guide-declaration-pp p. 45
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=45'
       label:
         en: 'Geneva tax guide 2025, p. 45: family, scale and splitting'
@@ -72,6 +82,7 @@ questions:
   - use: childcare
     # ge-2025-guide-declaration-pp p. 30
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=30'
       label:
         en: 'Geneva tax guide 2025, p. 30: childcare costs'
@@ -97,9 +108,9 @@ questions:
         fr: 'Taux et données fiscales, dont les centimes additionnels (ge.ch)'
         it: 'Aliquote e dati fiscali, con i centesimi addizionali comunali (ge.ch)'
     text:
-      en: 'Which commune did you live in on 31 December 2026?'
-      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
-      it: 'In quale Comune abitavi il 31 dicembre 2026?'
+      en: 'Which commune did you live in on 31 December {year}?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre {year} ?'
+      it: 'In quale Comune abitavi il 31 dicembre {year}?'
     help:
       en: 'On the official form: commune de domicile.'
       fr: 'Sur le formulaire officiel : commune de domicile.'
@@ -114,15 +125,16 @@ questions:
       it: 'Un trasloco all’interno del Cantone di Ginevra cambia poco. Neanche un arrivo da un altro Cantone cambia qualcosa: Ginevra ti tassa per tutto l’anno, come se ci avessi abitato da gennaio. Con un arrivo dall’estero, invece, Ginevra ti tassa solo per una parte dell’anno.'
     # ge-2025-guide-declaration-pp p. 53
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
       label:
         en: 'Geneva tax guide 2025, p. 53: changes of situation, arriving in Geneva'
         fr: 'Guide fiscal 2025, p. 53 : Changements de situation'
         it: 'Guida fiscale di Ginevra 2025, p. 53: cambiamenti di situazione, arrivo a Ginevra'
     text:
-      en: 'Did you move in 2026?'
-      fr: 'Avez-vous déménagé en 2026 ?'
-      it: 'Hai traslocato nel 2026?'
+      en: 'Did you move in {year}?'
+      fr: 'Avez-vous déménagé en {year} ?'
+      it: 'Hai traslocato nel {year}?'
     options:
       - { value: 'no', label: { en: 'No', fr: 'Non', it: 'No' } }
       - value: within_geneva
@@ -140,7 +152,7 @@ questions:
             fr: 'Oui, je suis arrivé(e) de l’étranger',
             it: 'Sì, sono arrivato o arrivata dall’estero',
           }
-        chip: { en: 'Arrived in 2026', fr: 'Arrivé(e) en 2026', it: 'Arrivo nel 2026' }
+        chip: { en: 'Arrived in {year}', fr: 'Arrivé(e) en {year}', it: 'Arrivo nel {year}' }
       # Geneva taxes the whole year of someone who arrived from another canton (guide p. 53,
       # Arrivée d'un canton suisse): the return is the same as for a full year here.
       - value: from_other_canton
@@ -173,6 +185,7 @@ questions:
   - use: income_sources
     # ge-2025-guide-declaration-pp p. 25
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=25'
       label:
         en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
@@ -215,6 +228,7 @@ questions:
   - use: employers
     # ge-2025-guide-declaration-pp p. 17
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=17'
       label:
         en: 'Geneva tax guide 2025, p. 17: employment income'
@@ -245,6 +259,7 @@ questions:
       it: 'TOU (taxation ordinaire ultérieure): l’imposta trattenuta dal tuo salario non è più definitiva, compili una dichiarazione normale e puoi far valere le deduzioni. Una volta chiesta, non si torna indietro.'
     # ge-2025-guide-declaration-pp p. 52
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=52'
       label:
         en: 'Geneva tax guide 2025, p. 52: TOU for people taxed at source'
@@ -289,6 +304,7 @@ questions:
       it: 'Una ditta individuale (raison individuelle) è un’attività che gestisci da solo, a tuo nome. Una società di persone (société simple, en nom collectif o en commandite) ha due o più soci.'
     # ge-2025-guide-independants p. 3
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=3'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 3: who is self-employed'
@@ -337,12 +353,13 @@ questions:
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
     explain:
-      en: 'Your income from the business is the result of the accounts closed in 2026 (exercice comptable). They can end on another date than 31 December.'
-      fr: 'Le revenu de votre activité est le résultat des comptes clôturés en 2026 (exercice comptable). Ils peuvent se terminer à une autre date que le 31 décembre.'
-      de: 'Dein Einkommen aus dem Geschäft ist das Ergebnis des 2026 abgeschlossenen Geschäftsjahrs (exercice comptable). Es kann an einem anderen Datum als am 31. Dezember enden.'
-      it: 'Il reddito della tua attività è il risultato dell’esercizio chiuso nel 2026 (exercice comptable). Può finire in un’altra data che il 31 dicembre.'
+      en: 'Your income from the business is the result of the accounts closed in {year} (exercice comptable). They can end on another date than 31 December.'
+      fr: 'Le revenu de votre activité est le résultat des comptes clôturés en {year} (exercice comptable). Ils peuvent se terminer à une autre date que le 31 décembre.'
+      de: 'Dein Einkommen aus dem Geschäft ist das Ergebnis des {year} abgeschlossenen Geschäftsjahrs (exercice comptable). Es kann an einem anderen Datum als am 31. Dezember enden.'
+      it: 'Il reddito della tua attività è il risultato dell’esercizio chiuso nel {year} (exercice comptable). Può finire in un’altra data che il 31 dicembre.'
     # ge-2025-guide-independants p. 8 and 9
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=9'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 9: the business year'
@@ -351,15 +368,15 @@ questions:
         it: 'Guida di Ginevra 2025 per gli indipendenti, p. 9: l’esercizio, in francese'
     text:
       p1:
-        en: 'Which accounts of your business close in 2026?'
-        fr: 'Quels comptes de votre activité sont clôturés en 2026 ?'
-        de: 'Welcher Abschluss deines Geschäfts fällt ins Jahr 2026?'
-        it: 'Quali conti della tua attività si chiudono nel 2026?'
+        en: 'Which accounts of your business close in {year}?'
+        fr: 'Quels comptes de votre activité sont clôturés en {year} ?'
+        de: 'Welcher Abschluss deines Geschäfts fällt ins Jahr {year}?'
+        it: 'Quali conti della tua attività si chiudono nel {year}?'
       p2:
-        en: 'Which accounts of your spouse or partner’s business close in 2026?'
-        fr: 'Quels comptes de l’activité de votre conjoint ou partenaire sont clôturés en 2026 ?'
-        de: 'Welcher Abschluss des Geschäfts deines Partners oder deiner Partnerin fällt ins Jahr 2026?'
-        it: 'Quali conti dell’attività del tuo coniuge o partner si chiudono nel 2026?'
+        en: 'Which accounts of your spouse or partner’s business close in {year}?'
+        fr: 'Quels comptes de l’activité de votre conjoint ou partenaire sont clôturés en {year} ?'
+        de: 'Welcher Abschluss des Geschäfts deines Partners oder deiner Partnerin fällt ins Jahr {year}?'
+        it: 'Quali conti dell’attività del tuo coniuge o partner si chiudono nel {year}?'
     help:
       en: 'On the official form: exercice comptable, début / fin de l’activité (annexe B1).'
       fr: 'Sur le formulaire officiel : exercice comptable, début / fin de l’activité indépendante (annexe B1).'
@@ -368,30 +385,35 @@ questions:
     options:
       - value: calendar
         label:
-          en: 'One business year, 1 January to 31 December 2026'
-          fr: 'Un exercice du 1er janvier au 31 décembre 2026'
-          de: 'Ein Geschäftsjahr vom 1. Januar bis 31. Dezember 2026'
-          it: 'Un esercizio dal 1° gennaio al 31 dicembre 2026'
+          en: 'One business year, 1 January to 31 December {year}'
+          fr: 'Un exercice du 1er janvier au 31 décembre {year}'
+          de: 'Ein Geschäftsjahr vom 1. Januar bis 31. Dezember {year}'
+          it: 'Un esercizio dal 1° gennaio al 31 dicembre {year}'
       - value: other_closing
         label:
-          en: 'One business year of 12 months, closing on another date in 2026'
-          fr: 'Un exercice de 12 mois, clôturé à une autre date en 2026'
-          de: 'Ein Geschäftsjahr von 12 Monaten, an einem anderen Datum 2026 abgeschlossen'
-          it: 'Un esercizio di 12 mesi, chiuso in un’altra data nel 2026'
+          en: 'One business year of 12 months, closing on another date in {year}'
+          fr: 'Un exercice de 12 mois, clôturé à une autre date en {year}'
+          de: 'Ein Geschäftsjahr von 12 Monaten, an einem anderen Datum {year} abgeschlossen'
+          it: 'Un esercizio di 12 mesi, chiuso in un’altra data nel {year}'
       - value: started
         label:
-          en: 'I started in 2026 and my first accounts close in 2026'
-          fr: 'J’ai commencé en 2026 et mes premiers comptes sont clôturés en 2026'
-          de: 'Ich habe 2026 angefangen, und mein erster Abschluss ist 2026'
-          it: 'Ho iniziato nel 2026 e i miei primi conti si chiudono nel 2026'
+          en: 'I started in {year} and my first accounts close in {year}'
+          fr: 'J’ai commencé en {year} et mes premiers comptes sont clôturés en {year}'
+          de: 'Ich habe {year} angefangen, und mein erster Abschluss ist {year}'
+          it: 'Ho iniziato nel {year} e i miei primi conti si chiudono nel {year}'
         chip:
-          { en: 'Started in 2026', fr: 'Début en 2026', de: 'Beginn 2026', it: 'Inizio nel 2026' }
+          {
+            en: 'Started in {year}',
+            fr: 'Début en {year}',
+            de: 'Beginn {year}',
+            it: 'Inizio nel {year}',
+          }
       - value: no_closing
         label:
-          en: 'I started in 2026 and my first accounts close in 2027'
-          fr: 'J’ai commencé en 2026 et mes premiers comptes seront clôturés en 2027'
-          de: 'Ich habe 2026 angefangen, und mein erster Abschluss ist 2027'
-          it: 'Ho iniziato nel 2026 e i miei primi conti si chiudono nel 2027'
+          en: 'I started in {year} and my first accounts close next year'
+          fr: 'J’ai commencé en {year} et mes premiers comptes seront clôturés l’an prochain'
+          de: 'Ich habe {year} angefangen, und mein erster Abschluss ist nächstes Jahr'
+          it: 'Ho iniziato nel {year} e i miei primi conti si chiudono l’anno prossimo'
         notSupported:
           en: 'A first business year that closes next year'
           fr: 'Un premier exercice clôturé l’année suivante'
@@ -399,10 +421,10 @@ questions:
           it: 'Un primo esercizio che si chiude l’anno seguente'
       - value: two_closings
         label:
-          en: 'Two business years close in 2026'
-          fr: 'Deux exercices sont clôturés en 2026'
-          de: 'Zwei Geschäftsjahre schliessen 2026 ab'
-          it: 'Due esercizi si chiudono nel 2026'
+          en: 'Two business years close in {year}'
+          fr: 'Deux exercices sont clôturés en {year}'
+          de: 'Zwei Geschäftsjahre schliessen {year} ab'
+          it: 'Due esercizi si chiudono nel {year}'
         notSupported:
           en: 'Two business years closing in the same year'
           fr: 'Deux exercices clôturés la même année'
@@ -410,10 +432,10 @@ questions:
           it: 'Due esercizi chiusi nello stesso anno'
       - value: stopped
         label:
-          en: 'I stopped my business in 2026'
-          fr: 'J’ai cessé mon activité indépendante en 2026'
-          de: 'Ich habe mein Geschäft 2026 aufgegeben'
-          it: 'Ho cessato la mia attività nel 2026'
+          en: 'I stopped my business in {year}'
+          fr: 'J’ai cessé mon activité indépendante en {year}'
+          de: 'Ich habe mein Geschäft {year} aufgegeben'
+          it: 'Ho cessato la mia attività nel {year}'
         notSupported:
           en: 'Stopping a business (cessation, liquidation gains)'
           fr: 'La cessation d’une activité (bénéfice de liquidation)'
@@ -432,6 +454,7 @@ questions:
       it: 'Il luogo dell’attività decide quali Comuni si dividono la tua imposta comunale. Taxpresso prepara un’attività nel tuo Comune di domicilio.'
     # ge-2025-guide-independants p. 11 (code commune)
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=11'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 11: the commune of the business'
@@ -496,6 +519,7 @@ questions:
       it: 'Con il metodo della fatturazione, ricavi e costi contano quando sono fatturati. Con il metodo dell’incasso (encaissement-décaissement), quando il denaro entra o esce; i tuoi contributi AVS contano allora quando li paghi. Oltre 500 000 franchi di cifra d’affari, il metodo della fatturazione è obbligatorio.'
     # ge-2025-guide-independants p. 8 and 22
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=8'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 8: accounting methods'
@@ -544,6 +568,7 @@ questions:
       it: 'Taxpresso prepara il caso semplice: il tuo risultato tratto dai tuoi conti, così come sono. Ognuno di questi casi richiede regole che non ha ancora.'
     # ge-2025-guide-independants p. 4, 5, 12 to 16 and 21 to 24
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=4'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 4: income and wealth of a self-employed person'
@@ -694,12 +719,13 @@ questions:
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
     explain:
-      en: 'A business loss you could not deduct in one of the seven previous years (2019 to 2025) can still be deducted, oldest first. Your assessment (avis de taxation) shows what is left.'
-      fr: 'Une perte commerciale que vous n’avez pas pu déduire l’une des sept années précédentes (2019 à 2025) peut encore l’être, la plus ancienne d’abord. Votre avis de taxation indique ce qui reste.'
-      de: 'Ein Geschäftsverlust, den du in einem der sieben Vorjahre (2019 bis 2025) nicht abziehen konntest, lässt sich noch abziehen, der älteste zuerst. Deine Veranlagung (avis de taxation) zeigt, was übrig ist.'
-      it: 'Una perdita commerciale che non hai potuto dedurre in uno dei sette anni precedenti (dal 2019 al 2025) si può ancora dedurre, la più vecchia per prima. La tua tassazione (avis de taxation) indica quanto resta.'
+      en: 'A business loss you could not deduct in one of the seven years before {year} can still be deducted, oldest first. Your assessment (avis de taxation) shows what is left.'
+      fr: 'Une perte commerciale que vous n’avez pas pu déduire l’une des sept années avant {year} peut encore l’être, la plus ancienne d’abord. Votre avis de taxation indique ce qui reste.'
+      de: 'Ein Geschäftsverlust, den du in einem der sieben Jahre vor {year} nicht abziehen konntest, lässt sich noch abziehen, der älteste zuerst. Deine Veranlagung (avis de taxation) zeigt, was übrig ist.'
+      it: 'Una perdita commerciale che non hai potuto dedurre in uno dei sette anni prima del {year} si può ancora dedurre, la più vecchia per prima. La tua tassazione (avis de taxation) indica quanto resta.'
     # ge-2025-guide-independants p. 16
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=16'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 16: losses not deducted yet'
@@ -708,15 +734,15 @@ questions:
         it: 'Guida di Ginevra 2025 per gli indipendenti, p. 16: perdite non ancora compensate, in francese'
     text:
       p1:
-        en: 'Do you have business losses from 2019 to 2025 not deducted yet?'
-        fr: 'Avez-vous des pertes commerciales de 2019 à 2025 pas encore déduites ?'
-        de: 'Hast du Geschäftsverluste von 2019 bis 2025, die noch nicht abgezogen sind?'
-        it: 'Hai perdite commerciali dal 2019 al 2025 non ancora dedotte?'
+        en: 'Do you have business losses from the seven years before {year} not deducted yet?'
+        fr: 'Avez-vous des pertes commerciales des sept années avant {year} pas encore déduites ?'
+        de: 'Hast du Geschäftsverluste aus den sieben Jahren vor {year}, die noch nicht abgezogen sind?'
+        it: 'Hai perdite commerciali dei sette anni prima del {year} non ancora dedotte?'
       p2:
-        en: 'Does your spouse or partner have business losses from 2019 to 2025 not deducted yet?'
-        fr: 'Votre conjoint ou partenaire a-t-il des pertes commerciales de 2019 à 2025 pas encore déduites ?'
-        de: 'Hat dein Partner oder deine Partnerin Geschäftsverluste von 2019 bis 2025, die noch nicht abgezogen sind?'
-        it: 'Il tuo coniuge o partner ha perdite commerciali dal 2019 al 2025 non ancora dedotte?'
+        en: 'Does your spouse or partner have business losses from the seven years before {year} not deducted yet?'
+        fr: 'Votre conjoint ou partenaire a-t-il des pertes commerciales des sept années avant {year} pas encore déduites ?'
+        de: 'Hat dein Partner oder deine Partnerin Geschäftsverluste aus den sieben Jahren vor {year}, die noch nicht abgezogen sind?'
+        it: 'Il tuo coniuge o partner ha perdite commerciali dei sette anni prima del {year} non ancora dedotte?'
     help:
       en: 'On the official form: pertes non compensées (57.20, annexe B2).'
       fr: 'Sur le formulaire officiel : pertes non compensées (57.20, annexe B2).'
@@ -736,12 +762,13 @@ questions:
     perPerson: true
     when: { key: profile.business_losses, is: true }
     explain:
-      en: 'Only the losses of 2019 to 2025 not deducted yet, as your last assessment shows them for the Geneva tax. Older losses can no longer be deducted.'
-      fr: 'Seulement les pertes de 2019 à 2025 pas encore déduites, telles que votre dernier avis de taxation les indique pour l’impôt cantonal. Les pertes plus anciennes ne sont plus déductibles.'
-      de: 'Nur die noch nicht abgezogenen Verluste von 2019 bis 2025, wie sie deine letzte Veranlagung für die Kantonssteuer zeigt. Ältere Verluste sind nicht mehr abziehbar.'
-      it: 'Solo le perdite dal 2019 al 2025 non ancora dedotte, come le indica la tua ultima tassazione per l’imposta cantonale. Le perdite più vecchie non sono più deducibili.'
+      en: 'Only the losses of the seven years before {year} not deducted yet, as your last assessment shows them for the Geneva tax. Older losses can no longer be deducted.'
+      fr: 'Seulement les pertes des sept années avant {year} pas encore déduites, telles que votre dernier avis de taxation les indique pour l’impôt cantonal. Les pertes plus anciennes ne sont plus déductibles.'
+      de: 'Nur die noch nicht abgezogenen Verluste der sieben Jahre vor {year}, wie sie deine letzte Veranlagung für die Kantonssteuer zeigt. Ältere Verluste sind nicht mehr abziehbar.'
+      it: 'Solo le perdite dei sette anni prima del {year} non ancora dedotte, come le indica la tua ultima tassazione per l’imposta cantonale. Le perdite più vecchie non sono più deducibili.'
     # ge-2025-guide-independants p. 16; ge-na-law-lipp art. 30 let. f
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=16'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 16: losses not deducted yet'
@@ -775,14 +802,23 @@ questions:
       fr: 'Les mêmes pertes pour l’impôt fédéral, telles que votre dernier avis de taxation les indique. Souvent le même montant que pour l’impôt cantonal.'
       de: 'Dieselben Verluste für die Bundessteuer, wie sie deine letzte Veranlagung zeigt. Oft derselbe Betrag wie für die Kantonssteuer.'
       it: 'Le stesse perdite per l’imposta federale, come le indica la tua ultima tassazione. Spesso lo stesso importo che per l’imposta cantonale.'
-    # ch-2026-ifd-instructions-personnes-physiques p. 3 (Pertes); ch-na-law-lifd art. 31 al. 1
+    # ch-2026-ifd-instructions-personnes-physiques p. 3 (Pertes) for 2026,
+    # ch-2025-ifd-instructions-personnes-physiques p. 3 for 2025; ch-na-law-lifd art. 31 al. 1
     learnMore:
-      url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=3'
-      label:
-        en: 'Federal tax instructions 2026, p. 3: losses, in French'
-        fr: 'Instructions IFD 2026, p. 3 : Pertes'
-        de: 'Wegleitung direkte Bundessteuer 2026, S. 3: Verluste, auf Französisch'
-        it: 'Istruzioni per l’imposta federale 2026, p. 3: perdite, in francese'
+      - year: 2026
+        url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=3'
+        label:
+          en: 'Federal tax instructions 2026, p. 3: losses, in French'
+          fr: 'Instructions IFD 2026, p. 3 : Pertes'
+          de: 'Wegleitung direkte Bundessteuer 2026, S. 3: Verluste, auf Französisch'
+          it: 'Istruzioni per l’imposta federale 2026, p. 3: perdite, in francese'
+      - year: 2025
+        url: 'https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf#page=3'
+        label:
+          en: 'Federal tax instructions 2025, p. 3: losses, in French'
+          fr: 'Instructions IFD 2025, p. 3 : Pertes'
+          de: 'Wegleitung direkte Bundessteuer 2025, S. 3: Verluste, auf Französisch'
+          it: 'Istruzioni per l’imposta federale 2025, p. 3: perdite, in francese'
     text:
       p1:
         en: 'And for the federal tax (IFD)?'
@@ -803,6 +839,7 @@ questions:
   - use: pillar3a
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -816,6 +853,7 @@ questions:
   - use: lpp_buyin
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -826,7 +864,23 @@ questions:
       fr: 'Un versement volontaire en plus des cotisations habituelles.'
       it: 'Un versamento volontario in più rispetto ai contributi abituali. Sul modulo ufficiale: rachat 2e pilier.'
 
+  # Travel costs: the shared question's page of the 2026 federal instructions for 2026, the 2025
+  # guide's for 2025 (ge-2025-guide-declaration-pp p. 19 and 20: frais de déplacements, ICC and IFD).
   - use: commute
+    learnMore: &travel
+      - year: 2026
+        url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
+        label:
+          en: 'Federal tax instructions 2026, p. 6: travel costs'
+          fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
+          de: 'Wegleitung direkte Bundessteuer 2026, S. 6: Fahrkosten, auf Französisch'
+          it: 'Istruzioni per l’imposta federale 2026, p. 6: spese di trasporto'
+      - year: 2025
+        url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=20'
+        label:
+          en: 'Geneva tax guide 2025, p. 20: travel costs'
+          fr: 'Guide fiscal 2025, p. 20 : Frais de déplacements'
+          it: 'Guida fiscale di Ginevra 2025, p. 20: spese di trasporto'
     explain:
       en: 'Getting to work can be deducted as travel costs (frais de déplacement). How you get there decides how they are counted. A trip by public transport of over 2 hours a day, there and back, also lets your lunches count for the Geneva tax.'
       fr: 'Le trajet pour le travail se déduit comme frais de déplacement. Votre moyen de transport décide comment ils sont comptés. Un trajet en transports publics de plus de 2 heures par jour, aller et retour, permet aussi de déduire vos repas pour l’impôt genevois.'
@@ -837,22 +891,27 @@ questions:
       it: 'Scegli come ci andavi nella maggior parte dei giorni di lavoro. Sul modulo ufficiale: frais de déplacement.'
 
   - use: commute_transit_cost
+    learnMore: *travel
     explain:
       en: 'For the federal tax you deduct what you actually paid to get to work, up to a yearly limit. The Geneva tax has a much lower limit.'
       fr: 'Pour l’impôt fédéral, vous déduisez ce que vous avez réellement payé pour aller au travail, jusqu’à une limite annuelle. L’impôt genevois a une limite bien plus basse.'
       it: 'Per l’imposta federale deduci quello che hai effettivamente pagato per andare al lavoro, fino a un limite annuo. L’imposta ginevrina ha un limite molto più basso.'
 
   - use: commute_transit_usable
+    learnMore: *travel
     help:
       en: 'Over 2 hours a day there and back by public transport also lets your lunches count for the Geneva tax.'
       fr: 'Plus de 2 heures par jour aller et retour en transports publics permet aussi de déduire vos repas pour l’impôt genevois.'
       it: 'Con i trasporti pubblici, più di 2 ore al giorno andata e ritorno ti permettono anche di dedurre i pasti per l’imposta ginevrina.'
 
   - use: commute_transit_equivalent
+    learnMore: *travel
 
   - use: commute_distance
+    learnMore: *travel
 
   - use: commute_drive_days
+    learnMore: *travel
 
   # Lunches away from home (frais de repas): federal, per day up to a yearly limit, half with box G;
   # Geneva, only over 2 hours a day by public transport (ge-2025-guide-declaration-pp p. 19). No
@@ -865,15 +924,23 @@ questions:
       it: 'Pranzare fuori casa per lavoro costa più che a casa. L’imposta federale conta un importo fisso al giorno, fino a un limite annuo, la metà se il tuo datore di lavoro paga una parte dei tuoi pasti (casella G del certificato di salario). L’imposta ginevrina lo conta solo se il tuo tragitto con i trasporti pubblici supera le 2 ore al giorno.'
     # ge-2025-guide-declaration-pp p. 19
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=19'
       label:
         en: 'Geneva tax guide 2025, p. 19: meals'
         fr: 'Guide fiscal 2025, p. 19 : Frais de repas'
         it: 'Guida fiscale di Ginevra 2025, p. 19: pasti'
+    # The 10 francs are the 2026 federal instructions' (ch-2026-ifd-instructions-personnes-physiques
+    # p. 6); the 2025 guide says only that the meal must cost more than at home (p. 19).
     help:
-      en: 'Count the days your lunch cost you more than 10 francs; 0 if you usually ate at home. On the official form: frais de repas.'
-      fr: 'Comptez les jours où votre repas vous a coûté plus de 10 francs ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
-      it: 'Conta i giorni in cui il pranzo ti è costato più di 10 franchi; 0 se di solito mangiavi a casa. Sul modulo ufficiale: frais de repas.'
+      - year: 2026
+        en: 'Count the days your lunch cost you more than 10 francs; 0 if you usually ate at home. On the official form: frais de repas.'
+        fr: 'Comptez les jours où votre repas vous a coûté plus de 10 francs ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
+        it: 'Conta i giorni in cui il pranzo ti è costato più di 10 franchi; 0 se di solito mangiavi a casa. Sul modulo ufficiale: frais de repas.'
+      - year: 2025
+        en: 'Count the days your lunch away from home cost you more than a meal at home; 0 if you usually ate at home. On the official form: frais de repas.'
+        fr: 'Comptez les jours où votre repas hors de chez vous vous a coûté plus qu’un repas à la maison ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
+        it: 'Conta i giorni in cui il pranzo fuori casa ti è costato più di un pasto a casa; 0 se di solito mangiavi a casa. Sul modulo ufficiale: frais de repas.'
 
   - use: banks
     # ge-na-other-e-releve-fiscal
@@ -891,6 +958,7 @@ questions:
   - use: crypto
     # ge-2025-guide-declaration-pp p. 40
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=40'
       label:
         en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
@@ -900,6 +968,7 @@ questions:
   - use: payments
     # ge-2025-guide-declaration-pp p. 11
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=11'
       label:
         en: 'Geneva tax guide 2025, p. 11: the main deductions'
@@ -969,6 +1038,7 @@ requirements:
   - use: salary_certificate
     # ge-2025-guide-declaration-pp p. 17
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=17'
       label:
         en: 'Geneva tax guide 2025, p. 17: employment income'
@@ -979,6 +1049,7 @@ requirements:
   - use: replacement_income
     # ge-2025-guide-declaration-pp p. 10
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=10'
       label:
         en: 'Geneva tax guide 2025, p. 10: supporting documents'
@@ -989,6 +1060,7 @@ requirements:
   - use: pension
     # ge-2025-guide-declaration-pp p. 25
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=25'
       label:
         en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
@@ -999,6 +1071,7 @@ requirements:
   - use: pillar3a
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -1013,6 +1086,7 @@ requirements:
       it: 'Serve solo se hai fatto un versamento volontario in più nella tua cassa pensione. La cassa lo conferma sul modulo 21EDP. Nessun riscatto? Cambia la tua risposta e questa riga sparisce.'
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -1029,6 +1103,7 @@ requirements:
   - use: health_premiums
     # ge-2025-guide-declaration-pp p. 29
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=29'
       label:
         en: 'Geneva tax guide 2025, p. 29: health and accident insurance'
@@ -1062,6 +1137,7 @@ requirements:
   - use: crypto
     # ge-2025-guide-declaration-pp p. 40
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=40'
       label:
         en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
@@ -1072,6 +1148,7 @@ requirements:
   - use: childcare
     # ge-2025-guide-declaration-pp p. 30
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=30'
       label:
         en: 'Geneva tax guide 2025, p. 30: childcare costs'
@@ -1086,6 +1163,7 @@ requirements:
       it: 'Il conteggio della tua assicurazione con le spese che non ha rimborsato (décompte LAMal), più le fatture che non le hai mai mandato.'
     # ge-2025-guide-declaration-pp p. 14
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=14'
       label:
         en: 'Geneva tax guide 2025, p. 14: medical costs'
@@ -1102,6 +1180,7 @@ requirements:
   - use: donations
     # ge-2025-guide-declaration-pp p. 15
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=15'
       label:
         en: 'Geneva tax guide 2025, p. 15: donations'
@@ -1112,6 +1191,7 @@ requirements:
   - use: loan_interest
     # ge-2025-guide-declaration-pp p. 37
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=37'
       label:
         en: 'Geneva tax guide 2025, p. 37: interest and debts'
@@ -1122,6 +1202,7 @@ requirements:
   - use: alimony
     # ge-2025-guide-declaration-pp p. 29
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=29'
       label:
         en: 'Geneva tax guide 2025, p. 29: alimony paid'
@@ -1132,6 +1213,7 @@ requirements:
   - use: separation_judgment
     # ge-2025-guide-declaration-pp p. 10
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=10'
       label:
         en: 'Geneva tax guide 2025, p. 10: supporting documents'
@@ -1152,12 +1234,13 @@ requirements:
       de: 'Geschäftsabschluss (bilan et compte de résultat)'
       it: 'Conti commerciali (bilan et compte de résultat)'
     explain:
-      en: 'Your signed accounts for the business year closed in 2026: balance sheet and profit and loss account. Without full accounts (under 500,000 francs of turnover), your records of income and expenses, of what the business owns and owes, and of what you took out or put in privately. Your own AVS contributions are not among the charges: they are declared apart (32.10, 32.11).'
-      fr: 'Vos comptes annuels signés de l’exercice clos en 2026 : bilan et compte de résultat. Sans comptabilité complète (moins de 500 000 francs de chiffre d’affaires), vos relevés des recettes et des dépenses, de l’état des actifs et passifs et des prélèvements et apports privés. Vos propres cotisations AVS ne font pas partie des charges : elles se déclarent à part (32.10, 32.11).'
-      de: 'Dein unterschriebener Jahresabschluss des 2026 abgeschlossenen Geschäftsjahrs: Bilanz und Erfolgsrechnung. Ohne vollständige Buchhaltung (unter 500 000 Franken Umsatz) deine Aufzeichnungen über Einnahmen und Ausgaben, Aktiven und Passiven sowie Privatbezüge und -einlagen. Deine eigenen AHV-Beiträge gehören nicht zum Aufwand: Sie werden separat deklariert (32.10, 32.11).'
-      it: 'I tuoi conti annuali firmati dell’esercizio chiuso nel 2026: bilancio e conto economico. Senza una contabilità completa (meno di 500 000 franchi di cifra d’affari), le tue registrazioni di ricavi e spese, di attivi e passivi e dei prelevamenti e apporti privati. I tuoi contributi AVS non fanno parte dei costi: si dichiarano a parte (32.10, 32.11).'
+      en: 'Your signed accounts for the business year closed in {year}: balance sheet and profit and loss account. Without full accounts (under 500,000 francs of turnover), your records of income and expenses, of what the business owns and owes, and of what you took out or put in privately. Your own AVS contributions are not among the charges: they are declared apart (32.10, 32.11).'
+      fr: 'Vos comptes annuels signés de l’exercice clos en {year} : bilan et compte de résultat. Sans comptabilité complète (moins de 500 000 francs de chiffre d’affaires), vos relevés des recettes et des dépenses, de l’état des actifs et passifs et des prélèvements et apports privés. Vos propres cotisations AVS ne font pas partie des charges : elles se déclarent à part (32.10, 32.11).'
+      de: 'Dein unterschriebener Jahresabschluss des {year} abgeschlossenen Geschäftsjahrs: Bilanz und Erfolgsrechnung. Ohne vollständige Buchhaltung (unter 500 000 Franken Umsatz) deine Aufzeichnungen über Einnahmen und Ausgaben, Aktiven und Passiven sowie Privatbezüge und -einlagen. Deine eigenen AHV-Beiträge gehören nicht zum Aufwand: Sie werden separat deklariert (32.10, 32.11).'
+      it: 'I tuoi conti annuali firmati dell’esercizio chiuso nel {year}: bilancio e conto economico. Senza una contabilità completa (meno di 500 000 franchi di cifra d’affari), le tue registrazioni di ricavi e spese, di attivi e passivi e dei prelevamenti e apporti privati. I tuoi contributi AVS non fanno parte dei costi: si dichiarano a parte (32.10, 32.11).'
     # ge-2025-guide-independants p. 25
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=25'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 25: documents to attach'
@@ -1181,12 +1264,13 @@ requirements:
       de: 'AHV-Beitragsabrechnung'
       it: 'Conteggio dei contributi AVS'
     explain:
-      en: 'From your AVS compensation fund (caisse de compensation): the contributions you paid in 2026 for your business year, and each final decision received in 2026 for an earlier year.'
-      fr: 'De votre caisse de compensation AVS : les cotisations payées en 2026 pour votre exercice, et chaque décision définitive reçue en 2026 pour une année antérieure.'
-      de: 'Von deiner AHV-Ausgleichskasse (caisse de compensation): die 2026 bezahlten Beiträge für dein Geschäftsjahr und jede 2026 erhaltene definitive Verfügung für ein früheres Jahr.'
-      it: 'Dalla tua cassa di compensazione AVS (caisse de compensation): i contributi pagati nel 2026 per il tuo esercizio, e ogni decisione definitiva ricevuta nel 2026 per un anno precedente.'
+      en: 'From your AVS compensation fund (caisse de compensation): the contributions you paid in {year} for your business year, and each final decision received in {year} for an earlier year.'
+      fr: 'De votre caisse de compensation AVS : les cotisations payées en {year} pour votre exercice, et chaque décision définitive reçue en {year} pour une année antérieure.'
+      de: 'Von deiner AHV-Ausgleichskasse (caisse de compensation): die {year} bezahlten Beiträge für dein Geschäftsjahr und jede {year} erhaltene definitive Verfügung für ein früheres Jahr.'
+      it: 'Dalla tua cassa di compensazione AVS (caisse de compensation): i contributi pagati nel {year} per il tuo esercizio, e ogni decisione definitiva ricevuta nel {year} per un anno precedente.'
     # ge-2025-guide-independants p. 22 and 25
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=22'
       label:
         en: 'Geneva guide for the self-employed 2025, p. 22: your AVS contributions'

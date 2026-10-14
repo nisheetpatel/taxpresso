@@ -8,16 +8,22 @@ import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import type { DocumentKind } from '@taxpresso/ledger';
+import { mkdtemp } from 'node:fs/promises';
+import os from 'node:os';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApi, type DashboardState } from '../src/api.js';
+import { readConfig } from '../src/config.js';
 import { type ApiRequest, Dashboard } from '../src/dashboard.js';
 import { createTaxpressoServer } from '../src/server.js';
 import type { Workspace } from '../src/workspace.js';
+import { TaxYears } from '../src/years.js';
 import { makeUiDir, makeWorkspace } from './helpers.js';
 
 let client: Client;
 let dashboard: Dashboard;
 let ws: Workspace;
+/** The tax year of the documents dropped in the folder: the open year's. */
+let docYear = 2026;
 
 type Result = Awaited<ReturnType<Client['callTool']>>;
 const texts = (res: Result) =>
@@ -44,6 +50,7 @@ const state = async (lang = 'en'): Promise<DashboardState> => {
 };
 
 beforeEach(async () => {
+  docYear = 2026;
   const uiDir = await makeUiDir();
   ws = await makeWorkspace(uiDir);
   dashboard = new Dashboard({ dir: path.join(uiDir, 'dashboard'), api: createApi(ws) });
@@ -85,7 +92,7 @@ async function document(
   // As Claude would: what the document is, and each value with its page.
   const res = await call('propose_extraction', {
     id: doc.id,
-    document: { kind, taxYear: 2026, person },
+    document: { kind, taxYear: docYear, person },
     values: values.map(([key, value]) => ({ key, value, page: 1 })),
   });
   expect(res.isError, texts(res)).toBeFalsy();
@@ -120,8 +127,8 @@ async function lea({ confirmAvs = true } = {}) {
   ]);
   await document('business_accounts', 'p1', [
     ['business.name', 'Atelier Léa Martin, graphisme'],
-    ['business.period_from', '01.01.2026'],
-    ['business.period_to', '31.12.2026'],
+    ['business.period_from', `01.01.${docYear}`],
+    ['business.period_to', `31.12.${docYear}`],
     ['business.turnover', "120'000.00"],
     ['business.other_income', '500.00'],
     ['business.costs_goods', "8'000.00"],
@@ -317,6 +324,12 @@ describe('self-employment in Geneva, end to end', () => {
     const b2 = await call('get_form_values', { section: 'B2' });
     expect(texts(b2)).toMatch(/12\.46 Bénéfice\/\(Perte\)/);
     expect(texts(b2)).toMatch(/12\.52 Capital propre/);
+    // The 3a limit before 31 December, from the year's accounts once read: 20 % of 95'000 less
+    // 9'000 of AVS contributions, 17'200.
+    const plan = (await call('list_optimizations')).structuredContent as {
+      pillar3a: { people: { capCentimes: number; capIsMaximum: boolean }[] };
+    };
+    expect(plan.pillar3a.people[0]).toMatchObject({ capCentimes: 1_720_000, capIsMaximum: false });
   });
 
   it('S1: the final check names the limits, the rule to check and the value still to confirm', async () => {
@@ -432,16 +445,24 @@ describe('self-employment in Geneva, end to end', () => {
     };
     expect(plan.pillar3a.people[0]).toMatchObject({ capCentimes: 3_628_800, capIsMaximum: true });
     expect(texts(await call('list_optimizations'))).toMatch(/plan\.business_profit/);
-    // In the dashboard, as in the chat: the profit after AVS, 70'000, gives 20 % = 14'000.
+    // The dashboard has no field of its own for it: the existing 3a plan, without a pension fund.
     let s = await state();
-    expect(s.plan.inputs[0]).toMatchObject({ selfEmployed: true, business: null });
-    const res = await createApi(ws)(
+    expect(s.plan!.inputs[0]).toEqual({
+      person: 'p1',
+      gross: null,
+      net: null,
+      hasPensionFund: false,
+      paid: 0,
+    });
+    const refused = await createApi(ws)(
       req('POST', '/plan', { person: 'p1', field: 'business', value: 70_000 }),
     );
-    expect(res.status).toBe(200);
-    s = res.body as DashboardState;
-    expect(s.plan.inputs[0]).toMatchObject({ business: 7_000_000, hasPensionFund: false });
-    expect(s.plan.result.people[0]).toMatchObject({ capCentimes: 1_400_000, capIsMaximum: false });
+    expect(refused.status).toBe(400);
+    // Asked in the chat in plain words: the profit after AVS, 70'000, gives 20 % = 14'000.
+    const said = await call('set_fact', { key: 'plan.business_profit', value: 70_000 });
+    expect(said.isError, texts(said)).toBeFalsy();
+    s = await state();
+    expect(s.plan!.result.people[0]).toMatchObject({ capCentimes: 1_400_000, capIsMaximum: false });
     await call('set_fact', { key: 'plan.pillar3a_paid', value: 4_000 });
     plan = (await call('list_optimizations')).structuredContent as typeof plan;
     expect(plan.pillar3a.people[0]).toMatchObject({ capCentimes: 1_400_000 });
@@ -596,5 +617,66 @@ describe('self-employment in Geneva, end to end', () => {
       value: ['self_employment'],
     });
     expect(texts(self)).toMatch(/Not supported yet/);
+  });
+});
+
+// The 2025 return (docs/design/tax-years.md): its own folder, the 2025 rules and the 2025 form map.
+describe('self-employment in Geneva, tax year 2025', () => {
+  let years: TaxYears;
+  beforeEach(async () => {
+    await client.close();
+    await dashboard.stop();
+    const uiDir = await makeUiDir();
+    const root = await mkdtemp(path.join(os.tmpdir(), 'taxpresso-ws-'));
+    years = new TaxYears(
+      readConfig({ TAXPRESSO_VAULT_PATH: path.join(root, 'Taxpresso'), TAXPRESSO_UI_DIR: uiDir }),
+    );
+    dashboard = new Dashboard({ dir: path.join(uiDir, 'dashboard'), api: createApi(years) });
+    const server = createTaxpressoServer({ years, dashboard });
+    const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverSide);
+    client = new Client({ name: 'test', version: '0' });
+    await client.connect(clientSide);
+    const opened = await call('open_tax_year', { year: 2025 });
+    expect(opened.isError, texts(opened)).toBeFalsy();
+    ws = years.current;
+    await ws.ready();
+    docYear = 2025;
+  });
+
+  it('S1 in 2025: the tax derived by hand, annexe B on the 2025 form, no 2026 document', async () => {
+    expect(ws.taxYear).toBe(2025);
+    await lea();
+    expect(ws.snapshot().slots.filter((s) => s.value === undefined)).toEqual([]);
+    const next = texts(await call('next_questions'));
+    expect(next).not.toMatch(/2026/);
+    const res = await call('compute_tax', { detail: true });
+    const out = res.structuredContent as TaxOut & { taxYear: number };
+    expect(out).toMatchObject({ taxYear: 2025, computed: true, unsupported: [] });
+    // The same figures as 2026: Carouge's rates and the tariffs at these incomes are the same
+    // (packages/rules-ge/test/self-employment.test.ts, S1).
+    expect(out.icc.total).toBe(874_685);
+    expect(out.icc.taxableWealth).toBe(3_236_800);
+    expect(out.ifd).toMatchObject({ tax: 87_930, taxableIncome: 6_700_000 });
+    const all = JSON.stringify(res.structuredContent);
+    expect(all).not.toMatch(/ge-2026-unpublished|ch-2026-/);
+    expect(all).toMatch(/ge-2025-guide-independants/);
+    // The 2025 form, not provisional: annexe B with the year's dates.
+    const s = await state();
+    const rows = rowsOf(s);
+    expect(rows.filter((r) => r.page === 'B1').map((r) => [r.ref, r.copy])).toEqual(
+      expect.arrayContaining([
+        ['B1-DU', '01.01.2025'],
+        ['B1-AU', '31.12.2025'],
+      ]),
+    );
+    expect(rows.filter((r) => r.page === 'B4').map((r) => [r.ref, r.copy])).toEqual([
+      ['32.10', '9000'],
+      ['32.40', '18000'],
+      ['32.00', '26200'],
+    ]);
+    expect(s.copyPanel.unplaced).toEqual([]);
+    // The plans before 31 December are 2026's.
+    expect(s.plan).toBeNull();
   });
 });

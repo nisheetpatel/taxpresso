@@ -16,10 +16,19 @@ import {
   touPlan,
   type TouWithheld,
 } from '@taxpresso/optimizer';
-import { sourceTax, SourceTaxError, sourceTaxTariffs } from '@taxpresso/rules-ge';
+import {
+  sourceTax,
+  SourceTaxError,
+  sourceTaxTariffs,
+  TOU_FACTS,
+  touDeadline,
+} from '@taxpresso/rules-ge';
+import { LPP_BUYIN_FACTS, PILLAR3A_CATCHUP_FACTS } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
 import { CANTONS, type CantonEntry } from './cantons.js';
 import { PLAN_KEYS, WorkspaceError, type Via, type Workspace } from './workspace.js';
+import { isYearOver } from './year-over.js';
+import { CURRENT_TAX_YEAR } from './config.js';
 
 type Who = 'p1' | 'p2';
 const WORK = ['salary', 'replacement_income', 'self_employment'];
@@ -164,7 +173,7 @@ export interface TouView extends TouResult {
   decision?: StoredDecision;
 }
 
-export function touView(ws: Workspace, today = new Date().toISOString().slice(0, 10)): TouView {
+export function touView(ws: Workspace, today = ws.today()): TouView {
   const { h, unconfirmed: householdUnconfirmed } = household(ws);
   // TOU is Geneva's (the AFC's directives): in another canton, taxation at source and its ordinary
   // assessment afterwards (Zurich's NOV) are not supported yet, so there is nothing to compare.
@@ -269,13 +278,18 @@ export async function decide(
   ws: Workspace,
   input: DecisionInput,
   via: Via,
-  today = new Date().toISOString().slice(0, 10),
+  today = ws.today(),
 ): Promise<StoredDecision> {
   const run = (locks.get(ws) ?? Promise.resolve()).then(async () => {
     await ws.ready();
     await planningReady(ws);
     const problem = ws.vault.problem();
     if (problem) throw new WorkspaceError(problem);
+    if (isYearOver(ws.taxYear)) {
+      throw new WorkspaceError(
+        `${ws.taxYear} is over: a TOU request for ${ws.taxYear} had to reach the tax office by ${touDeadline(ws.taxYear)} (${TOU_FACTS.deadline}). There is nothing to decide now.`,
+      );
+    }
     const tou = touView(ws, today);
     const canton = ws.canton().canton;
     if (canton && !canton.tou) {
@@ -361,6 +375,87 @@ export function planningView(ws: Workspace) {
 }
 
 export type PlanningView = ReturnType<typeof planningView>;
+
+/**
+ * For a tax year that is over (docs/design/tax-years.md): what replaces the plans before 31 December
+ * and the TOU card. Nothing can be paid into the year anymore: the plans are the default year's,
+ * one step away (open_tax_year, or the card's button). Only facts with their sources.
+ */
+export interface YearOverView {
+  year: number;
+  /** The year whose plans apply now (pillar 3a, buy-in, 3a catch-up): the default year. */
+  plansIn: number;
+  /** 3a and buy-ins count in the year they are paid: what was paid is on the attestations. */
+  paidInYear: string;
+  /** A 3a gap of this year can be made up in the plans' year (rachat 3a), under conditions. */
+  catchUp?: { sources: string[] };
+  /**
+   * People taxed at source in Geneva: the day a TOU request had to reach the tax office, by law,
+   * whether it has passed, and the decision recorded, if any.
+   */
+  tou?: { deadline: string; passed: boolean; source: string; decision?: StoredDecision };
+}
+
+export function yearOverView(ws: Workspace): YearOverView | undefined {
+  if (!ws.yearOver()) return undefined;
+  const year = ws.taxYear;
+  const snap = ws.snapshot();
+  const canton = ws.canton().canton;
+  const atSource = snap.people.some(
+    (p) => snap.answers.get(`profile.taxed_at_source|${p}`) === true,
+  );
+  const deadline = touDeadline(year);
+  const decision = currentDecision(ws, 'tou');
+  return {
+    year,
+    plansIn: CURRENT_TAX_YEAR,
+    // Payments "effectués en 2025" (ge-2025-guide-declaration-pp p. 18), the buy-in's own rule.
+    paidInYear: LPP_BUYIN_FACTS.paidInYear,
+    // The 3a catch-up makes up gaps from 2025 on (OPP 3 art. 7a, its transitional provision).
+    ...(year >= 2025
+      ? {
+          catchUp: {
+            sources: [
+              PILLAR3A_CATCHUP_FACTS.onlyGapsFrom2025,
+              PILLAR3A_CATCHUP_FACTS.gapYearConditions,
+            ],
+          },
+        }
+      : {}),
+    // TOU is Geneva's: its deadline is in the law (31 March of the next year).
+    ...(atSource && (canton === undefined || canton.tou)
+      ? {
+          tou: {
+            deadline,
+            passed: ws.today() > deadline,
+            source: TOU_FACTS.deadline,
+            ...(decision ? { decision } : {}),
+          },
+        }
+      : {}),
+  };
+}
+
+/** The chat's words for a year that is over (list_optimizations). */
+export function yearOverText(v: YearOverView, canton?: CantonEntry): string[] {
+  const pillar3a = canton?.terms?.pillar3a ?? '3e pilier A';
+  const buyIn = canton?.terms?.pensionBuyIn ?? 'rachat 2e pilier';
+  const lines = [
+    `Tax year ${v.year} is open, and it is over. The plans before 31 December, pillar 3a (${pillar3a}), a pension fund buy-in (${buyIn}) and the 3a catch-up, are ${v.plansIn}'s: payments count in the year they are paid, so nothing paid now lowers the ${v.year} tax, whose return takes what was paid in ${v.year}, from the attestations (${v.paidInYear}).`,
+    `When the user asks about 3a or a buy-in, say these plans apply to ${v.plansIn}, and offer to switch to ${v.plansIn} in one step: open_tax_year with year ${v.plansIn}, then list_optimizations (the dashboard has the same button). ${v.year} stays as it is.`,
+  ];
+  if (v.catchUp) {
+    lines.push(
+      `If less than the maximum went into 3a in ${v.year}, the gap can be made up in ${v.plansIn} (3a catch-up, rachat 3a), under conditions (${v.catchUp.sources.join('; ')}): the ${v.plansIn} plans show it.`,
+    );
+  }
+  if (v.tou) {
+    lines.push(
+      `TOU (taxation ordinaire ultérieure) for ${v.year}: a request had to reach the tax office by ${v.tou.deadline} (${v.tou.source})${v.tou.passed ? ', which has passed' : ''}.${v.tou.decision ? ` Recorded: ${v.tou.decision.choice === 'request' ? 'the user asked for TOU' : 'no TOU'}.` : ''} If the user asked for it in time, their ${v.year} return is an ordinary one: Taxpresso prepares it.`,
+    );
+  }
+  return lines;
+}
 
 const WHO: Record<string, string> = { p1: 'you', p2: 'your spouse or partner' };
 const chf = (centimes: number) => `CHF ${Math.round(centimes / 100).toLocaleString('en-US')}`;
