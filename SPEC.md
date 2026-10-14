@@ -441,12 +441,15 @@ taxpresso/
                         (wired into the extension as a preview)
     rules-be/           Bern's cantonal, communal and church tax, and the federal tax of TaxMe's
                         summary (wired into the extension as a preview)
-    rules-vd/           Vaud's cantonal and communal tax (not wired into the extension yet)
+    rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
+                        worksheet (wired into the extension as a preview)
     optimizer/
     filing-ge/          src/<year>/fieldmap.json, plan generator, reconciliation; the form shapes
                         and the copy panel every canton's form uses
     filing-zh/          the Zurich form map (main form and annexes) and the values to type on it
     filing-be/          the Bern forms and TaxMe's summaries, and the values to type on them
+    filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
+                        worksheet for the federal tax, to check
   ui/                   Vite app; views reused as MCP Apps resources
   site/                 static website (EN, FR, DE, IT, ES, PT), no JavaScript, no cookies, fonts bundled
   README.md, CONTRIBUTING.md, LICENSE   (AGPL-3.0-or-later, section 12)
@@ -455,6 +458,9 @@ taxpresso/
   data/zh/2026/         Zurich's questionnaire: the shared questions, its own (commune, church)
   data/be/2026/         Bern's questionnaire: the shared questions, its own (household, church, parish,
                         shared custody, parties, childcare and education per child)
+  data/vd/2026/         Vaud's questionnaire: the shared questions, its own (commune and its part,
+                        household alone with the children, upkeep, rent, household contents,
+                        childcare per child, savings interest)
   test/golden/          households + GeTax expected outputs
   test/fixtures/        sample PDFs (synthetic only, never real data)
   docs/                 privacy policy, support, example prompts
