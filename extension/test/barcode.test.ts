@@ -75,6 +75,7 @@ describe('the salary certificate barcode', () => {
   it(
     'gives verified values, with their boxes, when added in the dashboard',
     async () => {
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'single' });
       const { document } = await ws.addDocument(
         await salaryCertificateJpegPdf(),
@@ -126,6 +127,7 @@ describe('the salary certificate barcode', () => {
   it(
     'waits for whose it is in a couple, then fills in for that person',
     async () => {
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'married' });
       const { document } = await ws.addDocument(
         await salaryCertificateJpegPdf(),
@@ -147,6 +149,7 @@ describe('the salary certificate barcode', () => {
   it(
     'takes whose it is from the chat too (set_document_owner)',
     async () => {
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'married' });
       const { document } = await ws.addDocument(
         await salaryCertificateJpegPdf(),
@@ -167,6 +170,7 @@ describe('the salary certificate barcode', () => {
   it(
     'lets the user say it is something else: their word wins, and it is read the other ways',
     async () => {
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'married' });
       const { document } = await ws.addDocument(
         await salaryCertificateJpegPdf(),
@@ -191,6 +195,7 @@ describe('the salary certificate barcode', () => {
         'dashboard',
       );
       expect(document.parse.method).toBe('barcode_pending');
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'single' });
       expect(value('salary.net')).toBe(7_535_250);
     },
@@ -200,6 +205,7 @@ describe('the salary certificate barcode', () => {
   it(
     'is read when the user puts the file in the folder (ingest_vault)',
     async () => {
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'single' });
       await writeFile(path.join(ws.vault.dir, 'cert.pdf'), await salaryCertificateJpegPdf());
       const res = await call('ingest_vault');
@@ -213,6 +219,7 @@ describe('the salary certificate barcode', () => {
   it(
     'keeps its kind: Claude can’t read it as something else',
     async () => {
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'single' });
       const { document } = await ws.addDocument(
         await salaryCertificateJpegPdf(),
@@ -252,6 +259,7 @@ describe('the e-tax statement barcode', () => {
   it(
     'gives the totals, accounts, loans and securities, verified, and shows them in the card',
     async () => {
+      await call('answer_question', { id: 'canton', value: 'GE' });
       await call('answer_question', { id: 'civil_status', value: 'single' });
       const api = createApi(ws);
       const { bytes } = await statementPdf();

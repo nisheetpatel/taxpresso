@@ -10,7 +10,18 @@ export const StatusSchema = z.object({
   product: z.literal('Taxpresso'),
   version: z.string(),
   taxYear: z.number().int(),
-  canton: z.literal('GE'),
+  canton: z
+    .enum(['GE', 'ZH'])
+    .nullable()
+    .describe('The canton of the return: where the user lived on 31 December. null until known.'),
+  cantonFrom: z
+    .enum(['answer', 'earlier_answers', 'none'])
+    .describe(
+      'answer: the user said so. earlier_answers: taken from answers only that canton asks (a return started before the canton question); the user can still answer it.',
+    ),
+  cantonBecause: z
+    .array(z.string())
+    .describe('With cantonFrom earlier_answers: which answers say so.'),
   household: z.object({
     started: z.boolean(),
     people: z.number().int(),
@@ -107,6 +118,10 @@ export function buildStatus(
       skipped: r.status === 'waived',
     }));
   const notSupported = ws.engine.notSupported(snap).map((n) => n.what.en);
+  const canton = ws.canton();
+  const software = canton.canton
+    ? `${canton.canton.software} (the canton's free software)`
+    : "their canton's free tax software";
   const documents = ws.activeDocuments();
   const toIdentify = documents.filter((d) => !d.kind).length;
   const toRead = ws.toRead().length;
@@ -133,15 +148,19 @@ export function buildStatus(
   let nextStep: string;
   if (vault.problem) nextStep = vault.problem;
   else if (notSupported.length) {
-    nextStep = `Tell the user plainly that Taxpresso can't prepare this yet: ${notSupported.join('; ')}. Suggest GeTax (the canton's free software) or a fiduciary. Don't work around it.`;
+    nextStep = `Tell the user plainly that Taxpresso can't prepare this yet: ${notSupported.join('; ')}. Suggest ${software} or a fiduciary. Don't work around it.`;
+  } else if (!canton.answer) {
+    nextStep = `Ask the first question: where the user lived on 31 December (next_questions). That canton taxes the whole year, and it decides the questions and the tax. Taxpresso prepares Geneva and Zurich returns so far.${lastYear?.suggestions ? " It comes with a suggestion from last year's declaration: ask the user whether it is still right, then save their answer with answer_question." : ''}`;
   } else if (
+    // Taxpresso reads Geneva's declarations (GeTax, the online declaration) so far.
+    canton.canton?.code === 'GE' &&
     open > 0 &&
-    answered === 0 &&
+    snap.slots.every((s) => s.value === undefined || s.question.key === 'profile.canton') &&
     !lastYear &&
     !documents.some((d) => d.kind === 'prior_declaration')
   ) {
     nextStep =
-      "Before the first question, ask the user for last year's Geneva tax declaration (the PDF from GeTax, the online declaration or their tax software): Taxpresso reads it on this computer and suggests most answers for them to confirm. They drop it in the dashboard (open_dashboard) or in their Taxpresso folder, then call ingest_vault. If they don't have it, ask the next question: call next_questions.";
+      "Before the next question, ask the user for last year's Geneva tax declaration (the PDF from GeTax, the online declaration or their tax software): Taxpresso reads it on this computer and suggests most answers for them to confirm. They drop it in the dashboard (open_dashboard) or in their Taxpresso folder, then call ingest_vault. If they don't have it, ask the next question: call next_questions.";
   } else if (open > 0) {
     nextStep = lastYear?.suggestions
       ? "Ask the next question: call next_questions. When a question comes with a suggestion from last year's declaration, ask the user whether it is still right, then save their answer with answer_question."
@@ -171,7 +190,9 @@ export function buildStatus(
     product: 'Taxpresso',
     version: ws.config.version,
     taxYear: ws.config.taxYear,
-    canton: 'GE',
+    canton: canton.canton?.code ?? null,
+    cantonFrom: canton.from,
+    cantonBecause: canton.because.map((b) => b.en),
     household: {
       started: answered > 0,
       people: snap.people.length,
@@ -212,9 +233,17 @@ export function buildStatus(
 }
 
 /** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */
+const CANTON_NAME: Record<string, string> = { GE: 'Geneva', ZH: 'Zurich' };
+
 export function statusText(s: Status): string {
+  const canton = s.canton ? CANTON_NAME[s.canton] : undefined;
   const lines = [
-    `Taxpresso ${s.version}, tax year ${s.taxYear}, Geneva`,
+    `Taxpresso ${s.version}, tax year ${s.taxYear}, ${canton ?? 'canton not known yet'}`,
+    ...(s.cantonFrom === 'earlier_answers' && canton
+      ? [
+          `Canton: ${canton}, taken from the user's earlier answers (${s.cantonBecause.join('; ')}). Taxpresso now asks for the canton first; if it is wrong, the user answers the canton question.`,
+        ]
+      : []),
     `Household: ${s.household.started ? s.household.summary.join(', ') || 'started' : 'not started'}`,
     `Questions: ${s.progress.questionsAnswered} answered, ${s.progress.questionsOpen} to go`,
     `Documents: ${s.progress.documents}${s.progress.documentsToIdentify ? ` (${s.progress.documentsToIdentify} to identify)` : ''}${s.progress.documentsFromBarcode ? `, ${s.progress.documentsFromBarcode} read from the barcode` : ''}${s.progress.documentsWaitingForWhose ? ` (${s.progress.documentsWaitingForWhose} waiting for the user to say whose it is)` : ''}${s.progress.documentsToRead ? `, ${s.progress.documentsToRead} not read yet` : ''}`,

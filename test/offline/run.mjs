@@ -296,6 +296,12 @@ describe('offline end to end', { timeout: 60_000 }, () => {
   test('answers in the chat and in the dashboard, and documents, all land in the folder', async () => {
     assert.ok(dashboardSession, 'the dashboard test ran first');
     const { origin, host, cookie, csrf } = dashboardSession;
+    // The canton first: the questions that follow are Geneva's.
+    const canton = await client.callTool({
+      name: 'answer_question',
+      arguments: { id: 'canton', value: 'GE' },
+    });
+    assert.ok(!canton.isError, canton.content?.[0]?.text);
     const saved = await client.callTool({
       name: 'answer_question',
       arguments: { id: 'civil_status', value: 'single' },
@@ -323,6 +329,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.deepEqual(
       ledger.facts.map((f) => [f.key, f.value, f.source.via]),
       [
+        ['profile.canton', 'GE', 'chat'],
         ['profile.civil_status', 'single', 'chat'],
         ['profile.children_count', 0, 'dashboard'],
       ],

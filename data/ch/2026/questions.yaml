@@ -1,0 +1,76 @@
+# The questions every canton asks, tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data,
+# not code: packages/questionnaire reads it. A canton's file (data/<canton>/2026/questionnaire.yaml)
+# takes a question or a document from here with `use: <id>`, in its own order, and may replace any of
+# its fields: its own explanation, its official page (learnMore), its form's terms. Every key and
+# value must exist in the canton's keys (packages/rules-ch keys/ for the shared ones; a test checks).
+#
+# Before the canton is known, Taxpresso asks these questions only, starting with the canton.
+#
+# French: write plain spaces before ? ! : ; and the loader makes them non-breaking. German: informal
+# "du", the official German term next to its gloss. Texts per person (p1, p2) where the grammar
+# differs; {n} is replaced by the number.
+
+taxYear: 2026
+
+people:
+  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p2:
+    {
+      en: 'Your spouse or partner',
+      fr: 'Votre conjoint ou partenaire',
+      de: 'Dein Ehepartner oder deine Ehepartnerin',
+    }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
+
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. Your canton’s free tax software, or a fiduciary, can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. Le logiciel gratuit de votre canton, ou une fiduciaire, le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. Die kostenlose Steuersoftware deines Kantons oder eine Treuhand kann es.'
+
+questions:
+  # The canton you lived in on 31 December taxes the whole year, also when you moved there from
+  # another canton during the year: for the federal tax, ch-na-law-lifd art. 105 al. 1 (p. 58); for
+  # the cantonal and communal tax, ge-2025-guide-declaration-pp p. 53 (Arrivée d'un canton suisse)
+  # and zh-2025-guide-natuerliche-personen p. 5 and 6 (Zuzug aus einem anderen Kanton).
+  - id: canton
+    key: profile.canton
+    type: choice
+    explain:
+      en: 'The canton you lived in on 31 December taxes your whole year: cantonal, communal and federal tax. Taxpresso prepares returns for Geneva and Zurich so far.'
+      fr: 'Le canton où vous habitiez au 31 décembre vous impose pour toute l’année : impôt cantonal, communal et fédéral. Taxpresso prépare pour l’instant les déclarations de Genève et de Zurich.'
+      de: 'Der Kanton, in dem du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr: Staats-, Gemeinde- und Bundessteuer. Taxpresso bereitet bisher Steuererklärungen für Genf und Zürich vor.'
+    learnMore:
+      url: 'https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1991-1184_1184_1184-20260101-fr-pdf-a.pdf#page=58'
+      label:
+        en: 'Federal tax law (LIFD), art. 105: the canton at the end of the year, in French'
+        fr: 'LIFD, art. 105 : Rattachement personnel'
+        de: 'Bundessteuergesetz (DBG, LIFD), Art. 105: der Kanton am Ende des Jahres, auf Französisch'
+    link:
+      url: 'https://github.com/nisheetpatel/taxpresso/issues/1'
+      label:
+        en: 'Vote for the next canton'
+        fr: 'Votez pour le prochain canton'
+        de: 'Stimm für den nächsten Kanton ab'
+    text:
+      en: 'Where did you live on 31 December 2026?'
+      fr: 'Où habitiez-vous au 31 décembre 2026 ?'
+      de: 'Wo hast du am 31. Dezember 2026 gewohnt?'
+    help:
+      en: 'Moved from another canton during 2026? Choose the canton you lived in on 31 December: it taxes the whole year, as if you had lived there since January. Other cantons are coming: vote for yours.'
+      fr: 'Vous avez déménagé d’un autre canton en 2026 ? Choisissez celui où vous habitiez au 31 décembre : il vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. D’autres cantons arrivent : votez pour le vôtre.'
+      de: 'Du bist 2026 aus einem anderen Kanton umgezogen? Wähl den Kanton, in dem du am 31. Dezember gewohnt hast: Er besteuert das ganze Jahr, als hättest du seit Januar dort gewohnt. Weitere Kantone folgen: Stimm für deinen ab.'
+    options:
+      - value: GE
+        label: { en: 'Canton of Geneva', fr: 'Canton de Genève', de: 'Kanton Genf' }
+        chip: { en: 'Geneva', fr: 'Genève', de: 'Genf' }
+      - value: ZH
+        label: { en: 'Canton of Zurich', fr: 'Canton de Zurich', de: 'Kanton Zürich' }
+        chip: { en: 'Zurich', fr: 'Zurich', de: 'Zürich' }
+      - value: other
+        label: { en: 'Another canton', fr: 'Un autre canton', de: 'Ein anderer Kanton' }
+        notSupported:
+          en: 'A canton other than Geneva or Zurich'
+          fr: 'Un autre canton que Genève ou Zurich'
+          de: 'Ein anderer Kanton als Genf oder Zürich'
+
+requirements: []

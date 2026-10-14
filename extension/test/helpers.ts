@@ -2,8 +2,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
-import { geQuestionnaire2026, QuestionnaireEngine } from '@taxpresso/questionnaire';
-import { COMMUNES_2026, KEYS_2026 } from '@taxpresso/rules-ge';
+import { CantonRegistry } from '../src/cantons.js';
 import { readConfig } from '../src/config.js';
 import { Workspace } from '../src/workspace.js';
 
@@ -72,6 +71,5 @@ export async function makeWorkspace(uiDir?: string): Promise<Workspace> {
     TAXPRESSO_VAULT_PATH: path.join(root, 'Taxpresso'),
     ...(uiDir ? { TAXPRESSO_UI_DIR: uiDir } : {}),
   });
-  const engine = new QuestionnaireEngine(geQuestionnaire2026(), KEYS_2026, COMMUNES_2026);
-  return new Workspace(config, engine, KEYS_2026);
+  return new Workspace(config, new CantonRegistry(config.taxYear));
 }

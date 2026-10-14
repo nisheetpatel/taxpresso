@@ -134,7 +134,15 @@ export function App(): JSX.Element {
                         {a.who ? <span class="muted">{a.who} · </span> : null}
                         {a.question}
                       </span>
-                      <span class="answer-a">{a.answer}</span>
+                      <span class="answer-a">
+                        {a.answer}
+                        {a.assumed && state.canton ? (
+                          <span class="muted small-text">
+                            {' '}
+                            {t(L, 'assumedAnswer', { because: state.canton.because.join(', ') })}
+                          </span>
+                        ) : null}
+                      </span>
                       <button
                         type="button"
                         class="ghost small"
@@ -409,7 +417,11 @@ function Header({
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark" dangerouslySetInnerHTML={{ __html: wordmark(true) }} />
-        <span class="pill">{t(lang, 'yearPill', { year: state.taxYear })}</span>
+        <span class="pill">
+          {state.canton
+            ? t(lang, 'yearPill', { year: state.taxYear, canton: state.canton.name })
+            : t(lang, 'yearPillNoCanton', { year: state.taxYear })}
+        </span>
       </div>
       <nav aria-label={t(lang, 'steps')} class="steps">
         {steps.map((label, i) => (
@@ -620,6 +632,13 @@ function QuestionCard(p: CardProps) {
           ) : null}
         </h2>
         {q.help ? <p class="muted">{q.help}</p> : null}
+        {q.link ? (
+          <p class="muted small-text">
+            <a href={q.link.url} target="_blank" rel="noopener noreferrer">
+              {q.link.label}
+            </a>
+          </p>
+        ) : null}
         {q.skipped ? <p class="muted small-text">{t(lang, 'skippedNote')}</p> : null}
       </div>
       {q.suggested !== undefined && q.value === undefined ? (

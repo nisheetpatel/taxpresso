@@ -123,6 +123,7 @@ describe('review_last_year', () => {
   });
 
   it('never changes this year’s tax', async () => {
+    await call('answer_question', { id: 'canton', value: 'GE' });
     await call('answer_question', { id: 'civil_status', value: 'married' });
     await call('answer_question', { id: 'commune', value: 'Vernier' });
     const before = ws.taxEstimate();

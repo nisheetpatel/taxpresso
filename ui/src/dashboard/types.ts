@@ -28,6 +28,8 @@ export interface Question {
   explain?: string;
   /** An official page on the topic, shown as "Official page" in the explanation. */
   learnMore?: OfficialLink;
+  /** A page of the Taxpresso project, such as the vote for the next canton. */
+  link?: OfficialLink;
   options?: { value: string; label: string; notSupported: boolean }[];
   none?: string;
   min?: number;
@@ -37,6 +39,8 @@ export interface Question {
   /** Read from a document (last year's declaration), not an answer yet: the user confirms it. */
   suggested?: Value;
   suggestedFrom?: { kind?: string; year?: number; page?: number };
+  /** Taken from other answers (a return started before the canton question). */
+  assumed?: boolean;
 }
 
 export interface RequirementView {
@@ -82,6 +86,13 @@ export interface Activity {
 export interface State extends DocumentsState {
   version: string;
   taxYear: number;
+  /** The canton of the return, once the user said where they lived on 31 December. */
+  canton: {
+    code: 'GE' | 'ZH';
+    name: string;
+    from: 'answer' | 'earlier_answers' | 'none';
+    because: string[];
+  } | null;
   lang: Language;
   csrf: string;
   vault: { path: string; exists: boolean; problem?: string };
@@ -89,7 +100,7 @@ export interface State extends DocumentsState {
   progress: { answered: number; total: number };
   question: Question | null;
   chips: string[];
-  answers: { id: string; question: string; answer: string; who?: string }[];
+  answers: { id: string; question: string; answer: string; who?: string; assumed?: boolean }[];
   documents: DocumentView[];
   kinds: { value: string; label: string }[];
   requirements: RequirementView[];

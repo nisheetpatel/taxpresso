@@ -97,9 +97,19 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       ? people[person][lang]
       : undefined;
   const next = ws.next();
+  const canton = ws.canton();
   return {
     version: ws.config.version,
     taxYear: ws.config.taxYear,
+    // The canton of the return (./cantons.ts): null until the user says where they lived.
+    canton: canton.canton
+      ? {
+          code: canton.canton.code,
+          name: canton.canton.name[lang],
+          from: canton.from,
+          because: canton.because.map((b) => b[lang]),
+        }
+      : null,
     lang,
     csrf,
     vault: ws.vaultInfo(),
@@ -123,6 +133,8 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
         question: ws.render(s, lang).text,
         answer: ws.engine.describe(s, lang),
         ...(who(s.person) ? { who: who(s.person) } : {}),
+        // Taken from other answers (a return started before the canton question).
+        ...(s.assumed ? { assumed: true } : {}),
       })),
     documents: ws.activeDocuments().map((d) => ({
       id: d.id,

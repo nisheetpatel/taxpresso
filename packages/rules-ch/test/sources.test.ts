@@ -24,6 +24,7 @@ import {
   ifdParamsFor,
   ifdTax,
   insurancePremiums,
+  KEYS_CANTON_2026,
   KEYS_ECH0196_2026,
   KEYS_SALARY_CERTIFICATE_2026,
   KEYS_SECURITIES_2026,
@@ -120,10 +121,12 @@ describe('citations of rules-ch', () => {
 
   it('the shared ledger keys', () => {
     const keys: KeyRegistry = {
+      ...KEYS_CANTON_2026,
       ...KEYS_SALARY_CERTIFICATE_2026,
       ...KEYS_SECURITIES_2026,
       ...KEYS_ECH0196_2026,
     };
+    expect(keys['profile.canton']?.source).toMatch(/ch-na-law-lifd art\. 105/);
     for (const [key, def] of Object.entries(keys)) {
       if (def.source) expectCited(def.source, key, false);
     }

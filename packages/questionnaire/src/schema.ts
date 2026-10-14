@@ -1,8 +1,16 @@
-// The shape of a questionnaire file (data/ge/<year>/questionnaire.yaml), checked when it loads.
+// The shape of a questionnaire file (data/<canton>/<year>/questionnaire.yaml), checked when it
+// loads. The questions every canton asks are written once (data/ch/<year>/questions.yaml); a
+// canton's file takes one with `use: <id>`, and may replace any of its fields (a canton's own
+// explanation, its official page), which keeps each canton's questions in its own order.
 import { DOCUMENT_KINDS } from '@taxpresso/ledger';
 import * as z from 'zod/v4';
 
-export const Text = z.object({ en: z.string().min(1), fr: z.string().min(1) });
+/** Plain words in English and French; German where the canton's file gives it (Zurich). */
+export const Text = z.object({
+  en: z.string().min(1),
+  fr: z.string().min(1),
+  de: z.string().min(1).optional(),
+});
 export type Text = z.infer<typeof Text>;
 
 const PerPersonText = z.object({ p1: Text, p2: Text });
@@ -45,6 +53,7 @@ export const OFFICIAL_HOSTS = [
   'ge.ch',
   'getax.ch',
   'silgeneve.ch',
+  'zh.ch', // www.zh.ch, notes.zh.ch (ZH-Lex)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
 ] as const;
@@ -73,6 +82,26 @@ export const LearnMore = z
   .strict();
 export type LearnMore = z.infer<typeof LearnMore>;
 
+/** The project's own pages: the votes for the next cantons and languages (README.md). */
+const PROJECT = 'https://github.com/nisheetpatel/taxpresso/';
+
+/**
+ * A page of the Taxpresso project itself (not an official one), such as the vote for the next
+ * canton. Only the project's own GitHub pages, without parameters.
+ */
+export const ProjectLink = z
+  .object({
+    url: z
+      .url()
+      .refine(
+        (u) => u.startsWith(PROJECT) && URL.canParse(u) && !new URL(u).search && !new URL(u).hash,
+        'link.url must be a page of the Taxpresso project on GitHub',
+      ),
+    label: Text,
+  })
+  .strict();
+export type ProjectLink = z.infer<typeof ProjectLink>;
+
 const Option = z
   .object({
     value: z.string(),
@@ -95,6 +124,8 @@ export const Question = z
     /** Plain-language "what is this?", shown on hover and given to Claude. */
     explain: Text.optional(),
     learnMore: LearnMore.optional(),
+    /** A page of the project, e.g. where to vote for the next canton. */
+    link: ProjectLink.optional(),
     options: z.array(Option).optional(),
     none: Text.optional(),
     min: z.number().int().optional(),
@@ -126,6 +157,8 @@ export type RequirementDef = z.infer<typeof RequirementDef>;
 export const QuestionnaireFile = z
   .object({
     taxYear: z.number().int(),
+    /** The canton the file is for, in words: "Geneva" in "not a Geneva commune". */
+    place: Text.optional(),
     people: z.object({ p1: Text, p2: Text, p2Chip: Text }),
     notSupported: Text,
     questions: z.array(Question).min(1),
@@ -142,9 +175,44 @@ export function frenchSpacing(s: string): string {
   return s.replace(/ ([?!:;»])/g, `${NBSP}$1`).replace(/« /g, `«${NBSP}`);
 }
 
-/** Validates a parsed questionnaire file and applies French typography to every French text. */
-export function parseQuestionnaire(raw: unknown): QuestionnaireFile {
-  const file = QuestionnaireFile.parse(raw);
+type Entry = Record<string, unknown>;
+
+/**
+ * A canton's file with the shared questions and documents it takes (`use: <id>`) written out: the
+ * shared definition, then the canton's own fields over it. The people and the "not supported"
+ * message come from the shared file when the canton's file has none.
+ */
+export function resolveShared(raw: unknown, shared: unknown): unknown {
+  if (!raw || typeof raw !== 'object' || !shared || typeof shared !== 'object') return raw;
+  const file = raw as Entry;
+  const base = shared as Entry;
+  const take = (list: unknown, from: unknown, what: string): unknown => {
+    if (!Array.isArray(list)) return list;
+    const pool = Array.isArray(from) ? (from as Entry[]) : [];
+    return list.map((item: Entry) => {
+      if (!item || typeof item !== 'object' || !('use' in item)) return item;
+      const { use, ...over } = item;
+      const def = pool.find((x) => x.id === use);
+      if (!def) throw new Error(`${what} ${String(use)} is not in the shared questionnaire`);
+      return { ...def, ...over };
+    });
+  };
+  return {
+    taxYear: file.taxYear ?? base.taxYear,
+    ...(file.place ? { place: file.place } : {}),
+    people: file.people ?? base.people,
+    notSupported: file.notSupported ?? base.notSupported,
+    questions: take(file.questions, base.questions, 'question'),
+    requirements: take(file.requirements, base.requirements, 'requirement'),
+  };
+}
+
+/**
+ * Validates a questionnaire file and applies French typography to every French text. `shared` is
+ * the questionnaire every canton shares (data/ch/<year>/questions.yaml), when the file takes from it.
+ */
+export function parseQuestionnaire(raw: unknown, shared?: unknown): QuestionnaireFile {
+  const file = QuestionnaireFile.parse(shared === undefined ? raw : resolveShared(raw, shared));
   const fix = (v: unknown): void => {
     if (Array.isArray(v)) return v.forEach(fix);
     if (v && typeof v === 'object') {

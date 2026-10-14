@@ -48,6 +48,7 @@ beforeEach(async () => {
   await client.connect(clientSide);
   await ws.ready();
   // Jean and Marie Dupont, married.
+  await ws.answer('canton', 'GE', 'chat');
   await ws.answer('civil_status', 'married', 'chat');
   await writeFile(path.join(ws.vault.dir, 'ibkr.xml'), fixture('dupont-ibkr-2026.xml'));
   await call('ingest_vault');

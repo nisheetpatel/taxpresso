@@ -45,6 +45,11 @@ export interface Slot {
    */
   suggested?: FactValue;
   suggestion?: Fact;
+  /**
+   * Not answered, but taken from the user's other answers (the canton of an existing return, from
+   * its commune): it counts as the answer until the user answers the question themselves.
+   */
+  assumed?: boolean;
 }
 
 export interface Snapshot {
@@ -67,6 +72,8 @@ export interface RenderedQuestion {
   explain?: string;
   /** An official page on the topic, in the user's language. */
   learnMore?: { url: string; label: string };
+  /** A page of the project, such as the vote for the next canton. */
+  link?: { url: string; label: string };
   options?: { value: string; label: string; notSupported: boolean }[];
   none?: string;
   min?: number;
@@ -74,6 +81,8 @@ export interface RenderedQuestion {
   value?: FactValue;
   /** Not an answer yet: a value read from a document, for the user to confirm or change. */
   suggested?: FactValue;
+  /** The value was taken from the user's other answers, not given to this question. */
+  assumed?: boolean;
 }
 
 export class QuestionnaireError extends Error {}
@@ -164,7 +173,11 @@ export class QuestionnaireEngine {
     return problems;
   }
 
-  snapshot(ledger: Ledger): Snapshot {
+  /**
+   * The questions that apply, with their answers. `assumed` gives household answers taken from the
+   * user's other answers (by key): each counts until the question is answered.
+   */
+  snapshot(ledger: Ledger, assumed: Readonly<Record<string, FactValue>> = {}): Snapshot {
     const answers = new Map<string, FactValue>();
     const people = (): Person[] =>
       COUPLE.has(String(answers.get(slotKey('profile.civil_status', 'household'))))
@@ -182,14 +195,22 @@ export class QuestionnaireEngine {
         // Read from a document and not confirmed yet: a suggestion, not an answer.
         const suggestion = fact?.status === 'extracted' ? fact : undefined;
         const answer = suggestion ? undefined : fact;
+        const taken =
+          !answer && person === 'household' && assumed[question.key] !== undefined && def
+            ? invalidValue(def, assumed[question.key]!)
+              ? undefined
+              : assumed[question.key]
+            : undefined;
         const slot: Slot = {
           id: question.perPerson ? `${question.id}:${person}` : question.id,
           question,
           person,
           ...(answer ? { value: answer.value, fact: answer } : {}),
+          ...(taken !== undefined ? { value: taken, assumed: true } : {}),
           ...(suggestion ? { suggested: suggestion.value, suggestion } : {}),
         };
         if (answer) answers.set(slotKey(question.key, person), answer.value);
+        else if (taken !== undefined) answers.set(slotKey(question.key, person), taken);
         slots.push(slot);
       }
     }
@@ -342,12 +363,14 @@ export class QuestionnaireEngine {
       ...(q.learnMore
         ? { learnMore: { url: q.learnMore.url, label: q.learnMore.label[lang] } }
         : {}),
+      ...(q.link ? { link: { url: q.link.url, label: q.link.label[lang] } } : {}),
       ...(options ? { options } : {}),
       ...(q.none ? { none: q.none[lang] } : {}),
       ...(q.min !== undefined ? { min: q.min } : {}),
       ...(q.max !== undefined ? { max: q.max } : {}),
       ...(slot.value !== undefined ? { value: slot.value } : {}),
       ...(slot.suggested !== undefined ? { suggested: slot.suggested } : {}),
+      ...(slot.assumed ? { assumed: true } : {}),
     };
   }
 
@@ -436,7 +459,12 @@ export class QuestionnaireEngine {
         if (typeof raw !== 'string') return bad('expected a commune');
         const f = fold(raw.replace(/^(ville de|commune de|le|la)\s+/i, ''));
         const hit = this.communes.find((c) => c.slug === raw || fold(c.name) === f);
-        return hit?.slug ?? bad(`"${raw}" is not a Geneva commune`);
+        return (
+          hit?.slug ??
+          bad(
+            `"${raw}" is not ${this.file.place ? `a ${this.file.place.en}` : 'one of the'} commune${this.file.place ? '' : 's'}`,
+          )
+        );
       }
       case 'yesno': {
         if (typeof raw === 'boolean') return raw;

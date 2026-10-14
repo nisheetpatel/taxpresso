@@ -153,3 +153,12 @@ export {
 } from './keys/salary-certificate.js';
 export { KEYS_SECURITIES_2026, type SecurityKey } from './keys/securities.js';
 export { KEYS_ECH0196_2026, type Ech0196Key } from './keys/ech0196.js';
+// The canton of the tax year: the first question (docs/design/cantons.md, section 3).
+export {
+  CANTON_ANSWERS,
+  isSupportedCanton,
+  KEYS_CANTON_2026,
+  SUPPORTED_CANTONS,
+  type CantonAnswer,
+  type SupportedCanton,
+} from './keys/canton.js';

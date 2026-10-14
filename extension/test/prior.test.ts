@@ -89,7 +89,10 @@ const upload = async (bytes: Buffer = fixture('dupont-declaration-2025.pdf'), na
   (await ws.addDocument(bytes, name, 'dashboard')).document;
 
 describe('last year’s declaration', () => {
-  it('is offered first, before any question', async () => {
+  it('is offered first, before any question but the canton', async () => {
+    const before = structured<{ nextStep: string }>(await call('get_status'));
+    expect(before.nextStep).toMatch(/where the user lived on 31 December/);
+    await call('answer_question', { id: 'canton', value: 'GE' });
     const status = structured<{ nextStep: string }>(await call('get_status'));
     expect(status.nextStep).toMatch(/last year's Geneva tax declaration/);
     expect(status.nextStep).toMatch(/next_questions/);
@@ -151,6 +154,12 @@ describe('last year’s declaration', () => {
     );
     expect(status.progress.questionsAnswered).toBe(0);
     expect(status.lastYear).toMatch(/Last year's declaration \(2025\).*suggested answers wait/);
+    // The canton first: last year's return was a Geneva one.
+    const canton = await call('next_questions');
+    expect(texts(canton)).toMatch(
+      /\[canton\][\s\S]*Suggested from last year's declaration \(2025\), page 1: Canton of Geneva \("GE"\)/,
+    );
+    await call('answer_question', { id: 'canton', value: 'GE' });
     const q = await call('next_questions');
     expect(texts(q)).toMatch(
       /Suggested from last year's declaration \(2025\), page 1: Married \("married"\)\. It is not an answer yet/,
@@ -167,7 +176,7 @@ describe('last year’s declaration', () => {
       suggestedFrom: { kind: 'prior_declaration', year: 2025, page: 1 },
     });
     expect(s.question?.value).toBeUndefined();
-    expect(s.progress.answered).toBe(0);
+    expect(s.progress.answered).toBe(1);
 
     // The user confirms in the chat: the answer replaces the suggestion.
     const id = ws.ledger.get('profile.civil_status')!.id;
@@ -178,10 +187,11 @@ describe('last year’s declaration', () => {
       source: { via: 'chat' },
     });
     status = structured(await call('get_status'));
-    expect(status.progress.questionsAnswered).toBe(1);
+    expect(status.progress.questionsAnswered).toBe(2);
   });
 
   it('never overwrites what the user already answered', async () => {
+    await call('answer_question', { id: 'canton', value: 'GE' });
     await call('answer_question', { id: 'civil_status', value: 'married' });
     await call('answer_question', { id: 'commune', value: 'Carouge' });
     await upload();
@@ -215,7 +225,7 @@ describe('last year’s declaration', () => {
   it('shows a "Last year" card in the dashboard, in French too', async () => {
     await upload();
     const s = await state();
-    expect(s.lastYear).toMatchObject({ taxYear: 2025, software: 'GeTax', suggestions: 11 });
+    expect(s.lastYear).toMatchObject({ taxYear: 2025, software: 'GeTax', suggestions: 12 });
     const income = s.lastYear!.sections.find((x) => x.id === 'income')!;
     expect(income.lines[0]).toMatchObject({
       code: '11.00',

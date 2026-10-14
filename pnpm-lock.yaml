@@ -241,6 +241,9 @@ importers:
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../packages/rules-ge
+      '@taxpresso/rules-zh':
+        specifier: workspace:*
+        version: link:../packages/rules-zh
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -342,6 +345,9 @@ importers:
         specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
+      '@taxpresso/rules-ch':
+        specifier: workspace:*
+        version: link:../rules-ch
       '@taxpresso/rules-ge':
         specifier: workspace:*
         version: link:../rules-ge

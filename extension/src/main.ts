@@ -5,9 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { setBarcodeWasmPath } from '@taxpresso/intake';
-import { geQuestionnaire2026, QuestionnaireEngine } from '@taxpresso/questionnaire';
-import { COMMUNES_2026, KEYS_2026 } from '@taxpresso/rules-ge';
 import { createApi } from './api.js';
+import { CantonRegistry } from './cantons.js';
 import { readConfig } from './config.js';
 import { Dashboard } from './dashboard.js';
 import { createTaxpressoServer } from './server.js';
@@ -20,8 +19,8 @@ const config = readConfig();
 // The barcode reader's WebAssembly ships next to this bundle (extension/scripts/build.mjs) and is
 // read from disk: never located or downloaded.
 setBarcodeWasmPath(path.join(path.dirname(fileURLToPath(import.meta.url)), 'zxing_reader.wasm'));
-const engine = new QuestionnaireEngine(geQuestionnaire2026(), KEYS_2026, COMMUNES_2026);
-const workspace = new Workspace(config, engine, KEYS_2026);
+// One registry of the cantons (./cantons.ts): the canton of the year is the user's first answer.
+const workspace = new Workspace(config, new CantonRegistry(config.taxYear));
 const dashboard = new Dashboard({
   dir: path.join(config.uiDir, 'dashboard'),
   api: createApi(workspace),

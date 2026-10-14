@@ -11,6 +11,8 @@
 
 taxYear: 2026
 
+place: { en: 'Geneva', fr: 'Genève', de: 'Genf' }
+
 people:
   p1: { en: 'You', fr: 'Vous' }
   p2: { en: 'Your spouse or partner', fr: 'Votre conjoint ou partenaire' }
@@ -21,6 +23,9 @@ notSupported:
   fr: 'Taxpresso ne peut pas encore préparer cette partie. GeTax, le logiciel gratuit du canton, ou une fiduciaire le peuvent.'
 
 questions:
+  # Where you lived on 31 December: the questions every canton shares (data/ch/2026/questions.yaml).
+  - use: canton
+
   - id: civil_status
     key: profile.civil_status
     type: choice
@@ -210,8 +215,8 @@ questions:
     key: profile.moved
     type: choice
     explain:
-      en: 'A move within Geneva changes little. Arriving from abroad means you were taxed here for part of the year only.'
-      fr: 'Un déménagement dans le canton change peu de choses. Arriver de l’étranger signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      en: 'A move within Geneva changes little. Arriving from another canton changes nothing either: Geneva taxes your whole year, as if you had lived here since January. Arriving from abroad means you were taxed here for part of the year only.'
+      fr: 'Un déménagement dans le canton change peu de choses. Arriver d’un autre canton non plus : Genève vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger signifie que vous n’étiez imposé ici qu’une partie de l’année.'
     # ge-2025-guide-declaration-pp p. 53
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
@@ -229,10 +234,11 @@ questions:
       - value: from_abroad
         label: { en: 'Yes, I arrived from abroad', fr: 'Oui, je suis arrivé(e) de l’étranger' }
         chip: { en: 'Arrived in 2026', fr: 'Arrivé(e) en 2026' }
+      # Geneva taxes the whole year of someone who arrived from another canton (guide p. 53,
+      # Arrivée d'un canton suisse): the return is the same as for a full year here.
       - value: from_other_canton
         label: { en: 'Yes, from another canton', fr: 'Oui, depuis un autre canton' }
-        notSupported:
-          { en: 'Moving from another canton', fr: 'Un déménagement depuis un autre canton' }
+        chip: { en: 'Moved from another canton', fr: 'Arrivé(e) d’un autre canton' }
       - value: leaving_switzerland
         label:
           { en: 'I left, or I’m leaving, Switzerland', fr: 'J’ai quitté ou je quitte la Suisse' }

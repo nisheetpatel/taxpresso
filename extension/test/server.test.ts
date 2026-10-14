@@ -90,6 +90,20 @@ describe('MCP surface', () => {
   });
 
   it('asks the questions and saves answers given in the chat', async () => {
+    // The canton comes first: before it, only the questions every canton shares.
+    const first = await call('next_questions');
+    expect(text(first)).toMatch(/\[canton\] Où habitiez-vous au 31 décembre 2026/);
+    expect(text(first)).toMatch(
+      /GE = Canton of Geneva; ZH = Canton of Zurich; other = Another canton \[not supported yet\]/,
+    );
+    expect(text(first)).toMatch(
+      /Vote for the next canton: https:\/\/github\.com\/nisheetpatel\/taxpresso\/issues\/1/,
+    );
+    expect(
+      structured<{ questions: { learnMore?: { url: string } }[] }>(first).questions[0]?.learnMore
+        ?.url,
+    ).toMatch(/^https:\/\/www\.fedlex\.admin\.ch\/.+#page=58$/);
+    await call('answer_question', { id: 'canton', value: 'GE' });
     const q = await call('next_questions');
     expect(text(q)).toMatch(/\[civil_status\] Quel était votre état civil/);
     // An official page Claude can give the user, from the sources library.
@@ -116,10 +130,21 @@ describe('MCP surface', () => {
     const employers = await call('answer_question', { id: 'employers:p1', value: 2 });
     expect(text(employers)).toMatch(/Documents now needed: Salary certificate/);
     const status = structured<{ household: { summary: string[] } }>(await call('get_status'));
-    expect(status.household.summary).toEqual(['Single', 'No children', 'Carouge', '2 employers']);
+    expect(status.household.summary).toEqual([
+      'Geneva',
+      'Single',
+      'No children',
+      'Carouge',
+      '2 employers',
+    ]);
   });
 
   it('reports wrong answers as tool errors, and unsupported situations plainly', async () => {
+    // The commune is asked once the canton is known.
+    const early = await call('answer_question', { id: 'commune', value: 'Onex' });
+    expect(early.isError).toBe(true);
+    expect(text(early)).toMatch(/doesn't apply now/);
+    await call('answer_question', { id: 'canton', value: 'GE' });
     const bad = await call('answer_question', { id: 'commune', value: 'Lausanne' });
     expect(bad.isError).toBe(true);
     expect(text(bad)).toMatch(/not a Geneva commune/);
@@ -138,6 +163,7 @@ describe('MCP surface', () => {
   });
 
   it('finds documents the user put in the folder, and lists them', async () => {
+    await call('answer_question', { id: 'canton', value: 'GE' });
     await call('answer_question', { id: 'civil_status', value: 'single' });
     await writeFile(path.join(ws.vault.dir, 'certificat.pdf'), '%PDF synthetic');
     const ingest = await call('ingest_vault');
@@ -155,6 +181,7 @@ describe('MCP surface', () => {
     const before = await call('list_optimizations');
     expect(text(before)).toMatch(/you: room left CHF 7,258/);
     expect(text(before)).toMatch(/No salary yet/);
+    await call('answer_question', { id: 'canton', value: 'GE' });
     await call('answer_question', { id: 'civil_status', value: 'single' });
     const saved = await call('set_fact', { key: 'plan.gross_salary', value: 95_000 });
     expect(saved.isError).toBeFalsy();
@@ -171,8 +198,9 @@ describe('MCP surface', () => {
   it('computes the tax with the rules engine, flags estimates, and explains with detail', async () => {
     const none = await call('compute_tax');
     expect(structured<{ computed: boolean }>(none).computed).toBe(false);
-    expect(text(none)).toMatch(/needs your civil status and your commune/);
+    expect(text(none)).toMatch(/needs the canton where you lived on 31 December/);
 
+    await call('answer_question', { id: 'canton', value: 'GE' });
     await call('answer_question', { id: 'civil_status', value: 'single' });
     await call('answer_question', { id: 'children', value: 0 });
     await call('answer_question', { id: 'commune', value: 'Carouge' });

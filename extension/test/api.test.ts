@@ -25,9 +25,17 @@ describe('dashboard API', () => {
     const res = await api(req('GET', '/state'));
     const state = res.body as DashboardState;
     expect(state).toMatchObject({ lang: 'fr', csrf: 'csrf-token', progress: { answered: 0 } });
-    expect(state.question?.text).toBe(`Quel était votre état civil au 31 décembre 2026${NBSP}?`);
+    // The canton first: the questions that follow are the canton's own.
+    expect(state.question?.text).toBe(`Où habitiez-vous au 31 décembre 2026${NBSP}?`);
+    expect(state.question?.link).toEqual({
+      url: 'https://github.com/nisheetpatel/taxpresso/issues/1',
+      label: 'Votez pour le prochain canton',
+    });
+    const geneva = (await api(req('POST', '/answer', { id: 'canton', value: 'GE' })))
+      .body as DashboardState;
+    expect(geneva.question?.text).toBe(`Quel était votre état civil au 31 décembre 2026${NBSP}?`);
     // The official page shown under "Page officielle" in the explanation, in the page language.
-    expect(state.question?.learnMore).toEqual({
+    expect(geneva.question?.learnMore).toEqual({
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53',
       label: `Guide fiscal 2025, p. 53${NBSP}: Changements de situation`,
     });
@@ -36,9 +44,10 @@ describe('dashboard API', () => {
   it('answers, skips and records who did it', async () => {
     const ws = await makeWorkspace();
     const api = createApi(ws);
+    await api(req('POST', '/answer', { id: 'canton', value: 'GE' }));
     let state = (await api(req('POST', '/answer', { id: 'civil_status', value: 'married' })))
       .body as DashboardState;
-    expect(state.chips).toEqual(['Marié(e)']);
+    expect(state.chips).toEqual(['Genève', 'Marié(e)']);
     expect(state.people.map((p) => p.label)).toEqual(['Vous', 'Votre conjoint ou partenaire']);
     expect(ws.ledger.get('profile.civil_status')?.source.via).toBe('dashboard');
     state = (await api(req('POST', '/skip', { id: 'children' }))).body as DashboardState;
@@ -49,6 +58,7 @@ describe('dashboard API', () => {
   it('takes documents, lets the user say what they are, and updates what is missing', async () => {
     const ws = await makeWorkspace();
     const api = createApi(ws);
+    await api(req('POST', '/answer', { id: 'canton', value: 'GE' }));
     await api(req('POST', '/answer', { id: 'civil_status', value: 'single' }));
     for (const [id, value] of [
       ['children', 0],
@@ -96,6 +106,7 @@ describe('dashboard API', () => {
   it('saves planning inputs and returns the 3a estimate', async () => {
     const ws = await makeWorkspace();
     const api = createApi(ws);
+    await api(req('POST', '/answer', { id: 'canton', value: 'GE' }));
     await api(req('POST', '/answer', { id: 'civil_status', value: 'single' }));
     let state = (await api(req('POST', '/plan', { person: 'p1', field: 'gross', value: 95_000 })))
       .body as DashboardState;

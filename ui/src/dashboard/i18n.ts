@@ -5,7 +5,9 @@ const NB = String.fromCharCode(0xa0);
 export const messages = {
   en: {
     docTitle: 'Taxpresso · Your taxes, done over an espresso.',
-    yearPill: 'Tax year {year} · Geneva',
+    yearPill: 'Tax year {year} · {canton}',
+    yearPillNoCanton: 'Tax year {year}',
+    assumedAnswer: 'From your earlier answers ({because}). Change it if it’s wrong.',
     localOnly: 'On this computer only',
     steps: 'Steps',
     step1: 'Tell & drop',
@@ -149,7 +151,9 @@ export const messages = {
   },
   fr: {
     docTitle: 'Taxpresso · Vos impôts, le temps d’un espresso.',
-    yearPill: 'Année fiscale {year} · Genève',
+    yearPill: 'Année fiscale {year} · {canton}',
+    yearPillNoCanton: 'Année fiscale {year}',
+    assumedAnswer: 'D’après vos réponses précédentes ({because}). Modifiez-la si elle est fausse.',
     localOnly: 'Uniquement sur cet ordinateur',
     steps: 'Étapes',
     step1: 'Racontez & déposez',

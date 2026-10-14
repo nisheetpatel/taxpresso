@@ -56,6 +56,7 @@ afterEach(async () => {
 
 /** A year folder with answers, a document, an "Entered" tick and a file the user filed there. */
 async function fill() {
+  await ws.answer('canton', 'GE', 'chat');
   await ws.answer('civil_status', 'single', 'chat');
   const pdf = readFileSync(path.join(FIXTURES, 'dupont-certificat-salaire-2026.pdf'));
   const { document } = await ws.addDocument(pdf, 'Certificat de salaire.pdf', 'dashboard');

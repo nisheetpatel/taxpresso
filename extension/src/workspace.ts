@@ -30,6 +30,7 @@ import {
 } from '@taxpresso/rules-ge';
 import type { Text } from '@taxpresso/rules-ch';
 import type { SecuritiesSummary } from '@taxpresso/intake';
+import type { CantonRegistry, CantonState } from './cantons.js';
 import { displayPath, type Config } from './config.js';
 import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';
 import {
@@ -130,8 +131,8 @@ export type PlanKey = (typeof PLAN_KEYS)[number];
 
 export class Workspace {
   readonly config: Config;
-  readonly engine: QuestionnaireEngine;
-  readonly keys: KeyRegistry;
+  /** The cantons, their questionnaires and keys (./cantons.ts). */
+  readonly cantons: CantonRegistry;
   readonly vault: Vault;
   #ledger: Ledger | undefined;
   #documents: VaultDocument[] = [];
@@ -143,17 +144,35 @@ export class Workspace {
   /** The securities list read from broker exports (SPEC.md 5.7), and exports that can't be read. */
   #securities: { summary: SecuritiesSummary; unreadable: string[] } | undefined;
 
-  constructor(config: Config, engine: QuestionnaireEngine, keys: KeyRegistry) {
+  constructor(config: Config, cantons: CantonRegistry) {
     this.config = config;
-    this.engine = engine;
-    this.keys = keys;
-    this.vault = new Vault(config.vaultPath, engine.taxYear);
+    this.cantons = cantons;
+    this.vault = new Vault(config.vaultPath, cantons.taxYear);
+  }
+
+  /**
+   * The canton of the year (docs/design/cantons.md, section 3): the user's answer to the first
+   * question or, for a return started before it was asked, the canton its answers belong to.
+   */
+  canton(): CantonState {
+    if (!this.#ledger) return { answer: undefined, canton: undefined, from: 'none', because: [] };
+    return this.cantons.state(this.#ledger);
+  }
+
+  /** The questionnaire of the canton (the shared questions until the canton is known). */
+  get engine(): QuestionnaireEngine {
+    return this.cantons.engine(this.canton().canton);
+  }
+
+  /** The ledger keys of the canton's return. */
+  get keys(): KeyRegistry {
+    return this.cantons.keys(this.canton().canton);
   }
 
   /** Loads what is already in the folder, once. A missing folder is an empty return. */
   ready(): Promise<void> {
     this.#loading ??= (async () => {
-      this.#ledger = await this.vault.loadLedger(this.keys);
+      this.#ledger = await this.vault.loadLedger(this.cantons.ledgerKeys);
       this.#documents = await this.vault.loadDocuments();
       this.#prefs = {
         ...this.#prefs,
@@ -196,7 +215,11 @@ export class Workspace {
   }
 
   snapshot() {
-    return this.engine.snapshot(this.ledger);
+    const state = this.canton();
+    // A canton taken from earlier answers counts as the answer until the user gives one.
+    const assumed: Record<string, string> =
+      state.from === 'earlier_answers' && state.answer ? { 'profile.canton': state.answer } : {};
+    return this.engine.snapshot(this.ledger, assumed);
   }
 
   next(): Slot | undefined {
@@ -248,6 +271,26 @@ export class Workspace {
    * never stored. Null result when an answer the engine needs is missing (`missing` says which).
    */
   taxEstimate(): { result: TaxResult | null; missing: Text[]; notes: Text[] } {
+    const canton = this.canton();
+    if (canton.canton?.code !== 'GE') {
+      return {
+        result: null,
+        missing: canton.canton
+          ? [
+              {
+                en: `the ${canton.canton.name.en} tax rules, which come in a later step`,
+                fr: `les règles fiscales de ${canton.canton.name.fr}, qui arrivent dans une prochaine étape`,
+              },
+            ]
+          : [
+              {
+                en: 'the canton where you lived on 31 December',
+                fr: 'le canton où vous habitiez au 31 décembre',
+              },
+            ],
+        notes: [],
+      };
+    }
     const { input, missing, notes } = engineInputFromFacts(
       this.engine.taxYear,
       this.countedFacts(),

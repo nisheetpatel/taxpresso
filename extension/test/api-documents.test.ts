@@ -28,6 +28,7 @@ const req = (
 async function setUp(): Promise<{ ws: Workspace; api: ReturnType<typeof createApi>; id: string }> {
   const ws = await makeWorkspace();
   const api = createApi(ws);
+  await api(req('POST', '/answer', { id: 'canton', value: 'GE' }));
   await api(req('POST', '/answer', { id: 'civil_status', value: 'single' }));
   const upload = await api(
     req(
