@@ -1,5 +1,6 @@
 // The figures on the Geneva reference pages (/<lang>/geneva/), read at build time from the rules
-// engine's own cited constants in packages/rules-ge. No tax figure is typed here: each one comes
+// engines' own cited constants: Geneva's in packages/rules-ge, the federal ones every canton shares
+// in packages/rules-ch. No tax figure is typed here: each one comes
 // from a constant, with that constant's citation (manifest id plus page or article), and the
 // citation is looked up in docs/sources/manifest.json for the official document's title and
 // address. An id that isn't in the manifest fails the build. Anything the code doesn't hold yet is
@@ -23,8 +24,11 @@ import {
   PILLAR3A_2025,
   PILLAR3A_CATCHUP_2026,
   PILLAR3A_CATCHUP_FACTS,
-} from '../../packages/rules-ge/src/2026/pension.ts';
-import { PILLAR3A_2026, PILLAR3A_2026_FACTS } from '../../packages/rules-ge/src/2026/pillar3a.ts';
+} from '../../packages/rules-ch/src/pension/buy-ins.ts';
+import {
+  PILLAR3A_2026,
+  PILLAR3A_2026_FACTS,
+} from '../../packages/rules-ch/src/pension/pillar3a.ts';
 import { TOU_FACTS, touDeadline } from '../../packages/rules-ge/src/2026/tou.ts';
 
 /** The tax year of the 2026 modules above. */

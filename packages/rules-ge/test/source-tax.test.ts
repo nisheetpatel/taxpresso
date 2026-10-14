@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import ge2025 from '../../../data/ge/2025/source-tax/tariffs.json';
 import ge2026 from '../../../data/ge/2026/source-tax/tariffs.json';
-import { expandTariff } from '../src/source-tax/ascii.js';
+import { expandTariff } from '@taxpresso/rules-ch';
 import {
   normalizeTariff,
   sourceTax,

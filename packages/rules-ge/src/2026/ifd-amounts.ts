@@ -5,7 +5,7 @@
 // personnes-physiques (Form. 2a 2026), p. 6 (3 % flat) and p. 7 (pillar 3a); ch-2026-ifd-tarif-
 // personnes-physiques (Form. 58c 2026) notes 1 and 2 for rounding; ch-na-law-lifd for the rules.
 import type { IfdAmounts } from '../2025/ifd.js';
-import { PILLAR3A_2026 } from './pillar3a.js';
+import { PILLAR3A_2026 } from '@taxpresso/rules-ch';
 
 const CIRCULAR = 'ch-2026-ifd-progression-deductions';
 const INSTRUCTIONS = 'ch-2026-ifd-instructions-personnes-physiques';

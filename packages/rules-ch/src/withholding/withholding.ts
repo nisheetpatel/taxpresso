@@ -22,7 +22,7 @@
 //   art. 9, p. 5 and 6): Taxpresso shows the amount requested, the office applies the cap.
 // - The rates are published per income year, each February for the year before. A year without
 //   its list fails closed: nothing is credited until the list is added here.
-import type { Cited } from '@taxpresso/rules-ch';
+import type { Cited } from '../core/cited.js';
 
 /** 35 %, in basis points. */
 export const IA_RATE: Cited<number> = {

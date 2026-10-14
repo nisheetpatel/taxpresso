@@ -23,7 +23,7 @@ export {
   ifdTax2026,
 } from './2026/ifd.js';
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
-export { KEYS_SECURITIES_2026, type SecurityKey } from './2026/keys-securities.js';
+export { KEYS_SECURITIES_2026, type SecurityKey } from '@taxpresso/rules-ch';
 // The securities list (état des titres), other movable wealth and the withholding tax claimed back.
 export {
   KEYS_WEALTH_2026,
@@ -65,12 +65,12 @@ export {
   iaClaim,
   iaOn,
   residualRate,
-  roundFranc,
+  roundFrancExact as roundFranc,
   splitForeignTax,
   type ForeignIncomeKind,
   type ResidualRate,
-} from './2026/withholding.js';
-export { OFFICIAL_RATES, officialChf, type Conversion } from './2026/exchange-rates.js';
+} from '@taxpresso/rules-ch';
+export { OFFICIAL_RATES, officialChf, type Conversion } from '@taxpresso/rules-ch';
 export {
   KEYS_PRIOR_2026,
   parsePriorInstance,
@@ -92,8 +92,8 @@ export {
   communeByName,
   foldName,
 } from './2026/commune-codes.js';
-export { KEYS_ECH0196_2026, type Ech0196Key } from './2026/keys-ech0196.js';
-export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
+export { KEYS_ECH0196_2026, type Ech0196Key } from '@taxpresso/rules-ch';
+export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ch';
 // Source tax (2025, 2026), TOU, pension fund buy-ins and the 3a catch-up (SPEC.md section 8).
 export {
   normalizeTariff,
@@ -118,7 +118,7 @@ export {
   PILLAR3A_2025,
   PILLAR3A_CATCHUP_2026,
   PILLAR3A_CATCHUP_FACTS,
-} from './2026/pension.js';
+} from '@taxpresso/rules-ch';
 export {
   DOCUMENT_FIELDS_2026,
   DOCUMENT_KEYS_2026,

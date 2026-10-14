@@ -3,15 +3,13 @@
 // parsers and the rules engine, each with the form field it maps to.
 // Official terms: ge-2025-guide-declaration-pp (p. 8 documents to gather, p. 10 attachments).
 import type { KeyRegistry } from '@taxpresso/ledger';
+import { KEYS_ECH0196_2026, KEYS_SECURITIES_2026, LPP_BUYIN_FACTS } from '@taxpresso/rules-ch';
 import { COMMUNES_2026 } from './communes.js';
-import { KEYS_SECURITIES_2026 } from './keys-securities.js';
 import { KEYS_WEALTH_2026 } from './keys-wealth.js';
 import { DOCUMENT_KEYS_2026 } from './document-keys.js';
 import { sourceTaxTariffs } from '../source-tax/index.js';
-import { LPP_BUYIN_FACTS } from './pension.js';
 import { TOU_FACTS } from './tou.js';
 import { KEYS_PRIOR_2026 } from './keys-prior.js';
-import { KEYS_ECH0196_2026 } from './keys-ech0196.js';
 
 export const KEYS_2026 = {
   'profile.civil_status': {

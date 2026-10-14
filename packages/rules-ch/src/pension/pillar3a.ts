@@ -1,6 +1,6 @@
 // Pillar 3a for tax year 2026. Source: ch-2026-ifd-instructions-personnes-physiques (Form. 2a,
 // période fiscale 2026). The same limits apply to the cantonal tax (federal harmonization).
-import type { Cited } from '@taxpresso/rules-ch';
+import type { Cited } from '../core/cited.js';
 
 export const PILLAR3A_2026: Cited<{
   /** With a pension fund (2nd pillar). */

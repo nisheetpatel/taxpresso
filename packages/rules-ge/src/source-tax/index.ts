@@ -11,7 +11,7 @@
 // (ch-na-is-recordformat-salaires p. 7) lets a canton list only one variant, and the files list N.
 import ge2025 from '../../../../data/ge/2025/source-tax/tariffs.json';
 import ge2026 from '../../../../data/ge/2026/source-tax/tariffs.json';
-import { expandTariff, type CompactTariff } from './ascii.js';
+import { expandTariff, type CompactTariff } from '@taxpresso/rules-ch';
 
 export type SourceTaxYear = 2025 | 2026;
 /** The amount is for one month, or for the whole year. */

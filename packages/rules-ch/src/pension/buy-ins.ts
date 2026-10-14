@@ -2,7 +2,7 @@
 // buy-ins (rachat LPP) and the new pillar 3a catch-up payments (rachat 3a). SPEC.md section 8,
 // group B. The same federal limits apply to the cantonal tax: LIPP art. 31 let. b and c deduct
 // these payments "au sens et dans les limites du droit fédéral" (ge-na-law-lipp art. 31).
-import type { Cited } from '@taxpresso/rules-ch';
+import type { Cited } from '../core/cited.js';
 
 /** Where each statement about pension fund buy-ins is written. */
 export const LPP_BUYIN_FACTS = {
