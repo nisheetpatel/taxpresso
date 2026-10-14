@@ -95,6 +95,7 @@ export {
   commuteCosts,
   debtInterest,
   donations,
+  federalChildcare,
   federalScale,
   IFD_NOTE,
   insurancePremiums,
@@ -104,6 +105,7 @@ export {
   professionalCosts,
   trainingCosts,
   twoEarner,
+  type CaredChild,
   type CommuteBase,
   type FederalConcept,
 } from './ifd/items.js';

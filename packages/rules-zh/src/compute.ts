@@ -641,6 +641,11 @@ export function computeReturn(input: ZhEngineInput): ZhTaxResult {
   // 14 who live with you together; given per child, per child.
   const household = (hh.childcare?.value ?? 0) > 0;
   const withCare = counted.filter((ch) => (household || ch.childcare) && ch.livesWithYou);
+  // Each child's care counts up to the 14th birthday ("das 14. Altersjahr noch nicht vollendet":
+  // zh-2025-law-steuergesetz-631-1-stand-2025 and zh-2026-law-steuergesetz-631-1-stand-2026 p. 18;
+  // zh-2026-tariff-weisung-sozialabzuege p. 5): the costs given for an older child are left out.
+  if (!household && withCare.some((ch) => ch.under14 === false && (ch.childcare?.value ?? 0) > 0))
+    notes.add(notes.notCounted, NOTE.childcareAge);
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)

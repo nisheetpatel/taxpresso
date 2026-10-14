@@ -20,6 +20,7 @@ import {
   donations,
   federalScale,
   francTotal,
+  IFD_NOTE,
   ifdParamsFor,
   ifdSideJobFlat,
   ifdTax,
@@ -519,6 +520,9 @@ export function federalReturn(
     ccTrace,
     counted.map((c) => c.childcare),
   );
+  if (f.children.some((c) => c.under14 === false && (c.childcare?.value ?? 0) > 0)) {
+    add(notes.notCounted, IFD_NOTE.childcareAge);
+  }
   if (care > 0) {
     const eligible = couple ? figures.length === 2 && figures.every((x) => x.earns) : true;
     if (eligible) {

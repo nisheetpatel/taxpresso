@@ -703,8 +703,13 @@ export function computeReturn(input: BeEngineInput): BeTaxResult {
     }
   }
 
-  // Childcare (form 2.1; StG Art. 38 Abs. 1 lit. l): both spouses, or the parent, must work.
+  // Childcare (form 2.1; StG Art. 38 Abs. 1 lit. l): both spouses, or the parent, must work. Each
+  // child's care counts up to the 14th birthday ("das 14. Altersjahr noch nicht vollendet":
+  // be-2025-stg-de and be-2026-stg-de p. 28; be-2025-wegleitung-np-de p. 23): the costs given for
+  // an older child are left out.
   const withCare = counted.filter((ch) => ch.childcare && ch.livesWithYou);
+  if (withCare.some((ch) => ch.under14 === false && (ch.childcare?.value ?? 0) > 0))
+    notes.add(notes.notCounted, NOTE.childcareAge);
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)

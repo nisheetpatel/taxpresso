@@ -140,6 +140,10 @@ export const NOTE = {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,
   },
+  childcareAge: {
+    en: 'Childcare (Kinderdrittbetreuungskosten, 2.1) counts only up to the child’s 14th birthday (StG Art. 38 Abs. 1 lit. l). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Les frais de garde (Kinderdrittbetreuungskosten, 2.1) ne comptent que jusqu’aux 14 ans de l’enfant (StG art. 38 al. 1 let. l). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
   sharedChildcare: {
     en: 'Childcare for a child living with each parent in turn: each parent deducts what they paid, at most half the limit per child (the two together at most the limit).',
     fr: `Frais de garde d’un enfant vivant tour à tour chez chaque parent${NB}: chacun déduit ce qu’il a payé, au plus la moitié du plafond par enfant (les deux ensemble au plus le plafond).`,

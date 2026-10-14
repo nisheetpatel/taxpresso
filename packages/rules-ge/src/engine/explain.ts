@@ -23,6 +23,10 @@ export const NOTE = {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,
   },
+  childcareAge: {
+    en: 'Childcare (frais de garde, 59.10 and 59.12) counts only up to the month of the child’s 14th birthday (guide p. 30). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Les frais de garde (59.10 et 59.12) ne comptent que jusqu’au mois du 14e anniversaire de l’enfant (guide p. 30). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
   partialSplitting: {
     en: 'Shared custody: partial splitting (55.56 %) assumes a judgment or a signed agreement that you share the children’s care and costs half and half (LIPP art. 41 al. 4). Otherwise the parent who mainly supports them gets full splitting.',
     fr: `Garde alternée${NB}: le splitting partiel (55,56${NB}%) suppose un jugement ou une convention signée prévoyant une prise en charge et des frais partagés pour moitié (LIPP art. 41 al. 4). Sinon, le parent qui assume l’essentiel de l’entretien a le splitting intégral.`,

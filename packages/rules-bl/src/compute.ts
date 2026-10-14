@@ -770,8 +770,13 @@ export function computeReturn(input: BlEngineInput): BlTaxResult {
     }
   }
 
-  // Childcare (640): per child under 14 living with you, while you work (married: both).
+  // Childcare (640): per child under 14 living with you, while you work (married: both). Each
+  // child's care counts up to the 14th birthday ("das 14. Altersjahr noch nicht vollendet":
+  // bl-na-steuergesetz-331 p. 23; bl-2025-wegleitung and bl-2026-wegleitung p. 32; the age limit
+  // is 14 since 2013, bl-na-steuerbuch p. 142): the costs given for an older child are left out.
   const withCare = fam.children.filter((c) => c.amount);
+  if (withCare.some((c) => c.under14 === false && c.childcare && (c.amount?.value ?? 0) > 0))
+    notes.add(notes.notCounted, NOTE.childcareAge);
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)

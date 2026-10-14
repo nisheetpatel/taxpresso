@@ -4,7 +4,7 @@
 // household; then the places where Fribourg's own documents take a federal deduction otherwise than
 // Geneva's form, each pinned with its documents (docs/sources/fr/NOTES.md, "Wiring Fribourg in the
 // app").
-import { ifdParamsFor, type HouseholdInput, type PersonInput } from '@taxpresso/rules-ch';
+import { IFD_NOTE, ifdParamsFor, type HouseholdInput, type PersonInput } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, rules as geneva } from '@taxpresso/rules-ge';
 import { communesFor as lucerneCommunes, rules as lucerne } from '@taxpresso/rules-lu';
 import { rules as zug } from '@taxpresso/rules-zg';
@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import {
   communesFor,
   FEDERAL_DIFFERENT,
+  NOTE,
   rules as fribourg,
   type FribourgCantonal,
   type Item,
@@ -109,13 +110,13 @@ function household(): Shared {
     taxYear: pick([2025, 2026] as const),
     civilStatus: civil,
     people: couple ? [person('p1'), person('p2')] : [person('p1')],
-    // Childcare only for a child under 14: for an older child, Geneva's engine adds it within the
-    // cap of the younger ones (the case below).
+    // Childcare for a child of any age: the costs of a child of 14 or more count in no canton's
+    // engine (the case below).
     children: Array.from({ length: kids }, () => {
       const under14 = maybe(0.3) ? maybe(0.7) : undefined;
       return {
         custody: shared && maybe(0.8) ? 'shared' : 'full',
-        ...(under14 !== false && maybe(0.4) ? { childcare: amt(500, 25_000) } : {}),
+        ...(maybe(0.4) ? { childcare: amt(500, 25_000) } : {}),
         ...(under14 !== undefined ? { under14 } : {}),
       };
     }),
@@ -414,10 +415,11 @@ describe('where Fribourg’s documents take a federal deduction otherwise than G
     expect(fr.taxableIncome.amount - ge.taxableIncome.amount).toBe(chf(2_700 - 1_810));
   });
 
-  it('childcare for a child of 14 or more counts for neither tax; Geneva’s engine adds it within the cap of the younger children', () => {
+  it('childcare for a child of 14 or more counts for neither tax, as in Geneva’s engine', () => {
     // Two children, 6,000 of childcare each, the second aged 14: LIFD art. 33 al. 3 and the guide
-    // (p. 48: "par enfant") count the first child's only. Geneva's federal childcare sums both
-    // within the cap of the children under 14 (packages/rules-ge): 6,000 more deducted there.
+    // (p. 48: "par enfant") count the first child's only. Geneva's federal childcare leaves the
+    // second child's out too (packages/rules-ge), where it used to add it within the cap of the
+    // children under 14: the same taxable income.
     const h = single(salary(80_000), {
       civilStatus: 'divorced',
       children: [
@@ -433,7 +435,8 @@ describe('where Fribourg’s documents take a federal deduction otherwise than G
       ],
     });
     expect(fr.items.find((i) => i.code === '4.380')?.amount).toBe(chf(-6_000));
-    expect(fr.taxableIncome.amount - ge.taxableIncome.amount).toBe(chf(6_000));
+    expect(ge.items.find((i) => i.code === '59.12')?.amount).toBe(chf(-6_000));
+    expect(fr.taxableIncome.amount).toBe(ge.taxableIncome.amount);
   });
 
   it('daily allowances are not in the base of the 3 % flat (code 2.130 is the salary’s), as Zurich and not as Geneva', () => {
@@ -508,5 +511,44 @@ describe('the federal amounts the guide prints for 2025', () => {
     expect(F.child.value).toBe(chf(6_800));
     expect(F.married.value).toBe(chf(2_800));
     expect(F.childTaxReduction.value).toBe(chf(263));
+  });
+});
+
+describe('childcare of a child of 14 or more', () => {
+  it('counts for neither tax, and the result says so', () => {
+    // Two children: the younger under 14 with childcare of 8,000, the elder 14 or more at the end
+    // of the year with 5,000. Only the younger child’s counts: cantonal 8,000 (4.380, at most
+    // 12,000, LICD art. 34 al. 3); federal 8,000 (at most 25,800, Form. 2a 2025 p. 8), as the
+    // federal column already took it.
+    const h: Shared = {
+      taxYear: 2025,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(8_000) } },
+        { custody: 'full', under14: false, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = fribourg.computeReturn({
+      ...h,
+      commune: 'Fribourg',
+      cantonal: {
+        church: { p1: 'none', p2: 'none' },
+        children: [
+          { age: 'child', under14: true },
+          { age: 'child', under14: false },
+        ],
+      },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '4.380')).toBe(chf(8_000));
+    expect(ded(r.ifd!.items, '4.380')).toBe(chf(8_000));
+    expect(r.notCounted).toContainEqual(NOTE.childcareNotCounted);
+    expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
   });
 });

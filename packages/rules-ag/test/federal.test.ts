@@ -5,7 +5,7 @@
 // through the five cantons' interfaces; then the lines for one household; then the places where
 // the cantons' engines take a federal deduction differently, each pinned with its documents
 // (docs/sources/ag/NOTES.md, "Wiring Aargau in the app").
-import type { HouseholdInput, PersonInput } from '@taxpresso/rules-ch';
+import { IFD_NOTE, type HouseholdInput, type PersonInput } from '@taxpresso/rules-ch';
 import { communesFor as bernCommunes, rules as bern, type BernCantonal } from '@taxpresso/rules-be';
 import {
   communesFor as baselLandCommunes,
@@ -19,6 +19,7 @@ import {
   communesFor,
   FEDERAL_NOTE,
   federalTotals,
+  NOTE,
   rules as aargau,
   type AargauCantonal,
   type ChildBand,
@@ -108,8 +109,8 @@ function person(id: 'p1' | 'p2'): PersonInput {
 /**
  * A household every canton computes without what their engines do differently (see the cases
  * below, and the other cantons' federal tests): no benefits replacing a salary, no medical costs or
- * donations, no payments to political parties, no side job, and no childcare for a child of 14 or
- * more.
+ * donations, no payments to political parties, no side job. Childcare for a child of any age: the
+ * costs of a child of 14 or more count in no canton's engine.
  */
 function household(): Shared {
   const civil = pick(['single', 'married', 'married', 'divorced', 'widowed'] as const);
@@ -124,7 +125,7 @@ function household(): Shared {
       const under14 = maybe(0.3) ? maybe(0.7) : undefined;
       return {
         custody: shared && maybe(0.8) ? 'shared' : 'full',
-        ...(under14 !== false && maybe(0.4) ? { childcare: amt(500, 25_000) } : {}),
+        ...(maybe(0.4) ? { childcare: amt(500, 25_000) } : {}),
         ...(under14 !== undefined ? { under14 } : {}),
       };
     }),
@@ -424,11 +425,11 @@ describe('where the cantons’ engines take a federal deduction differently (ope
     expect(ag.tax.amount).toBe(zh.tax.amount);
   });
 
-  it('childcare of a child of 14 or more: not counted for the federal tax; the other cantons’ engines add its costs to the total they cap', () => {
+  it('childcare of a child of 14 or more: counted for neither tax, in every canton’s engine', () => {
     // Two children, the younger under 14 with childcare 10,000, the elder 15 with 5,000: only
     // children under 14 count (ch-2026-ifd-instructions-personnes-physiques p. 8, "jusqu’à 14
-    // ans"), so 10,000. Geneva, Zurich, Bern and Basel-Landschaft add the elder's 5,000 to the
-    // total, capped per child under 14: 15,000.
+    // ans"), so 10,000. Geneva, Zurich, Bern and Basel-Landschaft leave the elder's 5,000 out too,
+    // where they used to add it to the total, capped per child under 14: 15,000.
     const h: Shared = {
       taxYear: 2026,
       commune: '',
@@ -448,9 +449,27 @@ describe('where the cantons’ engines take a federal deduction differently (ope
       cantonal: { church: { p1: 'none', p2: 'none' }, childBands: ['under14', 'under18'] },
     });
     const ge = geneva.computeReturn({ ...h, commune: 'geneve' }).ifd!;
+    const zh = zurich.computeReturn({ ...h, commune: 261 }).ifd!;
+    const be = bern.computeReturn({
+      ...h,
+      commune: 351,
+      cantonal: { church: { p1: 'none', p2: 'none' } },
+    }).ifd!;
+    const bl = baselLand.computeReturn({
+      ...h,
+      commune: 'Liestal',
+      cantonal: { church: { p1: 'none', p2: 'none' } },
+    }).ifd!;
     expect(ded(ag.ifd!.items, '15.0')).toBe(chf(10_000));
-    expect(ded(ge.items, '59.12')).toBe(chf(15_000));
-    // The cantonal tax counts the younger child's only, as the canton's documents say.
+    expect(ded(ge.items, '59.12')).toBe(chf(10_000));
+    expect(ded(zh.items, '376')).toBe(chf(10_000));
+    expect(ded(be.items, '2.1-betreuung')).toBe(chf(10_000));
+    expect(ded(bl.items, '640')).toBe(chf(10_000));
+    for (const other of [ge, zh, be, bl]) expect(ag.ifd!.tax.amount).toBe(other.tax.amount);
+    // The cantonal tax counts the younger child's only, as the canton's documents say; the result
+    // says why the elder's costs are left out, for each tax.
     expect(ded(ag.icc!.items, '15.0')).toBe(chf(10_000));
+    expect(ag.notCounted).toContainEqual(NOTE.childcareOver14);
+    expect(ag.notCounted).toContainEqual(IFD_NOTE.childcareAge);
   });
 });
