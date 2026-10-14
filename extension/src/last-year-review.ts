@@ -24,6 +24,7 @@ import * as z from 'zod/v4';
 import { room2026 } from './planning.js';
 import { chfText, lastYearLines } from './prior.js';
 import type { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 const COUPLE = new Set(['married', 'registered_partnership']);
 const isCommune = (v: FactValue | undefined): v is CommuneSlug =>
@@ -43,7 +44,7 @@ export interface ReviewView extends LastYearReview {
 }
 
 /** The review of the declaration that counts, from the workspace. */
-export function reviewOf(ws: Workspace, today = new Date().toISOString().slice(0, 10)): ReviewView {
+export function reviewOf(ws: Workspace, today = ws.today()): ReviewView {
   const taxYear = ws.engine.taxYear;
   const doc = ws.priorDocument();
   const tax = (d: { kind?: string }) => d.kind === 'tax_assessment';
@@ -368,7 +369,9 @@ export function reviewText(v: ReviewView, detail: boolean): string {
   return out.join('\n');
 }
 
-export function registerReviewTool(server: McpServer, ws: Workspace): void {
+export function registerReviewTool(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'review_last_year',
     {
@@ -392,6 +395,7 @@ export function registerReviewTool(server: McpServer, ws: Workspace): void {
       },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       const view = reviewOf(ws);
       return {

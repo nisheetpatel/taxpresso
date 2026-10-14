@@ -21,6 +21,8 @@ import {
   planningReady,
   planningText,
   planningView,
+  yearOverText,
+  yearOverView,
 } from './planning.js';
 import { PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
@@ -36,12 +38,16 @@ import { CANTONS, cantonNames, fullCantons, germanCantons, previewCantons } from
 import { PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
 import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
+import { registerYearTool } from './year-tool.js';
+import { DEFAULT_TAX_YEAR, TaxYears } from './years.js';
 
 // MCP Apps: the dashboard in the conversation, and the tool it talks through (./dashboard-view.ts).
 export { DASHBOARD_VIEW_URI, MCP_APP_MIME_TYPE } from './dashboard-view.js';
 
 export interface ServerDeps {
-  workspace: Workspace;
+  /** The tax years and the open one (./years.ts); or one workspace, whose year opens first. */
+  years?: TaxYears;
+  workspace?: Workspace;
   dashboard: Dashboard;
 }
 
@@ -172,6 +178,13 @@ function toolError(err: unknown) {
   throw err;
 }
 
+/**
+ * "Tax year 2025: " before what a question or an answer says, when the open year is not the default
+ * one: the user may have switched in the dashboard (docs/design/tax-years.md).
+ */
+const yearOf = (ws: Workspace) =>
+  ws.taxYear === DEFAULT_TAX_YEAR ? '' : `Tax year ${ws.taxYear}: `;
+
 /** `place`: the canton's name; `hint`: how its communes are named, when that needs saying. */
 function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
   const how =
@@ -203,19 +216,22 @@ function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
   ].join('\n');
 }
 
-export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps): McpServer {
+export function createTaxpressoServer(deps: ServerDeps): McpServer {
+  const { dashboard } = deps;
+  // Every tool takes the open year's workspace once, when it starts (./years.ts).
+  const years = deps.years ?? TaxYears.of(deps.workspace!);
   const server = new McpServer(
-    { name: 'taxpresso', title: 'Taxpresso', version: ws.config.version },
+    { name: 'taxpresso', title: 'Taxpresso', version: years.config.version },
     { instructions: INSTRUCTIONS },
   );
-  const status = (detail = false) =>
-    buildStatus(ws, { dashboardRunning: dashboard.running, detail });
+  const status = (ws: Workspace, detail = false) =>
+    buildStatus(ws, { dashboardRunning: dashboard.running, detail, years });
 
   server.registerTool(
     'get_status',
     {
       title: 'Get tax return status',
-      description: `Where the user's tax return stands (${cantonNames(fullCantons(), 'and')}, or ${cantonNames(previewCantons(), 'and')} as a preview): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.`,
+      description: `Where the user's tax return stands for the open tax year (${cantonNames(fullCantons(), 'and')}, or ${cantonNames(previewCantons(), 'and')} as a preview): the year, canton, household, answers, documents, what is missing or not supported, and the next step. Call this first.`,
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -226,9 +242,10 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Get tax return status', ...RO },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       ws.record('claude', 'status');
-      const s = status(detail === true);
+      const s = status(ws, detail === true);
       return { content: [{ type: 'text', text: statusText(s) }], structuredContent: s };
     },
   );
@@ -249,6 +266,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Get the next questions', ...RO },
     },
     async ({ limit }) => {
+      const ws = years.current;
       await ws.ready();
       ws.record('claude', 'questions');
       const snap = ws.snapshot();
@@ -261,7 +279,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
       const text = questions.length
-        ? `${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}`
+        ? `${yearOf(ws)}${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}`
         : 'All questions are answered. Call get_status for the next step.';
       return {
         content: [{ type: 'text', text }],
@@ -295,6 +313,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Save an answer', ...RW },
     },
     async ({ id, value }) => {
+      const ws = years.current;
       try {
         const { added } = await ws.answer(id, value, 'chat');
         const snap = ws.snapshot();
@@ -307,7 +326,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           .map((n) => n.what.en);
         const nextSlot = ws.next();
         const next = nextSlot ? questionOut(ws, nextSlot) : undefined;
-        const lines = [`Saved: ${saved}.`];
+        const lines = [`${yearOf(ws)}Saved: ${saved}.`];
         if (newlyMissing.length) lines.push(`Documents now needed: ${newlyMissing.join('; ')}.`);
         if (notSupported.length) {
           lines.push(
@@ -355,6 +374,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'List documents', ...RO },
     },
     async () => {
+      const ws = years.current;
       await ws.ready();
       const exportNote = (id: string) => {
         const doc = ws.documents.find((d) => d.id === id);
@@ -414,6 +434,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Check the Taxpresso folder', ...RW, idempotentHint: true },
     },
     async () => {
+      const ws = years.current;
       const found = await ws.scan('claude');
       const added = found.map((d) => d.filename);
       const counted = ws.countedFacts();
@@ -450,9 +471,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   );
 
   // get_last_year: last year's figures, for comparison only (./prior-tool.ts).
-  registerLastYearTool(server, ws);
+  registerLastYearTool(server, years);
   // review_last_year: last year's return reviewed, read-only (./last-year-review.ts).
-  registerReviewTool(server, ws);
+  registerReviewTool(server, years);
 
   server.registerTool(
     'list_optimizations',
@@ -465,17 +486,36 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         lppBuyIn: z.record(z.string(), z.unknown()),
         pillar3aCatchUp: z.record(z.string(), z.unknown()),
         tou: z.record(z.string(), z.unknown()),
+        yearOver: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe('A tax year that is over: the plans before 31 December no longer apply.'),
       }),
       annotations: { title: 'List tax savings', ...RO },
     },
     async () => {
+      const ws = years.current;
       await ws.ready();
       await planningReady(ws);
+      // A year that is over: nothing can be paid into it anymore (./planning.ts).
+      const over = yearOverView(ws);
+      if (over) {
+        return {
+          content: [{ type: 'text', text: yearOverText(over, ws.canton().canton).join('\n') }],
+          structuredContent: {
+            pillar3a: {},
+            lppBuyIn: {},
+            pillar3aCatchUp: {},
+            tou: over.tou ? { ...over.tou } : {},
+            yearOver: { ...over },
+          },
+        };
+      }
       const plan = ws.plan();
       const planning = planningView(ws);
       const canton = ws.canton().canton;
       const lines = [
-        `Before 31 December ${ws.config.taxYear}: pillar 3a (${canton?.terms?.pillar3a ?? '3e pilier A'})`,
+        `Before 31 December ${ws.taxYear}: pillar 3a (${canton?.terms?.pillar3a ?? '3e pilier A'})`,
       ];
       for (const p of plan.people) {
         const cap = p.capIsMaximum
@@ -502,9 +542,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         `Assumptions: ${plan.assumptions.map((a) => ASSUMPTION_TEXT[a] ?? cantonAssumptionText(a) ?? a).join(' ')}`,
       );
       lines.push(
-        `Facts with sources: only payments made in ${ws.config.taxYear} count (${PILLAR3A_2026_FACTS.paidInYearOnly}); payouts are taxed (${PILLAR3A_2026_FACTS.payoutsTaxable}); missed years since 2025 can be made up from 2026, under conditions (${PILLAR3A_2026_FACTS.catchUpFrom2026}).`,
+        `Facts with sources: only payments made in ${ws.taxYear} count (${PILLAR3A_2026_FACTS.paidInYearOnly}); payouts are taxed (${PILLAR3A_2026_FACTS.payoutsTaxable}); missed years since 2025 can be made up from 2026, under conditions (${PILLAR3A_2026_FACTS.catchUpFrom2026}).`,
         "Don't recommend specific 3a providers or investments.",
-        ...planningText(planning, ws.config.taxYear, canton),
+        ...planningText(planning, ws.taxYear, canton),
       );
       return {
         content: [{ type: 'text', text: lines.join('\n') }],
@@ -538,6 +578,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Compute the tax', ...RO },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       const { text, structured } = computeTaxOutput(ws, detail === true);
       return { content: [{ type: 'text', text }], structuredContent: structured };
@@ -569,6 +610,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Record the user’s TOU decision', ...RW },
     },
     async (args) => {
+      const ws = years.current;
       try {
         const d = await decide(ws, DecisionInput.parse(args), 'chat');
         const delta = Math.round(Math.abs(d.deltaCentimes) / 100).toLocaleString('en-US');
@@ -625,6 +667,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Save what the user said', ...RW },
     },
     async ({ key, person, instance, value, confirm }) => {
+      const ws = years.current;
       try {
         if (confirm) {
           if (!instance) throw new WorkspaceError('Give the document id as instance.');
@@ -715,6 +758,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Read a document', ...RO },
     },
     async ({ id, page }) => {
+      const ws = years.current;
       await ws.ready();
       try {
         const { content, summary } = await reviewDocument(ws, id, page ?? 1);
@@ -791,6 +835,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Propose values read in a document', ...RW },
     },
     async ({ id, document, values }) => {
+      const ws = years.current;
       try {
         const result = await ws.proposeExtraction(id, document ?? {}, values ?? []);
         const doc = result.document;
@@ -841,7 +886,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   );
 
   // The securities list (état des titres) and other wealth: get_holdings, set_holding.
-  registerHoldingTools(server, ws);
+  registerHoldingTools(server, years);
 
   server.registerTool(
     'get_form_values',
@@ -890,6 +935,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Get the values to type into the declaration', ...RO },
     },
     async ({ section }) => {
+      const ws = years.current;
       await ws.ready();
       try {
         const { text, structured } = formValues(ws, section);
@@ -911,6 +957,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       _meta: { ui: { resourceUri: DASHBOARD_VIEW_URI }, 'ui/resourceUri': DASHBOARD_VIEW_URI },
     },
     async () => {
+      const ws = years.current;
       await ws.ready();
       ws.record('claude', 'dashboard');
       const url = await dashboard.start();
@@ -921,26 +968,29 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
             text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running.`,
           },
         ],
-        structuredContent: { url, status: status() },
+        structuredContent: { url, status: status(ws) },
       };
     },
   );
 
+  // open_tax_year: the year the user prepares, the same choice as the dashboard's year switch.
+  registerYearTool(server, years);
+
   // What the dashboard's buttons do, from the chat: mark_entered, skip_question,
   // waive_requirement, replace_document (./parity-tools.ts).
-  registerParityTools(server, ws);
+  registerParityTools(server, years);
 
   // reconcile_official_pdf: this year's declaration PDF against the values to type (./reconcile.ts).
-  registerDeclarationCheckTool(server, ws);
+  registerDeclarationCheckTool(server, years);
 
   // export_bundle: one ZIP of the tax-year folder, on this computer (./export.ts).
-  registerExportTool(server, ws);
+  registerExportTool(server, years);
 
   // The dashboard view (ui://) and dashboard_api, which only that view calls.
-  registerDashboardView(server, ws, dashboard);
+  registerDashboardView(server, years, dashboard);
 
   // final_check: what to fix before filling in the official form, and what is good to know.
-  registerFinalCheckTool(server, ws);
+  registerFinalCheckTool(server, years);
 
   server.registerPrompt(
     'start_geneva_tax_return',
@@ -954,7 +1004,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           role: 'user',
           content: {
             type: 'text',
-            text: `I want to work on my tax return for ${ws.config.taxYear} with Taxpresso. Check where I am and tell me the next step.`,
+            text: `I want to work on my tax return for ${years.year} with Taxpresso. Check where I am and tell me the next step.`,
           },
         },
       ],

@@ -25,11 +25,12 @@ import {
   blQuestionnaire2026,
   bsQuestionnaire2026,
   frQuestionnaire2026,
-  geQuestionnaire2026,
+  GE_QUESTIONNAIRE_YEARS,
+  geQuestionnaire,
   luQuestionnaire2026,
   sgQuestionnaire2026,
   QuestionnaireEngine,
-  sharedQuestionnaire2026,
+  sharedQuestionnaire,
   tiQuestionnaire2026,
   vdQuestionnaire2026,
   zgQuestionnaire2026,
@@ -210,6 +211,12 @@ export interface CantonEntry {
   software: string;
   /** The canton's tax rules behind the canton interface (packages/rules-ch, canton.ts). */
   rules: { canton: CantonCode; taxYears: readonly number[] };
+  /**
+   * The tax years Taxpresso prepares for the canton (docs/design/tax-years.md): only years its
+   * rules, its form map and its questions all cover, with that year's documents cited (a test
+   * checks). Any other year fails closed: the canton question says it isn't available yet.
+   */
+  years: readonly number[];
   /** The canton's questionnaire for the year, or undefined while it has none. */
   questionnaire(taxYear: number): QuestionnaireFile | undefined;
   /** Every ledger key of the year: the canton question, the shared keys and the canton's own. */
@@ -293,7 +300,11 @@ const GENEVA: CantonEntry = {
   name: { en: 'Geneva', fr: 'Genève', de: 'Genf', it: 'Ginevra' },
   software: 'GeTax',
   rules: genevaRules,
-  questionnaire: (taxYear) => (taxYear === 2026 ? geQuestionnaire2026() : undefined),
+  // The rules (rules-ge, 2025 published, 2026 with Geneva's 2025 scales flagged), the form maps
+  // (filing-ge, FORM_2025 and FORM_2026) and the questions (data/ge/2026, taxYears) of both years.
+  years: [2025, 2026],
+  questionnaire: (taxYear) =>
+    GE_QUESTIONNAIRE_YEARS.includes(taxYear) ? geQuestionnaire(taxYear) : undefined,
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...genevaRules.keys(taxYear) }),
   communes: () => COMMUNES_2026.map((c) => ({ slug: c.slug, name: c.name })),
   inferFrom(ledger) {
@@ -325,6 +336,8 @@ const ZURICH: CantonEntry = {
   name: { en: 'Zurich', fr: 'Zurich', de: 'Zürich', it: 'Zurigo' },
   software: 'ZHprivateTax',
   rules: zurichRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? zhQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zurichRules.keys(taxYear) }),
   communes: (taxYear) => communeOptions(taxYear),
@@ -361,6 +374,8 @@ const BERN: CantonEntry = {
   name: { en: 'Bern', fr: 'Berne', de: 'Bern', it: 'Berna' },
   software: 'TaxMe-Online',
   rules: bernRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? beQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...bernRules.keys(taxYear) }),
   communes: (taxYear) => bernCommunes(taxYear),
@@ -402,6 +417,8 @@ const BASEL_LAND: CantonEntry = {
   },
   software: 'E-Tax BL',
   rules: baselLandRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? blQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...baselLandRules.keys(taxYear) }),
   communes: (taxYear) => baselLandCommunes(taxYear),
@@ -439,6 +456,8 @@ const VAUD: CantonEntry = {
   name: { en: 'Vaud', fr: 'Vaud', de: 'Waadt', it: 'Vaud' },
   software: 'VaudTax',
   rules: vaudRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? vdQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...vaudRules.keys(taxYear) }),
   communes: (taxYear) => vaudCommunes(taxYear),
@@ -478,6 +497,8 @@ const BASEL: CantonEntry = {
   // The canton's official software, in the eSteuern.BS portal (bs-2025-efiling-baltax-tipps p. 1).
   software: 'BalTax Online',
   rules: baselRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? bsQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...baselRules.keys(taxYear) }),
   communes: (taxYear) => baselCommunes(taxYear),
@@ -515,6 +536,8 @@ const ZUG: CantonEntry = {
   // eTax.zug, the canton's online return, in the browser with an AGOV login (zg-na-efiling-etax-zug).
   software: 'eTax.zug',
   rules: zugRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? zgQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zugRules.keys(taxYear) }),
   communes: (taxYear) => zugCommunes(taxYear),
@@ -554,6 +577,8 @@ const LUCERNE: CantonEntry = {
   // PersID and Zugangscode eFiling printed on your return (lu-2025-efiling-merkblatt-esteuern).
   software: 'eSteuern.LU',
   rules: lucerneRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? luQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...lucerneRules.keys(taxYear) }),
   communes: (taxYear) => lucerneCommunes(taxYear),
@@ -593,6 +618,8 @@ const ST_GALLEN: CantonEntry = {
   // (sg-na-efiling-etax-sg; sg-2025-efiling-faltblatt-etax).
   software: 'E-Tax SG',
   rules: stGallenRules,
+  // Its questions are 2026's only (data/<canton>/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? sgQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...stGallenRules.keys(taxYear) }),
   communes: (taxYear) => stGallenCommunes(taxYear),
@@ -636,6 +663,8 @@ const FRIBOURG: CantonEntry = {
   // program: no browser filling, the copy panel is the way (@taxpresso/filing-fr).
   software: 'FriTax',
   rules: fribourgRules,
+  // Its questions are 2026's only (data/fr/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? frQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...fribourgRules.keys(taxYear) }),
   communes: (taxYear) => fribourgCommunes(taxYear),
@@ -680,6 +709,8 @@ const TICINO: CantonEntry = {
   // ti-2025-guide-istruzioni-pf-pdf p. 8).
   software: 'eTax PF',
   rules: ticinoRules,
+  // Its questions are 2026's only (data/ti/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
   questionnaire: (taxYear) => (taxYear === 2026 ? tiQuestionnaire2026() : undefined),
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...ticinoRules.keys(taxYear) }),
   communes: (taxYear) => ticinoCommunes(taxYear).map((c) => ({ slug: c.slug, name: c.name })),
@@ -760,8 +791,13 @@ export const germanCantons = (): SupportedCanton[] =>
 export interface CantonState {
   /** undefined: not answered yet. 'other': a canton Taxpresso doesn't cover yet. */
   answer: CantonAnswer | undefined;
-  /** The canton whose return this is, when Taxpresso covers it. */
+  /** The canton whose return this is, when Taxpresso covers it for the year. */
   canton: CantonEntry | undefined;
+  /**
+   * A canton Taxpresso covers, but not for this tax year (CantonEntry.years): nothing is computed
+   * for it, and the canton question says it isn't available yet (fail closed).
+   */
+  notOffered?: CantonEntry;
   /** answer: the user said so. earlier_answers: taken from answers only this canton asks. */
   from: 'answer' | 'earlier_answers' | 'none';
   /** With earlier_answers: which answers, in words. */
@@ -771,15 +807,18 @@ export interface CantonState {
 /** The questionnaire engines, one per canton and one for the questions every canton shares. */
 export class CantonRegistry {
   readonly taxYear: number;
+  /** The cantons Taxpresso prepares for this tax year (CantonEntry.years). */
+  readonly offered: readonly SupportedCanton[];
   readonly #engines = new Map<string, QuestionnaireEngine>();
   /** Every key any canton of the year knows: what the ledger accepts (one year, one ledger). */
   readonly ledgerKeys: KeyRegistry;
 
   constructor(taxYear: number) {
     this.taxYear = taxYear;
+    this.offered = SUPPORTED_CANTONS.filter((c) => CANTONS[c].years.includes(taxYear));
     this.ledgerKeys = mergeKeys([
       KEYS_CANTON_2026,
-      ...SUPPORTED_CANTONS.map((c) => CANTONS[c].keys(taxYear)),
+      ...this.offered.map((c) => CANTONS[c].keys(taxYear)),
     ]);
   }
 
@@ -787,10 +826,20 @@ export class CantonRegistry {
   state(ledger: Ledger): CantonState {
     const answer = stated(ledger, 'profile.canton');
     if (isSupportedCanton(answer)) {
+      // A canton Taxpresso covers, but not for this year: nothing of it applies (fail closed).
+      if (!this.offered.includes(answer)) {
+        return {
+          answer,
+          canton: undefined,
+          notOffered: CANTONS[answer],
+          from: 'answer',
+          because: [],
+        };
+      }
       return { answer, canton: CANTONS[answer], from: 'answer', because: [] };
     }
     if (answer === 'other') return { answer, canton: undefined, from: 'answer', because: [] };
-    for (const code of SUPPORTED_CANTONS) {
+    for (const code of this.offered) {
       const because = CANTONS[code].inferFrom?.(ledger) ?? [];
       if (because.length) {
         return { answer: code, canton: CANTONS[code], from: 'earlier_answers', because };
@@ -814,9 +863,10 @@ export class CantonRegistry {
         file && canton
           ? new QuestionnaireEngine(file, canton.keys(this.taxYear), canton.communes(this.taxYear))
           : // The shared questions read the shared keys: a canton may offer more values (Bern's
-            // payments to political parties), which the shared question doesn't ask about.
+            // payments to political parties), which the shared question doesn't ask about. The
+            // cantons not offered this year say so in the canton question.
             new QuestionnaireEngine(
-              sharedQuestionnaire2026(),
+              sharedQuestionnaire(this.taxYear, this.offered),
               { ...this.ledgerKeys, ...KEYS_HOUSEHOLD_2026 },
               [],
             );

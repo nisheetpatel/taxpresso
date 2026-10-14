@@ -94,7 +94,7 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     return {
       text,
       structured: {
-        taxYear: ws.config.taxYear,
+        taxYear: ws.taxYear,
         ...tag,
         computed: false,
         missing: en(missing),

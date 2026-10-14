@@ -61,6 +61,7 @@ describe('MCP surface', () => {
       'mark_entered',
       'next_questions',
       'open_dashboard',
+      'open_tax_year',
       'propose_extraction',
       'reconcile_official_pdf',
       'replace_document',

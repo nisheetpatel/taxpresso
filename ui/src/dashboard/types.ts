@@ -82,10 +82,35 @@ export interface Activity {
   detail?: string;
 }
 
+/** A tax year that is over (extension/src/planning.ts, yearOverView). */
+export interface YearOverView {
+  year: number;
+  /** The year whose plans apply now (3a, buy-in, 3a catch-up): one step away. */
+  plansIn: number;
+  paidInYear: string;
+  catchUp?: { sources: string[] };
+  tou?: {
+    deadline: string;
+    passed: boolean;
+    source: string;
+    decision?: { choice: 'request' | 'decline'; decidedAt: string };
+  };
+}
+
 /** Values read from documents, checks and the assessment: ./types-docs.ts. */
 export interface State extends DocumentsState {
   version: string;
+  /** The open tax year: everything on the page is about it. */
   taxYear: number;
+  /** The year switch: every tax year Taxpresso prepares (extension/src/years.ts). */
+  years: {
+    year: number;
+    open: boolean;
+    over: boolean;
+    cantons: { code: string; name: string }[];
+  }[];
+  /** A year that is over: what replaces the plans before 31 December, or null. */
+  yearOver: YearOverView | null;
   /** The canton of the return, once the user said where they lived on 31 December. */
   canton: {
     code: 'GE' | 'ZH' | 'BE' | 'BL' | 'VD' | 'BS' | 'ZG' | 'LU' | 'SG' | 'FR' | 'TI';
@@ -104,6 +129,7 @@ export interface State extends DocumentsState {
   documents: DocumentView[];
   kinds: { value: string; label: string }[];
   requirements: RequirementView[];
+  /** The plans before 31 December; null for a year that is over (see yearOver). */
   plan: {
     inputs: {
       person: 'p1' | 'p2';
@@ -125,9 +151,9 @@ export interface State extends DocumentsState {
       assumptions: string[];
       sources: string[];
     };
-  };
-  /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. */
-  planning: PlanningState;
+  } | null;
+  /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. Null for a year that is over. */
+  planning: PlanningState | null;
   notSupported: string[];
   /** The values to type into the official declaration, in the form's order (SPEC.md 10.5). */
   copyPanel: CopyPanelState;
@@ -146,3 +172,12 @@ export interface State extends DocumentsState {
   notSupportedMessage: string;
   activity: Activity[];
 }
+
+/** The state of a year whose plans before 31 December apply: not over (see yearOver). */
+export type PlannedState = State & {
+  plan: NonNullable<State['plan']>;
+  planning: PlanningState;
+};
+
+export const isPlanned = (state: State): state is PlannedState =>
+  state.plan !== null && state.planning !== null;

@@ -1,5 +1,6 @@
-# Questionnaire for tax year 2026 (SPEC.md section 6). Data, not code: packages/questionnaire reads
-# it, and every key and value must exist in packages/rules-ge/src/2026/keys.ts (a test checks).
+# Questionnaire for tax years 2025 and 2026 (SPEC.md section 6; docs/design/tax-years.md). Data, not
+# code: packages/questionnaire reads it once per tax year, and every key and value must exist in
+# packages/rules-ge/src/2026/keys.ts (a test checks).
 # Every question changes what we ask for or compute; otherwise it doesn't belong here.
 #
 # The questions every canton asks are written once (data/ch/2026/questions.yaml): this file takes
@@ -10,10 +11,16 @@
 # ge-2025-guide-declaration-pp p. 8 (documents to gather) and p. 10 (attachments).
 # Re-check everything against the 2026 guide when it is published (January 2027).
 #
+# One file for both years: {year} is the tax year being prepared, and each citation of the guide
+# carries its year (2025), so it is cited for 2025 and, until the 2026 guide is out, for 2026. A
+# question that cites the 2026 federal instructions cites the 2025 guide's page for 2025 instead
+# (the 2025 federal instructions are not in the library). Adding a year means adding its citations
+# here, next to these, each with its `year` (docs/design/tax-years.md, section 6).
+#
 # French: write plain spaces before ? ! : ; and the loader makes them non-breaking.
 # Texts per person (p1, p2) where the grammar differs; {n} is replaced by the number.
 
-taxYear: 2026
+taxYears: [2025, 2026]
 
 place: { en: 'Geneva', fr: 'Genève', de: 'Genf', it: 'Ginevra' }
 
@@ -31,6 +38,7 @@ questions:
   - use: civil_status
     # ge-2025-guide-declaration-pp p. 53
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
       label:
         en: 'Geneva tax guide 2025, p. 53: changes of situation'
@@ -44,6 +52,7 @@ questions:
   - use: children
     # ge-2025-guide-declaration-pp p. 46
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=46'
       label:
         en: 'Geneva tax guide 2025, p. 46: children you support'
@@ -57,6 +66,7 @@ questions:
   - use: children_custody
     # ge-2025-guide-declaration-pp p. 45
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=45'
       label:
         en: 'Geneva tax guide 2025, p. 45: family, scale and splitting'
@@ -72,6 +82,7 @@ questions:
   - use: childcare
     # ge-2025-guide-declaration-pp p. 30
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=30'
       label:
         en: 'Geneva tax guide 2025, p. 30: childcare costs'
@@ -97,9 +108,9 @@ questions:
         fr: 'Taux et données fiscales, dont les centimes additionnels (ge.ch)'
         it: 'Aliquote e dati fiscali, con i centesimi addizionali comunali (ge.ch)'
     text:
-      en: 'Which commune did you live in on 31 December 2026?'
-      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
-      it: 'In quale Comune abitavi il 31 dicembre 2026?'
+      en: 'Which commune did you live in on 31 December {year}?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre {year} ?'
+      it: 'In quale Comune abitavi il 31 dicembre {year}?'
     help:
       en: 'On the official form: commune de domicile.'
       fr: 'Sur le formulaire officiel : commune de domicile.'
@@ -114,15 +125,16 @@ questions:
       it: 'Un trasloco all’interno del Cantone di Ginevra cambia poco. Neanche un arrivo da un altro Cantone cambia qualcosa: Ginevra ti tassa per tutto l’anno, come se ci avessi abitato da gennaio. Con un arrivo dall’estero, invece, Ginevra ti tassa solo per una parte dell’anno.'
     # ge-2025-guide-declaration-pp p. 53
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
       label:
         en: 'Geneva tax guide 2025, p. 53: changes of situation, arriving in Geneva'
         fr: 'Guide fiscal 2025, p. 53 : Changements de situation'
         it: 'Guida fiscale di Ginevra 2025, p. 53: cambiamenti di situazione, arrivo a Ginevra'
     text:
-      en: 'Did you move in 2026?'
-      fr: 'Avez-vous déménagé en 2026 ?'
-      it: 'Hai traslocato nel 2026?'
+      en: 'Did you move in {year}?'
+      fr: 'Avez-vous déménagé en {year} ?'
+      it: 'Hai traslocato nel {year}?'
     options:
       - { value: 'no', label: { en: 'No', fr: 'Non', it: 'No' } }
       - value: within_geneva
@@ -140,7 +152,7 @@ questions:
             fr: 'Oui, je suis arrivé(e) de l’étranger',
             it: 'Sì, sono arrivato o arrivata dall’estero',
           }
-        chip: { en: 'Arrived in 2026', fr: 'Arrivé(e) en 2026', it: 'Arrivo nel 2026' }
+        chip: { en: 'Arrived in {year}', fr: 'Arrivé(e) en {year}', it: 'Arrivo nel {year}' }
       # Geneva taxes the whole year of someone who arrived from another canton (guide p. 53,
       # Arrivée d'un canton suisse): the return is the same as for a full year here.
       - value: from_other_canton
@@ -173,6 +185,7 @@ questions:
   - use: income_sources
     # ge-2025-guide-declaration-pp p. 25
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=25'
       label:
         en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
@@ -219,6 +232,7 @@ questions:
   - use: employers
     # ge-2025-guide-declaration-pp p. 17
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=17'
       label:
         en: 'Geneva tax guide 2025, p. 17: employment income'
@@ -249,6 +263,7 @@ questions:
       it: 'TOU (taxation ordinaire ultérieure): l’imposta trattenuta dal tuo salario non è più definitiva, compili una dichiarazione normale e puoi far valere le deduzioni. Una volta chiesta, non si torna indietro.'
     # ge-2025-guide-declaration-pp p. 52
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=52'
       label:
         en: 'Geneva tax guide 2025, p. 52: TOU for people taxed at source'
@@ -279,6 +294,7 @@ questions:
   - use: pillar3a
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -292,6 +308,7 @@ questions:
   - use: lpp_buyin
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -302,7 +319,23 @@ questions:
       fr: 'Un versement volontaire en plus des cotisations habituelles.'
       it: 'Un versamento volontario in più rispetto ai contributi abituali. Sul modulo ufficiale: rachat 2e pilier.'
 
+  # Travel costs: the shared question's page of the 2026 federal instructions for 2026, the 2025
+  # guide's for 2025 (ge-2025-guide-declaration-pp p. 19 and 20: frais de déplacements, ICC and IFD).
   - use: commute
+    learnMore: &travel
+      - year: 2026
+        url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=6'
+        label:
+          en: 'Federal tax instructions 2026, p. 6: travel costs'
+          fr: 'Instructions IFD 2026, p. 6 : Frais de déplacement'
+          de: 'Wegleitung direkte Bundessteuer 2026, S. 6: Fahrkosten, auf Französisch'
+          it: 'Istruzioni per l’imposta federale 2026, p. 6: spese di trasporto'
+      - year: 2025
+        url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=20'
+        label:
+          en: 'Geneva tax guide 2025, p. 20: travel costs'
+          fr: 'Guide fiscal 2025, p. 20 : Frais de déplacements'
+          it: 'Guida fiscale di Ginevra 2025, p. 20: spese di trasporto'
     explain:
       en: 'Getting to work can be deducted as travel costs (frais de déplacement). How you get there decides how they are counted. A trip by public transport of over 2 hours a day, there and back, also lets your lunches count for the Geneva tax.'
       fr: 'Le trajet pour le travail se déduit comme frais de déplacement. Votre moyen de transport décide comment ils sont comptés. Un trajet en transports publics de plus de 2 heures par jour, aller et retour, permet aussi de déduire vos repas pour l’impôt genevois.'
@@ -313,22 +346,27 @@ questions:
       it: 'Scegli come ci andavi nella maggior parte dei giorni di lavoro. Sul modulo ufficiale: frais de déplacement.'
 
   - use: commute_transit_cost
+    learnMore: *travel
     explain:
       en: 'For the federal tax you deduct what you actually paid to get to work, up to a yearly limit. The Geneva tax has a much lower limit.'
       fr: 'Pour l’impôt fédéral, vous déduisez ce que vous avez réellement payé pour aller au travail, jusqu’à une limite annuelle. L’impôt genevois a une limite bien plus basse.'
       it: 'Per l’imposta federale deduci quello che hai effettivamente pagato per andare al lavoro, fino a un limite annuo. L’imposta ginevrina ha un limite molto più basso.'
 
   - use: commute_transit_usable
+    learnMore: *travel
     help:
       en: 'Over 2 hours a day there and back by public transport also lets your lunches count for the Geneva tax.'
       fr: 'Plus de 2 heures par jour aller et retour en transports publics permet aussi de déduire vos repas pour l’impôt genevois.'
       it: 'Con i trasporti pubblici, più di 2 ore al giorno andata e ritorno ti permettono anche di dedurre i pasti per l’imposta ginevrina.'
 
   - use: commute_transit_equivalent
+    learnMore: *travel
 
   - use: commute_distance
+    learnMore: *travel
 
   - use: commute_drive_days
+    learnMore: *travel
 
   # Lunches away from home (frais de repas): federal, per day up to a yearly limit, half with box G;
   # Geneva, only over 2 hours a day by public transport (ge-2025-guide-declaration-pp p. 19). No
@@ -341,15 +379,23 @@ questions:
       it: 'Pranzare fuori casa per lavoro costa più che a casa. L’imposta federale conta un importo fisso al giorno, fino a un limite annuo, la metà se il tuo datore di lavoro paga una parte dei tuoi pasti (casella G del certificato di salario). L’imposta ginevrina lo conta solo se il tuo tragitto con i trasporti pubblici supera le 2 ore al giorno.'
     # ge-2025-guide-declaration-pp p. 19
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=19'
       label:
         en: 'Geneva tax guide 2025, p. 19: meals'
         fr: 'Guide fiscal 2025, p. 19 : Frais de repas'
         it: 'Guida fiscale di Ginevra 2025, p. 19: pasti'
+    # The 10 francs are the 2026 federal instructions' (ch-2026-ifd-instructions-personnes-physiques
+    # p. 6); the 2025 guide says only that the meal must cost more than at home (p. 19).
     help:
-      en: 'Count the days your lunch cost you more than 10 francs; 0 if you usually ate at home. On the official form: frais de repas.'
-      fr: 'Comptez les jours où votre repas vous a coûté plus de 10 francs ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
-      it: 'Conta i giorni in cui il pranzo ti è costato più di 10 franchi; 0 se di solito mangiavi a casa. Sul modulo ufficiale: frais de repas.'
+      - year: 2026
+        en: 'Count the days your lunch cost you more than 10 francs; 0 if you usually ate at home. On the official form: frais de repas.'
+        fr: 'Comptez les jours où votre repas vous a coûté plus de 10 francs ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
+        it: 'Conta i giorni in cui il pranzo ti è costato più di 10 franchi; 0 se di solito mangiavi a casa. Sul modulo ufficiale: frais de repas.'
+      - year: 2025
+        en: 'Count the days your lunch away from home cost you more than a meal at home; 0 if you usually ate at home. On the official form: frais de repas.'
+        fr: 'Comptez les jours où votre repas hors de chez vous vous a coûté plus qu’un repas à la maison ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
+        it: 'Conta i giorni in cui il pranzo fuori casa ti è costato più di un pasto a casa; 0 se di solito mangiavi a casa. Sul modulo ufficiale: frais de repas.'
 
   - use: banks
     # ge-na-other-e-releve-fiscal
@@ -367,6 +413,7 @@ questions:
   - use: crypto
     # ge-2025-guide-declaration-pp p. 40
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=40'
       label:
         en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
@@ -376,6 +423,7 @@ questions:
   - use: payments
     # ge-2025-guide-declaration-pp p. 11
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=11'
       label:
         en: 'Geneva tax guide 2025, p. 11: the main deductions'
@@ -445,6 +493,7 @@ requirements:
   - use: salary_certificate
     # ge-2025-guide-declaration-pp p. 17
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=17'
       label:
         en: 'Geneva tax guide 2025, p. 17: employment income'
@@ -455,6 +504,7 @@ requirements:
   - use: replacement_income
     # ge-2025-guide-declaration-pp p. 10
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=10'
       label:
         en: 'Geneva tax guide 2025, p. 10: supporting documents'
@@ -465,6 +515,7 @@ requirements:
   - use: pension
     # ge-2025-guide-declaration-pp p. 25
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=25'
       label:
         en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
@@ -475,6 +526,7 @@ requirements:
   - use: pillar3a
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -489,6 +541,7 @@ requirements:
       it: 'Serve solo se hai fatto un versamento volontario in più nella tua cassa pensione. La cassa lo conferma sul modulo 21EDP. Nessun riscatto? Cambia la tua risposta e questa riga sparisce.'
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
@@ -505,6 +558,7 @@ requirements:
   - use: health_premiums
     # ge-2025-guide-declaration-pp p. 29
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=29'
       label:
         en: 'Geneva tax guide 2025, p. 29: health and accident insurance'
@@ -538,6 +592,7 @@ requirements:
   - use: crypto
     # ge-2025-guide-declaration-pp p. 40
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=40'
       label:
         en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
@@ -548,6 +603,7 @@ requirements:
   - use: childcare
     # ge-2025-guide-declaration-pp p. 30
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=30'
       label:
         en: 'Geneva tax guide 2025, p. 30: childcare costs'
@@ -562,6 +618,7 @@ requirements:
       it: 'Il conteggio della tua assicurazione con le spese che non ha rimborsato (décompte LAMal), più le fatture che non le hai mai mandato.'
     # ge-2025-guide-declaration-pp p. 14
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=14'
       label:
         en: 'Geneva tax guide 2025, p. 14: medical costs'
@@ -578,6 +635,7 @@ requirements:
   - use: donations
     # ge-2025-guide-declaration-pp p. 15
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=15'
       label:
         en: 'Geneva tax guide 2025, p. 15: donations'
@@ -588,6 +646,7 @@ requirements:
   - use: loan_interest
     # ge-2025-guide-declaration-pp p. 37
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=37'
       label:
         en: 'Geneva tax guide 2025, p. 37: interest and debts'
@@ -598,6 +657,7 @@ requirements:
   - use: alimony
     # ge-2025-guide-declaration-pp p. 29
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=29'
       label:
         en: 'Geneva tax guide 2025, p. 29: alimony paid'
@@ -608,6 +668,7 @@ requirements:
   - use: separation_judgment
     # ge-2025-guide-declaration-pp p. 10
     learnMore:
+      year: 2025
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=10'
       label:
         en: 'Geneva tax guide 2025, p. 10: supporting documents'

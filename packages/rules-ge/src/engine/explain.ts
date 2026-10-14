@@ -2,6 +2,7 @@
 // words, official French terms next to their gloss), so Claude can explain without stating rules
 // from memory.
 import { IFD_NOTE } from '@taxpresso/rules-ch';
+import type { TaxYear } from './params.js';
 import type { EstimateReason, Text } from './types.js';
 
 const NB = '\u00a0';
@@ -81,3 +82,16 @@ export const NOTE = {
     fr: `Limite assurance-vie (52.15)${NB}: l’augmentation de moitié donne un demi-franc, arrondi vers le bas.`,
   },
 } as const satisfies Record<string, Text>;
+
+/**
+ * The note on pricing travel costs for the cantonal tax, by tax year: it cites that year's document
+ * for the federal pricing (docs/design/tax-years.md). For 2025, whose federal instructions are not
+ * in the library, the 2025 guide gives the federal pricing itself (p. 20).
+ */
+export const ICC_COMMUTE_PRICING: Readonly<Record<TaxYear, Text>> = {
+  2025: {
+    en: 'Travel costs, cantonal tax: the Geneva guide caps them whatever the means of transport (p. 19 and 21) without saying how a bike or the kilometres are priced; Taxpresso prices them as the federal tax does (guide p. 20), then applies the Geneva cap.',
+    fr: `Frais de déplacement, impôt cantonal${NB}: le guide genevois les plafonne quel que soit le moyen de transport (p. 19 et 21) sans dire comment compter un vélo ou les kilomètres${NB}; Taxpresso les compte comme l’impôt fédéral (guide p. 20), puis applique le plafond genevois.`,
+  },
+  2026: NOTE.iccCommutePricing,
+};
