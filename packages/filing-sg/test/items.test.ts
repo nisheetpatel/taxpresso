@@ -244,7 +244,7 @@ describe('the values to type on St. Gallen’s return', () => {
     expect(filing.formNote(2026)?.en).toMatch(/2025 return/);
     expect(filing.words.guide).toMatch(/E-Tax SG/);
     expect(filing.words.guide).toMatch(/438 for Person 1 and 488 for Person 2/);
-    expect(filing.words.example).toBe('S3');
+    expect(filing.words.example).toBe('F4-1');
     expect(FORM_SG_2026.pages.map((p) => p.id)).toContain(filing.words.example);
     expect(filing.labels).toBe(SG_COPY_LABELS);
     expect(filing.checksPdf).toBe(false);
