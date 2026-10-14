@@ -1533,6 +1533,97 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Ticino return: its questions, its tax and the values to type, offline, in Italian', async () => {
+    // Another household in its own folder, in its own server process with the same guard, its
+    // dashboard in Italian: Giulia Ferrari, single, in Lugano, with the synthetic salary
+    // certificate read from its barcode.
+    const tiVault = path.join(work, 'Ticino');
+    const tiTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: tiVault,
+        TAXPRESSO_UI_LANGUAGE: 'it',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    tiTransport.stderr?.on('data', (d) => (stderr += d));
+    const ti = new Client({ name: 'taxpresso-offline-test-ti', version: '0.0.0' });
+    await ti.connect(tiTransport);
+    try {
+      const answers = [
+        ['canton', 'TI'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Lugano'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['work_rate:p1', 100],
+        ['full_year:p1', true],
+        ['taxed_at_source:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 800],
+        ['meal_days:p1', 0],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['payments', []],
+        ['banks', 0],
+        ['crypto', false],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await ti.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await ti.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'TI');
+      assert.equal(status.structuredContent.uiLanguage, 'it');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(tiVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await ti.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await ti.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'TI');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'LUGANO');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.equal(tax.structuredContent.icc.personal, 4000);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /imposta cantonale e comunale/);
+
+      const sections = await ti.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['M4-1', 'P2', 'P3'],
+      );
+      const modulo4 = await ti.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'M4-1' },
+      });
+      assert.match(modulo4.content[0].text, /- 438 7\. Totale delle spese professionali/);
+
+      const check = await ti.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await ti.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await ti.close();
+    }
+  });
+
   test('a Geneva couple with two lump sums of pension capital: the tax apart, offline', async () => {
     // Pierre and Anne Rochat, Vernier (made-up): his pension fund capital and her pillar 3a in the
     // same year, added up for one tax (packages/rules-ge/test/capital.test.ts works it out by hand).

@@ -1,5 +1,5 @@
 // The St. Gallen questionnaire (data/sg/2026/questionnaire.yaml): in step with St. Gallen's keys,
-// communes and church areas (packages/rules-sg), every text in English, French and German, every
+// communes and church areas (packages/rules-sg), every text in English, French, German and Italian, every
 // page an official one, and the questions only St. Gallen asks (who mainly bears a shared child's
 // upkeep, each child's stage, whether a minor, its education costs, scholarships and childcare, the
 // church and the church area) only where they apply. Synthetic answers only.
@@ -139,19 +139,31 @@ describe('St. Gallen questionnaire 2026', () => {
     const options = (id: string) => file.questions.find((q) => q.id === id)!.options!;
     expect(options('commute').map((o) => o.value)).not.toContain('public_transport_long');
     expect(options('commute_transit_usable').map((o) => o.value)).toEqual(['yes', 'no']);
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'St. Gallen', fr: 'Saint-Gall', de: 'St. Gallen' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({
+      en: 'St. Gallen',
+      fr: 'Saint-Gall',
+      de: 'St. Gallen',
+      it: 'San Gallo',
+    });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = sgQuestionnaire2026();
     const missing: string[] = [];
+    const missingIt: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missingIt.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -159,6 +171,7 @@ describe('St. Gallen questionnaire 2026', () => {
     };
     visit(file, 'sg');
     expect(missing).toEqual([]);
+    expect(missingIt).toEqual([]);
     // No em-dash anywhere, no amount or limit in a question's own words.
     const all = JSON.stringify(file);
     expect(all).not.toMatch(/—/);
@@ -186,6 +199,9 @@ describe('St. Gallen questionnaire 2026', () => {
         );
         expect(label.de, item.id).toMatch(
           new RegExp(`^Wegleitung zur Steuererklärung 2025, S\\. ${page}: `),
+        );
+        expect(label.it, item.id).toMatch(
+          new RegExp(`^Guida fiscale di San Gallo 2025, p\\. ${page}: `),
         );
       } else {
         expect(url.startsWith(GUIDE), item.id).toBe(false);
@@ -298,7 +314,7 @@ describe('St. Gallen questionnaire 2026', () => {
       'On 31 December 2026, was child 2 in school or training, or not yet of school age?',
     );
     expect(e.render(second, snap, 'de').who).toBe('Kind 2');
-    for (const lang of ['en', 'fr', 'de'] as const) {
+    for (const lang of ['en', 'fr', 'de', 'it'] as const) {
       const r = e.render(second, snap, lang);
       expect(JSON.stringify([r.text, r.help, r.explain, r.who])).not.toMatch(/\{n\}/);
       expect(r.options!.map((o) => o.value)).toEqual(['preschool', 'school']);
@@ -353,11 +369,14 @@ describe('St. Gallen questionnaire 2026', () => {
     const table = areaOptions(2026);
     expect(new Set(table.map((o) => o.slug)).size).toBe(20);
     // The options are the table's areas, each offered only in its own commune.
-    expect(area.options!.map((o) => [o.value, o.label.en, o.label.fr, o.label.de, o.when])).toEqual(
+    expect(
+      area.options!.map((o) => [o.value, o.label.en, o.label.fr, o.label.de, o.label.it, o.when]),
+    ).toEqual(
       table.map((o) => [
         o.value,
         `${o.commune}: ${o.area}`,
         `${o.commune}${NBSP}: ${o.area}`,
+        `${o.commune}: ${o.area}`,
         `${o.commune}: ${o.area}`,
         { key: 'profile.commune', eq: o.slug },
       ]),

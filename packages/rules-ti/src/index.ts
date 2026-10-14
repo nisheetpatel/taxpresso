@@ -1,8 +1,9 @@
 // Deterministic Ticino cantonal and communal income and wealth tax (imposta cantonale e comunale
-// sul reddito e sulla sostanza, with the communal personal tax), tax years 2025 and 2026, every
-// constant cited (SPEC.md section 7). Pure functions and data: not wired into the extension yet
-// (docs/design/cantons.md). The federal tax, the pillar 3a rule and the helpers every canton shares
-// are in packages/rules-ch.
+// sul reddito e sulla sostanza, with the communal personal tax) and the federal tax the authority
+// derives from the same return, tax years 2025 and 2026, every constant cited (SPEC.md section 7).
+// Pure functions and data, wired into the extension as a preview behind the canton registry
+// (extension/src/cantons.ts, docs/design/cantons.md). The federal rules, the pillar 3a rule and the
+// helpers every canton shares are in packages/rules-ch.
 // Citations: "p." is the page of the PDF file; the instructions print the same page numbers, the
 // executive decrees print the page of the official bulletin (BU) instead. The return's line numbers
 // (cifre) are those of the main return, Modulo 1 (ti-2025-form-modulo-1-de).
@@ -35,8 +36,14 @@ export {
   DEBTS,
   DEDUCTIONS,
   EXEMPTION,
+  FEDERAL_DEDUCTIONS,
+  FEDERAL_RUBRICS,
+  federalRubric,
   INCOME,
   MEDICAL,
+  MODULO4,
+  MODULO4_CODES,
+  MODULO4_LINES,
   PERSON_CODES,
   RUBRICS,
   rubric,
@@ -72,5 +79,26 @@ export {
 export { ESTIMATE_TEXT, NOTE } from './explain.js';
 export type { Cited } from '@taxpresso/rules-ch';
 export type * from './types.js';
-// Ticino behind the canton interface (packages/rules-ch, canton.ts); not wired into the extension.
+// Ticino behind the canton interface (packages/rules-ch, canton.ts).
 export { rules, ticinoInput, type TicinoCantonal } from './canton.js';
+// The federal tax the authority derives from the same return.
+export { FEDERAL_NOTE, federalReturn, federalTotals } from './ifd.js';
+// The ledger read into Ticino's household input.
+export {
+  NOTE_VALUABLES,
+  TICINO_READING,
+  ticinoInputFromFacts,
+  type TicinoLedgerInput,
+} from './from-ledger.js';
+// The keys of the questionnaire and the communes it offers.
+export {
+  communeName,
+  communeOfAnswer,
+  communeOptions,
+  tiKeys,
+  type CommuneOption,
+} from './keys.js';
+// How a Ticino result reads in the generic views, and the official terms of the return.
+export { view } from './view.js';
+export { TI_TERMS } from './terms.js';
+export { TI_OFFICIAL_DOCUMENTS, type OfficialDocument } from './official-documents.js';

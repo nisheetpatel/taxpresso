@@ -8,7 +8,7 @@ declare const __TAXPRESSO_VERSION__: string | undefined;
 /** The tax year this release prepares (SPEC.md section 1). Product scope, not a tax constant. */
 export const CURRENT_TAX_YEAR = 2026;
 
-export const UI_LANGUAGES = ['en', 'fr', 'de'] as const;
+export const UI_LANGUAGES = ['en', 'fr', 'de', 'it'] as const;
 export type UiLanguage = (typeof UI_LANGUAGES)[number];
 
 export interface Config {
@@ -25,8 +25,8 @@ export function defaultVaultPath(): string {
   return path.join(os.homedir(), 'Documents', 'Taxpresso');
 }
 
-function isUiLanguage(value: string): value is UiLanguage {
-  return (UI_LANGUAGES as readonly string[]).includes(value);
+export function isUiLanguage(value: unknown): value is UiLanguage {
+  return typeof value === 'string' && (UI_LANGUAGES as readonly string[]).includes(value);
 }
 
 /**

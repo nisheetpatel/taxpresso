@@ -68,15 +68,17 @@ describe('Zurich questionnaire 2026', () => {
     expect(commute.options?.map((o) => o.value)).not.toContain('public_transport_long');
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = zhQuestionnaire2026();
     const texts: string[] = [];
+    const noItalian: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) texts.push(where);
+          if (typeof o.it !== 'string' || !o.it) noItalian.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -84,6 +86,7 @@ describe('Zurich questionnaire 2026', () => {
     };
     visit(file, 'zh');
     expect(texts).toEqual([]);
+    expect(noItalian).toEqual([]);
     const manifest = JSON.parse(
       readFileSync(new URL('../../../docs/sources/manifest.json', import.meta.url), 'utf8'),
     ) as { entries: { url: string }[] };

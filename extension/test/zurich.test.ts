@@ -282,7 +282,7 @@ describe('a Zurich return', () => {
     const res = await createApi(ws)({
       method: 'GET',
       path: '/state',
-      query: new URLSearchParams('lang=it'),
+      query: new URLSearchParams('lang=es'),
       headers: {},
       body: Buffer.from('{}'),
       csrf: 'csrf-token',

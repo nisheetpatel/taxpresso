@@ -122,6 +122,7 @@ describe('a pillar 3a paid out at retirement (Favre)', () => {
       en: 'Pension capital attestation, pillar 3a',
       fr: 'Attestation de prestation en capital du 3e pilier A',
       de: 'Bescheinigung Kapitalleistung Säule 3a',
+      it: 'Attestazione di prestazione in capitale, pilastro 3a',
     });
     expect(req.source).toMatch(/ch-na-law-lifd art\. 129/);
     // Nothing unsupported in the answers.
@@ -205,6 +206,12 @@ describe('a pillar 3a paid out at retirement (Favre)', () => {
     expect(fr.capital?.rows[0]?.label).toBe('Impôt cantonal et communal (ICC)');
     const de = await estimate('de');
     expect(de.capital?.rows.map((r) => r.amount)).toEqual([275_280, 33_885]);
+    // Geneva's content reads in English on German and Italian pages (extension/src/lang.ts).
+    const it = await estimate('it');
+    expect(it.capital?.rows.map((r) => [r.label, r.amount])).toEqual([
+      ['Cantonal and communal tax on it (ICC)', 275_280],
+      ['Federal direct tax on it (IFD)', 33_885],
+    ]);
   });
 
   it('lists it in the final check with its rules, and in the values to type at 98.12', async () => {

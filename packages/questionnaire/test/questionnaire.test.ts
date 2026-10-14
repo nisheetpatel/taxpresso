@@ -11,6 +11,7 @@ import {
   geQuestionnaire2026,
   luQuestionnaire2026,
   sgQuestionnaire2026,
+  tiQuestionnaire2026,
   vdQuestionnaire2026,
   LearnMore,
   NBSP,
@@ -540,6 +541,7 @@ describe('pension capital (prestations en capital, 98.12)', () => {
       ['LU', luQuestionnaire2026()],
       ['SG', sgQuestionnaire2026()],
       ['FR', frQuestionnaire2026()],
+      ['TI', tiQuestionnaire2026()],
       ['shared', sharedQuestionnaire2026()],
     ] as const) {
       const special = file.questions.find((q) => q.id === 'special')!;
@@ -576,6 +578,7 @@ describe('the questions every canton shares', () => {
       'LU',
       'SG',
       'FR',
+      'TI',
       'other',
     ]);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
@@ -586,20 +589,21 @@ describe('the questions every canton shares', () => {
     expect(canton.help?.en).toMatch(/taxes the whole year/);
     // The cantons covered are named from the options themselves: a canton added there is named.
     expect(canton.explain?.en).toMatch(
-      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen and Fribourg so far\.$/,
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg and Ticino so far\.$/,
     );
     expect(canton.explain?.fr).toMatch(
       new RegExp(
-        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall et Fribourg\\.$`,
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg et Tessin\\.$`,
       ),
     );
     expect(canton.explain?.de).toMatch(
-      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen und Freiburg vor\.$/,
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg und Tessin vor\.$/,
     );
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
-      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Fribourg',
-      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall ou Fribourg',
-      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen oder Freiburg',
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg or Ticino',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg ou Tessin',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg oder Tessin',
+      it: 'Un Cantone diverso da Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna, San Gallo, Friburgo o Ticino',
     });
     for (const f of [
       file,
@@ -614,6 +618,43 @@ describe('the questions every canton shares', () => {
       expect(item.explain?.de, item.id).toBeTruthy();
       expect(item.learnMore?.label.de, item.id).toBeTruthy();
     }
+  });
+
+  it('says everything in Italian too', () => {
+    for (const [name, file] of [
+      ['ch', sharedQuestionnaire2026()],
+      ['ge', geQuestionnaire2026()],
+    ] as const) {
+      const missing: string[] = [];
+      const italian: string[] = [];
+      const visit = (v: unknown, where: string): void => {
+        if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
+        if (v && typeof v === 'object') {
+          const o = v as Record<string, unknown>;
+          if (typeof o.en === 'string' && typeof o.fr === 'string') {
+            if (typeof o.it !== 'string' || !o.it) missing.push(where);
+            else italian.push(o.it);
+            return;
+          }
+          for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
+        }
+      };
+      visit(file, name);
+      expect(missing).toEqual([]);
+      // No em-dash anywhere; the typographic apostrophe (’) only in Italian.
+      expect(JSON.stringify(file)).not.toMatch(/—/);
+      expect(italian.filter((s) => s.includes("'"))).toEqual([]);
+    }
+    // The cantons covered are named in Italian, the last two joined with "e" (a canton added
+    // after St. Gallen only lengthens the list).
+    const canton = sharedQuestionnaire2026().questions[0]!;
+    expect(canton.explain?.it).toMatch(
+      /Cantoni: Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna(,| e) San Gallo\b/,
+    );
+    expect(canton.explain?.it).toMatch(/ e [^,]+\.$/);
+    expect(canton.options?.find((o) => o.value === 'other')?.notSupported?.it).toMatch(
+      /^Un Cantone diverso da Ginevra, Zurigo, .+ o [^,]+$/,
+    );
   });
 
   it('are taken by a canton in its own order, with its own fields over them', () => {
@@ -662,7 +703,7 @@ describe('the questions every canton shares', () => {
     expect(e.next(snap)?.id).toBe('civil_status');
     expect(e.render(slot, snap, 'en')).toMatchObject({ value: 'GE', assumed: true });
     // An answer the key doesn't take is not assumed.
-    const refused = e.snapshot(fresh, { 'profile.canton': 'TI' });
+    const refused = e.snapshot(fresh, { 'profile.canton': 'AG' });
     expect(refused.slots.find((s) => s.id === 'canton')?.value).toBeUndefined();
     // The user's answer wins.
     const answered = e.snapshot(ledger, { 'profile.canton': 'ZH' });

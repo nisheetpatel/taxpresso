@@ -1,8 +1,8 @@
 // The Fribourg questionnaire (data/fr/2026/questionnaire.yaml): in step with Fribourg's keys and
-// communes (packages/rules-fr), every text in English, French and German, every page an official
-// one, and the questions only Fribourg asks (each child's age band and childcare, the commune and
-// the move, each adult's church and the parish, the premium subsidy, life insurance, savings
-// interest) only where they apply. Synthetic answers only.
+// communes (packages/rules-fr), every text in English, French, German and Italian, every page an
+// official one, and the questions only Fribourg asks (each child's age band and childcare, the
+// commune and the move, each adult's church and the parish, the premium subsidy, life insurance,
+// savings interest) only where they apply. Synthetic answers only.
 import { readFileSync } from 'node:fs';
 import { Ledger } from '@taxpresso/ledger';
 import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
@@ -142,18 +142,20 @@ describe('Fribourg questionnaire 2026', () => {
     expect(options('commute_transit_usable').map((o) => o.value)).toEqual(['yes', 'no']);
     // No attestation of health premiums: Fribourg deducts a flat amount.
     expect(file.requirements.map((r) => r.id)).not.toContain('health_premiums');
-    expect(file.place).toEqual({ en: 'Fribourg', fr: 'Fribourg', de: 'Freiburg' });
+    expect(file.place).toEqual({ en: 'Fribourg', fr: 'Fribourg', de: 'Freiburg', it: 'Friburgo' });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = frQuestionnaire2026();
     const missing: string[] = [];
+    const missingIt: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missingIt.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -161,6 +163,7 @@ describe('Fribourg questionnaire 2026', () => {
     };
     visit(file, 'fr');
     expect(missing).toEqual([]);
+    expect(missingIt).toEqual([]);
     const all = JSON.stringify(file);
     expect(all).not.toMatch(/—/);
     expect(JSON.stringify(file.questions.map((q) => [q.text, q.explain]))).not.toMatch(

@@ -15,13 +15,14 @@
 
 taxYear: 2026
 
-place: { en: 'Geneva', fr: 'Genève', de: 'Genf' }
+place: { en: 'Geneva', fr: 'Genève', de: 'Genf', it: 'Ginevra' }
 
 # The people (you, your spouse or partner) are the shared ones (data/ch/2026/questions.yaml).
 notSupported:
   en: 'Taxpresso can’t prepare this part yet. GeTax, the canton’s free software, or a fiduciary can.'
   fr: 'Taxpresso ne peut pas encore préparer cette partie. GeTax, le logiciel gratuit du canton, ou une fiduciaire le peuvent.'
   de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. GeTax, die kostenlose Software des Kantons, oder eine Treuhand kann es.'
+  it: 'Taxpresso non può ancora preparare questa parte. Possono farlo GeTax, il software gratuito del Cantone, o una fiduciaria.'
 
 questions:
   # Where you lived on 31 December: the questions every canton shares (data/ch/2026/questions.yaml).
@@ -34,9 +35,11 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 53: changes of situation'
         fr: 'Guide fiscal 2025, p. 53 : Changements de situation'
+        it: 'Guida fiscale di Ginevra 2025, p. 53: cambiamenti di situazione'
     help:
       en: 'On the official form: état civil.'
       fr: 'Sur le formulaire officiel : état civil.'
+      it: 'Sul modulo ufficiale: état civil.'
 
   - use: children
     # ge-2025-guide-declaration-pp p. 46
@@ -45,9 +48,11 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 46: children you support'
         fr: 'Guide fiscal 2025, p. 46 : Enfant(s) à charge'
+        it: 'Guida fiscale di Ginevra 2025, p. 46: figli a carico'
     help:
       en: 'On the official form: enfants à charge.'
       fr: 'Sur le formulaire officiel : enfants à charge.'
+      it: 'Sul modulo ufficiale: enfants à charge.'
 
   - use: children_custody
     # ge-2025-guide-declaration-pp p. 45
@@ -56,6 +61,7 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 45: family, scale and splitting'
         fr: 'Guide fiscal 2025, p. 45 : Barème et splitting'
+        it: 'Guida fiscale di Ginevra 2025, p. 45: famiglia, tariffa e splitting'
 
   # Parents who share custody without a partner: child support decides who gets the federal
   # parental scale and the child deductions (ch-na-circulaire-30-epoux-famille p. 24, ch. 13.4.2;
@@ -70,9 +76,11 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 30: childcare costs'
         fr: 'Guide fiscal 2025, p. 30 : Frais de garde des enfants'
+        it: 'Guida fiscale di Ginevra 2025, p. 30: spese di custodia dei figli'
     help:
       en: 'Crèche, day care, after-school care or a nanny. On the official form: frais de garde.'
       fr: 'Crèche, garderie, parascolaire ou nourrice. Sur le formulaire officiel : frais de garde.'
+      it: 'Asilo nido, doposcuola o tata. Sul modulo ufficiale: frais de garde.'
 
   - id: commune
     key: profile.commune
@@ -80,18 +88,22 @@ questions:
     explain:
       en: 'The municipality where you lived on 31 December. Each commune adds its own share of tax (centimes additionnels).'
       fr: 'La commune où vous habitiez au 31 décembre. Chaque commune ajoute sa propre part d’impôt (centimes additionnels).'
+      it: 'Il Comune in cui abitavi il 31 dicembre. Ogni Comune aggiunge la propria parte di imposta (centimes additionnels).'
     # ge-2025-taux-donnees-fiscales
     learnMore:
       url: 'https://www.ge.ch/taux-donnees-fiscales'
       label:
         en: 'Tax rates and data, with the communal centimes (ge.ch)'
         fr: 'Taux et données fiscales, dont les centimes additionnels (ge.ch)'
+        it: 'Aliquote e dati fiscali, con i centesimi addizionali comunali (ge.ch)'
     text:
       en: 'Which commune did you live in on 31 December 2026?'
       fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      it: 'In quale Comune abitavi il 31 dicembre 2026?'
     help:
       en: 'On the official form: commune de domicile.'
       fr: 'Sur le formulaire officiel : commune de domicile.'
+      it: 'Sul modulo ufficiale: commune de domicile.'
 
   - id: moved
     key: profile.moved
@@ -99,32 +111,64 @@ questions:
     explain:
       en: 'A move within Geneva changes little. Arriving from another canton changes nothing either: Geneva taxes your whole year, as if you had lived here since January. Arriving from abroad means you were taxed here for part of the year only.'
       fr: 'Un déménagement dans le canton change peu de choses. Arriver d’un autre canton non plus : Genève vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      it: 'Un trasloco all’interno del Cantone di Ginevra cambia poco. Neanche un arrivo da un altro Cantone cambia qualcosa: Ginevra ti tassa per tutto l’anno, come se ci avessi abitato da gennaio. Con un arrivo dall’estero, invece, Ginevra ti tassa solo per una parte dell’anno.'
     # ge-2025-guide-declaration-pp p. 53
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=53'
       label:
         en: 'Geneva tax guide 2025, p. 53: changes of situation, arriving in Geneva'
         fr: 'Guide fiscal 2025, p. 53 : Changements de situation'
+        it: 'Guida fiscale di Ginevra 2025, p. 53: cambiamenti di situazione, arrivo a Ginevra'
     text:
       en: 'Did you move in 2026?'
       fr: 'Avez-vous déménagé en 2026 ?'
+      it: 'Hai traslocato nel 2026?'
     options:
-      - { value: 'no', label: { en: 'No', fr: 'Non' } }
+      - { value: 'no', label: { en: 'No', fr: 'Non', it: 'No' } }
       - value: within_geneva
-        label: { en: 'Yes, within the canton of Geneva', fr: 'Oui, dans le canton de Genève' }
-        chip: { en: 'Moved in Geneva', fr: 'Déménagé à Genève' }
+        label:
+          {
+            en: 'Yes, within the canton of Geneva',
+            fr: 'Oui, dans le canton de Genève',
+            it: 'Sì, all’interno del Cantone di Ginevra',
+          }
+        chip: { en: 'Moved in Geneva', fr: 'Déménagé à Genève', it: 'Trasloco a Ginevra' }
       - value: from_abroad
-        label: { en: 'Yes, I arrived from abroad', fr: 'Oui, je suis arrivé(e) de l’étranger' }
-        chip: { en: 'Arrived in 2026', fr: 'Arrivé(e) en 2026' }
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            it: 'Sì, sono arrivato o arrivata dall’estero',
+          }
+        chip: { en: 'Arrived in 2026', fr: 'Arrivé(e) en 2026', it: 'Arrivo nel 2026' }
       # Geneva taxes the whole year of someone who arrived from another canton (guide p. 53,
       # Arrivée d'un canton suisse): the return is the same as for a full year here.
       - value: from_other_canton
-        label: { en: 'Yes, from another canton', fr: 'Oui, depuis un autre canton' }
-        chip: { en: 'Moved from another canton', fr: 'Arrivé(e) d’un autre canton' }
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            it: 'Sì, da un altro Cantone',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            it: 'Arrivo da un altro Cantone',
+          }
       - value: leaving_switzerland
         label:
-          { en: 'I left, or I’m leaving, Switzerland', fr: 'J’ai quitté ou je quitte la Suisse' }
-        notSupported: { en: 'Leaving Switzerland', fr: 'Un départ de Suisse' }
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            it: 'Ho lasciato o sto lasciando la Svizzera',
+          }
+        notSupported:
+          {
+            en: 'Leaving Switzerland',
+            fr: 'Un départ de Suisse',
+            it: 'Una partenza dalla Svizzera',
+          }
 
   - use: income_sources
     # ge-2025-guide-declaration-pp p. 25
@@ -133,26 +177,44 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
         fr: 'Guide fiscal 2025, p. 25 : Rentes, pensions et autres prestations'
+        it: 'Guida fiscale di Ginevra 2025, p. 25: rendite e altre prestazioni'
     options:
-      - { value: salary, label: { en: 'A salary', fr: 'Un salaire' } }
+      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', it: 'Un salario' } }
       - value: replacement_income
         label:
           en: 'Unemployment, sickness or accident benefits'
           fr: 'Des indemnités (chômage, maladie, accident)'
-        chip: { en: 'Benefits', fr: 'Indemnités' }
+          it: 'Indennità di disoccupazione, malattia o infortunio'
+        chip: { en: 'Benefits', fr: 'Indemnités', it: 'Indennità' }
       - value: pension
         label:
           {
             en: 'A pension (AVS, AI or pension fund)',
             fr: 'Une rente (AVS, AI ou caisse de pension)',
+            it: 'Una rendita (AVS, AI o cassa pensione)',
           }
-        chip: { en: 'Pension', fr: 'Rente' }
+        chip: { en: 'Pension', fr: 'Rente', it: 'Rendita' }
       - value: alimony
-        label: { en: 'Alimony or child support received', fr: 'Une pension alimentaire reçue' }
-        chip: { en: 'Receives alimony', fr: 'Reçoit une pension' }
+        label:
+          {
+            en: 'Alimony or child support received',
+            fr: 'Une pension alimentaire reçue',
+            it: 'Alimenti o contributi di mantenimento ricevuti',
+          }
+        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', it: 'Riceve alimenti' }
       - value: self_employment
-        label: { en: 'Income from self-employment', fr: 'Un revenu d’activité indépendante' }
-        notSupported: { en: 'Self-employment (annexe B)', fr: 'L’activité indépendante (annexe B)' }
+        label:
+          {
+            en: 'Income from self-employment',
+            fr: 'Un revenu d’activité indépendante',
+            it: 'Reddito da attività lucrativa indipendente',
+          }
+        notSupported:
+          {
+            en: 'Self-employment (annexe B)',
+            fr: 'L’activité indépendante (annexe B)',
+            it: 'L’attività lucrativa indipendente (annexe B)',
+          }
 
   - use: employers
     # ge-2025-guide-declaration-pp p. 17
@@ -161,6 +223,7 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 17: employment income'
         fr: 'Guide fiscal 2025, p. 17 : Activité dépendante'
+        it: 'Guida fiscale di Ginevra 2025, p. 17: reddito da attività dipendente'
 
   - use: taxed_at_source
     # ge-2025-dris-tou-page
@@ -169,9 +232,11 @@ questions:
       label:
         en: 'Tax at source: correction or TOU (ge.ch)'
         fr: 'Demande de rectification ou taxation ordinaire ultérieure (ge.ch)'
+        it: 'Imposta alla fonte: rettifica o TOU (ge.ch)'
     help:
       en: 'If so, it shows on the salary certificate. On the official form: impôt à la source.'
       fr: 'Si c’est le cas, cela figure sur le certificat de salaire.'
+      it: 'Se sì, è indicato sul certificato di salario. Sul modulo ufficiale: impôt à la source.'
 
   - id: tou
     key: profile.tou
@@ -181,30 +246,35 @@ questions:
     explain:
       en: 'TOU (taxation ordinaire ultérieure): instead of the tax taken from your salary being final, you file a normal declaration and can claim deductions. Once you ask for it, you can’t go back.'
       fr: 'TOU (taxation ordinaire ultérieure) : au lieu que l’impôt retenu sur votre salaire soit définitif, vous remplissez une déclaration normale et pouvez faire valoir des déductions. Une fois demandée, on ne peut plus revenir en arrière.'
+      it: 'TOU (taxation ordinaire ultérieure): l’imposta trattenuta dal tuo salario non è più definitiva, compili una dichiarazione normale e puoi far valere le deduzioni. Una volta chiesta, non si torna indietro.'
     # ge-2025-guide-declaration-pp p. 52
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=52'
       label:
         en: 'Geneva tax guide 2025, p. 52: TOU for people taxed at source'
         fr: 'Guide fiscal 2025, p. 52 : La TOU pour les contribuables imposés à la source'
+        it: 'Guida fiscale di Ginevra 2025, p. 52: la TOU per chi paga l’imposta alla fonte'
     text:
       p1:
         en: 'Are you taxed ordinarily instead (TOU), or thinking about it?'
         fr: 'Êtes-vous en taxation ordinaire ultérieure (TOU), ou y songez-vous ?'
+        it: 'Sei invece in tassazione ordinaria (TOU), o ci stai pensando?'
       p2:
         en: 'Is your spouse or partner taxed ordinarily instead (TOU), or thinking about it?'
         fr: 'Votre conjoint ou partenaire est-il en taxation ordinaire ultérieure (TOU), ou y songe-t-il ?'
+        it: 'Il tuo coniuge o partner è invece in tassazione ordinaria (TOU), o ci sta pensando?'
     help:
       en: 'Taxpresso will show you both cases, with their amounts, before you decide.'
       fr: 'Taxpresso vous montrera les deux cas, avec leurs montants, avant que vous décidiez.'
+      it: 'Taxpresso ti mostrerà i due casi, con i loro importi, prima che tu decida.'
     options:
       - value: already
-        label: { en: 'Yes, already', fr: 'Oui, déjà' }
-        chip: { en: 'TOU', fr: 'TOU' }
+        label: { en: 'Yes, already', fr: 'Oui, déjà', it: 'Sì, già' }
+        chip: { en: 'TOU', fr: 'TOU', it: 'TOU' }
       - value: considering
-        label: { en: 'I’m thinking about it', fr: 'J’y songe' }
-        chip: { en: 'Considering TOU', fr: 'Envisage la TOU' }
-      - { value: 'no', label: { en: 'No', fr: 'Non' } }
+        label: { en: 'I’m thinking about it', fr: 'J’y songe', it: 'Ci sto pensando' }
+        chip: { en: 'Considering TOU', fr: 'Envisage la TOU', it: 'Valuta la TOU' }
+      - { value: 'no', label: { en: 'No', fr: 'Non', it: 'No' } }
 
   - use: pillar3a
     # ge-2025-guide-declaration-pp p. 18
@@ -213,9 +283,11 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
         fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
+        it: 'Guida fiscale di Ginevra 2025, p. 18: contributi e riscatti'
     help:
       en: 'Your bank or insurer sends an attestation. On the official form: 3e pilier A.'
       fr: 'Votre banque ou votre assurance vous envoie une attestation.'
+      it: 'La tua banca o assicurazione ti manda un’attestazione. Sul modulo ufficiale: 3e pilier A.'
 
   - use: lpp_buyin
     # ge-2025-guide-declaration-pp p. 18
@@ -224,27 +296,33 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
         fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
+        it: 'Guida fiscale di Ginevra 2025, p. 18: contributi e riscatti'
     help:
       en: 'A voluntary payment on top of the usual contributions. On the official form: rachat 2e pilier.'
       fr: 'Un versement volontaire en plus des cotisations habituelles.'
+      it: 'Un versamento volontario in più rispetto ai contributi abituali. Sul modulo ufficiale: rachat 2e pilier.'
 
   - use: commute
     explain:
       en: 'Getting to work can be deducted as travel costs (frais de déplacement). How you get there decides how they are counted. A trip by public transport of over 2 hours a day, there and back, also lets your lunches count for the Geneva tax.'
       fr: 'Le trajet pour le travail se déduit comme frais de déplacement. Votre moyen de transport décide comment ils sont comptés. Un trajet en transports publics de plus de 2 heures par jour, aller et retour, permet aussi de déduire vos repas pour l’impôt genevois.'
+      it: 'Il tragitto casa-lavoro si può dedurre come spese di trasporto (frais de déplacement). Il mezzo che usi decide come vengono calcolate. Con i trasporti pubblici, un tragitto di più di 2 ore al giorno, andata e ritorno, ti permette anche di dedurre i pasti per l’imposta ginevrina.'
     help:
       en: 'Choose how you went on most work days. On the official form: frais de déplacement.'
       fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire officiel : frais de déplacement.'
+      it: 'Scegli come ci andavi nella maggior parte dei giorni di lavoro. Sul modulo ufficiale: frais de déplacement.'
 
   - use: commute_transit_cost
     explain:
       en: 'For the federal tax you deduct what you actually paid to get to work, up to a yearly limit. The Geneva tax has a much lower limit.'
       fr: 'Pour l’impôt fédéral, vous déduisez ce que vous avez réellement payé pour aller au travail, jusqu’à une limite annuelle. L’impôt genevois a une limite bien plus basse.'
+      it: 'Per l’imposta federale deduci quello che hai effettivamente pagato per andare al lavoro, fino a un limite annuo. L’imposta ginevrina ha un limite molto più basso.'
 
   - use: commute_transit_usable
     help:
       en: 'Over 2 hours a day there and back by public transport also lets your lunches count for the Geneva tax.'
       fr: 'Plus de 2 heures par jour aller et retour en transports publics permet aussi de déduire vos repas pour l’impôt genevois.'
+      it: 'Con i trasporti pubblici, più di 2 ore al giorno andata e ritorno ti permettono anche di dedurre i pasti per l’imposta ginevrina.'
 
   - use: commute_transit_equivalent
 
@@ -260,15 +338,18 @@ questions:
     explain:
       en: 'Lunch away from home because of work costs more than at home. The federal tax counts a fixed amount per day, up to a yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate). The Geneva tax counts it only when your trip by public transport takes over 2 hours a day.'
       fr: 'Manger à l’extérieur à cause du travail coûte plus cher qu’à la maison. L’impôt fédéral compte un montant fixe par jour, jusqu’à une limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire). L’impôt genevois ne le compte que si votre trajet en transports publics dépasse 2 heures par jour.'
+      it: 'Pranzare fuori casa per lavoro costa più che a casa. L’imposta federale conta un importo fisso al giorno, fino a un limite annuo, la metà se il tuo datore di lavoro paga una parte dei tuoi pasti (casella G del certificato di salario). L’imposta ginevrina lo conta solo se il tuo tragitto con i trasporti pubblici supera le 2 ore al giorno.'
     # ge-2025-guide-declaration-pp p. 19
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=19'
       label:
         en: 'Geneva tax guide 2025, p. 19: meals'
         fr: 'Guide fiscal 2025, p. 19 : Frais de repas'
+        it: 'Guida fiscale di Ginevra 2025, p. 19: pasti'
     help:
       en: 'Count the days your lunch cost you more than 10 francs; 0 if you usually ate at home. On the official form: frais de repas.'
       fr: 'Comptez les jours où votre repas vous a coûté plus de 10 francs ; 0 si vous mangiez en général à la maison. Sur le formulaire officiel : frais de repas.'
+      it: 'Conta i giorni in cui il pranzo ti è costato più di 10 franchi; 0 se di solito mangiavi a casa. Sul modulo ufficiale: frais de repas.'
 
   - use: banks
     # ge-na-other-e-releve-fiscal
@@ -277,9 +358,11 @@ questions:
       label:
         en: 'The e-tax statement (e-relevé fiscal) on ge.ch'
         fr: 'Déclarez vos titres avec le e-relevé fiscal (ge.ch)'
+        it: 'L’estratto fiscale elettronico (e-relevé fiscal) su ge.ch'
     help:
       en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers (Interactive Brokers, DEGIRO). If a bank offers an e-tax statement (e-relevé fiscal), ask for it: it has everything in one document.'
       fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers (Interactive Brokers, DEGIRO). Si une banque propose un e-relevé fiscal, demandez-le : il contient tout en un seul document.'
+      it: 'Conta anche PostFinance, i conti dei tuoi figli e i broker online o esteri (Interactive Brokers, DEGIRO). Se una banca offre un estratto fiscale elettronico (e-relevé fiscal), chiedilo: contiene tutto in un solo documento.'
 
   - use: crypto
     # ge-2025-guide-declaration-pp p. 40
@@ -288,6 +371,7 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
         fr: 'Guide fiscal 2025, p. 40 : Comptes bancaires et postaux'
+        it: 'Guida fiscale di Ginevra 2025, p. 40: conti bancari, con le criptovalute'
 
   - use: payments
     # ge-2025-guide-declaration-pp p. 11
@@ -296,6 +380,7 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 11: the main deductions'
         fr: 'Guide fiscal 2025, p. 11 : Principales déductions'
+        it: 'Guida fiscale di Ginevra 2025, p. 11: le principali deduzioni'
 
   # A lump sum from the 2nd pillar or pillar 3a is supported in Geneva since 14 October 2026 (SPEC.md
   # section 1): the questions below ask who received which, and why.
@@ -304,34 +389,50 @@ questions:
       en: 'Most of these need checks that Taxpresso can’t do yet. Better to know now than in March. A lump sum from your pension fund or pillar 3a is the exception: Taxpresso computes the separate tax on it.'
       fr: 'La plupart de ces situations demandent des vérifications que Taxpresso ne sait pas encore faire. Mieux vaut le savoir maintenant qu’en mars. Un capital de votre caisse de pension ou du 3e pilier A fait exception : Taxpresso calcule l’impôt séparé sur ce capital.'
       de: 'Die meisten davon brauchen Abklärungen, die Taxpresso noch nicht kann. Besser jetzt wissen als im März. Ein Kapitalbezug aus der Pensionskasse oder der Säule 3a ist die Ausnahme: Taxpresso berechnet die separate Steuer darauf.'
+      it: 'La maggior parte di queste situazioni richiede verifiche che Taxpresso non sa ancora fare. Meglio saperlo ora che a marzo. Un capitale della tua cassa pensione o del pilastro 3a fa eccezione: Taxpresso calcola l’imposta separata su di esso.'
     # ge-2025-getax-software
     learnMore:
       url: 'https://www.ge.ch/getax/telecharger-installer-getax-particuliers'
       label:
         en: 'GeTax, the canton’s free software (ge.ch)'
         fr: 'GeTax, le logiciel gratuit du canton (ge.ch)'
+        it: 'GeTax, il software gratuito del Cantone (ge.ch)'
     options:
       - value: real_estate
         label:
           {
             en: 'I own real estate, in Switzerland or abroad',
             fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
+            it: 'Possiedo un immobile, in Svizzera o all’estero',
           }
-        notSupported: { en: 'Real estate (annexe D)', fr: 'Les immeubles (annexe D)' }
+        notSupported:
+          {
+            en: 'Real estate (annexe D)',
+            fr: 'Les immeubles (annexe D)',
+            it: 'Gli immobili (annexe D)',
+          }
       - value: inheritance_or_gift
         label:
           {
             en: 'I received an inheritance or a large gift',
             fr: 'J’ai reçu un héritage ou une donation importante',
+            it: 'Ho ricevuto un’eredità o una donazione importante',
           }
-        notSupported: { en: 'An inheritance or a gift', fr: 'Un héritage ou une donation' }
+        notSupported:
+          {
+            en: 'An inheritance or a gift',
+            fr: 'Un héritage ou une donation',
+            it: 'Un’eredità o una donazione',
+          }
       - value: foreign_income
         label:
           {
             en: 'I had income from abroad (salary, pension, rent)',
             fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+            it: 'Ho avuto redditi dall’estero (salario, rendita, affitto)',
           }
-        notSupported: { en: 'Income from abroad', fr: 'Des revenus de l’étranger' }
+        notSupported:
+          { en: 'Income from abroad', fr: 'Des revenus de l’étranger', it: 'Redditi dall’estero' }
       # 98.12, Prestations en capital du 2e et 3e pilier A (ge-2025-guide-declaration-pp p. 13).
       - value: pension_capital
         label:
@@ -339,8 +440,15 @@ questions:
             en: 'I received a lump sum from my pension fund or pillar 3a',
             fr: 'J’ai reçu un capital de ma caisse de pension ou du 3e pilier A',
             de: 'Ich habe Kapital aus der Pensionskasse oder der Säule 3a bezogen',
+            it: 'Ho ricevuto un capitale dalla mia cassa pensione o dal pilastro 3a',
           }
-        chip: { en: 'Pension capital', fr: 'Capital de prévoyance', de: 'Vorsorgekapital' }
+        chip:
+          {
+            en: 'Pension capital',
+            fr: 'Capital de prévoyance',
+            de: 'Vorsorgekapital',
+            it: 'Capitale di previdenza',
+          }
 
   # Who received which lump sum (prestation en capital): from a pension fund or vested benefits
   # (2nd pillar: ch-na-law-lifd art. 22 al. 1 and 2, p. 17) or from pillar 3a. Each is taxed apart
@@ -357,26 +465,31 @@ questions:
       en: 'A lump sum from your pension fund, a vested benefits account (2nd pillar) or pillar 3a is taxed apart from your other income, at a fifth of the usual rate. Every lump sum of the year counts together, your spouse’s too.'
       fr: 'Un capital versé par votre caisse de pension, un compte de libre passage (2e pilier) ou le 3e pilier A est imposé séparément de vos autres revenus, au cinquième du taux habituel. Tous les capitaux de l’année comptent ensemble, ceux de votre conjoint aussi.'
       de: 'Kapital aus deiner Pensionskasse, einem Freizügigkeitskonto (2. Säule) oder der Säule 3a wird getrennt von deinem übrigen Einkommen besteuert, zu einem Fünftel des üblichen Satzes. Alle Kapitalbezüge des Jahres zählen zusammen, auch die deines Partners oder deiner Partnerin.'
+      it: 'Un capitale versato dalla tua cassa pensione, da un conto di libero passaggio (2° pilastro) o dal pilastro 3a è tassato separatamente dagli altri redditi, a un quinto dell’aliquota abituale. Tutti i capitali dell’anno contano insieme, anche quelli del tuo coniuge.'
     # ge-2025-guide-declaration-pp p. 13
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=13'
       label:
         en: 'Geneva tax guide 2025, p. 13: pension capital (98.12)'
         fr: 'Guide fiscal 2025, p. 13 : Prestations en capital du 2e et 3e pilier A'
+        it: 'Guida fiscale di Ginevra 2025, p. 13: prestazioni in capitale (98.12)'
     text:
       p1:
         en: 'Which lump sum did you receive in 2026?'
         fr: 'Quel capital avez-vous reçu en 2026 ?'
         de: 'Welches Kapital hast du 2026 bezogen?'
+        it: 'Quale capitale hai ricevuto nel 2026?'
       p2:
         en: 'Which lump sum did your spouse or partner receive in 2026?'
         fr: 'Quel capital votre conjoint ou partenaire a-t-il reçu en 2026 ?'
         de: 'Welches Kapital hat dein Partner oder deine Partnerin 2026 bezogen?'
+        it: 'Quale capitale ha ricevuto il tuo coniuge o partner nel 2026?'
     help:
       en: 'A lump sum, not a pension paid every month. Choose all that apply. On the official form: prestations en capital du 2e et 3e pilier A (98.12).'
       fr: 'Un capital, pas une rente versée chaque mois. Choisissez tout ce qui s’applique. Sur le formulaire officiel : prestations en capital du 2e et 3e pilier A (98.12).'
       de: 'Ein Kapital, keine monatliche Rente. Wähl alles, was zutrifft. Auf dem offiziellen Formular: prestations en capital du 2e et 3e pilier A (98.12).'
-    none: { en: 'None', fr: 'Aucun', de: 'Keines' }
+      it: 'Un capitale, non una rendita mensile. Scegli tutto ciò che vale. Sul modulo ufficiale: prestations en capital du 2e et 3e pilier A (98.12).'
+    none: { en: 'None', fr: 'Aucun', de: 'Keines', it: 'Nessuno' }
     options:
       - value: pillar2
         label:
@@ -384,11 +497,30 @@ questions:
             en: 'From a pension fund or a vested benefits account (2nd pillar)',
             fr: 'D’une caisse de pension ou d’un compte de libre passage (2e pilier)',
             de: 'Aus einer Pensionskasse oder einem Freizügigkeitskonto (2. Säule)',
+            it: 'Da una cassa pensione o da un conto di libero passaggio (2° pilastro)',
           }
-        chip: { en: 'Capital, 2nd pillar', fr: 'Capital 2e pilier', de: 'Kapital 2. Säule' }
+        chip:
+          {
+            en: 'Capital, 2nd pillar',
+            fr: 'Capital 2e pilier',
+            de: 'Kapital 2. Säule',
+            it: 'Capitale 2° pilastro',
+          }
       - value: pillar3a
-        label: { en: 'From pillar 3a', fr: 'Du 3e pilier A', de: 'Aus der Säule 3a' }
-        chip: { en: 'Capital, pillar 3a', fr: 'Capital 3e pilier A', de: 'Kapital Säule 3a' }
+        label:
+          {
+            en: 'From pillar 3a',
+            fr: 'Du 3e pilier A',
+            de: 'Aus der Säule 3a',
+            it: 'Dal pilastro 3a',
+          }
+        chip:
+          {
+            en: 'Capital, pillar 3a',
+            fr: 'Capital 3e pilier A',
+            de: 'Kapital Säule 3a',
+            it: 'Capitale pilastro 3a',
+          }
 
   # Why it was paid: the law allows a lump sum at retirement age, for your own home, to start
   # self-employment, on leaving Switzerland, and in a few other cases (ch-na-law-opp3 art. 3, p. 2
@@ -406,25 +538,30 @@ questions:
       en: 'Your pension fund or bank pays a lump sum only for a reason the law allows. The reason is written on its attestation. For the reasons listed first, the tax is the same.'
       fr: 'Votre caisse de pension ou votre banque ne verse un capital que pour un motif prévu par la loi. Le motif figure sur son attestation. Pour les premiers motifs de la liste, l’impôt est le même.'
       de: 'Deine Pensionskasse oder Bank zahlt Kapital nur aus einem Grund aus, den das Gesetz vorsieht. Der Grund steht auf ihrer Bescheinigung. Für die ersten Gründe der Liste ist die Steuer dieselbe.'
+      it: 'La tua cassa pensione o la tua banca versa un capitale solo per un motivo previsto dalla legge. Il motivo è scritto sulla sua attestazione. Per i primi motivi della lista, l’imposta è la stessa.'
     # ch-na-law-opp3 art. 3
     learnMore:
       url: 'https://www.fedlex.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1985/1778_1778_1778/20250101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1985-1778_1778_1778-20250101-fr-pdf-a-1.pdf#page=2'
       label:
         en: 'Pillar 3a ordinance (OPP 3), art. 3: when a lump sum can be paid, in French'
         fr: 'OPP 3, art. 3 : Versement des prestations'
+        it: 'Ordinanza sul pilastro 3a (OPP 3), art. 3: quando si può versare un capitale, in francese'
     text:
       p1:
         en: 'Why was it paid to you?'
         fr: 'Pour quel motif vous a-t-il été versé ?'
         de: 'Aus welchem Grund wurde es dir ausbezahlt?'
+        it: 'Per quale motivo ti è stato versato?'
       p2:
         en: 'Why was it paid to your spouse or partner?'
         fr: 'Pour quel motif a-t-il été versé à votre conjoint ou partenaire ?'
         de: 'Aus welchem Grund wurde es deinem Partner oder deiner Partnerin ausbezahlt?'
+        it: 'Per quale motivo è stato versato al tuo coniuge o partner?'
     help:
       en: 'Choose all that apply, if you received more than one lump sum.'
       fr: 'Choisissez tout ce qui s’applique, si vous avez reçu plusieurs capitaux.'
       de: 'Wähl alles, was zutrifft, wenn du mehrere Kapitalbezüge hattest.'
+      it: 'Scegli tutto ciò che vale, se hai ricevuto più capitali.'
     options:
       - value: retirement
         label:
@@ -432,6 +569,7 @@ questions:
             en: 'Retirement: I reached the age to draw it',
             fr: 'Retraite : j’ai atteint l’âge de le toucher',
             de: 'Pensionierung: Ich habe das Bezugsalter erreicht',
+            it: 'Pensionamento: ho raggiunto l’età per riceverlo',
           }
       - value: home
         label:
@@ -439,6 +577,7 @@ questions:
             en: 'My own home: buying or building it, shares of a housing cooperative, or paying off its mortgage',
             fr: 'Mon propre logement : achat ou construction, parts d’une coopérative d’habitation, ou remboursement de l’hypothèque',
             de: 'Mein eigenes Zuhause: Kauf oder Bau, Anteile einer Wohnbaugenossenschaft oder Rückzahlung der Hypothek',
+            it: 'La mia abitazione: acquisto o costruzione, quote di una cooperativa di abitazione o rimborso dell’ipoteca',
           }
       - value: self_employment
         label:
@@ -446,6 +585,7 @@ questions:
             en: 'Starting self-employment',
             fr: 'Début d’une activité indépendante',
             de: 'Aufnahme einer selbständigen Erwerbstätigkeit',
+            it: 'Inizio di un’attività lucrativa indipendente',
           }
       - value: leaving
         label:
@@ -453,11 +593,13 @@ questions:
             en: 'Leaving Switzerland for good',
             fr: 'Départ définitif de Suisse',
             de: 'Endgültiges Verlassen der Schweiz',
+            it: 'Partenza definitiva dalla Svizzera',
           }
         notSupported:
           {
             en: 'A lump sum paid on leaving Switzerland (taxed at source)',
             fr: 'Un capital versé lors d’un départ de Suisse (imposé à la source)',
+            it: 'Un capitale versato alla partenza dalla Svizzera (imposto alla fonte)',
           }
       - value: other
         label:
@@ -465,11 +607,13 @@ questions:
             en: 'Another reason (disability, a death, a divorce, a transfer to a pension fund)',
             fr: 'Un autre motif (invalidité, décès, divorce, transfert à une caisse de pension)',
             de: 'Ein anderer Grund (Invalidität, Todesfall, Scheidung, Übertrag an eine Pensionskasse)',
+            it: 'Un altro motivo (invalidità, decesso, divorzio, trasferimento a una cassa pensione)',
           }
         notSupported:
           {
             en: 'A lump sum paid for another reason (disability, a death, a divorce, a transfer)',
             fr: 'Un capital versé pour un autre motif (invalidité, décès, divorce, transfert)',
+            it: 'Un capitale versato per un altro motivo (invalidità, decesso, divorzio, trasferimento)',
           }
 
 # What the "still missing" list asks for. Labels use the guide's words (p. 8 and p. 10).
@@ -481,6 +625,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 17: employment income'
         fr: 'Guide fiscal 2025, p. 17 : Activité dépendante'
+        it: 'Guida fiscale di Ginevra 2025, p. 17: reddito da attività dipendente'
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
   - use: replacement_income
@@ -490,6 +635,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 10: supporting documents'
         fr: 'Guide fiscal 2025, p. 10 : Les justificatifs'
+        it: 'Guida fiscale di Ginevra 2025, p. 10: i giustificativi'
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
   - use: pension
@@ -499,6 +645,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 25: pensions and other benefits'
         fr: 'Guide fiscal 2025, p. 25 : Rentes, pensions et autres prestations'
+        it: 'Guida fiscale di Ginevra 2025, p. 25: rendite e altre prestazioni'
     source: 'ge-2025-guide-declaration-pp p. 8'
 
   - use: pillar3a
@@ -508,22 +655,26 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
         fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
+        it: 'Guida fiscale di Ginevra 2025, p. 18: contributi e riscatti'
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
   - use: lpp_buyin
     explain:
       en: 'Only needed if you made an extra, voluntary payment into your pension fund. The fund confirms it on form 21EDP. No buy-in? Change your answer and this goes away.'
       fr: 'Seulement si vous avez fait un versement volontaire supplémentaire dans votre caisse de pension. La caisse le confirme sur le formulaire 21EDP. Pas de rachat ? Modifiez votre réponse et cette ligne disparaît.'
+      it: 'Serve solo se hai fatto un versamento volontario in più nella tua cassa pensione. La cassa lo conferma sul modulo 21EDP. Nessun riscatto? Cambia la tua risposta e questa riga sparisce.'
     # ge-2025-guide-declaration-pp p. 18
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=18'
       label:
         en: 'Geneva tax guide 2025, p. 18: contributions and buy-ins'
         fr: 'Guide fiscal 2025, p. 18 : Déductions des cotisations et des rachats'
+        it: 'Guida fiscale di Ginevra 2025, p. 18: contributi e riscatti'
     reason:
       {
         en: 'Form 21EDP from your pension fund.',
         fr: 'Formulaire 21EDP de votre caisse de pension.',
+        it: 'Modulo 21EDP della tua cassa pensione.',
       }
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
@@ -534,6 +685,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 29: health and accident insurance'
         fr: 'Guide fiscal 2025, p. 29 : Assurances maladie et accidents'
+        it: 'Guida fiscale di Ginevra 2025, p. 29: assicurazione malattia e infortuni'
     source: 'ge-2025-guide-declaration-pp p. 8'
 
   # Securities held abroad belong in the état des titres too (p. 38). A broker's export gives the
@@ -543,16 +695,19 @@ requirements:
     explain:
       en: 'The statement each bank gives for your taxes, with balances on 31 December. Ask for the e-tax statement (e-relevé fiscal) if your bank offers it. For a broker such as Interactive Brokers or DEGIRO, add its export too (Flex Query XML, or the CSV of the portfolio and of the account statement): Taxpresso reads your securities from it.'
       fr: 'Le relevé fiscal de chaque banque, avec les soldes au 31 décembre. Demandez le e-relevé fiscal si votre banque le propose. Pour un courtier comme Interactive Brokers ou DEGIRO, ajoutez aussi son export (Flex Query XML, ou le CSV du portefeuille et du relevé de compte) : Taxpresso y lit vos titres.'
+      it: 'L’estratto fiscale di ogni banca, con i saldi al 31 dicembre. Chiedi l’estratto fiscale elettronico (e-relevé fiscal) se la tua banca lo offre. Per un broker come Interactive Brokers o DEGIRO, aggiungi anche il suo export (Flex Query XML, o il CSV del portafoglio e dell’estratto conto): Taxpresso legge da lì i tuoi titoli.'
     # ge-na-other-e-releve-fiscal
     learnMore:
       url: 'https://www.ge.ch/node/13593'
       label:
         en: 'The e-tax statement (e-relevé fiscal) on ge.ch'
         fr: 'Déclarez vos titres avec le e-relevé fiscal (ge.ch)'
+        it: 'L’estratto fiscale elettronico (e-relevé fiscal) su ge.ch'
     reason:
       {
         en: 'One per bank, ideally the e-tax statement (e-relevé fiscal).',
         fr: 'Un par banque, idéalement le e-relevé fiscal.',
+        it: 'Uno per banca, idealmente l’estratto fiscale elettronico (e-relevé fiscal).',
       }
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10, p. 38, p. 43'
 
@@ -563,6 +718,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 40: bank accounts, with crypto'
         fr: 'Guide fiscal 2025, p. 40 : Comptes bancaires et postaux'
+        it: 'Guida fiscale di Ginevra 2025, p. 40: conti bancari, con le criptovalute'
     source: 'ge-2025-guide-declaration-pp p. 38'
 
   - use: childcare
@@ -572,22 +728,26 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 30: childcare costs'
         fr: 'Guide fiscal 2025, p. 30 : Frais de garde des enfants'
+        it: 'Guida fiscale di Ginevra 2025, p. 30: spese di custodia dei figli'
     source: 'ge-2025-guide-declaration-pp p. 8'
 
   - use: medical
     explain:
       en: 'Your insurer’s statement of costs it didn’t reimburse (décompte LAMal), plus invoices you never sent to the insurer.'
       fr: 'Le décompte LAMal des frais non remboursés par votre assureur, plus les factures que vous ne lui avez pas envoyées.'
+      it: 'Il conteggio della tua assicurazione con le spese che non ha rimborsato (décompte LAMal), più le fatture che non le hai mai mandato.'
     # ge-2025-guide-declaration-pp p. 14
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=14'
       label:
         en: 'Geneva tax guide 2025, p. 14: medical costs'
         fr: 'Guide fiscal 2025, p. 14 : Déductions des frais médicaux'
+        it: 'Guida fiscale di Ginevra 2025, p. 14: spese di malattia'
     reason:
       {
         en: 'Your insurer’s statement of costs it didn’t cover (décompte LAMal).',
         fr: 'Le décompte LAMal des frais restés à votre charge.',
+        it: 'Il conteggio della tua assicurazione con le spese che non ha coperto (décompte LAMal).',
       }
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
@@ -598,6 +758,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 15: donations'
         fr: 'Guide fiscal 2025, p. 15 : Déductions des dons'
+        it: 'Guida fiscale di Ginevra 2025, p. 15: donazioni'
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
   - use: loan_interest
@@ -607,6 +768,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 37: interest and debts'
         fr: 'Guide fiscal 2025, p. 37 : Intérêts et dettes'
+        it: 'Guida fiscale di Ginevra 2025, p. 37: interessi e debiti'
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
   - use: alimony
@@ -616,6 +778,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 29: alimony paid'
         fr: 'Guide fiscal 2025, p. 29 : Pensions, contributions d’entretien versées'
+        it: 'Guida fiscale di Ginevra 2025, p. 29: alimenti versati'
     source: 'ge-2025-guide-declaration-pp p. 8'
 
   - use: separation_judgment
@@ -625,6 +788,7 @@ requirements:
       label:
         en: 'Geneva tax guide 2025, p. 10: supporting documents'
         fr: 'Guide fiscal 2025, p. 10 : Les justificatifs'
+        it: 'Guida fiscale di Ginevra 2025, p. 10: i giustificativi'
     source: 'ge-2025-guide-declaration-pp p. 8, p. 10'
 
   # The institution that paid a lump sum reports it to the tax office and sends you a copy
@@ -639,22 +803,26 @@ requirements:
         en: 'Pension capital attestation, 2nd pillar',
         fr: 'Attestation de prestation en capital du 2e pilier',
         de: 'Bescheinigung Kapitalleistung 2. Säule',
+        it: 'Attestazione di prestazione in capitale, 2° pilastro',
       }
     explain:
       en: 'The statement your pension fund or vested benefits institution sends when it pays a lump sum: the amount, the date and the reason. Paid by two institutions? Add both.'
       fr: 'Le décompte que votre caisse de pension ou votre institution de libre passage envoie quand elle verse un capital : le montant, la date et le motif. Versé par deux institutions ? Ajoutez les deux.'
       de: 'Die Abrechnung, die deine Pensionskasse oder Freizügigkeitseinrichtung schickt, wenn sie Kapital auszahlt: Betrag, Datum und Grund. Von zwei Einrichtungen bezahlt? Füg beide hinzu.'
+      it: 'Il conteggio che la tua cassa pensione o il tuo istituto di libero passaggio invia quando versa un capitale: l’importo, la data e il motivo. Versato da due istituti? Aggiungili entrambi.'
     # ge-2025-guide-declaration-pp p. 13
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=13'
       label:
         en: 'Geneva tax guide 2025, p. 13: pension capital (98.12)'
         fr: 'Guide fiscal 2025, p. 13 : Prestations en capital du 2e et 3e pilier A'
+        it: 'Guida fiscale di Ginevra 2025, p. 13: prestazioni in capitale (98.12)'
     reason:
       {
         en: 'From your pension fund or vested benefits institution.',
         fr: 'De votre caisse de pension ou institution de libre passage.',
         de: 'Von deiner Pensionskasse oder Freizügigkeitseinrichtung.',
+        it: 'Dalla tua cassa pensione o dal tuo istituto di libero passaggio.',
       }
     source: 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13'
 
@@ -667,37 +835,52 @@ requirements:
         en: 'Pension capital attestation, pillar 3a',
         fr: 'Attestation de prestation en capital du 3e pilier A',
         de: 'Bescheinigung Kapitalleistung Säule 3a',
+        it: 'Attestazione di prestazione in capitale, pilastro 3a',
       }
     explain:
       en: 'The statement your bank or insurer sends when it pays out a pillar 3a account: the amount, the date and the reason. Several 3a accounts? Add each one.'
       fr: 'Le décompte que votre banque ou votre assurance envoie quand elle verse un compte du 3e pilier A : le montant, la date et le motif. Plusieurs comptes 3a ? Ajoutez chacun.'
       de: 'Die Abrechnung, die deine Bank oder Versicherung schickt, wenn sie ein Säule-3a-Konto auszahlt: Betrag, Datum und Grund. Mehrere 3a-Konten? Füg jedes hinzu.'
+      it: 'Il conteggio che la tua banca o la tua assicurazione invia quando versa un conto del pilastro 3a: l’importo, la data e il motivo. Più conti 3a? Aggiungili tutti.'
     # ge-2025-guide-declaration-pp p. 13
     learnMore:
       url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=13'
       label:
         en: 'Geneva tax guide 2025, p. 13: pension capital (98.12)'
         fr: 'Guide fiscal 2025, p. 13 : Prestations en capital du 2e et 3e pilier A'
+        it: 'Guida fiscale di Ginevra 2025, p. 13: prestazioni in capitale (98.12)'
     reason:
       {
         en: 'From your bank or insurer.',
         fr: 'De votre banque ou de votre assurance.',
         de: 'Von deiner Bank oder Versicherung.',
+        it: 'Dalla tua banca o dalla tua assicurazione.',
       }
     source: 'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13'
 
   - id: prior_declaration
     optional: true
     expects: { kinds: [prior_declaration] }
-    label: { en: 'Last year’s declaration', fr: 'Déclaration de l’an dernier' }
+    label:
+      {
+        en: 'Last year’s declaration',
+        fr: 'Déclaration de l’an dernier',
+        it: 'Dichiarazione dell’anno scorso',
+      }
     explain:
       en: 'Last year’s declaration or tax assessment, if you have it. It helps fill in your situation faster.'
       fr: 'La déclaration ou l’avis de taxation de l’an dernier, si vous l’avez. Cela aide à remplir votre situation plus vite.'
+      it: 'La dichiarazione o la decisione di tassazione dell’anno scorso, se ce l’hai. Ti aiuta a compilare più in fretta la tua situazione.'
     # ge-na-efiling-espace-fiscal
     learnMore:
       url: 'https://www.ge.ch/espace-fiscal-e-demarches/gerer-mes-declarations-impot'
       label:
         en: 'Your past returns in e-démarches (ge.ch)'
         fr: 'Gérer mes déclarations d’impôt (ge.ch)'
+        it: 'Le tue dichiarazioni passate in e-démarches (ge.ch)'
     reason:
-      { en: 'If you have it: it speeds things up.', fr: 'Si vous l’avez : cela va plus vite.' }
+      {
+        en: 'If you have it: it speeds things up.',
+        fr: 'Si vous l’avez : cela va plus vite.',
+        it: 'Se ce l’hai: si fa prima.',
+      }

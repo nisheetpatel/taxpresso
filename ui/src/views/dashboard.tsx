@@ -46,10 +46,19 @@ const strings = {
     noTools:
       'Dein Dashboard kann in diesem Chat nicht laufen. Öffne es im Browser auf diesem Computer.',
   },
+  it: {
+    full: 'Schermo intero',
+    exitFull: 'Esci dallo schermo intero',
+    browser: 'Apri nel browser',
+    copyLink: 'Se non si apre niente, copia questo link in un browser su questo computer:',
+    alone: 'Chiedi a Claude di aprire la tua dashboard Taxpresso.',
+    noTools:
+      'La tua dashboard non può funzionare in questa chat. Aprila nel browser su questo computer.',
+  },
 };
 type Lang = keyof typeof strings;
 const asLang = (value: unknown): Lang | undefined =>
-  value === 'fr' || value === 'en' || value === 'de' ? value : undefined;
+  value === 'fr' || value === 'en' || value === 'de' || value === 'it' ? value : undefined;
 
 /** The open_dashboard result: the private link for the browser. */
 interface OpenResult {
