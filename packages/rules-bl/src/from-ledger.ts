@@ -19,7 +19,14 @@ import { communeOfAnswer } from './keys.js';
 import { isBlTaxYear } from './params.js';
 import type { Confession } from './types.js';
 
+const NB = ' ';
 const t = (en: string, fr: string): Text => ({ en, fr });
+
+/** Cash, precious metals and vehicles described together, as other assets (the shared reading). */
+export const NOTE_VALUABLES: Text = t(
+  'Cash, precious metals and vehicles you described are taken together on line 825 (Übrige Vermögenswerte); the return also has 805 for cash and gold and 815 for vehicles: the taxable wealth is the same.',
+  `Les espèces, métaux précieux et véhicules décrits sont pris ensemble à la ligne 825 (Übrige Vermögenswerte)${NB}; la déclaration a aussi 805 pour les espèces et l’or et 815 pour les véhicules${NB}: la fortune imposable est la même.`,
+);
 
 export type BaselLandLedgerInput = CantonLedgerInput<BaselLandCantonal>;
 

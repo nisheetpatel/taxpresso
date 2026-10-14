@@ -93,6 +93,7 @@ export { FEDERAL_NOTE, federalReturn, federalTotals } from './ifd.js';
 export {
   BASEL_LAND_READING,
   baselLandInputFromFacts,
+  NOTE_VALUABLES,
   type BaselLandLedgerInput,
 } from './from-ledger.js';
 export { blKeys, communeOfAnswer, communeOptions, type CommuneOption } from './keys.js';
