@@ -538,7 +538,7 @@ export class QuestionnaireEngine {
       case 'yesno': {
         if (typeof raw === 'boolean') return raw;
         const f = fold(String(raw));
-        if (['yes', 'oui', 'true', 'y'].includes(f)) return true;
+        if (['yes', 'oui', 'si', 'true', 'y'].includes(f)) return true;
         if (['no', 'non', 'false', 'n'].includes(f)) return false;
         return bad('expected yes or no');
       }

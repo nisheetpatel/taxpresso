@@ -44,7 +44,8 @@ questions:
   # für die ganze Steuerperiode zuständig), lu-2025-guide-wegleitung p. 8 (Zuzug in den Kanton
   # Luzern: the tax liability in Lucerne for the whole tax period) and sg-2025-guide-wegleitung
   # p. 11 (Zuzug aus einem anderen Kanton: für das ganze Steuerjahr 2025 im Kanton St.Gallen
-  # steuerpflichtig).
+  # steuerpflichtig) and ti-2025-guide-istruzioni-pf-pdf p. 10 (Arrivo in Ticino di contribuenti
+  # provenienti da altri cantoni: assoggettato per l'intero anno).
   - id: canton
     key: profile.canton
     type: choice
@@ -150,6 +151,15 @@ questions:
             it: 'Cantone di San Gallo',
           }
         chip: { en: 'St. Gallen', fr: 'Saint-Gall', de: 'St. Gallen', it: 'San Gallo' }
+      - value: TI
+        label:
+          {
+            en: 'Canton of Ticino',
+            fr: 'Canton du Tessin',
+            de: 'Kanton Tessin',
+            it: 'Cantone Ticino',
+          }
+        chip: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino' }
       # The cantons Taxpresso covers are named from the options above ({cantonsOr}, {cantons}:
       # packages/questionnaire, schema.ts), so adding a canton adds its option only.
       - value: other
