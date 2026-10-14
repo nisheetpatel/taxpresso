@@ -135,6 +135,14 @@ export const RUBRICS = {
   '71.00': r('Frais médicaux', 'Medical costs', 'p. 3', 'p. 14'),
   '73.00': r('Versements bénévoles et dons', 'Donations', 'p. 3', 'p. 15'),
   '74.00': r('Versements aux partis politiques', 'Political parties', 'p. 3', 'p. 15'),
+  // Information the form asks for that is not in the income: the lump sums from the 2nd pillar and
+  // pillar 3a, taxed apart (renseignements, p. 2; ../law/capital.ts).
+  '98.12': r(
+    'Prestations en capital du 2ème et 3ème pilier A imposées au 1/5ème du barème',
+    'Pension capital, taxed apart',
+    'p. 2',
+    'p. 13',
+  ),
   // Wealth (other than the état des titres, whose items carry their own label).
   '16.40': r(
     'Numéraires, métaux précieux, autos, bateaux, etc.',

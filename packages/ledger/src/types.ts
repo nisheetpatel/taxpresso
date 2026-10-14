@@ -73,6 +73,12 @@ export const DOCUMENT_KINDS = [
   // The PDF of this year's own declaration, downloaded from GeTax or the online declaration before
   // the user transmits it, to check it against the values to type (SPEC.md 10.4). Never a source of values.
   'official_declaration',
+  // The attestation of a lump sum paid by a pension fund or vested benefits institution (2nd pillar)
+  // or by a pillar 3a foundation or insurer: the copy the institution sends the taxpayer
+  // (ch-na-law-lifd art. 129 al. 1 let. b and al. 2, p. 69); Geneva rubric 98.12
+  // (ge-2025-guide-declaration-pp p. 13).
+  'lpp_capital_attestation',
+  'pillar3a_capital_attestation',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
