@@ -477,3 +477,20 @@ export function t(
 export function isMessageKey(key: string): key is MessageKey {
   return key in messages.en;
 }
+
+/**
+ * The key of a canton's own text when the table has one ("leadZh" for Zurich, "leadBe" for Bern),
+ * else the key itself (Geneva's, the default): a new canton adds its texts, not code.
+ */
+export function cantonKey<K extends string>(
+  table: Readonly<Record<string, unknown>>,
+  key: K,
+  canton: string | undefined,
+): K {
+  const own = canton ? `${key}${canton.slice(0, 1)}${canton.slice(1).toLowerCase()}` : undefined;
+  return (own !== undefined && own in table ? own : key) as K;
+}
+
+/** The key of a canton's own text in the main table. */
+export const ck = (key: MessageKey, canton: string | undefined): MessageKey =>
+  cantonKey(messages.en, key, canton);

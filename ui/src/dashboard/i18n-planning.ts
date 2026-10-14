@@ -1,7 +1,7 @@
 // UI strings for the pension fund buy-in, the 3a catch-up and the TOU card (SPEC.md section 8,
 // groups B and C). Second person, plain words, official terms next to their gloss (French in
 // Geneva, German in Zurich).
-import { isMessageKey, t, type Language } from './i18n';
+import { cantonKey, isMessageKey, type Language, t } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
@@ -347,6 +347,10 @@ const messages = {
 } as const;
 
 export type PlanningMessageKey = keyof (typeof messages)['en'];
+
+/** The key of a canton's own text, else Geneva's (./i18n.ts, cantonKey). */
+export const pck = (key: PlanningMessageKey, canton: string | undefined): PlanningMessageKey =>
+  cantonKey(messages.en, key, canton);
 
 export function tp(
   lang: Language,

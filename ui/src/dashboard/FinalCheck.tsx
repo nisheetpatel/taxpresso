@@ -5,7 +5,7 @@
 import type { JSX } from 'preact';
 import './final-check.css';
 import type { Language } from './i18n';
-import { tf, type FinalCheckMessageKey } from './i18n-final-check';
+import { fck, type FinalCheckMessageKey, tf } from './i18n-final-check';
 import type { State } from './types';
 import type { FinalCheckItemState, FinalCheckSource } from './types-final-check';
 
@@ -128,7 +128,7 @@ export function FinalCheck({ state, lang }: { state: State; lang: Language }): J
           {view.moreTime ? (
             <p class="small-text fc-more-time">
               <a href={view.moreTime} target="_blank" rel="noopener noreferrer">
-                {tf(lang, state.canton?.code === 'ZH' ? 'moreTimeZh' : 'moreTime')}
+                {tf(lang, fck('moreTime', state.canton?.code))}
               </a>{' '}
               {tf(lang, 'moreTimeAfter')}
             </p>

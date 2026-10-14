@@ -1,7 +1,7 @@
 // UI strings for the copy panel (SPEC.md 10.5). Second person, plain words, the official label
 // (French in Geneva, German in Zurich) always next to its gloss. Status labels follow SPEC.md
 // section 11b.
-import type { Language } from './i18n';
+import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
@@ -106,6 +106,10 @@ const messages = {
 } as const;
 
 export type CopyMessageKey = keyof (typeof messages)['en'];
+
+/** The key of a canton's own text, else Geneva's (./i18n.ts, cantonKey). */
+export const cck = (key: CopyMessageKey, canton: string | undefined): CopyMessageKey =>
+  cantonKey(messages.en, key, canton);
 
 export function tc(
   lang: Language,

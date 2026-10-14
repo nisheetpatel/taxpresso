@@ -1,7 +1,7 @@
 // UI strings for "Final check" (SPEC.md 10.0). Second person, plain words, official French terms
 // next to their gloss. Status labels follow SPEC.md section 11b. The items' own texts come worded
 // from the extension (extension/src/final-check.ts), in the page's language.
-import type { Language } from './i18n';
+import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
@@ -102,6 +102,10 @@ const messages = {
 } as const;
 
 export type FinalCheckMessageKey = keyof (typeof messages)['en'];
+
+/** The key of a canton's own text, else Geneva's (./i18n.ts, cantonKey). */
+export const fck = (key: FinalCheckMessageKey, canton: string | undefined): FinalCheckMessageKey =>
+  cantonKey(messages.en, key, canton);
 
 export function tf(
   lang: Language,

@@ -7,7 +7,7 @@ import { useState } from 'preact/hooks';
 import type { JSX } from 'preact';
 import { api } from './api';
 import { t, type Language } from './i18n';
-import { assumption, day, tp, type PlanningMessageKey } from './i18n-planning';
+import { assumption, day, pck, type PlanningMessageKey, tp } from './i18n-planning';
 import type { State } from './types';
 import type { Estimate, PlanningField, PlanningState } from './types-planning';
 
@@ -81,13 +81,21 @@ function MoneyField(p: {
   );
 }
 
-function Saving({ saving, lang, zh }: { saving: Estimate; lang: Language; zh: boolean }) {
+function Saving({
+  saving,
+  lang,
+  canton,
+}: {
+  saving: Estimate;
+  lang: Language;
+  canton: string | undefined;
+}) {
   return (
     <div class="pl-figure pl-figure-good">
       <span>{tp(lang, 'saving')}</span>
       <strong class="tnum">{about(saving.totalCentimes, lang)}</strong>
       <span class="pl-hint tnum">
-        {tp(lang, zh ? 'splitZh' : 'split', {
+        {tp(lang, pck('split', canton), {
           icc: chf(saving.cantonalCentimes, lang),
           ifd: chf(saving.federalCentimes, lang),
         })}
@@ -143,7 +151,7 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
       return (
         <section class="card pl-card" aria-labelledby="tou-title">
           <h2 id="tou-title">{tp(lang, 'touTitle')}</h2>
-          <p class="muted small-text">{tp(lang, 'touGenevaOnly')}</p>
+          <p class="muted small-text">{tp(lang, pck('touGenevaOnly', state.canton?.code))}</p>
         </section>
       );
     }
@@ -397,7 +405,7 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
 
 function LppCard({ state, lang, act }: Props) {
   const { lpp, inputs, needsTou } = state.planning;
-  const zh = state.canton?.code === 'ZH';
+  const canton = state.canton?.code;
   const save = useSave(lang, act);
   const couple = inputs.length > 1;
   const year = state.taxYear;
@@ -407,7 +415,7 @@ function LppCard({ state, lang, act }: Props) {
       <span class="pl-eyebrow">{tp(lang, 'when')}</span>
       <h2 id="lpp-title">
         {tp(lang, 'lppTitle')}{' '}
-        <span class="pl-official">({tp(lang, zh ? 'lppOfficialZh' : 'lppOfficial')})</span>
+        <span class="pl-official">({tp(lang, pck('lppOfficial', canton))})</span>
       </h2>
       <p class="muted small-text">{tp(lang, 'lppLead')}</p>
       {inputs.map((i) => (
@@ -435,7 +443,7 @@ function LppCard({ state, lang, act }: Props) {
           {tp(lang, 'lppOver', { cap: chf(over.capacityCentimes ?? 0, lang) })}
         </p>
       ) : lpp.saving ? (
-        <Saving saving={lpp.saving} lang={lang} zh={zh} />
+        <Saving saving={lpp.saving} lang={lang} canton={canton} />
       ) : (
         <p class="pl-hint">
           {tp(lang, lpp.problem === 'no_income' ? 'lppNoSalary' : 'lppNoAmount')}
@@ -451,7 +459,7 @@ function LppCard({ state, lang, act }: Props) {
         </li>
         <li>{tp(lang, 'lppPaidInYear', { year })}</li>
         <li>{tp(lang, 'lppHome')}</li>
-        <li>{tp(lang, zh ? 'lppAttestationZh' : 'lppAttestation')}</li>
+        <li>{tp(lang, pck('lppAttestation', canton))}</li>
       </ul>
       <How assumptions={lpp.assumptions} sources={lpp.sources} lang={lang} />
     </section>
@@ -459,7 +467,7 @@ function LppCard({ state, lang, act }: Props) {
 }
 
 function CatchUpCard({ state, lang, act }: Props) {
-  const zh = state.canton?.code === 'ZH';
+  const canton = state.canton?.code;
   const { catchUp, inputs, needsTou } = state.planning;
   const save = useSave(lang, act);
   const couple = inputs.length > 1;
@@ -469,7 +477,7 @@ function CatchUpCard({ state, lang, act }: Props) {
       <span class="pl-eyebrow">{tp(lang, 'when')}</span>
       <h2 id="cu-title">
         {tp(lang, 'cuTitle')}{' '}
-        <span class="pl-official">({tp(lang, zh ? 'cuOfficialZh' : 'cuOfficial')})</span>
+        <span class="pl-official">({tp(lang, pck('cuOfficial', canton))})</span>
       </h2>
       <p class="muted small-text">{tp(lang, 'cuLead')}</p>
       {inputs.map((i) => {
@@ -499,13 +507,13 @@ function CatchUpCard({ state, lang, act }: Props) {
           </fieldset>
         );
       })}
-      {catchUp.saving ? <Saving saving={catchUp.saving} lang={lang} zh={zh} /> : null}
+      {catchUp.saving ? <Saving saving={catchUp.saving} lang={lang} canton={canton} /> : null}
       {needsTou && catchUp.catchUpCentimes > 0 ? (
         <p class="banner banner-estimate">{tp(lang, 'onlyWithTou')}</p>
       ) : null}
       <ul class="pl-facts">
         <li>{tp(lang, 'cuRuleGaps', { cap })}</li>
-        <li>{tp(lang, zh ? 'cuRuleIncomeZh' : 'cuRuleIncome')}</li>
+        <li>{tp(lang, pck('cuRuleIncome', canton))}</li>
         <li>{tp(lang, 'cuRuleOnce')}</li>
         <li>{tp(lang, 'cuRuleAsk')}</li>
       </ul>
