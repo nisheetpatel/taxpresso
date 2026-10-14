@@ -39,7 +39,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 | Folder | Entries | Core | PDFs | Tax year 2026 items |
 |---|---|---|---|---|
 | ge | 32 | 24 | 11 | 4 |
-| vd | 40 | 22 | 33 | 12 |
+| vd | 42 | 24 | 35 | 12 |
 | vs | 13 | 11 | 5 | 3 |
 | fr | 49 | 34 | 34 | 12 |
 | ne | 17 | 11 | 10 | 2 |
@@ -78,7 +78,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 - Geneva: the published approved-software list stops at tax year 2024 (Dr. Tax). Ask the AFC how approval works today.
 - Geneva TOU: the AFC's TOU page lists a married couple with one spouse without activity as a compulsory TOU case; the 2026 source-tax directives (p. 51) and the law (LISP art. 4) don't. Taxpresso shows it as "to check with the AFC". See ge/NOTES.md.
 - Valais: the 2025 guide says 15 days to correct after online filing, the VSTax FAQ says 10.
-- Vaud: the communal coefficient tables and the consolidated LI and RDVE texts could not be read by the tool; open them in a browser.
+- Vaud: the law (LI art. 42a al. 1) and the guide's text give the family deduction only to spouses and single parents with the part of 1.3, while the guide's example 3 and the family regulation (RIFam) give its amount per child to other parents too; the guide and the deduction tables describe the cantonal tax without the LRIPP reduction that the LRIPP and the guide's own worked examples apply; the 2026 guide is not published, so some 2026 amounts are missing. The communal tables (.xls) are read by scripts/vd-communes.mjs, and the LI and RDVE PDFs read fine. See `vd/NOTES.md`, "Open points for the rules".
 - Several agents could read PDF text only through automated summaries. Never copy a number from a NOTES.md file; read it in the document.
 
 ## Legal

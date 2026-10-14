@@ -334,8 +334,11 @@ export interface CantonalResult {
 /** What every canton's computeReturn gives (docs/design/cantons.md, section 2). */
 export interface TaxResult<Icc extends CantonalResult = CantonalResult> {
   taxYear: number;
-  /** The commune of residence: Geneva's slug, or Zurich's reference with its BFS number. */
-  commune: string | { bfs: number; name: string; rate: number | null };
+  /**
+   * The commune of residence: Geneva's slug, or a reference with its BFS number (Zurich, Bern), or
+   * without one where the canton's official tables carry none (Vaud), as `Commune.bfs` in canton.ts.
+   */
+  commune: string | { bfs: number | null; name: string; rate: number | null };
   icc: Icc | null;
   ifd: IfdResult | null;
   /**
