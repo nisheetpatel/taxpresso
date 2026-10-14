@@ -24,7 +24,7 @@ Early preview for tax year 2026 (returns filed in early 2027).
   - every value in the official form's order, ready to copy into your declaration;
   - your tax assessment checked against your return, with the deadline to object.
 - Coming next: a check of the official PDF before you transmit, a review of what you could have saved last year, Geneva's 2026 rates when the canton publishes them, and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
-- Geneva first; Zurich, Bern, Vaud, Basel-Stadt and Basel-Landschaft as a preview. The goal is all 26 cantons.
+- Geneva; and as a preview, Zurich, Bern, Vaud, Basel-Stadt, Basel-Landschaft, Zug and Lucerne. Aargau and St. Gallen come next, then Fribourg and Ticino. The goal is all 26 cantons.
 
 ## Install
 
