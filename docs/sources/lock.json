@@ -5702,5 +5702,25 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-13T23:04:00.443Z",
     "status": "ok"
+  },
+  "vd-na-law-rifam": {
+    "url": "https://prestations.vd.ch/pub/blv-publication/api/actes/e3bdeafc-c047-494d-b959-11a2eba919ec/pdf?type=PDF_RENDU",
+    "final_url": "https://prestations.vd.ch/pub/blv-publication/api/actes/e3bdeafc-c047-494d-b959-11a2eba919ec/pdf?type=PDF_RENDU",
+    "file": "vd/files/vd-na-law-rifam.pdf",
+    "bytes": 52492,
+    "sha256": "3704779e4a7071e80be90d5dc74cf860dab1d548be2ae48577e6c537b46e71e7",
+    "content_type": "application/pdf;charset=UTF-8",
+    "retrieved_at": "2026-10-14T01:49:49.125Z",
+    "status": "ok"
+  },
+  "vd-na-law-licom": {
+    "url": "https://prestations.vd.ch/pub/blv-publication/api/actes/0848120c-c688-409b-9bf7-fe174efd0bfc/pdf?type=PDF_RENDU",
+    "final_url": "https://prestations.vd.ch/pub/blv-publication/api/actes/0848120c-c688-409b-9bf7-fe174efd0bfc/pdf?type=PDF_RENDU",
+    "file": "vd/files/vd-na-law-licom.pdf",
+    "bytes": 76151,
+    "sha256": "b73aa99ff63aa434b03284d4a42e54d01cd7c862831174ba679d7fbfeebd83c0",
+    "content_type": "application/pdf;charset=UTF-8",
+    "retrieved_at": "2026-10-14T01:49:49.131Z",
+    "status": "ok"
   }
 }
