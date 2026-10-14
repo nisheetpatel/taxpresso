@@ -1,0 +1,21 @@
+{
+  "name": "@taxpresso/rules-bs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deterministic Basel-Stadt cantonal and communal income and wealth tax (Einkommens- und Vermögenssteuer, with the communal tax of Riehen and Bettingen), every constant cited (SPEC.md section 7). Not wired into the extension yet (docs/design/cantons.md).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@taxpresso/rules-ch": "workspace:*"
+  }
+}
