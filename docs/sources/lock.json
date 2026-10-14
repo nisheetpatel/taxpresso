@@ -5852,5 +5852,25 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-14T13:14:20.828Z",
     "status": "ok"
+  },
+  "ch-na-ordonnance-frais-professionnels": {
+    "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1993/1363_1363_1363/20230101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1993-1363_1363_1363-20230101-fr-pdf-a.pdf",
+    "final_url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1993/1363_1363_1363/20230101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1993-1363_1363_1363-20230101-fr-pdf-a.pdf",
+    "file": "ch/files/ch-na-ordonnance-frais-professionnels.pdf",
+    "bytes": 348656,
+    "sha256": "6d2f07a94a85f280309e78244f46fbbf141b88a698b6dcdd9ad17bec762e5f4f",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T19:00:10.528Z",
+    "status": "ok"
+  },
+  "ch-2026-afc-guide-futur-contribuable": {
+    "url": "https://www.efd.admin.ch/dam/fr/sd-web/SPiTLcf5pKap/leitfaden-steuerpflichtige-fr.pdf",
+    "final_url": "https://www.efd.admin.ch/dam/fr/sd-web/SPiTLcf5pKap/leitfaden-steuerpflichtige-fr.pdf",
+    "file": "ch/files/ch-2026-afc-guide-futur-contribuable.pdf",
+    "bytes": 2477565,
+    "sha256": "13a5f54be8588040785c919ef89b909269e9a40d5e6a2fceeec0ae958d1ad5b4",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T19:00:11.088Z",
+    "status": "ok"
   }
 }
