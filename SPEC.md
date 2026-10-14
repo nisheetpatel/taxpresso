@@ -447,6 +447,8 @@ taxpresso/
                         column (wired into the extension as a preview)
     rules-zg/           Zug's cantonal, communal, church and Bürgergemeinde tax, and the federal tax of
                         form K's Bund column (wired into the extension as a preview)
+    rules-sg/           St. Gallen's cantonal, communal and church tax, and the federal tax the tax office
+                        derives from the same return (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
                         worksheet (wired into the extension as a preview)
     optimizer/
@@ -458,6 +460,8 @@ taxpresso/
     filing-bs/          the Basel-Stadt main form and forms W, B, K, Z and F (Kanton and Bund columns)
                         and the values to type on them
     filing-zg/          Zug's form K (pages 2 to 4, Kanton and Bund columns) and the values to type
+    filing-sg/          St. Gallen's Form 4 (per person) and return (pages 2 to 4, one column) and the
+                        values to type
     filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
                         worksheet for the federal tax, to check
   ui/                   Vite app; views reused as MCP Apps resources
@@ -475,6 +479,9 @@ taxpresso/
                         parties)
   data/zg/2026/         Zug's questionnaire: the shared questions, its own (commune by name, children's
                         ages and childcare, shared custody, rent, parish, Bürgergemeinde)
+  data/sg/2026/         St. Gallen's questionnaire: the shared questions, its own (each child's stage,
+                        minor, education costs and scholarships, childcare per child, shared custody,
+                        commune by name, move, church, church area)
   data/vd/2026/         Vaud's questionnaire: the shared questions, its own (commune and its part,
                         household alone with the children, upkeep, rent, household contents,
                         childcare per child, savings interest)
