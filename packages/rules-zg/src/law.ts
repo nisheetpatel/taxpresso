@@ -28,7 +28,8 @@ export const simpleTaxRule = (y: ZgTaxYear) =>
  * The Mehrpersonentarif: married couples, and anyone single who lives alone with their own children
  * in the same household and mainly supports them; everyone else the Grundtarif (StG § 35).
  */
-export const tariffRule = (y: ZgTaxYear) => rule(`${law(y)} § 35 Abs. 1 and 2 (p. 26 and 27)`);
+export const tariffRule = (y: ZgTaxYear) =>
+  rule(`${law(y)} § 35 Abs. 1 and 2 (p. 26${y === 2026 ? ' and 27' : ''})`);
 
 /** The family situation at the end of the year decides the social deductions and the tariffs. */
 export const familySituation = (y: ZgTaxYear) =>
@@ -39,7 +40,7 @@ export const familySituation = (y: ZgTaxYear) =>
  * Bürgergemeinde (StG § 171 with § 11 Abs. 3).
  */
 export const communeAtYearEnd = (y: ZgTaxYear) =>
-  rule(`${law(y)} § 171 Abs. 1 and 2 (p. 84), § 11 Abs. 3 (p. 5 and 6)`);
+  rule(`${law(y)} § 171 Abs. 1 and 2 (p. 84), § 11 Abs. 3 (p. 6)`);
 
 /**
  * Parents not taxed together, alternating custody: the parent who receives child support for the
