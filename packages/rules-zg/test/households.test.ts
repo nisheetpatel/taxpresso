@@ -32,6 +32,9 @@ describe('H1: single, Zug, 2025, employed, renting, Roman Catholic', () => {
   // 600: 80,000; 672: -204,000; 690: 0, no wealth tax.
   // Canton 82 %: 2,390.464, to 5 centimes 2,390.45. Zug 52.11 %: 1,519.11072, 1,519.10.
   // Roman Catholic parish of Zug 7 %: 204.064, 204.05. Total 4,113.60.
+  // The Bund column: 201 the same 6,859 (travel 729, at most 3,300; meals 3,000; the 3 % flat 3,130);
+  // 220 7,258; 230 paid 4,800, single with contributions, at most 1,800. 280: 15,917. 287: 88,803.
+  // 296: 500. 299 and 490: 88,303 (no social deduction of the Bund column for a single person).
   const r = computeReturn({
     taxYear: 2025,
     commune: 'Zug',
@@ -84,9 +87,18 @@ describe('H1: single, Zug, 2025, employed, renting, Roman Catholic', () => {
     expect(x.communal.amount).toBe(chf(1_519.1));
     expect(x.church?.amount).toBe(chf(204.05));
     expect(x.citizens).toBeNull();
-    expect(r.total).toBe(chf(4_113.6));
+    // The cantonal, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(x.total.amount).toBe(chf(4_113.6));
+    expect(r.total).toBe(x.total.amount + r.ifd!.tax.amount);
     expect(r.commune).toEqual({ bfs: null, name: 'Zug', rate: 5_211 });
-    expect(r.ifd).toBeNull();
+    const federal = (code: string) =>
+      r.ifd!.items.filter((i) => i.code === code).reduce((s, i) => s + i.amount, 0);
+    expect(federal('201')).toBe(chf(-6_859));
+    expect(federal('230')).toBe(chf(-1_800));
+    expect(r.ifd?.totalDeductions.amount).toBe(chf(15_917));
+    expect(r.ifd?.subtotal.amount).toBe(chf(88_803));
+    expect(federal('296')).toBe(chf(-500));
+    expect(r.ifd?.taxableIncome.amount).toBe(chf(88_303));
     expect(r.estimates).toEqual([]);
     expect(r.unverifiedRules).toEqual([NOTE.rounding]);
     expect(r.assumptions).toContainEqual(NOTE.fullYear);
@@ -203,7 +215,9 @@ describe('H2: married, two earners, two children, Baar, 2026, Evangelical Reform
     expect(x.cantonal.amount).toBe(chf(1_049.65));
     expect(x.communal.amount).toBe(chf(639.6));
     expect(x.church?.amount).toBe(chf(80.75));
-    expect(r.total).toBe(chf(1_770));
+    // The cantonal, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(1_770));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.notCounted).toContainEqual(NOTE.rentNotGiven);
     expect(r.notCounted).toContainEqual(NOTE.citizensNotAsked);
     expect(r.assumptions).toContainEqual(NOTE.childrenAtCharge);
@@ -291,7 +305,9 @@ describe('H3: single parent, one child, Cham, 2025, receives child support', () 
     expect(x.cantonal.amount).toBe(chf(298.6));
     expect(x.communal.amount).toBe(chf(196.65));
     expect(x.church).toBeNull();
-    expect(r.total).toBe(chf(495.25));
+    // The cantonal and communal tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(495.25));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.ownCareInstead);
     expect(r.notCounted).toContainEqual(NOTE.churchNotAsked);
   });
@@ -349,7 +365,9 @@ describe('H4: retiree with wealth, Walchwil, 2026, Roman Catholic, Ortsbürger o
     expect(x.church?.amount).toBe(chf(204.25));
     expect(x.citizens).toBeNull();
     expect(r.assumptions).toContainEqual(NOTE.citizensSpecial);
-    expect(r.total).toBe(chf(2_599.5));
+    // The cantonal, communal and church tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(2_599.5));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
   });
 
   it('with less wealth, the pensioners’ deduction of 2026: 6,000 a pensioner', () => {
@@ -390,6 +408,8 @@ describe('H5: shared custody without child support, Steinhausen, 2026', () => {
     civilStatus: 'divorced',
     childSupport: 'none',
     mainCare: true,
+    // The federal parental scale: this parent earns more (the federal tax needs it).
+    ifdParentalScale: true,
     rent: amt(26_000),
     people: [
       {
@@ -420,7 +440,9 @@ describe('H5: shared custody without child support, Steinhausen, 2026', () => {
     expect(r.icc?.taxes.simpleIncome.amount).toBe(chf(159.3));
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(124.25));
     expect(r.icc?.taxes.communal.amount).toBe(chf(84.45));
-    expect(r.total).toBe(chf(208.7));
+    // The cantonal and communal tax; the total adds the federal tax (./federal.test.ts).
+    expect(r.icc!.taxes.total.amount).toBe(chf(208.7));
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.mainCareYes);
   });
 

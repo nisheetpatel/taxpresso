@@ -445,6 +445,8 @@ taxpresso/
                         Bundessteuer column (wired into the extension as a preview)
     rules-bs/           Basel-Stadt's cantonal and communal tax, and the federal tax of its Bund
                         column (wired into the extension as a preview)
+    rules-zg/           Zug's cantonal, communal, church and Bürgergemeinde tax, and the federal tax of
+                        form K's Bund column (wired into the extension as a preview)
     rules-vd/           Vaud's cantonal and communal tax, and the federal tax of its guide's
                         worksheet (wired into the extension as a preview)
     optimizer/
@@ -455,6 +457,7 @@ taxpresso/
     filing-bl/          the Basel-Landschaft return (pages 2 to 4, two columns) and the values to type
     filing-bs/          the Basel-Stadt main form and forms W, B, K, Z and F (Kanton and Bund columns)
                         and the values to type on them
+    filing-zg/          Zug's form K (pages 2 to 4, Kanton and Bund columns) and the values to type
     filing-vd/          the Vaud form and its annexes, and the values to type on them; the guide's
                         worksheet for the federal tax, to check
   ui/                   Vite app; views reused as MCP Apps resources
@@ -470,6 +473,8 @@ taxpresso/
   data/bs/2026/         Basel-Stadt's questionnaire: the shared questions, its own (reference age, work
                         rate, shared custody, each child under 18, childcare per child, commune, church,
                         parties)
+  data/zg/2026/         Zug's questionnaire: the shared questions, its own (commune by name, children's
+                        ages and childcare, shared custody, rent, parish, Bürgergemeinde)
   data/vd/2026/         Vaud's questionnaire: the shared questions, its own (commune and its part,
                         household alone with the children, upkeep, rent, household contents,
                         childcare per child, savings interest)

@@ -1,10 +1,11 @@
 // The lines of Zug's main form K the engine reads or computes, with the official German term and its
-// gloss. The codes are those printed on the 2025 form (the guide's sample return, zg-2025-guide-
-// wegleitung p. 17 income, p. 18 deductions and the taxable income, p. 19 wealth) and explained
-// under the same codes in the guide (the page next to each). The 2026 forms and guide are not
+// gloss. The codes are those printed on the 2025 form (the guide's sample return,
+// zg-2025-guide-wegleitung p. 17 income, p. 18 deductions and the taxable income, p. 19 wealth) and
+// explained under the same codes in the guide (the page next to each). The 2026 forms and guide are not
 // published yet (docs/sources/zg/NOTES.md, Gaps): the 2025 codes are used for both years. Lines
 // with a code for each person: 100 for person 1, 101 for person 2, and so on. The cantonal and the
-// federal tax share the form's lines, each in its column; this package fills the cantonal column.
+// federal tax share the form's lines, each in its column (Kanton, Bund); the cantonal column comes
+// from ./compute.ts, the federal one from ./ifd.ts, with 401 the federal column's only.
 import type { Text } from '@taxpresso/rules-ch';
 
 const GUIDE = 'zg-2025-guide-wegleitung';
@@ -235,6 +236,14 @@ export const RUBRICS = {
     'Déduction personnelle, couples mariés et parents vivant avec leurs enfants',
     '41',
   ),
+  // The federal column only: the married couple deduction (LIFD art. 35 al. 1 let. c); the cantonal
+  // tax has none (guide p. 41, Code 401).
+  '401': deduction(
+    'Abzug für Ehepaare (nur Bundessteuer)',
+    'Married couples, federal tax only',
+    'Couples mariés, impôt fédéral seulement',
+    '41',
+  ),
   '402': deduction(
     'Persönlicher Abzug für die übrigen Steuerpflichtigen',
     'Personal deduction, everyone else',
@@ -390,6 +399,12 @@ export const FURTHER = new Set<string>(['295', '296']);
  * taxable income 490.
  */
 export const SOCIAL = new Set<string>(['400', '402', '403', '403a', '404', '406', '407', '410']);
+/**
+ * Social deductions of the federal column (Bund 2025): the married couple deduction (401, the
+ * federal column's only) and the child deduction (403, the federal amount); 299 less them is the
+ * federal taxable income 490 (./ifd.ts).
+ */
+export const FEDERAL_SOCIAL = new Set<string>(['401', '403']);
 /** Wealth: assets, debts, then the tax-free amounts. */
 export const ASSETS = new Set<string>(['600', '601', '603', '604', '606', '610']);
 export const DEBTS = new Set<string>(['640']);

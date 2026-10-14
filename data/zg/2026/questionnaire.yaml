@@ -1,0 +1,998 @@
+# Zug questionnaire for tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data, not code:
+# packages/questionnaire reads it, and every key and value must exist in Zug's keys
+# (packages/rules-zg, src/keys.ts; a test checks).
+#
+# The questions every canton asks come from data/ch/2026/questions.yaml (`use: <id>`), in the order
+# of Zug's main form K (zg-2025-guide-wegleitung p. 15 to 19, the sample return), with Zug's own
+# explanations and official pages. The questions only Zug asks are written out here, as
+# packages/rules-zg reads them (ZugCantonal): who has the larger share of the care of children in
+# shared custody without child support, whether each child was under 15 on 31 December and, if not,
+# a minor, the childcare paid for each child (the limit is per child), the commune and the move, the
+# net rent (Mietzinsabzug, 407), and each adult's parish and Bürgergemeinde.
+#
+# Wording and documents follow the Zug guide for 2025 (zg-2025-guide-wegleitung): the 2026 guide
+# is not published yet (docs/sources/zg/NOTES.md, Gaps), so the questions say "2026" and link the
+# 2025 guide, whose codes and rules form K keeps until it appears. "p." is the page of the PDF
+# file, as in the links, and the guide prints the same page numbers. Form K and the guide are in
+# German: the questions give the German term next to the gloss.
+#
+# German: informal "du", Swiss spelling (ss), the official German term next to its gloss. French:
+# write plain spaces before ? ! : ; and the loader makes them non-breaking.
+
+taxYear: 2026
+
+place: { en: 'Zug', fr: 'Zoug', de: 'Zug' }
+
+people:
+  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p2:
+    {
+      en: 'Your spouse or partner',
+      fr: 'Votre conjoint ou partenaire',
+      de: 'Dein Partner oder deine Partnerin',
+    }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+
+# eTax.zug is the canton's online return, in the browser with an AGOV login (docs/sources/zg/NOTES.md,
+# Filing channels; zg-na-efiling-etax-zug). No document of the library says it is free, so the text
+# doesn't.
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. eTax.zug, the canton’s online return (zg.ch/etax), or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. eTax.zug, la déclaration en ligne du canton (zg.ch/etax), ou une fiduciaire le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. eTax.zug, die Online-Steuererklärung des Kantons (zg.ch/etax), oder eine Treuhand kann es.'
+
+questions:
+  - use: canton
+
+  # zg-2025-guide-wegleitung p. 9 (Heirat, Scheidung oder Trennung: the situation of the whole
+  # year) and p. 13 (Person 1 and Person 2 for couples taxed together).
+  - use: civil_status
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=9'
+      label:
+        en: 'Zug tax guide 2025, p. 9: marriage, divorce or separation'
+        fr: 'Guide fiscal de Zoug 2025, p. 9 : Mariage, divorce ou séparation'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 9: Heirat, Scheidung oder Trennung'
+    help:
+      en: 'A registered partnership files like a married couple, on one return.'
+      fr: 'Un partenariat enregistré déclare comme un couple marié, sur une seule déclaration.'
+      de: 'Eine eingetragene Partnerschaft füllt wie ein Ehepaar eine gemeinsame Steuererklärung aus.'
+
+  # zg-2025-guide-wegleitung p. 41 (Code 403, Kinderabzug: minors in your parental care or custody,
+  # and adult children in training whom you mainly support); page 1 of form K lists them (I and II).
+  - use: children
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=41'
+      label:
+        en: 'Zug tax guide 2025, p. 41: child deduction'
+        fr: 'Guide fiscal de Zoug 2025, p. 41 : Déduction pour enfant'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 41: Kinderabzug'
+    help:
+      en: 'Minors in your care, and adult children in training whose upkeep you mainly bear. On page 1 of form K: Minderjährige Kinder, Volljährige Kinder in Ausbildung.'
+      fr: 'Les mineurs à votre charge, et les enfants majeurs en formation dont vous assumez l’essentiel de l’entretien. En page 1 du formulaire K : Minderjährige Kinder, Volljährige Kinder in Ausbildung (enfants mineurs, enfants majeurs en formation).'
+      de: 'Minderjährige, für die du sorgst, und volljährige Kinder in Ausbildung, deren Unterhalt du zur Hauptsache bestreitest. Auf Seite 1 des Formulars K: Minderjährige Kinder, Volljährige Kinder in Ausbildung.'
+
+  # zg-2025-guide-wegleitung p. 13 (Zusatzangaben bei getrennt besteuerten Eltern, Formular KI).
+  - use: children_custody
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=13'
+      label:
+        en: 'Zug tax guide 2025, p. 13: children of parents taxed apart'
+        fr: 'Guide fiscal de Zoug 2025, p. 13 : Enfants de parents taxés séparément'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: getrennt besteuerte Eltern mit gemeinsamen Kindern'
+    help:
+      en: 'Parents taxed apart fill in form KI (Kinder) with child support, custody (Sorgerecht) and care (Obhut).'
+      fr: 'Les parents taxés séparément remplissent le formulaire KI (Kinder) : contributions d’entretien, autorité parentale (Sorgerecht) et garde (Obhut).'
+      de: 'Getrennt besteuerte Eltern füllen das Formular KI aus: Unterhaltsbeiträge, Sorgerecht und Obhut.'
+
+  # Parents taxed apart with joint custody: for the cantonal tax, the parent who receives child
+  # support counts the children; without it, the parent with the larger share of their actual care
+  # (zg-na-law-verordnung-steuergesetz § 18 Abs. 2 and 3, p. 6); for the federal tax, half the child
+  # deduction each without child support, the parental scale to the one who earns more
+  # (zg-2025-guide-wegleitung p. 41; ch-na-circulaire-30-epoux-famille p. 24).
+  - use: child_support
+    explain:
+      en: 'With shared custody, child support decides who counts the children. The parent who receives it counts them; without child support, the cantonal tax counts them for the parent with the larger share of their care, and the federal tax gives each parent half the child deduction and the parental scale (Elterntarif), a lower rate, to the one who earns more.'
+      fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit les compte ; sans contribution, l’impôt cantonal les compte pour le parent qui en assume la plus grande part de la garde, et l’impôt fédéral donne à chacun la moitié de la déduction pour enfant et le barème parental (Elterntarif), un taux plus bas, à celui qui gagne le plus.'
+      de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, zählt die Kinder; ohne Unterhaltsbeiträge zählt die Kantonssteuer sie für den Elternteil mit dem grösseren Anteil an ihrer Betreuung, und die Bundessteuer gibt jedem den halben Kinderabzug und den Elterntarif, einen tieferen Satz, dem, der mehr verdient.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=13'
+      label:
+        en: 'Zug tax guide 2025, p. 13: children of parents taxed apart'
+        fr: 'Guide fiscal de Zoug 2025, p. 13 : Enfants de parents taxés séparément'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 13: getrennt besteuerte Eltern mit gemeinsamen Kindern'
+    help:
+      en: 'Child support (Unterhaltsbeiträge, Alimente) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
+      fr: 'La contribution d’entretien (Unterhaltsbeiträge, Alimente) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
+      de: 'Unterhaltsbeiträge (Alimente) sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+
+  # zg-na-law-verordnung-steuergesetz § 18 Abs. 2 and 3 (p. 6): without child support, the large
+  # personal deduction, the child deduction and the Mehrpersonentarif go to the parent with the
+  # larger share of the actual care. packages/rules-zg asks rather than guess (NOTE.mainCare).
+  - id: main_care
+    key: zg.main_care
+    type: yesno
+    when:
+      all:
+        - { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+        - { key: profile.children_custody, in: [shared] }
+        - { key: profile.child_support, in: [none_i_earn_more, none_other_earns_more, none_unsure] }
+    explain:
+      en: 'With shared custody and no child support, Zug counts the children for the parent with the larger share of their actual care (überwiegender Anteil an der tatsächlichen Betreuung): that parent gets the child deduction (Kinderabzug), the higher personal deduction and the Mehrpersonentarif, a lower rate. The insurance deduction for the children is shared half and half.'
+      fr: 'En garde partagée sans contribution d’entretien, Zoug compte les enfants pour le parent qui en assume la plus grande part de la garde effective (überwiegender Anteil an der tatsächlichen Betreuung) : ce parent a la déduction pour enfant (Kinderabzug), la déduction personnelle plus élevée et le Mehrpersonentarif, un taux plus bas. La déduction d’assurance pour les enfants est partagée par moitié.'
+      de: 'Bei geteilter Obhut ohne Unterhaltsbeiträge zählt Zug die Kinder für den Elternteil mit dem überwiegenden Anteil an der tatsächlichen Betreuung: Er erhält den Kinderabzug, den höheren persönlichen Abzug und den Mehrpersonentarif, einen tieferen Satz. Der Versicherungsabzug für die Kinder wird hälftig geteilt.'
+    learnMore:
+      url: 'https://bgs.zg.ch/api/de/versions/2286/pdf_file#page=6'
+      label:
+        en: 'Ordinance on the Zug tax law (Verordnung zum Steuergesetz), § 18, p. 6: children of parents taxed apart'
+        fr: 'Ordonnance sur la loi fiscale de Zoug (Verordnung zum Steuergesetz), § 18, p. 6 : Enfants de parents taxés séparément'
+        de: 'Verordnung zum Steuergesetz, § 18, S. 6: Kinder getrennt besteuerter Eltern'
+    text:
+      en: 'In 2026, did you have the larger share of the children’s care?'
+      fr: 'En 2026, assumiez-vous la plus grande part de la garde des enfants ?'
+      de: 'Hattest du 2026 den grösseren Anteil an der Betreuung der Kinder?'
+    help:
+      en: 'Who looked after them more of the time, as agreed or decided. Not sure? Your last assessment (Veranlagung) shows whether you got the child deduction.'
+      fr: 'Qui s’en occupait la plus grande partie du temps, selon l’accord ou la décision. Un doute ? Votre dernière taxation (Veranlagung) indique si vous avez eu la déduction pour enfant.'
+      de: 'Wer sich die meiste Zeit um sie gekümmert hat, wie vereinbart oder entschieden. Unsicher? Deine letzte Veranlagung zeigt, ob du den Kinderabzug erhalten hast.'
+    chip: { en: 'Main care', fr: 'Garde principale', de: 'Hauptbetreuung' }
+
+  # zg-2025-guide-wegleitung p. 41 (Code 403a: from the year the child turns 15, a higher child
+  # deduction; Code 404: own care of each child under 15 with a child deduction); StG § 33 Abs. 1
+  # Ziff. 2 and Abs. 2 (zg-2026-law-steuergesetz p. 25).
+  - id: child_under15
+    key: zg.child_under15
+    type: yesno
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+    explain:
+      en: 'Zug gives a deduction for your own care of each child under 15 (Eigenbetreuungsabzug), unless the childcare deduction for that child is higher; from the year a child turns 15, a higher child deduction (Kinderabzug Zusatz) instead.'
+      fr: 'Zoug accorde une déduction pour la garde par les parents de chaque enfant de moins de 15 ans (Eigenbetreuungsabzug), sauf si la déduction des frais de garde pour cet enfant est plus élevée ; dès l’année où l’enfant a 15 ans, une déduction pour enfant plus élevée (Kinderabzug Zusatz) à la place.'
+      de: 'Zug gewährt für jedes Kind unter 15 einen Eigenbetreuungsabzug, ausser der Kinderdrittbetreuungskostenabzug für dieses Kind ist höher; ab dem Jahr, in dem das Kind 15 wird, stattdessen einen höheren Kinderabzug (Kinderabzug Zusatz).'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=41'
+      label:
+        en: 'Zug tax guide 2025, p. 41: child deduction and own care'
+        fr: 'Guide fiscal de Zoug 2025, p. 41 : Déduction pour enfant et garde par les parents'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 41: Kinderabzug und Eigenbetreuungsabzug'
+    text:
+      en: 'Was child {n} under 15 on 31 December 2026?'
+      fr: 'L’enfant {n} avait-il moins de 15 ans au 31 décembre 2026 ?'
+      de: 'War Kind {n} am 31. Dezember 2026 jünger als 15?'
+    help:
+      en: 'Number your children the same way in every answer, for example from the oldest.'
+      fr: 'Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # zg-2025-guide-wegleitung p. 45 (Code 673: tax-free wealth for each minor child); StG § 44 Abs. 1
+  # (zg-2026-law-steuergesetz p. 30). A child under 15 is a minor: asked only from 15.
+  - id: child_minor
+    key: zg.child_minor
+    type: yesno
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+        - { key: zg.child_under15, is: false }
+    explain:
+      en: 'For each minor child, part of your wealth is tax-free (steuerfreier Betrag für jedes minderjährige Kind). An adult child in training still gives the child deduction.'
+      fr: 'Pour chaque enfant mineur, une partie de votre fortune est exonérée (steuerfreier Betrag für jedes minderjährige Kind). Un enfant majeur en formation donne quand même droit à la déduction pour enfant.'
+      de: 'Für jedes minderjährige Kind ist ein Teil deines Vermögens steuerfrei (steuerfreier Betrag für jedes minderjährige Kind). Ein volljähriges Kind in Ausbildung gibt trotzdem den Kinderabzug.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=45'
+      label:
+        en: 'Zug tax guide 2025, p. 45: tax-free wealth'
+        fr: 'Guide fiscal de Zoug 2025, p. 45 : Fortune exonérée'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 45: steuerfreie Beträge'
+    text:
+      en: 'Was child {n} a minor (under 18) on 31 December 2026?'
+      fr: 'L’enfant {n} était-il mineur (moins de 18 ans) au 31 décembre 2026 ?'
+      de: 'War Kind {n} am 31. Dezember 2026 minderjährig (unter 18)?'
+    help:
+      en: 'Number your children the same way in every answer, for example from the oldest.'
+      fr: 'Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # zg-2025-guide-wegleitung p. 38 (Code 253, Kinderdrittbetreuungskostenabzug: children under 14,
+  # while you work, train or cannot work; for a married couple, both; meals don't count; form KDBK).
+  - use: childcare
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=38'
+      label:
+        en: 'Zug tax guide 2025, p. 38: childcare by others'
+        fr: 'Guide fiscal de Zoug 2025, p. 38 : Frais de garde par des tiers'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 38: Kinderdrittbetreuungskostenabzug'
+    help:
+      en: 'A crèche (Kinderkrippe), day care or a nanny, for a child under 14, while you work or train. Meals don’t count. On form K: 253, Kinderdrittbetreuungskostenabzug (form KDBK).'
+      fr: 'Une crèche (Kinderkrippe), une garderie ou une nourrice, pour un enfant de moins de 14 ans, pendant que vous travaillez ou êtes en formation. Les repas ne comptent pas. Sur le formulaire K : 253, Kinderdrittbetreuungskostenabzug (formulaire KDBK, frais de garde par des tiers).'
+      de: 'Eine Kinderkrippe, ein Hort oder eine Nanny, für ein Kind unter 14, während du arbeitest oder in Ausbildung bist. Mahlzeiten zählen nicht. Auf dem Formular K: 253, Kinderdrittbetreuungskostenabzug (Formular KDBK).'
+
+  # The limit is per child (StG § 30 Abs. 1 Bst. l, zg-2026-law-steuergesetz p. 23), and for a child
+  # under 15 the deduction for own care applies when it is higher (§ 33 Abs. 2bis, p. 25): with
+  # several children, how the invoices' total splits can decide the deduction, so it is asked per
+  # child (form KDBK lists each child, zg-2025-guide-wegleitung p. 38).
+  - id: child_care
+    key: zg.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+    explain:
+      en: 'Zug’s limit on childcare is per child, and for a child under 15 the deduction for your own care applies when it is higher, so the split between your children can change the deduction. Your invoices give the total.'
+      fr: 'La limite de Zoug pour les frais de garde est par enfant, et pour un enfant de moins de 15 ans la déduction pour la garde par les parents s’applique quand elle est plus élevée : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
+      de: 'Der Höchstbetrag für die Kinderdrittbetreuung gilt in Zug pro Kind, und für ein Kind unter 15 gilt der Eigenbetreuungsabzug, wenn er höher ist: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=38'
+      label:
+        en: 'Zug tax guide 2025, p. 38: childcare by others'
+        fr: 'Guide fiscal de Zoug 2025, p. 38 : Frais de garde par des tiers'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 38: Kinderdrittbetreuungskostenabzug'
+    text:
+      en: 'How much of the childcare you paid in 2026 was for child {n}?'
+      fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
+      de: 'Wie viel der 2026 bezahlten Kinderdrittbetreuungskosten war für Kind {n}?'
+    help:
+      en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
+      fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # The commune of 31 December taxes the whole year, and so do its parish and its Bürgergemeinde
+  # (StG § 171, zg-2026-law-steuergesetz p. 84). The list is Zug's 11 communes by name
+  # (packages/rules-zg, from zg-2026-communal-steuerfuesse; the table has no BFS numbers). Each levies
+  # its Steuerfuss of the einfache Steuer (StG § 2 Abs. 1, p. 1).
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'The commune you lived in on 31 December taxes your whole year, and so do its parish and its Bürgergemeinde. Each commune sets its own Steuerfuss, a percentage of the simple tax (einfache Steuer).'
+      fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année, de même que sa paroisse et sa bourgeoisie. Chaque commune fixe son propre coefficient (Steuerfuss), un pourcentage de l’impôt simple (einfache Steuer).'
+      de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr, ebenso ihre Kirchgemeinde und ihre Bürgergemeinde. Jede Gemeinde legt ihren eigenen Steuerfuss fest, einen Prozentsatz der einfachen Steuer.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:24fb8832-3383-4718-9a48-9461bc7501fc/Steuerf%C3%BCsse%202026_effektiv%2021.1.26.pdf'
+      label:
+        en: 'Steuerfüsse of the Zug communes, 2023 to 2026'
+        fr: 'Coefficients (Steuerfüsse) des communes zougoises, 2023 à 2026'
+        de: 'Steuerfüsse der Gemeinden des Kantons Zug, 2023 bis 2026'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+    help:
+      en: 'The official name, such as Zug, Baar or Unterägeri.'
+      fr: 'Le nom officiel, par exemple Zug, Baar ou Unterägeri.'
+      de: 'Der offizielle Name, zum Beispiel Zug, Baar oder Unterägeri.'
+
+  # Who files in Zug: everyone living in the canton on 31 December (zg-2025-guide-wegleitung p. 8);
+  # arriving from another canton, Zug taxes the whole year (p. 24); leaving for another canton, the
+  # new canton does; leaving for abroad ends the liability in Zug (p. 9). Arriving from abroad or
+  # leaving Switzerland means a return for part of the year: not covered by rules-zg.
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Zug taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
+      fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Zoug vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Zug besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=9'
+      label:
+        en: 'Zug tax guide 2025, p. 9: moving away during the year'
+        fr: 'Guide fiscal de Zoug 2025, p. 9 : Départ en cours d’année'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 9: Beendigung der Steuerpflicht'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+      de: 'Bist du 2026 umgezogen?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - value: within_zg
+        label:
+          {
+            en: 'Yes, within the canton of Zug',
+            fr: 'Oui, dans le canton de Zoug',
+            de: 'Ja, innerhalb des Kantons Zug',
+          }
+        chip: { en: 'Moved in the canton', fr: 'Déménagé dans le canton', de: 'Umzug im Kanton' }
+      - value: from_other_canton
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            de: 'Ja, aus einem anderen Kanton',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            de: 'Zuzug aus einem anderen Kanton',
+          }
+      - value: from_abroad
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            de: 'Ja, ich bin aus dem Ausland zugezogen',
+          }
+        notSupported:
+          {
+            en: 'Arriving from abroad during the year (Zuzug aus dem Ausland)',
+            fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland)',
+            de: 'Ein Zuzug aus dem Ausland während des Jahres',
+          }
+      - value: leaving_switzerland
+        label:
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+          }
+        notSupported:
+          {
+            en: 'Leaving Switzerland (Wegzug ins Ausland)',
+            fr: 'Un départ de Suisse (Wegzug ins Ausland)',
+            de: 'Ein Wegzug ins Ausland',
+          }
+
+  # The renters' deduction (Mietzinsabzug, 407): a share of the rent of the home you live in at your
+  # residence in Zug, without service charges, up to a yearly maximum (StG § 33 Abs. 1 Ziff. 5,
+  # zg-2026-law-steuergesetz p. 25; zg-2025-guide-wegleitung p. 42, Code 407, form MZ).
+  - id: rent
+    key: zg.rent
+    type: money
+    explain:
+      en: 'Renters in Zug deduct part of the rent of the home they live in (Mietzinsabzug), up to a yearly limit. Only the net rent counts, without service charges (Nebenkosten) such as heating.'
+      fr: 'Les locataires à Zoug déduisent une partie du loyer du logement qu’ils habitent (Mietzinsabzug), jusqu’à une limite annuelle. Seul le loyer net compte, sans les charges (Nebenkosten) comme le chauffage.'
+      de: 'Wer in Zug zur Miete wohnt, zieht einen Teil der Wohnungsmiete ab (Mietzinsabzug), bis zu einem jährlichen Höchstbetrag. Es zählt nur die Miete ohne Nebenkosten wie die Heizung.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=42'
+      label:
+        en: 'Zug tax guide 2025, p. 42: renters’ deduction'
+        fr: 'Guide fiscal de Zoug 2025, p. 42 : Déduction pour locataires'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 42: Mietzinsabzug'
+    text:
+      en: 'How much rent, without service charges, did you pay in 2026 for the home you lived in, in Zug?'
+      fr: 'Combien de loyer, sans les charges, avez-vous payé en 2026 pour le logement où vous habitiez, à Zoug ?'
+      de: 'Wie viel Wohnungsmiete ohne Nebenkosten hast du 2026 für deine Wohnung in Zug bezahlt?'
+    help:
+      en: 'The rent of the year without service charges (Nebenkosten), in CHF, for your household; 0 if you paid no rent. On form K: 407, Mietzinsabzug (form MZ).'
+      fr: 'Le loyer de l’année sans les charges (Nebenkosten), en CHF, pour votre ménage ; 0 si vous n’avez pas payé de loyer. Sur le formulaire K : 407, Mietzinsabzug (formulaire MZ, déduction pour locataires).'
+      de: 'Die Miete des Jahres ohne Nebenkosten, in CHF, für deinen Haushalt; 0, wenn du keine Miete bezahlt hast. Auf dem Formular K: 407, Mietzinsabzug (Formular MZ).'
+
+  # Church tax (Kirchensteuer): the Roman Catholic parishes of each commune and the Evangelical
+  # Reformed parish of the canton levy their Steuerfuss of the einfache Steuer
+  # (zg-2026-communal-steuerfuesse; StG § 169 Abs. 1, zg-2026-law-steuergesetz p. 84). Opt-in:
+  # Taxpresso adds it only for a member; packages/rules-zg says plainly when it can't compute it
+  # (spouses in different parishes with children).
+  - id: church
+    key: zg.church
+    type: choice
+    perPerson: true
+    explain:
+      en: 'Members of the Roman Catholic or the Evangelical Reformed parish (Kirchgemeinde) pay church tax (Kirchensteuer) at their parish’s Steuerfuss. Taxpresso adds it only for a member.'
+      fr: 'Les membres de la paroisse catholique romaine ou évangélique réformée (Kirchgemeinde) paient l’impôt ecclésiastique (Kirchensteuer) au coefficient (Steuerfuss) de leur paroisse. Taxpresso ne l’ajoute que pour un membre.'
+      de: 'Mitglieder der katholischen oder der evangelisch-reformierten Kirchgemeinde zahlen Kirchensteuer zum Steuerfuss ihrer Kirchgemeinde. Taxpresso rechnet sie nur für Mitglieder dazu.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:24fb8832-3383-4718-9a48-9461bc7501fc/Steuerf%C3%BCsse%202026_effektiv%2021.1.26.pdf'
+      label:
+        en: 'Steuerfüsse of the Zug communes and parishes, 2023 to 2026'
+        fr: 'Coefficients (Steuerfüsse) des communes et paroisses zougoises, 2023 à 2026'
+        de: 'Steuerfüsse der Gemeinden und Kirchgemeinden des Kantons Zug, 2023 bis 2026'
+    text:
+      p1:
+        en: 'On 31 December 2026, were you a member of one of these parishes?'
+        fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces paroisses ?'
+        de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Kirchgemeinden?'
+      p2:
+        en: 'On 31 December 2026, was your spouse or partner a member of one of these parishes?'
+        fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces paroisses ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Kirchgemeinden?'
+    help:
+      en: 'Another religion, or none, pays no church tax.'
+      fr: 'Une autre religion, ou aucune, ne paie pas d’impôt ecclésiastique.'
+      de: 'Eine andere Religion oder keine zahlt keine Kirchensteuer.'
+    options:
+      - value: catholic
+        label:
+          {
+            en: 'Roman Catholic (römisch-katholisch)',
+            fr: 'Catholique romaine (römisch-katholisch)',
+            de: 'Römisch-katholisch',
+          }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch' }
+      - value: reformed
+        label:
+          {
+            en: 'Evangelical Reformed (evangelisch-reformiert)',
+            fr: 'Évangélique réformée (evangelisch-reformiert)',
+            de: 'Evangelisch-reformiert',
+          }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert' }
+      - value: none
+        label: { en: 'None of these', fr: 'Aucune de ces paroisses', de: 'Keine davon' }
+
+  # Bürgergemeinde tax (Bürgersteuer): levied on the Ortsbürger living in the canton, at the
+  # Bürgergemeinde's Steuerfuss; a married couple where only one spouse is a Zug Ortsbürger pays half
+  # (StG § 170 Abs. 1 to 3, zg-2026-law-steuergesetz p. 84; zg-2026-communal-steuerfuesse). Opt-in:
+  # Taxpresso adds it only for an Ortsbürger; packages/rules-zg says plainly when it can't compute it
+  # (spouses citizens of two different Zug communes).
+  - id: citizen_of
+    key: zg.citizen_of
+    type: choice
+    perPerson: true
+    explain:
+      en: 'Some Bürgergemeinden levy a tax on their Ortsbürger (citizens of the commune, as in your place of origin, Heimatort) who live in the canton, at their own Steuerfuss. Taxpresso adds it only for an Ortsbürger.'
+      fr: 'Certaines bourgeoisies (Bürgergemeinden) prélèvent un impôt sur leurs bourgeois (Ortsbürger, citoyens de la commune, comme votre lieu d’origine, Heimatort) qui habitent le canton, à leur propre coefficient (Steuerfuss). Taxpresso ne l’ajoute que pour un bourgeois.'
+      de: 'Einige Bürgergemeinden erheben von ihren Ortsbürgerinnen und Ortsbürgern (Heimatort), die im Kanton wohnen, eine Steuer zu ihrem eigenen Steuerfuss. Taxpresso rechnet sie nur für Ortsbürger dazu.'
+    learnMore:
+      url: 'https://bgs.zg.ch/api/de/versions/2956/pdf_file#page=84'
+      label:
+        en: 'Zug tax law (Steuergesetz), § 170, p. 84: the Bürgergemeinde tax'
+        fr: 'Loi fiscale de Zoug (Steuergesetz), § 170, p. 84 : Impôt de la bourgeoisie'
+        de: 'Steuergesetz, § 170, S. 84: Steuern der Bürgergemeinden'
+    text:
+      p1:
+        en: 'On 31 December 2026, were you an Ortsbürger (citizen) of a Zug commune?'
+        fr: 'Au 31 décembre 2026, étiez-vous bourgeois (Ortsbürger) d’une commune zougoise ?'
+        de: 'Warst du am 31. Dezember 2026 Ortsbürger oder Ortsbürgerin einer Zuger Gemeinde?'
+      p2:
+        en: 'On 31 December 2026, was your spouse or partner an Ortsbürger (citizen) of a Zug commune?'
+        fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il bourgeois (Ortsbürger) d’une commune zougoise ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Ortsbürger oder Ortsbürgerin einer Zuger Gemeinde?'
+    help:
+      en: 'Your place of origin (Heimatort), as on your passport or identity card. Most people are Ortsbürger of a commune outside the canton: then choose None.'
+      fr: 'Votre lieu d’origine (Heimatort), comme sur votre passeport ou votre carte d’identité. La plupart des gens sont bourgeois d’une commune hors du canton : choisissez alors Aucune.'
+      de: 'Dein Heimatort, wie im Pass oder in der Identitätskarte. Die meisten Leute sind Ortsbürger einer Gemeinde ausserhalb des Kantons: Dann wähl Keine.'
+    options:
+      - value: zug
+        label: { en: 'Zug', fr: 'Zug', de: 'Zug' }
+        chip: { en: 'Ortsbürger of Zug', fr: 'Bourgeois de Zug', de: 'Ortsbürger von Zug' }
+      - value: oberageri
+        label: { en: 'Oberägeri', fr: 'Oberägeri', de: 'Oberägeri' }
+        chip:
+          {
+            en: 'Ortsbürger of Oberägeri',
+            fr: 'Bourgeois de Oberägeri',
+            de: 'Ortsbürger von Oberägeri',
+          }
+      - value: unterageri
+        label: { en: 'Unterägeri', fr: 'Unterägeri', de: 'Unterägeri' }
+        chip:
+          {
+            en: 'Ortsbürger of Unterägeri',
+            fr: 'Bourgeois de Unterägeri',
+            de: 'Ortsbürger von Unterägeri',
+          }
+      - value: menzingen
+        label: { en: 'Menzingen', fr: 'Menzingen', de: 'Menzingen' }
+        chip:
+          {
+            en: 'Ortsbürger of Menzingen',
+            fr: 'Bourgeois de Menzingen',
+            de: 'Ortsbürger von Menzingen',
+          }
+      - value: baar
+        label: { en: 'Baar', fr: 'Baar', de: 'Baar' }
+        chip: { en: 'Ortsbürger of Baar', fr: 'Bourgeois de Baar', de: 'Ortsbürger von Baar' }
+      - value: cham
+        label: { en: 'Cham', fr: 'Cham', de: 'Cham' }
+        chip: { en: 'Ortsbürger of Cham', fr: 'Bourgeois de Cham', de: 'Ortsbürger von Cham' }
+      - value: hunenberg
+        label: { en: 'Hünenberg', fr: 'Hünenberg', de: 'Hünenberg' }
+        chip:
+          {
+            en: 'Ortsbürger of Hünenberg',
+            fr: 'Bourgeois de Hünenberg',
+            de: 'Ortsbürger von Hünenberg',
+          }
+      - value: steinhausen
+        label: { en: 'Steinhausen', fr: 'Steinhausen', de: 'Steinhausen' }
+        chip:
+          {
+            en: 'Ortsbürger of Steinhausen',
+            fr: 'Bourgeois de Steinhausen',
+            de: 'Ortsbürger von Steinhausen',
+          }
+      - value: risch
+        label: { en: 'Risch', fr: 'Risch', de: 'Risch' }
+        chip: { en: 'Ortsbürger of Risch', fr: 'Bourgeois de Risch', de: 'Ortsbürger von Risch' }
+      - value: walchwil
+        label: { en: 'Walchwil', fr: 'Walchwil', de: 'Walchwil' }
+        chip:
+          {
+            en: 'Ortsbürger of Walchwil',
+            fr: 'Bourgeois de Walchwil',
+            de: 'Ortsbürger von Walchwil',
+          }
+      - value: neuheim
+        label: { en: 'Neuheim', fr: 'Neuheim', de: 'Neuheim' }
+        chip:
+          { en: 'Ortsbürger of Neuheim', fr: 'Bourgeois de Neuheim', de: 'Ortsbürger von Neuheim' }
+      - value: none
+        label:
+          {
+            en: 'None: not an Ortsbürger of a Zug commune',
+            fr: 'Aucune : pas bourgeois d’une commune zougoise',
+            de: 'Keine: nicht Ortsbürger einer Zuger Gemeinde',
+          }
+
+  # zg-2025-guide-wegleitung p. 20 (Code 100, the net salary of the salary certificate) to p. 22
+  # (Code 130 to 151, pensions and allowances).
+  - use: income_sources
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=20'
+      label:
+        en: 'Zug tax guide 2025, p. 20: income'
+        fr: 'Guide fiscal de Zoug 2025, p. 20 : Revenus'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 20: Einkünfte im In- und Ausland'
+    options:
+      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - value: replacement_income
+        label:
+          en: 'Unemployment, sickness or accident benefits'
+          fr: 'Des indemnités (chômage, maladie, accident)'
+          de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+      - value: pension
+        label:
+          {
+            en: 'A pension (AHV, IV or pension fund)',
+            fr: 'Une rente (AVS, AI ou caisse de pension)',
+            de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+          }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+      - value: alimony
+        label:
+          {
+            en: 'Alimony or child support received',
+            fr: 'Une pension alimentaire reçue',
+            de: 'Erhaltene Unterhaltsbeiträge',
+          }
+        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+      - value: self_employment
+        label:
+          {
+            en: 'Income from self-employment',
+            fr: 'Un revenu d’activité indépendante',
+            de: 'Einkommen aus selbständiger Erwerbstätigkeit',
+          }
+        notSupported:
+          {
+            en: 'Self-employment (selbständige Erwerbstätigkeit, 115 and 116)',
+            fr: 'L’activité indépendante (selbständige Erwerbstätigkeit, 115 et 116)',
+            de: 'Die selbständige Erwerbstätigkeit (115 und 116)',
+          }
+
+  # zg-2025-guide-wegleitung p. 20 (Code 100, 101: the net salary of each salary certificate).
+  - use: employers
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=20'
+      label:
+        en: 'Zug tax guide 2025, p. 20: main employment'
+        fr: 'Guide fiscal de Zoug 2025, p. 20 : Activité principale'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 20: Haupterwerb'
+    help:
+      en: 'Each one gives you a salary certificate (Lohnausweis).'
+      fr: 'Chacun vous remet un certificat de salaire (Lohnausweis).'
+      de: 'Jeder gibt dir einen Lohnausweis.'
+
+  # People taxed at source (Quellensteuer) file an ordinary return only in the cases the guide lists,
+  # or when they ask for it by 31 March of the next year (nachträgliche ordentliche Veranlagung,
+  # NOV): zg-2025-guide-wegleitung p. 8; zg-na-source-tax-nov-antrag. Not covered by rules-zg.
+  - use: taxed_at_source
+    yesNotSupported:
+      en: 'Tax at source in Zug (Quellensteuer) and the ordinary assessment that follows it (nachträgliche ordentliche Veranlagung, NOV)'
+      fr: 'L’impôt à la source à Zoug (Quellensteuer) et la taxation ordinaire ultérieure qui suit (nachträgliche ordentliche Veranlagung, NOV)'
+      de: 'Die Quellensteuer im Kanton Zug und die nachträgliche ordentliche Veranlagung (NOV)'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=8'
+      label:
+        en: 'Zug tax guide 2025, p. 8: tax at source'
+        fr: 'Guide fiscal de Zoug 2025, p. 8 : Impôt à la source'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 8: Deklaration Quellensteuer'
+    help:
+      en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, Ziffer 12).'
+      de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+
+  # zg-2025-guide-wegleitung p. 36 (Code 220, 221: only with the attestations; the catch-up,
+  # nachträglicher Einkauf, from 2026).
+  - use: pillar3a
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=36'
+      label:
+        en: 'Zug tax guide 2025, p. 36: pillar 3a'
+        fr: 'Guide fiscal de Zoug 2025, p. 36 : Pilier 3a'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 36: Beiträge an die Säule 3a'
+    help:
+      en: 'Your bank or insurer sends an attestation (Bescheinigung): attach it to your return. On form K: 220, Beiträge gebundene Vorsorge.'
+      fr: 'Votre banque ou votre assurance vous envoie une attestation (Bescheinigung) : joignez-la à votre déclaration. Sur le formulaire K : 220, Beiträge gebundene Vorsorge (cotisations au 3e pilier A).'
+      de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung: Leg sie der Steuererklärung bei. Auf dem Formular K: 220, Beiträge gebundene Vorsorge.'
+
+  # zg-2025-guide-wegleitung p. 37 (Code 250, 251: only what the salary certificate doesn't already
+  # show; attach the fund's attestation).
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=37'
+      label:
+        en: 'Zug tax guide 2025, p. 37: pension fund buy-ins'
+        fr: 'Guide fiscal de Zoug 2025, p. 37 : Rachats au 2e pilier'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 37: Beiträge an die 2. Säule'
+    help:
+      en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On form K: 250, Beiträge an die 2. Säule.'
+      fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas. Sur le formulaire K : 250, Beiträge an die 2. Säule (rachats au 2e pilier).'
+      de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. Auf dem Formular K: 250, Beiträge an die 2. Säule.'
+
+  # Travel to work (Code 201, 202, form BA: Fahrkosten zwischen Wohn- und Arbeitsort) for both taxes,
+  # each up to its own yearly limit: zg-2025-guide-wegleitung p. 32; ch-2026-ifd-instructions-
+  # personnes-physiques p. 6. No "over 2 hours a day" choice: only Geneva's meal rule needs it.
+  - use: commute
+    explain:
+      en: 'Getting to work is deducted as travel costs (Fahrkosten), for the cantonal and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
+      fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrkosten), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
+      de: 'Der Arbeitsweg wird als Fahrkosten abgezogen, bei der Kantons- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=32'
+      label:
+        en: 'Zug tax guide 2025, p. 32: travel to work'
+        fr: 'Guide fiscal de Zoug 2025, p. 32 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Fahrkosten zwischen Wohn- und Arbeitsort'
+    help:
+      en: 'Choose how you went on most work days. On the Berufsauslagen form (BA): Fahrkosten zwischen Wohn- und Arbeitsort.'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire Berufsauslagen (BA, frais professionnels) : Fahrkosten zwischen Wohn- und Arbeitsort (frais de déplacement).'
+      de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf dem Formular Berufsauslagen (BA): Fahrkosten zwischen Wohn- und Arbeitsort.'
+    options:
+      - value: public_transport
+        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+            de: 'Motorrad oder Roller mit weissem Kontrollschild',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+            de: 'Velo, E-Bike oder Motorfahrrad mit gelbem Kontrollschild',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - value: mostly_home
+        label:
+          {
+            en: 'From home, almost every day',
+            fr: 'Depuis chez moi, presque tous les jours',
+            de: 'Von zu Hause, fast jeden Tag',
+          }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+
+  # zg-2025-guide-wegleitung p. 32 (public transport: the Zuger Pass or the GA, the cost).
+  - use: commute_transit_cost
+    explain:
+      en: 'You deduct the public transport you paid to get to work, for the cantonal and the federal tax, each up to its own yearly limit.'
+      fr: 'Vous déduisez les transports publics payés pour aller au travail, pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Du ziehst den bezahlten öffentlichen Verkehr zur Arbeit ab, bei der Kantons- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=32'
+      label:
+        en: 'Zug tax guide 2025, p. 32: travel to work'
+        fr: 'Guide fiscal de Zoug 2025, p. 32 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Fahrkosten zwischen Wohn- und Arbeitsort'
+
+  # Zug recognises "grundsätzlich" public transport only; a private vehicle needs a reason: no public
+  # transport, over an hour and a quarter saved a day, health, or the car needed at work at the
+  # employer's request (zg-2025-guide-wegleitung p. 32; the form BA, zg-2025-guide-en-how-to-fill
+  # p. 3). Otherwise what public transport would have cost.
+  - use: commute_transit_usable
+    explain:
+      en: 'A driver deducts what public transport would have cost, for both taxes. The kilometres count only if you had a reason: no public transport for the trip, over an hour and a quarter saved each day, a health reason, or the car needed at work at your employer’s request.'
+      fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics, pour les deux impôts. Les kilomètres ne comptent que si vous aviez une raison : pas de transport public pour ce trajet, plus d’une heure et quart gagnée par jour, une raison de santé, ou la voiture nécessaire au travail à la demande de l’employeur.'
+      de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Die Kilometer zählen nur mit einem Grund: kein öffentliches Verkehrsmittel für diesen Weg, über 1¼ Stunden Zeitgewinn pro Tag, ein gesundheitlicher Grund, oder das Auto laut Bestätigung des Arbeitgebers für die Arbeit nötig.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=32'
+      label:
+        en: 'Zug tax guide 2025, p. 32: travel to work'
+        fr: 'Guide fiscal de Zoug 2025, p. 32 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Fahrkosten zwischen Wohn- und Arbeitsort'
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, I could have used public transport',
+            fr: 'Oui, j’aurais pu prendre les transports publics',
+            de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No, one of those reasons applies',
+            fr: 'Non, l’une de ces raisons s’applique',
+            de: 'Nein, einer dieser Gründe trifft zu',
+          }
+
+  - use: commute_transit_equivalent
+    explain:
+      en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
+      fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab, bei beiden Steuern, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=32'
+      label:
+        en: 'Zug tax guide 2025, p. 32: travel to work'
+        fr: 'Guide fiscal de Zoug 2025, p. 32 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Fahrkosten zwischen Wohn- und Arbeitsort'
+
+  # zg-2025-guide-wegleitung p. 32 (cars and motorbikes per km, on the actual working days, at most
+  # 220 a year).
+  - use: commute_distance
+    explain:
+      en: 'With one of those reasons, both taxes count a fixed amount per kilometre, there and back once a day, each up to its own yearly limit.'
+      fr: 'Avec l’une de ces raisons, les deux impôts comptent un montant fixe par kilomètre, un aller et retour par jour, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Mit einem dieser Gründe zählen beide Steuern einen festen Betrag pro Kilometer, einmal hin und zurück pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=32'
+      label:
+        en: 'Zug tax guide 2025, p. 32: travel by car'
+        fr: 'Guide fiscal de Zoug 2025, p. 32 : Trajets en voiture'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Ansätze und Arbeitstage'
+
+  - use: commute_drive_days
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=32'
+      label:
+        en: 'Zug tax guide 2025, p. 32: travel by car'
+        fr: 'Guide fiscal de Zoug 2025, p. 32 : Trajets en voiture'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 32: Ansätze und Arbeitstage'
+    help:
+      en: 'The days you actually worked there; leave out holidays, sick days and days worked from home (Homeoffice).'
+      fr: 'Les jours effectivement travaillés sur place ; sans les vacances, les jours de maladie et les jours de télétravail (Homeoffice).'
+      de: 'Die effektiven Arbeitstage am Arbeitsort; ohne Ferien, Krankheitstage und Tage im Homeoffice.'
+
+  # Meals away from home (Mehrkosten für auswärtige Verpflegung, form BA), for both taxes:
+  # zg-2025-guide-wegleitung p. 33.
+  - use: meal_days
+    explain:
+      en: 'Lunch away from home because of work costs more than at home (Mehrkosten für auswärtige Verpflegung). A fixed amount per day counts for both taxes, up to a yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate).'
+      fr: 'Manger à l’extérieur à cause du travail coûte plus cher qu’à la maison (Mehrkosten für auswärtige Verpflegung). Un montant fixe par jour compte pour les deux impôts, jusqu’à une limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire).'
+      de: 'Auswärts essen wegen der Arbeit kostet mehr als zu Hause (Mehrkosten für auswärtige Verpflegung). Für beide Steuern zählt ein fester Betrag pro Tag, bis zu einem jährlichen Höchstbetrag, die Hälfte davon, wenn dein Arbeitgeber einen Teil deiner Mahlzeiten bezahlt (Feld G des Lohnausweises).'
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=33'
+      label:
+        en: 'Zug tax guide 2025, p. 33: meals'
+        fr: 'Guide fiscal de Zoug 2025, p. 33 : Frais de repas'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 33: Mehrkosten für auswärtige Verpflegung'
+
+  # zg-2025-guide-wegleitung p. 23 (Code 160, 600: Wertschriften- und Guthabenverzeichnis, WV).
+  - use: banks
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=23'
+      label:
+        en: 'Zug tax guide 2025, p. 23: securities and accounts'
+        fr: 'Guide fiscal de Zoug 2025, p. 23 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Wertschriften- und Guthabenverzeichnis'
+    help:
+      en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers. On the return: Wertschriften- und Guthabenverzeichnis (WV).'
+      fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers. Sur la déclaration : Wertschriften- und Guthabenverzeichnis (WV, état des titres et avoirs).'
+      de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker. Auf der Steuererklärung: Wertschriften- und Guthabenverzeichnis (WV).'
+
+  # zg-2025-guide-wegleitung p. 28 (Kryptowährungen: wealth and income on the WV form, code KR, a
+  # wallet printout at year end).
+  - use: crypto
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=28'
+      label:
+        en: 'Zug tax guide 2025, p. 28: cryptocurrencies'
+        fr: 'Guide fiscal de Zoug 2025, p. 28 : Cryptomonnaies'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 28: Kryptowährungen'
+
+  # zg-2025-guide-wegleitung p. 40 (295, Krankheits- und Unfallkosten), p. 41 (296, Gemeinnützige
+  # Zuwendungen), p. 38 (252, politische Parteien), p. 34 and 35 (205, 210, 211).
+  - use: payments
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=40'
+      label:
+        en: 'Zug tax guide 2025, p. 40: illness costs and donations'
+        fr: 'Guide fiscal de Zoug 2025, p. 40 : Frais de maladie et dons'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 40: Zusätzliche Abzüge'
+
+  # What Taxpresso can't prepare for Zug yet: property (181, 610, form LVZ), inheritances and gifts,
+  # income from abroad, capital benefits (taxed apart, StG § 37). eTax.zug is the canton's online
+  # return (zg-na-efiling-etax-zug).
+  - use: special
+    learnMore:
+      url: 'https://zg.ch/de/steuern-finanzen/steuern/etax'
+      label:
+        en: 'eTax.zug, the canton’s online return (zg.ch)'
+        fr: 'eTax.zug, la déclaration en ligne du canton (zg.ch)'
+        de: 'eTax.zug, die Online-Steuererklärung des Kantons (zg.ch)'
+    options:
+      - value: real_estate
+        label:
+          {
+            en: 'I own real estate, in Switzerland or abroad',
+            fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
+            de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+          }
+        notSupported:
+          {
+            en: 'Real estate (Liegenschaften)',
+            fr: 'Les immeubles (Liegenschaften)',
+            de: 'Liegenschaften',
+          }
+      - value: inheritance_or_gift
+        label:
+          {
+            en: 'I received an inheritance or a large gift',
+            fr: 'J’ai reçu un héritage ou une donation importante',
+            de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+          }
+        notSupported:
+          {
+            en: 'An inheritance or a gift (Erbschaft, Schenkung)',
+            fr: 'Un héritage ou une donation (Erbschaft, Schenkung)',
+            de: 'Eine Erbschaft oder Schenkung',
+          }
+      - value: foreign_income
+        label:
+          {
+            en: 'I had income from abroad (salary, pension, rent)',
+            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+            de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+          }
+        notSupported:
+          {
+            en: 'Income from abroad',
+            fr: 'Des revenus de l’étranger',
+            de: 'Einkünfte aus dem Ausland',
+          }
+      - value: pension_capital
+        label:
+          {
+            en: 'I withdrew pension capital (2nd or 3rd pillar)',
+            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
+            de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+          }
+        notSupported:
+          {
+            en: 'A pension capital withdrawal (Kapitalleistungen aus Vorsorge)',
+            fr: 'Un retrait de capital de prévoyance (Kapitalleistungen aus Vorsorge)',
+            de: 'Ein Kapitalbezug aus der Vorsorge (Kapitalleistungen aus Vorsorge)',
+          }
+
+# The documents, with the page of the Zug guide for 2025 (zg-2025-guide-wegleitung p. 11 and 12 list
+# the attachments).
+requirements:
+  - use: salary_certificate
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=20'
+      label:
+        en: 'Zug tax guide 2025, p. 20: main employment'
+        fr: 'Guide fiscal de Zoug 2025, p. 20 : Activité principale'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 20: Haupterwerb'
+    source: 'zg-2025-guide-wegleitung p. 11, p. 20'
+
+  - use: replacement_income
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=22'
+      label:
+        en: 'Zug tax guide 2025, p. 22: allowances and unemployment benefits'
+        fr: 'Guide fiscal de Zoug 2025, p. 22 : Indemnités et chômage'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 22: Erwerbsausfallentschädigungen und Taggelder'
+    source: 'zg-2025-guide-wegleitung p. 11, p. 22'
+
+  - use: pension
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=22'
+      label:
+        en: 'Zug tax guide 2025, p. 22: pensions'
+        fr: 'Guide fiscal de Zoug 2025, p. 22 : Rentes'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 22: Renten und Pensionen'
+    source: 'zg-2025-guide-wegleitung p. 11, p. 22'
+
+  - use: pillar3a
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=36'
+      label:
+        en: 'Zug tax guide 2025, p. 36: pillar 3a'
+        fr: 'Guide fiscal de Zoug 2025, p. 36 : Pilier 3a'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 36: Beiträge an die Säule 3a'
+    source: 'zg-2025-guide-wegleitung p. 12, p. 36'
+
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=37'
+      label:
+        en: 'Zug tax guide 2025, p. 37: pension fund buy-ins'
+        fr: 'Guide fiscal de Zoug 2025, p. 37 : Rachats au 2e pilier'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 37: Beiträge an die 2. Säule'
+    source: 'zg-2025-guide-wegleitung p. 12, p. 37'
+
+  - use: health_premiums
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=37'
+      label:
+        en: 'Zug tax guide 2025, p. 37: insurance premiums'
+        fr: 'Guide fiscal de Zoug 2025, p. 37 : Primes d’assurances'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 37: Versicherungsprämien'
+    source: 'zg-2025-guide-wegleitung p. 37'
+
+  - use: banks
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=23'
+      label:
+        en: 'Zug tax guide 2025, p. 23: securities and accounts'
+        fr: 'Guide fiscal de Zoug 2025, p. 23 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 23: Wertschriften- und Guthabenverzeichnis'
+    source: 'zg-2025-guide-wegleitung p. 11, p. 23'
+
+  - use: crypto
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=28'
+      label:
+        en: 'Zug tax guide 2025, p. 28: cryptocurrencies'
+        fr: 'Guide fiscal de Zoug 2025, p. 28 : Cryptomonnaies'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 28: Kryptowährungen'
+    source: 'zg-2025-guide-wegleitung p. 28'
+
+  - use: childcare
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=38'
+      label:
+        en: 'Zug tax guide 2025, p. 38: childcare by others'
+        fr: 'Guide fiscal de Zoug 2025, p. 38 : Frais de garde par des tiers'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 38: Kinderdrittbetreuungskostenabzug'
+    source: 'zg-2025-guide-wegleitung p. 38'
+
+  - use: medical
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=40'
+      label:
+        en: 'Zug tax guide 2025, p. 40: illness and accident costs'
+        fr: 'Guide fiscal de Zoug 2025, p. 40 : Frais de maladie et d’accident'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 40: Krankheits- und Unfallkosten'
+    source: 'zg-2025-guide-wegleitung p. 40'
+
+  - use: donations
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=41'
+      label:
+        en: 'Zug tax guide 2025, p. 41: donations'
+        fr: 'Guide fiscal de Zoug 2025, p. 41 : Dons'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 41: Gemeinnützige Zuwendungen'
+    source: 'zg-2025-guide-wegleitung p. 41'
+
+  - use: loan_interest
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=34'
+      label:
+        en: 'Zug tax guide 2025, p. 34: debt interest'
+        fr: 'Guide fiscal de Zoug 2025, p. 34 : Intérêts passifs'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 34: Private Schuldzinsen'
+    source: 'zg-2025-guide-wegleitung p. 34, p. 35'
+
+  - use: alimony
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=35'
+      label:
+        en: 'Zug tax guide 2025, p. 35: alimony and child support'
+        fr: 'Guide fiscal de Zoug 2025, p. 35 : Contributions d’entretien'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 35: Unterhaltsbeiträge'
+    source: 'zg-2025-guide-wegleitung p. 12, p. 28, p. 35'
+
+  - use: separation_judgment
+    learnMore:
+      url: 'https://cdn.zg.ch/dam/jcr:17c572af-908f-43a5-96b0-0fd25983f924/Wegleitung_2025_StKtZug_A4_20251119.pdf#page=9'
+      label:
+        en: 'Zug tax guide 2025, p. 9: marriage, divorce or separation'
+        fr: 'Guide fiscal de Zoug 2025, p. 9 : Mariage, divorce ou séparation'
+        de: 'Wegleitung zur Steuererklärung 2025, S. 9: Heirat, Scheidung oder Trennung'
+    source: 'zg-2025-guide-wegleitung p. 9'

@@ -14,6 +14,7 @@ import {
   QuestionnaireError,
   resolveShared,
   sharedQuestionnaire2026,
+  zgQuestionnaire2026,
   zhQuestionnaire2026,
 } from '../src/index.js';
 
@@ -470,6 +471,7 @@ describe('the questions every canton shares', () => {
       'BL',
       'VD',
       'BS',
+      'ZG',
       'other',
     ]);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
@@ -480,22 +482,28 @@ describe('the questions every canton shares', () => {
     expect(canton.help?.en).toMatch(/taxes the whole year/);
     // The cantons covered are named from the options themselves: a canton added there is named.
     expect(canton.explain?.en).toMatch(
-      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud and Basel-Stadt so far\.$/,
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt and Zug so far\.$/,
     );
     expect(canton.explain?.fr).toMatch(
       new RegExp(
-        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud et Bâle-Ville\\.$`,
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville et Zoug\\.$`,
       ),
     );
     expect(canton.explain?.de).toMatch(
-      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt und Basel-Stadt vor\.$/,
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt und Zug vor\.$/,
     );
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
-      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud or Basel-Stadt',
-      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud ou Bâle-Ville',
-      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt oder Basel-Stadt',
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt or Zug',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville ou Zoug',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt oder Zug',
     });
-    for (const f of [file, geQuestionnaire2026(), zhQuestionnaire2026(), bsQuestionnaire2026()]) {
+    for (const f of [
+      file,
+      geQuestionnaire2026(),
+      zhQuestionnaire2026(),
+      bsQuestionnaire2026(),
+      zgQuestionnaire2026(),
+    ]) {
       expect(JSON.stringify(f)).not.toMatch(/\{cantons/);
     }
     for (const item of [...file.questions, ...file.requirements]) {
