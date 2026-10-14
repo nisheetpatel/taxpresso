@@ -9,12 +9,14 @@ import {
   DONATE_URL,
   DOWNLOAD_URL,
   ISSUE_URL,
+  REVIEW_URL,
   type Lang,
   LANGS,
   SOURCE_URL,
   startPath,
   type Tone,
 } from './content.ts';
+import { TESTIMONIALS } from './testimonials.ts';
 import {
   frenchSpacing,
   GUIDE_IDS,
@@ -187,7 +189,7 @@ function head(lang: Lang, meta: Meta, cssVersion: string) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>${esc(meta.title)}</title>
 <meta name="description" content="${esc(meta.description)}">
@@ -277,12 +279,42 @@ export function render(lang: Lang, cssVersion = ''): string {
     .join('\n');
   const [swissTitle, swissText] = t.principles.swiss;
 
-  const menu = t.support.tip.menu
-    .map(
+  // The free item opens, when clicked, to the ways to leave a review (a <details>, no script): a
+  // star on GitHub, or a few words in a text box. The box posts to api/review.mjs, which files the
+  // review privately; it is only shown once reviews are switched on in Vercel (TAXPRESSO_REVIEWS),
+  // and until then a review on GitHub takes its place.
+  const r = t.support.tip.review;
+  const reviewsOn = process.env.TAXPRESSO_REVIEWS === 'on';
+  const words = reviewsOn
+    ? `<li><form class="review-form" method="post" action="/api/review">
+<input type="hidden" name="lang" value="${lang}">
+<label for="review-text">${esc(r.words)}</label>
+<textarea id="review-text" name="text" rows="4" minlength="3" maxlength="2000" required></textarea>
+<label for="review-name">${esc(r.name)}</label>
+<input id="review-name" name="name" maxlength="60" autocomplete="given-name">
+<label class="review-quote"><input type="checkbox" name="quote" value="yes"><span>${esc(r.quote)}</span></label>
+<div class="review-hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
+<button class="btn btn-crema" type="submit">${esc(r.send)}</button>
+</form></li>`
+    : `<li><a ${out(REVIEW_URL)}>${esc(r.github)}</a></li>`;
+  const review = `<li class="menu-review"><details><summary><span>${esc(r.label)}</span><span class="dots" aria-hidden="true"></span><span class="amount">${esc(r.amount)}</span></summary>
+<ul class="review-ways">
+<li><a ${out(SOURCE_URL)}>${STAR}${esc(r.star)}</a></li>
+${words}
+</ul>
+</details></li>`;
+  const menu = [
+    review,
+    ...t.support.tip.menu.map(
       ([drink, amount]) =>
         `<li><span>${esc(drink)}</span><span class="dots" aria-hidden="true"></span><span class="amount">${esc(amount)}</span></li>`,
-    )
-    .join('\n');
+    ),
+  ].join('\n');
+  const voices = TESTIMONIALS.map(
+    (v) =>
+      `<figure class="voice"><blockquote lang="${v.lang}"><p>${esc(v.quote)}</p></blockquote>${v.name ? `<figcaption>${esc(v.name)}</figcaption>` : ''}</figure>`,
+  ).join('\n');
+  const voicesMore = TESTIMONIALS.length ? t.support.voices.more : t.support.voices.first;
 
   const help = t.contribute.items
     .map(
@@ -382,17 +414,18 @@ ${cards}
 <p>${esc(t.support.text)}</p>
 </div>
 <div class="free-grid">
-<div class="star-card">
-<span class="star-mark">${STAR}</span>
-<h3>${esc(t.support.star.title)}</h3>
-<p>${esc(t.support.star.text)}</p>
-<a class="btn btn-primary" ${out(SOURCE_URL)}>${STAR}${esc(t.support.star.button)}</a>
+<div class="star-card voices-card">
+<h3>${esc(t.support.voices.title)}</h3>
+${voices}
+<p class="voices-more">${esc(voicesMore)}</p>
 </div>
 <div class="tip-card">
 <h3>${esc(t.support.tip.title)}</h3>
 <ul class="menu">
 ${menu}
 </ul>
+<p id="review-thanks" class="review-msg" role="status">${esc(r.thanks)}</p>
+<p id="review-error" class="review-msg review-msg-error" role="status">${esc(r.error)}</p>
 <p class="tip-note">${esc(t.support.tip.note)}</p>
 <a class="btn btn-crema" ${out(DONATE_URL)}>${esc(t.support.tip.button)}</a>
 </div>
