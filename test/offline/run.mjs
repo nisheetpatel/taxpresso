@@ -1175,8 +1175,100 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
-  test('an Aargau return: its questions, its tax and the values to type, offline', async () => {
+  test('a Zug return: its questions, its tax and the values to type, offline', async () => {
     // A seventh household in its own folder, in its own server process with the same guard: Lea
+    // Keller, single, in Zug, renting, with the synthetic salary certificate read from its barcode.
+    const zgVault = path.join(work, 'Zug');
+    const zgTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: zgVault,
+        TAXPRESSO_UI_LANGUAGE: 'de',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    zgTransport.stderr?.on('data', (d) => (stderr += d));
+    const zg = new Client({ name: 'taxpresso-offline-test-zg', version: '0.0.0' });
+    await zg.connect(zgTransport);
+    try {
+      const answers = [
+        ['canton', 'ZG'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Zug'],
+        ['moved', 'no'],
+        ['rent', 24000],
+        ['church:p1', 'none'],
+        ['citizen_of:p1', 'none'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 729],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await zg.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await zg.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'ZG');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(zgVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await zg.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await zg.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'ZG');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'Zug');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /Kantons- und Gemeindesteuern/);
+
+      const sections = await zg.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['K2', 'K3'],
+      );
+      const deductions = await zg.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'K3' },
+      });
+      assert.match(
+        deductions.content[0].text,
+        /- 201 Berufsauslagen bei unselbständiger Erwerbstätigkeit \(BA\), Person 1 /,
+      );
+
+      const check = await zg.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await zg.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await zg.close();
+    }
+  });
+
+  test('an Aargau return: its questions, its tax and the values to type, offline', async () => {
+    // An eighth household in its own folder, in its own server process with the same guard: Lea
     // Huber, single, in Aarau, with the synthetic salary certificate read from its barcode.
     const agVault = path.join(work, 'Aargau');
     const agTransport = new StdioClientTransport({

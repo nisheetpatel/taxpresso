@@ -1,15 +1,15 @@
 // Zug behind the canton interface (packages/rules-ch, canton.ts; docs/design/cantons.md, section 2):
 // the household input becomes Zug's engine input, and computeReturn gives exactly what the engine
-// gives (the cantonal, communal and opt-in church and Bürgergemeinde tax; the federal column of
-// form K is not mapped yet, so `ifd` is null). Not wired into the extension. A fact that changes
-// the tax and that Zug's engine does not read is refused, never dropped (fail closed). Left aside
-// because they don't change Zug's tax: the withholding tax credit shown next to the tax, the
-// federal parental scale, and the facts only Geneva's rules use (a person's or a child's age band,
-// Geneva's meal rule, the commune of work).
+// gives (the cantonal, communal and opt-in church and Bürgergemeinde tax, and the federal tax of
+// form K's Bund column, ./ifd.ts). The extension reads it through its canton registry. A fact that
+// changes the tax and that Zug's engine does not read is refused, never dropped (fail closed). Left
+// aside because they change neither tax: the withholding tax credit shown next to the tax, and the
+// facts only Geneva's rules use (a person's or a child's age band, Geneva's meal rule, the commune
+// of work).
+import type { DocumentKind } from '@taxpresso/ledger';
 import {
-  KEYS_ECH0196_2026,
-  KEYS_SALARY_CERTIFICATE_2026,
-  KEYS_SECURITIES_2026,
+  ATTESTATION_FIELDS_2026,
+  DOCUMENT_FIELDS_WEALTH_2026,
   SALARY_CERTIFICATE_FIELDS_2026,
   type Amount,
   type CantonRules,
@@ -21,8 +21,16 @@ import {
 import { ZgInputError } from './assess.js';
 import { communesFor, slugOf } from './communes.js';
 import { computeReturn } from './compute.js';
+import { zgKeys } from './keys.js';
 import { ZG_TAX_YEARS, zgParamsFor, type ZgTaxYear } from './params.js';
-import type { Confession, MovableOwner, PersonInput, ZgEngineInput, ZgTaxResult } from './types.js';
+import type {
+  ChildInput,
+  Confession,
+  MovableOwner,
+  PersonInput,
+  ZgEngineInput,
+  ZgTaxResult,
+} from './types.js';
 
 /** What only Zug asks for. */
 export interface ZugCantonal {
@@ -39,14 +47,12 @@ export interface ZugCantonal {
   church?: { p1?: Confession; p2?: Confession };
   /** Opt-in Bürgergemeinde tax: the Zug commune each adult is an Ortsbürger of, or null. */
   citizenOf?: { p1?: string | null; p2?: string | null };
+  /**
+   * Childcare paid, by child, in the order of `children` (253: the limit is per child, and a child
+   * under 15 has own care, 404, when higher): replaces childcare given for the household as a whole.
+   */
+  childcare?: readonly (Amount | undefined)[];
 }
-
-/** The shared keys: the salary certificate, the securities and the e-tax statements. */
-const KEYS = {
-  ...KEYS_SALARY_CERTIFICATE_2026,
-  ...KEYS_SECURITIES_2026,
-  ...KEYS_ECH0196_2026,
-} as const;
 
 function refuse(what: string): never {
   throw new ZgInputError(`${what}: Zug's engine does not read it, so the tax would be wrong.`);
@@ -80,18 +86,21 @@ export function zugInput(input: HouseholdInput<ZugCantonal>): ZgEngineInput {
     );
   }
   const c = input.cantonal ?? {};
-  if (input.household?.childcare) {
-    refuse('Childcare for the household (household.childcare; give it per child)');
-  }
-  if (c.children && c.children.length !== (input.children?.length ?? 0)) {
+  const count = input.children?.length ?? 0;
+  if (c.children && c.children.length !== count) {
     throw new ZgInputError('cantonal.children needs one answer per child, in order.');
   }
-  const children = input.children?.map((ch, i) => {
+  if (c.childcare && c.childcare.length > count) {
+    refuse('Childcare for a child not in children (cantonal.childcare)');
+  }
+  const children: ChildInput[] | undefined = input.children?.map((ch, i) => {
     const ages = c.children?.[i] ?? {};
+    const care = c.childcare?.[i];
     return {
       ...without(ch, ['age']),
       ...(ages.under15 !== undefined ? { under15: ages.under15 } : {}),
       ...(ages.minor !== undefined ? { minor: ages.minor } : {}),
+      ...(care ? { childcare: care } : {}),
     };
   });
   const movable = input.movable?.map((m) => {
@@ -99,7 +108,12 @@ export function zugInput(input: HouseholdInput<ZugCantonal>): ZgEngineInput {
     if (!isOwner(owner)) refuse(`Accounts or securities of ${owner} (movable[].owner)`);
     return { ...without(m, ['owner', 'withholdingSwiss']), owner };
   });
-  const household = input.household ? without(input.household, ['childcare']) : undefined;
+  // Childcare split per child replaces the household's total.
+  const household = input.household
+    ? c.childcare
+      ? without(input.household, ['childcare'])
+      : input.household
+    : undefined;
   return {
     taxYear: input.taxYear as ZgTaxYear,
     commune: input.commune,
@@ -107,6 +121,7 @@ export function zugInput(input: HouseholdInput<ZugCantonal>): ZgEngineInput {
     people: input.people.map(person),
     ...(children ? { children } : {}),
     ...(input.childSupport ? { childSupport: input.childSupport } : {}),
+    ...(input.ifdParentalScale !== undefined ? { ifdParentalScale: input.ifdParentalScale } : {}),
     ...(c.mainCare !== undefined ? { mainCare: c.mainCare } : {}),
     ...(c.rent ? { rent: c.rent } : {}),
     ...(c.church ? { church: c.church } : {}),
@@ -130,10 +145,22 @@ function communes(taxYear: number): Commune[] {
   }));
 }
 
-/** What each kind of document gives: so far the salary certificate, the same in every canton. */
+/**
+ * What each kind of document gives: the documents every canton asks for (packages/rules-ch keys/),
+ * the salary certificate, the attestations and the bank and wealth documents. The tax assessment
+ * is Geneva's only for now.
+ */
 function documents(taxYear: number): DocumentRule[] {
   zgParamsFor(taxYear);
-  return [{ kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 }];
+  const fields: Partial<Record<DocumentKind, readonly string[]>> = {
+    salary_certificate: SALARY_CERTIFICATE_FIELDS_2026,
+    ...ATTESTATION_FIELDS_2026,
+    ...DOCUMENT_FIELDS_WEALTH_2026,
+  };
+  return (Object.entries(fields) as [DocumentKind, readonly string[]][]).map(([kind, keys]) => ({
+    kind,
+    keys,
+  }));
 }
 
 export const rules: CantonRules<ZugCantonal, ZgTaxResult> = {
@@ -143,7 +170,7 @@ export const rules: CantonRules<ZugCantonal, ZgTaxResult> = {
   computeReturn: (input) => computeReturn(zugInput(input)),
   keys: (taxYear) => {
     zgParamsFor(taxYear);
-    return KEYS;
+    return zgKeys(taxYear);
   },
   documents,
   sourcesIndex: 'docs/sources/zg',

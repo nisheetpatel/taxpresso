@@ -37,7 +37,9 @@ questions:
   # be-2025-wegleitung-np-de p. 10 (Seite 1: Wohnsitz am Ende des Jahres), bl-2026-wegleitung
   # p. 3 and 4 (Wer hat eine Steuererklärung einzureichen?; Zuzug aus einem anderen Kanton),
   # vd-2025-guide p. 6 (Début et fin de l'assujettissement: arriving from another canton, the whole
-  # year), bs-2025-guide-wegleitung p. 8 (Zuzug aus einem anderen Kanton) and
+  # year), bs-2025-guide-wegleitung p. 8 (Zuzug aus einem anderen Kanton),
+  # zg-2025-guide-wegleitung p. 24 (Bei Zuzug aus einem anderen Kanton ... ist der Kanton Zug
+  # für die ganze Steuerperiode zuständig) and
   # ag-2025-guide-wegleitung p. 7 and 8 (Wer füllt eine Steuererklärung aus?; Wohnsitzverlegung).
   - id: canton
     key: profile.canton
@@ -90,6 +92,9 @@ questions:
       - value: BS
         label: { en: 'Canton of Basel-Stadt', fr: 'Canton de Bâle-Ville', de: 'Kanton Basel-Stadt' }
         chip: { en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' }
+      - value: ZG
+        label: { en: 'Canton of Zug', fr: 'Canton de Zoug', de: 'Kanton Zug' }
+        chip: { en: 'Zug', fr: 'Zoug', de: 'Zug' }
       - value: AG
         label: { en: 'Canton of Aargau', fr: 'Canton d’Argovie', de: 'Kanton Aargau' }
         chip: { en: 'Aargau', fr: 'Argovie', de: 'Aargau' }

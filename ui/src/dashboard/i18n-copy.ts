@@ -52,10 +52,14 @@ const messages = {
       'On the Vaud form, contribuable 1 is {a} and contribuable 2 is {b}. If your form has them the other way round, swap the values.',
     leadBs:
       'Type each value into BalTax Online or the paper form, form by form in the order the guide gives: first the auxiliary forms (W, B, K, Z, F), whose totals carry to pages 2 to 4. From 369 down, each line has a Kanton and a Bund column. Amounts are whole francs (CHF ohne Rappen), without separators. Tick each value once it is in.',
-    leadAg:
-      'Type each value into eTAX AARGAU or the paper form: the sheets first (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), then the main form. Amounts are whole francs, without centimes or separators. The codes are the sections of the Aargau guide: check each against your form or eTAX AARGAU. There is no federal column: the tax office works out the federal tax. Tick each value once it is in.',
     coupleBs:
       'On the Basel-Stadt form, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
+    leadZg:
+      'Type each value into eTax.zug or the paper form K, page by page in the form’s order: page 2 the income, page 3 the deductions, each in two columns, Kanton and Bund, page 4 the wealth. Amounts are whole francs (keine Rappenbeträge), without separators. Tick each value once it is in.',
+    leadAg:
+      'Type each value into eTAX AARGAU or the paper form: the sheets first (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), then the main form. Amounts are whole francs, without centimes or separators. The codes are the sections of the Aargau guide: check each against your form or eTAX AARGAU. There is no federal column: the tax office works out the federal tax. Tick each value once it is in.',
+    coupleZg:
+      'On Zug’s form K, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
     coupleAg:
       'On the Aargau forms, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
@@ -95,8 +99,10 @@ const messages = {
     leadVd: `Recopiez chaque valeur dans VaudTax ou le formulaire papier, page par page dans l’ordre du formulaire. Les montants sont en francs entiers, sans centimes ni séparateurs. La dernière section, l’impôt fédéral direct, est seulement à vérifier${NB}: VaudTax le calcule. Cochez chaque valeur une fois saisie.`,
     coupleVd: `Sur le formulaire vaudois, le contribuable 1 est {a} et le contribuable 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
     leadBs: `Recopiez chaque valeur dans BalTax Online ou le formulaire papier, formulaire par formulaire dans l’ordre du guide${NB}: d’abord les formulaires annexes (W, B, K, Z, F), dont les totaux sont reportés aux pages 2 à 4. À partir du 369, chaque ligne a une colonne Kanton et une colonne Bund. Les montants sont en francs entiers (CHF ohne Rappen), sans séparateurs. Cochez chaque valeur une fois saisie.`,
-    leadAg: `Recopiez chaque valeur dans eTAX AARGAU ou le formulaire papier${NB}: d’abord les feuilles annexes (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), puis le formulaire principal. Les montants sont en francs entiers, sans centimes ni séparateurs. Les codes sont les sections du guide argovien${NB}: vérifiez chacun sur votre formulaire ou dans eTAX AARGAU. Il n’y a pas de colonne fédérale${NB}: l’administration calcule l’impôt fédéral. Cochez chaque valeur une fois saisie.`,
     coupleBs: `Sur le formulaire bâlois, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadZg: `Recopiez chaque valeur dans eTax.zug ou le formulaire K papier, page par page dans l’ordre du formulaire${NB}: page 2 les revenus, page 3 les déductions, chacune en deux colonnes, Kanton et Bund, page 4 la fortune. Les montants sont en francs entiers (keine Rappenbeträge), sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    leadAg: `Recopiez chaque valeur dans eTAX AARGAU ou le formulaire papier${NB}: d’abord les feuilles annexes (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), puis le formulaire principal. Les montants sont en francs entiers, sans centimes ni séparateurs. Les codes sont les sections du guide argovien${NB}: vérifiez chacun sur votre formulaire ou dans eTAX AARGAU. Il n’y a pas de colonne fédérale${NB}: l’administration calcule l’impôt fédéral. Cochez chaque valeur une fois saisie.`,
+    coupleZg: `Sur le formulaire K de Zoug, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
     coupleAg: `Sur les formulaires argoviens, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
@@ -146,10 +152,14 @@ const messages = {
       'Auf dem Waadtländer Formular ist contribuable 1 {a} und contribuable 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
     leadBs:
       'Tippe jeden Wert in BalTax Online oder ins Papierformular, Formular für Formular in der Reihenfolge der Wegleitung: zuerst die Hilfsformulare (W, B, K, Z, F), deren Totale auf die Seiten 2 bis 4 übertragen werden. Ab Ziffer 369 hat jede Zeile eine Spalte Kanton und eine Spalte Bund. Beträge in ganzen Franken (CHF ohne Rappen), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
-    leadAg:
-      'Tippe jeden Wert in eTAX AARGAU oder ins Papierformular: zuerst die Hilfsblätter (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), dann den Hauptbogen. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Die Ziffern sind die Abschnitte der Wegleitung: Prüfe jede auf deinem Formular oder in eTAX AARGAU. Eine Spalte für die Bundessteuer gibt es nicht: Das Steueramt berechnet sie. Hake jeden Wert ab, sobald er drin ist.',
     coupleBs:
       'Auf dem Basler Formular ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadZg:
+      'Tippe jeden Wert in eTax.zug oder ins Papierformular K, Seite für Seite in der Reihenfolge des Formulars: Seite 2 die Einkünfte, Seite 3 die Abzüge, je in zwei Spalten, Kanton und Bund, Seite 4 das Vermögen. Beträge in ganzen Franken (keine Rappenbeträge), ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    leadAg:
+      'Tippe jeden Wert in eTAX AARGAU oder ins Papierformular: zuerst die Hilfsblätter (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), dann den Hauptbogen. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Die Ziffern sind die Abschnitte der Wegleitung: Prüfe jede auf deinem Formular oder in eTAX AARGAU. Eine Spalte für die Bundessteuer gibt es nicht: Das Steueramt berechnet sie. Hake jeden Wert ab, sobald er drin ist.',
+    coupleZg:
+      'Auf dem Formular K von Zug ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
     coupleAg:
       'Auf den Aargauer Formularen ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },

@@ -145,19 +145,27 @@ const messages = {
     touGenevaOnlyVd:
       'Taxpresso’s TOU comparison follows Geneva’s rules. For Vaud, Taxpresso doesn’t support taxation at source (impôt à la source) and its TOU (taxation ordinaire ultérieure) yet.',
     splitBs: 'Basel-Stadt {icc} · federal {ifd}',
-    splitAg: 'Aargau {icc} · federal {ifd}',
     lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
-    lppOfficialAg: 'Einkäufe Säule 2',
     lppAttestationBs:
       'Your fund confirms the payment with a certificate (Bescheinigung): keep it for your return.',
-    lppAttestationAg:
-      'Your fund confirms the payment with a certificate (Bescheinigung): it goes with your return.',
     cuOfficialBs: 'zusätzlicher Einkauf in die Säule 3a',
-    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
     cuRuleIncomeBs: 'You must have had earned income subject to AHV in 2025.',
-    cuRuleIncomeAg: 'You must have had earned income subject to AHV in 2025.',
     touGenevaOnlyBs:
       'TOU is Geneva’s procedure. For Basel-Stadt, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
+    splitZg: 'Zug {icc} · federal {ifd}',
+    splitAg: 'Aargau {icc} · federal {ifd}',
+    lppOfficialZg: 'Beiträge an die 2. Säule (Einkaufsbeiträge)',
+    lppOfficialAg: 'Einkäufe Säule 2',
+    lppAttestationZg:
+      'Your fund confirms the payment with a certificate (Bescheinigung): attach it to your return.',
+    lppAttestationAg:
+      'Your fund confirms the payment with a certificate (Bescheinigung): it goes with your return.',
+    cuOfficialZg: 'Nachträglicher Einkauf in die Säule 3a',
+    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
+    cuRuleIncomeZg: 'You must have had earned income subject to AHV in 2025.',
+    cuRuleIncomeAg: 'You must have had earned income subject to AHV in 2025.',
+    touGenevaOnlyZg:
+      'TOU is Geneva’s procedure. For Zug, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
     touGenevaOnlyAg:
       'TOU is Geneva’s procedure. For Aargau, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
   },
@@ -280,16 +288,22 @@ const messages = {
     cuOfficialVd: 'rachat dans la prévoyance individuelle liée (3e pilier A)',
     touGenevaOnlyVd: `La comparaison TOU de Taxpresso suit les règles genevoises. Pour Vaud, Taxpresso ne prend pas encore en charge l’impôt à la source ni sa taxation ordinaire ultérieure (TOU).`,
     splitBs: 'Bâle-Ville {icc} · fédéral {ifd}',
-    splitAg: 'Argovie {icc} · fédéral {ifd}',
     lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
-    lppOfficialAg: 'Einkäufe Säule 2',
     lppAttestationBs: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: gardez-la pour votre déclaration.`,
-    lppAttestationAg: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: joignez-la à votre déclaration.`,
     cuOfficialBs: 'zusätzlicher Einkauf in die Säule 3a',
-    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
     cuRuleIncomeBs: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
-    cuRuleIncomeAg: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
     touGenevaOnlyBs: `La TOU est une procédure genevoise. Pour Bâle-Ville, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
+    splitZg: 'Zoug {icc} · fédéral {ifd}',
+    splitAg: 'Argovie {icc} · fédéral {ifd}',
+    lppOfficialZg: 'Beiträge an die 2. Säule (Einkaufsbeiträge)',
+    lppOfficialAg: 'Einkäufe Säule 2',
+    lppAttestationZg: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: joignez-la à votre déclaration.`,
+    lppAttestationAg: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: joignez-la à votre déclaration.`,
+    cuOfficialZg: 'Nachträglicher Einkauf in die Säule 3a',
+    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
+    cuRuleIncomeZg: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
+    cuRuleIncomeAg: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
+    touGenevaOnlyZg: `La TOU est une procédure genevoise. Pour Zoug, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
     touGenevaOnlyAg: `La TOU est une procédure genevoise. Pour Argovie, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
   },
   de: {
@@ -435,19 +449,27 @@ const messages = {
     touGenevaOnlyVd:
       'Der TOU-Vergleich von Taxpresso folgt den Genfer Regeln. Für die Waadt unterstützt Taxpresso die Quellensteuer (impôt à la source) und ihre nachträgliche ordentliche Veranlagung (TOU, taxation ordinaire ultérieure) noch nicht.',
     splitBs: 'Basel-Stadt {icc} · Bund {ifd}',
-    splitAg: 'Aargau {icc} · Bund {ifd}',
     lppOfficialBs: 'Einkauf in die berufliche Vorsorge (Pensionskasse)',
-    lppOfficialAg: 'Einkäufe Säule 2',
     lppAttestationBs:
       'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Bewahre sie für deine Steuererklärung auf.',
-    lppAttestationAg:
-      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Sie gehört zu deiner Steuererklärung.',
     cuOfficialBs: 'zusätzlicher Einkauf in die Säule 3a',
-    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
     cuRuleIncomeBs: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
-    cuRuleIncomeAg: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
     touGenevaOnlyBs:
       'Die TOU ist ein Genfer Verfahren. Für Basel-Stadt unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
+    splitZg: 'Zug {icc} · Bund {ifd}',
+    splitAg: 'Aargau {icc} · Bund {ifd}',
+    lppOfficialZg: 'Beiträge an die 2. Säule (Einkaufsbeiträge)',
+    lppOfficialAg: 'Einkäufe Säule 2',
+    lppAttestationZg:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Leg sie deiner Steuererklärung bei.',
+    lppAttestationAg:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Sie gehört zu deiner Steuererklärung.',
+    cuOfficialZg: 'Nachträglicher Einkauf in die Säule 3a',
+    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
+    cuRuleIncomeZg: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    cuRuleIncomeAg: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    touGenevaOnlyZg:
+      'Die TOU ist ein Genfer Verfahren. Für Zug unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
     touGenevaOnlyAg:
       'Die TOU ist ein Genfer Verfahren. Für Aargau unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
   },
