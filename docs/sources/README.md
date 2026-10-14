@@ -63,6 +63,7 @@ The script checks that each file really is what the manifest says (a PDF starts 
 - Lucerne: the childcare cap in the tax law (StG § 40/42) differs from the canton's own deduction overviews and guide; the law text on life annuities differs from the 2025 guide; Steuerbuch § 145 still describes the old downloadable software. See `lu/NOTES.md`.
 - Aargau: the eTAX start date (26 January vs 1 February 2026) and the change window after submitting (24 vs 48 hours) differ between official pages; the 2025 Progressionsverordnung differs from the StG. See `ag/NOTES.md`.
 - St. Gallen: Steuerbuch chapters dated 2021 quote older caps than the 2025 guide; use them for conditions only. See `sg/NOTES.md`.
+- Zurich: the 2026 cantonal multiplier differs between the Kantonsrat decision and the 2026 source-tax parameter sheet; the rounding of taxable amounts and taxes is in none of the documents; some communes have several multipliers by part. See `zh/NOTES.md`, "Open points for the rules".
 - Zug: tariff headers give different index dates; a sample form says 60 days while the guide says 30 April. See `zg/NOTES.md`.
 - Basel-Landschaft: six baselland.ch HTML pages refuse scripted downloads (Cloudflare challenge); open them in a browser. See `bl/NOTES.md`.
 - Barcode compression: the eCH-0196 barcode annex describes ZLIB-compressed XML, while eCH-0270 says "ZIP". The decoder handles both (and GZIP and raw deflate) and reports which one a statement used; still open until a real bank statement settles it (docs/spikes/S2.md).
