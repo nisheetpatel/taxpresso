@@ -35,18 +35,25 @@ export function partYearAnswers(ws: Workspace): PartYearAnswers | undefined {
   return { kind, days, couple: people.length > 1 };
 }
 
-/** A sentence of "About you" about the year of arrival or departure, in every language. */
+/**
+ * A fact of "About you" about the year of arrival or departure, in every language: one short
+ * sentence, why in a few more words (behind "Why?" on the dashboard), and its source.
+ */
 export interface PartYearFact {
   id: 'part_year';
   text: Required<Text>;
+  why?: Required<Text>;
   source: string;
 }
 
-const NB = ' ';
+const NB = ' ';
 
 /** CHF 1’234, whole francs, the Swiss way. */
 const francs = (centimes: number) =>
   `CHF${NB}${String(Math.round(Math.abs(centimes) / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '’')}`;
+
+const inEach = (f: (lang: Lang) => string) =>
+  Object.fromEntries(LANGS.map((l) => [l, f(l)])) as Required<Text>;
 
 /**
  * "About you" for a year of arrival or departure: the day, and that Geneva taxes the income of the
@@ -74,44 +81,68 @@ export function partYearFacts(ws: Workspace): PartYearFact[] {
   const day = a.days[0]!;
   const both = a.couple && a.days.length > 1;
   const rate = r?.partYear?.icc?.rateTotal.amount;
-  const words = (lang: Lang): string => {
+  const rateText = (lang: Lang) =>
+    rate === undefined
+      ? ''
+      : {
+          en: ` (${francs(rate)} for the rate, revenu net pour le taux)`,
+          fr: ` (${francs(rate)} pour le taux, revenu net pour le taux)`,
+          de: ` (${francs(rate)} für den Satz, revenu net pour le taux)`,
+          it: ` (${francs(rate)} per l’aliquota, revenu net pour le taux)`,
+        }[lang];
+  // The day first, in one sentence; how Geneva taxes the period behind "Why?". Leaving, the
+  // sentence is what to do: the tax office's departure form, at least 15 days before.
+  const text = (lang: Lang): string => {
     const d = dayText(day, lang);
-    const rateText =
-      rate === undefined
-        ? ''
-        : {
-            en: ` (${francs(rate)} for the rate, revenu net pour le taux)`,
-            fr: ` (${francs(rate)} pour le taux, revenu net pour le taux)`,
-            de: ` (${francs(rate)} für den Satz, revenu net pour le taux)`,
-            it: ` (${francs(rate)} per l’aliquota, revenu net pour le taux)`,
-          }[lang];
     if (arrival) {
       return {
-        en: `${both ? 'You both arrived' : 'You arrived'} on ${d}: Geneva taxes your income from then, at the rate of a full year’s income${rateText}, and your wealth on 31 December.`,
-        fr: `${both ? 'Vous êtes arrivés tous les deux' : 'Vous êtes arrivé'} le ${d}${NB}: Genève impose votre revenu dès cette date, au taux d’un revenu annuel${rateText}, et votre fortune au 31 décembre.`,
-        de: `${both ? 'Ihr seid beide' : 'Du bist'} am ${d} zugezogen: Genf besteuert dein Einkommen ab dann, zum Satz eines ganzen Jahreseinkommens${rateText}, und dein Vermögen am 31. Dezember.`,
-        it: `${both ? 'Siete arrivati entrambi' : 'Sei arrivato'} il ${d}: Ginevra tassa il tuo reddito da allora, all’aliquota di un reddito annuo${rateText}, e la tua sostanza al 31 dicembre.`,
+        en: `${both ? 'You both arrived' : 'You arrived'} on ${d}: Geneva taxes your income from that day.`,
+        fr: `${both ? 'Vous êtes arrivés tous les deux' : 'Vous êtes arrivé'} le ${d}${NB}: Genève impose votre revenu dès cette date.`,
+        de: `${both ? 'Ihr seid beide' : 'Du bist'} am ${d} zugezogen: Genf besteuert dein Einkommen ab diesem Tag.`,
+        it: `${both ? 'Siete arrivati entrambi' : 'Sei arrivato'} il ${d}: Ginevra tassa il tuo reddito da quel giorno.`,
       }[lang];
     }
     return {
-      en: `${both ? 'You both leave' : 'You leave'} Switzerland on ${d}: Geneva taxes your income from 1 January to then, at the rate of a full year’s income${rateText}, and your wealth on that day. Go to the tax office at least 15 days before you leave, with its departure form (questionnaire de départ).`,
-      fr: `${both ? 'Vous quittez tous les deux' : 'Vous quittez'} la Suisse le ${d}${NB}: Genève impose votre revenu du 1er janvier à cette date, au taux d’un revenu annuel${rateText}, et votre fortune à ce jour. Présentez-vous à l’administration fiscale au moins 15 jours avant votre départ, avec son questionnaire de départ.`,
-      de: `${both ? 'Ihr verlasst beide' : 'Du verlässt'} die Schweiz am ${d}: Genf besteuert dein Einkommen vom 1. Januar bis dann, zum Satz eines ganzen Jahreseinkommens${rateText}, und dein Vermögen an diesem Tag. Geh mindestens 15 Tage vor dem Wegzug mit dem Wegzugsformular (questionnaire de départ) zur Steuerverwaltung.`,
-      it: `${both ? 'Lasciate entrambi' : 'Lasci'} la Svizzera il ${d}: Ginevra tassa il tuo reddito dal 1° gennaio fino ad allora, all’aliquota di un reddito annuo${rateText}, e la tua sostanza a quel giorno. Presentati all’amministrazione fiscale almeno 15 giorni prima della partenza, con il suo questionario di partenza (questionnaire de départ).`,
+      en: `${both ? 'You both leave' : 'You leave'} Switzerland on ${d}: go to the tax office at least 15 days before, with its departure form (questionnaire de départ).`,
+      fr: `${both ? 'Vous quittez tous les deux' : 'Vous quittez'} la Suisse le ${d}${NB}: présentez-vous à l’administration fiscale au moins 15 jours avant, avec son questionnaire de départ.`,
+      de: `${both ? 'Ihr verlasst beide' : 'Du verlässt'} die Schweiz am ${d}: ${both ? 'Geht' : 'Geh'} mindestens 15 Tage vorher mit dem Wegzugsformular (questionnaire de départ) zur Steuerverwaltung.`,
+      it: `${both ? 'Lasciate entrambi' : 'Lasci'} la Svizzera il ${d}: ${both ? 'presentatevi' : 'presentati'} all’amministrazione fiscale almeno 15 giorni prima, con il suo questionario di partenza (questionnaire de départ).`,
     }[lang];
   };
-  const text = Object.fromEntries(LANGS.map((l) => [l, words(l)])) as Required<Text>;
-  const out: PartYearFact[] = [{ id: 'part_year', text, source }];
+  const why = (lang: Lang): string => {
+    const rt = rateText(lang);
+    if (arrival) {
+      return {
+        en: `Your income is taxed at the rate of a full year’s income${rt}, and your wealth as it is on 31 December.`,
+        fr: `Votre revenu est imposé au taux d’un revenu annuel${rt}, et votre fortune telle qu’elle est au 31 décembre.`,
+        de: `Dein Einkommen wird zum Satz eines ganzen Jahreseinkommens besteuert${rt}, dein Vermögen nach dem Stand am 31. Dezember.`,
+        it: `Il tuo reddito è tassato all’aliquota di un reddito annuo${rt}, la tua sostanza secondo il suo stato al 31 dicembre.`,
+      }[lang];
+    }
+    return {
+      en: `Geneva taxes your income from 1 January to that day, at the rate of a full year’s income${rt}, and your wealth as it is on that day.`,
+      fr: `Genève impose votre revenu du 1er janvier à cette date, au taux d’un revenu annuel${rt}, et votre fortune telle qu’elle est ce jour-là.`,
+      de: `Genf besteuert dein Einkommen vom 1. Januar bis zu diesem Tag, zum Satz eines ganzen Jahreseinkommens${rt}, und dein Vermögen nach dem Stand an diesem Tag.`,
+      it: `Ginevra tassa il tuo reddito dal 1° gennaio fino a quel giorno, all’aliquota di un reddito annuo${rt}, e la tua sostanza secondo il suo stato a quel giorno.`,
+    }[lang];
+  };
+  const out: PartYearFact[] = [{ id: 'part_year', text: inEach(text), why: inEach(why), source }];
   // Taxed at source and leaving: TOU goes with the departure form, before leaving (ch. 8.5).
   if (!arrival && sourceTaxOf(ws)?.any) {
     const d = (lang: Lang) => dayText(day, lang);
     out.push({
       id: 'part_year',
       text: {
-        en: `Taxed at source and leaving: a TOU (taxation ordinaire ultérieure), compulsory or asked for, goes with the departure form you hand in at the tax office, before ${d('en')}, not by 31 March.`,
-        fr: `Imposé à la source et sur le départ${NB}: une TOU (taxation ordinaire ultérieure), obligatoire ou demandée, se fait avec le formulaire de départ que vous déposez à l’administration fiscale, avant le ${d('fr')}, et non au 31 mars.`,
-        de: `An der Quelle besteuert und Wegzug: Eine TOU (taxation ordinaire ultérieure), obligatorisch oder beantragt, läuft über das Wegzugsformular, das du vor dem ${d('de')} bei der Steuerverwaltung abgibst, nicht bis zum 31. März.`,
-        it: `Imposta alla fonte e partenza: una TOU (taxation ordinaire ultérieure), obbligatoria o chiesta, va con il modulo di partenza che consegni all’amministrazione fiscale prima del ${d('it')}, non entro il 31 marzo.`,
+        en: `A TOU (taxation ordinaire ultérieure) goes with your departure form, before ${d('en')}.`,
+        fr: `Une TOU (taxation ordinaire ultérieure) se fait avec votre formulaire de départ, avant le ${d('fr')}.`,
+        de: `Eine TOU (taxation ordinaire ultérieure) läuft über dein Wegzugsformular, vor dem ${d('de')}.`,
+        it: `Una TOU (taxation ordinaire ultérieure) va con il tuo modulo di partenza, prima del ${d('it')}.`,
+      },
+      why: {
+        en: 'Taxed at source and leaving: a TOU, compulsory or asked for, goes with the departure form you hand in at the tax office, not by 31 March.',
+        fr: `Imposé à la source et sur le départ${NB}: une TOU, obligatoire ou demandée, se fait avec le formulaire de départ que vous déposez à l’administration fiscale, et non au 31 mars.`,
+        de: 'An der Quelle besteuert und Wegzug: Eine TOU, obligatorisch oder beantragt, läuft über das Wegzugsformular, das du bei der Steuerverwaltung abgibst, nicht bis zum 31. März.',
+        it: 'Imposta alla fonte e partenza: una TOU, obbligatoria o chiesta, va con il modulo di partenza che consegni all’amministrazione fiscale, non entro il 31 marzo.',
       },
       source: `ge-${ws.taxYear}-source-directives ${ws.taxYear === 2025 ? 'p. 53' : 'p. 54'} (ch. 8.5)`,
     });

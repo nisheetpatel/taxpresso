@@ -296,23 +296,33 @@ describe('a property abroad in Geneva, end to end (2026)', () => {
     expect(text).toMatch(/15\.20 Immeubles locatifs ou loués/);
     expect(text).toMatch(/converted at the official 2025 rates, as estimates/);
 
-    // get_status: the fact in "About you", with its source.
+    // get_status: the fact in "About you", why, and its source.
     const status = texts(await call('get_status'));
     expect(status).toMatch(
-      /Your property let abroad is taxed in its country\. Switzerland counts it only to set your rate \(exemption avec réserve de progression\): its rents CHF.8’433 and its value CHF.139’575\. \(an estimate\) \[ge-na-law-lipp art\. 5 and 6/,
+      /Your property let abroad is taxed in its country, and counts here only for your rate\. Switzerland doesn’t tax it, but counts it to set the rate of your tax \(exemption avec réserve de progression\): its rents CHF.8’433 and its value CHF.139’575\. \(an estimate\) \[ge-na-law-lipp art\. 5 and 6/,
     );
 
-    // The dashboard: the same fact in each language, the kinds of the property's documents, the
-    // estimate, and the copy panel's annexe D and 97.00.
+    // The dashboard: the same fact in each language, one short sentence with its figures behind
+    // "Why?", the kinds of the property's documents, the estimate, and the copy panel's annexe D
+    // and 97.00.
     const s = await state();
     expect(s.estimate).toMatchObject({ total: 1_294_690 + 179_430 });
     const facts = s.journey.about.filter((f) => f.id === 'abroad');
     expect(facts).toHaveLength(1);
-    expect(facts[0]!.text!.fr).toMatch(
-      /^Votre immeuble loué à l’étranger est imposé dans son pays/,
+    expect(facts[0]!.text!.fr).toBe(
+      'Votre immeuble loué à l’étranger est imposé dans son pays et ne compte ici que pour votre taux.',
     );
-    expect(facts[0]!.text!.de).toMatch(/^Deine vermietete Liegenschaft im Ausland/);
-    expect(facts[0]!.text!.it).toMatch(/^Il tuo immobile affittato all’estero/);
+    expect(facts[0]!.why!.fr).toMatch(/exemption avec réserve de progression\).: ses loyers/);
+    expect(facts[0]!.text!.de).toBe(
+      'Deine vermietete Liegenschaft im Ausland wird in ihrem Land besteuert und zählt hier nur für deinen Steuersatz.',
+    );
+    expect(facts[0]!.text!.it).toBe(
+      'Il tuo immobile affittato all’estero è tassato nel suo Paese e qui conta solo per la tua aliquota.',
+    );
+    expect(facts[0]!.sources!.map((x) => [x.id, x.where])).toEqual([
+      ['ge-na-law-lipp', 'art. 5 and 6'],
+      ['ch-na-law-lifd', 'art. 6 al. 1 and art. 7 al. 1'],
+    ]);
     expect(s.kinds.map((k) => k.value)).toEqual(
       expect.arrayContaining([
         'foreign_property_tax_notice',
@@ -483,7 +493,7 @@ describe('a property abroad in Geneva, tax year 2025', () => {
 
     const status = texts(await call('get_status'));
     expect(status).toMatch(
-      /Your debts and their interest are shared with it by where your assets lie \(51\.5 % abroad\): CHF.1’965 of interest goes abroad/,
+      /CHF.1’965 of the interest on your debts goes abroad\. Your debts and their interest are shared with it by where your assets lie \(51\.5 % abroad\), wherever the loan was taken out\./,
     );
     const s = await state();
     const rows = rowsOf(s);

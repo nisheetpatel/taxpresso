@@ -15,10 +15,14 @@ export function ownsPropertyAbroad(ws: Workspace): boolean {
   return ws.activeDocuments().some((d) => d.kind !== undefined && ABROAD_KINDS.has(d.kind));
 }
 
-/** A sentence of "About you" about the property abroad, in every language, with its source. */
+/**
+ * A fact of "About you" about the property abroad, in every language: one short sentence, why in a
+ * few more words (behind "Why?" on the dashboard), and its source.
+ */
 export interface AbroadFact {
   id: 'abroad';
   text: Required<Text>;
+  why?: Required<Text>;
   source: string;
   estimate?: true;
 }
@@ -106,13 +110,26 @@ export function abroadFacts(ws: Workspace): AbroadFact[] {
     const join = { en: ' and ', fr: ' et ', de: ' und ', it: ' e ' }[lang];
     return words.join(join);
   };
+  // German and Italian say "it" by the word's gender: a home and a property let are feminine in
+  // German, land neuter; a home is feminine in Italian, the others masculine.
+  const land = use === 'land';
+  const sie = land ? 'es' : 'sie';
+  const la = use === 'own_use' ? 'la' : 'lo';
+  const fig = (lang: 'en' | 'fr' | 'de' | 'it') =>
+    figures(lang) ? `${lang === 'fr' ? NB : ''}: ${figures(lang)}` : '';
   out.push({
     id: 'abroad',
     text: {
-      en: `${what.en} is taxed in its country. Switzerland counts it only to set your rate (exemption avec réserve de progression)${figures('en') ? `: ${figures('en')}` : ''}.`,
-      fr: `${what.fr} est imposé dans son pays. La Suisse le compte seulement pour fixer votre taux (exemption avec réserve de progression)${figures('fr') ? `${NB}: ${figures('fr')}` : ''}.`,
-      de: `${what.de} wird in ihrem Land besteuert. Die Schweiz zählt sie nur für deinen Steuersatz (exemption avec réserve de progression)${figures('de') ? `: ${figures('de')}` : ''}.`,
-      it: `${what.it} è tassato nel suo Paese. La Svizzera lo conta solo per stabilire la tua aliquota (exemption avec réserve de progression)${figures('it') ? `: ${figures('it')}` : ''}.`,
+      en: `${what.en} is taxed in its country, and counts here only for your rate.`,
+      fr: `${what.fr} est imposé dans son pays et ne compte ici que pour votre taux.`,
+      de: `${what.de} wird in ${land ? 'seinem' : 'ihrem'} Land besteuert und zählt hier nur für deinen Steuersatz.`,
+      it: `${what.it} è ${use === 'own_use' ? 'tassata' : 'tassato'} nel suo Paese e qui conta solo per la tua aliquota.`,
+    },
+    why: {
+      en: `Switzerland doesn’t tax it, but counts it to set the rate of your tax (exemption avec réserve de progression)${fig('en')}.`,
+      fr: `La Suisse ne l’impose pas, mais en tient compte pour fixer le taux de votre impôt (exemption avec réserve de progression)${fig('fr')}.`,
+      de: `Die Schweiz besteuert ${sie} nicht, zählt ${sie} aber für deinen Steuersatz mit (exemption avec réserve de progression)${fig('de')}.`,
+      it: `La Svizzera non ${la} tassa, ma ${la} conta per stabilire la tua aliquota (exemption avec réserve de progression)${fig('it')}.`,
     },
     source: 'ge-na-law-lipp art. 5 and 6; ch-na-law-lifd art. 6 al. 1 and art. 7 al. 1',
     ...(estimate ? { estimate: true as const } : {}),
@@ -123,10 +140,16 @@ export function abroadFacts(ws: Workspace): AbroadFact[] {
     out.push({
       id: 'abroad',
       text: {
-        en: `Your debts and their interest are shared with it by where your assets lie (${pct} % abroad): ${francs(interest.amount)} of interest goes abroad, wherever the loan was taken out.`,
-        fr: `Vos dettes et leurs intérêts sont répartis avec lui selon la situation de vos actifs (${pct.replace('.', ',')}${NB}% à l’étranger)${NB}: ${francs(interest.amount)} d’intérêts vont à l’étranger, où que l’emprunt ait été contracté.`,
-        de: `Deine Schulden und ihre Zinsen werden nach der Lage deiner Vermögenswerte aufgeteilt (${pct} % im Ausland): ${francs(interest.amount)} Zinsen gehen ins Ausland, wo auch immer der Kredit aufgenommen wurde.`,
-        it: `I tuoi debiti e i loro interessi sono ripartiti secondo dove si trovano i tuoi beni (${pct.replace('.', ',')} % all’estero): ${francs(interest.amount)} di interessi vanno all’estero, ovunque sia stato contratto il prestito.`,
+        en: `${francs(interest.amount)} of the interest on your debts goes abroad.`,
+        fr: `${francs(interest.amount)} des intérêts de vos dettes vont à l’étranger.`,
+        de: `${francs(interest.amount)} der Zinsen deiner Schulden gehen ins Ausland.`,
+        it: `${francs(interest.amount)} degli interessi dei tuoi debiti vanno all’estero.`,
+      },
+      why: {
+        en: `Your debts and their interest are shared with it by where your assets lie (${pct} % abroad), wherever the loan was taken out.`,
+        fr: `Vos dettes et leurs intérêts sont répartis avec lui selon la situation de vos actifs (${pct.replace('.', ',')}${NB}% à l’étranger), où que l’emprunt ait été contracté.`,
+        de: `Deine Schulden und ihre Zinsen werden nach der Lage deiner Vermögenswerte aufgeteilt (${pct} % im Ausland), wo auch immer der Kredit aufgenommen wurde.`,
+        it: `I tuoi debiti e i loro interessi sono ripartiti secondo dove si trovano i tuoi beni (${pct.replace('.', ',')} % all’estero), ovunque sia stato contratto il prestito.`,
       },
       source: 'ge-na-law-lipp art. 57; ch-na-law-lifd art. 6 al. 3; zh-na-zstb-5-3 p. 1',
       ...(interest.estimates?.length || interest.needsOk ? { estimate: true as const } : {}),

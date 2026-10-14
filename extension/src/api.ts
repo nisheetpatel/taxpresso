@@ -134,6 +134,10 @@ export function dashboardState(
   const canton = ws.canton();
   // One next step and the stages, the same as get_status's (./journey.ts, docs/design/simple.md).
   const j = journey(ws);
+  const saidAbove = new Set([
+    ...(j.about.some((f) => f.id === 'source_tax') ? ['profile.taxed_at_source'] : []),
+    ...(j.about.some((f) => f.id === 'tou_already') ? ['profile.tou'] : []),
+  ]);
   // "Your assessment" compares this year's assessment; an earlier year's feeds the review.
   const otherYear = new Set(
     ws.documents
@@ -188,7 +192,9 @@ export function dashboardState(
           ...suggestedFrom(ws, next),
         }
       : null,
-    chips: ws.engine.chips(snap, lang),
+    // The answers in short, without those a fact of "About you" just above already says: who is
+    // taxed at source, and TOU already in place. They stay in "Edit answers".
+    chips: ws.engine.chips(snap, lang, (s) => saidAbove.has(s.question.key)),
     answers: snap.slots
       .filter((s) => s.value !== undefined)
       .map((s) => ({

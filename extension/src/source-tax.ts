@@ -771,3 +771,276 @@ export function sourceTaxLines(st: SourceTax, lang: UiLang): SourceTaxLine[] {
   }
   return lines;
 }
+
+// ---- "About you": the same facts, short (docs/design/simple.md) -----------------------------
+
+/**
+ * A fact of "About you" about tax at source: one short sentence, why in a few more words (behind
+ * "Why?" on the dashboard), and where it comes from. `who` is `both` when it is the same for both
+ * of a couple: who is taxed at source and the barème are said once; the tax withheld is each
+ * person's own, from their own documents.
+ */
+export interface SourceTaxFact {
+  who: Who | 'both';
+  text: Required<Text>;
+  why?: Required<Text>;
+  source?: string;
+  estimate?: true;
+}
+
+const LANGS: readonly UiLang[] = ['en', 'fr', 'de', 'it'];
+const inEach = (f: (lang: UiLang) => string): Required<Text> =>
+  Object.fromEntries(LANGS.map((l) => [l, f(l)])) as Required<Text>;
+
+/** Who is taxed at source, said once for both of a couple. */
+const BOTH: Record<'yes' | 'no' | 'open', Text> = {
+  yes: T(
+    'You’re both taxed at source',
+    'Vous êtes tous les deux imposés à la source',
+    'Ihr werdet beide an der Quelle besteuert',
+    'Pagate entrambi l’imposta alla fonte',
+  ),
+  no: T(
+    'Neither of you is taxed at source',
+    'Aucun de vous deux n’est imposé à la source',
+    'Ihr werdet beide nicht an der Quelle besteuert',
+    'Nessuno dei due paga l’imposta alla fonte',
+  ),
+  open: T(
+    'Whether either of you is taxed at source isn’t known yet',
+    'On ne sait pas encore si l’un de vous deux est imposé à la source',
+    'Ob ihr an der Quelle besteuert werdet, ist noch offen',
+    'Non si sa ancora se uno di voi due paga l’imposta alla fonte',
+  ),
+};
+
+/** Taxed at source because of the permit (the questionnaire's derive). */
+const NO_C = T(' (no C permit)', ' (sans permis C)', ' (kein Ausweis C)', ' (senza permesso C)');
+
+const BAREME_IS: Record<Who | 'both', Text> = {
+  p1: T('Your barème is', 'Votre barème est', 'Dein Tarif ist', 'La tua tariffa è'),
+  p2: T(
+    'Your spouse or partner’s barème is',
+    'Le barème de votre conjoint ou partenaire est',
+    'Der Tarif deines Partners oder deiner Partnerin ist',
+    'La tariffa del tuo coniuge o partner è',
+  ),
+  both: T('Your barème is', 'Votre barème est', 'Euer Tarif ist', 'La vostra tariffa è'),
+};
+
+const CANT: Record<Who | 'both', Text> = {
+  p1: T(
+    'Taxpresso can’t work out your barème yet',
+    'Taxpresso ne peut pas encore déduire votre barème',
+    'Taxpresso kann deinen Tarif noch nicht ableiten',
+    'Taxpresso non può ancora dedurre la tua tariffa',
+  ),
+  p2: T(
+    'Taxpresso can’t work out your spouse or partner’s barème yet',
+    'Taxpresso ne peut pas encore déduire le barème de votre conjoint ou partenaire',
+    'Taxpresso kann den Tarif deines Partners oder deiner Partnerin noch nicht ableiten',
+    'Taxpresso non può ancora dedurre la tariffa del tuo coniuge o partner',
+  ),
+  both: T(
+    'Taxpresso can’t work out your barème yet',
+    'Taxpresso ne peut pas encore déduire votre barème',
+    'Taxpresso kann euren Tarif noch nicht ableiten',
+    'Taxpresso non può ancora dedurre la vostra tariffa',
+  ),
+};
+
+const TAKEN: Record<Who, Text> = {
+  p1: T(
+    'Your tax taken at source for {year}',
+    'Votre impôt retenu à la source pour {year}',
+    'Deine an der Quelle abgezogene Steuer {year}',
+    'La tua imposta trattenuta alla fonte per il {year}',
+  ),
+  p2: T(
+    'Your spouse or partner’s tax taken at source for {year}',
+    'L’impôt retenu à la source de votre conjoint ou partenaire pour {year}',
+    'Die an der Quelle abgezogene Steuer deines Partners oder deiner Partnerin {year}',
+    'L’imposta trattenuta alla fonte del tuo coniuge o partner per il {year}',
+  ),
+};
+
+const CREDITED: Record<Who, Text> = {
+  p1: T(
+    'Tax was taken at source from you in {year} all the same',
+    'De l’impôt a tout de même été retenu à la source sur vos revenus en {year}',
+    'Dir wurde {year} trotzdem Steuer an der Quelle abgezogen',
+    'Nel {year} ti è stata comunque trattenuta l’imposta alla fonte',
+  ),
+  p2: T(
+    'Tax was taken at source from your spouse or partner in {year} all the same',
+    'De l’impôt a tout de même été retenu à la source sur les revenus de votre conjoint ou partenaire en {year}',
+    'Deinem Partner oder deiner Partnerin wurde {year} trotzdem Steuer an der Quelle abgezogen',
+    'Nel {year} al tuo coniuge o partner è stata comunque trattenuta l’imposta alla fonte',
+  ),
+};
+
+const BOX_12 = T(
+  'The salary certificate shows it (box 12).',
+  'Le certificat de salaire l’indique (chiffre 12).',
+  'Der Lohnausweis zeigt sie (Ziffer 12).',
+  'Il certificato di salario la indica (cifra 12).',
+);
+
+/** One person's part of a fact, before the parts the same for both of a couple are merged. */
+interface Part {
+  kind: 'who' | 'tariff' | 'withheld';
+  person: Who;
+  /**
+   * Equal for both of a couple when the words are: the fact is said once, with both sources.
+   * Withheld facts are never merged: each comes from the person's own documents.
+   */
+  key: string;
+  text: (who: Who | 'both', lang: UiLang) => string;
+  why?: (lang: UiLang) => string;
+  source?: string;
+  estimate?: true;
+}
+
+/**
+ * The facts of tax at source for "About you" (docs/design/simple.md): who is taxed at source, the
+ * barème, and each person's tax withheld or what gives it, each one short sentence with why and
+ * its sources. What is the same for both of a couple is said once. The same facts as
+ * sourceTaxLines, which list_optimizations says in full.
+ */
+export function sourceTaxFacts(st: SourceTax): SourceTaxFact[] {
+  const parts: Part[] = [];
+  const subject = SOURCE_TAX_SUBJECT[st.taxYear as 2025 | 2026];
+  const year = String(st.taxYear);
+  for (const p of st.people) {
+    const person = p.person;
+    if (p.atSource === undefined) {
+      if (p.incomeSources?.some((s) => SALARY_LIKE.includes(s))) {
+        parts.push({
+          kind: 'who',
+          person,
+          key: 'open',
+          text: (who, lang) => `${say(who === 'both' ? BOTH.open : WHO_IS[who].open, lang)}.`,
+        });
+      }
+      continue;
+    }
+    const because = p.because ?? (p.how === 'answered' ? ANSWERED : NO_SALARY);
+    const reason = p.source ?? (p.atSource ? subject?.who : undefined);
+    const state = p.atSource ? 'yes' : 'no';
+    // Taxed at source because of the permit, worked out (the only derived "yes").
+    const permit = p.atSource && p.how === 'derived' && p.because !== undefined;
+    parts.push({
+      kind: 'who',
+      person,
+      key: `${state}|${permit}|${because.en}`,
+      text: (who, lang) =>
+        `${say(who === 'both' ? BOTH[state] : WHO_IS[who][state], lang)}${permit ? say(NO_C, lang) : ''}.`,
+      why: (lang) => say(because, lang),
+      ...(reason ? { source: reason } : {}),
+    });
+    if (!p.atSource) {
+      const credited = p.creditedCentimes;
+      if (credited !== undefined) {
+        parts.push({
+          kind: 'withheld',
+          person,
+          key: person,
+          text: (_, lang) =>
+            `${say(CREDITED[person], lang).replace('{year}', year)}${colon(lang)}${chf(credited, lang)}.`,
+          why: (lang) => `${say(W.creditedWhy, lang)} ${say(BOX_12, lang)}`,
+          ...(subject ? { source: subject.toOrdinary } : {}),
+        });
+      }
+      continue;
+    }
+    const t = p.derivedTariff;
+    const tariffSource = t?.sources.length ? t.sources.join('; ') : undefined;
+    const withSource = tariffSource ? { source: tariffSource } : {};
+    if (p.documentTariff) {
+      const code = p.documentTariff;
+      const differs = t?.code !== undefined && t.code !== code ? t.code : undefined;
+      parts.push({
+        kind: 'tariff',
+        person,
+        key: `payslip|${code}|${differs ?? ''}`,
+        text: (who, lang) => `${say(BAREME_IS[who], lang)} ${code}, ${say(W.fromPayslip, lang)}.`,
+        ...(differs ? { why: (lang: UiLang) => `${capital(say(W.wins, lang))} ${differs}.` } : {}),
+        ...withSource,
+      });
+    } else if (t?.code && t.why) {
+      const code = t.code;
+      const reasonWhy = WHY[t.why]!;
+      const why = (lang: UiLang) => {
+        const assume = t.assumptions.map((a) => say(ASSUME[a], lang)).join(sep(lang));
+        return `${capital(say(reasonWhy, lang))}${assume ? `${sep(lang)}${assume}` : ''}.`;
+      };
+      parts.push({
+        kind: 'tariff',
+        person,
+        key: `derived|${code}|${why('en')}`,
+        text: (who, lang) => `${say(BAREME_IS[who], lang)} ${code}.`,
+        why,
+        ...withSource,
+      });
+    } else if (t?.open) {
+      const open = t.open;
+      parts.push({
+        kind: 'tariff',
+        person,
+        key: `open|${open}`,
+        text: (who, lang) => `${say(CANT[who], lang)}.`,
+        why: (lang) => `${capital(say(OPEN[open], lang))}. ${say(W.payslipShows, lang)}`,
+        ...withSource,
+      });
+    }
+    const taken = (lang: UiLang) => say(TAKEN[person], lang).replace('{year}', year);
+    const held = p.withheld;
+    if (held) {
+      parts.push({
+        kind: 'withheld',
+        person,
+        key: person,
+        text: (_, lang) =>
+          `${taken(lang)}${colon(lang)}${held.estimate ? `${say(W.about, lang)} ` : ''}${chf(held.centimes, lang)}.`,
+        why: (lang) =>
+          `${capital(say(FROM[held.from], lang).replace('{tariff}', held.tariff ?? ''))}.`,
+        ...(held.sources.length ? { source: held.sources.join('; ') } : {}),
+        ...(held.estimate ? { estimate: true as const } : {}),
+      });
+    } else if (p.missing.length) {
+      const missing = p.missing;
+      parts.push({
+        kind: 'withheld',
+        person,
+        key: person,
+        text: (_, lang) => `${taken(lang)}${colon(lang)}${say(W.notKnown, lang)}`,
+        why: (lang) => `${capital(missing.map((m) => say(MISSING[m], lang)).join(sep(lang)))}.`,
+        ...(missing.includes('benefits')
+          ? { source: SOURCE_TAX_FACTS.benefitsTaxedByInsurer }
+          : {}),
+      });
+    }
+  }
+  const fact = (p: Part, who: Who | 'both'): SourceTaxFact => ({
+    who,
+    text: inEach((lang) => p.text(who, lang)),
+    ...(p.why ? { why: inEach(p.why) } : {}),
+    ...(p.source ? { source: p.source } : {}),
+    ...(p.estimate ? { estimate: true as const } : {}),
+  });
+  const out: SourceTaxFact[] = [];
+  for (const kind of ['who', 'tariff', 'withheld'] as const) {
+    const of = parts.filter((p) => p.kind === kind);
+    const [a, b] = of;
+    if (st.couple && kind !== 'withheld' && a && b && of.length === 2 && a.key === b.key) {
+      // The same words for both: said once, with the sources of both (benefits add their own).
+      const cited = [
+        ...new Set([a.source, b.source].flatMap((s) => (s ? s.split('; ') : []))),
+      ].join('; ');
+      out.push(fact({ ...a, ...(cited ? { source: cited } : {}) }, 'both'));
+    } else {
+      out.push(...of.map((p) => fact(p, p.person)));
+    }
+  }
+  return out;
+}

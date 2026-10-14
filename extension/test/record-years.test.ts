@@ -10,6 +10,10 @@
 // sha256 of its data (the structured results with Claude's next-step instruction left out, and
 // every dashboard state and API response) and the texts addressed to Claude in full, so a change
 // of those texts alone can be proved and listed (docs/design/simple.md, "Guidance for Claude").
+// TAXPRESSO_RECORD_FACTS=1, with the split, also takes the facts of "About you" out of the data:
+// get_status's fact ids and its "Facts:" line, a dashboard state's facts and its answer chips. They
+// are kept in full beside the data's hash, so a change of the facts' words and shape alone can be
+// proved and listed too.
 //
 //   TAXPRESSO_RECORD=/tmp/before.jsonl TAXPRESSO_RECORD_N=20 pnpm vitest run extension/test/record-years.test.ts
 import { createHash } from 'node:crypto';
@@ -28,6 +32,7 @@ const OUT = process.env.TAXPRESSO_RECORD;
 const N = Number(process.env.TAXPRESSO_RECORD_N ?? 20);
 const HASH = process.env.TAXPRESSO_RECORD_HASH === '1';
 const SPLIT = process.env.TAXPRESSO_RECORD_SPLIT === '1';
+const FACTS = SPLIT && process.env.TAXPRESSO_RECORD_FACTS === '1';
 const ONLY = process.env.TAXPRESSO_RECORD_ONLY?.split(',');
 const CANTONS = (process.env.TAXPRESSO_RECORD_CANTONS ?? 'GE,ZH,BE,BL,VD,BS,ZG,LU,SG').split(',');
 /** Another tax year than the default, opened first with open_tax_year (only once it exists). */
@@ -94,6 +99,36 @@ function splitForClaude(kind: string, result: unknown): { data: unknown; text: s
     return false;
   });
   return { data: strip({ ...r, content }), text };
+}
+
+/**
+ * The facts of "About you" out of a record's data (TAXPRESSO_RECORD_FACTS): get_status's fact ids
+ * and its "Facts:" line, or a dashboard state's facts and answer chips. Anything else is left as is.
+ */
+function splitFacts(kind: string, data: unknown): { data: unknown; facts: unknown } {
+  if (!data || typeof data !== 'object') return { data, facts: null };
+  if (kind === 'tool') {
+    const r = data as { structured?: Record<string, unknown> };
+    const s = r.structured;
+    if (!s || !Array.isArray(s.journey) || !('about' in s)) return { data, facts: null };
+    const lines = s.journey as string[];
+    const { about, ...rest } = s;
+    return {
+      data: {
+        ...r,
+        structured: { ...rest, journey: lines.filter((l) => !l.startsWith('Facts:')) },
+      },
+      facts: { about, journey: lines.filter((l) => l.startsWith('Facts:')) },
+    };
+  }
+  const r = data as { body?: { journey?: Record<string, unknown>; chips?: unknown } };
+  const body = r.body;
+  if (!body || typeof body !== 'object' || !body.journey || !('about' in body.journey)) {
+    return { data, facts: null };
+  }
+  const { about, ...journey } = body.journey;
+  const { chips, ...more } = body;
+  return { data: { ...r, body: { ...more, journey } }, facts: { about, chips } };
 }
 
 interface Household {
@@ -176,13 +211,24 @@ async function run(h: Household): Promise<void> {
   let n = 0;
   const record = (kind: string, name: string, args: unknown, result: unknown) => {
     if (SPLIT) {
-      const { data, text } = splitForClaude(kind, result);
+      const split = splitForClaude(kind, result);
+      const { data, facts } = FACTS
+        ? splitFacts(kind, split.data)
+        : { data: split.data, facts: null };
       const line = normalize({ h: h.id, n, kind, name, args, result: data }, root);
       const sha = createHash('sha256').update(line).digest('hex').slice(0, 16);
-      const said = JSON.parse(normalize(text, root)) as string[];
+      const said = JSON.parse(normalize(split.text, root)) as string[];
       appendFileSync(
         OUT!,
-        JSON.stringify({ h: h.id, n: n++, kind, name, sha, text: said }) + '\n',
+        JSON.stringify({
+          h: h.id,
+          n: n++,
+          kind,
+          name,
+          sha,
+          text: said,
+          ...(facts ? { facts: JSON.parse(normalize(facts, root)) as unknown } : {}),
+        }) + '\n',
         'utf8',
       );
       return;

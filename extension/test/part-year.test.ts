@@ -345,16 +345,30 @@ describe('Lena Brandt, arrived from abroad on 1 April 2026', () => {
       /A year of arrival from abroad: the taxes are on the income of 2026-04-01 to 2026-12-31 \(270 of 360 days\), at the rate of a full year's income \(revenu net pour le taux, 95\.00: CHF 69,986 cantonal, CHF 72,913 federal\)\. Say it as it is; never present a full year's tax/,
     );
 
-    // get_status and the dashboard: the fact in "About you", in every language.
+    // get_status and the dashboard: the fact in "About you", one short sentence in every
+    // language, the rate behind "Why?".
     const status = texts(await call('get_status'));
     expect(status).toMatch(
-      /You arrived on 1 April 2026: Geneva taxes your income from then, at the rate of a full year’s income \(CHF.69’986 for the rate, revenu net pour le taux\), and your wealth on 31 December\./,
+      /You arrived on 1 April 2026: Geneva taxes your income from that day\. Your income is taxed at the rate of a full year’s income \(CHF.69’986 for the rate, revenu net pour le taux\), and your wealth as it is on 31 December\./,
     );
     const s = await state();
     const fact = s.journey.about.find((f) => f.id === 'part_year')!;
-    expect(fact.text!.fr).toMatch(/^Vous êtes arrivé le 1er avril 2026/);
+    expect(fact.text!.en).toBe(
+      'You arrived on 1 April 2026: Geneva taxes your income from that day.',
+    );
+    expect(fact.text!.fr).toMatch(
+      /^Vous êtes arrivé le 1er avril 2026.: Genève impose votre revenu dès cette date\.$/,
+    );
     expect(fact.text!.de).toMatch(/^Du bist am 1\. April 2026 zugezogen/);
     expect(fact.text!.it).toMatch(/^Sei arrivato il 1° aprile 2026/);
+    expect(fact.why!.fr).toMatch(
+      /^Votre revenu est imposé au taux d’un revenu annuel \(CHF.69’986/,
+    );
+    expect(fact.sources!.map((x) => x.id)).toEqual([
+      'ge-2025-guide-declaration-pp',
+      'ge-na-law-lipp',
+      'ch-na-law-lifd',
+    ]);
     expect(s.estimate).toMatchObject({ total: 761_750 + 76_375 });
 
     // The salary certificate matches the day of arrival: nothing to check.
@@ -449,9 +463,12 @@ describe('Jonas Lindqvist, leaving Switzerland on 30 September 2026', () => {
     expect(out.icc).toMatchObject({ total: 1_132_120, taxableIncome: 6_707_000 });
     expect(out.ifd).toMatchObject({ tax: 167_240, taxableIncome: 6_874_000 });
     const s = await state();
-    expect(s.journey.about.find((f) => f.id === 'part_year')!.text!.en).toMatch(
-      /^You leave Switzerland on 30 September 2026: Geneva taxes your income from 1 January to then/,
+    // What to do in the sentence; how Geneva taxes the period behind "Why?".
+    const fact = s.journey.about.find((f) => f.id === 'part_year')!;
+    expect(fact.text!.en).toBe(
+      'You leave Switzerland on 30 September 2026: go to the tax office at least 15 days before, with its departure form (questionnaire de départ).',
     );
+    expect(fact.why!.en).toMatch(/^Geneva taxes your income from 1 January to that day/);
     const rows = rowsOf(s);
     expect(rows.find((r) => r.key === 'PG1-ARRIVEE')).toBeUndefined();
     expect(ws.checks().filter((c) => c.rule === 'salary_period')).toEqual([]);

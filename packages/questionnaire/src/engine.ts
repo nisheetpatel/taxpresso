@@ -435,11 +435,14 @@ export class QuestionnaireEngine {
     return out;
   }
 
-  /** Short summaries of the answers, like the chips on screen 1. */
-  chips(snapshot: Snapshot, lang: Lang): string[] {
+  /**
+   * Short summaries of the answers, like the chips on screen 1. `omit`: answers the page already
+   * says another way (a fact of "About you"), left out.
+   */
+  chips(snapshot: Snapshot, lang: Lang, omit?: (slot: Slot) => boolean): string[] {
     const chips: string[] = [];
     for (const slot of snapshot.all) {
-      if (slot.value === undefined) continue;
+      if (slot.value === undefined || omit?.(slot)) continue;
       const q = slot.question;
       let texts: string[] = [];
       if (q.type === 'commune') {
