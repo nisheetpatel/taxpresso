@@ -66,6 +66,10 @@ export const messages = {
       'Type each value into E-Tax SG or the paper forms, in the form’s order: first Form 4 (Berufskosten) for each person, whose total goes to 10.1 or 10.2, then the return’s page 2 the income, page 3 the deductions, page 4 the wealth. The return has one column: the tax office works out the federal tax from it. Amounts are whole francs, without separators. Tick each value once it is in.',
     coupleSg:
       'On the St. Gallen return, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
+    leadTi:
+      'Type each value into eTax PF or the paper forms, in the forms’ order: first Modulo 4 (spese professionali) for each person, whose total goes to 9.1 or 9.2, then Modulo 6 and Modulo 5, then the return (Modulo 1) page 2 the income, page 3 the deductions, page 4 the wealth. The return has one column: the tax authority works out the federal tax from it. Amounts are whole francs, without separators. Tick each value once it is in.',
+    coupleTi:
+      'On the Ticino forms, the taxpayer (contribuente) is {a} and the spouse (coniuge/partner registrato) is {b}. If your forms have them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -110,6 +114,9 @@ export const messages = {
     coupleLu: `Sur la déclaration lucernoise, la Person 1 est {a} et la Person 2 est {b}. La déclaration imprime le mari comme Person 1${NB}: si la vôtre les inverse, inversez les valeurs.`,
     leadSg: `Recopiez chaque valeur dans E-Tax SG ou les formulaires papier, dans l’ordre du formulaire${NB}: d’abord le formulaire 4 (Berufskosten, frais professionnels) de chaque personne, dont le total va au 10.1 ou au 10.2, puis la page 2 de la déclaration les revenus, la page 3 les déductions, la page 4 la fortune. La déclaration a une seule colonne${NB}: l’administration fiscale en déduit l’impôt fédéral. Les montants sont en francs entiers, sans séparateurs. Cochez chaque valeur une fois saisie.`,
     coupleSg: `Sur la déclaration saint-galloise, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
+    leadTi: `Recopiez chaque valeur dans eTax PF ou les formulaires papier, dans l’ordre des formulaires${NB}: d’abord le Modulo 4 (spese professionali, frais professionnels) de chaque personne, dont le total va au 9.1 ou au 9.2, puis le Modulo 6 et le Modulo 5, puis la déclaration (Modulo 1), la page 2 les revenus, la page 3 les déductions, la page 4 la fortune. La déclaration a une seule colonne${NB}: l’autorité fiscale en déduit l’impôt fédéral. Les montants sont en francs entiers, sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    coupleTi:
+      'Sur les formulaires tessinois, le contribuable (contribuente) est {a} et le conjoint (coniuge/partner registrato) est {b}. Si vos formulaires les inversent, inversez les valeurs.',
   },
   de: {
     title: 'Fülle deine Steuererklärung aus',
@@ -172,6 +179,10 @@ export const messages = {
       'Tippe jeden Wert in E-Tax SG oder in die Papierformulare, in der Reihenfolge des Formulars: zuerst das Formular 4 (Berufskosten) für jede Person, dessen Total in Ziffer 10.1 oder 10.2 kommt, dann auf der Steuererklärung Seite 2 die Einkünfte, Seite 3 die Abzüge, Seite 4 das Vermögen. Die Steuererklärung hat eine Spalte: Die Steuerbehörde leitet die direkte Bundessteuer daraus ab. Beträge in ganzen Franken, ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
     coupleSg:
       'Auf der St. Galler Steuererklärung ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+    leadTi:
+      'Tippe jeden Wert in eTax PF oder in die Papierformulare, in der Reihenfolge der Formulare: zuerst das Modulo 4 (spese professionali, Berufskosten) für jede Person, dessen Total in 9.1 oder 9.2 kommt, dann das Modulo 6 und das Modulo 5, dann die Steuererklärung (Modulo 1), Seite 2 die Einkünfte, Seite 3 die Abzüge, Seite 4 das Vermögen. Die Steuererklärung hat eine Spalte: Die Steuerbehörde leitet die direkte Bundessteuer daraus ab. Beträge in ganzen Franken, ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    coupleTi:
+      'Auf den Tessiner Formularen ist der Steuerpflichtige (contribuente) {a} und der Ehegatte (coniuge/partner registrato) {b}. Wenn deine Formulare sie umgekehrt haben, tausche die Werte.',
   },
   it: {
     title: 'Compila la tua dichiarazione',
@@ -234,6 +245,10 @@ export const messages = {
       'Inserisci ogni valore in E-Tax SG o nei moduli cartacei, nell’ordine del modulo: prima il modulo 4 (Berufskosten) per ogni persona, il cui totale va al 10.1 o al 10.2, poi sulla dichiarazione a pagina 2 i redditi, a pagina 3 le deduzioni, a pagina 4 la sostanza. La dichiarazione ha una sola colonna: l’amministrazione fiscale ne ricava l’imposta federale. Gli importi sono in franchi interi, senza separatori. Spunta ogni valore una volta inserito.',
     coupleSg:
       'Sulla dichiarazione di San Gallo, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadTi:
+      'Inserisci ogni valore in eTax PF o sui moduli cartacei, nell’ordine dei moduli: prima il Modulo 4 (spese professionali) di ogni persona, il cui totale va alla cifra 9.1 o 9.2, poi il Modulo 6 e il Modulo 5, poi la dichiarazione (Modulo 1), pagina 2 i redditi, pagina 3 le deduzioni, pagina 4 la sostanza. La dichiarazione ha una sola colonna: l’autorità fiscale ne ricava l’imposta federale diretta. Gli importi sono in franchi interi, senza separatori. Spunta ogni valore una volta inserito.',
+    coupleTi:
+      'Sui moduli ticinesi, il contribuente è {a} e il coniuge/partner registrato è {b}. Se i tuoi moduli li hanno al contrario, scambia i valori.',
   },
 } as const;
 
