@@ -77,6 +77,8 @@ export {
   zurichKeys,
   type CommuneOption,
 } from './keys.js';
+// How a Zurich result reads in the generic views (compute_tax, the estimate card, the plans).
+export { view } from './view.js';
 // The words of the final check for a Zurich return, and the official documents it links.
 export { ZH_FINAL_CHECK, ZH_FORM_NOTE } from './final-check.js';
 export { ZH_OFFICIAL_DOCUMENTS, type OfficialDocument } from './official-documents.js';

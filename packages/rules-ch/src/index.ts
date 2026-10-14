@@ -117,6 +117,16 @@ export type {
   DocumentRule,
   LedgerView,
 } from './canton.js';
+// How a canton's result reads: one generic view for every canton (compute_tax, the estimate card,
+// the final check, the plans).
+export type {
+  IncomeTax,
+  ResultView,
+  ViewLine,
+  ViewRow,
+  YearComparisonRow,
+  YearPair,
+} from './view.js';
 // Pillar 3a and the pension fund (2nd pillar): the federal limits, the same for every canton's tax.
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './pension/pillar3a.js';
 export {

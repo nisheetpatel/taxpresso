@@ -31,7 +31,7 @@ import {
 import type { HouseholdInput as HouseholdInputOf, Text } from '@taxpresso/rules-ch';
 import { communeOfAnswer, type ZhTaxResult, type ZurichCantonal } from '@taxpresso/rules-zh';
 import type { SecuritiesSummary } from '@taxpresso/intake';
-import type { CantonRegistry, CantonState, LedgerContext } from './cantons.js';
+import type { CantonEntry, CantonRegistry, CantonState, LedgerContext } from './cantons.js';
 import { displayPath, type Config } from './config.js';
 import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';
 import {
@@ -65,9 +65,9 @@ export type Via = 'chat' | 'dashboard';
 
 /** The tax of the year's canton (Workspace.estimate). */
 export type CantonEstimate =
-  | { canton: 'GE'; result: TaxResult | null; missing: Text[]; notes: Text[] }
-  | { canton: 'ZH'; result: ZhTaxResult | null; missing: Text[]; notes: Text[] }
-  | { canton: undefined; result: null; missing: Text[]; notes: Text[] };
+  | { canton: 'GE'; entry: CantonEntry; result: TaxResult | null; missing: Text[]; notes: Text[] }
+  | { canton: 'ZH'; entry: CantonEntry; result: ZhTaxResult | null; missing: Text[]; notes: Text[] }
+  | { canton: undefined; entry?: undefined; result: null; missing: Text[]; notes: Text[] };
 
 export interface ActivityEntry {
   at: string;
@@ -291,7 +291,11 @@ export class Workspace {
   estimate(): CantonEstimate {
     const canton = this.canton().canton;
     if (canton) {
-      return { canton: canton.code, ...canton.estimate(this.ledgerContext()) } as CantonEstimate;
+      return {
+        canton: canton.code,
+        entry: canton,
+        ...canton.estimate(this.ledgerContext()),
+      } as CantonEstimate;
     }
     return {
       canton: undefined,

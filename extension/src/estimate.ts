@@ -1,17 +1,26 @@
-// The tax estimate, for Claude (compute_tax) and for the dashboard ("Your estimate"). Every figure
-// comes from the rules engine (@taxpresso/rules-ge, with the federal tax and the shared shapes of
-// @taxpresso/rules-ch, SPEC.md section 7); nothing is computed here.
-// Concise by default (C6), the explanation tree with `detail`.
-import { contentLang, type ContentLang, type UiLang } from './lang.js';
-import { chf, type Item, type Line, type Text } from '@taxpresso/rules-ch';
-import { compareWithLastYear, type LastYearRow, type TaxResult } from '@taxpresso/rules-ge';
-import { zurichEstimateView, zurichTaxOutput } from './estimate-zh.js';
+// The tax estimate, for Claude (compute_tax) and for the dashboard ("Your estimate"), for any
+// canton. Every figure comes from the canton's rules engine (packages/rules-<c>, with the federal
+// tax and the shared shapes of @taxpresso/rules-ch, SPEC.md section 7); the canton's words and
+// lines come from its result view (rules-ch, view.ts: rules-ge's, rules-zh's... `view`). Nothing is
+// computed here and nothing here is a canton's own. Concise by default (C6), the explanation tree
+// with `detail`.
+import {
+  chf,
+  type Item,
+  type Line,
+  type ResultView,
+  type TaxResult,
+  type Text,
+  type ViewLine,
+  type YearComparisonRow,
+} from '@taxpresso/rules-ch';
+import { contentLang, say, type UiLang } from './lang.js';
 import type { Workspace } from './workspace.js';
 
 const WHO: Record<string, Text> = {
-  p1: { en: 'you', fr: 'vous' },
-  p2: { en: 'your spouse', fr: 'votre conjoint' },
-  household: { en: 'household', fr: 'ménage' },
+  p1: { en: 'you', fr: 'vous', de: 'du' },
+  p2: { en: 'your spouse', fr: 'votre conjoint', de: 'dein Partner' },
+  household: { en: 'household', fr: 'ménage', de: 'Haushalt' },
 };
 
 /** The largest items first, at most `n`, shown in the order of the form. */
@@ -25,19 +34,19 @@ const flags = (line: Line) => ({
   ...(line.needsOk ? { needsOk: true } : {}),
 });
 
-function itemOut(i: Item) {
+function itemOut(view: ResultView, i: Item) {
   return {
     code: i.code,
     person: i.person,
     amount: i.amount,
-    label: i.label.fr,
+    label: view.term(i),
     how: i.how.en,
     sources: i.sources,
     ...flags(i),
   };
 }
 
-function lineOut(id: string, l: Line) {
+function lineOut({ id, line: l }: ViewLine) {
   return {
     id,
     amount: l.amount,
@@ -48,68 +57,9 @@ function lineOut(id: string, l: Line) {
   };
 }
 
-/** Every computed line of a result with a stable id, for the explanation tree. */
-function lines(r: TaxResult): ReturnType<typeof lineOut>[] {
-  const out: ReturnType<typeof lineOut>[] = [];
-  if (r.icc) {
-    const i = r.icc;
-    const x = i.taxes;
-    const named: [string, Line][] = [
-      ['icc.grossIncome', i.grossIncome],
-      ['icc.subtotal9220', i.subtotal9220],
-      ['icc.subtotal9240', i.subtotal9240],
-      ['icc.netIncome', i.netIncome],
-      ['icc.taxableIncome', i.taxableIncome],
-      ['icc.rateIncome', i.rateIncome],
-      ['icc.wealth.grossWealth', i.wealth.grossWealth],
-      ['icc.wealth.netWealth', i.wealth.netWealth],
-      ['icc.wealth.taxableWealth', i.wealth.taxableWealth],
-      ['icc.incomeBase', x.incomeBase],
-      ['icc.incomeCantonalCentimes', x.incomeCantonalCentimes],
-      ['icc.incomeReduction12', x.incomeReduction12],
-      ['icc.incomeHomeCare', x.incomeHomeCare],
-      ['icc.incomeCantonal', x.incomeCantonal],
-      ['icc.wealthBase', x.wealthBase],
-      ['icc.wealthCantonalCentimes', x.wealthCantonalCentimes],
-      ['icc.wealthHomeCare', x.wealthHomeCare],
-      ['icc.wealthSupplementary', x.wealthSupplementary],
-      ['icc.wealthCantonal', x.wealthCantonal],
-      ['icc.communal.privileged.base', x.communalIncome.privileged.base],
-      ['icc.communal.privileged.tax', x.communalIncome.privileged.tax],
-      ...x.communalIncome.rest.flatMap((s): [string, Line][] => [
-        [`icc.communal.${s.commune}.base`, s.base],
-        [`icc.communal.${s.commune}.tax`, s.tax],
-      ]),
-      ['icc.communalIncome', x.communalIncomeTotal],
-      ['icc.communalWealth', x.communalWealthTotal],
-      ['icc.personalTax', x.personalTax],
-      ['icc.total', x.total],
-    ];
-    if (i.credits.withholdingTax)
-      named.push(['icc.credit.withholdingTax', i.credits.withholdingTax]);
-    out.push(...named.map(([id, l]) => lineOut(id, l)));
-  }
-  if (r.ifd) {
-    const f = r.ifd;
-    const named: [string, Line][] = [
-      ['ifd.grossIncome', f.grossIncome],
-      ['ifd.subtotal9220', f.subtotal9220],
-      ['ifd.subtotal9240', f.subtotal9240],
-      ['ifd.netIncome', f.netIncome],
-      ['ifd.taxableIncome', f.taxableIncome],
-      ['ifd.scaleIncome', f.scaleIncome],
-      ['ifd.scaleTax', f.scaleTax],
-      ['ifd.childReduction', f.childReduction],
-      ['ifd.tax', f.tax],
-    ];
-    out.push(...named.map(([id, l]) => lineOut(id, l)));
-  }
-  return out;
-}
-
 const en = (list: readonly Text[]) => list.map((x) => x.en);
 
-const PERSON: Record<LastYearRow['person'], Text> = {
+const PERSON: Record<YearComparisonRow['person'], Text> = {
   A: { en: 'you', fr: 'vous' },
   B: { en: 'your spouse', fr: 'votre conjoint' },
   household: { en: 'household', fr: 'ménage' },
@@ -119,7 +69,7 @@ const PERSON: Record<LastYearRow['person'], Text> = {
 const money = (n: number | undefined) => (n === undefined ? '-' : chf(n));
 
 /** One row of the comparison, in plain words, for Claude. */
-function lastYearText(x: LastYearRow): string {
+function lastYearText(x: YearComparisonRow): string {
   const col = (k: 'icc' | 'ifd', name: string) =>
     x.lastYear[k] === undefined && x.thisYear[k] === undefined
       ? ''
@@ -128,20 +78,28 @@ function lastYearText(x: LastYearRow): string {
   return `${x.code} ${x.official} (${PERSON[x.person].en}): ${cols}${x.lastYearNeedsOk ? ' [last year read, not checked by the user]' : ''}${x.thisYearProvisional ? ' [this year not final]' : ''}`;
 }
 
+/** The canton's result and its view, or why there is none. */
+function current(ws: Workspace) {
+  const e = ws.estimate();
+  return { e, view: e.entry?.view, result: e.result as TaxResult | null };
+}
+
 /** compute_tax: text for Claude and the structured result. */
 export function computeTaxOutput(ws: Workspace, detail: boolean) {
-  const e = ws.estimate();
-  if (e.canton === 'ZH') return zurichTaxOutput(ws, e, detail);
-  const { result: r, missing, notes } = e;
+  const { e, view, result: r } = current(ws);
+  const { missing, notes } = e;
+  const tag = view?.preview ? { canton: view.canton } : {};
   const notSupported = ws.engine.notSupported(ws.snapshot()).map((n) => n.what.en);
-  if (!r) {
+  if (!r || !view) {
     const text = `No tax computed yet: Taxpresso needs ${missing.map((m) => m.en).join(' and ')}. Ask with next_questions.`;
     return {
       text,
-      structured: { taxYear: ws.config.taxYear, computed: false, missing: en(missing) } as Record<
-        string,
-        unknown
-      >,
+      structured: {
+        taxYear: ws.config.taxYear,
+        ...tag,
+        computed: false,
+        missing: en(missing),
+      } as Record<string, unknown>,
     };
   }
   const icc = r.icc;
@@ -149,40 +107,29 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   const say: string[] = [];
   const estimated = r.estimates.length > 0;
   say.push(
-    `Tax year ${r.taxYear}, commune ${r.commune}. ${estimated ? 'An estimate: see "Estimates" below.' : 'From official values only.'}`,
+    `Tax year ${r.taxYear}, ${view.where(r)}. ${estimated ? 'An estimate: see "Estimates" below.' : 'From official values only.'}${view.previewNote ? ` ${view.previewNote}` : ''}`,
   );
-  if (icc) {
-    const x = icc.taxes;
-    say.push(
-      `Cantonal and communal tax (ICC): ${chf(x.total.amount)} = cantonal income tax ${chf(x.incomeCantonal.amount)} + cantonal wealth tax ${chf(x.wealthCantonal.amount)} + communal tax ${chf(x.communalIncomeTotal.amount + x.communalWealthTotal.amount)} + taxe personnelle ${chf(x.personalTax.amount)}.`,
-      `ICC taxable income (revenu imposable) ${chf(icc.taxableIncome.amount)}, rate income (revenu déterminant le taux) ${chf(icc.rateIncome.amount)} (${icc.splitting === 'none' ? 'no splitting' : `${icc.splitting} splitting`}); taxable wealth (fortune imposable) ${chf(icc.wealth.taxableWealth.amount)}.`,
-    );
-    if (icc.credits.withholdingTax) {
-      say.push(
-        `Swiss withholding tax to be credited (impôt anticipé): ${chf(icc.credits.withholdingTax.amount)}, not part of the tax.`,
-      );
-    }
-  }
+  if (icc) say.push(...view.cantonal(icc));
   if (ifd) {
     say.push(
-      `Federal direct tax (IFD): ${chf(ifd.tax.amount)}, on a taxable income of ${chf(ifd.taxableIncome.amount)} (${ifd.scale} scale).`,
+      `${view.federal.name}: ${chf(ifd.tax.amount)}, on a taxable income of ${chf(ifd.taxableIncome.amount)} (${ifd.scale} scale)${view.federal.from}.`,
     );
   }
   if (r.total !== null) say.push(`Total: ${chf(r.total)}.`);
   const items = icc ? mainItems(icc.items, 8) : [];
   if (items.length) {
     say.push(
-      `Main ICC items: ${items.map((i) => `${i.code} ${i.label.fr} (${WHO[i.person]?.en ?? i.person}) ${chf(i.amount)}${i.estimates?.length ? ' [estimate]' : ''}${i.needsOk ? " [needs the user's OK]" : ''}`).join('; ')}.`,
+      `${view.mainItems}: ${items.map((i) => `${i.code} ${view.term(i)} (${WHO[i.person]?.en ?? i.person}) ${chf(i.amount)}${i.estimates?.length ? ' [estimate]' : ''}${i.needsOk ? " [needs the user's OK]" : ''}`).join('; ')}.`,
     );
   }
-  const lastYear = compareWithLastYear(r, ws.countedFacts());
+  const lastYear = view.lastYear?.(r, ws.countedFacts()) ?? [];
   if (lastYear.length) {
     say.push(
       'Compared with last year (read from last year’s declaration; comparison only, never part of this year’s calculation):',
       ...lastYear.map((x) => `- ${lastYearText(x)}`),
     );
   }
-  if (r.estimates.length) say.push(`Estimates: ${r.estimates.map((e) => e.what.en).join(' ')}`);
+  if (r.estimates.length) say.push(`Estimates: ${r.estimates.map((x) => x.what.en).join(' ')}`);
   if (!r.complete) {
     say.push(
       `Not final: some amounts are known only in part, so these taxes are at least what is shown. ${en(r.incomplete).join(' ')}`,
@@ -206,26 +153,14 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   }
   const structured: Record<string, unknown> = {
     taxYear: r.taxYear,
+    ...tag,
     commune: r.commune,
     computed: true,
     missing: [],
     total: r.total,
-    icc: icc && {
-      total: icc.taxes.total.amount,
-      cantonalIncome: icc.taxes.incomeCantonal.amount,
-      cantonalWealth: icc.taxes.wealthCantonal.amount,
-      communal: icc.taxes.communalIncomeTotal.amount + icc.taxes.communalWealthTotal.amount,
-      personalTax: icc.taxes.personalTax.amount,
-      taxableIncome: icc.taxableIncome.amount,
-      rateIncome: icc.rateIncome.amount,
-      splitting: icc.splitting,
-      taxableWealth: icc.wealth.taxableWealth.amount,
-      ...(icc.credits.withholdingTax
-        ? { withholdingTaxCredit: icc.credits.withholdingTax.amount }
-        : {}),
-    },
+    icc: icc && view.structured(icc),
     ifd: ifd && { tax: ifd.tax.amount, taxableIncome: ifd.taxableIncome.amount, scale: ifd.scale },
-    estimates: r.estimates.map((e) => e.what.en),
+    estimates: r.estimates.map((x) => x.what.en),
     needsOk: r.needsOk,
     notCounted: en(r.notCounted),
     assumptions: [...en(r.assumptions), ...en(notes)],
@@ -251,28 +186,26 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
       : {}),
   };
   if (detail) {
+    const lines = view.lines(r).map(lineOut);
+    const wealth = icc ? view.wealthItems(icc) : [];
     structured.detail = {
-      iccItems: (icc?.items ?? []).map(itemOut),
-      wealthItems: icc ? [...icc.wealth.items, icc.wealth.socialDeduction].map(itemOut) : [],
-      ifdItems: (ifd?.items ?? []).map(itemOut),
-      lines: lines(r),
+      iccItems: (icc?.items ?? []).map((i) => itemOut(view, i)),
+      wealthItems: wealth.map((i) => itemOut(view, i)),
+      ifdItems: (ifd?.items ?? []).map((i) => itemOut(view, i)),
+      lines,
     };
     const all = [
-      ...(icc ? [...icc.items, ...icc.wealth.items, icc.wealth.socialDeduction] : []),
-      ...(ifd ? ifd.items.map((i) => ({ ...i, code: `IFD ${i.code}` })) : []),
+      ...(icc ? [...icc.items, ...wealth] : []),
+      ...(ifd ? ifd.items.map((i) => ({ ...i, code: `${view.ifdCode} ${i.code}` })) : []),
     ];
     say.push(
-      'Detail, each item with how it was computed and its source:',
+      `Detail, each item with how it was computed and its source${view.detailNote}:`,
       ...all.map(
         (i) =>
-          `- ${i.code} ${i.label.fr} (${WHO[i.person]?.en ?? i.person}): ${chf(i.amount)}. ${i.how.en} [${i.sources.join('; ')}]`,
+          `- ${i.code} ${view.term(i)} (${WHO[i.person]?.en ?? i.person}): ${chf(i.amount)}. ${i.how.en} [${i.sources.join('; ')}]`,
       ),
-      ...lines(r)
-        .filter((l) =>
-          /incomeBase|Cantonal|Reduction|HomeCare|Supplementary|privileged|personalTax|total|scaleTax|childReduction|ifd\.tax$/.test(
-            l.id,
-          ),
-        )
+      ...lines
+        .filter((l) => view.detailLines.test(l.id))
         .map((l) => `- ${l.label}: ${chf(l.amount)}. ${l.how} [${l.sources.join('; ')}]`),
     );
   } else {
@@ -285,69 +218,28 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
 
 /** "Your estimate" in the dashboard, in the UI language. */
 export function estimateView(ws: Workspace, lang: UiLang) {
-  const e = ws.estimate();
-  if (e.canton === 'ZH') return zurichEstimateView(ws, e, lang);
-  return genevaEstimateView(ws, e, contentLang(lang));
-}
-
-/** Geneva's "Your estimate" (and what is missing while there is no canton). */
-function genevaEstimateView(
-  ws: Workspace,
-  e: { result: TaxResult | null; missing: Text[] },
-  lang: ContentLang,
-) {
-  const { result: r, missing } = e;
-  if (!r) return { computed: false as const, missing: missing.map((m) => m[lang]) };
+  const { e, view, result: r } = current(ws);
+  // A canton without German content shows English on a German page (./lang.ts).
+  const l: UiLang = view?.german ? lang : contentLang(lang);
+  if (!r || !view) return { computed: false as const, missing: e.missing.map((m) => say(m, l)) };
   const icc = r.icc;
   const ifd = r.ifd;
-  const row = (id: string, label: Text, line: Line | undefined) =>
-    line && {
-      id,
-      label: label[lang],
-      amount: line.amount,
-      estimate: Boolean(line.estimates?.length),
-      needsOk: Boolean(line.needsOk),
-    };
+  const row = ({ id, label, line }: { id: string; label: Text; line: Line }) => ({
+    id,
+    label: say(label, l),
+    amount: line.amount,
+    estimate: Boolean(line.estimates?.length),
+    needsOk: Boolean(line.needsOk),
+  });
+  const couple = ws.snapshot().people.length > 1;
   return {
     computed: true as const,
+    ...(view.preview ? { canton: view.canton } : {}),
     taxYear: r.taxYear,
     total: r.total,
     estimate: r.estimates.length > 0,
-    rows: [
-      row(
-        'icc',
-        { en: 'Cantonal and communal tax (ICC)', fr: 'Impôt cantonal et communal (ICC)' },
-        icc?.taxes.total,
-      ),
-      row('ifd', { en: 'Federal direct tax (IFD)', fr: 'Impôt fédéral direct (IFD)' }, ifd?.tax),
-    ].filter((x) => x !== undefined),
-    parts: icc
-      ? [
-          row(
-            'income',
-            { en: 'Cantonal tax on income', fr: 'Impôt cantonal sur le revenu' },
-            icc.taxes.incomeCantonal,
-          ),
-          row(
-            'wealth',
-            { en: 'Cantonal tax on wealth', fr: 'Impôt cantonal sur la fortune' },
-            icc.taxes.wealthCantonal,
-          ),
-          row(
-            'communal',
-            { en: 'Communal tax', fr: 'Impôt communal' },
-            {
-              ...icc.taxes.communalIncomeTotal,
-              amount: icc.taxes.communalIncomeTotal.amount + icc.taxes.communalWealthTotal.amount,
-            },
-          ),
-          row(
-            'personal',
-            { en: 'Personal tax (taxe personnelle)', fr: 'Taxe personnelle' },
-            icc.taxes.personalTax,
-          ),
-        ].filter((x) => x !== undefined)
-      : [],
+    rows: view.rows(r).map(row),
+    parts: view.parts(r).map(row),
     taxable: {
       icc: icc?.taxableIncome.amount ?? null,
       ifd: ifd?.taxableIncome.amount ?? null,
@@ -355,26 +247,29 @@ function genevaEstimateView(
     },
     items: (icc ? mainItems(icc.items, 8) : []).map((i) => ({
       code: i.code,
-      label: i.label[lang],
-      who:
-        r.icc && i.person !== 'household' && ws.snapshot().people.length > 1
-          ? (WHO[i.person]?.[lang] ?? '')
-          : '',
+      label: say(i.label, l),
+      who: i.person !== 'household' && couple ? say(WHO[i.person] ?? WHO.household!, l) : '',
       amount: i.amount,
-      how: i.how[lang],
+      how: say(i.how, l),
       estimate: Boolean(i.estimates?.length),
       needsOk: Boolean(i.needsOk),
     })),
-    estimates: r.estimates.map((e) => e.what[lang]),
+    estimates: r.estimates.map((x) => say(x.what, l)),
     needsOk: r.needsOk,
-    notes: [...r.unsupported, ...r.incomplete, ...r.notCounted].map((n) => n[lang]),
+    notes: [...r.unsupported, ...r.incomplete, ...r.notCounted].map((n) => say(n, l)),
     complete: r.complete,
-    lastYear: compareWithLastYear(r, ws.countedFacts()).map((x) => ({
+    // A preview canton: the rules the documents don't spell out, and what was assumed.
+    ...(view.preview
+      ? {
+          unverified: r.unverifiedRules.map((n) => say(n, l)),
+          assumptions: [...r.assumptions, ...e.notes].map((n) => say(n, l)),
+        }
+      : {}),
+    lastYear: (view.lastYear?.(r, ws.countedFacts()) ?? []).map((x) => ({
       code: x.code,
-      label: x.label[lang],
+      label: say(x.label, l),
       official: x.official,
-      who:
-        ws.snapshot().people.length > 1 && x.person !== 'household' ? PERSON[x.person][lang] : '',
+      who: couple && x.person !== 'household' ? say(PERSON[x.person], l) : '',
       lastYear: x.lastYear,
       thisYear: x.thisYear,
       provisional: x.lastYearNeedsOk || x.thisYearProvisional,

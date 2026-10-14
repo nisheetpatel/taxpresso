@@ -19,6 +19,7 @@ import {
   type CantonLedgerInput,
   type CantonLedgerReading,
   type CantonRules,
+  type ResultView,
   type SupportedCanton,
   type TaxResult,
   type Text,
@@ -28,11 +29,13 @@ import {
   computeReturn as genevaReturn,
   engineInputFromFacts,
   rules as genevaRules,
+  view as genevaView,
 } from '@taxpresso/rules-ge';
 import {
   communeOptions,
   NOTE_VALUABLES,
   rules as zurichRules,
+  view as zurichView,
   ZURICH_READING,
 } from '@taxpresso/rules-zh';
 import { movableWealth } from './wealth.js';
@@ -82,6 +85,8 @@ export interface CantonEntry {
   inferFrom?(ledger: Ledger): Text[];
   /** The tax of the year: the ledger read into the canton's household input, then its engine. */
   estimate(ctx: LedgerContext): LedgerEstimate;
+  /** How its result reads in the generic views (compute_tax, the estimate card, the plans). */
+  view: ResultView;
   /**
    * Every canton but Geneva (whose engine reads its own input, with the état des titres): the
    * ledger read into the shared household input, with the canton's own part (`cantonal`).
@@ -149,6 +154,7 @@ const GENEVA: CantonEntry = {
     const { input, missing, notes } = engineInputFromFacts(ctx.taxYear, ctx.facts, ctx.documents);
     return { result: input ? genevaReturn(input) : null, missing, notes };
   },
+  view: genevaView,
 };
 
 const ZURICH: CantonEntry = {
@@ -160,6 +166,7 @@ const ZURICH: CantonEntry = {
   keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...zurichRules.keys(taxYear) }),
   communes: (taxYear) => communeOptions(taxYear),
   ...sharedLedger(ZURICH_READING, zurichRules, NOTE_VALUABLES),
+  view: zurichView,
 };
 
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = { GE: GENEVA, ZH: ZURICH };
