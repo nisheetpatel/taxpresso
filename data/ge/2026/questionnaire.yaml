@@ -129,7 +129,7 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 30: childcare costs'
         fr: 'Guide fiscal 2025, p. 30 : Frais de garde des enfants'
-        de: 'Genfer Wegleitung 2025, S. 30: Kinderbetreuungskosten, auf Französisch'
+        de: 'Genfer Steuerwegleitung 2025, S. 30: Kinderbetreuungskosten, auf Französisch'
         it: 'Guida fiscale di Ginevra 2025, p. 30: spese di custodia dei figli'
     text:
       en: 'How much of the childcare you paid in {year} was for child {n}?'
@@ -280,7 +280,7 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 53: arriving in Geneva from abroad'
         fr: 'Guide fiscal 2025, p. 53 : Arrivée dans le canton de Genève, de l’étranger'
-        de: 'Genfer Wegleitung 2025, S. 53: Zuzug aus dem Ausland, auf Französisch'
+        de: 'Genfer Steuerwegleitung 2025, S. 53: Zuzug aus dem Ausland, auf Französisch'
         it: 'Guida fiscale di Ginevra 2025, p. 53: arrivo a Ginevra dall’estero, in francese'
     text:
       p1:
@@ -315,7 +315,7 @@ questions:
       label:
         en: 'Geneva tax guide 2025, p. 54: leaving Geneva for abroad'
         fr: 'Guide fiscal 2025, p. 54 : Départ du canton de Genève pour l’étranger'
-        de: 'Genfer Wegleitung 2025, S. 54: Wegzug ins Ausland, auf Französisch'
+        de: 'Genfer Steuerwegleitung 2025, S. 54: Wegzug ins Ausland, auf Französisch'
         it: 'Guida fiscale di Ginevra 2025, p. 54: partenza da Ginevra per l’estero, in francese'
     text:
       p1:
