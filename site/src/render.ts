@@ -280,11 +280,13 @@ export function render(lang: Lang, cssVersion = ''): string {
   const [swissTitle, swissText] = t.principles.swiss;
 
   // The free item opens, when clicked, to the ways to leave a review (a <details>, no script): a
-  // star on GitHub, or a few words in a text box. The box posts to api/review.mjs, which files the
-  // review privately; it is only shown once reviews are switched on in Vercel (TAXPRESSO_REVIEWS),
-  // and until then a review on GitHub takes its place.
+  // star on GitHub, or a few words in a text box. The box posts to api/review.mjs, which saves the
+  // review in the project's private database; it is only shown once that database is connected in
+  // Vercel (its variables are there at build time), and until then a review on GitHub takes its place.
   const r = t.support.tip.review;
-  const reviewsOn = process.env.TAXPRESSO_REVIEWS === 'on';
+  const reviewsOn =
+    Boolean(process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL) &&
+    process.env.TAXPRESSO_REVIEWS !== 'off';
   const words = reviewsOn
     ? `<li><form class="review-form" method="post" action="/api/review">
 <input type="hidden" name="lang" value="${lang}">
