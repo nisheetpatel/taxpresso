@@ -507,7 +507,11 @@ describe('pension capital (prestations en capital, 98.12)', () => {
       ],
     ]);
     expect(e.chips(snap, 'en')).toEqual(
-      expect.arrayContaining(['Pension capital', 'Capital, 2nd pillar', 'Capital, pillar 3a']),
+      expect.arrayContaining([
+        'I received a lump sum from my pension fund or pillar 3a',
+        'Capital, 2nd pillar',
+        'Capital, pillar 3a',
+      ]),
     );
   });
 

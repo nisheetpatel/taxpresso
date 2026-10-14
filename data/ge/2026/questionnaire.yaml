@@ -442,13 +442,8 @@ questions:
             de: 'Ich habe Kapital aus der Pensionskasse oder der Säule 3a bezogen',
             it: 'Ho ricevuto un capitale dalla mia cassa pensione o dal pilastro 3a',
           }
-        chip:
-          {
-            en: 'Pension capital',
-            fr: 'Capital de prévoyance',
-            de: 'Vorsorgekapital',
-            it: 'Capitale di previdenza',
-          }
+        # No chip of its own: the other options have none, so each shows its label (a chip here
+        # would hide theirs).
 
   # Who received which lump sum (prestation en capital): from a pension fund or vested benefits
   # (2nd pillar: ch-na-law-lifd art. 22 al. 1 and 2, p. 17) or from pillar 3a. Each is taxed apart
