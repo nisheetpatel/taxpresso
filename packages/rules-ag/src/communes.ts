@@ -58,9 +58,9 @@ const FIELD = {
 } as const satisfies Record<Exclude<Confession, 'none'>, keyof AgCommune['church']>;
 
 /**
- * The church rate of a confession in a commune: the commune's own parish, or a further parish when
- * one is named. 'parish' when the commune has a further parish of that confession and none was
- * named (or an unknown one); a named further parish of another confession is unknown too.
+ * The church rate of a confession in a commune: the commune's own rate when it has no further
+ * parish of that confession; otherwise the parish named (the commune's own name for its own
+ * parish). 'parish' when one is needed and none, or an unknown one, was named.
  */
 export function churchRate(
   commune: AgCommune,
@@ -69,7 +69,8 @@ export function churchRate(
 ): number | 'parish' {
   const extra = commune.extra.filter((p) => p.confession === confession);
   const own = commune.church[FIELD[confession]];
-  if (parish === undefined) return extra.length ? 'parish' : own;
+  if (!extra.length) return own;
+  if (parish === undefined) return 'parish';
   if (foldName(parish) === foldName(commune.name)) return own;
   const named = extra.find((p) => foldName(p.parish) === foldName(parish));
   return named ? named.rate : 'parish';

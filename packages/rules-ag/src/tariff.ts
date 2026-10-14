@@ -58,9 +58,10 @@ export function incomeSimpleTax(t: StepTariff, centimes: number, tarif: 'A' | 'B
  * centime, ag-2025-tariff-vermoegenssteuer p. 3 to 37).
  */
 export function wealthSimpleTax(t: StepTariff, centimes: number): number {
-  const numerator = tariffFraction(t, centimes);
-  if (numerator % t.denominator !== 0) {
+  if (centimes % 100_000 !== 0)
     throw new RangeError(`Wealth ${centimes} is not in whole CHF 1,000.`);
-  }
+  const numerator = tariffFraction(t, centimes);
+  if (numerator % t.denominator !== 0)
+    throw new RangeError(`Wealth tax ${numerator} is not exact.`);
   return numerator / t.denominator;
 }
