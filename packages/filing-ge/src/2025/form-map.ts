@@ -421,7 +421,7 @@ const PG3 = [
     '97.00',
     'Part proportionnelle du revenu non imposable',
     'Share of income not taxable here: a property abroad’s part, after its share of the deductions',
-    'Part du revenu non imposable ici : celle d’un immeuble à l’étranger, après sa part des déductions',
+    'Part du revenu non imposable ici: celle d’un immeuble à l’étranger, après sa part des déductions',
     { role: 'computed', nature: 'income' },
   ),
   pg3('99.00', 'Revenu imposable', 'Taxable income', 'Revenu imposable', {
@@ -517,7 +517,7 @@ const PG4 = [
     '97.00',
     'Part proportionnelle de la fortune non-imposable',
     'Share of wealth not taxable here: a property abroad’s part, after its share of the debts',
-    'Part de la fortune non imposable ici : celle d’un immeuble à l’étranger, après sa part des dettes',
+    'Part de la fortune non imposable ici: celle d’un immeuble à l’étranger, après sa part des dettes',
     { role: 'computed' },
   ),
   pg4d('99.00', 'Fortune imposable', 'Taxable wealth', 'Fortune imposable', { role: 'computed' }),
