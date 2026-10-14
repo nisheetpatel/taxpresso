@@ -254,7 +254,9 @@ describe('the next step and the stages', () => {
     expect(s.journey.hasFigures).toBe(true);
     const tax = s.journey.stages.find((x) => x.id === 'tax')!;
     expect(tax.vars.capital).toBeGreaterThan(0);
-    expect(tax.vars.amount).toBe(s.estimate!.computed ? s.estimate!.total : undefined);
+    // The total stays the total: the tax on the lump sum is beside it.
+    const estimate = s.estimate;
+    expect(tax.vars.amount).toBe(estimate.computed ? estimate.total : undefined);
     const lines = text(await call('get_status')).split('\n');
     expect(lines.find((l) => l.startsWith('Stages'))).toMatch(
       /Your tax: [^·]*the tax on pension capital, apart from it: CHF [\d,]+/,
