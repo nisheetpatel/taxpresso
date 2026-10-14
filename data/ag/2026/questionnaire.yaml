@@ -16,22 +16,24 @@
 # guide and eTAX AARGAU are in German only: the questions give the German term next to the gloss.
 #
 # German: informal "du", Swiss spelling (ss), the official German term next to its gloss. French:
-# write plain spaces before ? ! : ; and the loader makes them non-breaking.
+# write plain spaces before ? ! : ; and the loader makes them non-breaking. Italian: informal "tu",
+# Comune and Cantone capitalized, the German term kept next to its gloss.
 
 taxYear: 2026
 
-place: { en: 'Aargau', fr: 'Argovie', de: 'Aargau' }
+place: { en: 'Aargau', fr: 'Argovie', de: 'Aargau', it: 'Argovia' }
 
 people:
-  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p1: { en: 'You', fr: 'Vous', de: 'Du', it: 'Tu' }
   p2:
     {
       en: 'Your spouse or partner',
       fr: 'Votre conjoint ou partenaire',
       de: 'Dein Partner oder deine Partnerin',
+      it: 'Il tuo coniuge o partner',
     }
-  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
-  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner', it: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}', it: 'Figlio {n}' }
 
 # eTAX AARGAU is the canton's online return, a browser application at etax.ag.ch
 # (ag-na-efiling-etax-aargau; docs/sources/ag/NOTES.md, Filing channels). No document of the
@@ -40,6 +42,7 @@ notSupported:
   en: 'Taxpresso can’t prepare this part yet. eTAX AARGAU, the canton’s online return (etax.ag.ch), or a fiduciary can.'
   fr: 'Taxpresso ne peut pas encore préparer cette partie. eTAX AARGAU, la déclaration en ligne du canton (etax.ag.ch), ou une fiduciaire le peuvent.'
   de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. eTAX AARGAU, die Online-Steuererklärung des Kantons (etax.ag.ch), oder eine Treuhand kann es.'
+  it: 'Taxpresso non può ancora preparare questa parte. Può farlo eTAX AARGAU, la dichiarazione online del Cantone (etax.ag.ch), oppure una fiduciaria.'
 
 questions:
   - use: canton
@@ -53,10 +56,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 8: marriage, separation, partnership'
         fr: 'Guide fiscal argovien 2025, p. 8 : Mariage, séparation, partenariat'
         de: 'Wegleitung zur Steuererklärung 2025, S. 8: Heirat, Scheidung oder Trennung, eingetragene Partnerschaft'
+        it: 'Guida fiscale di Argovia 2025, p. 8: matrimonio, separazione, unione domestica registrata'
     help:
       en: 'A registered partnership files like a married couple, on one return.'
       fr: 'Un partenariat enregistré déclare comme un couple marié, sur une seule déclaration.'
       de: 'Eine eingetragene Partnerschaft füllt wie ein Ehepaar eine gemeinsame Steuererklärung aus.'
+      it: 'Un’unione domestica registrata presenta una sola dichiarazione, come una coppia sposata.'
 
   # ag-2025-guide-wegleitung p. 31 and 32 (19.1, Kinderabzug pro Kind: children under parental
   # authority up to 18, and children of age in education whose upkeep you mainly bear).
@@ -67,10 +72,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 31: child deduction'
         fr: 'Guide fiscal argovien 2025, p. 31 : Déduction pour enfants'
         de: 'Wegleitung zur Steuererklärung 2025, S. 31: Kinderabzug pro Kind'
+        it: 'Guida fiscale di Argovia 2025, p. 31: deduzione per figli'
     help:
       en: 'Minors, and children of age in education whose upkeep you mainly bear.'
       fr: 'Les mineurs, et les enfants majeurs en formation dont vous assumez l’essentiel de l’entretien.'
       de: 'Minderjährige und volljährige Kinder in Ausbildung, für deren Unterhalt du zur Hauptsache aufkommst.'
+      it: 'I figli minorenni e i figli maggiorenni in formazione al cui mantenimento provvedi principalmente.'
 
   # ag-2025-guide-wegleitung p. 44 (Anhang I, 2: a parent living with a child for whom the child
   # deduction is granted is taxed at the rate for married couples, Tarif B).
@@ -81,10 +88,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 44: families'
         fr: 'Guide fiscal argovien 2025, p. 44 : Familles'
         de: 'Wegleitung zur Steuererklärung 2025, S. 44: Familienbesteuerung'
+        it: 'Guida fiscale di Argovia 2025, p. 44: famiglie'
     help:
       en: 'A parent living with a child gets the lower rate of married couples (Tarif B) for the cantonal tax.'
       fr: 'Un parent qui vit avec un enfant a le taux plus bas des couples mariés (Tarif B) pour l’impôt cantonal.'
       de: 'Wer mit einem Kind zusammenlebt, erhält bei den Kantons- und Gemeindesteuern den tieferen Tarif für Verheiratete (Tarif B).'
+      it: 'Per l’imposta cantonale, un genitore che vive con un figlio ottiene l’aliquota più bassa delle coppie sposate (Tarif B).'
 
   # Parents taxed apart with shared parental authority: for the federal tax, half the child
   # deduction each without child support, the parental scale to the one who earns more
@@ -96,16 +105,19 @@ questions:
       en: 'With shared custody, child support decides who counts the children. The parent who receives it counts them; without child support, the cantonal tax counts them for the parent who mainly bears their upkeep, and the federal tax gives each parent half the child deduction and the parental scale (Elterntarif), a lower rate, to the one who earns more.'
       fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit les compte ; sans contribution, l’impôt cantonal les compte pour le parent qui assume l’essentiel de leur entretien, et l’impôt fédéral donne à chacun la moitié de la déduction pour enfant et le barème parental (Elterntarif), un taux plus bas, à celui qui gagne le plus.'
       de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, zählt die Kinder; ohne Unterhaltsbeiträge zählen die Kantons- und Gemeindesteuern sie für den Elternteil, der überwiegend für ihren Unterhalt aufkommt, und die Bundessteuer gibt jedem den halben Kinderabzug und den Elterntarif, einen tieferen Satz, dem, der mehr verdient.'
+      it: 'Con la custodia alternata, sono i contributi di mantenimento a decidere chi conta i figli. Il genitore che li riceve li conta; senza contributi di mantenimento, l’imposta cantonale li conta per il genitore che provvede principalmente al loro mantenimento, e l’imposta federale dà a ogni genitore metà della deduzione per figli e la tariffa per genitori (Elterntarif), un’aliquota più bassa, a quello che guadagna di più.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=32'
       label:
         en: 'Aargau tax guide 2025, p. 32: children of parents taxed apart'
         fr: 'Guide fiscal argovien 2025, p. 32 : Enfants de parents taxés séparément'
         de: 'Wegleitung zur Steuererklärung 2025, S. 32: Kinder nicht gemeinsam veranlagter Eltern'
+        it: 'Guida fiscale di Argovia 2025, p. 32: figli di genitori tassati separatamente'
     help:
       en: 'Child support (Unterhaltsbeiträge, Kinderalimente) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
       fr: 'La contribution d’entretien (Unterhaltsbeiträge, Kinderalimente) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
       de: 'Unterhaltsbeiträge (Kinderalimente) sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+      it: 'I contributi di mantenimento (Unterhaltsbeiträge, Kinderalimente) sono un importo regolare per i figli, fissato da una sentenza o da una convenzione. Guadagnare di più significa avere un reddito netto più alto.'
 
   # ag-2025-guide-wegleitung p. 32 (19.1): parents not taxed together who share parental authority:
   # the parent who mainly bears the child's upkeep has the child deduction; with it go Tarif B
@@ -123,21 +135,31 @@ questions:
       en: 'With shared custody and no child support, Aargau gives the child deduction (Kinderabzug) to the parent who mainly bears the children’s upkeep, and with it the lower rate of married couples (Tarif B) and the tax-free amount per child on wealth. The tax office checks that only one parent gets it.'
       fr: 'En garde partagée sans contribution d’entretien, Argovie donne la déduction pour enfants (Kinderabzug) au parent qui assume l’essentiel de l’entretien des enfants, et avec elle le taux plus bas des couples mariés (Tarif B) et le montant exonéré par enfant sur la fortune. L’administration vérifie qu’un seul parent l’obtient.'
       de: 'Bei geteilter Obhut ohne Unterhaltsbeiträge gibt Aargau den Kinderabzug dem Elternteil, der überwiegend für den Unterhalt der Kinder aufkommt, und damit den tieferen Tarif für Verheiratete (Tarif B) und den steuerfreien Betrag pro Kind auf dem Vermögen. Das Steueramt prüft, dass nur ein Elternteil ihn erhält.'
+      it: 'Con la custodia alternata e senza contributi di mantenimento, Argovia concede la deduzione per figli (Kinderabzug) al genitore che provvede principalmente al loro mantenimento, e con essa l’aliquota più bassa delle coppie sposate (Tarif B) e l’importo esente da imposta sulla sostanza per ogni figlio. L’ufficio delle imposte verifica che la ottenga un solo genitore.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=32'
       label:
         en: 'Aargau tax guide 2025, p. 32: children of parents taxed apart'
         fr: 'Guide fiscal argovien 2025, p. 32 : Enfants de parents taxés séparément'
         de: 'Wegleitung zur Steuererklärung 2025, S. 32: Kinder nicht gemeinsam veranlagter Eltern'
+        it: 'Guida fiscale di Argovia 2025, p. 32: figli di genitori tassati separatamente'
     text:
       en: 'In 2026, did you mainly bear the children’s upkeep (überwiegend für den Unterhalt aufkommen)?'
       fr: 'En 2026, assumiez-vous l’essentiel de l’entretien des enfants (überwiegend für den Unterhalt aufkommen) ?'
       de: 'Bist du 2026 überwiegend für den Unterhalt der Kinder aufgekommen?'
+      it: 'Nel 2026, eri tu a provvedere principalmente al mantenimento dei figli (überwiegend für den Unterhalt aufkommen)?'
     help:
       en: 'Not sure? Your last assessment shows whether you got the child deduction.'
       fr: 'Un doute ? Votre dernière taxation indique si vous avez eu la déduction pour enfants.'
       de: 'Unsicher? Deine letzte Veranlagung zeigt, ob du den Kinderabzug erhalten hast.'
-    chip: { en: 'Bears the upkeep', fr: 'Assume l’entretien', de: 'Trägt den Unterhalt' }
+      it: 'Hai un dubbio? La tua ultima decisione di tassazione (Veranlagung) mostra se hai ottenuto la deduzione per figli.'
+    chip:
+      {
+        en: 'Bears the upkeep',
+        fr: 'Assume l’entretien',
+        de: 'Trägt den Unterhalt',
+        it: 'Provvede al mantenimento',
+      }
 
   # The child deduction depends on the child's age at the end of the year: up to 14, up to 18, of
   # age and in education with its upkeep mainly yours (ag-na-law-steuergesetz § 42 Abs. 1 lit. a,
@@ -155,20 +177,24 @@ questions:
       en: 'Aargau’s child deduction (Kinderabzug) is higher for older children: one amount up to 14, a higher one up to 18, the highest for a child of age in education whose upkeep you mainly bear. Childcare counts only for a child under 14.'
       fr: 'La déduction pour enfants d’Argovie (Kinderabzug) est plus élevée pour les enfants plus âgés : un montant jusqu’à 14 ans, un plus élevé jusqu’à 18 ans, le plus élevé pour un enfant majeur en formation dont vous assumez l’essentiel de l’entretien. Les frais de garde ne comptent que pour un enfant de moins de 14 ans.'
       de: 'Der Kinderabzug ist in Aargau für ältere Kinder höher: ein Betrag bis 14, ein höherer bis 18, der höchste für ein volljähriges Kind in Ausbildung, für dessen Unterhalt du zur Hauptsache aufkommst. Kinderbetreuungskosten zählen nur für ein Kind unter 14.'
+      it: 'In Argovia la deduzione per figli (Kinderabzug) è più alta per i figli più grandi: un importo fino ai 14 anni, uno più alto fino ai 18, il più alto per un figlio maggiorenne in formazione al cui mantenimento provvedi principalmente. Le spese di custodia contano solo per un figlio sotto i 14 anni.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=32'
       label:
         en: 'Aargau tax guide 2025, p. 32: child deduction by age'
         fr: 'Guide fiscal argovien 2025, p. 32 : Déduction pour enfants selon l’âge'
         de: 'Wegleitung zur Steuererklärung 2025, S. 32: Kinderabzug nach Alter'
+        it: 'Guida fiscale di Argovia 2025, p. 32: deduzione per figli secondo l’età'
     text:
       en: 'How old was child {n} on 31 December 2026?'
       fr: 'Quel âge avait l’enfant {n} au 31 décembre 2026 ?'
       de: 'Wie alt war Kind {n} am 31. Dezember 2026?'
+      it: 'Quanti anni aveva il figlio {n} il 31 dicembre 2026?'
     help:
       en: 'Number your children the same way in every answer, for example from the oldest.'
       fr: 'Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
     options:
       - value: under14
         label:
@@ -176,28 +202,32 @@ questions:
             en: 'Under 14 (bis zum vollendeten 14. Altersjahr)',
             fr: 'Moins de 14 ans (bis zum vollendeten 14. Altersjahr)',
             de: 'Bis zum vollendeten 14. Altersjahr',
+            it: 'Sotto i 14 anni (bis zum vollendeten 14. Altersjahr)',
           }
-        chip: { en: 'Under 14', fr: 'Moins de 14 ans', de: 'Unter 14' }
+        chip: { en: 'Under 14', fr: 'Moins de 14 ans', de: 'Unter 14', it: 'Sotto i 14 anni' }
       - value: under18
         label:
           {
             en: '14 to 17 (bis zum vollendeten 18. Altersjahr)',
             fr: '14 à 17 ans (bis zum vollendeten 18. Altersjahr)',
             de: '14 bis 17 (bis zum vollendeten 18. Altersjahr)',
+            it: 'Da 14 a 17 anni (bis zum vollendeten 18. Altersjahr)',
           }
-        chip: { en: '14 to 17', fr: '14 à 17 ans', de: '14 bis 17' }
+        chip: { en: '14 to 17', fr: '14 à 17 ans', de: '14 bis 17', it: 'Da 14 a 17 anni' }
       - value: adult
         label:
           {
             en: 'Of age and in education (volljährig in Ausbildung)',
             fr: 'Majeur et en formation (volljährig in Ausbildung)',
             de: 'Volljährig und in Ausbildung',
+            it: 'Maggiorenne e in formazione (volljährig in Ausbildung)',
           }
         chip:
           {
             en: 'Of age, in education',
             fr: 'Majeur, en formation',
             de: 'Volljährig, in Ausbildung',
+            it: 'Maggiorenne, in formazione',
           }
 
   # ag-2025-guide-wegleitung p. 27 (15.0, Kinderbetreuungskosten: a child under 14 living with you,
@@ -209,10 +239,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 27: childcare'
         fr: 'Guide fiscal argovien 2025, p. 27 : Frais de garde'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Kinderbetreuungskosten'
+        it: 'Guida fiscale di Argovia 2025, p. 27: custodia dei figli'
     help:
       en: 'A crèche (Kita), day care or a nanny, for a child under 14 living with you, while you work or train. Any subsidy comes off the invoice first. On the return: 15.0, Kinderbetreuungskosten.'
       fr: 'Une crèche (Kita), une garderie ou une nourrice, pour un enfant de moins de 14 ans qui vit avec vous, pendant que vous travaillez ou êtes en formation. Une subvention se déduit d’abord de la facture. Sur la déclaration : 15.0, Kinderbetreuungskosten (frais de garde).'
       de: 'Eine Kita, ein Hort oder eine Nanny, für ein Kind unter 14, das bei dir lebt, während du arbeitest oder in Ausbildung bist. Unterstützungsbeiträge gehen zuerst von der Rechnung ab. Auf der Steuererklärung: 15.0, Kinderbetreuungskosten.'
+      it: 'Un asilo nido (Kita), un centro diurno o una tata, per un figlio sotto i 14 anni che vive con te, mentre lavori o segui una formazione. Eventuali sussidi si tolgono prima dalla fattura. Nella dichiarazione: 15.0, Kinderbetreuungskosten.'
 
   # The limit is per child (ag-na-law-steuergesetz § 40 Abs. 1 lit. n, p. 26; ag-2025-guide-wegleitung
   # p. 27, 15.0; ag-2026-deductions-kinderbetreuungskosten p. 7, 4.6 and 4.7). With several children,
@@ -229,20 +261,24 @@ questions:
       en: 'Aargau’s limit on childcare is per child, so the split between your children can change the deduction. Your invoices give the total.'
       fr: 'La limite d’Argovie pour les frais de garde est par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
       de: 'Der Höchstbetrag für die Kinderbetreuungskosten gilt in Aargau pro Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+      it: 'In Argovia il limite per le spese di custodia vale per ogni figlio: la ripartizione tra i tuoi figli può cambiare la deduzione. Le tue fatture danno il totale.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/merkblaetter-zu-steuern-natuerliche-personen/kinderbetreuungskosten.pdf#page=7'
       label:
         en: 'Aargau leaflet on childcare costs, p. 7: the limit per child'
         fr: 'Notice argovienne sur les frais de garde, p. 7 : La limite par enfant'
         de: 'Merkblatt Kinderbetreuungskosten, S. 7: Höchstbetrag pro Kind'
+        it: 'Promemoria argoviese sulle spese di custodia dei figli, p. 7: il limite per figlio'
     text:
       en: 'How much of the childcare you paid in 2026 was for child {n}?'
       fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
       de: 'Wie viel der 2026 bezahlten Kinderbetreuungskosten war für Kind {n}?'
+      it: 'Quanto delle spese di custodia pagate nel 2026 era per il figlio {n}?'
     help:
       en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
       fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
 
   # The commune of 31 December taxes the whole year; a move inside the canton does not split the
   # communal tax (ag-2025-guide-wegleitung p. 8, Wohnsitzverlegung; ag-na-law-steuergesetz § 157
@@ -256,20 +292,24 @@ questions:
       en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own Steuerfuss, a percentage of the simple tax (einfache Steuer), as the canton does.'
       fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année. Chaque commune fixe son propre coefficient (Steuerfuss), un pourcentage de l’impôt simple (einfache Steuer), comme le canton.'
       de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr. Jede Gemeinde legt wie der Kanton ihren eigenen Steuerfuss fest, einen Prozentsatz der einfachen Steuer.'
+      it: 'Il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno. Ogni Comune fissa il proprio moltiplicatore (Steuerfuss), una percentuale dell’imposta semplice (einfache Steuer), come fa il Cantone.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuerberechnung-tarife-natuerliche-personen/gemeinde-und-kirchensteuerf-sse-2026-v5.pdf#page=1'
       label:
         en: 'Communal and church tax rates 2026 (Gemeinde- und Kirchensteuerfüsse), p. 1'
         fr: 'Coefficients communaux et ecclésiastiques 2026 (Gemeinde- und Kirchensteuerfüsse), p. 1'
         de: 'Verzeichnis der Gemeinde- und Kirchensteuerfüsse 2026, S. 1'
+        it: 'Moltiplicatori comunali e di culto 2026 (Gemeinde- und Kirchensteuerfüsse), p. 1'
     text:
       en: 'Which commune did you live in on 31 December 2026?'
       fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
       de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale Comune abitavi il 31 dicembre 2026?'
     help:
       en: 'The official name, such as Aarau, Baden or Brugg (AG). In a few communes, a further parish of a church levies another church tax rate: Taxpresso asks for yours later, only if it changes your tax.'
       fr: 'Le nom officiel, par exemple Aarau, Baden ou Brugg (AG). Dans quelques communes, une paroisse supplémentaire d’une Église prélève un autre taux d’impôt ecclésiastique : Taxpresso vous demande la vôtre plus tard, seulement si cela change votre impôt.'
       de: 'Der offizielle Name, zum Beispiel Aarau, Baden oder Brugg (AG). In einigen Gemeinden erhebt eine Zusatzkirche einen anderen Kirchensteuerfuss: Taxpresso fragt später nach deiner, nur wenn sie deine Steuer ändert.'
+      it: 'Il nome ufficiale, per esempio Aarau, Baden o Brugg (AG). In alcuni Comuni un’altra parrocchia della stessa chiesa applica un altro moltiplicatore dell’imposta di culto: Taxpresso ti chiede la tua più avanti, solo se cambia la tua imposta.'
 
   # Who files in Aargau: everyone living in the canton on 31 December (ag-2025-guide-wegleitung p. 7);
   # a move within Switzerland: the canton and the commune of 31 December tax the whole year (p. 8,
@@ -282,38 +322,50 @@ questions:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Aargau taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
       fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Argovie vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
       de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Aargau besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug ins Ausland heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+      it: 'Un trasloco all’interno del Cantone non cambia niente: il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno. Nemmeno l’arrivo da un altro Cantone cambia qualcosa: Argovia ti tassa per tutto l’anno, come se avessi abitato qui da gennaio. Arrivare dall’estero, o lasciare la Svizzera, significa che qui sei stato tassato solo per una parte dell’anno.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=8'
       label:
         en: 'Aargau tax guide 2025, p. 8: moving'
         fr: 'Guide fiscal argovien 2025, p. 8 : Déménagement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 8: Wohnsitzverlegung'
+        it: 'Guida fiscale di Argovia 2025, p. 8: trasloco'
     text:
       en: 'Did you move in 2026?'
       fr: 'Avez-vous déménagé en 2026 ?'
       de: 'Bist du 2026 umgezogen?'
+      it: 'Hai traslocato nel 2026?'
     options:
-      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein', it: 'No' } }
       - value: within_ag
         label:
           {
             en: 'Yes, within Aargau',
             fr: 'Oui, dans le canton d’Argovie',
             de: 'Ja, innerhalb des Kantons Aargau',
+            it: 'Sì, all’interno dell’Argovia',
           }
-        chip: { en: 'Moved in the canton', fr: 'Déménagé dans le canton', de: 'Umzug im Kanton' }
+        chip:
+          {
+            en: 'Moved in the canton',
+            fr: 'Déménagé dans le canton',
+            de: 'Umzug im Kanton',
+            it: 'Trasloco nel Cantone',
+          }
       - value: from_other_canton
         label:
           {
             en: 'Yes, from another canton',
             fr: 'Oui, depuis un autre canton',
             de: 'Ja, aus einem anderen Kanton',
+            it: 'Sì, da un altro Cantone',
           }
         chip:
           {
             en: 'Moved from another canton',
             fr: 'Arrivé(e) d’un autre canton',
             de: 'Zuzug aus einem anderen Kanton',
+            it: 'Arrivo da un altro Cantone',
           }
       - value: from_abroad
         label:
@@ -321,12 +373,14 @@ questions:
             en: 'Yes, I arrived from abroad',
             fr: 'Oui, je suis arrivé(e) de l’étranger',
             de: 'Ja, ich bin aus dem Ausland zugezogen',
+            it: 'Sì, sono arrivato o arrivata dall’estero',
           }
         notSupported:
           {
             en: 'Arriving from abroad during the year (Zuzug aus dem Ausland, unterjährige Steuerpflicht)',
             fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland, unterjährige Steuerpflicht)',
             de: 'Ein Zuzug aus dem Ausland während des Jahres (unterjährige Steuerpflicht)',
+            it: 'L’arrivo dall’estero nel corso dell’anno (Zuzug aus dem Ausland, unterjährige Steuerpflicht)',
           }
       - value: leaving_switzerland
         label:
@@ -334,12 +388,14 @@ questions:
             en: 'I left, or I’m leaving, Switzerland',
             fr: 'J’ai quitté ou je quitte la Suisse',
             de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+            it: 'Ho lasciato o sto per lasciare la Svizzera',
           }
         notSupported:
           {
             en: 'Leaving Switzerland (Wegzug ins Ausland, unterjährige Steuerpflicht)',
             fr: 'Un départ de Suisse (Wegzug ins Ausland, unterjährige Steuerpflicht)',
             de: 'Ein Wegzug ins Ausland (unterjährige Steuerpflicht)',
+            it: 'La partenza dalla Svizzera (Wegzug ins Ausland, unterjährige Steuerpflicht)',
           }
 
   # Church tax (Kirchensteuer): the parishes of the Reformed, Roman Catholic and Christ Catholic
@@ -355,25 +411,30 @@ questions:
       en: 'Members of the Reformed, Roman Catholic or Christ Catholic church pay church tax (Kirchensteuer), a percentage of the simple tax (einfache Steuer) set by their parish. Taxpresso adds it only for a member.'
       fr: 'Les membres de l’Église réformée, catholique romaine ou catholique chrétienne paient l’impôt ecclésiastique (Kirchensteuer), un pourcentage de l’impôt simple (einfache Steuer) fixé par leur paroisse. Taxpresso ne l’ajoute que pour un membre.'
       de: 'Mitglieder der reformierten, der römisch-katholischen oder der christkatholischen Kirche zahlen Kirchensteuer, einen Prozentsatz der einfachen Steuer, den ihre Kirchgemeinde festlegt. Taxpresso rechnet sie nur für Mitglieder dazu.'
+      it: 'I membri della chiesa riformata, cattolica romana o cattolica cristiana pagano l’imposta di culto (Kirchensteuer), una percentuale dell’imposta semplice (einfache Steuer) fissata dalla loro parrocchia. Taxpresso la aggiunge solo per chi ne è membro.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuerberechnung-tarife-natuerliche-personen/gemeinde-und-kirchensteuerf-sse-2026-v5.pdf#page=1'
       label:
         en: 'Communal and church tax rates 2026 (Gemeinde- und Kirchensteuerfüsse), p. 1'
         fr: 'Coefficients communaux et ecclésiastiques 2026 (Gemeinde- und Kirchensteuerfüsse), p. 1'
         de: 'Verzeichnis der Gemeinde- und Kirchensteuerfüsse 2026, S. 1'
+        it: 'Moltiplicatori comunali e di culto 2026 (Gemeinde- und Kirchensteuerfüsse), p. 1'
     text:
       p1:
         en: 'On 31 December 2026, were you a member of one of these churches?'
         fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces Églises ?'
         de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026, eri membro di una di queste chiese?'
       p2:
         en: 'On 31 December 2026, was your spouse or partner a member of one of these churches?'
         fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces Églises ?'
         de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026, il tuo coniuge o partner era membro di una di queste chiese?'
     help:
       en: 'Another religion, or none, pays no church tax.'
       fr: 'Une autre religion, ou aucune, ne paie pas d’impôt ecclésiastique.'
       de: 'Eine andere Religion oder keine zahlt keine Kirchensteuer.'
+      it: 'Chi ha un’altra religione, o nessuna, non paga l’imposta di culto.'
     options:
       - value: reformed
         label:
@@ -381,26 +442,41 @@ questions:
             en: 'Reformed (evangelisch-reformiert)',
             fr: 'Réformée (evangelisch-reformiert)',
             de: 'Evangelisch-reformiert',
+            it: 'Riformata (evangelisch-reformiert)',
           }
-        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert' }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert', it: 'Riformata' }
       - value: catholic
         label:
           {
             en: 'Roman Catholic (römisch-katholisch)',
             fr: 'Catholique romaine (römisch-katholisch)',
             de: 'Römisch-katholisch',
+            it: 'Cattolica romana (römisch-katholisch)',
           }
-        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch' }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch', it: 'Cattolica' }
       - value: christ_catholic
         label:
           {
             en: 'Christ Catholic (christkatholisch)',
             fr: 'Catholique chrétienne (christkatholisch)',
             de: 'Christkatholisch',
+            it: 'Cattolica cristiana (christkatholisch)',
           }
-        chip: { en: 'Christ Catholic', fr: 'Catholique chrétien(ne)', de: 'Christkatholisch' }
+        chip:
+          {
+            en: 'Christ Catholic',
+            fr: 'Catholique chrétien(ne)',
+            de: 'Christkatholisch',
+            it: 'Cattolica cristiana',
+          }
       - value: none
-        label: { en: 'None of these', fr: 'Aucune de ces Églises', de: 'Keine davon' }
+        label:
+          {
+            en: 'None of these',
+            fr: 'Aucune de ces Églises',
+            de: 'Keine davon',
+            it: 'Nessuna di queste',
+          }
 
   # In some communes a further parish (Zusatzkirche) of the Reformed or the Roman Catholic church
   # levies another church tax rate in part of the commune (ag-2026-communal-steuerfuesse p. 9; the
@@ -452,32 +528,38 @@ questions:
       en: 'In part of your commune, a further parish of your church (Zusatzkirche) levies another church tax rate. Choose the parish you belonged to on 31 December. The names are those of the canton’s list.'
       fr: 'Dans une partie de votre commune, une paroisse supplémentaire de votre Église (Zusatzkirche) prélève un autre taux d’impôt ecclésiastique. Choisissez la paroisse à laquelle vous apparteniez au 31 décembre. Les noms sont ceux de la liste du canton.'
       de: 'In einem Teil deiner Gemeinde erhebt eine Zusatzkirche deiner Kirche einen anderen Kirchensteuerfuss. Wähl die Kirchgemeinde, zu der du am 31. Dezember gehört hast. Die Namen sind die der Liste des Kantons.'
+      it: 'In una parte del tuo Comune, un’altra parrocchia della tua chiesa (Zusatzkirche) applica un altro moltiplicatore dell’imposta di culto. Scegli la parrocchia a cui appartenevi il 31 dicembre. I nomi sono quelli dell’elenco del Cantone.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuerberechnung-tarife-natuerliche-personen/gemeinde-und-kirchensteuerf-sse-2026-v5.pdf#page=9'
       label:
         en: 'Communal and church tax rates 2026 (Gemeinde- und Kirchensteuerfüsse), p. 9: further parishes'
         fr: 'Coefficients communaux et ecclésiastiques 2026 (Gemeinde- und Kirchensteuerfüsse), p. 9 : Paroisses supplémentaires'
         de: 'Verzeichnis der Gemeinde- und Kirchensteuerfüsse 2026, S. 9: Zusatzkirchen'
+        it: 'Moltiplicatori comunali e di culto 2026 (Gemeinde- und Kirchensteuerfüsse), p. 9: altre parrocchie'
     text:
       en: 'Which parish of your church did you belong to on 31 December 2026?'
       fr: 'À quelle paroisse de votre Église apparteniez-vous au 31 décembre 2026 ?'
       de: 'Zu welcher Kirchgemeinde deiner Kirche hast du am 31. Dezember 2026 gehört?'
+      it: 'A quale parrocchia della tua chiesa appartenevi il 31 dicembre 2026?'
     help:
       en: 'Not sure? Your parish (Kirchgemeinde) or your commune’s tax office (Gemeindesteueramt) knows.'
       fr: 'Un doute ? Votre paroisse (Kirchgemeinde) ou le service des impôts de votre commune (Gemeindesteueramt) le sait.'
       de: 'Unsicher? Deine Kirchgemeinde oder das Gemeindesteueramt weiss es.'
+      it: 'Hai un dubbio? Lo sa la tua parrocchia (Kirchgemeinde) o l’ufficio delle imposte del tuo Comune (Gemeindesteueramt).'
     options:
       - value: 'aarau:Aarau'
         label:
           en: 'Aarau (the commune’s own parish)'
           fr: 'Aarau (paroisse de la commune)'
           de: 'Aarau (Kirchgemeinde der Gemeinde)'
+          it: 'Aarau (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'aarau' }
       - value: 'aarau:ref. Kirche Rohr'
         label:
           en: 'Aarau: ref. Kirche Rohr'
           fr: 'Aarau : ref. Kirche Rohr'
           de: 'Aarau: ref. Kirche Rohr'
+          it: 'Aarau: ref. Kirche Rohr'
         when:
           all:
             - { key: profile.commune, eq: 'aarau' }
@@ -487,12 +569,14 @@ questions:
           en: 'Baden (the commune’s own parish)'
           fr: 'Baden (paroisse de la commune)'
           de: 'Baden (Kirchgemeinde der Gemeinde)'
+          it: 'Baden (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'baden' }
       - value: 'baden:ref. Kirche Turgi Birmenstorf Gebenstorf'
         label:
           en: 'Baden: ref. Kirche Turgi Birmenstorf Gebenstorf'
           fr: 'Baden : ref. Kirche Turgi Birmenstorf Gebenstorf'
           de: 'Baden: ref. Kirche Turgi Birmenstorf Gebenstorf'
+          it: 'Baden: ref. Kirche Turgi Birmenstorf Gebenstorf'
         when:
           all:
             - { key: profile.commune, eq: 'baden' }
@@ -502,6 +586,7 @@ questions:
           en: 'Baden: röm.-kath. Kirche Gebenstorf'
           fr: 'Baden : röm.-kath. Kirche Gebenstorf'
           de: 'Baden: röm.-kath. Kirche Gebenstorf'
+          it: 'Baden: röm.-kath. Kirche Gebenstorf'
         when:
           all:
             - { key: profile.commune, eq: 'baden' }
@@ -511,12 +596,14 @@ questions:
           en: 'Boswil (the commune’s own parish)'
           fr: 'Boswil (paroisse de la commune)'
           de: 'Boswil (Kirchgemeinde der Gemeinde)'
+          it: 'Boswil (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'boswil' }
       - value: 'boswil:röm.-kath. Kirche Muri'
         label:
           en: 'Boswil: röm.-kath. Kirche Muri'
           fr: 'Boswil : röm.-kath. Kirche Muri'
           de: 'Boswil: röm.-kath. Kirche Muri'
+          it: 'Boswil: röm.-kath. Kirche Muri'
         when:
           all:
             - { key: profile.commune, eq: 'boswil' }
@@ -526,12 +613,14 @@ questions:
           en: 'Böttstein (the commune’s own parish)'
           fr: 'Böttstein (paroisse de la commune)'
           de: 'Böttstein (Kirchgemeinde der Gemeinde)'
+          it: 'Böttstein (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'bottstein' }
       - value: 'bottstein:ref. Kirche Böttstein'
         label:
           en: 'Böttstein: ref. Kirche Böttstein'
           fr: 'Böttstein : ref. Kirche Böttstein'
           de: 'Böttstein: ref. Kirche Böttstein'
+          it: 'Böttstein: ref. Kirche Böttstein'
         when:
           all:
             - { key: profile.commune, eq: 'bottstein' }
@@ -541,12 +630,14 @@ questions:
           en: 'Bremgarten (AG) (the commune’s own parish)'
           fr: 'Bremgarten (AG) (paroisse de la commune)'
           de: 'Bremgarten (AG) (Kirchgemeinde der Gemeinde)'
+          it: 'Bremgarten (AG) (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'bremgarten-ag' }
       - value: 'bremgarten-ag:röm.-kath. Kirche Hermetschwil'
         label:
           en: 'Bremgarten (AG): röm.-kath. Kirche Hermetschwil'
           fr: 'Bremgarten (AG) : röm.-kath. Kirche Hermetschwil'
           de: 'Bremgarten (AG): röm.-kath. Kirche Hermetschwil'
+          it: 'Bremgarten (AG): röm.-kath. Kirche Hermetschwil'
         when:
           all:
             - { key: profile.commune, eq: 'bremgarten-ag' }
@@ -556,12 +647,14 @@ questions:
           en: 'Brugg (AG) (the commune’s own parish)'
           fr: 'Brugg (AG) (paroisse de la commune)'
           de: 'Brugg (AG) (Kirchgemeinde der Gemeinde)'
+          it: 'Brugg (AG) (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'brugg-ag' }
       - value: 'brugg-ag:ref. Kirche Rein'
         label:
           en: 'Brugg (AG): ref. Kirche Rein'
           fr: 'Brugg (AG) : ref. Kirche Rein'
           de: 'Brugg (AG): ref. Kirche Rein'
+          it: 'Brugg (AG): ref. Kirche Rein'
         when:
           all:
             - { key: profile.commune, eq: 'brugg-ag' }
@@ -571,6 +664,7 @@ questions:
           en: 'Brugg (AG): ref. Kirche Umiken'
           fr: 'Brugg (AG) : ref. Kirche Umiken'
           de: 'Brugg (AG): ref. Kirche Umiken'
+          it: 'Brugg (AG): ref. Kirche Umiken'
         when:
           all:
             - { key: profile.commune, eq: 'brugg-ag' }
@@ -580,6 +674,7 @@ questions:
           en: 'Brugg (AG): ref. Kirche Birr'
           fr: 'Brugg (AG) : ref. Kirche Birr'
           de: 'Brugg (AG): ref. Kirche Birr'
+          it: 'Brugg (AG): ref. Kirche Birr'
         when:
           all:
             - { key: profile.commune, eq: 'brugg-ag' }
@@ -589,12 +684,14 @@ questions:
           en: 'Fisibach (the commune’s own parish)'
           fr: 'Fisibach (paroisse de la commune)'
           de: 'Fisibach (Kirchgemeinde der Gemeinde)'
+          it: 'Fisibach (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'fisibach' }
       - value: 'fisibach:ref. Kirche Stadlerberg (ZH)'
         label:
           en: 'Fisibach: ref. Kirche Stadlerberg (ZH)'
           fr: 'Fisibach : ref. Kirche Stadlerberg (ZH)'
           de: 'Fisibach: ref. Kirche Stadlerberg (ZH)'
+          it: 'Fisibach: ref. Kirche Stadlerberg (ZH)'
         when:
           all:
             - { key: profile.commune, eq: 'fisibach' }
@@ -604,12 +701,14 @@ questions:
           en: 'Kaisten (the commune’s own parish)'
           fr: 'Kaisten (paroisse de la commune)'
           de: 'Kaisten (Kirchgemeinde der Gemeinde)'
+          it: 'Kaisten (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'kaisten' }
       - value: 'kaisten:röm.-kath. Kirche Ittenthal'
         label:
           en: 'Kaisten: röm.-kath. Kirche Ittenthal'
           fr: 'Kaisten : röm.-kath. Kirche Ittenthal'
           de: 'Kaisten: röm.-kath. Kirche Ittenthal'
+          it: 'Kaisten: röm.-kath. Kirche Ittenthal'
         when:
           all:
             - { key: profile.commune, eq: 'kaisten' }
@@ -619,12 +718,14 @@ questions:
           en: 'Kallern (the commune’s own parish)'
           fr: 'Kallern (paroisse de la commune)'
           de: 'Kallern (Kirchgemeinde der Gemeinde)'
+          it: 'Kallern (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'kallern' }
       - value: 'kallern:röm.-kath. Kirche Sarmenstorf'
         label:
           en: 'Kallern: röm.-kath. Kirche Sarmenstorf'
           fr: 'Kallern : röm.-kath. Kirche Sarmenstorf'
           de: 'Kallern: röm.-kath. Kirche Sarmenstorf'
+          it: 'Kallern: röm.-kath. Kirche Sarmenstorf'
         when:
           all:
             - { key: profile.commune, eq: 'kallern' }
@@ -634,12 +735,14 @@ questions:
           en: 'Laufenburg (the commune’s own parish)'
           fr: 'Laufenburg (paroisse de la commune)'
           de: 'Laufenburg (Kirchgemeinde der Gemeinde)'
+          it: 'Laufenburg (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'laufenburg' }
       - value: 'laufenburg:röm.-kath. Kirche Sulz'
         label:
           en: 'Laufenburg: röm.-kath. Kirche Sulz'
           fr: 'Laufenburg : röm.-kath. Kirche Sulz'
           de: 'Laufenburg: röm.-kath. Kirche Sulz'
+          it: 'Laufenburg: röm.-kath. Kirche Sulz'
         when:
           all:
             - { key: profile.commune, eq: 'laufenburg' }
@@ -649,12 +752,14 @@ questions:
           en: 'Leuggern (the commune’s own parish)'
           fr: 'Leuggern (paroisse de la commune)'
           de: 'Leuggern (Kirchgemeinde der Gemeinde)'
+          it: 'Leuggern (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'leuggern' }
       - value: 'leuggern:ref. Kirche Koblenz'
         label:
           en: 'Leuggern: ref. Kirche Koblenz'
           fr: 'Leuggern : ref. Kirche Koblenz'
           de: 'Leuggern: ref. Kirche Koblenz'
+          it: 'Leuggern: ref. Kirche Koblenz'
         when:
           all:
             - { key: profile.commune, eq: 'leuggern' }
@@ -664,6 +769,7 @@ questions:
           en: 'Leuggern: ref. Kirche Klingnau'
           fr: 'Leuggern : ref. Kirche Klingnau'
           de: 'Leuggern: ref. Kirche Klingnau'
+          it: 'Leuggern: ref. Kirche Klingnau'
         when:
           all:
             - { key: profile.commune, eq: 'leuggern' }
@@ -673,12 +779,14 @@ questions:
           en: 'Mettauertal (the commune’s own parish)'
           fr: 'Mettauertal (paroisse de la commune)'
           de: 'Mettauertal (Kirchgemeinde der Gemeinde)'
+          it: 'Mettauertal (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'mettauertal' }
       - value: 'mettauertal:ref. Kirche Mandach'
         label:
           en: 'Mettauertal: ref. Kirche Mandach'
           fr: 'Mettauertal : ref. Kirche Mandach'
           de: 'Mettauertal: ref. Kirche Mandach'
+          it: 'Mettauertal: ref. Kirche Mandach'
         when:
           all:
             - { key: profile.commune, eq: 'mettauertal' }
@@ -688,12 +796,14 @@ questions:
           en: 'Oftringen (the commune’s own parish)'
           fr: 'Oftringen (paroisse de la commune)'
           de: 'Oftringen (Kirchgemeinde der Gemeinde)'
+          it: 'Oftringen (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'oftringen' }
       - value: 'oftringen:röm.-kath. Kirche Zofingen'
         label:
           en: 'Oftringen: röm.-kath. Kirche Zofingen'
           fr: 'Oftringen : röm.-kath. Kirche Zofingen'
           de: 'Oftringen: röm.-kath. Kirche Zofingen'
+          it: 'Oftringen: röm.-kath. Kirche Zofingen'
         when:
           all:
             - { key: profile.commune, eq: 'oftringen' }
@@ -703,12 +813,14 @@ questions:
           en: 'Schinznach (the commune’s own parish)'
           fr: 'Schinznach (paroisse de la commune)'
           de: 'Schinznach (Kirchgemeinde der Gemeinde)'
+          it: 'Schinznach (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'schinznach' }
       - value: 'schinznach:ref. Kirche Veltheim-Oberflachs'
         label:
           en: 'Schinznach: ref. Kirche Veltheim-Oberflachs'
           fr: 'Schinznach : ref. Kirche Veltheim-Oberflachs'
           de: 'Schinznach: ref. Kirche Veltheim-Oberflachs'
+          it: 'Schinznach: ref. Kirche Veltheim-Oberflachs'
         when:
           all:
             - { key: profile.commune, eq: 'schinznach' }
@@ -718,12 +830,14 @@ questions:
           en: 'Sins (the commune’s own parish)'
           fr: 'Sins (paroisse de la commune)'
           de: 'Sins (Kirchgemeinde der Gemeinde)'
+          it: 'Sins (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'sins' }
       - value: 'sins:röm.-kath. Kirche Dietwil'
         label:
           en: 'Sins: röm.-kath. Kirche Dietwil'
           fr: 'Sins : röm.-kath. Kirche Dietwil'
           de: 'Sins: röm.-kath. Kirche Dietwil'
+          it: 'Sins: röm.-kath. Kirche Dietwil'
         when:
           all:
             - { key: profile.commune, eq: 'sins' }
@@ -733,12 +847,14 @@ questions:
           en: 'Untersiggenthal (the commune’s own parish)'
           fr: 'Untersiggenthal (paroisse de la commune)'
           de: 'Untersiggenthal (Kirchgemeinde der Gemeinde)'
+          it: 'Untersiggenthal (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'untersiggenthal' }
       - value: 'untersiggenthal:ref. Kirche Rein'
         label:
           en: 'Untersiggenthal: ref. Kirche Rein'
           fr: 'Untersiggenthal : ref. Kirche Rein'
           de: 'Untersiggenthal: ref. Kirche Rein'
+          it: 'Untersiggenthal: ref. Kirche Rein'
         when:
           all:
             - { key: profile.commune, eq: 'untersiggenthal' }
@@ -748,12 +864,14 @@ questions:
           en: 'Villmergen (the commune’s own parish)'
           fr: 'Villmergen (paroisse de la commune)'
           de: 'Villmergen (Kirchgemeinde der Gemeinde)'
+          it: 'Villmergen (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'villmergen' }
       - value: 'villmergen:ref. Kirche Ammerswil'
         label:
           en: 'Villmergen: ref. Kirche Ammerswil'
           fr: 'Villmergen : ref. Kirche Ammerswil'
           de: 'Villmergen: ref. Kirche Ammerswil'
+          it: 'Villmergen: ref. Kirche Ammerswil'
         when:
           all:
             - { key: profile.commune, eq: 'villmergen' }
@@ -763,12 +881,14 @@ questions:
           en: 'Zurzach (the commune’s own parish)'
           fr: 'Zurzach (paroisse de la commune)'
           de: 'Zurzach (Kirchgemeinde der Gemeinde)'
+          it: 'Zurzach (la parrocchia del Comune)'
         when: { key: profile.commune, eq: 'zurzach' }
       - value: 'zurzach:röm.-kath. Kirche Baldingen Böbikon'
         label:
           en: 'Zurzach: röm.-kath. Kirche Baldingen Böbikon'
           fr: 'Zurzach : röm.-kath. Kirche Baldingen Böbikon'
           de: 'Zurzach: röm.-kath. Kirche Baldingen Böbikon'
+          it: 'Zurzach: röm.-kath. Kirche Baldingen Böbikon'
         when:
           all:
             - { key: profile.commune, eq: 'zurzach' }
@@ -778,6 +898,7 @@ questions:
           en: 'Zurzach: röm.-kath. Kirche Kaiserstuhl Fisibach'
           fr: 'Zurzach : röm.-kath. Kirche Kaiserstuhl Fisibach'
           de: 'Zurzach: röm.-kath. Kirche Kaiserstuhl Fisibach'
+          it: 'Zurzach: röm.-kath. Kirche Kaiserstuhl Fisibach'
         when:
           all:
             - { key: profile.commune, eq: 'zurzach' }
@@ -787,6 +908,7 @@ questions:
           en: 'Zurzach: röm.-kath. Kirche Rümikon Wislikofen'
           fr: 'Zurzach : röm.-kath. Kirche Rümikon Wislikofen'
           de: 'Zurzach: röm.-kath. Kirche Rümikon Wislikofen'
+          it: 'Zurzach: röm.-kath. Kirche Rümikon Wislikofen'
         when:
           all:
             - { key: profile.commune, eq: 'zurzach' }
@@ -796,6 +918,7 @@ questions:
           en: 'Zurzach: ref. Kirche Tegerfelden'
           fr: 'Zurzach : ref. Kirche Tegerfelden'
           de: 'Zurzach: ref. Kirche Tegerfelden'
+          it: 'Zurzach: ref. Kirche Tegerfelden'
         when:
           all:
             - { key: profile.commune, eq: 'zurzach' }
@@ -805,6 +928,7 @@ questions:
           en: 'Zurzach: ref. Kirche Kaiserstuhl Fisibach'
           fr: 'Zurzach : ref. Kirche Kaiserstuhl Fisibach'
           de: 'Zurzach: ref. Kirche Kaiserstuhl Fisibach'
+          it: 'Zurzach: ref. Kirche Kaiserstuhl Fisibach'
         when:
           all:
             - { key: profile.commune, eq: 'zurzach' }
@@ -818,42 +942,57 @@ questions:
         en: 'Aargau tax guide 2025, p. 13: income'
         fr: 'Guide fiscal argovien 2025, p. 13 : Revenus'
         de: 'Wegleitung zur Steuererklärung 2025, S. 13: Einkünfte im In- und Ausland'
+        it: 'Guida fiscale di Argovia 2025, p. 13: redditi'
     options:
-      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - {
+          value: salary,
+          label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn', it: 'Un salario' },
+        }
       - value: replacement_income
         label:
           en: 'Unemployment, sickness or accident benefits'
           fr: 'Des indemnités (chômage, maladie, accident)'
           de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
-        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+          it: 'Indennità di disoccupazione, malattia o infortunio'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder', it: 'Indennità' }
       - value: pension
         label:
           {
             en: 'A pension (AHV, IV or pension fund)',
             fr: 'Une rente (AVS, AI ou caisse de pension)',
             de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+            it: 'Una rendita (AVS, AI o cassa pensione)',
           }
-        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente', it: 'Rendita' }
       - value: alimony
         label:
           {
             en: 'Alimony or child support received',
             fr: 'Une pension alimentaire reçue',
             de: 'Erhaltene Unterhaltsbeiträge',
+            it: 'Alimenti o contributi di mantenimento ricevuti',
           }
-        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+        chip:
+          {
+            en: 'Receives alimony',
+            fr: 'Reçoit une pension',
+            de: 'Erhält Unterhalt',
+            it: 'Riceve alimenti',
+          }
       - value: self_employment
         label:
           {
             en: 'Income from self-employment',
             fr: 'Un revenu d’activité indépendante',
             de: 'Einkommen aus selbstständiger Erwerbstätigkeit',
+            it: 'Reddito da attività indipendente',
           }
         notSupported:
           {
             en: 'Self-employment (selbstständige Erwerbstätigkeit, 2)',
             fr: 'L’activité indépendante (selbstständige Erwerbstätigkeit, 2)',
             de: 'Die selbstständige Erwerbstätigkeit (2)',
+            it: 'L’attività indipendente (selbstständige Erwerbstätigkeit, 2)',
           }
 
   # ag-2025-guide-wegleitung p. 13 (1.1 Haupterwerb, 1.2 Nebenerwerb: every salary with its
@@ -865,10 +1004,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 13: main and side employment'
         fr: 'Guide fiscal argovien 2025, p. 13 : Activité principale et accessoire'
         de: 'Wegleitung zur Steuererklärung 2025, S. 13: Haupterwerb und Nebenerwerb'
+        it: 'Guida fiscale di Argovia 2025, p. 13: attività principale e accessoria'
     help:
       en: 'Each one gives you a salary certificate (Lohnausweis).'
       fr: 'Chacun vous remet un certificat de salaire (Lohnausweis).'
       de: 'Jeder gibt dir einen Lohnausweis.'
+      it: 'Ognuno ti dà un certificato di salario (Lohnausweis).'
 
   # People taxed at source (Quellensteuer) file an ordinary return only when they must or ask for it
   # by 31 March of the next year (nachträgliche ordentliche Veranlagung, NOV):
@@ -878,16 +1019,19 @@ questions:
       en: 'Tax at source in Aargau (Quellensteuer) and the ordinary assessment that follows it (nachträgliche ordentliche Veranlagung, NOV)'
       fr: 'L’impôt à la source en Argovie (Quellensteuer) et la taxation ordinaire ultérieure qui suit (nachträgliche ordentliche Veranlagung, NOV)'
       de: 'Die Quellensteuer im Kanton Aargau und die nachträgliche ordentliche Veranlagung (NOV)'
+      it: 'L’imposta alla fonte in Argovia (Quellensteuer) e la tassazione ordinaria ulteriore che la segue (nachträgliche ordentliche Veranlagung, NOV)'
     learnMore:
       url: 'https://www.ag.ch/de/themen/steuern-finanzen/steuern/qellensteuern-abwickeln/quellensteuerpflichtige-personen'
       label:
         en: 'People taxed at source (Quellensteuerpflichtige Personen, ag.ch)'
         fr: 'Personnes imposées à la source (Quellensteuerpflichtige Personen, ag.ch)'
         de: 'Quellensteuerpflichtige Personen (ag.ch)'
+        it: 'Persone soggette all’imposta alla fonte (Quellensteuerpflichtige Personen, ag.ch)'
     help:
       en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
       fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, Ziffer 12).'
       de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+      it: 'Se è così, lo indica il certificato di salario (Lohnausweis, Ziffer 12).'
 
   # ag-2025-guide-wegleitung p. 26 (13.2, Beiträge Säule 3a: with the attestations).
   - use: pillar3a
@@ -897,10 +1041,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 26: pillar 3a'
         fr: 'Guide fiscal argovien 2025, p. 26 : Pilier 3a'
         de: 'Wegleitung zur Steuererklärung 2025, S. 26: Beiträge Säule 3a'
+        it: 'Guida fiscale di Argovia 2025, p. 26: pilastro 3a'
     help:
       en: 'Your bank or insurer sends an attestation; it goes with the return. On the return: 13.2, Beiträge Säule 3a.'
       fr: 'Votre banque ou votre assurance vous envoie une attestation, à joindre à la déclaration. Sur la déclaration : 13.2, Beiträge Säule 3a (cotisations au pilier 3a).'
       de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung, die zur Steuererklärung gehört. Auf der Steuererklärung: 13.2, Beiträge Säule 3a.'
+      it: 'La tua banca o assicurazione ti manda un’attestazione, da allegare alla dichiarazione. Nella dichiarazione: 13.2, Beiträge Säule 3a.'
 
   # ag-2025-guide-wegleitung p. 25 and 26 (13.1, Einkäufe Säule 2: only what the net salary doesn't
   # already include).
@@ -911,10 +1057,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 25: pension fund buy-ins'
         fr: 'Guide fiscal argovien 2025, p. 25 : Rachats au 2e pilier'
         de: 'Wegleitung zur Steuererklärung 2025, S. 25: Einkäufe Säule 2'
+        it: 'Guida fiscale di Argovia 2025, p. 25: riscatti nella cassa pensione'
     help:
       en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On the return: 13.1, Einkäufe Säule 2.'
       fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas. Sur la déclaration : 13.1, Einkäufe Säule 2 (rachats au 2e pilier).'
       de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. Auf der Steuererklärung: 13.1, Einkäufe Säule 2.'
+      it: 'Un versamento volontario oltre ai contributi abituali. Conta solo un riscatto che il tuo certificato di salario non mostra. Nella dichiarazione: 13.1, Einkäufe Säule 2.'
 
   # Travel to work (10.1, Fahrtkosten zwischen Wohn- und Arbeitsstätte) for both taxes, each up to its
   # own yearly limit: ag-2025-guide-wegleitung p. 22; ch-2026-ifd-instructions-personnes-physiques
@@ -924,26 +1072,36 @@ questions:
       en: 'Getting to work is deducted as travel costs (Fahrtkosten), for the cantonal and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
       fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrtkosten), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
       de: 'Der Arbeitsweg wird als Fahrtkosten abgezogen, bei den Kantons- und Gemeindesteuern und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+      it: 'Il tragitto per andare al lavoro si deduce come spese di trasporto (Fahrtkosten), per l’imposta cantonale e per quella federale, ognuna fino al proprio limite annuo. Il mezzo che usi decide come vengono contate.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=22'
       label:
         en: 'Aargau tax guide 2025, p. 22: travel to work'
         fr: 'Guide fiscal argovien 2025, p. 22 : Frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 22: Fahrtkosten zwischen Wohn- und Arbeitsstätte'
+        it: 'Guida fiscale di Argovia 2025, p. 22: spese di trasporto per recarsi al lavoro'
     help:
       en: 'Choose how you went on most work days. On the return: 10.1, Fahrtkosten zwischen Wohn- und Arbeitsstätte.'
       fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur la déclaration : 10.1, Fahrtkosten zwischen Wohn- und Arbeitsstätte (frais de déplacement).'
       de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf der Steuererklärung: 10.1, Fahrtkosten zwischen Wohn- und Arbeitsstätte.'
+      it: 'Scegli come ci sei andato nella maggior parte dei giorni di lavoro. Nella dichiarazione: 10.1, Fahrtkosten zwischen Wohn- und Arbeitsstätte.'
     options:
       - value: public_transport
-        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
-      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+        label:
+          {
+            en: 'Public transport',
+            fr: 'Transports publics',
+            de: 'Öffentlicher Verkehr',
+            it: 'Trasporti pubblici',
+          }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto', it: 'Automobile' } }
       - value: motorbike
         label:
           {
             en: 'Motorbike or scooter with a white number plate',
             fr: 'Moto ou scooter à plaque blanche',
             de: 'Motorrad oder Roller mit weissem Kontrollschild',
+            it: 'Motocicletta o scooter con targa bianca',
           }
       - value: bike
         label:
@@ -951,16 +1109,18 @@ questions:
             en: 'Bike, e-bike or moped with a yellow number plate',
             fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
             de: 'Velo, E-Bike oder Motorfahrrad mit gelbem Kontrollschild',
+            it: 'Bicicletta, bicicletta elettrica o ciclomotore con targa gialla',
           }
-      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss', it: 'A piedi' } }
       - value: mostly_home
         label:
           {
             en: 'From home, almost every day',
             fr: 'Depuis chez moi, presque tous les jours',
             de: 'Von zu Hause, fast jeden Tag',
+            it: 'Da casa, quasi tutti i giorni',
           }
-        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice', it: 'Lavora da casa' }
 
   # ag-2025-guide-wegleitung p. 22 (10.1: public transport, the actual costs, as a rule a season
   # ticket).
@@ -969,12 +1129,14 @@ questions:
       en: 'You deduct the public transport you paid to get to work, for the cantonal and the federal tax, each up to its own yearly limit.'
       fr: 'Vous déduisez les transports publics payés pour aller au travail, pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
       de: 'Du ziehst den bezahlten öffentlichen Verkehr zur Arbeit ab, bei den Kantons- und Gemeindesteuern und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Deduci i trasporti pubblici che hai pagato per andare al lavoro, per l’imposta cantonale e per quella federale, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=22'
       label:
         en: 'Aargau tax guide 2025, p. 22: travel to work'
         fr: 'Guide fiscal argovien 2025, p. 22 : Frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 22: Fahrtkosten zwischen Wohn- und Arbeitsstätte'
+        it: 'Guida fiscale di Argovia 2025, p. 22: spese di trasporto per recarsi al lavoro'
 
   # Aargau counts the kilometres only for one of its reasons: no public transport at the start or the
   # end of work, more than an hour a day saved, the car needed at work at the employer's request and
@@ -985,12 +1147,14 @@ questions:
       en: 'A driver deducts what public transport would have cost, for both taxes. The kilometres count only if you had a reason: no public transport for the trip, or none when work starts or ends, more than an hour a day saved by car, the car used all day for work at your employer’s request, or a health reason.'
       fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics, pour les deux impôts. Les kilomètres ne comptent que si vous aviez une raison : pas de transport public pour ce trajet, ou aucun au début ou à la fin du travail, plus d’une heure gagnée par jour en voiture, la voiture utilisée toute la journée pour le travail à la demande de l’employeur, ou une raison de santé.'
       de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Die Kilometer zählen nur mit einem Grund: kein öffentliches Verkehrsmittel für diesen Weg oder keines bei Arbeitsbeginn oder -ende, mehr als eine Stunde Zeitersparnis pro Tag mit dem Auto, das Auto während der Arbeitszeit ständig auf Verlangen der Arbeitgeberfirma, oder ein gesundheitlicher Grund.'
+      it: 'Chi va in automobile deduce quanto sarebbero costati i trasporti pubblici, per entrambe le imposte. I chilometri contano solo se avevi un motivo: nessun trasporto pubblico per il tragitto, o nessuno all’inizio o alla fine del lavoro, più di un’ora al giorno risparmiata in automobile, l’automobile usata tutto il giorno per il lavoro su richiesta del datore di lavoro, o un motivo di salute.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=22'
       label:
         en: 'Aargau tax guide 2025, p. 22: travel by car'
         fr: 'Guide fiscal argovien 2025, p. 22 : Trajets en voiture'
         de: 'Wegleitung zur Steuererklärung 2025, S. 22: Benützung des privaten Autos'
+        it: 'Guida fiscale di Argovia 2025, p. 22: trasporto con l’automobile'
     options:
       - value: 'yes'
         label:
@@ -998,6 +1162,7 @@ questions:
             en: 'Yes, I could have used public transport',
             fr: 'Oui, j’aurais pu prendre les transports publics',
             de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+            it: 'Sì, avrei potuto usare i trasporti pubblici',
           }
       - value: 'no'
         label:
@@ -1005,6 +1170,7 @@ questions:
             en: 'No, one of those reasons applies',
             fr: 'Non, l’une de ces raisons s’applique',
             de: 'Nein, einer dieser Gründe trifft zu',
+            it: 'No, vale uno di questi motivi',
           }
 
   - use: commute_transit_equivalent
@@ -1012,12 +1178,14 @@ questions:
       en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
       fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
       de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab, bei beiden Steuern, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Quel prezzo è quanto deduci per andare al lavoro in automobile, per entrambe le imposte, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=22'
       label:
         en: 'Aargau tax guide 2025, p. 22: travel to work'
         fr: 'Guide fiscal argovien 2025, p. 22 : Frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 22: Fahrtkosten zwischen Wohn- und Arbeitsstätte'
+        it: 'Guida fiscale di Argovia 2025, p. 22: spese di trasporto per recarsi al lavoro'
 
   # ag-2025-guide-wegleitung p. 22 (an amount per km for a car or a motorbike); the ordinance's lower
   # rate for a car beyond a yearly distance (ag-2026-law-steuerverordnung § 13 Abs. 1, p. 4).
@@ -1026,12 +1194,14 @@ questions:
       en: 'With one of those reasons, both taxes count a fixed amount per kilometre, there and back once a day, each up to its own yearly limit.'
       fr: 'Avec l’une de ces raisons, les deux impôts comptent un montant fixe par kilomètre, un aller et retour par jour, chacun jusqu’à sa propre limite annuelle.'
       de: 'Mit einem dieser Gründe zählen beide Steuern einen festen Betrag pro Kilometer, einmal hin und zurück pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Con uno di questi motivi, entrambe le imposte contano un importo fisso per chilometro, andata e ritorno una volta al giorno, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=22'
       label:
         en: 'Aargau tax guide 2025, p. 22: travel by car'
         fr: 'Guide fiscal argovien 2025, p. 22 : Trajets en voiture'
         de: 'Wegleitung zur Steuererklärung 2025, S. 22: Benützung des privaten Autos'
+        it: 'Guida fiscale di Argovia 2025, p. 22: trasporto con l’automobile'
 
   - use: commute_drive_days
     learnMore:
@@ -1040,10 +1210,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 22: travel by car'
         fr: 'Guide fiscal argovien 2025, p. 22 : Trajets en voiture'
         de: 'Wegleitung zur Steuererklärung 2025, S. 22: Benützung des privaten Autos'
+        it: 'Guida fiscale di Argovia 2025, p. 22: trasporto con l’automobile'
     help:
       en: 'Leave out holidays, sick days and days worked from home (Homeoffice).'
       fr: 'Sans les vacances, les jours de maladie et les jours de télétravail (Homeoffice).'
       de: 'Ohne Ferien, Krankheitstage und Tage im Homeoffice.'
+      it: 'Escludi le vacanze, i giorni di malattia e i giorni di lavoro da casa (Homeoffice).'
 
   # Meals away from home (10.2, Mehrkosten der auswärtigen Verpflegung), for both taxes:
   # ag-2025-guide-wegleitung p. 22 and 23.
@@ -1052,12 +1224,14 @@ questions:
       en: 'Lunch away from home because of work costs more than at home (Mehrkosten der auswärtigen Verpflegung). A fixed amount per day counts for both taxes, up to a yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate).'
       fr: 'Manger à l’extérieur à cause du travail coûte plus cher qu’à la maison (Mehrkosten der auswärtigen Verpflegung). Un montant fixe par jour compte pour les deux impôts, jusqu’à une limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire).'
       de: 'Auswärts essen wegen der Arbeit kostet mehr als zu Hause (Mehrkosten der auswärtigen Verpflegung). Für beide Steuern zählt ein fester Betrag pro Tag, bis zu einem jährlichen Höchstbetrag, die Hälfte davon, wenn deine Arbeitgeberfirma einen Teil deiner Mahlzeiten bezahlt (Feld G des Lohnausweises).'
+      it: 'Il pranzo fuori casa a causa del lavoro costa più che a casa (Mehrkosten der auswärtigen Verpflegung). Un importo fisso al giorno conta per entrambe le imposte, fino a un limite annuo, la metà quando il datore di lavoro paga una parte dei tuoi pasti (casella G del tuo certificato di salario).'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=23'
       label:
         en: 'Aargau tax guide 2025, p. 23: meals'
         fr: 'Guide fiscal argovien 2025, p. 23 : Frais de repas'
         de: 'Wegleitung zur Steuererklärung 2025, S. 23: Mehrkosten der auswärtigen Verpflegung'
+        it: 'Guida fiscale di Argovia 2025, p. 23: pasti'
 
   # ag-2025-guide-wegleitung p. 34 (20.1 Wertschriften: the securities list, the banks' tax
   # statements).
@@ -1068,10 +1242,12 @@ questions:
         en: 'Aargau tax guide 2025, p. 34: securities and accounts'
         fr: 'Guide fiscal argovien 2025, p. 34 : Titres et avoirs'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Wertschriften'
+        it: 'Guida fiscale di Argovia 2025, p. 34: titoli e averi'
     help:
       en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers. On the return: Wertschriften- und Guthabenverzeichnis.'
       fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers. Sur la déclaration : Wertschriften- und Guthabenverzeichnis (état des titres et avoirs).'
       de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker. Auf der Steuererklärung: Wertschriften- und Guthabenverzeichnis.'
+      it: 'Conta anche PostFinance, i conti dei tuoi figli e i broker online o esteri. Nella dichiarazione: Wertschriften- und Guthabenverzeichnis.'
 
   # ag-2025-guide-wegleitung p. 38 and 39 (Kryptowährungen in the securities list).
   - use: crypto
@@ -1081,6 +1257,7 @@ questions:
         en: 'Aargau tax guide 2025, p. 39: cryptocurrencies'
         fr: 'Guide fiscal argovien 2025, p. 39 : Cryptomonnaies'
         de: 'Wegleitung zur Steuererklärung 2025, S. 39: Kryptowährungen'
+        it: 'Guida fiscale di Argovia 2025, p. 39: criptovalute'
 
   # ag-2025-guide-wegleitung p. 25 (11 Schuldzinsen, 12 Unterhaltsbeiträge), p. 28 (15.3), p. 30
   # (17).
@@ -1091,6 +1268,7 @@ questions:
         en: 'Aargau tax guide 2025, p. 25: debt interest and alimony'
         fr: 'Guide fiscal argovien 2025, p. 25 : Intérêts passifs et pensions'
         de: 'Wegleitung zur Steuererklärung 2025, S. 25: Schuldzinsen und Unterhaltsbeiträge'
+        it: 'Guida fiscale di Argovia 2025, p. 25: interessi passivi e alimenti'
 
   # What Taxpresso can't prepare for Aargau yet: property (6, 21), inheritances and gifts, income from
   # abroad, capital payments (StG § 45). eTAX AARGAU is the canton's online return
@@ -1102,6 +1280,7 @@ questions:
         en: 'eTAX AARGAU, the canton’s online return (ag.ch)'
         fr: 'eTAX AARGAU, la déclaration en ligne du canton (ag.ch)'
         de: 'eTAX AARGAU, die Online-Steuererklärung des Kantons (ag.ch)'
+        it: 'eTAX AARGAU, la dichiarazione online del Cantone (ag.ch)'
     options:
       - value: real_estate
         label:
@@ -1109,12 +1288,14 @@ questions:
             en: 'I own real estate, in Switzerland or abroad',
             fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
             de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+            it: 'Possiedo immobili, in Svizzera o all’estero',
           }
         notSupported:
           {
             en: 'Real estate (Liegenschaften)',
             fr: 'Les immeubles (Liegenschaften)',
             de: 'Liegenschaften',
+            it: 'Gli immobili (Liegenschaften)',
           }
       - value: inheritance_or_gift
         label:
@@ -1122,12 +1303,14 @@ questions:
             en: 'I received an inheritance or a large gift',
             fr: 'J’ai reçu un héritage ou une donation importante',
             de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+            it: 'Ho ricevuto un’eredità o una donazione importante',
           }
         notSupported:
           {
             en: 'An inheritance or a gift (Erbschaft, Schenkung)',
             fr: 'Un héritage ou une donation (Erbschaft, Schenkung)',
             de: 'Eine Erbschaft oder Schenkung',
+            it: 'Un’eredità o una donazione (Erbschaft, Schenkung)',
           }
       - value: foreign_income
         label:
@@ -1135,12 +1318,14 @@ questions:
             en: 'I had income from abroad (salary, pension, rent)',
             fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
             de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+            it: 'Ho avuto redditi dall’estero (salario, rendita, affitto)',
           }
         notSupported:
           {
             en: 'Income from abroad',
             fr: 'Des revenus de l’étranger',
             de: 'Einkünfte aus dem Ausland',
+            it: 'I redditi dall’estero',
           }
       - value: pension_capital
         label:
@@ -1148,12 +1333,14 @@ questions:
             en: 'I withdrew pension capital (2nd or 3rd pillar)',
             fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
             de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+            it: 'Ho prelevato un capitale di previdenza (2° o 3° pilastro)',
           }
         notSupported:
           {
             en: 'A pension capital withdrawal (Kapitalleistungen aus Vorsorge)',
             fr: 'Un retrait de capital de prévoyance (Kapitalleistungen aus Vorsorge)',
             de: 'Ein Kapitalbezug aus der Vorsorge (Kapitalleistungen aus Vorsorge)',
+            it: 'Un prelievo di capitale di previdenza (Kapitalleistungen aus Vorsorge)',
           }
 
 # The documents, with the page of the Aargau guide for 2025 (ag-2025-guide-wegleitung p. 8 and 9
@@ -1167,6 +1354,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 13: main and side employment'
         fr: 'Guide fiscal argovien 2025, p. 13 : Activité principale et accessoire'
         de: 'Wegleitung zur Steuererklärung 2025, S. 13: Haupterwerb und Nebenerwerb'
+        it: 'Guida fiscale di Argovia 2025, p. 13: attività principale e accessoria'
     source: 'ag-2025-guide-wegleitung p. 13'
 
   - use: replacement_income
@@ -1176,6 +1364,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 17: daily allowances'
         fr: 'Guide fiscal argovien 2025, p. 17 : Indemnités journalières'
         de: 'Wegleitung zur Steuererklärung 2025, S. 17: Erwerbsausfallentschädigungen'
+        it: 'Guida fiscale di Argovia 2025, p. 17: indennità giornaliere'
     source: 'ag-2025-guide-wegleitung p. 17'
 
   - use: pension
@@ -1185,6 +1374,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 16: pensions'
         fr: 'Guide fiscal argovien 2025, p. 16 : Rentes'
         de: 'Wegleitung zur Steuererklärung 2025, S. 16: Steuerbare Renten'
+        it: 'Guida fiscale di Argovia 2025, p. 16: rendite'
     source: 'ag-2025-guide-wegleitung p. 16'
 
   - use: pillar3a
@@ -1194,6 +1384,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 26: pillar 3a'
         fr: 'Guide fiscal argovien 2025, p. 26 : Pilier 3a'
         de: 'Wegleitung zur Steuererklärung 2025, S. 26: Beiträge Säule 3a'
+        it: 'Guida fiscale di Argovia 2025, p. 26: pilastro 3a'
     source: 'ag-2025-guide-wegleitung p. 26'
 
   - use: lpp_buyin
@@ -1203,6 +1394,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 26: pension fund buy-ins'
         fr: 'Guide fiscal argovien 2025, p. 26 : Rachats au 2e pilier'
         de: 'Wegleitung zur Steuererklärung 2025, S. 26: Einkäufe Säule 2'
+        it: 'Guida fiscale di Argovia 2025, p. 26: riscatti nella cassa pensione'
     source: 'ag-2025-guide-wegleitung p. 25, p. 26'
 
   # Aargau deducts a flat amount for insurance premiums whatever was paid (ag-2025-guide-wegleitung
@@ -1214,17 +1406,20 @@ requirements:
       en: 'Aargau deducts a flat amount for insurance premiums, whatever you paid. The federal tax counts what you paid, up to its own limit: Taxpresso needs your insurer’s yearly statement for it. One family statement can cover several people.'
       fr: 'Argovie déduit un forfait pour les primes d’assurance, quel que soit le montant payé. L’impôt fédéral compte ce que vous avez payé, jusqu’à sa propre limite : Taxpresso a besoin du relevé annuel de votre assureur pour lui. Un relevé familial peut couvrir plusieurs personnes.'
       de: 'Aargau zieht für Versicherungsprämien einen Pauschalbetrag ab, egal wie viel du bezahlt hast. Die Bundessteuer zählt, was du bezahlt hast, bis zu ihrem eigenen Höchstbetrag: Taxpresso braucht dafür die Jahresbescheinigung deiner Krankenkasse. Eine Familienbescheinigung kann mehrere Personen abdecken.'
+      it: 'Argovia deduce un importo forfettario per i premi assicurativi, qualunque cosa tu abbia pagato. L’imposta federale conta quello che hai pagato, fino al proprio limite: per questo Taxpresso ha bisogno dell’attestazione annuale della tua assicurazione. Un’attestazione di famiglia può coprire più persone.'
     learnMore:
       url: 'https://www.ag.ch/media/kanton-aargau/dfr/dokumente/steuern/natuerliche-personen/steuererklaerung/wegleitung-zur-steuererkl-rung-2025-kanton-aargau.pdf#page=27'
       label:
         en: 'Aargau tax guide 2025, p. 27: insurance premiums'
         fr: 'Guide fiscal argovien 2025, p. 27 : Primes d’assurances'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Versicherungsprämien und Zinsen von Sparkapitalien'
+        it: 'Guida fiscale di Argovia 2025, p. 27: premi assicurativi'
     reason:
       {
         en: 'For the federal tax: your insurer’s annual attestation.',
         fr: 'Pour l’impôt fédéral : l’attestation annuelle de votre assureur.',
         de: 'Für die Bundessteuer: die Jahresbescheinigung deiner Krankenkasse.',
+        it: 'Per l’imposta federale: l’attestazione annuale della tua assicurazione.',
       }
     source: 'ag-2025-guide-wegleitung p. 27, p. 42'
 
@@ -1235,6 +1430,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 34: securities and accounts'
         fr: 'Guide fiscal argovien 2025, p. 34 : Titres et avoirs'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Wertschriften'
+        it: 'Guida fiscale di Argovia 2025, p. 34: titoli e averi'
     source: 'ag-2025-guide-wegleitung p. 34'
 
   - use: crypto
@@ -1244,6 +1440,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 39: cryptocurrencies'
         fr: 'Guide fiscal argovien 2025, p. 39 : Cryptomonnaies'
         de: 'Wegleitung zur Steuererklärung 2025, S. 39: Kryptowährungen'
+        it: 'Guida fiscale di Argovia 2025, p. 39: criptovalute'
     source: 'ag-2025-guide-wegleitung p. 38, p. 39'
 
   - use: childcare
@@ -1253,6 +1450,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 27: childcare'
         fr: 'Guide fiscal argovien 2025, p. 27 : Frais de garde'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Kinderbetreuungskosten'
+        it: 'Guida fiscale di Argovia 2025, p. 27: custodia dei figli'
     source: 'ag-2025-guide-wegleitung p. 27'
 
   - use: medical
@@ -1262,6 +1460,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 30: medical and accident costs'
         fr: 'Guide fiscal argovien 2025, p. 30 : Frais de maladie et d’accident'
         de: 'Wegleitung zur Steuererklärung 2025, S. 30: Krankheits- und Unfallkosten'
+        it: 'Guida fiscale di Argovia 2025, p. 30: spese di malattia e infortunio'
     source: 'ag-2025-guide-wegleitung p. 30'
 
   - use: donations
@@ -1271,6 +1470,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 28: donations'
         fr: 'Guide fiscal argovien 2025, p. 28 : Dons'
         de: 'Wegleitung zur Steuererklärung 2025, S. 28: Freiwillige Leistungen (Spenden)'
+        it: 'Guida fiscale di Argovia 2025, p. 28: donazioni'
     source: 'ag-2025-guide-wegleitung p. 28'
 
   - use: loan_interest
@@ -1280,6 +1480,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 25: debt interest'
         fr: 'Guide fiscal argovien 2025, p. 25 : Intérêts passifs'
         de: 'Wegleitung zur Steuererklärung 2025, S. 25: Schuldzinsen'
+        it: 'Guida fiscale di Argovia 2025, p. 25: interessi passivi'
     source: 'ag-2025-guide-wegleitung p. 25'
 
   - use: alimony
@@ -1289,6 +1490,7 @@ requirements:
         en: 'Aargau tax guide 2025, p. 25: alimony and child support'
         fr: 'Guide fiscal argovien 2025, p. 25 : Contributions d’entretien'
         de: 'Wegleitung zur Steuererklärung 2025, S. 25: Unterhaltsbeiträge'
+        it: 'Guida fiscale di Argovia 2025, p. 25: alimenti e contributi di mantenimento'
     source: 'ag-2025-guide-wegleitung p. 18, p. 25'
 
   - use: separation_judgment
@@ -1298,4 +1500,5 @@ requirements:
         en: 'Aargau tax guide 2025, p. 8: separation and divorce'
         fr: 'Guide fiscal argovien 2025, p. 8 : Séparation et divorce'
         de: 'Wegleitung zur Steuererklärung 2025, S. 8: Heirat, Scheidung oder Trennung'
+        it: 'Guida fiscale di Argovia 2025, p. 8: separazione e divorzio'
     source: 'ag-2025-guide-wegleitung p. 8'

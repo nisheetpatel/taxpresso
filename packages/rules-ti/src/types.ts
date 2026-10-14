@@ -3,7 +3,15 @@
 // the same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items
 // carry the number of the line (cifra) on the Ticino return, Modulo 1 (./rubrics.ts), and the
 // person; deductions are negative, income and assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { TiTaxYear } from './params.js';
 
 export type {
@@ -11,6 +19,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -86,6 +95,11 @@ export interface PersonInput {
    * the deduction is in proportion (Modulo 4, cifra 1). Not given: the whole year, said in the result.
    */
   monthsWorked?: number;
+  /**
+   * Worked only part of the year, the months not given yet: as `monthsWorked` under 12, the flat
+   * amounts would be in proportion, which Taxpresso does not compute.
+   */
+  partYear?: boolean;
 }
 
 export interface ChildInput {
@@ -123,7 +137,18 @@ export interface TiEngineInput {
    * (LT art. 35 cpv. 5).
    */
   changedThisYear?: boolean;
+  /**
+   * The federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). Unknown, the federal tax is not
+   * computed.
+   */
+  ifdParentalScale?: boolean;
   household?: {
+    /**
+     * 20: childcare paid for the household as a whole (the invoices of a crèche, say), when not
+     * given per child: it counts where it can be told apart per child (./compute.ts).
+     */
+    childcare?: Amount;
     /** 12 (Modulo 6, 1.a): health insurance premiums paid for the household. */
     healthPremiums?: Amount;
     /** 12 (Modulo 6, 1.b and 1.e): private accident and loss-of-earnings insurance premiums. */
@@ -203,6 +228,11 @@ export interface TiIccResult {
   netIncome: Line;
   /** 21, Reddito netto intermedio II: 19 less childcare (20). */
   netIncome2: Line;
+  /**
+   * 22.1 as the return lays it out: a. the illness and accident costs you bore (Modulo 6, back) and
+   * b. the threshold, 5 % of 21; c. (the deduction) is among the items. Null without such costs.
+   */
+  medical: { costs: Line; threshold: Line } | null;
   /** 23, Reddito netto intermedio III: 21 less illness costs (22.1). */
   netIncome3: Line;
   /** 26, the net income after donations (24) and the social deductions (25). */
@@ -211,6 +241,13 @@ export interface TiIccResult {
   taxableIncome: Line;
   /** The income tariff: LT art. 35 cpv. 1 (single) or cpv. 2 (spouses and families). */
   incomeTariff: 'single' | 'family';
+  /**
+   * Modulo 4 line by line, each person's professional costs as their 9.1 or 9.2 adds them up: the
+   * travel (2.1, 2.2 or 2.3), the meals (3.1), the other costs (5.1 flat or 5.2 actual), a side
+   * job's flat amount (6.1), with Modulo 4's field numbers (./rubrics.ts, MODULO4). Not counted
+   * again: 9.1 and 9.2 are their totals.
+   */
+  professional: Item[];
   wealth: {
     items: Item[];
     /** 32, the total of the assets. */
@@ -239,18 +276,40 @@ export interface TiIccResult {
   };
 }
 
+/**
+ * The federal direct tax (imposta federale diretta) the authority derives from the same return
+ * (./ifd.ts): the return's income lines, the federal deductions on the same lines (Modulo 4's lines
+ * for the professional costs; the married couple deduction among the other deductions, as the
+ * canton's table of deductions lists it), the subtotals 16, 19, 21, 23 and 26 with the federal
+ * amounts, and the taxable income (28), with no exemption for AVS and AI pensioners (27 is cantonal).
+ */
+export interface TiIfdResult extends IfdResult {
+  items: Item[];
+  /** 16, Totale delle deduzioni, federal amounts. */
+  totalDeductions: Line;
+  /** 19, Reddito netto I, federal (named as the cantonal result names it). */
+  netIncome: Line;
+  /** 21, Reddito netto intermedio II, federal: the base of the illness costs' threshold. */
+  netIncome2: Line;
+  /** 23, Reddito netto intermedio III, federal: the base of the donations' cap. */
+  netIncome3: Line;
+  /** 26, Reddito netto, federal: after the donations and the federal child deduction. */
+  netIncome4: Line;
+}
+
 export interface TiTaxResult {
   canton: 'TI';
   taxYear: TiTaxYear;
   commune: CommuneRef;
   icc: TiIccResult | null;
   /**
-   * The federal tax is packages/rules-ch's. The Ticino return has no federal column: the tax
-   * authority derives the federal tax from the cantonal return (ti-2025-guide-istruzioni-pf-pdf
-   * p. 5), so the result leaves it to the federal engine.
+   * The federal tax (packages/rules-ch's rules): the Ticino return has no federal column, the
+   * authority derives the federal tax from it, adjusting the deductions itself
+   * (ti-2025-guide-istruzioni-pf-pdf p. 5 and 47; the differences in ti-2025-deductions-table), so
+   * ./ifd.ts computes it on the return's own lines; null when not computed.
    */
-  ifd: null;
-  /** The cantonal and communal tax with the personal tax, when computed. */
+  ifd: TiIfdResult | null;
+  /** The cantonal and communal tax with the personal tax and the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -260,4 +319,6 @@ export interface TiTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes. */
+  limits: LimitApplied[];
 }

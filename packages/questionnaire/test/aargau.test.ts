@@ -1,6 +1,6 @@
 // The Aargau questionnaire (data/ag/2026/questionnaire.yaml): in step with Aargau's keys, communes
-// and parishes (packages/rules-ag), every text in English, French and German, every page an
-// official one, and the questions only Aargau asks (who mainly bears a shared child's upkeep, each
+// and parishes (packages/rules-ag), every text in English, French, German and Italian, every page
+// an official one, and the questions only Aargau asks (who mainly bears a shared child's upkeep, each
 // child's age band and childcare, the church and the further parish) only where they apply.
 // Synthetic answers only.
 import { readFileSync } from 'node:fs';
@@ -120,19 +120,26 @@ describe('Aargau questionnaire 2026', () => {
     const options = (id: string) => file.questions.find((q) => q.id === id)!.options!;
     expect(options('commute').map((o) => o.value)).not.toContain('public_transport_long');
     expect(options('commute_transit_usable').map((o) => o.value)).toEqual(['yes', 'no']);
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'Aargau', fr: 'Argovie', de: 'Aargau' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({ en: 'Aargau', fr: 'Argovie', de: 'Aargau', it: 'Argovia' });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = agQuestionnaire2026();
     const missing: string[] = [];
+    const missingIt: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missingIt.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -140,6 +147,7 @@ describe('Aargau questionnaire 2026', () => {
     };
     visit(file, 'ag');
     expect(missing).toEqual([]);
+    expect(missingIt).toEqual([]);
     // No em-dash anywhere, no amount or limit in a question's own words.
     const all = JSON.stringify(file);
     expect(all).not.toMatch(/—/);
@@ -163,6 +171,9 @@ describe('Aargau questionnaire 2026', () => {
         expect(label.de, item.id).toMatch(
           new RegExp(`^Wegleitung zur Steuererklärung 2025, S\\. ${page}: `),
         );
+        expect(label.it, item.id).toMatch(
+          new RegExp(`^Guida fiscale di Argovia 2025, p\\. ${page}: `),
+        );
       }
     }
     // Every document cites the Aargau guide, by the page of the PDF.
@@ -183,13 +194,14 @@ describe('Aargau questionnaire 2026', () => {
     // The options are the list's parishes, each offered only in its own commune, a further one
     // only to a member of its church.
     expect(
-      parish.options!.map((o) => [o.value, o.label.en, o.label.fr, o.label.de, o.when]),
+      parish.options!.map((o) => [o.value, o.label.en, o.label.fr, o.label.de, o.label.it, o.when]),
     ).toEqual(
       table.map((o) => [
         o.value,
         o.own ? `${o.commune} (the commune’s own parish)` : `${o.commune}: ${o.parish}`,
         o.own ? `${o.commune} (paroisse de la commune)` : `${o.commune}${NBSP}: ${o.parish}`,
         o.own ? `${o.commune} (Kirchgemeinde der Gemeinde)` : `${o.commune}: ${o.parish}`,
+        o.own ? `${o.commune} (la parrocchia del Comune)` : `${o.commune}: ${o.parish}`,
         o.own
           ? { key: 'profile.commune', eq: o.slug }
           : {

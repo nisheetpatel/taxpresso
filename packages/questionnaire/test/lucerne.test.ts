@@ -1,5 +1,5 @@
 // The Lucerne questionnaire (data/lu/2026/questionnaire.yaml): in step with Lucerne's keys and
-// communes (packages/rules-lu), every text in English, French and German, every page an official
+// communes (packages/rules-lu), every text in English, French, German and Italian, every page an official
 // one, and the questions only Lucerne asks (the family tariff in shared custody, each child's
 // household, age, education away from home, childcare and confession, each adult's confession) only
 // where they apply. Synthetic answers only.
@@ -132,19 +132,26 @@ describe('Lucerne questionnaire 2026', () => {
     const options = (id: string) => file.questions.find((q) => q.id === id)!.options!;
     expect(options('commute').map((o) => o.value)).not.toContain('public_transport_long');
     expect(options('commute_transit_usable').map((o) => o.value)).toEqual(['yes', 'no']);
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'Lucerne', fr: 'Lucerne', de: 'Luzern' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({ en: 'Lucerne', fr: 'Lucerne', de: 'Luzern', it: 'Lucerna' });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = luQuestionnaire2026();
     const missing: string[] = [];
+    const missingIt: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missingIt.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -152,6 +159,7 @@ describe('Lucerne questionnaire 2026', () => {
     };
     visit(file, 'lu');
     expect(missing).toEqual([]);
+    expect(missingIt).toEqual([]);
     // No em-dash anywhere, no amount or limit in a question's own words.
     const all = JSON.stringify(file);
     expect(all).not.toMatch(/—/);
@@ -174,6 +182,9 @@ describe('Lucerne questionnaire 2026', () => {
         );
         expect(label.de, item.id).toMatch(
           new RegExp(`^Wegleitung zur Steuererklärung 2025, S\\. ${page}: `),
+        );
+        expect(label.it, item.id).toMatch(
+          new RegExp(`^Guida fiscale di Lucerna 2025, p\\. ${page}: `),
         );
       }
     }
@@ -264,7 +275,7 @@ describe('Lucerne questionnaire 2026', () => {
     expect(e.render(second, snap, 'en').text).toBe(
       'Did child 2 live in your household at the end of 2026?',
     );
-    for (const lang of ['en', 'fr', 'de'] as const) {
+    for (const lang of ['en', 'fr', 'de', 'it'] as const) {
       const r = e.render(second, snap, lang);
       expect(JSON.stringify([r.text, r.help, r.explain, r.who])).not.toMatch(/\{n\}/);
     }

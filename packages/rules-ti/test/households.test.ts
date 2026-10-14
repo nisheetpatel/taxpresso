@@ -84,7 +84,7 @@ describe('a single person in Lugano, 2025', () => {
     expect(x.communalIncome.amount).toBe(chf(2_693.6));
     expect(x.wealthBase.amount).toBe(0);
     expect(x.personal.amount).toBe(chf(40));
-    expect(r.total).toBe(chf(6_231.8));
+    expect(r.icc!.taxes.total.amount).toBe(chf(6_231.8));
     expect(r.commune).toEqual({ bfs: null, name: 'LUGANO', rate: 7_700 });
   });
 });
@@ -175,7 +175,7 @@ describe('a couple with two children in Bellinzona, 2026', () => {
     expect(x.incomeBase.amount).toBe(chf(2_203.85));
     expect(x.communalIncome.amount).toBe(chf(2_049.6));
     expect(x.personal.amount).toBe(chf(80));
-    expect(r.total).toBe(chf(4_333.45));
+    expect(r.icc!.taxes.total.amount).toBe(chf(4_333.45));
   });
 });
 
@@ -231,7 +231,7 @@ describe('a single parent in Locarno, 2025', () => {
     expect(r.icc!.taxes.incomeBase.amount).toBe(chf(996.55));
     expect(r.icc!.taxes.communalIncome.amount).toBe(chf(896.9));
     expect(r.icc!.wealth.taxableWealth.amount).toBe(0);
-    expect(r.total).toBe(chf(1_933.45));
+    expect(r.icc!.taxes.total.amount).toBe(chf(1_933.45));
   });
 });
 
@@ -283,7 +283,7 @@ describe('a retiree with wealth in Mendrisio, 2026', () => {
     expect(x.communalIncome.amount).toBe(chf(2_888.25));
     expect(x.wealthBase.amount).toBe(chf(2_175));
     expect(x.communalWealth.amount).toBe(chf(1_674.75));
-    expect(r.total).toBe(chf(10_528.95));
+    expect(r.icc!.taxes.total.amount).toBe(chf(10_528.95));
   });
 
   it('a lower income gives the AVS exemption by its band', () => {
@@ -301,7 +301,7 @@ describe('a retiree with wealth in Mendrisio, 2026', () => {
     expect(line(small, '27')).toBe(-chf(8_000));
     expect(small.icc!.taxableIncome.amount).toBe(chf(11_800));
     expect(small.icc!.taxes.incomeBase.amount).toBe(0);
-    expect(small.total).toBe(chf(40));
+    expect(small.icc!.taxes.total.amount).toBe(chf(40));
   });
 });
 
@@ -326,6 +326,9 @@ describe('a parent sharing custody without child support in Lugano, 2026', () =>
     commune: 'LUGANO',
     civilStatus: 'divorced',
     childSupport: 'none',
+    // Without child support, the federal parental scale goes to the parent who earns more
+    // (ch-na-circulaire-30-epoux-famille p. 24): this one, here.
+    ifdParentalScale: true,
     people: [
       {
         id: 'p1',
@@ -356,7 +359,7 @@ describe('a parent sharing custody without child support in Lugano, 2026', () =>
     expect(r.icc!.incomeTariff).toBe('family');
     expect(r.icc!.taxes.incomeBase.amount).toBe(chf(1_114.3));
     expect(r.icc!.taxes.communalIncome.amount).toBe(chf(891.45));
-    expect(r.total).toBe(chf(2_045.75));
+    expect(r.icc!.taxes.total.amount).toBe(chf(2_045.75));
     const unverified = r.unverifiedRules.map((n) => n.en).join(' ');
     expect(unverified).toContain('family tariff');
     expect(unverified).toContain('CHF 1,200');

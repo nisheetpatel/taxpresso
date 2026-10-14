@@ -23,18 +23,19 @@
 
 taxYear: 2026
 
-place: { en: 'Lucerne', fr: 'Lucerne', de: 'Luzern' }
+place: { en: 'Lucerne', fr: 'Lucerne', de: 'Luzern', it: 'Lucerna' }
 
 people:
-  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p1: { en: 'You', fr: 'Vous', de: 'Du', it: 'Tu' }
   p2:
     {
       en: 'Your spouse or partner',
       fr: 'Votre conjoint ou partenaire',
       de: 'Dein Partner oder deine Partnerin',
+      it: 'Il tuo coniuge o partner',
     }
-  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
-  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner', it: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}', it: 'Figlio {n}' }
 
 # eSteuern.LU is the canton's online return, in the browser, with your own eSteuern account and the
 # PersID and Zugangscode eFiling printed on your return (docs/sources/lu/NOTES.md, Filing channels;
@@ -44,6 +45,7 @@ notSupported:
   en: 'Taxpresso can’t prepare this part yet. eSteuern.LU, the canton’s online return (esteuern.lu.ch), or a fiduciary can.'
   fr: 'Taxpresso ne peut pas encore préparer cette partie. eSteuern.LU, la déclaration en ligne du canton (esteuern.lu.ch), ou une fiduciaire le peuvent.'
   de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. eSteuern.LU, die Online-Steuererklärung des Kantons (esteuern.lu.ch), oder eine Treuhand kann es.'
+  it: 'Taxpresso non può ancora preparare questa parte. Può farlo eSteuern.LU, la dichiarazione online del Cantone (esteuern.lu.ch), o una fiduciaria.'
 
 questions:
   - use: canton
@@ -57,10 +59,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 7: marriage, divorce or separation'
         fr: 'Guide fiscal de Lucerne 2025, p. 7 : Mariage, divorce ou séparation'
         de: 'Wegleitung zur Steuererklärung 2025, S. 7: Heirat, Scheidung oder Trennung'
+        it: 'Guida fiscale di Lucerna 2025, p. 7: matrimonio, divorzio o separazione'
     help:
       en: 'A registered partnership files like a married couple, on one return.'
       fr: 'Un partenariat enregistré déclare comme un couple marié, sur une seule déclaration.'
       de: 'Eine eingetragene Partnerschaft füllt wie ein Ehepaar eine gemeinsame Steuererklärung aus.'
+      it: 'Un’unione domestica registrata presenta una sola dichiarazione, come una coppia sposata.'
 
   # lu-2025-guide-wegleitung p. 34 (350, Kinderabzug: minors, and children in school or vocational
   # training whose upkeep you bear); page 1 of the return lists them (Ziffer 3).
@@ -71,10 +75,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 34: child deductions'
         fr: 'Guide fiscal de Lucerne 2025, p. 34 : Déductions pour enfants'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Kinderabzüge'
+        it: 'Guida fiscale di Lucerna 2025, p. 34: deduzioni per i figli'
     help:
       en: 'Minors, and older children in school or training whose upkeep you bear. On page 1 of the return, Ziffer 3: Minderjährige oder in Ausbildung stehende Kinder.'
       fr: 'Les mineurs, et les enfants plus âgés en formation dont vous assumez l’entretien. En page 1 de la déclaration, Ziffer 3 : Minderjährige oder in Ausbildung stehende Kinder (enfants mineurs ou en formation).'
       de: 'Minderjährige und ältere Kinder in Ausbildung, deren Unterhalt du bestreitest. Auf Seite 1 der Steuererklärung, Ziffer 3: Minderjährige oder in Ausbildung stehende Kinder.'
+      it: 'I figli minorenni, e quelli più grandi a scuola o in formazione che mantieni tu. A pagina 1 della dichiarazione, Ziffer 3: Minderjährige oder in Ausbildung stehende Kinder.'
 
   # lu-2025-guide-wegleitung p. 20 (Ziffer 3: each child, whether in your household, whether the
   # other parent pays child support; the tariff with joint parental authority).
@@ -85,10 +91,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 20: personal details and children'
         fr: 'Guide fiscal de Lucerne 2025, p. 20 : Situation personnelle et enfants'
         de: 'Wegleitung zur Steuererklärung 2025, S. 20: Personalien und Familienverhältnisse'
+        it: 'Guida fiscale di Lucerna 2025, p. 20: dati personali e figli'
     help:
       en: 'Parents taxed apart attach the custody and child support agreement (Sorgerechts- und Unterhaltsvereinbarung) to their return.'
       fr: 'Les parents taxés séparément joignent à leur déclaration la convention sur l’autorité parentale et l’entretien (Sorgerechts- und Unterhaltsvereinbarung).'
       de: 'Getrennt besteuerte Eltern legen der Steuererklärung die Sorgerechts- und Unterhaltsvereinbarung bei.'
+      it: 'I genitori tassati separatamente allegano alla dichiarazione l’accordo sull’autorità parentale e sul mantenimento (Sorgerechts- und Unterhaltsvereinbarung).'
 
   # Parents taxed apart with joint parental authority: the parent who receives child support counts
   # the children; without it, each has half the child deduction (StG § 42 Abs. 2,
@@ -99,16 +107,19 @@ questions:
       en: 'With shared custody, child support decides who counts the children. The parent who receives it counts them; without child support, each parent has half the child deductions (Kinderabzug), and the federal tax gives the parental scale (Elterntarif), a lower rate, to the one who earns more.'
       fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit les compte ; sans contribution, chaque parent a la moitié des déductions pour enfants (Kinderabzug), et l’impôt fédéral donne le barème parental (Elterntarif), un taux plus bas, à celui qui gagne le plus.'
       de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, zählt die Kinder; ohne Unterhaltsbeiträge hat jeder Elternteil die Hälfte der Kinderabzüge, und die Bundessteuer gibt den Elterntarif, einen tieferen Satz, dem, der mehr verdient.'
+      it: 'Con la custodia alternata, sono i contributi di mantenimento a decidere chi conta i figli. Li conta il genitore che li riceve; senza contributi, ogni genitore ha metà delle deduzioni per i figli (Kinderabzug), e l’imposta federale dà la tariffa per genitori (Elterntarif), un’aliquota più bassa, a chi guadagna di più.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=20'
       label:
         en: 'Lucerne tax guide 2025, p. 20: personal details and children'
         fr: 'Guide fiscal de Lucerne 2025, p. 20 : Situation personnelle et enfants'
         de: 'Wegleitung zur Steuererklärung 2025, S. 20: Personalien und Familienverhältnisse'
+        it: 'Guida fiscale di Lucerna 2025, p. 20: dati personali e figli'
     help:
       en: 'Child support (Unterhaltsbeiträge, Alimente) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
       fr: 'La contribution d’entretien (Unterhaltsbeiträge, Alimente) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
       de: 'Unterhaltsbeiträge (Alimente) sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+      it: 'I contributi di mantenimento (Unterhaltsbeiträge, Alimente) sono un importo regolare per i figli, fissato da una sentenza o da un accordo. Guadagnare di più significa avere un reddito netto più alto.'
 
   # Without child support, the family tariff (Familientarif, StG § 57 Abs. 2,
   # lu-2026-law-steuergesetz p. 30) goes to the parent who cares for the children longer, or, at equal
@@ -126,21 +137,31 @@ questions:
       en: 'With shared custody and no child support, Lucerne gives the family tariff (Familientarif), a lower rate, to one parent only: the one who cares for the children longer or, at equal time, earns more; when the children live with the other parent, the one who bears more of their costs.'
       fr: 'En garde partagée sans contribution d’entretien, Lucerne n’accorde le barème des familles (Familientarif), un taux plus bas, qu’à un seul parent : celui qui s’occupe le plus longtemps des enfants ou, à temps égal, gagne le plus ; quand les enfants vivent chez l’autre parent, celui qui assume la plus grande part de leurs frais.'
       de: 'Bei geteilter Obhut ohne Unterhaltsbeiträge gibt Luzern den Familientarif, einen tieferen Satz, nur einem Elternteil: dem, der die Kinder länger betreut oder, bei gleicher Zeit, mehr verdient; leben die Kinder beim anderen Elternteil, dem, der mehr an ihre Kosten beiträgt.'
+      it: 'Con la custodia alternata e senza contributi di mantenimento, Lucerna concede la tariffa per famiglie (Familientarif), un’aliquota più bassa, a un solo genitore: quello che si occupa dei figli più a lungo o, a parità di tempo, guadagna di più; se i figli vivono con l’altro genitore, quello che sostiene la parte maggiore delle loro spese.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=20'
       label:
         en: 'Lucerne tax guide 2025, p. 20: the tariff with joint parental authority'
         fr: 'Guide fiscal de Lucerne 2025, p. 20 : Le barème en cas d’autorité parentale conjointe'
         de: 'Wegleitung zur Steuererklärung 2025, S. 20: Tarif bei gemeinsamer elterlicher Sorge'
+        it: 'Guida fiscale di Lucerna 2025, p. 20: la tariffa con autorità parentale congiunta'
     text:
       en: 'In 2026, did the family tariff go to you rather than to the other parent?'
       fr: 'En 2026, le barème des familles vous revenait-il plutôt qu’à l’autre parent ?'
       de: 'Stand der Familientarif 2026 dir zu und nicht dem anderen Elternteil?'
+      it: 'Nel 2026, la tariffa per famiglie spettava a te e non all’altro genitore?'
     help:
       en: 'Who looked after the children more of the time, as agreed or decided. Not sure? Your last assessment (Veranlagung) shows which tariff you got.'
       fr: 'Qui s’occupait le plus des enfants, selon l’accord ou la décision. Un doute ? Votre dernière taxation (Veranlagung) indique quel barème vous avez eu.'
       de: 'Wer sich die meiste Zeit um die Kinder gekümmert hat, wie vereinbart oder entschieden. Unsicher? Deine letzte Veranlagung zeigt, welchen Tarif du erhalten hast.'
-    chip: { en: 'Family tariff', fr: 'Barème des familles', de: 'Familientarif' }
+      it: 'Chi si è occupato dei figli per più tempo, secondo l’accordo o la decisione. Hai un dubbio? La tua ultima decisione di tassazione (Veranlagung) indica quale tariffa hai avuto.'
+    chip:
+      {
+        en: 'Family tariff',
+        fr: 'Barème des familles',
+        de: 'Familientarif',
+        it: 'Tariffa per famiglie',
+      }
 
   # Page 1 of the return asks for each child "In Ihrem Haushalt?" (lu-2025-guide-wegleitung p. 20,
   # Ziffer 3): the family tariff of a single parent, own care (353) and childcare (360) go with the
@@ -158,20 +179,24 @@ questions:
       en: 'Page 1 of the return asks for each child whether they live in your household: the family tariff of a single parent, the deduction for your own care and the childcare deduction go with the children who live with you.'
       fr: 'La page 1 de la déclaration demande pour chaque enfant s’il vit dans votre ménage : le barème des familles d’un parent seul, la déduction pour la garde par les parents et celle des frais de garde suivent les enfants qui vivent avec vous.'
       de: 'Seite 1 der Steuererklärung fragt für jedes Kind, ob es im Haushalt lebt: Der Familientarif eines alleinstehenden Elternteils, der Eigenbetreuungsabzug und der Fremdbetreuungsabzug gelten für die Kinder, die bei dir leben.'
+      it: 'A pagina 1 la dichiarazione chiede per ogni figlio se vive nella tua economia domestica: la tariffa per famiglie di un genitore solo, la deduzione per la custodia da parte dei genitori e quella per le spese di custodia valgono per i figli che vivono con te.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=20'
       label:
         en: 'Lucerne tax guide 2025, p. 20: personal details and children'
         fr: 'Guide fiscal de Lucerne 2025, p. 20 : Situation personnelle et enfants'
         de: 'Wegleitung zur Steuererklärung 2025, S. 20: Personalien und Familienverhältnisse'
+        it: 'Guida fiscale di Lucerna 2025, p. 20: dati personali e figli'
     text:
       en: 'Did child {n} live in your household at the end of 2026?'
       fr: 'L’enfant {n} vivait-il dans votre ménage à la fin de 2026 ?'
       de: 'Hat Kind {n} Ende 2026 in deinem Haushalt gelebt?'
+      it: 'Alla fine del 2026, il figlio {n} viveva nella tua economia domestica?'
     help:
       en: 'In shared custody, yes if the child lives with you at least half the time. Number your children the same way in every answer, for example from the oldest.'
       fr: 'En garde partagée, oui si l’enfant vit chez vous au moins la moitié du temps. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'Bei geteilter Obhut ja, wenn das Kind mindestens die Hälfte der Zeit bei dir lebt. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In custodia alternata, sì se il figlio vive con te almeno metà del tempo. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
 
   # lu-2025-guide-wegleitung p. 34 (353, Abzug für Eigenbetreuung: each child under 14 living with
   # you, born in 2012 or later for 2025; 360, Fremdbetreuungskosten up to 14); StG § 42 Abs. 1
@@ -189,20 +214,24 @@ questions:
       en: 'Lucerne gives a deduction for your own care of each child under 14 living with you (Abzug für Eigenbetreuung), and childcare by others counts for them too (Fremdbetreuungskosten).'
       fr: 'Lucerne accorde une déduction pour la garde par les parents de chaque enfant de moins de 14 ans vivant avec vous (Abzug für Eigenbetreuung), et les frais de garde par des tiers comptent aussi pour eux (Fremdbetreuungskosten).'
       de: 'Luzern gewährt für jedes Kind unter 14, das bei dir lebt, einen Abzug für Eigenbetreuung, und die Fremdbetreuungskosten zählen ebenfalls für diese Kinder.'
+      it: 'Lucerna concede una deduzione per la custodia da parte dei genitori di ogni figlio sotto i 14 anni che vive con te (Abzug für Eigenbetreuung), e per questi figli contano anche le spese di custodia da parte di terzi (Fremdbetreuungskosten).'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=34'
       label:
         en: 'Lucerne tax guide 2025, p. 34: own care and childcare'
         fr: 'Guide fiscal de Lucerne 2025, p. 34 : Garde par les parents et par des tiers'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Eigenbetreuung und Fremdbetreuungskosten'
+        it: 'Guida fiscale di Lucerna 2025, p. 34: custodia da parte dei genitori e di terzi'
     text:
       en: 'Was child {n} still under 14 at the end of 2026?'
       fr: 'L’enfant {n} avait-il encore moins de 14 ans à la fin de 2026 ?'
       de: 'War Kind {n} Ende 2026 noch nicht 14 Jahre alt?'
+      it: 'Alla fine del 2026, il figlio {n} aveva ancora meno di 14 anni?'
     help:
       en: 'Yes for a child born in 2013 or later.'
       fr: 'Oui pour un enfant né en 2013 ou après.'
       de: 'Ja für ein Kind mit Jahrgang 2013 oder jünger.'
+      it: 'Sì per un figlio nato nel 2013 o dopo.'
 
   # lu-2025-guide-wegleitung p. 34 (352: a child in school or vocational training who stays away
   # from home for it all the time has the higher child deduction); StG § 42 Abs. 1 lit. a
@@ -222,20 +251,24 @@ questions:
       en: 'A child in school or vocational training who has to stay away from home for it all the time (ständiger Aufenthalt am auswärtigen Ausbildungsort) gives a higher child deduction.'
       fr: 'Un enfant en formation scolaire ou professionnelle qui doit pour cela séjourner en permanence hors du domicile (ständiger Aufenthalt am auswärtigen Ausbildungsort) donne droit à une déduction pour enfant plus élevée.'
       de: 'Ein Kind in schulischer oder beruflicher Ausbildung, das dafür ständig am auswärtigen Ausbildungsort wohnt, gibt einen höheren Kinderabzug.'
+      it: 'Un figlio in formazione scolastica o professionale che per questo deve vivere sempre fuori casa (ständiger Aufenthalt am auswärtigen Ausbildungsort) dà diritto a una deduzione per figli più alta.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=34'
       label:
         en: 'Lucerne tax guide 2025, p. 34: child deductions'
         fr: 'Guide fiscal de Lucerne 2025, p. 34 : Déductions pour enfants'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Kinderabzüge'
+        it: 'Guida fiscale di Lucerna 2025, p. 34: deduzioni per i figli'
     text:
       en: 'In 2026, did child {n} stay away from home all the time for school or training?'
       fr: 'En 2026, l’enfant {n} séjournait-il en permanence hors du domicile pour sa formation ?'
       de: 'Hat Kind {n} 2026 wegen der Ausbildung ständig auswärts gewohnt?'
+      it: 'Nel 2026, il figlio {n} viveva sempre fuori casa per la scuola o la formazione?'
     help:
       en: 'For example a room near a university or an apprenticeship far from home, because of the training itself. Coming home at weekends is fine.'
       fr: 'Par exemple une chambre près d’une université ou un apprentissage loin du domicile, en raison de la formation elle-même. Rentrer le week-end ne change rien.'
       de: 'Zum Beispiel ein Zimmer nahe der Universität oder eine Lehre weit weg von zu Hause, wegen der Ausbildung selbst. Am Wochenende heimkommen ändert nichts.'
+      it: 'Per esempio una camera vicino all’università o un apprendistato lontano da casa, a causa della formazione stessa. Tornare a casa il fine settimana non cambia niente.'
 
   # lu-2025-guide-wegleitung p. 34 (360, Fremdbetreuungskosten: for each child under 14, costs due
   # to work, training or an inability to work; form U/F).
@@ -246,10 +279,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 34: childcare by others'
         fr: 'Guide fiscal de Lucerne 2025, p. 34 : Frais de garde par des tiers'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Fremdbetreuungskosten'
+        it: 'Guida fiscale di Lucerna 2025, p. 34: custodia da parte di terzi'
     help:
       en: 'A crèche (Kita), day care or a nanny, for a child under 14, while you work or train. On the return: 360, Fremdbetreuungskosten (form U/F).'
       fr: 'Une crèche (Kita), une garderie ou une nourrice, pour un enfant de moins de 14 ans, pendant que vous travaillez ou êtes en formation. Sur la déclaration : 360, Fremdbetreuungskosten (formulaire U/F, frais de garde par des tiers).'
       de: 'Eine Kita, ein Hort oder eine Nanny, für ein Kind unter 14, während du arbeitest oder in Ausbildung bist. Auf der Steuererklärung: 360, Fremdbetreuungskosten (Formular U/F).'
+      it: 'Un asilo nido (Kita), un centro extrascolastico o una tata, per un figlio sotto i 14 anni, mentre lavori o sei in formazione. Nella dichiarazione: 360, Fremdbetreuungskosten (modulo U/F).'
 
   # The limit is per child (StG § 42 Abs. 1 lit. b, lu-2026-law-steuergesetz p. 24): with several
   # children, how the invoices' total splits can decide the deduction, so it is asked per child
@@ -266,20 +301,24 @@ questions:
       en: 'Lucerne’s limit on childcare is per child, so the split between your children can change the deduction. Your invoices give the total.'
       fr: 'La limite de Lucerne pour les frais de garde est par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
       de: 'Der Höchstbetrag für die Fremdbetreuung gilt in Luzern pro Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+      it: 'A Lucerna il limite per le spese di custodia vale per ogni figlio, quindi la ripartizione tra i tuoi figli può cambiare la deduzione. Il totale lo trovi nelle tue fatture.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=34'
       label:
         en: 'Lucerne tax guide 2025, p. 34: childcare by others'
         fr: 'Guide fiscal de Lucerne 2025, p. 34 : Frais de garde par des tiers'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Fremdbetreuungskosten'
+        it: 'Guida fiscale di Lucerna 2025, p. 34: custodia da parte di terzi'
     text:
       en: 'How much of the childcare you paid in 2026 was for child {n}?'
       fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
       de: 'Wie viel der 2026 bezahlten Fremdbetreuungskosten war für Kind {n}?'
+      it: 'Quanto delle spese di custodia pagate nel 2026 era per il figlio {n}?'
     help:
       en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
       fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
 
   # The commune of the end of the year taxes the whole year, and so does its parish (StG § 237
   # Abs. 1, lu-2026-law-steuergesetz p. 95). The list is Lucerne's 79 communes by name
@@ -292,20 +331,24 @@ questions:
       en: 'The commune you lived in on 31 December taxes your whole year, and so does its parish. Each commune sets how many units (Einheiten) of the tax per unit (Steuer je Einheit) it levies, as the state does.'
       fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année, de même que sa paroisse. Chaque commune fixe le nombre d’unités (Einheiten) de l’impôt par unité (Steuer je Einheit) qu’elle prélève, comme l’État.'
       de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr, ebenso ihre Kirchgemeinde. Jede Gemeinde legt fest, wie viele Einheiten der Steuer je Einheit sie erhebt, wie der Staat.'
+      it: 'Il Comune in cui vivevi il 31 dicembre ti tassa per tutto l’anno, e così anche la sua parrocchia. Ogni Comune fissa quante unità (Einheiten) dell’imposta per unità (Steuer je Einheit) preleva, come fa il Cantone.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Publikationen/2026/Steuereinheiten_2026_NP.pdf'
       label:
         en: 'Tax units of the state, the communes and the parishes, 2026'
         fr: 'Unités d’impôt de l’État, des communes et des paroisses, 2026 (Steuereinheiten)'
         de: 'Steuereinheiten 2026, Staat / Einwohner- und Kirchgemeinde'
+        it: 'Unità d’imposta del Cantone, dei Comuni e delle parrocchie, 2026'
     text:
       en: 'Which commune did you live in on 31 December 2026?'
       fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
       de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale Comune vivevi il 31 dicembre 2026?'
     help:
       en: 'The official name, such as Luzern, Kriens or Escholzmatt-Marbach.'
       fr: 'Le nom officiel, par exemple Luzern, Kriens ou Escholzmatt-Marbach.'
       de: 'Der offizielle Name, zum Beispiel Luzern, Kriens oder Escholzmatt-Marbach.'
+      it: 'Il nome ufficiale, per esempio Luzern, Kriens o Escholzmatt-Marbach.'
 
   # Who files in Lucerne: arriving from another canton, Lucerne taxes the whole year
   # (lu-2025-guide-wegleitung p. 8, Zuzug in den Kanton Luzern); leaving for another canton, the new
@@ -318,38 +361,50 @@ questions:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Lucerne taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
       fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Lucerne vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
       de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Luzern besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+      it: 'Un trasloco all’interno del Cantone non cambia niente: il Comune in cui vivevi il 31 dicembre ti tassa per tutto l’anno. Nemmeno arrivare da un altro Cantone cambia qualcosa: Lucerna ti tassa per tutto l’anno, come se avessi vissuto qui da gennaio. Arrivare dall’estero, o lasciare la Svizzera, significa che qui pagavi le imposte solo per una parte dell’anno.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=8'
       label:
         en: 'Lucerne tax guide 2025, p. 8: arriving during the year'
         fr: 'Guide fiscal de Lucerne 2025, p. 8 : Arrivée en cours d’année'
         de: 'Wegleitung zur Steuererklärung 2025, S. 8: Beginn der Steuerpflicht'
+        it: 'Guida fiscale di Lucerna 2025, p. 8: arrivo nel corso dell’anno'
     text:
       en: 'Did you move in 2026?'
       fr: 'Avez-vous déménagé en 2026 ?'
       de: 'Bist du 2026 umgezogen?'
+      it: 'Hai traslocato nel 2026?'
     options:
-      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein', it: 'No' } }
       - value: within_lu
         label:
           {
             en: 'Yes, within the canton of Lucerne',
             fr: 'Oui, dans le canton de Lucerne',
             de: 'Ja, innerhalb des Kantons Luzern',
+            it: 'Sì, all’interno del Cantone di Lucerna',
           }
-        chip: { en: 'Moved in the canton', fr: 'Déménagé dans le canton', de: 'Umzug im Kanton' }
+        chip:
+          {
+            en: 'Moved in the canton',
+            fr: 'Déménagé dans le canton',
+            de: 'Umzug im Kanton',
+            it: 'Trasloco nel Cantone',
+          }
       - value: from_other_canton
         label:
           {
             en: 'Yes, from another canton',
             fr: 'Oui, depuis un autre canton',
             de: 'Ja, aus einem anderen Kanton',
+            it: 'Sì, da un altro Cantone',
           }
         chip:
           {
             en: 'Moved from another canton',
             fr: 'Arrivé(e) d’un autre canton',
             de: 'Zuzug aus einem anderen Kanton',
+            it: 'Arrivo da un altro Cantone',
           }
       - value: from_abroad
         label:
@@ -357,12 +412,14 @@ questions:
             en: 'Yes, I arrived from abroad',
             fr: 'Oui, je suis arrivé(e) de l’étranger',
             de: 'Ja, ich bin aus dem Ausland zugezogen',
+            it: 'Sì, sono arrivato o arrivata dall’estero',
           }
         notSupported:
           {
             en: 'Arriving from abroad during the year (Zuzug aus dem Ausland)',
             fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland)',
             de: 'Ein Zuzug aus dem Ausland während des Jahres',
+            it: 'L’arrivo dall’estero nel corso dell’anno (Zuzug aus dem Ausland)',
           }
       - value: leaving_switzerland
         label:
@@ -370,12 +427,14 @@ questions:
             en: 'I left, or I’m leaving, Switzerland',
             fr: 'J’ai quitté ou je quitte la Suisse',
             de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+            it: 'Ho lasciato o sto lasciando la Svizzera',
           }
         notSupported:
           {
             en: 'Leaving Switzerland (Wegzug ins Ausland)',
             fr: 'Un départ de Suisse (Wegzug ins Ausland)',
             de: 'Ein Wegzug ins Ausland',
+            it: 'La partenza dalla Svizzera (Wegzug ins Ausland)',
           }
 
   # Church tax (Kirchensteuer): only members of a recognised church pay it, at their parish's units
@@ -390,25 +449,30 @@ questions:
       en: 'Members of the Roman Catholic, Evangelical Reformed or Christ Catholic church pay church tax (Kirchensteuer) at their parish’s units. When a family’s members belong to different churches, the law shares it among them. Taxpresso adds it only for members.'
       fr: 'Les membres de l’Église catholique romaine, évangélique réformée ou catholique-chrétienne paient l’impôt ecclésiastique (Kirchensteuer) selon les unités de leur paroisse. Quand les membres d’une famille appartiennent à des Églises différentes, la loi le partage entre elles. Taxpresso ne l’ajoute que pour les membres.'
       de: 'Mitglieder der römisch-katholischen, der evangelisch-reformierten oder der christkatholischen Kirche zahlen Kirchensteuer nach den Einheiten ihrer Kirchgemeinde. Gehören die Mitglieder einer Familie verschiedenen Konfessionen an, teilt das Gesetz sie auf. Taxpresso rechnet sie nur für Mitglieder dazu.'
+      it: 'I membri della Chiesa cattolica romana, evangelica riformata o cattolica cristiana pagano l’imposta di culto (Kirchensteuer) secondo le unità della loro parrocchia. Quando i membri di una famiglia appartengono a Chiese diverse, la legge la ripartisce tra le Chiese. Taxpresso la aggiunge solo per i membri.'
     learnMore:
       url: 'https://srl.lu.ch/api/de/versions/4667/pdf_file#page=96'
       label:
         en: 'Lucerne tax law (Steuergesetz), § 240, p. 96: the church tax'
         fr: 'Loi fiscale de Lucerne (Steuergesetz), § 240, p. 96 : Impôt ecclésiastique'
         de: 'Steuergesetz, § 240, S. 96: Kirchensteuer'
+        it: 'Legge tributaria di Lucerna (Steuergesetz), § 240, p. 96: l’imposta di culto'
     text:
       p1:
         en: 'On 31 December 2026, were you a member of one of these churches?'
         fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces Églises ?'
         de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026 eri membro di una di queste Chiese?'
       p2:
         en: 'On 31 December 2026, was your spouse or partner a member of one of these churches?'
         fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces Églises ?'
         de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026 il tuo coniuge o partner era membro di una di queste Chiese?'
     help:
       en: 'Another religion, or none, pays no church tax.'
       fr: 'Une autre religion, ou aucune, ne paie pas d’impôt ecclésiastique.'
       de: 'Eine andere Religion oder keine zahlt keine Kirchensteuer.'
+      it: 'Con un’altra religione, o nessuna, non si paga l’imposta di culto.'
     options:
       - value: catholic
         label:
@@ -416,26 +480,41 @@ questions:
             en: 'Roman Catholic (römisch-katholisch)',
             fr: 'Catholique romaine (römisch-katholisch)',
             de: 'Römisch-katholisch',
+            it: 'Cattolica romana (römisch-katholisch)',
           }
-        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch' }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch', it: 'Chiesa cattolica' }
       - value: reformed
         label:
           {
             en: 'Evangelical Reformed (evangelisch-reformiert)',
             fr: 'Évangélique réformée (evangelisch-reformiert)',
             de: 'Evangelisch-reformiert',
+            it: 'Evangelica riformata (evangelisch-reformiert)',
           }
-        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert' }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert', it: 'Chiesa riformata' }
       - value: christ_catholic
         label:
           {
             en: 'Christ Catholic (christkatholisch)',
             fr: 'Catholique-chrétienne (christkatholisch)',
             de: 'Christkatholisch',
+            it: 'Cattolica cristiana (christkatholisch)',
           }
-        chip: { en: 'Christ Catholic', fr: 'Catholique-chrétien(ne)', de: 'Christkatholisch' }
+        chip:
+          {
+            en: 'Christ Catholic',
+            fr: 'Catholique-chrétien(ne)',
+            de: 'Christkatholisch',
+            it: 'Chiesa cattolica cristiana',
+          }
       - value: none
-        label: { en: 'None of these', fr: 'Aucune de ces Églises', de: 'Keine davon' }
+        label:
+          {
+            en: 'None of these',
+            fr: 'Aucune de ces Églises',
+            de: 'Keine davon',
+            it: 'Nessuna di queste',
+          }
 
   # The return asks each child's confession too (page 1, Ziffer 3), and when a family's members
   # belong to different confessions the church tax is shared in proportion of each one's members
@@ -458,20 +537,24 @@ questions:
       en: 'The return asks each child’s confession too: when a family’s members belong to different churches, or not all to one, the law shares the church tax among the churches in proportion of their members (StG § 240 Abs. 2).'
       fr: 'La déclaration demande aussi la confession de chaque enfant : quand les membres d’une famille appartiennent à des Églises différentes, ou pas tous à une Église, la loi partage l’impôt ecclésiastique entre les Églises en proportion de leurs membres (StG § 240 al. 2).'
       de: 'Die Steuererklärung fragt auch die Konfession jedes Kindes: Gehören die Mitglieder einer Familie verschiedenen Konfessionen an, oder nicht alle einer Kirche, teilt das Gesetz die Kirchensteuer im Verhältnis ihrer Mitglieder auf die Kirchen auf (StG § 240 Abs. 2).'
+      it: 'La dichiarazione chiede anche la confessione di ogni figlio: quando i membri di una famiglia appartengono a Chiese diverse, o non tutti a una Chiesa, la legge ripartisce l’imposta di culto tra le Chiese in proporzione ai loro membri (StG § 240 Abs. 2).'
     learnMore:
       url: 'https://srl.lu.ch/api/de/versions/4667/pdf_file#page=96'
       label:
         en: 'Lucerne tax law (Steuergesetz), § 240, p. 96: the church tax'
         fr: 'Loi fiscale de Lucerne (Steuergesetz), § 240, p. 96 : Impôt ecclésiastique'
         de: 'Steuergesetz, § 240, S. 96: Kirchensteuer'
+        it: 'Legge tributaria di Lucerna (Steuergesetz), § 240, p. 96: l’imposta di culto'
     text:
       en: 'On 31 December 2026, was child {n} a member of one of these churches?'
       fr: 'Au 31 décembre 2026, l’enfant {n} était-il membre de l’une de ces Églises ?'
       de: 'War Kind {n} am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+      it: 'Il 31 dicembre 2026 il figlio {n} era membro di una di queste Chiese?'
     help:
       en: 'As on page 1 of the return (Konfession). Number your children the same way in every answer, for example from the oldest.'
       fr: 'Comme en page 1 de la déclaration (Konfession). Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'Wie auf Seite 1 der Steuererklärung (Konfession). Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'Come a pagina 1 della dichiarazione (Konfession). Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
     options:
       - value: catholic
         label:
@@ -479,6 +562,7 @@ questions:
             en: 'Roman Catholic (römisch-katholisch)',
             fr: 'Catholique romaine (römisch-katholisch)',
             de: 'Römisch-katholisch',
+            it: 'Cattolica romana (römisch-katholisch)',
           }
       - value: reformed
         label:
@@ -486,6 +570,7 @@ questions:
             en: 'Evangelical Reformed (evangelisch-reformiert)',
             fr: 'Évangélique réformée (evangelisch-reformiert)',
             de: 'Evangelisch-reformiert',
+            it: 'Evangelica riformata (evangelisch-reformiert)',
           }
       - value: christ_catholic
         label:
@@ -493,9 +578,16 @@ questions:
             en: 'Christ Catholic (christkatholisch)',
             fr: 'Catholique-chrétienne (christkatholisch)',
             de: 'Christkatholisch',
+            it: 'Cattolica cristiana (christkatholisch)',
           }
       - value: none
-        label: { en: 'None of these', fr: 'Aucune de ces Églises', de: 'Keine davon' }
+        label:
+          {
+            en: 'None of these',
+            fr: 'Aucune de ces Églises',
+            de: 'Keine davon',
+            it: 'Nessuna di queste',
+          }
 
   # lu-2025-guide-wegleitung p. 21 (100/101, the net salary of the salary certificate) to p. 23
   # (140/141, daily allowances and unemployment benefits; 160/161, alimony and child support).
@@ -506,42 +598,57 @@ questions:
         en: 'Lucerne tax guide 2025, p. 21: income'
         fr: 'Guide fiscal de Lucerne 2025, p. 21 : Revenus'
         de: 'Wegleitung zur Steuererklärung 2025, S. 21: Einkünfte im In- und Ausland'
+        it: 'Guida fiscale di Lucerna 2025, p. 21: reddito'
     options:
-      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - {
+          value: salary,
+          label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn', it: 'Un salario' },
+        }
       - value: replacement_income
         label:
           en: 'Unemployment, sickness or accident benefits'
           fr: 'Des indemnités (chômage, maladie, accident)'
           de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
-        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+          it: 'Indennità di disoccupazione, malattia o infortunio'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder', it: 'Indennità' }
       - value: pension
         label:
           {
             en: 'A pension (AHV, IV or pension fund)',
             fr: 'Une rente (AVS, AI ou caisse de pension)',
             de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+            it: 'Una rendita (AVS, AI o cassa pensione)',
           }
-        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente', it: 'Rendita' }
       - value: alimony
         label:
           {
             en: 'Alimony or child support received',
             fr: 'Une pension alimentaire reçue',
             de: 'Erhaltene Unterhaltsbeiträge',
+            it: 'Alimenti o contributi di mantenimento ricevuti',
           }
-        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+        chip:
+          {
+            en: 'Receives alimony',
+            fr: 'Reçoit une pension',
+            de: 'Erhält Unterhalt',
+            it: 'Riceve alimenti',
+          }
       - value: self_employment
         label:
           {
             en: 'Income from self-employment',
             fr: 'Un revenu d’activité indépendante',
             de: 'Einkommen aus selbständiger Erwerbstätigkeit',
+            it: 'Reddito da attività indipendente',
           }
         notSupported:
           {
             en: 'Self-employment (selbständige Erwerbstätigkeit, Ziffer 110 to 119)',
             fr: 'L’activité indépendante (selbständige Erwerbstätigkeit, Ziffer 110 à 119)',
             de: 'Die selbständige Erwerbstätigkeit (Ziffer 110 bis 119)',
+            it: 'L’attività lucrativa indipendente (selbständige Erwerbstätigkeit, Ziffer da 110 a 119)',
           }
 
   # lu-2025-guide-wegleitung p. 21 (100/101: the net salary of each salary certificate).
@@ -552,10 +659,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 21: salaried work'
         fr: 'Guide fiscal de Lucerne 2025, p. 21 : Activité salariée'
         de: 'Wegleitung zur Steuererklärung 2025, S. 21: Einkünfte aus unselbständiger Erwerbstätigkeit'
+        it: 'Guida fiscale di Lucerna 2025, p. 21: attività dipendente'
     help:
       en: 'Each one gives you a salary certificate (Lohnausweis).'
       fr: 'Chacun vous remet un certificat de salaire (Lohnausweis).'
       de: 'Jeder gibt dir einen Lohnausweis.'
+      it: 'Ognuno ti rilascia un certificato di salario (Lohnausweis).'
 
   # People taxed at source (Quellensteuer) file an ordinary return only above the thresholds of the
   # Merkblatt, or when they ask for it by 31 March of the next year (nachträgliche ordentliche
@@ -565,16 +674,19 @@ questions:
       en: 'Tax at source in Lucerne (Quellensteuer) and the ordinary assessment that follows it (nachträgliche ordentliche Veranlagung, NOV)'
       fr: 'L’impôt à la source à Lucerne (Quellensteuer) et la taxation ordinaire ultérieure qui suit (nachträgliche ordentliche Veranlagung, NOV)'
       de: 'Die Quellensteuer im Kanton Luzern und die nachträgliche ordentliche Veranlagung (NOV)'
+      it: 'L’imposta alla fonte a Lucerna (Quellensteuer) e la tassazione ordinaria ulteriore che la segue (nachträgliche ordentliche Veranlagung, NOV)'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Publikationen/2025/930498_Merkblatt_2025_Nachtrgliche_ordentliche_Veranlagung_NOV.pdf#page=1'
       label:
         en: 'Lucerne leaflet 2025, p. 1: ordinary assessment after tax at source (NOV)'
         fr: 'Notice lucernoise 2025, p. 1 : Taxation ordinaire ultérieure (NOV)'
         de: 'Merkblatt 2025, S. 1: Nachträgliche ordentliche Veranlagung (NOV)'
+        it: 'Promemoria di Lucerna 2025, p. 1: tassazione ordinaria ulteriore dopo l’imposta alla fonte (NOV)'
     help:
       en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
       fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, Ziffer 12).'
       de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+      it: 'Se è così, lo trovi sul certificato di salario (Lohnausweis, Ziffer 12).'
 
   # lu-2025-guide-wegleitung p. 30 (260/261: only with the attestations).
   - use: pillar3a
@@ -584,10 +696,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 30: pillar 3a'
         fr: 'Guide fiscal de Lucerne 2025, p. 30 : Pilier 3a'
         de: 'Wegleitung zur Steuererklärung 2025, S. 30: Säule 3a'
+        it: 'Guida fiscale di Lucerna 2025, p. 30: pilastro 3a'
     help:
       en: 'Your bank or insurer sends an attestation (Bescheinigung): attach it to your return. On the return: 260, Beiträge an anerkannte Formen der gebundenen Selbstvorsorge.'
       fr: 'Votre banque ou votre assurance vous envoie une attestation (Bescheinigung) : joignez-la à votre déclaration. Sur la déclaration : 260, Beiträge an anerkannte Formen der gebundenen Selbstvorsorge (cotisations au 3e pilier A).'
       de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung: Leg sie der Steuererklärung bei. Auf der Steuererklärung: 260, Beiträge an anerkannte Formen der gebundenen Selbstvorsorge.'
+      it: 'La tua banca o la tua assicurazione ti manda un’attestazione (Bescheinigung): allegala alla dichiarazione. Nella dichiarazione: 260, Beiträge an anerkannte Formen der gebundenen Selbstvorsorge.'
 
   # lu-2025-guide-wegleitung p. 31 (280/282: only what the salary certificate doesn't already show;
   # attach the fund's attestation and the pension certificate).
@@ -598,10 +712,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 31: pension fund buy-ins'
         fr: 'Guide fiscal de Lucerne 2025, p. 31 : Rachats au 2e pilier'
         de: 'Wegleitung zur Steuererklärung 2025, S. 31: Beiträge an die 2. Säule'
+        it: 'Guida fiscale di Lucerna 2025, p. 31: riscatti nella cassa pensione'
     help:
       en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On the return: 280, Beiträge an 2. Säule, davon Einkauf.'
       fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas. Sur la déclaration : 280, Beiträge an 2. Säule, davon Einkauf (rachats au 2e pilier).'
       de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. Auf der Steuererklärung: 280, Beiträge an 2. Säule, davon Einkauf.'
+      it: 'Un versamento volontario in aggiunta ai contributi abituali. Conta solo un riscatto che il tuo certificato di salario non indica. Nella dichiarazione: 280, Beiträge an 2. Säule, davon Einkauf.'
 
   # Travel to work (form B, 202 to 208t: Fahrkosten zwischen Wohn- und Arbeitsstätte), for the
   # cantonal and the federal tax, each up to its own yearly limit (lu-2025-guide-wegleitung p. 27 and
@@ -612,26 +728,36 @@ questions:
       en: 'Getting to work is deducted as travel costs (Fahrkosten), for the cantonal and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
       fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrkosten), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
       de: 'Der Arbeitsweg wird als Fahrkosten abgezogen, bei der Staats- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+      it: 'Il tragitto per andare al lavoro si deduce come spese di trasporto (Fahrkosten), per l’imposta cantonale e per l’imposta federale, ognuna fino al proprio limite annuo. Il mezzo che usi decide come vengono calcolate.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=27'
       label:
         en: 'Lucerne tax guide 2025, p. 27: travel to work'
         fr: 'Guide fiscal de Lucerne 2025, p. 27 : Frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Fahrkosten zwischen Wohn- und Arbeitsstätte'
+        it: 'Guida fiscale di Lucerna 2025, p. 27: tragitto casa-lavoro'
     help:
       en: 'Choose how you went on most work days. On form B (Berufsauslagen): Fahrkosten zwischen Wohn- und Arbeitsstätte.'
       fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire B (Berufsauslagen, frais professionnels) : Fahrkosten zwischen Wohn- und Arbeitsstätte (frais de déplacement).'
       de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf dem Formular B (Berufsauslagen): Fahrkosten zwischen Wohn- und Arbeitsstätte.'
+      it: 'Scegli come ci andavi nella maggior parte dei giorni di lavoro. Sul modulo B (Berufsauslagen): Fahrkosten zwischen Wohn- und Arbeitsstätte.'
     options:
       - value: public_transport
-        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
-      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+        label:
+          {
+            en: 'Public transport',
+            fr: 'Transports publics',
+            de: 'Öffentlicher Verkehr',
+            it: 'Trasporti pubblici',
+          }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto', it: 'Auto' } }
       - value: motorbike
         label:
           {
             en: 'Motorbike or scooter with a white number plate',
             fr: 'Moto ou scooter à plaque blanche',
             de: 'Motorrad oder Roller mit weissem Kontrollschild',
+            it: 'Moto o scooter con targa bianca',
           }
       - value: bike
         label:
@@ -639,16 +765,18 @@ questions:
             en: 'Bike, e-bike or moped with a yellow number plate',
             fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
             de: 'Velo, E-Bike oder Motorfahrrad mit gelbem Kontrollschild',
+            it: 'Bicicletta, bici elettrica o ciclomotore con targa gialla',
           }
-      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss', it: 'A piedi' } }
       - value: mostly_home
         label:
           {
             en: 'From home, almost every day',
             fr: 'Depuis chez moi, presque tous les jours',
             de: 'Von zu Hause, fast jeden Tag',
+            it: 'Da casa, quasi tutti i giorni',
           }
-        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice', it: 'Telelavoro' }
 
   # lu-2025-guide-wegleitung p. 27 (202/203: public transport passes, park and ride, the cost).
   - use: commute_transit_cost
@@ -656,12 +784,14 @@ questions:
       en: 'You deduct the public transport you paid to get to work, for the cantonal and the federal tax, each up to its own yearly limit.'
       fr: 'Vous déduisez les transports publics payés pour aller au travail, pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
       de: 'Du ziehst den bezahlten öffentlichen Verkehr zur Arbeit ab, bei der Staats- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Deduci i trasporti pubblici che hai pagato per andare al lavoro, per l’imposta cantonale e per l’imposta federale, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=27'
       label:
         en: 'Lucerne tax guide 2025, p. 27: travel to work'
         fr: 'Guide fiscal de Lucerne 2025, p. 27 : Frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Fahrkosten zwischen Wohn- und Arbeitsstätte'
+        it: 'Guida fiscale di Lucerna 2025, p. 27: tragitto casa-lavoro'
 
   # A private vehicle needs a reason (form B, lu-2025-guide-wegleitung p. 16 and 27): no public
   # transport, over an hour saved a day, the vehicle needed at work at the employer's request, or
@@ -671,12 +801,14 @@ questions:
       en: 'A driver deducts what public transport would have cost, for both taxes. The kilometres count only if you had a reason: no public transport for the trip, over an hour saved each day, the vehicle needed at work at your employer’s request, or illness or infirmity.'
       fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics, pour les deux impôts. Les kilomètres ne comptent que si vous aviez une raison : pas de transport public pour ce trajet, plus d’une heure gagnée par jour, le véhicule nécessaire au travail à la demande de l’employeur, ou une maladie ou une infirmité.'
       de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Die Kilometer zählen nur mit einem Grund: kein öffentliches Verkehrsmittel für diesen Weg, über eine Stunde Zeitersparnis pro Tag, das Fahrzeug auf Verlangen des Arbeitgebers für die Arbeit nötig, oder Krankheit oder Gebrechlichkeit.'
+      it: 'Chi va in auto deduce quanto sarebbero costati i trasporti pubblici, per entrambe le imposte. I chilometri contano solo se avevi un motivo: nessun trasporto pubblico per quel tragitto, più di un’ora risparmiata al giorno, il veicolo necessario al lavoro su richiesta del datore di lavoro, oppure malattia o infermità.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=27'
       label:
         en: 'Lucerne tax guide 2025, p. 27: travel to work'
         fr: 'Guide fiscal de Lucerne 2025, p. 27 : Frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Fahrkosten zwischen Wohn- und Arbeitsstätte'
+        it: 'Guida fiscale di Lucerna 2025, p. 27: tragitto casa-lavoro'
     options:
       - value: 'yes'
         label:
@@ -684,6 +816,7 @@ questions:
             en: 'Yes, I could have used public transport',
             fr: 'Oui, j’aurais pu prendre les transports publics',
             de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+            it: 'Sì, avrei potuto usare i trasporti pubblici',
           }
       - value: 'no'
         label:
@@ -691,6 +824,7 @@ questions:
             en: 'No, one of those reasons applies',
             fr: 'Non, l’une de ces raisons s’applique',
             de: 'Nein, einer dieser Gründe trifft zu',
+            it: 'No, vale uno di questi motivi',
           }
 
   - use: commute_transit_equivalent
@@ -698,12 +832,14 @@ questions:
       en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
       fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
       de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab, bei beiden Steuern, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'È questo prezzo che deduci per il tragitto in veicolo, per entrambe le imposte, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=27'
       label:
         en: 'Lucerne tax guide 2025, p. 27: travel to work'
         fr: 'Guide fiscal de Lucerne 2025, p. 27 : Frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Fahrkosten zwischen Wohn- und Arbeitsstätte'
+        it: 'Guida fiscale di Lucerna 2025, p. 27: tragitto casa-lavoro'
 
   # lu-2025-guide-wegleitung p. 27 (208/209: cars and motorbikes per km; 220 working days a year
   # as a rule, form B p. 16).
@@ -712,12 +848,14 @@ questions:
       en: 'With one of those reasons, both taxes count a fixed amount per kilometre, there and back once a day, each up to its own yearly limit.'
       fr: 'Avec l’une de ces raisons, les deux impôts comptent un montant fixe par kilomètre, un aller et retour par jour, chacun jusqu’à sa propre limite annuelle.'
       de: 'Mit einem dieser Gründe zählen beide Steuern einen festen Betrag pro Kilometer, einmal hin und zurück pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Con uno di questi motivi, entrambe le imposte contano un importo fisso per chilometro, andata e ritorno una volta al giorno, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=27'
       label:
         en: 'Lucerne tax guide 2025, p. 27: travel by car'
         fr: 'Guide fiscal de Lucerne 2025, p. 27 : Trajets en voiture'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Privatfahrzeug'
+        it: 'Guida fiscale di Lucerna 2025, p. 27: tragitto in auto'
 
   - use: commute_drive_days
     learnMore:
@@ -726,10 +864,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 27: travel by car'
         fr: 'Guide fiscal de Lucerne 2025, p. 27 : Trajets en voiture'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Privatfahrzeug'
+        it: 'Guida fiscale di Lucerna 2025, p. 27: tragitto in auto'
     help:
       en: 'The days you actually worked there; a full year of work is usually 220 days. Leave out holidays, sick days and days worked from home (Homeoffice).'
       fr: 'Les jours effectivement travaillés sur place ; une année entière de travail compte en général 220 jours. Sans les vacances, les jours de maladie et les jours de télétravail (Homeoffice).'
       de: 'Die effektiven Arbeitstage am Arbeitsort; bei ganzjähriger Erwerbstätigkeit in der Regel 220. Ohne Ferien, Krankheitstage und Tage im Homeoffice.'
+      it: 'I giorni in cui hai lavorato davvero sul posto; un anno intero di lavoro conta di solito 220 giorni. Escludi le vacanze, i giorni di malattia e i giorni di lavoro da casa (Homeoffice).'
 
   # Meals away from home (form B, 212 to 215: Mehrkosten der Verpflegung), for both taxes:
   # lu-2025-guide-wegleitung p. 27.
@@ -738,12 +878,14 @@ questions:
       en: 'Lunch away from home because of work costs more than at home (Mehrkosten der Verpflegung). A fixed amount per day counts for both taxes, up to a yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate).'
       fr: 'Manger à l’extérieur à cause du travail coûte plus cher qu’à la maison (Mehrkosten der Verpflegung). Un montant fixe par jour compte pour les deux impôts, jusqu’à une limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire).'
       de: 'Auswärts essen wegen der Arbeit kostet mehr als zu Hause (Mehrkosten der Verpflegung). Für beide Steuern zählt ein fester Betrag pro Tag, bis zu einem jährlichen Höchstbetrag, die Hälfte davon, wenn dein Arbeitgeber einen Teil deiner Mahlzeiten bezahlt (Feld G des Lohnausweises).'
+      it: 'Pranzare fuori casa per lavoro costa più che a casa (Mehrkosten der Verpflegung). Per entrambe le imposte conta un importo fisso al giorno, fino a un limite annuo, la metà se il tuo datore di lavoro paga una parte dei tuoi pasti (casella G del certificato di salario).'
     learnMore:
       url: 'https://steuern.lu.ch/-/media/Steuern/Dokumente/Steuerformulare/2025/Wegleitung930109LU2025HADEFneu.pdf#page=27'
       label:
         en: 'Lucerne tax guide 2025, p. 27: meals'
         fr: 'Guide fiscal de Lucerne 2025, p. 27 : Frais de repas'
         de: 'Wegleitung zur Steuererklärung 2025, S. 27: Mehrkosten der Verpflegung'
+        it: 'Guida fiscale di Lucerna 2025, p. 27: pasti fuori casa'
 
   # lu-2025-guide-wegleitung p. 38 (Wertschriften- und Guthabenverzeichnis: 150 and 400).
   - use: banks
@@ -753,10 +895,12 @@ questions:
         en: 'Lucerne tax guide 2025, p. 38: securities and accounts'
         fr: 'Guide fiscal de Lucerne 2025, p. 38 : Titres et avoirs'
         de: 'Wegleitung zur Steuererklärung 2025, S. 38: Wertschriften- und Guthabenverzeichnis'
+        it: 'Guida fiscale di Lucerna 2025, p. 38: titoli e conti'
     help:
       en: 'Count PostFinance too, your minor children’s accounts, and online or foreign brokers. On the return: Wertschriften- und Guthabenverzeichnis (WV).'
       fr: 'Comptez aussi PostFinance, les comptes de vos enfants mineurs et les courtiers en ligne ou étrangers. Sur la déclaration : Wertschriften- und Guthabenverzeichnis (WV, état des titres et avoirs).'
       de: 'Zähl auch PostFinance, die Konten deiner minderjährigen Kinder und Online- oder ausländische Broker. Auf der Steuererklärung: Wertschriften- und Guthabenverzeichnis (WV).'
+      it: 'Conta anche PostFinance, i conti dei tuoi figli minorenni e i broker online o esteri. Nella dichiarazione: Wertschriften- und Guthabenverzeichnis (WV).'
 
   # lu-2025-guide-wegleitung p. 41 (Kryptowährungen: in the securities list, at their value on 31
   # December).
@@ -767,6 +911,7 @@ questions:
         en: 'Lucerne tax guide 2025, p. 41: cryptocurrencies'
         fr: 'Guide fiscal de Lucerne 2025, p. 41 : Cryptomonnaies'
         de: 'Wegleitung zur Steuererklärung 2025, S. 41: Kryptowährungen'
+        it: 'Guida fiscale di Lucerna 2025, p. 41: criptovalute'
 
   # lu-2025-guide-wegleitung p. 32 (320, Krankheits-, Unfall- und behinderungsbedingte Kosten; 324,
   # Freiwillige Zuwendungen), p. 33 (325, politische Parteien), p. 29 (252) and p. 30 (254, 255).
@@ -777,6 +922,7 @@ questions:
         en: 'Lucerne tax guide 2025, p. 32: medical costs and donations'
         fr: 'Guide fiscal de Lucerne 2025, p. 32 : Frais de maladie et dons'
         de: 'Wegleitung zur Steuererklärung 2025, S. 32: Zusätzliche Abzüge'
+        it: 'Guida fiscale di Lucerna 2025, p. 32: spese di malattia e donazioni'
 
   # What Taxpresso can't prepare for Lucerne yet: property (Ziffer 190, 420, form L), inheritances
   # and gifts, income from abroad, capital benefits from pension schemes (taxed apart, StG § 58).
@@ -788,6 +934,7 @@ questions:
         en: 'eSteuern.LU, the canton’s online return: leaflet, p. 1'
         fr: 'eSteuern.LU, la déclaration en ligne du canton : notice, p. 1'
         de: 'eSteuern.LU, die Online-Steuererklärung des Kantons: Merkblatt, S. 1'
+        it: 'eSteuern.LU, la dichiarazione online del Cantone: promemoria, p. 1'
     options:
       - value: real_estate
         label:
@@ -795,12 +942,14 @@ questions:
             en: 'I own real estate, in Switzerland or abroad',
             fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
             de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+            it: 'Possiedo un immobile, in Svizzera o all’estero',
           }
         notSupported:
           {
             en: 'Real estate (Liegenschaften)',
             fr: 'Les immeubles (Liegenschaften)',
             de: 'Liegenschaften',
+            it: 'Gli immobili (Liegenschaften)',
           }
       - value: inheritance_or_gift
         label:
@@ -808,12 +957,14 @@ questions:
             en: 'I received an inheritance or a large gift',
             fr: 'J’ai reçu un héritage ou une donation importante',
             de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+            it: 'Ho ricevuto un’eredità o una donazione importante',
           }
         notSupported:
           {
             en: 'An inheritance or a gift (Erbschaft, Schenkung)',
             fr: 'Un héritage ou une donation (Erbschaft, Schenkung)',
             de: 'Eine Erbschaft oder Schenkung',
+            it: 'Un’eredità o una donazione (Erbschaft, Schenkung)',
           }
       - value: foreign_income
         label:
@@ -821,12 +972,14 @@ questions:
             en: 'I had income from abroad (salary, pension, rent)',
             fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
             de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+            it: 'Ho avuto redditi dall’estero (salario, rendita, affitto)',
           }
         notSupported:
           {
             en: 'Income from abroad',
             fr: 'Des revenus de l’étranger',
             de: 'Einkünfte aus dem Ausland',
+            it: 'Redditi dall’estero',
           }
       - value: pension_capital
         label:
@@ -834,12 +987,14 @@ questions:
             en: 'I withdrew pension capital (2nd or 3rd pillar)',
             fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
             de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+            it: 'Ho prelevato un capitale di previdenza (2° o 3° pilastro)',
           }
         notSupported:
           {
             en: 'A pension capital withdrawal (Kapitalleistungen aus Vorsorge)',
             fr: 'Un retrait de capital de prévoyance (Kapitalleistungen aus Vorsorge)',
             de: 'Ein Kapitalbezug aus der Vorsorge (Kapitalleistungen aus Vorsorge)',
+            it: 'Un prelievo di capitale di previdenza (Kapitalleistungen aus Vorsorge)',
           }
 
 # The documents, with the page of the Lucerne guide for 2025 (lu-2025-guide-wegleitung p. 37 lists
@@ -852,6 +1007,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 21: salaried work'
         fr: 'Guide fiscal de Lucerne 2025, p. 21 : Activité salariée'
         de: 'Wegleitung zur Steuererklärung 2025, S. 21: Einkünfte aus unselbständiger Erwerbstätigkeit'
+        it: 'Guida fiscale di Lucerna 2025, p. 21: attività dipendente'
     source: 'lu-2025-guide-wegleitung p. 37, p. 21'
 
   - use: replacement_income
@@ -861,6 +1017,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 23: daily allowances and unemployment benefits'
         fr: 'Guide fiscal de Lucerne 2025, p. 23 : Indemnités journalières et de chômage'
         de: 'Wegleitung zur Steuererklärung 2025, S. 23: Erwerbsausfallentschädigung'
+        it: 'Guida fiscale di Lucerna 2025, p. 23: indennità giornaliere e di disoccupazione'
     source: 'lu-2025-guide-wegleitung p. 23'
 
   - use: pension
@@ -870,6 +1027,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 22: pensions'
         fr: 'Guide fiscal de Lucerne 2025, p. 22 : Rentes'
         de: 'Wegleitung zur Steuererklärung 2025, S. 22: Einkünfte aus Sozial- und anderen Versicherungen'
+        it: 'Guida fiscale di Lucerna 2025, p. 22: rendite'
     source: 'lu-2025-guide-wegleitung p. 22'
 
   - use: pillar3a
@@ -879,6 +1037,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 30: pillar 3a'
         fr: 'Guide fiscal de Lucerne 2025, p. 30 : Pilier 3a'
         de: 'Wegleitung zur Steuererklärung 2025, S. 30: Säule 3a'
+        it: 'Guida fiscale di Lucerna 2025, p. 30: pilastro 3a'
     source: 'lu-2025-guide-wegleitung p. 37, p. 30'
 
   - use: lpp_buyin
@@ -888,6 +1047,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 31: pension fund buy-ins'
         fr: 'Guide fiscal de Lucerne 2025, p. 31 : Rachats au 2e pilier'
         de: 'Wegleitung zur Steuererklärung 2025, S. 31: Beiträge an die 2. Säule'
+        it: 'Guida fiscale di Lucerna 2025, p. 31: riscatti nella cassa pensione'
     source: 'lu-2025-guide-wegleitung p. 31'
 
   - use: health_premiums
@@ -897,6 +1057,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 31: insurance premiums'
         fr: 'Guide fiscal de Lucerne 2025, p. 31 : Primes d’assurances'
         de: 'Wegleitung zur Steuererklärung 2025, S. 31: Versicherungsprämien'
+        it: 'Guida fiscale di Lucerna 2025, p. 31: premi assicurativi'
     source: 'lu-2025-guide-wegleitung p. 31'
 
   - use: banks
@@ -906,6 +1067,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 38: securities and accounts'
         fr: 'Guide fiscal de Lucerne 2025, p. 38 : Titres et avoirs'
         de: 'Wegleitung zur Steuererklärung 2025, S. 38: Wertschriften- und Guthabenverzeichnis'
+        it: 'Guida fiscale di Lucerna 2025, p. 38: titoli e conti'
     source: 'lu-2025-guide-wegleitung p. 37, p. 38'
 
   - use: crypto
@@ -915,6 +1077,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 41: cryptocurrencies'
         fr: 'Guide fiscal de Lucerne 2025, p. 41 : Cryptomonnaies'
         de: 'Wegleitung zur Steuererklärung 2025, S. 41: Kryptowährungen'
+        it: 'Guida fiscale di Lucerna 2025, p. 41: criptovalute'
     source: 'lu-2025-guide-wegleitung p. 41'
 
   - use: childcare
@@ -924,6 +1087,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 34: childcare by others'
         fr: 'Guide fiscal de Lucerne 2025, p. 34 : Frais de garde par des tiers'
         de: 'Wegleitung zur Steuererklärung 2025, S. 34: Fremdbetreuungskosten'
+        it: 'Guida fiscale di Lucerna 2025, p. 34: custodia da parte di terzi'
     source: 'lu-2025-guide-wegleitung p. 37, p. 34'
 
   - use: medical
@@ -933,6 +1097,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 32: medical costs'
         fr: 'Guide fiscal de Lucerne 2025, p. 32 : Frais de maladie et d’accident'
         de: 'Wegleitung zur Steuererklärung 2025, S. 32: Krankheits- und Unfallkosten'
+        it: 'Guida fiscale di Lucerna 2025, p. 32: spese di malattia'
     source: 'lu-2025-guide-wegleitung p. 37, p. 32'
 
   - use: donations
@@ -942,6 +1107,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 32: donations'
         fr: 'Guide fiscal de Lucerne 2025, p. 32 : Dons'
         de: 'Wegleitung zur Steuererklärung 2025, S. 32: Freiwillige Zuwendungen'
+        it: 'Guida fiscale di Lucerna 2025, p. 32: donazioni'
     source: 'lu-2025-guide-wegleitung p. 32'
 
   - use: loan_interest
@@ -951,6 +1117,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 29: debt interest'
         fr: 'Guide fiscal de Lucerne 2025, p. 29 : Intérêts passifs'
         de: 'Wegleitung zur Steuererklärung 2025, S. 29: Schuldzinsen'
+        it: 'Guida fiscale di Lucerna 2025, p. 29: interessi passivi'
     source: 'lu-2025-guide-wegleitung p. 37, p. 29'
 
   - use: alimony
@@ -960,6 +1127,7 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 30: alimony and child support'
         fr: 'Guide fiscal de Lucerne 2025, p. 30 : Contributions d’entretien'
         de: 'Wegleitung zur Steuererklärung 2025, S. 30: Unterhaltsbeiträge'
+        it: 'Guida fiscale di Lucerna 2025, p. 30: alimenti e contributi di mantenimento'
     source: 'lu-2025-guide-wegleitung p. 23, p. 30'
 
   - use: separation_judgment
@@ -969,4 +1137,5 @@ requirements:
         en: 'Lucerne tax guide 2025, p. 7: marriage, divorce or separation'
         fr: 'Guide fiscal de Lucerne 2025, p. 7 : Mariage, divorce ou séparation'
         de: 'Wegleitung zur Steuererklärung 2025, S. 7: Heirat, Scheidung oder Trennung'
+        it: 'Guida fiscale di Lucerna 2025, p. 7: matrimonio, divorzio o separazione'
     source: 'lu-2025-guide-wegleitung p. 7, p. 20'

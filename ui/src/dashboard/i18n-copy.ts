@@ -5,7 +5,7 @@ import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
-const messages = {
+export const messages = {
   en: {
     title: 'Fill in your declaration',
     lead: 'Type each value into the official declaration (e-démarches or GeTax), page by page in the form’s order. Amounts are whole francs, without centimes or separators, as the form asks. Tick each value once it is in.',
@@ -68,10 +68,14 @@ const messages = {
       'On the St. Gallen return, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
     leadFr:
       'Type each value into FriTax, the canton’s free program on your computer, or on the paper return, code by code in the return’s order: annex 01 (the securities list) and annex 02 (the debts) first, their totals carry to codes 3.210 and 4.210. Amounts are whole francs, without separators. FriTax works some lines out itself (the flat amounts, the totals): only check those. Tick each value once it is in.',
-    leadAg:
-      'Type each value into eTAX AARGAU or the paper form: the sheets first (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), then the main form. Amounts are whole francs, without centimes or separators. The codes are the sections of the Aargau guide: check each against your form or eTAX AARGAU. There is no federal column: the tax office works out the federal tax. Tick each value once it is in.',
     coupleFr:
       'On the Fribourg return, person 1 (personne 1) is {a} and person 2 (personne 2) is {b}. If your return has them the other way round, swap the values.',
+    leadTi:
+      'Type each value into eTax PF or the paper forms, in the forms’ order: first Modulo 4 (spese professionali) for each person, whose total goes to 9.1 or 9.2, then Modulo 6 and Modulo 5, then the return (Modulo 1) page 2 the income, page 3 the deductions, page 4 the wealth. The return has one column: the tax authority works out the federal tax from it. Amounts are whole francs, without separators. Tick each value once it is in.',
+    leadAg:
+      'Type each value into eTAX AARGAU or the paper form: the sheets first (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), then the main form. Amounts are whole francs, without centimes or separators. The codes are the sections of the Aargau guide: check each against your form or eTAX AARGAU. There is no federal column: the tax office works out the federal tax. Tick each value once it is in.',
+    coupleTi:
+      'On the Ticino forms, the taxpayer (contribuente) is {a} and the spouse (coniuge/partner registrato) is {b}. If your forms have them the other way round, swap the values.',
     coupleAg:
       'On the Aargau forms, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
@@ -119,9 +123,12 @@ const messages = {
     leadSg: `Recopiez chaque valeur dans E-Tax SG ou les formulaires papier, dans l’ordre du formulaire${NB}: d’abord le formulaire 4 (Berufskosten, frais professionnels) de chaque personne, dont le total va au 10.1 ou au 10.2, puis la page 2 de la déclaration les revenus, la page 3 les déductions, la page 4 la fortune. La déclaration a une seule colonne${NB}: l’administration fiscale en déduit l’impôt fédéral. Les montants sont en francs entiers, sans séparateurs. Cochez chaque valeur une fois saisie.`,
     coupleSg: `Sur la déclaration saint-galloise, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
     leadFr: `Recopiez chaque valeur dans FriTax, le programme gratuit du canton sur votre ordinateur, ou sur la déclaration papier, code par code dans l’ordre de la déclaration${NB}: d’abord l’annexe 01 (état des titres) et l’annexe 02 (état des dettes), dont les totaux sont reportés aux codes 3.210 et 4.210. Les montants sont en francs entiers, sans séparateurs. FriTax calcule lui-même certaines lignes (les forfaits, les totaux)${NB}: vérifiez-les seulement. Cochez chaque valeur une fois saisie.`,
-    leadAg: `Recopiez chaque valeur dans eTAX AARGAU ou le formulaire papier${NB}: d’abord les feuilles annexes (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), puis le formulaire principal. Les montants sont en francs entiers, sans centimes ni séparateurs. Les codes sont les sections du guide argovien${NB}: vérifiez chacun sur votre formulaire ou dans eTAX AARGAU. Il n’y a pas de colonne fédérale${NB}: l’administration calcule l’impôt fédéral. Cochez chaque valeur une fois saisie.`,
     coupleFr:
       'Sur la déclaration fribourgeoise, la personne 1 est {a} et la personne 2 est {b}. Si votre déclaration les inverse, inversez les valeurs.',
+    leadTi: `Recopiez chaque valeur dans eTax PF ou les formulaires papier, dans l’ordre des formulaires${NB}: d’abord le Modulo 4 (spese professionali, frais professionnels) de chaque personne, dont le total va au 9.1 ou au 9.2, puis le Modulo 6 et le Modulo 5, puis la déclaration (Modulo 1), la page 2 les revenus, la page 3 les déductions, la page 4 la fortune. La déclaration a une seule colonne${NB}: l’autorité fiscale en déduit l’impôt fédéral. Les montants sont en francs entiers, sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    leadAg: `Recopiez chaque valeur dans eTAX AARGAU ou le formulaire papier${NB}: d’abord les feuilles annexes (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), puis le formulaire principal. Les montants sont en francs entiers, sans centimes ni séparateurs. Les codes sont les sections du guide argovien${NB}: vérifiez chacun sur votre formulaire ou dans eTAX AARGAU. Il n’y a pas de colonne fédérale${NB}: l’administration calcule l’impôt fédéral. Cochez chaque valeur une fois saisie.`,
+    coupleTi:
+      'Sur les formulaires tessinois, le contribuable (contribuente) est {a} et le conjoint (coniuge/partner registrato) est {b}. Si vos formulaires les inversent, inversez les valeurs.',
     coupleAg: `Sur les formulaires argoviens, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
@@ -187,12 +194,90 @@ const messages = {
       'Auf der St. Galler Steuererklärung ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
     leadFr:
       'Tippe jeden Wert in FriTax, das kostenlose Programm des Kantons auf deinem Computer, oder in die Papiersteuererklärung, Code für Code in der Reihenfolge der Steuererklärung: zuerst die Beilage 01 (état des titres, Wertschriftenverzeichnis) und die Beilage 02 (état des dettes, Schuldenverzeichnis), deren Totale in die Codes 3.210 und 4.210 übertragen werden. Beträge in ganzen Franken, ohne Trennzeichen. Manche Zeilen berechnet FriTax selbst (die Pauschalen, die Totale): Prüf sie nur. Hake jeden Wert ab, sobald er drin ist.',
-    leadAg:
-      'Tippe jeden Wert in eTAX AARGAU oder ins Papierformular: zuerst die Hilfsblätter (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), dann den Hauptbogen. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Die Ziffern sind die Abschnitte der Wegleitung: Prüfe jede auf deinem Formular oder in eTAX AARGAU. Eine Spalte für die Bundessteuer gibt es nicht: Das Steueramt berechnet sie. Hake jeden Wert ab, sobald er drin ist.',
     coupleFr:
       'Auf der Freiburger Steuererklärung ist Person 1 (personne 1) {a} und Person 2 (personne 2) {b}. Wenn deine sie umgekehrt hat, tausche die Werte.',
+    leadTi:
+      'Tippe jeden Wert in eTax PF oder in die Papierformulare, in der Reihenfolge der Formulare: zuerst das Modulo 4 (spese professionali, Berufskosten) für jede Person, dessen Total in 9.1 oder 9.2 kommt, dann das Modulo 6 und das Modulo 5, dann die Steuererklärung (Modulo 1), Seite 2 die Einkünfte, Seite 3 die Abzüge, Seite 4 das Vermögen. Die Steuererklärung hat eine Spalte: Die Steuerbehörde leitet die direkte Bundessteuer daraus ab. Beträge in ganzen Franken, ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    leadAg:
+      'Tippe jeden Wert in eTAX AARGAU oder ins Papierformular: zuerst die Hilfsblätter (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), dann den Hauptbogen. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Die Ziffern sind die Abschnitte der Wegleitung: Prüfe jede auf deinem Formular oder in eTAX AARGAU. Eine Spalte für die Bundessteuer gibt es nicht: Das Steueramt berechnet sie. Hake jeden Wert ab, sobald er drin ist.',
+    coupleTi:
+      'Auf den Tessiner Formularen ist der Steuerpflichtige (contribuente) {a} und der Ehegatte (coniuge/partner registrato) {b}. Wenn deine Formulare sie umgekehrt haben, tausche die Werte.',
     coupleAg:
       'Auf den Aargauer Formularen ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
+  },
+  it: {
+    title: 'Compila la tua dichiarazione',
+    lead: 'Inserisci ogni valore nella dichiarazione ufficiale (e-démarches o GeTax), pagina per pagina nell’ordine del modulo. Gli importi sono in franchi interi, senza centesimi né separatori, come chiede il modulo. Spunta ogni valore una volta inserito.',
+    progress: '{n} di {total} inseriti',
+    pending: '{n} non ancora definitivi',
+    couple:
+      'Sul modulo, il contribuable A è la persona stampata a sinistra, B l’altra. Qui A è {a} e B è {b}: se il tuo modulo li ha al contrario, scambia i valori di A e B.',
+    waiting: 'Non ancora sul modulo, indica cos’è: {list}',
+    copy: 'Copia',
+    copied: 'Copiato',
+    copyFailed: 'Copia questo: {value}',
+    copyLabel: 'Copia {label}',
+    entered: 'Inserito',
+    tick: 'Spunta questa casella',
+    rounded: 'Da {amount}, arrotondato al franco',
+    confirmFirst: 'Controllalo prima, in “Cosa ha letto Claude nei tuoi documenti”.',
+    estimateFirst: 'Una stima: sistemala prima di inserirla.',
+    formWorksOut: 'Il modulo lo calcola: controlla che mostri questo importo.',
+    from: 'Letto in {files}',
+    statusNeedsOk: 'Da confermare',
+    statusConfirmed: 'Confermato da te',
+    statusVerified: 'Verificato',
+    statusEstimate: 'Stima',
+    statusComputed: 'Calcolato',
+    pageLabel: 'Pagina {page} del modulo',
+    column: 'Colonna {list}',
+    columns: 'Colonne {list}',
+    split:
+      'Per tutta l’economia domestica: sul modulo, ripartiscilo tra {parts}, come sul tuo documento.',
+    leadZh:
+      'Inserisci ogni valore in ZHprivateTax o nel modulo cartaceo, pagina per pagina nell’ordine del modulo: prima i moduli Berufsauslagen e Versicherungsprämien, i cui totali vanno riportati a pagina 3. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleZh:
+      'Sul modulo di Zurigo, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadBe:
+      'Inserisci ogni valore in TaxMe-Online o nel modulo cartaceo, modulo per modulo nell’ordine della dichiarazione. Gli importi sono in franchi interi, senza separatori. TaxMe calcola i limiti e due riepiloghi (Zusammenzug): confrontali con le ultime due sezioni. Spunta ogni valore una volta inserito.',
+    coupleBe:
+      'Sul modulo di Berna, la colonna Mann è {a} e la colonna Frau è {b}, anche per le unioni domestiche registrate. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadBl:
+      'Inserisci ogni valore in E-Tax BL o nel modulo cartaceo, pagina per pagina nell’ordine del modulo: a pagina 2 i redditi, a pagina 3 le deduzioni in due colonne, Staatssteuer e Bundessteuer, a pagina 4 la sostanza. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleBl:
+      'Sulla dichiarazione di Basilea Campagna, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadVd:
+      'Inserisci ogni valore in VaudTax o nel modulo cartaceo, pagina per pagina nell’ordine del modulo. Gli importi sono in franchi interi, senza centesimi né separatori. L’ultima sezione, l’imposta federale diretta (impôt fédéral direct), serve solo da controllo: la calcola VaudTax. Spunta ogni valore una volta inserito.',
+    coupleVd:
+      'Sul modulo di Vaud, il contribuable 1 è {a} e il contribuable 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadBs:
+      'Inserisci ogni valore in BalTax Online o nel modulo cartaceo, modulo per modulo nell’ordine indicato dalla guida: prima i moduli ausiliari (W, B, K, Z, F), i cui totali vanno riportati alle pagine da 2 a 4. Dal 369 in poi, ogni riga ha una colonna Kanton e una colonna Bund. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleBs:
+      'Sul modulo di Basilea Città, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadZg:
+      'Inserisci ogni valore in eTax.zug o nel modulo cartaceo K, pagina per pagina nell’ordine del modulo: a pagina 2 i redditi, a pagina 3 le deduzioni, ognuna in due colonne, Kanton e Bund, a pagina 4 la sostanza. Gli importi sono in franchi interi (keine Rappenbeträge), senza separatori. Spunta ogni valore una volta inserito.',
+    coupleZg:
+      'Sul modulo K di Zugo, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadLu:
+      'Inserisci ogni valore in eSteuern.LU o nei moduli cartacei, nell’ordine consigliato dalla guida: prima il modulo B e l’elenco dei titoli, poi le pagine da 2 a 4 della dichiarazione, nella sua unica colonna. Gli importi sono in franchi interi (CHF ohne Rappen), senza separatori. L’Ergänzungsblatt Direkte Bundessteuer è facoltativo: i suoi valori servono da controllo. Spunta ogni valore una volta inserito.',
+    coupleLu:
+      'Sulla dichiarazione di Lucerna, Person 1 è {a} e Person 2 è {b}. La dichiarazione stampa il marito come Person 1: se la tua li ha al contrario, scambia i valori.',
+    leadSg:
+      'Inserisci ogni valore in E-Tax SG o nei moduli cartacei, nell’ordine del modulo: prima il modulo 4 (Berufskosten) per ogni persona, il cui totale va al 10.1 o al 10.2, poi sulla dichiarazione a pagina 2 i redditi, a pagina 3 le deduzioni, a pagina 4 la sostanza. La dichiarazione ha una sola colonna: l’amministrazione fiscale ne ricava l’imposta federale. Gli importi sono in franchi interi, senza separatori. Spunta ogni valore una volta inserito.',
+    coupleSg:
+      'Sulla dichiarazione di San Gallo, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
+    leadFr:
+      'Inserisci ogni valore in FriTax, il programma gratuito del Cantone sul tuo computer, o sulla dichiarazione cartacea, codice per codice nell’ordine della dichiarazione: prima l’allegato 01 (état des titres, l’elenco dei titoli) e l’allegato 02 (état des dettes, l’elenco dei debiti), i cui totali vanno ai codici 3.210 e 4.210. Gli importi sono in franchi interi, senza separatori. Alcune righe FriTax le calcola da sé (gli importi forfettari, i totali): controllale soltanto. Spunta ogni valore una volta inserito.',
+    coupleFr:
+      'Sulla dichiarazione friburghese, la persona 1 (personne 1) è {a} e la persona 2 (personne 2) è {b}. Se la tua dichiarazione le ha al contrario, scambia i valori.',
+    leadTi:
+      'Inserisci ogni valore in eTax PF o sui moduli cartacei, nell’ordine dei moduli: prima il Modulo 4 (spese professionali) di ogni persona, il cui totale va alla cifra 9.1 o 9.2, poi il Modulo 6 e il Modulo 5, poi la dichiarazione (Modulo 1), pagina 2 i redditi, pagina 3 le deduzioni, pagina 4 la sostanza. La dichiarazione ha una sola colonna: l’autorità fiscale ne ricava l’imposta federale diretta. Gli importi sono in franchi interi, senza separatori. Spunta ogni valore una volta inserito.',
+    leadAg:
+      'Inserisci ogni valore in eTAX AARGAU o nel modulo cartaceo: prima i fogli ausiliari (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), poi il modulo principale. Gli importi sono in franchi interi, senza centesimi né separatori. I codici sono le sezioni della guida argoviese: verifica ognuno sul tuo modulo o in eTAX AARGAU. Non c’è una colonna federale: l’imposta federale la calcola l’ufficio delle imposte. Spunta ogni valore una volta inserito.',
+    coupleTi:
+      'Sui moduli ticinesi, il contribuente è {a} e il coniuge/partner registrato è {b}. Se i tuoi moduli li hanno al contrario, scambia i valori.',
+    coupleAg:
+      'Sui moduli argoviesi, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
   },
 } as const;
 

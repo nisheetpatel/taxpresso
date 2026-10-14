@@ -1,7 +1,8 @@
-// UI strings in English, French and German (SPEC.md section 1). Second person, plain words (German:
-// the informal "du"), official terms next to their gloss: French for Geneva, Vaud and Fribourg (a
-// bilingual canton: its French guide is the one in the library), German for Zurich, Bern,
-// Basel-Landschaft, Basel-Stadt, Zug, Lucerne and St. Gallen.
+// UI strings in English, French, German and Italian (SPEC.md section 1). Second person, plain words
+// (German: the informal "du"; Italian: the informal "tu"), official terms next to their gloss:
+// French for Geneva, Vaud and Fribourg (a bilingual canton: its French guide is the one in the
+// library), German for Zurich, Bern, Basel-Landschaft, Basel-Stadt, Zug, Lucerne and St. Gallen,
+// Italian for Ticino.
 // Status labels follow SPEC.md section 11b.
 const NB = String.fromCharCode(0xa0);
 
@@ -198,17 +199,23 @@ export const messages = {
     planExplainSg:
       'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
     'assume.fr_commune_default': 'Commune not answered yet: the city of Fribourg assumed.',
-    'assume.ag_commune_default': 'Commune not answered yet: Aarau assumed.',
     'assume.fr_preview':
       'Fribourg is a preview: the rules its documents don’t spell out are applied as in your estimate.',
-    'assume.ag_preview':
-      'Aargau is a preview: the rules its documents don’t spell out are applied as in your estimate.',
     'assume.fr_no_tax':
       'No saving for Fribourg yet: its communal tax rates for 2026 (coefficients communaux) aren’t published, so Taxpresso doesn’t compute your tax. The saving comes once they are, in a Taxpresso update.',
     planSavingSplitFr: 'Fribourg {icc} · federal {ifd}',
-    planSavingSplitAg: 'Aargau {icc} · federal {ifd}',
     planExplainFr:
       'Pillar 3a (3e pilier a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
+    'assume.ti_commune_default': 'Commune not answered yet: Lugano assumed.',
+    'assume.ag_commune_default': 'Commune not answered yet: Aarau assumed.',
+    'assume.ti_preview':
+      'Ticino is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    'assume.ag_preview':
+      'Aargau is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    planSavingSplitTi: 'Ticino {icc} · federal {ifd}',
+    planSavingSplitAg: 'Aargau {icc} · federal {ifd}',
+    planExplainTi:
+      'Pillar 3a (previdenza individuale vincolata, 3° pilastro A) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
     planExplainAg:
       'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
   },
@@ -395,14 +402,19 @@ export const messages = {
     planExplainSg:
       'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
     'assume.fr_commune_default': `Commune pas encore indiquée${NB}: la ville de Fribourg par défaut.`,
-    'assume.ag_commune_default': `Commune pas encore indiquée${NB}: Aarau par défaut.`,
     'assume.fr_preview': `Fribourg est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
-    'assume.ag_preview': `Argovie est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
     'assume.fr_no_tax': `Pas encore d’économie pour Fribourg${NB}: ses coefficients d’impôt communaux 2026 ne sont pas publiés, Taxpresso ne calcule donc pas votre impôt. L’économie viendra dès leur publication, avec une mise à jour de Taxpresso.`,
     planSavingSplitFr: 'Fribourg {icc} · fédéral {ifd}',
-    planSavingSplitAg: 'Argovie {icc} · fédéral {ifd}',
     planExplainFr:
       'Le pilier 3a (3e pilier a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
+    'assume.ti_commune_default': `Commune pas encore indiquée${NB}: Lugano par défaut.`,
+    'assume.ag_commune_default': `Commune pas encore indiquée${NB}: Aarau par défaut.`,
+    'assume.ti_preview': `Le Tessin est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    'assume.ag_preview': `Argovie est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    planSavingSplitTi: 'Tessin {icc} · fédéral {ifd}',
+    planSavingSplitAg: 'Argovie {icc} · fédéral {ifd}',
+    planExplainTi:
+      'Le pilier 3a (previdenza individuale vincolata, 3° pilastro A) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
     planExplainAg:
       'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
   },
@@ -417,7 +429,7 @@ export const messages = {
     step2: 'Optimieren',
     step3: 'Prüfen & einreichen',
     comingSoon: 'Bald verfügbar',
-    langButton: 'Sprache der Oberfläche: Deutsch. Zu Englisch wechseln',
+    langButton: 'Sprache der Oberfläche: Deutsch. Zu Italienisch wechseln',
     title: 'Erzähl mir von deinem Jahr {year}',
     lead: 'Antworte hier, oder sag es Claude einfach im Chat, in deiner Sprache. Beides landet am selben Ort.',
     editAnswers: 'Antworten bearbeiten',
@@ -601,19 +613,242 @@ export const messages = {
     planExplainSg:
       'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
     'assume.fr_commune_default': 'Gemeinde noch nicht angegeben: Stadt Freiburg angenommen.',
-    'assume.ag_commune_default': 'Gemeinde noch nicht angegeben: Aarau angenommen.',
     'assume.fr_preview':
       'Freiburg ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
-    'assume.ag_preview':
-      'Aargau ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
     'assume.fr_no_tax':
       'Noch keine Ersparnis für Freiburg: Seine Gemeindesteuerfüsse 2026 (coefficients communaux) sind nicht veröffentlicht, deshalb berechnet Taxpresso deine Steuer nicht. Die Ersparnis kommt, sobald sie veröffentlicht sind, mit einem Update von Taxpresso.',
     planSavingSplitFr: 'Freiburg {icc} · Bund {ifd}',
-    planSavingSplitAg: 'Aargau {icc} · Bund {ifd}',
     planExplainFr:
       'Die Säule 3a (3e pilier a) ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+    'assume.ti_commune_default': 'Gemeinde noch nicht angegeben: Lugano angenommen.',
+    'assume.ag_commune_default': 'Gemeinde noch nicht angegeben: Aarau angenommen.',
+    'assume.ti_preview':
+      'Das Tessin ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    'assume.ag_preview':
+      'Aargau ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    planSavingSplitTi: 'Tessin {icc} · Bund {ifd}',
+    planSavingSplitAg: 'Aargau {icc} · Bund {ifd}',
+    planExplainTi:
+      'Die Säule 3a (previdenza individuale vincolata, 3° pilastro A) ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
     planExplainAg:
       'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+  },
+  it: {
+    docTitle: 'Taxpresso · Le tue tasse, il tempo di un espresso.',
+    yearPill: 'Anno fiscale {year} · {canton}',
+    yearPillNoCanton: 'Anno fiscale {year}',
+    assumedAnswer: 'Dalle tue risposte precedenti ({because}). Cambiala se non è giusta.',
+    localOnly: 'Solo su questo computer',
+    steps: 'Passi',
+    step1: 'Racconta e aggiungi',
+    step2: 'Ottimizza',
+    step3: 'Controlla e trasmetti',
+    comingSoon: 'In arrivo',
+    langButton: 'Lingua dell’interfaccia: italiano. Passa all’inglese',
+    title: 'Raccontami il tuo {year}',
+    lead: 'Rispondi qui, oppure dillo a Claude nella chat, in qualsiasi lingua. In entrambi i casi finisce tutto nello stesso posto.',
+    editAnswers: 'Modifica le risposte',
+    hideAnswers: 'Nascondi le risposte',
+    change: 'Modifica',
+    questionOf: 'Domanda {n} di circa {total}',
+    forWho: 'Riguarda: {who}',
+    back: 'Indietro',
+    skip: 'Salta per ora',
+    next: 'Domanda successiva',
+    save: 'Salva',
+    cancel: 'Annulla',
+    skippedNote: 'Prima avevi saltato questa domanda.',
+    suggestedFromPrior:
+      'Dalla tua dichiarazione {year} (pagina {page}). Controlla che sia ancora giusto per il {taxYear}, oppure cambialo.',
+    suggestedFromPriorNoYear:
+      'Dalla dichiarazione dell’anno scorso (pagina {page}). Controlla che sia ancora giusto per il {taxYear}, oppure cambialo.',
+    suggestedFromDoc:
+      'Letto in uno dei tuoi documenti (pagina {page}). Controllalo, oppure cambialo.',
+    confirmNext: 'Conferma e continua',
+    none: 'Nessuna di queste',
+    chooseCommune: 'Scegli il tuo Comune',
+    amountPlaceholder: 'p. es. 790',
+    notSupportedPick: 'Taxpresso non può ancora preparare questa parte.',
+    allDone: 'Per ora le domande sono finite.',
+    allDoneLead:
+      'Ora tocca ai documenti, qui sotto. La tua stima si aggiorna man mano che arrivano.',
+    documents: 'I tuoi documenti',
+    documentOne: '1 documento',
+    documentsMany: '{n} documenti',
+    toIdentify: '{todo} da identificare',
+    dropTitle: 'Trascina tutto qui, o nella tua cartella Taxpresso',
+    dropText:
+      'PDF, foto, scansioni, in qualsiasi ordine. Vengono copiati nella tua cartella Taxpresso su questo computer.',
+    chooseFiles: 'Scegli i file',
+    checkFolder: 'Controlla la mia cartella',
+    uploading: 'Aggiungo {name}…',
+    noDocuments: 'Ancora nessun documento.',
+    whatIsThis: 'Che cos’è?',
+    whose: 'Di chi è?',
+    pickKind: 'Scegli…',
+    statusConfirmed: 'Confermato da te',
+    statusNeedsOk: 'Da confermare',
+    statusRecognised: 'Riconosciuto dal file',
+    statusFromBarcode: 'Verificato, codice a barre',
+    barcodeWhose: 'Codice a barre letto, indica di chi è',
+    statusMissing: 'Manca',
+    statusOptional: 'Facoltativo',
+    statusSkipped: 'Saltato',
+    missingTitle: 'Manca ancora',
+    missingNone: 'Per ora non manca niente.',
+    upload: 'Aggiungi',
+    skipDoc: 'Salta',
+    undoSkip: 'Annulla',
+    haveOf: '{have} di {need}',
+    gotTitle: 'Già qui',
+    notSupportedTitle: 'Non ancora supportato',
+    activityTitle: 'Attività dalla chat',
+    activityEmpty:
+      'Ancora niente. Chiedi a Claude: “A che punto è la mia dichiarazione Taxpresso?”',
+    'act.claude.status': 'Claude ha controllato a che punto sei',
+    'act.claude.dashboard': 'Claude ha aperto questa dashboard',
+    'act.claude.questions': 'Claude ha fatto la domanda successiva',
+    'act.claude.answer': 'Claude ha salvato la tua risposta: {detail}',
+    'act.you.answer': 'Hai risposto: {detail}',
+    'act.you.skip': 'Hai saltato una domanda',
+    'act.you.document': 'Hai aggiunto {detail}',
+    'act.claude.document': 'Claude ha aggiunto {detail}',
+    'act.you.scan': 'Hai controllato la tua cartella',
+    'act.claude.scan': 'Claude ha controllato la tua cartella',
+    'act.you.kind': 'Hai indicato che un documento è: {detail}',
+    'act.claude.extract': 'Claude ha letto {detail}',
+    'act.you.confirm': 'Hai controllato i valori di {detail}',
+    'act.claude.confirm': 'Claude ha salvato i valori di {detail} che hai confermato',
+    'act.you.check': 'Hai risolto un punto da verificare',
+    'act.claude.check': 'Claude ha salvato la tua nota su un punto da verificare',
+    'act.you.replace': 'Hai sostituito {detail}',
+    'act.you.decide': 'Hai registrato la tua scelta sulla TOU',
+    'act.claude.decide': 'Claude ha registrato la tua scelta sulla TOU',
+    folderProblem: 'Non è possibile usare la tua cartella Taxpresso',
+    lost: 'Taxpresso non risponde più. Si ferma quando chiudi Claude Desktop. Chiedi a Claude di riaprire la dashboard.',
+    footer: 'Funziona su 127.0.0.1. Niente di questa pagina esce dal tuo computer.',
+    footerChat:
+      'Funziona su questo computer, dentro Claude Desktop. Per aggiungere documenti, usa la tua cartella Taxpresso o la dashboard nel tuo browser.',
+    p1: 'Tu',
+    p2: 'Il tuo coniuge o partner',
+    p1Short: 'Tu',
+    p2Short: 'Partner',
+    both: 'Tutti e due',
+    forWhom: 'Per chi?',
+    personHere: '{who}: ricevuto',
+    personMissing: '{who}: manca',
+    whatIs: 'Che cos’è “{topic}”?',
+    askClaude: 'Chiedi a Claude',
+    officialPage: 'Pagina ufficiale',
+    askPrompt: 'In Taxpresso, cosa significa “{topic}”, e mi riguarda?',
+    askQuestionPrompt: 'Taxpresso mi chiede: “{topic}” Cosa significa, e come devo rispondere?',
+    whatMeans: 'Cosa significa?',
+    copied:
+      'Copiato. Incollalo nella tua chat con Claude (Cmd+V, o Ctrl+V su Windows). Puoi anche dirlo con il microfono di Claude.',
+    copyFallback: 'Copia questo nella tua chat con Claude:',
+    planWhen: 'Prima del 31 dicembre',
+    planExplain:
+      'Il pilastro 3a (3e pilier A) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    planTopic: 'pilastro 3a',
+    planTitle: 'Versa nel pilastro 3a e tieni di più del tuo salario',
+    planRoom: 'Ancora possibile nel {year}',
+    planUpTo: 'fino a {amount}',
+    planSaving: 'Imposte risparmiate, circa',
+    planSavingSplit: 'Ginevra {icc} · federale {ifd}',
+    planNeedSalary: 'Indica un salario approssimativo per vederlo',
+    planGross: 'Salario lordo di quest’anno, circa',
+    planPaid: 'Già versato nel pilastro 3a quest’anno',
+    planFund: 'Cassa pensione sul lavoro (2° pilastro)?',
+    planFundYes: 'Sì',
+    planFundNo: 'No',
+    planGood: 'I vantaggi',
+    planMind: 'Tieni presente',
+    planPro1:
+      'Riduce le tue imposte del {year}: quello che versi entro il 31 dicembre viene dedotto dal tuo reddito imponibile, fino al limite.',
+    planPro2: 'Puoi tenerlo come risparmio o investirlo.',
+    planCon1: 'Sono soldi per la pensione: prima non puoi usarli liberamente.',
+    planCon2: 'Vengono tassati quando li prelevi.',
+    planCon3: 'Contano solo i versamenti fatti nel {year}: calcola qualche giorno per il bonifico.',
+    planNew:
+      'Novità: dal 2026 puoi recuperare i versamenti mancati dal 2025 in poi, a certe condizioni.',
+    planHow: 'Come viene calcolato',
+    planSources: 'Fonti',
+    'assume.icc_2025_scale':
+      'L’imposta di Ginevra usa la tariffa 2025: quella del 2026 viene pubblicata a gennaio 2027.',
+    'assume.flat_deductions_only':
+      'I premi dell’assicurazione malattia, la custodia dei figli e le altre spese che non hai ancora indicato non vengono conteggiati, quindi il tuo risparmio reale può essere un po’ diverso.',
+    'assume.home_commune_rate': 'Tutto il tuo reddito è considerato guadagnato nel tuo Comune.',
+    'assume.net_from_gross':
+      'Supponiamo che circa l’88 % del tuo salario lordo resti dopo le assicurazioni sociali e la cassa pensione. La tua busta paga mostra la cifra esatta.',
+    'assume.commune_default': 'Comune non ancora indicato: consideriamo la Città di Ginevra.',
+    'assume.no_income_for_some':
+      'Nessun salario indicato per una delle due persone: contato come zero.',
+    'assume.zh_commune_default': 'Comune non ancora indicato: consideriamo la Città di Zurigo.',
+    'assume.zh_preview':
+      'Zurigo è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitZh: 'Zurigo {icc} · federale {ifd}',
+    planExplainZh:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.be_commune_default': 'Comune non ancora indicato: consideriamo la Città di Berna.',
+    'assume.be_preview':
+      'Berna è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitBe: 'Berna {icc} · federale {ifd}',
+    planExplainBe:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.bl_commune_default': 'Comune non ancora indicato: consideriamo Liestal.',
+    'assume.bl_preview':
+      'Basilea Campagna è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitBl: 'Basilea Campagna {icc} · federale {ifd}',
+    planExplainBl:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.vd_commune_default': 'Comune non ancora indicato: consideriamo Losanna.',
+    'assume.vd_preview':
+      'Vaud è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitVd: 'Vaud {icc} · federale {ifd}',
+    'assume.bs_commune_default': 'Comune non ancora indicato: consideriamo la Città di Basilea.',
+    'assume.bs_preview':
+      'Basilea Città è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitBs: 'Basilea Città {icc} · federale {ifd}',
+    planExplainBs:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.zg_commune_default': 'Comune non ancora indicato: consideriamo Zugo.',
+    'assume.zg_preview':
+      'Zugo è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitZg: 'Zugo {icc} · federale {ifd}',
+    planExplainZg:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.lu_commune_default': 'Comune non ancora indicato: consideriamo la Città di Lucerna.',
+    'assume.lu_preview':
+      'Lucerna è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitLu: 'Lucerna {icc} · federale {ifd}',
+    planExplainLu:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.sg_commune_default': 'Comune non ancora indicato: consideriamo la Città di San Gallo.',
+    'assume.sg_preview':
+      'San Gallo è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitSg: 'San Gallo {icc} · federale {ifd}',
+    planExplainSg:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.fr_commune_default': 'Comune non ancora indicato: consideriamo la Città di Friburgo.',
+    'assume.fr_preview':
+      'Friburgo è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    'assume.fr_no_tax':
+      'Ancora nessun risparmio per Friburgo: i suoi coefficienti d’imposta comunali 2026 (coefficients communaux) non sono pubblicati, quindi Taxpresso non calcola la tua imposta. Il risparmio arriverà quando lo saranno, con un aggiornamento di Taxpresso.',
+    planSavingSplitFr: 'Friburgo {icc} · federale {ifd}',
+    planExplainFr:
+      'Il pilastro 3a (3e pilier a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    'assume.ti_commune_default': 'Comune non ancora indicato: consideriamo Lugano.',
+    'assume.ag_commune_default': 'Comune non ancora indicato: consideriamo Aarau.',
+    'assume.ti_preview':
+      'Il Ticino è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    'assume.ag_preview':
+      'Argovia è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    planSavingSplitTi: 'Ticino {icc} · federale {ifd}',
+    planSavingSplitAg: 'Argovia {icc} · federale {ifd}',
+    planExplainTi:
+      'Il pilastro 3a (previdenza individuale vincolata, 3° pilastro A) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    planExplainAg:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
   },
 } as const;
 
