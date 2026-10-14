@@ -107,3 +107,6 @@ Found while giving the Zurich return its federal tax and the extension's estimat
 
 ## Property abroad (added 2026-10-14 by the property abroad agent)
 - Added zh-na-zstb-5-3 (Zürcher Steuerbuch Nr. 5.3, Internationale Steuerausscheidung, 5 March 2026). Geneva uses its section 1.1 (p. 1 and 2) for the federal split of a property abroad (ge/NOTES.md, Property abroad). Zurich itself still says real estate isn't supported: the Zurich questionnaire and rules are unchanged.
+
+## Childcare, the maximum per child (added 2026-10-14 by the childcare agent)
+- The limit is per child ("höchstens Fr. 25 300, für die Drittbetreuung jedes Kindes", zh-2026-law-steuergesetz-631-1-stand-2026 p. 18; 25,000 in zh-2025-law-steuergesetz-631-1-stand-2025 p. 18), half of it for each parent when they share the deduction (zh-2026-tariff-weisung-sozialabzuege p. 7). An amount given for the household used to be capped at the limit times the children under 14; it is now one child's only within the smallest limit of a child, the federal one included, and otherwise the tax is not computed (NOTE.childcareSplit) until the question zh.child_care gives it per child. That question is asked only once the invoices pass 25,300, or 12,650 in shared custody without child support; a test keeps these amounts equal to the engine's.

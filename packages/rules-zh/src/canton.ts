@@ -10,6 +10,7 @@ import {
   ATTESTATION_FIELDS_2026,
   DOCUMENT_FIELDS_WEALTH_2026,
   SALARY_CERTIFICATE_FIELDS_2026,
+  type Amount,
   type CantonRules,
   type Commune,
   type DocumentRule,
@@ -24,7 +25,16 @@ import { ZH_TAX_YEARS, zhParamsFor, type ZhTaxYear } from './params.js';
 import type { ItemPerson, PersonInput, ZhEngineInput, ZhTaxResult } from './types.js';
 
 /** What only Zurich asks for. */
-export type ZurichCantonal = Pick<ZhEngineInput, 'communeVariant' | 'marriedTariff' | 'church'>;
+export interface ZurichCantonal extends Pick<
+  ZhEngineInput,
+  'communeVariant' | 'marriedTariff' | 'church'
+> {
+  /**
+   * Childcare paid, by child, in the order of `children` (the limit is per child, StG § 31 Abs. 1
+   * lit. j): replaces childcare given for the household as a whole.
+   */
+  childcare?: readonly (Amount | undefined)[];
+}
 
 function refuse(what: string): never {
   throw new ZhInputError(`${what}: Zurich's engine does not read it, so the tax would be wrong.`);
@@ -56,19 +66,33 @@ export function zurichInput(input: HouseholdInput<ZurichCantonal>): ZhEngineInpu
     if (!isZurichOwner(m.owner)) refuse(`Accounts or securities of ${m.owner} (movable[].owner)`);
     return { ...without(m, ['owner', 'withholdingSwiss']), owner: m.owner };
   });
-  const { communeVariant, marriedTariff, church } = input.cantonal ?? {};
+  const { communeVariant, marriedTariff, church, childcare } = input.cantonal ?? {};
+  const care = childcare ?? [];
+  if (care.length > (input.children?.length ?? 0)) {
+    refuse('Childcare for a child not in children (cantonal.childcare)');
+  }
+  // Childcare split per child replaces the household's total.
+  const household =
+    input.household && childcare ? without(input.household, ['childcare']) : input.household;
   return {
     taxYear: input.taxYear as ZhTaxYear,
     commune: input.commune,
     ...(communeVariant !== undefined ? { communeVariant } : {}),
     civilStatus: input.civilStatus,
     people: input.people.map(person),
-    ...(input.children ? { children: input.children.map((c) => without(c, ['age'])) } : {}),
+    ...(input.children
+      ? {
+          children: input.children.map((c, i) => ({
+            ...without(c, ['age']),
+            ...(care[i] ? { childcare: care[i] } : {}),
+          })),
+        }
+      : {}),
     ...(input.childSupport ? { childSupport: input.childSupport } : {}),
     ...(marriedTariff !== undefined ? { marriedTariff } : {}),
     ...(input.ifdParentalScale !== undefined ? { ifdParentalScale: input.ifdParentalScale } : {}),
     ...(church ? { church } : {}),
-    ...(input.household ? { household: input.household } : {}),
+    ...(household ? { household } : {}),
     ...(movable ? { movable } : {}),
   };
 }

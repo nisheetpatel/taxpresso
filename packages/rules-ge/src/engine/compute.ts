@@ -958,18 +958,29 @@ export function computeReturn(input: EngineInput): TaxResult {
   // Childcare (59.10 ICC, 59.12 IFD): children under 14; spouses must both work. Both taxes count
   // the care of each child up to the month of the 14th birthday (ge-2025-guide-declaration-pp p. 30;
   // ICC: LIPP art. 35, ge-na-law-lipp, "si l'enfant a moins de 14 ans"; IFD: LIFD art. 33 al. 3),
-  // so the costs given for a child of 14 or more at the end of the year are left out of both; an
-  // amount for the household is taken for the children under 14.
+  // so the costs given for a child of 14 or more at the end of the year are left out of both. Each
+  // child's costs count at most the maximum, then they are added up (p. 30: "pour chaque enfant
+  // ... jusqu'à concurrence de"; LIPP art. 35 and LIFD art. 33 al. 3: "au plus par enfant"). An
+  // amount for the household is one child's when there is one child under 14, or when it is within
+  // the smaller of the two maximums; otherwise how it splits decides, and neither tax is computed
+  // until it is given per child (NOTE.childcareSplit; the question ge.child_care).
   const eligible = couple ? figures.length === 2 && figures.every((f) => f.earns) : true;
-  const perChild = children.filter((c) => (c.childcare?.value ?? 0) > 0);
+  const withCosts = children.filter((c) => (c.childcare?.value ?? 0) > 0);
   const ccTrace = new Trace();
-  const { care, older } = federalChildcare(children, hh.childcare, ccTrace);
+  const within = Math.min(I.childcareMax.value, F.childcareMax.value);
+  const {
+    care,
+    older,
+    perChild,
+    split: careNeedsSplit,
+  } = federalChildcare(children, hh.childcare, ccTrace, within);
   if (older) notes.add(notes.notCounted, NOTE.childcareAge);
   const caredFor = new Set<ChildInput>();
+  let careSplit = false;
   if (care > 0) {
     const young = children.filter((c) => c.under14 !== false);
     const counted =
-      hh.childcare && hh.childcare.value > 0 ? young : perChild.filter((c) => c.under14 !== false);
+      hh.childcare && hh.childcare.value > 0 ? young : withCosts.filter((c) => c.under14 !== false);
     if (children.some((c) => c.under14 === undefined)) notes.add(notes.assumptions, NOTE.under14);
     if (!eligible) {
       notes.add(
@@ -979,26 +990,31 @@ export function computeReturn(input: EngineInput): TaxResult {
           `Frais de garde${NB}: les deux conjoints doivent travailler (ou être en formation) pour les déduire.`,
         ),
       );
+    } else if (careNeedsSplit) {
+      careSplit = true;
+      notes.add(notes.unsupported, NOTE.childcareSplit);
     } else if (counted.length) {
       for (const c of counted) caredFor.add(c);
-      const ci = new Trace().with(ccTrace);
-      const maxI = ci.p(I.childcareMax);
-      const vi = Math.min(care, maxI * counted.length);
-      const capI = maxI * counted.length;
-      notes.limit(I.childcareMax, 'cap', ['59.10', 'household', 'icc'], care, capI, vi);
-      icc.push(
-        item(
-          '59.10',
-          'household',
-          ci,
-          -vi,
-          t(
-            `Paid ${chf(care)}; at most ${chf(maxI)} per child under 14 (${counted.length}): ${chf(vi)}.`,
-            `Payé ${chf(care)}${NB}; au plus ${chf(maxI)} par enfant de moins de 14 ans (${counted.length})${NB}: ${chf(vi)}.`,
-          ),
-        ),
+      const cantonal = childcareCosts(
+        { childcareMax: I.childcareMax },
+        care,
+        counted.length,
+        ccTrace,
+        perChild,
       );
-      const federal = childcareCosts(F, care, counted.length, ccTrace);
+      for (const l of cantonal.limits) {
+        notes.limit(
+          I.childcareMax,
+          'cap',
+          ['59.10', 'household', 'icc'],
+          l.given,
+          l.limit,
+          l.counted,
+        );
+      }
+      const d = cantonal.deduction!;
+      icc.push(item('59.10', 'household', d.trace, d.amount, d.how));
+      const federal = childcareCosts(F, care, counted.length, ccTrace, perChild);
       notes.apply(federal, 'household', 'ifd');
       if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
     }
@@ -1291,7 +1307,9 @@ export function computeReturn(input: EngineInput): TaxResult {
   // simple case (the answers or its figures say so): no tax at all (fail closed).
   for (const u of input.unsupported ?? []) notes.add(notes.unsupported, u);
   for (const u of abroadUnsupported) notes.add(notes.unsupported, u);
-  const failClosed = (input.unsupported ?? []).length > 0 || abroadUnsupported.length > 0;
+  // A household amount of childcare whose split between the children decides: no tax either.
+  const failClosed =
+    (input.unsupported ?? []).length > 0 || abroadUnsupported.length > 0 || careSplit;
 
   // Lump sums from the 2nd pillar and pillar 3a: a tax of their own (./capital.ts), with the
   // return's splitting and federal scale (LIPP art. 45 al. 3, LIFD art. 38 al. 2).

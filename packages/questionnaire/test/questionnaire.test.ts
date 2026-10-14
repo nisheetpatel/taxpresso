@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { Ledger, type VaultDocument } from '@taxpresso/ledger';
-import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
-import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
+import { ifdParamsFor, KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
+import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS, paramsFor } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
   agQuestionnaire2026,
@@ -950,6 +950,63 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       walk(e, ledger, answers(p1));
       const ids = e.snapshot(ledger).slots.map((s) => s.id);
       expect(ids.includes('residence:p2'), p1).toBe(askedSpouse);
+    }
+  });
+});
+
+describe('childcare per child (frais de garde, the maximum is per child)', () => {
+  /** A couple in Geneva with two children at a crèche, as far as the childcare question. */
+  const FAMILY = {
+    canton: 'GE',
+    civil_status: 'married',
+    children: 2,
+    children_custody: 'with_household',
+    childcare: 'creche_or_daycare',
+  };
+  const invoice = (ledger: Ledger, id: string, francs: number) =>
+    ledger.append({
+      key: 'childcare.costs',
+      person: 'household',
+      instance: id,
+      value: francs * 100,
+      status: 'verified',
+      source: { method: 'claude', docId: id, page: 1 },
+    });
+  const ids = (e: QuestionnaireEngine, ledger: Ledger) => e.snapshot(ledger).slots.map((s) => s.id);
+
+  it('is asked only once the invoices pass one child’s maximum, 25,800, with several children', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, FAMILY);
+    expect(ids(e, ledger)).not.toContain('child_care:child1');
+    // 20,000 of invoices: within one child's maximum, every split gives the same.
+    invoice(ledger, 'creche-1', 20_000);
+    expect(ids(e, ledger)).not.toContain('child_care:child1');
+    // 5,800 more: 25,800, still within it; 1 franc more and the split decides.
+    invoice(ledger, 'creche-2', 5_800);
+    expect(ids(e, ledger)).not.toContain('child_care:child1');
+    invoice(ledger, 'creche-3', 1);
+    expect(ids(e, ledger)).toEqual(
+      expect.arrayContaining(['child_care:child1', 'child_care:child2']),
+    );
+    const slot = e.snapshot(ledger).slots.find((s) => s.id === 'child_care:child2')!;
+    expect(e.render(slot, e.snapshot(ledger), 'en').text).toBe(
+      'How much of the childcare you paid in 2026 was for child 2?',
+    );
+    // One child: whatever the amount, it is that child's.
+    const one = new Ledger(2026, KEYS_2026);
+    walk(e, one, { ...FAMILY, children: 1 });
+    invoice(one, 'creche-1', 40_000);
+    expect(ids(e, one)).not.toContain('child_care:child1');
+  });
+
+  it('keeps the federal maximum in step with the engines’ (the smaller of the two)', () => {
+    const q = geQuestionnaire2026().questions.find((x) => x.id === 'child_care')!;
+    const gt = (q.when!.all ?? []).find((c) => c.key === 'childcare.costs')!.gt;
+    for (const year of [2025, 2026] as const) {
+      expect(gt).toBe(
+        Math.min(ifdParamsFor(year).childcareMax.value, paramsFor(year).icc.childcareMax.value),
+      );
     }
   });
 });

@@ -7,6 +7,7 @@
 import {
   answered,
   chf,
+  ifdParamsFor,
   pillar3a as federalPillar3a,
   roundFranc,
   Trace,
@@ -1204,7 +1205,10 @@ function childcareOf(input: BsEngineInput, cap: number, notes: Notes): readonly 
       : input.childSupport === 'none'
         ? cap / 2
         : 0;
-  if (young.length > 1 && paid.value > Math.min(...young.map(limitOf))) {
+  // The federal maximum is per child too (ch-2026-ifd-instructions-personnes-physiques p. 8), and
+  // lower than the canton's: within it, every split gives the same for both taxes.
+  const federal = ifdParamsFor(input.taxYear).childcareMax.value;
+  if (young.length > 1 && paid.value > Math.min(...young.map(limitOf), federal)) {
     notes.add(notes.unsupported, NOTE.childcareSplit);
     return children;
   }

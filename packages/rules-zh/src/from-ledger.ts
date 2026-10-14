@@ -52,7 +52,7 @@ export const ZURICH_READING: CantonLedgerReading<ZurichCantonal> = {
     paid: t('254 and 255', '254 et 255'),
   },
   unemploymentApart: true,
-  cantonal({ taxYear, input, answer, note }) {
+  cantonal({ taxYear, input, answer, amount, note }) {
     // The commune's part, where the official table gives the parts different multipliers.
     const where = communeOfAnswer(taxYear, answer('profile.commune'));
     // The church of each person: church tax only for a member (opt-in).
@@ -74,7 +74,18 @@ export const ZURICH_READING: CantonLedgerReading<ZurichCantonal> = {
           : undefined;
     if (marriedTariff !== undefined) note(NOTE_MARRIED_TARIFF);
     const members = Object.values(church).filter((c) => typeof c === 'string' && c !== 'none');
+    // Childcare split per child, asked when the invoices for the household need it (the limit is
+    // per child): it takes the place of the household's total.
+    const children = input.children ?? [];
+    const care =
+      children.length > 1
+        ? children.map((_, i) => {
+            const a = amount('zh.child_care', `child${i + 1}`);
+            return a && a.value > 0 ? a : undefined;
+          })
+        : [];
     return {
+      ...(care.some(Boolean) ? { childcare: care } : {}),
       ...(where?.variant !== undefined ? { communeVariant: where.variant } : {}),
       ...(marriedTariff !== undefined ? { marriedTariff } : {}),
       ...(members.length ? { church } : {}),
