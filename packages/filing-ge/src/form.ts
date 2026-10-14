@@ -89,6 +89,8 @@ export interface Gloss {
   fr: string;
   /** German, for a canton whose form is in German (Zurich): optional, English otherwise. */
   de?: string;
+  /** Italian, for a canton whose form is in Italian (Ticino): optional, English otherwise. */
+  it?: string;
 }
 
 /** A field written on each line of a repeating rubric (an employer's name, a creditor). */
