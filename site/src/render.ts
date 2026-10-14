@@ -44,6 +44,15 @@ import {
 } from './geneva-data.ts';
 import { privacy, PRIVACY_UPDATED, privacyPath } from './privacy.ts';
 import { absoluteUrl, alternates, jsonLd, ORGANIZATION, plain } from './seo.ts';
+import { CANTONS } from './cantons.ts';
+import { CANTON_PAGES, type CantonPage, cantonPath, cantonsPath } from './canton-data.ts';
+import { cantonPages } from './canton-pages.ts';
+import {
+  type CantonFigures,
+  DEDUCTION_IDS as CANTON_DEDUCTION_IDS,
+  deductionLines,
+  type Limit,
+} from './figures/shared.ts';
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -242,7 +251,7 @@ function footer(lang: Lang) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   return `<footer class="foot">
-<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a href="${genevaPath(here.path)}">${esc(geneva[lang].link)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="${privacyPath(here.path)}">${esc(privacy[lang].link)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
+<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a href="${cantonsPath(here.path)}">${esc(cantonPages[lang].index.link)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="${privacyPath(here.path)}">${esc(privacy[lang].link)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
 <p>${esc(t.footer.independent)}</p>
 <p>${esc(t.footer.noTracking)}</p>
 <p>© 2026 Taxpresso</p>
@@ -719,6 +728,11 @@ function figure(lang: Lang, f: Figure): string {
     );
   if ('centimes' in f)
     return new Intl.NumberFormat(loc, { maximumFractionDigits: 2 }).format(decimal(f.centimes, 2));
+  if ('units' in f)
+    return new Intl.NumberFormat(loc, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    }).format(decimal(f.units, 4));
   if ('date' in f) return longDate(lang, f.date);
   return String(f.n);
 }
@@ -978,6 +992,277 @@ ${more}
 </ul>
 </nav>
 <p class="back"><a href="${genevaPath(here.path)}">${esc(g.all)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Canton reference pages: every figure comes from the canton's figures module (figures/), with its
+// citation; the words from canton-pages.ts, the canton's own terms from its module.
+
+/** Copy with its {words} filled: the canton's name, its terms, the tax year. Plain text. */
+function say(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => {
+    const v = vars[key];
+    if (v === undefined) throw new Error(`No value for {${key}} in "${template}"`);
+    return v;
+  });
+}
+
+/** The words every template of a canton page may use. */
+const cantonVars = (lang: Lang, page: CantonPage) => ({
+  canton: page.canton.name[lang],
+  year: String(TAX_YEAR),
+  term: page.figures.term,
+  base: page.figures.base,
+  tax: page.figures.tax,
+});
+
+/** A term as a heading: its first letter in capitals. */
+const headingCase = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1);
+
+/** Each place cited once, in order. */
+function uniqueSources(sources: Citation[]): Citation[] {
+  const seen = new Set<string>();
+  return sources.filter((c) => {
+    const key = `${c.id} ${c.at}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function cantonCta(lang: Lang): string {
+  const c = cantonPages[lang];
+  const here = LANGS.find((l) => l.lang === lang)!;
+  return `<aside class="ref-cta" aria-labelledby="cta-title">
+<div>
+<h2 id="cta-title">${esc(c.cta.title)}</h2>
+<p>${esc(c.cta.text)}</p>
+</div>
+<a class="btn btn-crema" href="${startPath(here.path)}">${esc(copy[lang].getStarted)}</a>
+</aside>`;
+}
+
+function cantonCommunesHtml(lang: Lang, f: CantonFigures, vars: Record<string, string>): string {
+  const c = cantonPages[lang];
+  const t = c.communes;
+  const label = (col: CantonFigures['communes']['columns'][number]) =>
+    `${'term' in col.label ? headingCase(col.label.term) : c.churches[col.label.church]} ${col.year}`;
+  const head = f.communes.columns
+    .map((col) => `<th scope="col" class="ref-num">${esc(label(col))}</th>`)
+    .join('');
+  const rows = f.communes.rows
+    .map(
+      (r) =>
+        `<tr><th scope="row">${esc(r.name)}</th>${r.cells
+          .map(
+            (cell) =>
+              `<td class="ref-num">${cell.map((v) => fill(lang, '{v}', { v })).join(' / ')}</td>`,
+          )
+          .join('')}</tr>`,
+    )
+    .join('\n');
+  const church = f.communes.columns.some((col) => 'church' in col.label) || f.wide.length > 0;
+  const parts = f.communes.rows.some((r) => r.cells.some((cell) => cell.length > 1));
+  const empty = f.communes.rows.some((r) => r.cells.some((cell) => cell.length === 0));
+
+  const canton = f.canton
+    ? `<p>${esc(say(t.canton, { term: f.canton.term }))}</p>
+<ul class="ref-lines ref-rates">
+${f.canton.rates
+  .map(
+    (r) =>
+      `<li><span class="ref-tax">${r.year}</span> ${fill(lang, r.text === 'incomeWealth' ? t.incomeWealth : '{rate}', r.figures)}</li>`,
+  )
+  .join('\n')}
+</ul>
+${f.canton.rates.map((r) => cites(lang, r.sources, `<span class="cite-year">${r.year}</span> `)).join('\n')}`
+    : '';
+  const wide = f.wide.length
+    ? `<p>${esc(t.wide)}</p>
+<ul class="ref-lines ref-rates">
+${f.wide
+  .map(
+    (w) =>
+      `<li><span class="ref-tax">${esc(c.churches[w.church])}, ${w.year}</span> ${fill(lang, '{v}', { v: w.figure })}</li>`,
+  )
+  .join('\n')}
+</ul>
+${cites(lang, uniqueSources(f.wide.flatMap((w) => w.sources)))}`
+    : '';
+
+  return `<section id="communes" aria-labelledby="communes-title">
+<h2 id="communes-title">${esc(say(t.title, vars))}</h2>
+<p>${esc(say(t.how[f.how], vars))}${church ? ` ${esc(t.church)}` : ''}</p>
+${canton}
+${wide}
+<div class="ref-scroll" role="region" aria-labelledby="communes-title" tabindex="0">
+<table class="ref-table ref-communes">
+<caption class="sr-only">${esc(say(t.title, vars))}</caption>
+<thead><tr><th scope="col">${esc(t.colCommune)}</th>${head}</tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+</div>
+${f.communes.sources.map((s) => cites(lang, s.sources, `<span class="cite-year">${s.year}</span> `)).join('\n')}
+${parts ? `<p class="ref-small">${esc(t.parts)}</p>\n` : ''}${empty ? `<p class="ref-small">${esc(t.empty)}</p>\n` : ''}</section>`;
+}
+
+/** A deduction's limits for one tax, as one line: its sentences one after the other. */
+function limitsLine(lang: Lang, limits: Limit[]): string {
+  const sentences = cantonPages[lang].deductions.limits;
+  return limits
+    .map((l) => {
+      const s = fill(lang, sentences[l.text], l.figures);
+      return limits.length > 1 && !s.endsWith('.') ? `${s}.` : s;
+    })
+    .join(' ');
+}
+
+function cantonDeductionsHtml(lang: Lang, f: CantonFigures, vars: Record<string, string>): string {
+  const t = cantonPages[lang].deductions;
+  const cards = [...f.deductions]
+    .sort((a, b) => CANTON_DEDUCTION_IDS.indexOf(a.id) - CANTON_DEDUCTION_IDS.indexOf(b.id))
+    .map((d) => {
+      const name = t.names[d.id];
+      const heading = !d.term
+        ? name
+        : lang === f.lang
+          ? headingCase(d.term)
+          : `${name} (${d.term})`;
+      const lines = deductionLines(d);
+      const taxes = [...new Set(lines.map((l) => l.tax))];
+      const items = taxes
+        .map(
+          (tax) =>
+            `<li><span class="ref-tax">${esc(t.tax[tax])}, ${TAX_YEAR}</span> ${limitsLine(
+              lang,
+              lines.filter((l) => l.tax === tax).map((l) => l.limit),
+            )}</li>`,
+        )
+        .join('\n');
+      return `<li class="ref-card">
+<h3>${esc(heading)}</h3>
+<ul class="ref-lines">
+${items}
+</ul>
+${cites(lang, uniqueSources(lines.flatMap((l) => l.limit.sources)))}
+</li>`;
+    })
+    .join('\n');
+  return `<section id="deductions" aria-labelledby="deductions-title">
+<h2 id="deductions-title">${esc(say(t.title, vars))}</h2>
+<p>${esc(say(t.intro, vars))}</p>
+<ul class="ref-cards">
+${cards}
+</ul>
+</section>`;
+}
+
+/** One canton's reference page: its communes, its deductions, each figure with its source. */
+export function renderCanton(lang: Lang, page: CantonPage, cssVersion = ''): string {
+  const c = cantonPages[lang];
+  const f = page.figures;
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const vars = cantonVars(lang, page);
+  const at = (p: string) => cantonPath(p, page.slug);
+  const others = [
+    {
+      name: CANTONS.find((x) => x.code === 'GE')!.name[lang],
+      href: genevaPath(here.path),
+    },
+    ...CANTON_PAGES.filter((p) => p !== page).map((p) => ({
+      name: p.canton.name[lang],
+      href: cantonPath(here.path, p.slug),
+    })),
+  ]
+    .map((o) => `<li><a href="${o.href}">${esc(o.name)}</a></li>`)
+    .join('\n');
+  const preview =
+    page.canton.status === 'preview'
+      ? `<p class="ref-note">${esc(say(c.preview, vars))}</p>\n`
+      : '';
+
+  return `${head(
+    lang,
+    { title: say(c.htmlTitle, vars), description: say(c.metaDescription, vars), at },
+    cssVersion,
+  )}
+<body>
+${header(lang, at)}
+
+<main id="main" class="guides">
+<article class="guide ref ref-canton">
+<p class="crumb"><a href="${cantonsPath(here.path)}">${esc(c.index.title)}</a></p>
+<h1>${esc(say(c.title, vars))}</h1>
+${yearPill(lang)}
+<p class="lead">${esc(c.lead)}</p>
+${preview}<nav class="ref-toc" aria-label="${esc(c.onThisPage)}"><span>${esc(c.onThisPage)}</span> <a href="#communes">${esc(say(c.communes.title, vars))}</a> <a href="#deductions">${esc(say(c.deductions.title, vars))}</a></nav>
+${cantonCommunesHtml(lang, f, vars)}
+${cantonDeductionsHtml(lang, f, vars)}
+<p class="ref-check">${esc(geneva[lang].check)}</p>
+<p class="guide-basis">${esc(c.basis)} ${esc(c.disclaimer)}</p>
+</article>
+${cantonCta(lang)}
+<nav class="guide-more" aria-labelledby="more-title">
+<h2 id="more-title">${esc(c.others)}</h2>
+<ul>
+${others}
+</ul>
+</nav>
+<p class="back"><a href="${cantonsPath(here.path)}">${esc(c.all)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
+/** The index of the canton pages: Geneva's, then one card per canton. */
+export function renderCantons(lang: Lang, cssVersion = ''): string {
+  const c = cantonPages[lang];
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const year = { year: String(TAX_YEAR) };
+  const card = (href: string, name: string, summary: string, note = '') =>
+    `<li><a class="guide-card" href="${href}"><h2>${esc(name)}</h2><p>${esc(summary)}</p>${note}<span class="guide-go" aria-hidden="true">${esc(c.index.open)}</span></a></li>`;
+  const cards = [
+    card(genevaPath(here.path), CANTONS.find((x) => x.code === 'GE')!.name[lang], c.index.geneva),
+    ...CANTON_PAGES.map((p) =>
+      card(
+        cantonPath(here.path, p.slug),
+        p.canton.name[lang],
+        say(c.index.summary, { term: p.figures.term }),
+        p.canton.status === 'preview' ? `<p class="ref-tag">${esc(c.index.preview)}</p>` : '',
+      ),
+    ),
+  ].join('\n');
+
+  return `${head(
+    lang,
+    {
+      title: say(c.index.htmlTitle, year),
+      description: say(c.index.metaDescription, year),
+      at: cantonsPath,
+    },
+    cssVersion,
+  )}
+<body>
+${header(lang, cantonsPath)}
+
+<main id="main" class="guides">
+<section class="guides-hero">
+<h1>${esc(c.index.title)}</h1>
+<p class="lead">${esc(c.index.lead)}</p>
+${yearPill(lang)}
+</section>
+<ul class="guide-list ref-list">
+${cards}
+</ul>
+<p class="ref-check">${esc(geneva[lang].check)}</p>
+<p class="guide-basis">${esc(c.basis)} ${esc(c.disclaimer)}</p>
+${cantonCta(lang)}
+<p class="back"><a href="${here.path}">${esc(copy[lang].start.back)}</a></p>
 </main>
 
 ${footer(lang)}`;
