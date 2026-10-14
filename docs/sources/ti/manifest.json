@@ -622,5 +622,37 @@
     "priority": "useful",
     "why_needed": "Dated overview of tax law changes in force from 2024 and planned up to 2029, with BU references.",
     "notes": "2 pages; lists the 2024 income tax relief, the 2026 increase of official property estimates (BU 7/2026) and changes from 2027"
+  },
+  {
+    "id": "ti-2025-form-modulo-1-de",
+    "canton": "TI",
+    "doc_type": "form",
+    "title": "Steuererklärung 2025 für natürliche Personen (Modulo 1), Übersetzung",
+    "tax_year": 2025,
+    "language": "de",
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/Mod_1_trad_intero.pdf",
+    "format": "pdf",
+    "publisher": "Divisione delle contribuzioni, Dipartimento delle finanze e dell'economia, Canton Ticino",
+    "published": null,
+    "verified_on": "2026-10-14",
+    "priority": "core",
+    "why_needed": "The only published copy of the main return Modulo 1 with its numbered lines (cifre) and subtotals, needed to put each amount on its line.",
+    "notes": "Auxiliary German translation linked from the forms page (ti-2025-form-moduli-pf-page); the page says the Italian original is what is filed. No Italian PDF of Modulo 1 is published."
+  },
+  {
+    "id": "ti-2025-form-modulo-5",
+    "canton": "TI",
+    "doc_type": "form",
+    "title": "Elenco debiti - Liberalità a enti di pubblica utilità Modulo 5",
+    "tax_year": 2025,
+    "language": "it",
+    "url": "https://www4.ti.ch/fileadmin/DFE/DC/DOC-IPF/2025/Moduli_principali/PF_VS_0608-2025_Mod5_A4.pdf",
+    "format": "pdf",
+    "publisher": "Divisione delle contribuzioni, Dipartimento delle finanze e dell'economia, Canton Ticino",
+    "published": null,
+    "verified_on": "2026-10-14",
+    "priority": "useful",
+    "why_needed": "Private and business debts with their interest (cifre 13.2, 13.3, 33.1, 33.2) and donations to public-benefit bodies (cifra 24).",
+    "notes": "Linked from the forms page (ti-2025-form-moduli-pf-page)."
   }
 ]
