@@ -47,6 +47,8 @@ export const filing: CantonFiling<FormMap, FormItem, CopyLabels> = {
   },
   words: {
     amounts: '; imputations with centimes',
+    guide:
+      'Geneva: type them in GeTax, the canton’s free software, or in the online declaration (e-démarches), or on the paper form.',
     persons:
       'Contribuable A is you (p1), B your partner (p2). If the form prints them the other way round, swap A and B.',
     example: 'A1',

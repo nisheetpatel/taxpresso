@@ -97,7 +97,7 @@ export function registerHoldingTools(server: McpServer, given: Workspace | TaxYe
       if (missing.length) text.push(...missing);
       if (etat.lines.some((l) => l.valueBasis === 'broker')) {
         text.push(
-          'Official values: the user looks them up in the ESTV price list (ictax.admin.ch) and you save what they give with set_holding. Never give a value from your own knowledge.',
+          'Official values: Taxpresso never fetches them. The user looks them up in the ESTV price list (liste des cours, ictax.admin.ch) and you save what they give with set_holding (security = ISIN, officialValue, from). Never give a value or a rate from your own knowledge.',
         );
       }
       const items = detail

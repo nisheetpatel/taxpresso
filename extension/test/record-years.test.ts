@@ -6,6 +6,10 @@
 // TAXPRESSO_RECORD_HASH=1 keeps each record small on disk: a sha256 of its normalized content in
 // place of the content. To see a difference, rerun the households that differ without it, named in
 // TAXPRESSO_RECORD_ONLY (ids separated by commas; the others are skipped, their seeds kept).
+// TAXPRESSO_RECORD_SPLIT=1 separates what Claude reads from everything else: each record keeps a
+// sha256 of its data (the structured results with Claude's next-step instruction left out, and
+// every dashboard state and API response) and the texts addressed to Claude in full, so a change
+// of those texts alone can be proved and listed (docs/design/simple.md, "Guidance for Claude").
 //
 //   TAXPRESSO_RECORD=/tmp/before.jsonl TAXPRESSO_RECORD_N=20 pnpm vitest run extension/test/record-years.test.ts
 import { createHash } from 'node:crypto';
@@ -23,6 +27,7 @@ import { makeUiDir, makeWorkspace } from './helpers.js';
 const OUT = process.env.TAXPRESSO_RECORD;
 const N = Number(process.env.TAXPRESSO_RECORD_N ?? 20);
 const HASH = process.env.TAXPRESSO_RECORD_HASH === '1';
+const SPLIT = process.env.TAXPRESSO_RECORD_SPLIT === '1';
 const ONLY = process.env.TAXPRESSO_RECORD_ONLY?.split(',');
 const CANTONS = (process.env.TAXPRESSO_RECORD_CANTONS ?? 'GE,ZH,BE,BL,VD,BS,ZG,LU,SG').split(',');
 /** Another tax year than the default, opened first with open_tax_year (only once it exists). */
@@ -58,6 +63,33 @@ function normalize(value: unknown, root: string): string {
       'Taxpresso-$1-export-<DAY>.zip',
     )
     .replace(/"etag":"[^"]*"/g, '"etag":"<ETAG>"');
+}
+
+/**
+ * A tool result split in two: its texts for Claude (the content's text blocks, and get_status's
+ * next-step instruction, nextStep, wherever a status travels), and the rest. A dashboard state or
+ * an API response is data only.
+ */
+function splitForClaude(kind: string, result: unknown): { data: unknown; text: string[] } {
+  if (kind !== 'tool' || !result || typeof result !== 'object') return { data: result, text: [] };
+  const text: string[] = [];
+  const strip = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(strip);
+    if (!v || typeof v !== 'object') return v;
+    const out: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) {
+      if (k === 'nextStep' && typeof x === 'string') text.push(`nextStep: ${x}`);
+      else out[k] = strip(x);
+    }
+    return out;
+  };
+  const r = result as { content?: { type: string; text?: string }[] } & Record<string, unknown>;
+  const content = (r.content ?? []).filter((c) => {
+    if (c.type !== 'text') return true;
+    text.push(c.text ?? '');
+    return false;
+  });
+  return { data: strip({ ...r, content }), text };
 }
 
 interface Household {
@@ -139,6 +171,18 @@ async function run(h: Household): Promise<void> {
   const pick = <T>(xs: readonly T[]): T => xs[Math.floor(random() * xs.length)]!;
   let n = 0;
   const record = (kind: string, name: string, args: unknown, result: unknown) => {
+    if (SPLIT) {
+      const { data, text } = splitForClaude(kind, result);
+      const line = normalize({ h: h.id, n, kind, name, args, result: data }, root);
+      const sha = createHash('sha256').update(line).digest('hex').slice(0, 16);
+      const said = JSON.parse(normalize(text, root)) as string[];
+      appendFileSync(
+        OUT!,
+        JSON.stringify({ h: h.id, n: n++, kind, name, sha, text: said }) + '\n',
+        'utf8',
+      );
+      return;
+    }
     const line = normalize({ h: h.id, n: n++, kind, name, args, result }, root);
     const sha = HASH && createHash('sha256').update(line).digest('hex').slice(0, 16);
     appendFileSync(

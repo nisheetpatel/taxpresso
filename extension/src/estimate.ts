@@ -96,6 +96,19 @@ function capitalText(c: CapitalView, capital: CapitalTax): string {
   return `${c.amount.label.en}: ${chf(c.amount.line.amount)} (${each}). A tax of its own, apart from the tax on income, at a fifth of the scale, never in the total${taxes ? `: ${taxes}` : ': not computed (see "Not computed")'}${c.total ? `; together ${chf(c.total.line.amount)}` : ''}.`;
 }
 
+/**
+ * What Claude does with the tax on pension capital: say it apart, and ask why a lump sum was paid
+ * when its attestation doesn't say (the engine then takes retirement, a home or self-employment).
+ */
+function capitalGuide(ws: Workspace): string {
+  const facts = ws.countedFacts();
+  const docs = (key: string) =>
+    new Set(facts.filter((f) => f.key === key).map((f) => f.source.docId ?? ''));
+  const reasons = docs('capital.reason');
+  const unread = [...docs('capital.amount')].some((id) => !reasons.has(id));
+  return `Say it is a tax of its own, and never add it to the total.${unread ? " Where the reason wasn't read, ask the user why it was paid: if they left Switzerland, or for another reason, save that reason on the attestation (set_fact, key capital.reason, instance = its id) and say plainly that Taxpresso can't compute its tax yet." : ''}`;
+}
+
 /** The canton's result and its view, or why there is none. */
 function current(ws: Workspace) {
   const e = ws.estimate();
@@ -142,7 +155,7 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   const say: string[] = [];
   const estimated = r.estimates.length > 0;
   say.push(
-    `Tax year ${r.taxYear}, ${view.where(r)}. ${estimated ? 'An estimate: see "Estimates" below.' : 'From official values only.'}${view.previewNote ? ` ${view.previewNote}` : ''}`,
+    `Tax year ${r.taxYear}, ${view.where(r)}. ${estimated ? 'An estimate: see "Estimates" below.' : 'From official values only.'}${view.previewNote ? ` ${view.previewNote} Say so once, with those rules.` : ''}`,
   );
   if (icc) say.push(...view.cantonal(icc));
   if (ifd) {
@@ -152,7 +165,13 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   }
   if (r.total !== null) say.push(`Total: ${chf(r.total)}.`);
   const capital = view.capital?.(r);
-  if (capital && r.capital) say.push(capitalText(capital, r.capital));
+  if (capital && r.capital) say.push(capitalText(capital, r.capital), capitalGuide(ws));
+  // A home or land abroad (Geneva, annexe D): exempt here, counted for the rate.
+  if ((r as { abroad?: unknown }).abroad) {
+    say.push(
+      'Property abroad: Taxpresso counts it only to set the rate (exemption avec réserve de progression) and shares the debts, their interest and the deductions with it (97.00). Give these figures as they are, and say the rules it lists as not spelled out in the documents.',
+    );
+  }
   const items = icc ? mainItems(icc.items, 8) : [];
   if (items.length) {
     say.push(
@@ -187,6 +206,12 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   }
   if (r.unverifiedRules.length) {
     say.push(`Rules the documents don't spell out: ${en(r.unverifiedRules).join(' ')}`);
+  }
+  // A canton whose tax can't be computed for the year (Fribourg 2026: no communal coefficients).
+  if (ws.canton().canton?.plan?.noTax?.years.includes(r.taxYear)) {
+    say.push(
+      'Say so plainly; never estimate the tax, a rate or a saving yourself, not even from another year’s.',
+    );
   }
   const structured: Record<string, unknown> = {
     taxYear: r.taxYear,
@@ -257,7 +282,7 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
       );
     }
     say.push(
-      `Detail, each item with how it was computed and its source${view.detailNote}:`,
+      `Detail, each item with how it was computed and its source${view.detailNote}. Explain a figure from these, in the user's language, with its official term and code:`,
       ...all.map(
         (i) =>
           `- ${i.code} ${view.term(i)} (${WHO[i.person]?.en ?? i.person}): ${chf(i.amount)}. ${i.how.en} [${i.sources.join('; ')}]`,

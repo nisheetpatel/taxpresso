@@ -7,7 +7,7 @@ import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
 import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import type { Workspace } from './workspace.js';
-import { TaxYears } from './years.js';
+import { DEFAULT_TAX_YEAR, TaxYears } from './years.js';
 import { journey, journeyText, nextText, STAGES } from './journey.js';
 
 export const StatusSchema = z.object({
@@ -247,6 +247,32 @@ export function cantonList(lang: 'en' | 'fr' | 'de' | 'it' = 'en'): string {
 const yearDroppedText = (dropped: number, open: number) =>
   `The Taxpresso folder had ${dropped} open, which this version doesn't prepare: ${open} is open instead.`;
 
+/**
+ * The language of each canton's official form: Claude names a form item with its official term in
+ * it (instructions.ts). A canton added to SUPPORTED_CANTONS needs its line here.
+ */
+const FORM_TERMS: Record<SupportedCanton, string> = {
+  GE: 'French',
+  VD: 'French',
+  FR: 'French',
+  TI: 'Italian',
+  ZH: 'German',
+  // The Bern form is bilingual.
+  BE: 'German; for a French-speaking user, the French term too where the question gives one',
+  BS: 'German',
+  BL: 'German',
+  ZG: 'German',
+  LU: 'German',
+  SG: 'German',
+  AG: 'German',
+};
+
+/** "Zurich (a preview: say so once; official terms in German)": the canton, for Claude. */
+function cantonWords(code: SupportedCanton): string {
+  const c = CANTONS[code];
+  return `${c.name.en} (${c.view.preview ? 'a preview: say so once; ' : ''}official terms in ${FORM_TERMS[code]})`;
+}
+
 /** "Tax year 2026 is open; also 2025 (Geneva only): switch with open_tax_year when the user asks." */
 function yearsLine(s: Status): string {
   const all = Object.keys(CANTONS).length;
@@ -258,7 +284,12 @@ function yearsLine(s: Status): string {
         : String(y.year),
     );
   const over = s.years.find((y) => y.year === s.taxYear)?.over;
-  return `Tax year ${s.taxYear} is open${over ? ` (it is over: the plans before 31 December are ${CURRENT_TAX_YEAR}'s)` : ''}${others.length ? `; also ${others.join(' and ')}: switch with open_tax_year when the user asks` : ''}.`;
+  // Replies about another year than the default start with it (server.ts, yearOf).
+  const prefix =
+    s.taxYear === DEFAULT_TAX_YEAR
+      ? ''
+      : ` Replies that start with "Tax year ${s.taxYear}:" are about it.`;
+  return `Tax year ${s.taxYear} is open${over ? ` (it is over: the plans before 31 December are ${CURRENT_TAX_YEAR}'s)` : ''}${others.length ? `; also ${others.join(' and ')}: when the user asks for another year, call open_tax_year with it, then get_status` : ''}.${prefix}`;
 }
 
 /** Short text for Claude (C6: frugal by default). The full object travels as structuredContent. */
@@ -268,7 +299,7 @@ export function statusText(s: Status): string {
   // The year first (docs/design/tax-years.md), then the next step and the stages in one line
   // each (docs/design/simple.md).
   const lines = [
-    `Taxpresso ${s.version}, tax year ${s.taxYear}, ${canton ?? 'canton not known yet'}`,
+    `Taxpresso ${s.version}, tax year ${s.taxYear}, ${s.canton ? cantonWords(s.canton) : 'canton not known yet'}`,
     yearsLine(s),
     ...(s.yearNote ? [s.yearNote] : []),
     `Next step: ${s.nextStep}`,
