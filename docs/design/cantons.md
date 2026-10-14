@@ -59,9 +59,9 @@ export interface CantonFiling {
 ```
 
 - `HouseholdInput` is Geneva's `EngineInput` with the Geneva-only fields moved under `cantonal` (Geneva: `splitting`; Zurich: `church`, `communeVariant`; Vaud: the quotient familial parts). `packages/rules-zh/src/types.ts` already follows `EngineInput`'s field names, so `from-ledger` serves both.
-- `TaxResult` keeps today's top level (`taxYear`, `commune`, `icc`, `ifd`, `total`, `estimates`, `needsOk`, `complete`, `incomplete`, `assumptions`, `notCounted`, `unsupported`, `unverifiedRules`). `icc` means "cantonal and communal tax" in every canton; its common fields (`items`, `grossIncome`, `netIncome`, `taxableIncome`, `wealth`, `taxes.total`) are read by the dashboard, and `taxes` carries the canton's own lines (Geneva: centimes additionnels, 12 % reduction; Zurich: einfache Staatssteuer, Steuerfuss, Personalsteuer). The dashboard shows `taxes` as an ordered list of lines, so it needs no canton code.
+- `TaxResult` keeps today's top level (`taxYear`, `commune`, `icc`, `ifd`, `total`, `estimates`, `needsOk`, `complete`, `incomplete`, `assumptions`, `notCounted`, `unsupported`, `unverifiedRules`). `icc` means "cantonal and communal tax" in every canton; its common fields (`items`, `grossIncome`, `netIncome`, `taxableIncome`, `wealth.items`, `wealth.taxableWealth`, `taxes.total`) are what the dashboard reads, and `taxes` carries the canton's own lines (Geneva: centimes additionnels, 12 % reduction; Zurich: einfache Staatssteuer, Steuerfuss, Personalsteuer). The dashboard then shows `taxes` as an ordered list of lines and needs no canton code.
 - Communes are identified by their BFS number (federal commune number), which every canton's tables carry; `slug` stays for display and for Geneva's facts already stored as slugs (`profile.commune`).
-- The questionnaire engine already takes its file, keys and communes as arguments (`new QuestionnaireEngine(file, keys, communes)`): it needs no change beyond reading `profile.canton` first.
+- The questionnaire engine already takes its file, keys and communes as arguments (`new QuestionnaireEngine(file, keys, communes)`): beyond asking `profile.canton` first, only its "is not a Geneva commune" message names a canton.
 - The extension gets one registry, `extension/src/cantons.ts`: `{ GE: { rules, filing, questionnaire }, ZH: ... }`. `main.ts` stops importing `COMMUNES_2026` and `KEYS_2026` from `rules-ge` and asks the registry for the canton of the year being prepared.
 - Prior-return parsing (`packages/intake/src/prior/`) and the état des titres are form-specific: they move behind `CantonFiling` when a second canton needs them; until then Zurich has none.
 
@@ -97,6 +97,6 @@ No per-canton folder. One tax year has one canton, so `~/Documents/Taxpresso/<ye
 
 ## Open points for the lead
 
-- The Zurich communal table gives two or three multipliers for some communes (Uster, Turbenthal in 2026: two school districts) without naming the parts. `rules-zh` asks for the variant and does not compute without it. The questionnaire needs the area names from the commune or the canton.
+- The Zurich communal table gives two or three multipliers for some communes (Uster and Turbenthal in 2025 and 2026: two school districts) without naming the parts. `rules-zh` asks for the variant and does not compute without it. The questionnaire needs the area names from the commune or the canton.
 - Zurich's rounding of taxable amounts and of the tax is not in the documents in the library (`docs/sources/zh/NOTES.md`, "Open points for the rules"); `rules-zh` reports what it assumed in `unverifiedRules`. One official tax example (the online calculator's printout or an assessment) would settle it.
 - The 2026 Staatssteuerfuss: the Kantonsrat decision says 95 %, the 2026 source-tax parameter sheet says 98 % (see `docs/sources/zh/NOTES.md`). `rules-zh` uses the decision.
