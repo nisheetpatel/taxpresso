@@ -727,7 +727,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
           .union([z.number().min(0), z.boolean(), z.string().max(500)])
           .optional()
           .describe(
-            'plan.*: CHF amount, true/false, or the tariff code on the payslip for plan.source_tax_tariff (e.g. "A0"). Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
+            'plan.*: CHF amount, true/false, the tariff code on the payslip for plan.source_tax_tariff (e.g. "A0"), or an amount with its currency for plan.abroad_value and plan.abroad_rent (e.g. "250000 EUR"). Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
           ),
         confirm: z
           .boolean()
@@ -759,7 +759,9 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
           throw new WorkspaceError('Give key and value, or confirm: true with a document id.');
         }
         if ((PLAN_KEYS as readonly string[]).includes(key)) {
-          if (typeof value === 'string' && key !== 'plan.source_tax_tariff') {
+          // A property abroad's rough value and rent come with their currency, as the user says.
+          const abroad = key === 'plan.abroad_value' || key === 'plan.abroad_rent';
+          if (typeof value === 'string' && key !== 'plan.source_tax_tariff' && !abroad) {
             throw new WorkspaceError('Give a number or true/false.');
           }
           await ws.setPlan(person ?? 'p1', key as (typeof PLAN_KEYS)[number], value, 'chat');
@@ -767,7 +769,9 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
             content: [
               {
                 type: 'text',
-                text: `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
+                text: abroad
+                  ? 'Saved as an estimate: Taxpresso converts it at the official rate. Call compute_tax for the updated tax.'
+                  : `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
               },
             ],
             structuredContent: { saved: true },

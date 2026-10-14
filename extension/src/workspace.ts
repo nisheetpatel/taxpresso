@@ -173,7 +173,14 @@ export const PLAN_KEYS = [
   'plan.tou_taxable_wealth',
   // Geneva: a self-employed person's expected profit for the year, for the 3a room.
   'plan.business_profit',
+  // Geneva: a property abroad's rough value and rent, with their currency ("250000 EUR"), until its
+  // documents are in (abroad.ts): estimates for the return itself, not plans before 31 December.
+  'plan.abroad_value',
+  'plan.abroad_rent',
 ] as const;
+
+/** Planning values that are rough figures for the return itself: they hold for a year that is over. */
+const RETURN_ESTIMATES: readonly string[] = ['plan.abroad_value', 'plan.abroad_rent'];
 
 /**
  * A self-employed person's profit after their own AVS contributions, from the year's accounts when
@@ -713,7 +720,9 @@ export class Workspace {
       this.#usable();
       if (!PLAN_KEYS.includes(key)) throw new WorkspaceError(`Not a planning value: ${key}`);
       // The plans before 31 December and TOU can't be acted on for a year that is over.
-      if (this.yearOver()) throw new WorkspaceError(yearOverPlans(this.taxYear));
+      if (this.yearOver() && !RETURN_ESTIMATES.includes(key)) {
+        throw new WorkspaceError(yearOverPlans(this.taxYear));
+      }
       const def = this.keys[key];
       // TOU, taxation at source and a business's profit are Geneva's: another canton's keys don't
       // have them.

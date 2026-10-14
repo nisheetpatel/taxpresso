@@ -660,3 +660,36 @@ describe('guidance said where it applies, and not where it doesn’t', () => {
     expect(await row.whenNot()).not.toMatch(row.pattern);
   });
 });
+
+describe('the guidance a property abroad gives works', () => {
+  it('set_fact saves the rough value and rent with their currency, as estimates', async () => {
+    const h = await household();
+    await retired(h, ['property_abroad'], HOME_ABROAD);
+    await h.finish();
+    for (const [key, value] of [
+      ['plan.abroad_value', '250000 EUR'],
+      ['plan.abroad_rent', '0 EUR'],
+    ]) {
+      const { text, res } = await h.call('set_fact', { key, value });
+      expect(res.isError, text).toBeFalsy();
+      expect(text).toMatch(/as an estimate/);
+    }
+    expect((await h.call('compute_tax')).text).toMatch(/Property abroad: Taxpresso counts it/);
+  });
+
+  it('for a year that is over too: they are the return’s figures, not plans', async () => {
+    const h = await household();
+    await h.call('open_tax_year', { year: 2025 });
+    const { text: opened } = await h.call('get_status');
+    expect(opened).toMatch(/^Taxpresso [^,]+, tax year 2025/);
+    await retired(h, ['property_abroad'], HOME_ABROAD);
+    const { text, res } = await h.call('set_fact', {
+      key: 'plan.abroad_value',
+      value: '250000 EUR',
+    });
+    expect(res.isError, text).toBeFalsy();
+    // A plan before 31 December still can't be saved for a year that is over.
+    const plan = await h.call('set_fact', { key: 'plan.pillar3a_paid', value: 1000 });
+    expect(plan.res.isError).toBe(true);
+  });
+});
