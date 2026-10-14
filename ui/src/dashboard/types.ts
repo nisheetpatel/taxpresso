@@ -88,7 +88,7 @@ export interface State extends DocumentsState {
   taxYear: number;
   /** The canton of the return, once the user said where they lived on 31 December. */
   canton: {
-    code: 'GE' | 'ZH' | 'BE' | 'BL' | 'VD';
+    code: 'GE' | 'ZH' | 'BE' | 'BL' | 'VD' | 'AG';
     name: string;
     from: 'answer' | 'earlier_answers' | 'none';
     because: string[];

@@ -220,6 +220,9 @@ importers:
       '@modelcontextprotocol/server':
         specifier: ^2.3.0
         version: 2.3.1
+      '@taxpresso/filing-ag':
+        specifier: workspace:*
+        version: link:../packages/filing-ag
       '@taxpresso/filing-be':
         specifier: workspace:*
         version: link:../packages/filing-be
@@ -247,6 +250,9 @@ importers:
       '@taxpresso/questionnaire':
         specifier: workspace:*
         version: link:../packages/questionnaire
+      '@taxpresso/rules-ag':
+        specifier: workspace:*
+        version: link:../packages/rules-ag
       '@taxpresso/rules-be':
         specifier: workspace:*
         version: link:../packages/rules-be
