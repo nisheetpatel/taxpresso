@@ -95,6 +95,11 @@ const text = {
       'What the cantonal, communal and church tax (Kantons-, Gemeinde- und Kirchensteuern) is made of',
     taxableBe:
       'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
+    officialBl: 'Steuern {year}',
+    breakdownBl:
+      'What the state, communal and church tax (Staats-, Gemeinde- und Kirchensteuer) is made of',
+    taxableBl:
+      'Taxable income (steuerbares Einkommen): state tax {icc}, federal tax {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
     preview: '{canton} is a preview: what to check',
     previewNote:
       'Taxpresso computes {canton} from the official documents. A few rules aren’t spelled out in them, and some answers were assumed. Here they are.',
@@ -130,6 +135,10 @@ const text = {
     breakdownBe:
       'Ce qui compose les impôts cantonal, communal et paroissial (Kantons-, Gemeinde- und Kirchensteuern)',
     taxableBe: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
+    officialBl: 'Steuern {year}',
+    breakdownBl:
+      'Ce qui compose les impôts cantonal, communal et ecclésiastique (Staats-, Gemeinde- und Kirchensteuer)',
+    taxableBl: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
     preview: `{canton} est en avant-première${NB}: ce qu’il faut vérifier`,
     previewNote:
       'Taxpresso calcule {canton} à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
@@ -169,6 +178,10 @@ const text = {
     breakdownBe: 'Woraus die Kantons-, Gemeinde- und Kirchensteuern bestehen',
     taxableBe:
       'Steuerbares Einkommen: Kantons- und Gemeindesteuern {icc}, direkte Bundessteuer {ifd}. Steuerbares Vermögen: {wealth}.',
+    officialBl: 'Steuern {year}',
+    breakdownBl: 'Woraus die Staats-, Gemeinde- und Kirchensteuer besteht',
+    taxableBl:
+      'Steuerbares Einkommen: Staatssteuer {icc}, Bundessteuer {ifd}. Steuerbares Vermögen: {wealth}.',
     preview: '{canton} ist eine Vorschau: Was du prüfen solltest',
     previewNote:
       'Taxpresso berechnet {canton} aus den offiziellen Dokumenten. Ein paar Regeln sind darin nicht genau festgelegt, und einige Antworten wurden angenommen. Hier sind sie.',

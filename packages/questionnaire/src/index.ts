@@ -4,6 +4,7 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./yaml.d.ts" />
 import be2026 from '../../../data/be/2026/questionnaire.yaml';
+import bl2026 from '../../../data/bl/2026/questionnaire.yaml';
 import ch2026 from '../../../data/ch/2026/questions.yaml';
 import ge2026 from '../../../data/ge/2026/questionnaire.yaml';
 import zh2026 from '../../../data/zh/2026/questionnaire.yaml';
@@ -33,4 +34,9 @@ export function zhQuestionnaire2026(): QuestionnaireFile {
 /** The Bern questionnaire for tax year 2026, validated. */
 export function beQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(be2026, ch2026);
+}
+
+/** The Basel-Landschaft questionnaire for tax year 2026, validated. */
+export function blQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(bl2026, ch2026);
 }

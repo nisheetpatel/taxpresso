@@ -5,7 +5,8 @@
 // pages and adds 771, the deduction for IV pensioners (bl-2026-steuererklaerung-form p. 3). Most
 // income and deduction lines have a code for each person (100 for person 1, 105 for person 2); the
 // others are the household's. The state tax has one list of deductions (500 to 775) and no subtotal
-// before the taxable income (790 = 499 - 789).
+// before the taxable income (790 = 499 - 789). The federal column (Bundessteuer) has the same lines,
+// with the federal amounts, and two social deductions the state tax doesn't have, 750 and 775.
 import type { Text } from '@taxpresso/rules-ch';
 
 const FORM = 'bl-2025-steuererklaerung-form';
@@ -248,6 +249,15 @@ export const RUBRICS = {
     '36',
   ),
   '738': deduction('Freiwillige Zuwendungen', 'Donations', 'Dons', '36'),
+  // Social deductions (Sozialabzüge) of the federal column only: the state tax takes the children
+  // off the tax amount instead (the child reduction) and has no married couple deduction
+  // (bl-2025-wegleitung p. 36, 37 and 39).
+  '750': deduction(
+    'Sozialabzug für Kinder',
+    'Deduction for children (federal tax)',
+    'Déduction pour enfants (impôt fédéral)',
+    '36 and 37',
+  ),
   '770': deduction(
     'Abzug für AHV-/IV-Rentnerinnen und -Rentner',
     'Deduction for AHV/IV pensioners',
@@ -262,6 +272,12 @@ export const RUBRICS = {
     },
     source: 'bl-2026-steuererklaerung-form p. 3; bl-2026-wegleitung p. 40',
   },
+  '775': deduction(
+    'Sozialabzug für Ehepaare / eingetragene Partnerschaften',
+    'Deduction for married couples and registered partners (federal tax)',
+    'Déduction pour couples mariés et partenaires enregistrés (impôt fédéral)',
+    '39',
+  ),
 } as const satisfies Record<string, Rubric>;
 
 /** Wealth (Vermögen) lines, form page 4: assets and debts on 31 December, then the allowance. */
@@ -376,6 +392,8 @@ export const DEDUCTIONS = new Set<string>([
 ]);
 /** Social deductions (Sozialabzüge) of the state tax that the engine computes. */
 export const SOCIAL = new Set<string>(['770', '771']);
+/** Social deductions of the federal column (./ifd.ts): the children and married couples. */
+export const FEDERAL_SOCIAL = new Set<string>(['750', '775']);
 /** Wealth: assets, debts, then the allowance. */
 export const ASSETS = new Set<string>(['800', '805', '810', '815', '825']);
 export const DEBTS = new Set<string>(['891']);

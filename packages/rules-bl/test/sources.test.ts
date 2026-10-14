@@ -4,14 +4,18 @@
 // document). The citations written into the rules (the return's lines, the laws' rules) too. A 2026
 // constant cites 2026 documents or documents valid for every year (the StG Stand 2023, the
 // Steuerbuch, the Steuerfussdekret); a 2025 constant cites 2025 documents or those.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { ifdParamsFor } from '@taxpresso/rules-ch';
 import { describe, expect, it } from 'vitest';
 import {
   ASSESS_RULES,
+  BL_OFFICIAL_DOCUMENTS,
+  BL_TERMS,
+  blKeys,
   blParamsFor,
   COMPUTE_RULES,
   ESTIMATE_TEXT,
+  FEDERAL_NOTE,
   NOTE,
   RUBRICS,
   WEALTH_RUBRICS,
@@ -83,12 +87,50 @@ describe('citations', () => {
     }
   });
 
+  it('every key Basel-Landschaft defines, and the page to ask for more time', () => {
+    for (const year of [2025, 2026] as const) {
+      for (const [key, def] of Object.entries(blKeys(year))) {
+        if (key.startsWith('bl.') || key === 'profile.commune' || key === 'profile.moved') {
+          expectCited(def.source ?? '', `${year} key ${key}`);
+        }
+      }
+    }
+    expectCited(BL_TERMS.moreTimeSource, 'more time');
+  });
+
   it('the texts shown to the user have no en or em dash (CLAUDE.md, user-facing copy)', () => {
-    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT })) {
+    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT, ...FEDERAL_NOTE })) {
       expect(`${text.en} ${text.fr}`, name).not.toMatch(/[–—]/);
     }
     for (const year of [2025, 2026] as const) {
       for (const [name, c] of constants(year)) expect(c.source, name).not.toMatch(/[–—]/);
+    }
+  });
+});
+
+describe('the official Basel-Landschaft documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/bl/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    expect(Object.keys(BL_OFFICIAL_DOCUMENTS).sort()).toEqual(manifest.map((m) => m.id).sort());
+    for (const [id, doc] of Object.entries(BL_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id)!;
+      expect(doc, id).toEqual({ title: m.title, url: m.url, pdf: m.format === 'pdf' });
+    }
+  });
+
+  it('cover every Basel-Landschaft document the rules cite', () => {
+    const dir = new URL('../src/', import.meta.url);
+    const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    for (const f of files) {
+      const text = readFileSync(new URL(f, dir), 'utf8');
+      for (const id of text.match(/\bbl-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]\b/g) ?? []) {
+        expect(Object.keys(BL_OFFICIAL_DOCUMENTS), `${f}: ${id}`).toContain(id);
+      }
     }
   });
 });

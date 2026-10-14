@@ -918,6 +918,96 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a Basel-Landschaft return: its questions, its tax and the values to type, offline', async () => {
+    // A fourth household in its own folder, in its own server process with the same guard: Mia
+    // Meier, single, in Liestal, with the synthetic salary certificate read from its barcode.
+    const blVault = path.join(work, 'Basel-Landschaft');
+    const blTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: blVault,
+        TAXPRESSO_UI_LANGUAGE: 'de',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    blTransport.stderr?.on('data', (d) => (stderr += d));
+    const bl = new Client({ name: 'taxpresso-offline-test-bl', version: '0.0.0' });
+    await bl.connect(blTransport);
+    try {
+      const answers = [
+        ['canton', 'BL'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Liestal'],
+        ['moved', 'no'],
+        ['church:p1', 'none'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['taxed_at_source:p1', false],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 1032],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await bl.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await bl.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'BL');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(blVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await bl.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await bl.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'BL');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'Liestal');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /Staats-, Gemeinde- und Kirchensteuer/);
+
+      const sections = await bl.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['S2', 'S3'],
+      );
+      const deductions = await bl.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'S3' },
+      });
+      assert.match(
+        deductions.content[0].text,
+        /- 500 Fahrtkosten zwischen Wohn- und Arbeitsstätte, Person 1 /,
+      );
+
+      const check = await bl.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await bl.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await bl.close();
+    }
+  });
+
   test('no outbound network attempt was made (C2)', () => {
     const attempts = existsSync(guardLog) ? readFileSync(guardLog, 'utf8').trim() : '';
     assert.equal(attempts, '', `outbound attempts:\n${attempts}`);
