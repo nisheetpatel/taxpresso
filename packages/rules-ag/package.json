@@ -2,7 +2,7 @@
   "name": "@taxpresso/rules-ag",
   "version": "0.0.0",
   "private": true,
-  "description": "Deterministic Aargau cantonal, communal and church income and wealth tax (Kantons-, Gemeinde- und Kirchensteuern), every constant cited (SPEC.md section 7). Not wired into the extension yet (docs/design/cantons.md).",
+  "description": "Deterministic Aargau cantonal, communal and church income and wealth tax (Kantons-, Gemeinde- und Kirchensteuern) and the federal tax, every constant cited (SPEC.md section 7). Wired into the extension as a preview (docs/design/cantons.md).",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "exports": {
@@ -12,10 +12,15 @@
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
+    "@taxpresso/rules-be": "workspace:*",
+    "@taxpresso/rules-bl": "workspace:*",
+    "@taxpresso/rules-ge": "workspace:*",
+    "@taxpresso/rules-zh": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@taxpresso/ledger": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*"
   }
 }

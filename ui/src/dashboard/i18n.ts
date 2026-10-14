@@ -211,11 +211,17 @@ export const messages = {
     planExplainFr:
       'Pillar 3a (3e pilier a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
     'assume.ti_commune_default': 'Commune not answered yet: Lugano assumed.',
+    'assume.ag_commune_default': 'Commune not answered yet: Aarau assumed.',
     'assume.ti_preview':
       'Ticino is a preview: the rules its documents don’t spell out are applied as in your estimate.',
+    'assume.ag_preview':
+      'Aargau is a preview: the rules its documents don’t spell out are applied as in your estimate.',
     planSavingSplitTi: 'Ticino {icc} · federal {ifd}',
+    planSavingSplitAg: 'Aargau {icc} · federal {ifd}',
     planExplainTi:
       'Pillar 3a (previdenza individuale vincolata, 3° pilastro A) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
+    planExplainAg:
+      'Pillar 3a (Säule 3a) is a retirement account at a bank or insurer. What you pay in during the year lowers your taxable income, up to a yearly limit.',
   },
   fr: {
     docTitle: 'Taxpresso · Vos impôts, le temps d’un espresso.',
@@ -410,10 +416,15 @@ export const messages = {
     planExplainFr:
       'Le pilier 3a (3e pilier a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
     'assume.ti_commune_default': `Commune pas encore indiquée${NB}: Lugano par défaut.`,
+    'assume.ag_commune_default': `Commune pas encore indiquée${NB}: Aarau par défaut.`,
     'assume.ti_preview': `Le Tessin est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
+    'assume.ag_preview': `Argovie est en avant-première${NB}: les règles que ses documents ne précisent pas sont appliquées comme dans votre estimation.`,
     planSavingSplitTi: 'Tessin {icc} · fédéral {ifd}',
+    planSavingSplitAg: 'Argovie {icc} · fédéral {ifd}',
     planExplainTi:
       'Le pilier 3a (previdenza individuale vincolata, 3° pilastro A) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
+    planExplainAg:
+      'Le pilier 3a (Säule 3a) est un compte de prévoyance dans une banque ou une assurance. Ce que vous y versez dans l’année diminue votre revenu imposable, jusqu’à une limite annuelle.',
   },
   de: {
     docTitle: 'Taxpresso · Deine Steuern, erledigt bei einem Espresso.',
@@ -622,11 +633,17 @@ export const messages = {
     planExplainFr:
       'Die Säule 3a (3e pilier a) ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
     'assume.ti_commune_default': 'Gemeinde noch nicht angegeben: Lugano angenommen.',
+    'assume.ag_commune_default': 'Gemeinde noch nicht angegeben: Aarau angenommen.',
     'assume.ti_preview':
       'Das Tessin ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
+    'assume.ag_preview':
+      'Aargau ist eine Vorschau: Regeln, die seine Dokumente nicht genau festlegen, gelten wie in deiner Schätzung.',
     planSavingSplitTi: 'Tessin {icc} · Bund {ifd}',
+    planSavingSplitAg: 'Aargau {icc} · Bund {ifd}',
     planExplainTi:
       'Die Säule 3a (previdenza individuale vincolata, 3° pilastro A) ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
+    planExplainAg:
+      'Die Säule 3a ist ein Vorsorgekonto bei einer Bank oder Versicherung. Was du im Jahr einzahlst, senkt dein steuerbares Einkommen, bis zu einer jährlichen Grenze.',
   },
   it: {
     docTitle: 'Taxpresso · Le tue tasse, il tempo di un espresso.',
@@ -837,11 +854,17 @@ export const messages = {
     planExplainFr:
       'Il pilastro 3a (3e pilier a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
     'assume.ti_commune_default': 'Comune non ancora indicato: consideriamo Lugano.',
+    'assume.ag_commune_default': 'Comune non ancora indicato: consideriamo Aarau.',
     'assume.ti_preview':
       'Il Ticino è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
+    'assume.ag_preview':
+      'Argovia è in anteprima: le regole che i suoi documenti non precisano vengono applicate come nella tua stima.',
     planSavingSplitTi: 'Ticino {icc} · federale {ifd}',
+    planSavingSplitAg: 'Argovia {icc} · federale {ifd}',
     planExplainTi:
       'Il pilastro 3a (previdenza individuale vincolata, 3° pilastro A) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
+    planExplainAg:
+      'Il pilastro 3a (Säule 3a) è un conto di previdenza presso una banca o un’assicurazione. Quello che versi durante l’anno riduce il tuo reddito imponibile, fino a un limite annuo.',
   },
 } as const;
 

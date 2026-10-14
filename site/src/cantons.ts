@@ -106,16 +106,9 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
     status: 'preview',
     name: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino', es: 'Tesino', pt: 'Ticino' },
   },
-];
-
-/** When a canton that doesn't work yet should come: the next ones, then the ones after. */
-export type CantonWhen = 'next' | 'then';
-
-/** The cantons coming next, in order. Not in the extension yet. */
-export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
   {
     code: 'AG',
-    when: 'next',
+    status: 'preview',
     name: {
       en: 'Aargau',
       fr: 'Argovie',
@@ -126,6 +119,12 @@ export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
     },
   },
 ];
+
+/** When a canton that doesn't work yet should come: the next ones, then the ones after. */
+export type CantonWhen = 'next' | 'then';
+
+/** The cantons coming next, in order. Not in the extension yet. */
+export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [];
 
 const AND: Record<Lang, string> = { en: 'and', fr: 'et', de: 'und', it: 'e', es: 'y', pt: 'e' };
 

@@ -8,6 +8,7 @@ import {
   type FormItem,
   type FormMap,
 } from '@taxpresso/filing-ge';
+import { filing as aargauFiling } from '@taxpresso/filing-ag';
 import { filing as bernFiling } from '@taxpresso/filing-be';
 import { filing as baselLandFiling } from '@taxpresso/filing-bl';
 import { filing as vaudFiling } from '@taxpresso/filing-vd';
@@ -21,6 +22,7 @@ import { filing as zurichFiling } from '@taxpresso/filing-zh';
 import type { Fact, FactValue, KeyRegistry, Ledger, VaultDocument } from '@taxpresso/ledger';
 import type { CantonPlan } from '@taxpresso/optimizer';
 import {
+  agQuestionnaire2026,
   beQuestionnaire2026,
   blQuestionnaire2026,
   bsQuestionnaire2026,
@@ -173,6 +175,17 @@ import {
   type TicinoCantonal,
   type TiTaxResult,
 } from '@taxpresso/rules-ti';
+import {
+  AARGAU_READING,
+  AG_TERMS,
+  agParamsFor,
+  communeOptions as aargauCommunes,
+  NOTE_VALUABLES as AG_NOTE_VALUABLES,
+  rules as aargauRules,
+  view as aargauView,
+  type AargauCantonal,
+  type AgTaxResult,
+} from '@taxpresso/rules-ag';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -770,6 +783,46 @@ const TICINO: CantonEntry = {
   tou: false,
 };
 
+const AARGAU: CantonEntry = {
+  code: 'AG',
+  name: { en: 'Aargau', fr: 'Argovie', de: 'Aargau', it: 'Argovia' },
+  software: 'eTAX AARGAU',
+  rules: aargauRules,
+  // Its questions are 2026's only (data/ag/2026): 2025 is not offered yet (tax-years.md).
+  years: [2026],
+  questionnaire: (taxYear) => (taxYear === 2026 ? agQuestionnaire2026() : undefined),
+  keys: (taxYear) => ({ ...KEYS_CANTON_2026, ...aargauRules.keys(taxYear) }),
+  communes: (taxYear) => aargauCommunes(taxYear),
+  communeHint: ' as the canton’s list prints it (some carry the canton: "Brugg (AG)")',
+  // The guide has lines of its own for cash and gold (20.2) and vehicles (20.5): the note says so.
+  ...sharedLedger(AARGAU_READING, aargauRules, AG_NOTE_VALUABLES),
+  view: aargauView,
+  filing: aargauFiling,
+  terms: AG_TERMS,
+  plan: {
+    computeReturn: (input) => aargauRules.computeReturn(input as HouseholdInput<AargauCantonal>),
+    incomeTax: (r) => aargauView.incomeTax(r as AgTaxResult),
+    // Aarau, the capital, by its name (the canton's list has no BFS numbers).
+    defaultCommune: 'Aarau',
+    communeName: { en: 'Aarau', fr: 'Aarau', de: 'Aarau' },
+    sources(taxYear) {
+      // The documents an Aargau household's income tax rests on, for the year.
+      const P = agParamsFor(taxYear);
+      return [
+        P.incomeTariff.source,
+        P.cantonalRate.source,
+        P.communes.source,
+        'ch-2026-ifd-progression-deductions p. 2, p. 4',
+      ];
+    },
+    assumptions: { preview: 'ag_preview', communeDefault: 'ag_commune_default' },
+    // The federal 3a limits, which StG § 40 Abs. 1 lit. e takes over, the catch-up from 2026
+    // included (packages/rules-ag, compute.ts).
+    catchUp: { field: 'pillar3aCatchUp' },
+  },
+  tou: false,
+};
+
 export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   GE: GENEVA,
   ZH: ZURICH,
@@ -782,6 +835,7 @@ export const CANTONS: Readonly<Record<SupportedCanton, CantonEntry>> = {
   SG: ST_GALLEN,
   FR: FRIBOURG,
   TI: TICINO,
+  AG: AARGAU,
 };
 
 /**

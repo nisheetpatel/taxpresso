@@ -1,8 +1,9 @@
 // The one entry point: computeReturn(input) gives the lines of the Aargau return by code and
-// person, the totals and the cantonal, communal and (when asked for) church tax, each line explained
-// with its sources. First stage here (household figures to the lines of the return, every cap,
-// floor, threshold and step of the Aargau documents), second stage in ./assess.ts (lines to taxes).
-// The same two stages, with the same names, as packages/rules-be/src/compute.ts.
+// person, the totals and the cantonal, communal and (when asked for) church tax, and the federal tax
+// (./ifd.ts), each line explained with its sources. First stage here (household figures to the
+// lines of the return, every cap, floor, threshold and step of the Aargau documents, with the limits
+// each applied for the final check), second stage in ./assess.ts (lines to taxes). The same two
+// stages, with the same names, as packages/rules-be/src/compute.ts.
 import {
   answered,
   chf,
@@ -10,6 +11,7 @@ import {
   roundFranc,
   Trace,
   type Amount,
+  type LimitApplied,
 } from '@taxpresso/rules-ch';
 import {
   AgInputError,
@@ -21,9 +23,10 @@ import {
 } from './assess.js';
 import type { Confession } from './communes.js';
 import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { federalReturn, type FederalChild } from './ifd.js';
 import { lowIncomeSteps, sharedChildren, tariffRule } from './law.js';
 import { agParamsFor, type AgYearParams } from './params.js';
-import { RUBRICS, type RubricCode } from './rubrics.js';
+import { INCOME, RUBRIC_ORDER, RUBRICS, type RubricCode } from './rubrics.js';
 import {
   donationDeduction,
   drivingCost,
@@ -37,6 +40,7 @@ import type {
   AgEngineInput,
   AgTaxResult,
   ChildBand,
+  ChildInput,
   EmploymentInput,
   Item,
   ItemPerson,
@@ -53,8 +57,36 @@ class Notes {
   readonly notCounted: Text[] = [];
   readonly unsupported: Text[] = [];
   readonly unverified: Text[] = [];
+  readonly limits: LimitApplied[] = [];
   add(list: Text[], text: Text) {
     if (!list.some((x) => x.en === text.en)) list.push(text);
+  }
+  /**
+   * A limit a cantonal rule applied (SPEC.md 10.0), on `code` for `person`, cited by the constant
+   * that sets it: `given` before the rule, `counted` after it. `rule` names it as the federal
+   * concepts are (packages/rules-ch, ifd/items.ts).
+   */
+  limit(
+    rule: string,
+    p: { source: string },
+    code: string,
+    person: LimitApplied['person'],
+    kind: LimitApplied['kind'],
+    given: number,
+    limit: number,
+    counted: number,
+  ) {
+    this.limits.push({
+      code,
+      person,
+      tax: 'icc',
+      kind,
+      given,
+      limit,
+      counted,
+      source: p.source,
+      rule,
+    });
   }
 }
 
@@ -211,6 +243,9 @@ function personItems(P: AgYearParams, p: PersonInput, items: Item[], notes: Note
     const tv = travel(A, p, main, trTravel, notes);
     const cap = trTravel.p(A.commuteMax);
     const travelCost = Math.min(tv.cost, cap);
+    if (tv.cost > 0) {
+      notes.limit('commute', A.commuteMax, '10.1', p.id, 'cap', tv.cost, cap, travelCost);
+    }
     const travelHow =
       tv.cost > cap
         ? t(`${tv.how.en}, at most ${chf(cap)}`, `${tv.how.fr}, au plus ${chf(cap)}`)
@@ -227,6 +262,8 @@ function personItems(P: AgYearParams, p: PersonInput, items: Item[], notes: Note
       const m = trMeals.p(A.meals);
       meals = mealsDeduction(p.mealDays ?? 0, canteen, m);
       const [perDay, perYear] = canteen ? [m.halfPerDay, m.halfPerYear] : [m.perDay, m.perYear];
+      const days = p.mealDays ?? 0;
+      notes.limit('meals', A.meals, '10.2', p.id, 'cap', days * perDay, perYear, meals);
       mealsHow = t(
         `${p.mealDays} days x ${chf(perDay)}${canteen ? ' (half: canteen or meal vouchers, box G)' : ''}, at most ${chf(perYear)} a year: ${chf(meals)}`,
         `${p.mealDays} jours x ${chf(perDay)}${canteen ? ` (moitié${NB}: cantine ou bons de repas, case G)` : ''}, au plus ${chf(perYear)} par an${NB}: ${chf(meals)}`,
@@ -243,6 +280,18 @@ function personItems(P: AgYearParams, p: PersonInput, items: Item[], notes: Note
     );
     if (p.otherProfessionalCosts) {
       const actual = total(trOther, [p.otherProfessionalCosts]);
+      // As the federal rule names it (packages/rules-ch, professionalCosts).
+      const used = Math.max(actual, flat);
+      notes.limit(
+        'professional.flat',
+        A.professionalFlat,
+        '10.3',
+        p.id,
+        'choice',
+        actual,
+        flat,
+        used,
+      );
       if (actual > flat) {
         other = actual;
         otherHow = t(`Actual costs: ${chf(actual)}`, `Frais effectifs${NB}: ${chf(actual)}`);
@@ -317,6 +366,20 @@ function personItems(P: AgYearParams, p: PersonInput, items: Item[], notes: Note
     },
   );
   for (const n of r3a.notCounted) notes.add(notes.notCounted, n);
+  for (const l of r3a.limits) {
+    notes.limits.push({
+      code: '13.2',
+      person: p.id,
+      tax: 'icc',
+      kind: l.kind,
+      given: l.given,
+      limit: l.limit,
+      counted: l.counted,
+      source: l.param.source,
+      ...(l.param.estimate ? { estimate: true } : {}),
+      rule: 'pillar3a',
+    });
+  }
   if (r3a.limits.some((l) => l.given > l.counted)) notes.add(notes.notCounted, NOTE.pillar3aAbove);
   if (r3a.deduction && r3a.deduction.amount < 0) {
     const left = Math.max(0, mainSalary.net + sideSalary.net - professional);
@@ -349,6 +412,7 @@ function personItems(P: AgYearParams, p: PersonInput, items: Item[], notes: Note
     const paid = total(tr, [p.trainingCosts]);
     const cap = tr.p(A.trainingMax);
     const ded = Math.min(paid, cap);
+    notes.limit('training', A.trainingMax, '15.5', p.id, 'cap', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -396,6 +460,47 @@ function householdConfession(input: AgEngineInput, couple: boolean, notes: Notes
   return [...churches][0]!;
 }
 
+/** Under 14 for childcare: as given, else from the age band, else unknown. */
+const under14Of = (ch: ChildInput): boolean | undefined =>
+  ch.under14 ?? (ch.band ? ch.band === 'under14' : undefined);
+
+/**
+ * Childcare paid for the household as a whole (the invoices of a crèche, say): the limit is per
+ * child (StG § 40 Abs. 1 lit. n; ag-2026-deductions-kinderbetreuungskosten p. 7, 4.6 and 4.7). It
+ * is that child's when one child can have it, or when the whole amount is within each child's
+ * limit; otherwise how it splits decides the deduction, and the tax is not computed without it
+ * (fail closed).
+ */
+function withHouseholdChildcare(
+  input: AgEngineInput,
+  A: AgYearParams['amounts'],
+  couple: boolean,
+  notes: Notes,
+): readonly ChildInput[] {
+  const children = input.children ?? [];
+  const care = input.household?.childcare;
+  if (!care) return children;
+  if (children.some((ch) => ch.childcare)) {
+    throw new AgInputError('Childcare: give it per child or for the household, not both.');
+  }
+  const eligible = children
+    .map((ch, i) => ({ ch, i }))
+    .filter(({ ch }) => (ch.livesWithYou ?? true) && under14Of(ch) !== false);
+  const paid = total(new Trace(), [care]);
+  const cap = (ch: ChildInput) =>
+    !couple && ch.custody === 'shared'
+      ? A.childcare.value.perParentShared
+      : A.childcare.value.perChild;
+  const within = eligible.every(({ ch }) => paid <= cap(ch));
+  if (eligible.length === 1 || (eligible.length > 1 && within)) {
+    const at = eligible[0]!.i;
+    return children.map((ch, i) => (i === at ? { ...ch, childcare: care } : ch));
+  }
+  if (eligible.length > 1) notes.add(notes.unsupported, NOTE.childcareSplit);
+  else if (paid > 0) notes.add(notes.notCounted, NOTE.childcareNoChild);
+  return children;
+}
+
 const BAND_TEXT: Record<ChildBand, Text> = {
   under14: t('under 14', 'moins de 14 ans'),
   under18: t('14 to 17', '14 à 17 ans'),
@@ -419,7 +524,7 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
   notes.add(notes.notCounted, NOTE.fireLevy);
 
   // Children: who counts them (StG § 42 Abs. 1 lit. a; guide 19.1), and the tariff (§ 43 Abs. 2).
-  const children = input.children ?? [];
+  const children = withHouseholdChildcare(input, A, couple, notes);
   const shared = children.filter((ch) => ch.custody === 'shared');
   if (couple && shared.length) notes.add(notes.unsupported, NOTE.coupleShared);
   if (!couple && shared.length && !input.childSupport) {
@@ -507,6 +612,7 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
     const extra = tr.p(A.debtInterestExtra);
     const cap = movableIncome + extra;
     const ded = Math.min(paid, cap);
+    notes.limit('debt_interest', A.debtInterestExtra, '11', 'household', 'cap', paid, cap, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -551,6 +657,7 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
     const paid = total(tr, [hh.politicalParty]);
     const max = tr.p(A.partyMax);
     const ded = Math.min(paid, max);
+    notes.limit('party', A.partyMax, '15.2', 'household', 'cap', paid, max, ded);
     if (ded > 0) {
       items.push(
         item(
@@ -568,7 +675,9 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
   }
 
   // Childcare (15.0): a child under 14 living with you; both spouses, or the parent, work.
-  const withCare = children.filter((ch) => ch.childcare && (ch.livesWithYou ?? true));
+  const withCare = children
+    .map((ch, i) => ({ ...ch, n: i + 1 }))
+    .filter((ch) => ch.childcare && (ch.livesWithYou ?? true));
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)
@@ -591,6 +700,16 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
         if (halfShared) notes.add(notes.assumptions, NOTE.sharedChildcare);
         const paid = total(tr, [ch.childcare]);
         const cap = halfShared ? cc.perParentShared : cc.perChild;
+        notes.limit(
+          'childcare',
+          A.childcare,
+          '15.0',
+          `child${ch.n}`,
+          'cap',
+          paid,
+          cap,
+          Math.min(paid, cap),
+        );
         ded += Math.min(paid, cap);
         parts.push(chf(Math.min(paid, cap)));
       }
@@ -643,6 +762,16 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
     const bp = tr.p(A.medicalThresholdBp);
     const m = medicalDeduction(costs, base, bp);
     if (costs > 0) {
+      notes.limit(
+        'medical',
+        A.medicalThresholdBp,
+        '17.1',
+        'household',
+        'threshold',
+        costs,
+        m.addBack,
+        m.deduction,
+      );
       notes.add(notes.unverified, NOTE.medicalRounding);
       if (hh.donations) notes.add(notes.unverified, NOTE.medicalOrder);
       if (m.deduction === 0) notes.add(notes.notCounted, NOTE.medicalBelow);
@@ -671,6 +800,30 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
     const base = items.reduce((s, i) => s + i.amount, 0);
     const p = tr.p(A.donations);
     const d = donationDeduction(gifts, base, p.shareBp, p.min);
+    if (gifts > 0) {
+      notes.limit(
+        'donations',
+        A.donations,
+        '15.3',
+        'household',
+        'minimum',
+        gifts,
+        p.min,
+        d.deduction,
+      );
+      if (gifts >= p.min) {
+        notes.limit(
+          'donations',
+          A.donations,
+          '15.3',
+          'household',
+          'cap',
+          gifts,
+          d.cap,
+          d.deduction,
+        );
+      }
+    }
     if (d.deduction > 0) {
       items.push(
         item(
@@ -801,32 +954,35 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
     }
   }
 
-  const allLines: Line[] = [...items, ...wealthItems];
+  const status = (lines: readonly Line[]) => ({
+    estimates: lines.some((l) => l.estimates?.includes('input-estimate'))
+      ? [{ id: 'input-estimate', what: ESTIMATE_TEXT['input-estimate'] }]
+      : [],
+    needsOk: lines.filter((l) => l.needsOk).length,
+    complete: !lines.some((l) => l.incomplete),
+    incomplete: lines.filter((l) => l.incomplete).map((l) => l.label),
+  });
   const base = {
     canton: 'AG' as const,
     taxYear: input.taxYear,
     commune: communeRef(commune),
-    ifd: null,
-    estimates: allLines.some((l) => l.estimates?.includes('input-estimate'))
-      ? [{ id: 'input-estimate', what: ESTIMATE_TEXT['input-estimate'] }]
-      : [],
-    needsOk: allLines.filter((l) => l.needsOk).length,
-    complete: !allLines.some((l) => l.incomplete),
-    incomplete: allLines.filter((l) => l.incomplete).map((l) => l.label),
     assumptions: notes.assumptions,
     notCounted: notes.notCounted,
   };
-  const unsupported = () => ({
+  const unsupported = (): AgTaxResult => ({
     ...base,
+    ...status([...items, ...wealthItems]),
     unsupported: notes.unsupported,
     icc: null,
+    ifd: null,
     total: null,
     unverifiedRules: [],
+    limits: notes.limits,
   });
   if (notes.unsupported.length) return unsupported();
 
   // In the form's order, person 1 before person 2 (the sort is stable).
-  const order = Object.keys(RUBRICS);
+  const order: readonly string[] = RUBRIC_ORDER;
   const byForm = (x: Item, y: Item) => order.indexOf(x.code) - order.indexOf(y.code);
   items.sort(byForm);
   wealthItems.sort(byForm);
@@ -873,12 +1029,61 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
       unverified.push(NOTE.maxBurdenRounding);
       if (icc.taxes.church) notes.add(notes.assumptions, NOTE.maxBurdenChurch);
     }
+
+    // The federal tax (./ifd.ts): the same income lines, the federal deductions. Who counts the
+    // children follows the federal rules (circular 30): in full, half in shared custody without
+    // child support, not for the parent who pays it.
+    const sharedAlone = !couple && children.some((ch) => ch.custody === 'shared');
+    const support = sharedAlone ? input.childSupport : undefined;
+    const federalSources =
+      support === 'receives'
+        ? [`${CIRCULAR30} p. 24 and 33 (ch. 13.4.2, 14.5)`]
+        : support === 'pays'
+          ? [`${CIRCULAR30} p. 24, 32 and 33 (ch. 13.4.2, 14.5)`]
+          : support === 'none' && input.ifdParentalScale !== undefined
+            ? [`${CIRCULAR30} p. 19, 24 and 32 (ch. 10.2, 13.4.2, 14.4)`]
+            : [];
+    const federalChildren: FederalChild[] = [];
+    for (const ch of children) {
+      const under14 = under14Of(ch);
+      const child = {
+        livesWithYou: ch.livesWithYou ?? true,
+        ...(under14 !== undefined ? { under14 } : {}),
+        ...(ch.childcare ? { childcare: ch.childcare } : {}),
+      };
+      if (couple || ch.custody === 'full' || input.childSupport === 'receives') {
+        federalChildren.push({ weight: 1, ...child });
+      } else if (input.childSupport === 'none') {
+        federalChildren.push({ weight: 0.5, ...child });
+      }
+    }
+    const federal = federalReturn(
+      {
+        input,
+        couple,
+        incomeItems: items.filter((i) => INCOME.has(i.code)),
+        inFull: items.filter((i) => IN_FULL.has(i.code)),
+        children: federalChildren,
+        childSources: federalSources,
+        wealthIncome: movableIncome,
+      },
+      people.map((p) => ({
+        input: p,
+        earnings: items.filter((i) => i.person === p.id && EARNED.has(i.code)),
+      })),
+    );
+    const ifd = federal.ifd;
+    for (const x of federal.notes.notCounted) notes.add(notes.notCounted, x);
+    const lines = [...new Set<Line>([...items, ...wealthItems, ...(ifd?.items ?? [])])];
     return {
       ...base,
-      unsupported: [],
+      ...status(lines),
+      unsupported: [...federal.notes.unsupported],
       icc,
-      total: icc.taxes.total.amount,
-      unverifiedRules: unverified,
+      ifd,
+      total: ifd ? icc.taxes.total.amount + ifd.tax.amount : null,
+      unverifiedRules: [...unverified, ...federal.notes.unverified],
+      limits: bothTaxes(notes.limits, federal.notes.limits),
     };
   } catch (e) {
     if (!(e instanceof AgUnsupported)) throw e;
@@ -887,9 +1092,59 @@ export function computeReturn(input: AgEngineInput): AgTaxResult {
   }
 }
 
+/** ESTV circular 30 on the taxation of spouses and the family: separated parents, the scales. */
+const CIRCULAR30 = 'ch-na-circulaire-30-epoux-famille';
+/**
+ * Deductions in full in both taxes: buy-ins paid directly (13.1), alimony and child support paid
+ * (12.1, 12.2) and the costs of managing securities (15.4).
+ */
+const IN_FULL = new Set(['12.1', '12.2', '13.1', '15.4']);
+/** The income that counts as earned for the federal two-earner deduction: salaries, allowances. */
+const EARNED = new Set(['1.1', '1.2', '3-alv', '3-taggelder']);
+
+/**
+ * The limits of both taxes, a limit applied alike in each (same line, rule kind and amounts, as
+ * the pillar 3a cap) said once for both: the final check then shows it once (SPEC.md 10.0).
+ */
+function bothTaxes(icc: readonly LimitApplied[], ifd: readonly LimitApplied[]): LimitApplied[] {
+  const out = icc.map((l) => ({ ...l }));
+  for (const f of ifd) {
+    const same = out.find(
+      (l) =>
+        l.tax === 'icc' &&
+        l.code === f.code &&
+        l.person === f.person &&
+        l.kind === f.kind &&
+        l.given === f.given &&
+        l.limit === f.limit &&
+        l.counted === f.counted &&
+        l.rule === f.rule &&
+        Boolean(l.estimate) === Boolean(f.estimate),
+    );
+    if (same) same.tax = 'both';
+    else out.push(f);
+  }
+  return out;
+}
+
 /** Every computed line of a result, for checks and for the explanation tree. */
-export function allLines(r: Pick<AgTaxResult, 'icc'>): Line[] {
-  if (!r.icc) return [];
+export function allLines(r: Pick<AgTaxResult, 'icc'> & { ifd?: AgTaxResult['ifd'] }): Line[] {
+  const f = r.ifd;
+  const federal: Line[] = f
+    ? [
+        ...f.items,
+        f.grossIncome,
+        f.totalDeductions,
+        f.baseIncome,
+        f.netIncome,
+        f.taxableIncome,
+        f.scaleIncome,
+        f.scaleTax,
+        f.childReduction,
+        f.tax,
+      ]
+    : [];
+  if (!r.icc) return federal;
   const x = r.icc;
   return [
     ...x.items,
@@ -910,5 +1165,6 @@ export function allLines(r: Pick<AgTaxResult, 'icc'>): Line[] {
     ...(x.taxes.church ? [x.taxes.church] : []),
     ...(x.taxes.maxBurden ? [x.taxes.maxBurden] : []),
     x.taxes.total,
+    ...federal,
   ];
 }

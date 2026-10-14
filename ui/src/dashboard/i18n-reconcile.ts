@@ -88,6 +88,8 @@ export const messages = {
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your Vaud return, compare what you typed in VaudTax with the values to type above. You transmit your declaration yourself.',
     notAvailableTi:
       'Taxpresso checks the PDF of Geneva declarations only, for now. For your Ticino return, compare what you typed in eTax PF with the values to type above. You transmit your declaration yourself.',
+    notAvailableAg:
+      'Taxpresso checks the PDF of Geneva declarations only, for now. For your Aargau return, compare what you typed in eTAX AARGAU with the values to type above. You transmit your declaration yourself.',
   },
   fr: {
     title: 'Vérifier avant de transmettre',
@@ -160,6 +162,7 @@ export const messages = {
     notAvailableVd: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration vaudoise, comparez vous-même ce que vous avez saisi dans VaudTax avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
     notAvailableTi:
       'Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration tessinoise, comparez vous-même ce que vous avez saisi dans eTax PF avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.',
+    notAvailableAg: `Pour l’instant, Taxpresso ne vérifie que le PDF des déclarations genevoises. Pour votre déclaration argovienne, comparez vous-même ce que vous avez saisi dans eTAX AARGAU avec les valeurs à saisir ci-dessus. Vous transmettez votre déclaration vous-même.`,
   },
   de: {
     title: 'Vor dem Übermitteln prüfen',
@@ -243,6 +246,8 @@ export const messages = {
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Waadtländer Steuererklärung vergleiche selbst, was du in VaudTax eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
     notAvailableTi:
       'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Tessiner Steuererklärung vergleiche selbst, was du in eTax PF eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
+    notAvailableAg:
+      'Taxpresso prüft vorerst nur das PDF von Genfer Steuererklärungen. Für deine Aargauer Steuererklärung vergleiche selbst, was du in eTAX AARGAU eingetragen hast, mit den Werten zum Eintragen oben. Du übermittelst deine Steuererklärung selbst.',
   },
   it: {
     title: 'Controlla prima di trasmettere',
@@ -326,6 +331,8 @@ export const messages = {
       'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione di Vaud, confronta quello che hai inserito in VaudTax con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
     notAvailableTi:
       'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione ticinese, confronta ciò che hai inserito in eTax PF con i valori da inserire qui sopra. Trasmetti tu la tua dichiarazione.',
+    notAvailableAg:
+      'Per ora Taxpresso controlla solo il PDF delle dichiarazioni ginevrine. Per la tua dichiarazione argoviese, confronta quello che hai inserito in eTAX AARGAU con i valori da inserire qui sopra. La tua dichiarazione la trasmetti tu.',
   },
 } as const;
 

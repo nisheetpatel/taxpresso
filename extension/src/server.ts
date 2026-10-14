@@ -236,7 +236,9 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
     'get_status',
     {
       title: 'Get tax return status',
-      description: `Where the user's tax return stands for the open tax year (${cantonNames(fullCantons(), 'and')}, or ${cantonNames(previewCantons(), 'and')} as a preview): the year, canton, household, answers, documents, what is missing or not supported, and the next step. Call this first.`,
+      // The cantons are named from the registry: the words around them stay short so the description
+      // keeps within the 300 characters a tool's description may have (C6), with Aargau the twelfth.
+      description: `Where the user's tax return stands for the open tax year (${cantonNames(fullCantons(), 'and')}, or ${cantonNames(previewCantons(), 'and')} as a preview): year, canton, household, answers, documents, what is missing or not supported, next step. Call this first.`,
       inputSchema: z.object({
         detail: z
           .boolean()

@@ -120,10 +120,15 @@ export const text = {
     taxableSg:
       'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
     officialFr: 'impôts {year}',
+    officialAg: 'Steuern {year}',
     breakdownFr:
       'What the cantonal, communal and church tax (impôts cantonal, communal et ecclésiastique) is made of',
+    breakdownAg:
+      'What the cantonal, communal and church tax (Kantons-, Gemeinde- und Kirchensteuern) is made of',
     taxableFr:
       'Taxable income (revenu imposable): cantonal {icc}, federal {ifd}. Taxable wealth (fortune imposable): {wealth}.',
+    taxableAg:
+      'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
     preview: '{canton} is a preview: what to check',
     previewNote:
       'Taxpresso computes {canton} from the official documents. A few rules aren’t spelled out in them, and some answers were assumed. Here they are.',
@@ -183,8 +188,12 @@ export const text = {
       'Ce qui compose les impôts cantonal, communal et ecclésiastique (Kantons-, Gemeinde- und Kirchensteuer)',
     taxableSg: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
     officialFr: 'impôts {year}',
+    officialAg: 'Steuern {year}',
     breakdownFr: 'Ce qui compose les impôts cantonal, communal et ecclésiastique',
+    breakdownAg:
+      'Ce qui compose les impôts cantonal, communal et ecclésiastique (Kantons-, Gemeinde- und Kirchensteuern)',
     taxableFr: `Revenu imposable${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable${NB}: {wealth}.`,
+    taxableAg: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
     preview: `{canton} est en avant-première${NB}: ce qu’il faut vérifier`,
     previewNote:
       'Taxpresso calcule {canton} à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
@@ -247,10 +256,14 @@ export const text = {
     breakdownSg: 'Woraus die Kantons-, Gemeinde- und Kirchensteuer besteht',
     taxableSg: 'Steuerbares Einkommen: Kanton {icc}, Bund {ifd}. Steuerbares Vermögen: {wealth}.',
     officialFr: 'impôts {year}',
+    officialAg: 'Steuern {year}',
     breakdownFr:
       'Woraus die Kantons-, Gemeinde- und Kirchensteuern (impôts cantonal, communal et ecclésiastique) bestehen',
+    breakdownAg: 'Woraus die Kantons-, Gemeinde- und Kirchensteuern bestehen',
     taxableFr:
       'Steuerbares Einkommen (revenu imposable): Kanton {icc}, Bund {ifd}. Steuerbares Vermögen (fortune imposable): {wealth}.',
+    taxableAg:
+      'Steuerbares Einkommen: Kantons- und Gemeindesteuern {icc}, direkte Bundessteuer {ifd}. Steuerbares Vermögen: {wealth}.',
     preview: '{canton} ist eine Vorschau: Was du prüfen solltest',
     previewNote:
       'Taxpresso berechnet {canton} aus den offiziellen Dokumenten. Ein paar Regeln sind darin nicht genau festgelegt, und einige Antworten wurden angenommen. Hier sind sie.',
@@ -320,10 +333,15 @@ export const text = {
     taxableSg:
       'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
     officialFr: 'impôts {year}',
+    officialAg: 'Steuern {year}',
     breakdownFr:
       'Di cosa si compongono le imposte cantonale, comunale e di culto (impôts cantonal, communal et ecclésiastique)',
+    breakdownAg:
+      'Di cosa si compongono le imposte cantonale, comunale e di culto (Kantons-, Gemeinde- und Kirchensteuern)',
     taxableFr:
       'Reddito imponibile (revenu imposable): cantonale {icc}, federale {ifd}. Sostanza imponibile (fortune imposable): {wealth}.',
+    taxableAg:
+      'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
     preview: '{canton} in anteprima: cosa controllare',
     previewNote:
       'Taxpresso calcola le imposte del Cantone {canton} a partire dai documenti ufficiali. Alcune regole non vi sono precisate, e alcune risposte sono state presunte. Eccole.',

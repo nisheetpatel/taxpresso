@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.3.0",
+    "@taxpresso/filing-ag": "workspace:*",
     "@taxpresso/filing-be": "workspace:*",
     "@taxpresso/filing-bl": "workspace:*",
     "@taxpresso/filing-bs": "workspace:*",
@@ -27,6 +28,7 @@
     "@taxpresso/ledger": "workspace:*",
     "@taxpresso/optimizer": "workspace:*",
     "@taxpresso/questionnaire": "workspace:*",
+    "@taxpresso/rules-ag": "workspace:*",
     "@taxpresso/rules-be": "workspace:*",
     "@taxpresso/rules-bl": "workspace:*",
     "@taxpresso/rules-bs": "workspace:*",

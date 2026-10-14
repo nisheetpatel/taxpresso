@@ -11,6 +11,11 @@
 // The summary lines (Nettoeinkommen Ziffer 20, Reineinkommen Ziffer 23, steuerbares Einkommen
 // Ziffer 25, steuerbares Vermögen Ziffer 37, as the guide names them) are the result's totals, not
 // items.
+//
+// The return has no federal column: the tax office replaces the cantonal deductions by the federal
+// ones (ag-2025-guide-wegleitung p. 42, Direkte Bundessteuer). The federal tax (./ifd.ts) puts each
+// federal deduction on the line of the same concept, and the married couple deduction, which the
+// cantonal tax doesn't have, on a line of its own (FEDERAL_RUBRICS).
 import type { Text } from '@taxpresso/rules-ch';
 
 const GUIDE = 'ag-2025-guide-wegleitung';
@@ -21,7 +26,7 @@ export interface Rubric {
 }
 
 const r = (de: string, en: string, fr: string, where: string): Rubric => ({
-  label: { en: `${en} (${de})`, fr: `${fr} (${de})` },
+  label: { en: `${en} (${de})`, fr: `${fr} (${de})`, de },
   source: `${GUIDE} ${where}`,
 });
 
@@ -211,6 +216,7 @@ export const RUBRICS = {
     label: {
       en: 'Tax-free amount (steuerfreier Betrag)',
       fr: 'Montant exonéré (steuerfreier Betrag)',
+      de: 'Steuerfreier Betrag',
     },
     source: 'ag-na-law-steuergesetz § 54 Abs. 1 lit. a and b (p. 32)',
   },
@@ -218,6 +224,7 @@ export const RUBRICS = {
     label: {
       en: 'Tax-free amount per child (steuerfreier Betrag für Kinder)',
       fr: 'Montant exonéré par enfant (steuerfreier Betrag für Kinder)',
+      de: 'Steuerfreier Betrag für Kinder',
     },
     source: 'ag-na-law-steuergesetz § 54 Abs. 1 lit. c (p. 32)',
   },
@@ -225,8 +232,74 @@ export const RUBRICS = {
 
 export type RubricCode = keyof typeof RUBRICS;
 
+/**
+ * The lines in the order of the return (the guide's sections). Not Object.keys(RUBRICS): a key that
+ * reads as a whole number ("4", "11", "14") comes first in an object's keys.
+ */
+export const RUBRIC_ORDER: readonly RubricCode[] = [
+  '1.1',
+  '1.2',
+  '3-ahv',
+  '3-bv',
+  '3-andere',
+  '3-alv',
+  '3-taggelder',
+  '4',
+  '5.1',
+  '5.2',
+  '5.5',
+  '10.1',
+  '10.2',
+  '10.3',
+  '10.6',
+  '11',
+  '12.1',
+  '12.2',
+  '13.1',
+  '13.2',
+  '14',
+  '15.0',
+  '15.2',
+  '15.3',
+  '15.4',
+  '15.5',
+  '16',
+  '17.1',
+  '18',
+  '19.1',
+  '24',
+  '20.1',
+  '20.2',
+  '20.3',
+  '20.5',
+  '20.6',
+  '34',
+  'steuerfrei',
+  'steuerfrei-kinder',
+];
+
+/**
+ * Lines of the federal tax only (./ifd.ts): the married couple deduction (LIFD art. 35 al. 1 let.
+ * c), which the cantonal tax doesn't have; the guide says the federal social deductions replace
+ * the cantonal ones (ag-2025-guide-wegleitung p. 42).
+ */
+export const FEDERAL_RUBRICS = {
+  'bund-ehepaar': {
+    label: {
+      en: 'Married couple deduction, federal tax (Abzug für Verheiratete, direkte Bundessteuer)',
+      fr: 'Déduction pour couple marié, impôt fédéral (Abzug für Verheiratete, direkte Bundessteuer)',
+      de: 'Abzug für Verheiratete (direkte Bundessteuer)',
+    },
+    source: `${GUIDE} p. 42 (Direkte Bundessteuer); ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 23)`,
+  },
+} as const satisfies Record<string, Rubric>;
+
+export type FederalRubricCode = keyof typeof FEDERAL_RUBRICS;
+
 export function rubric(code: string): Rubric | undefined {
-  return (RUBRICS as Record<string, Rubric>)[code];
+  return (
+    (RUBRICS as Record<string, Rubric>)[code] ?? (FEDERAL_RUBRICS as Record<string, Rubric>)[code]
+  );
 }
 
 /** Total der Einkünfte. */
@@ -268,6 +341,8 @@ export const DEDUCTIONS = new Set<string>([
 export const SOCIAL = new Set<string>(['19.1']);
 /** The low-income deduction (§ 42 Abs. 1bis): from Ziffer 23 to the taxable income. */
 export const LOW_INCOME = new Set<string>(['24']);
+/** The federal tax's social deductions (./ifd.ts): the children and married couples. */
+export const FEDERAL_SOCIAL = new Set<string>(['19.1', 'bund-ehepaar']);
 /** Vermögenswerte, Schulden and the steuerfreie Beträge (§ 54). */
 export const ASSETS = new Set<string>(['20.1', '20.2', '20.3', '20.5', '20.6']);
 export const DEBTS = new Set<string>(['34']);

@@ -72,8 +72,12 @@ export const messages = {
       'On the Fribourg return, person 1 (personne 1) is {a} and person 2 (personne 2) is {b}. If your return has them the other way round, swap the values.',
     leadTi:
       'Type each value into eTax PF or the paper forms, in the forms’ order: first Modulo 4 (spese professionali) for each person, whose total goes to 9.1 or 9.2, then Modulo 6 and Modulo 5, then the return (Modulo 1) page 2 the income, page 3 the deductions, page 4 the wealth. The return has one column: the tax authority works out the federal tax from it. Amounts are whole francs, without separators. Tick each value once it is in.',
+    leadAg:
+      'Type each value into eTAX AARGAU or the paper form: the sheets first (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), then the main form. Amounts are whole francs, without centimes or separators. The codes are the sections of the Aargau guide: check each against your form or eTAX AARGAU. There is no federal column: the tax office works out the federal tax. Tick each value once it is in.',
     coupleTi:
       'On the Ticino forms, the taxpayer (contribuente) is {a} and the spouse (coniuge/partner registrato) is {b}. If your forms have them the other way round, swap the values.',
+    coupleAg:
+      'On the Aargau forms, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
   fr: {
     title: 'Remplir votre déclaration',
@@ -122,8 +126,10 @@ export const messages = {
     coupleFr:
       'Sur la déclaration fribourgeoise, la personne 1 est {a} et la personne 2 est {b}. Si votre déclaration les inverse, inversez les valeurs.',
     leadTi: `Recopiez chaque valeur dans eTax PF ou les formulaires papier, dans l’ordre des formulaires${NB}: d’abord le Modulo 4 (spese professionali, frais professionnels) de chaque personne, dont le total va au 9.1 ou au 9.2, puis le Modulo 6 et le Modulo 5, puis la déclaration (Modulo 1), la page 2 les revenus, la page 3 les déductions, la page 4 la fortune. La déclaration a une seule colonne${NB}: l’autorité fiscale en déduit l’impôt fédéral. Les montants sont en francs entiers, sans séparateurs. Cochez chaque valeur une fois saisie.`,
+    leadAg: `Recopiez chaque valeur dans eTAX AARGAU ou le formulaire papier${NB}: d’abord les feuilles annexes (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), puis le formulaire principal. Les montants sont en francs entiers, sans centimes ni séparateurs. Les codes sont les sections du guide argovien${NB}: vérifiez chacun sur votre formulaire ou dans eTAX AARGAU. Il n’y a pas de colonne fédérale${NB}: l’administration calcule l’impôt fédéral. Cochez chaque valeur une fois saisie.`,
     coupleTi:
       'Sur les formulaires tessinois, le contribuable (contribuente) est {a} et le conjoint (coniuge/partner registrato) est {b}. Si vos formulaires les inversent, inversez les valeurs.',
+    coupleAg: `Sur les formulaires argoviens, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
     title: 'Fülle deine Steuererklärung aus',
@@ -192,8 +198,12 @@ export const messages = {
       'Auf der Freiburger Steuererklärung ist Person 1 (personne 1) {a} und Person 2 (personne 2) {b}. Wenn deine sie umgekehrt hat, tausche die Werte.',
     leadTi:
       'Tippe jeden Wert in eTax PF oder in die Papierformulare, in der Reihenfolge der Formulare: zuerst das Modulo 4 (spese professionali, Berufskosten) für jede Person, dessen Total in 9.1 oder 9.2 kommt, dann das Modulo 6 und das Modulo 5, dann die Steuererklärung (Modulo 1), Seite 2 die Einkünfte, Seite 3 die Abzüge, Seite 4 das Vermögen. Die Steuererklärung hat eine Spalte: Die Steuerbehörde leitet die direkte Bundessteuer daraus ab. Beträge in ganzen Franken, ohne Trennzeichen. Hake jeden Wert ab, sobald er drin ist.',
+    leadAg:
+      'Tippe jeden Wert in eTAX AARGAU oder ins Papierformular: zuerst die Hilfsblätter (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), dann den Hauptbogen. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen. Die Ziffern sind die Abschnitte der Wegleitung: Prüfe jede auf deinem Formular oder in eTAX AARGAU. Eine Spalte für die Bundessteuer gibt es nicht: Das Steueramt berechnet sie. Hake jeden Wert ab, sobald er drin ist.',
     coupleTi:
       'Auf den Tessiner Formularen ist der Steuerpflichtige (contribuente) {a} und der Ehegatte (coniuge/partner registrato) {b}. Wenn deine Formulare sie umgekehrt haben, tausche die Werte.',
+    coupleAg:
+      'Auf den Aargauer Formularen ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
   it: {
     title: 'Compila la tua dichiarazione',
@@ -262,8 +272,12 @@ export const messages = {
       'Sulla dichiarazione friburghese, la persona 1 (personne 1) è {a} e la persona 2 (personne 2) è {b}. Se la tua dichiarazione le ha al contrario, scambia i valori.',
     leadTi:
       'Inserisci ogni valore in eTax PF o sui moduli cartacei, nell’ordine dei moduli: prima il Modulo 4 (spese professionali) di ogni persona, il cui totale va alla cifra 9.1 o 9.2, poi il Modulo 6 e il Modulo 5, poi la dichiarazione (Modulo 1), pagina 2 i redditi, pagina 3 le deduzioni, pagina 4 la sostanza. La dichiarazione ha una sola colonna: l’autorità fiscale ne ricava l’imposta federale diretta. Gli importi sono in franchi interi, senza separatori. Spunta ogni valore una volta inserito.',
+    leadAg:
+      'Inserisci ogni valore in eTAX AARGAU o nel modulo cartaceo: prima i fogli ausiliari (Berufskosten, Schuldenverzeichnis, Wertschriftenverzeichnis, Krankheitskosten), poi il modulo principale. Gli importi sono in franchi interi, senza centesimi né separatori. I codici sono le sezioni della guida argoviese: verifica ognuno sul tuo modulo o in eTAX AARGAU. Non c’è una colonna federale: l’imposta federale la calcola l’ufficio delle imposte. Spunta ogni valore una volta inserito.',
     coupleTi:
       'Sui moduli ticinesi, il contribuente è {a} e il coniuge/partner registrato è {b}. Se i tuoi moduli li hanno al contrario, scambia i valori.',
+    coupleAg:
+      'Sui moduli argoviesi, Person 1 è {a} e Person 2 è {b}. Se il tuo modulo li ha al contrario, scambia i valori.',
   },
 } as const;
 

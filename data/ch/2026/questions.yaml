@@ -61,8 +61,9 @@ questions:
   # Luzern: the tax liability in Lucerne for the whole tax period), sg-2025-guide-wegleitung
   # p. 11 (Zuzug aus einem anderen Kanton: für das ganze Steuerjahr 2025 im Kanton St.Gallen
   # steuerpflichtig), fr-2025-guide-instructions-generales p. 4 (arriving from another canton:
-  # taxable for the whole year) and ti-2025-guide-istruzioni-pf-pdf p. 10 (Arrivo in Ticino di
-  # contribuenti provenienti da altri cantoni: assoggettato per l'intero anno).
+  # taxable for the whole year), ti-2025-guide-istruzioni-pf-pdf p. 10 (Arrivo in Ticino di
+  # contribuenti provenienti da altri cantoni: assoggettato per l'intero anno) and
+  # ag-2025-guide-wegleitung p. 7 and 8 (Wer füllt eine Steuererklärung aus?; Wohnsitzverlegung).
   - id: canton
     key: profile.canton
     type: choice
@@ -186,6 +187,15 @@ questions:
             it: 'Cantone Ticino',
           }
         chip: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino' }
+      - value: AG
+        label:
+          {
+            en: 'Canton of Aargau',
+            fr: 'Canton d’Argovie',
+            de: 'Kanton Aargau',
+            it: 'Cantone di Argovia',
+          }
+        chip: { en: 'Aargau', fr: 'Argovie', de: 'Aargau', it: 'Argovia' }
       # The cantons Taxpresso covers are named from the options above ({cantonsOr}, {cantons}:
       # packages/questionnaire, schema.ts), so adding a canton adds its option only.
       - value: other

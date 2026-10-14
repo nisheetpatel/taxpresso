@@ -53,6 +53,8 @@ export const messages = {
       'A document won’t arrive in time? Ask the cantonal tax office (Service cantonal des contributions, SCC) for more time to file (prolongation du délai): CHF 20 with the QR bill that comes with your return',
     moreTimeTi:
       'A document won’t arrive in time? Ask the tax office (Divisione delle contribuzioni) for more time to file (proroga), online at www.ti.ch/pf-proroga with your registry number',
+    moreTimeAg:
+      'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristverlängerung), online at www.ag.ch/fristerstreckung',
   },
   fr: {
     title: 'Vérification finale',
@@ -92,6 +94,7 @@ export const messages = {
     moreTimeSg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), avant l’échéance, en ligne sur www.steuern.sg.ch`,
     moreTimeFr: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai au Service cantonal des contributions (SCC)${NB}: 20 francs avec la facture QR jointe à votre déclaration`,
     moreTimeTi: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (proroga) à la Division des contributions (Divisione delle contribuzioni), en ligne sur www.ti.ch/pf-proroga avec votre numéro de registre`,
+    moreTimeAg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), en ligne sur www.ag.ch/fristerstreckung`,
   },
   de: {
     title: 'Schlusskontrolle',
@@ -143,6 +146,8 @@ export const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim kantonalen Steueramt (Service cantonal des contributions, SCC) eine Fristerstreckung (prolongation du délai): 20 Franken mit der QR-Rechnung, die deiner Steuererklärung beiliegt',
     moreTimeTi:
       'Kommt ein Dokument nicht rechtzeitig? Beantrage bei der kantonalen Steuerverwaltung (Divisione delle contribuzioni) eine Fristerstreckung (proroga), online unter www.ti.ch/pf-proroga mit deiner Registernummer',
+    moreTimeAg:
+      'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristverlängerung, online unter www.ag.ch/fristerstreckung',
   },
   it: {
     title: 'Controllo finale',
@@ -193,6 +198,8 @@ export const messages = {
       'Un documento non arriverà in tempo? Chiedi all’amministrazione fiscale cantonale (Service cantonal des contributions, SCC) una proroga del termine (prolongation du délai): 20 franchi con la fattura QR allegata alla tua dichiarazione',
     moreTimeTi:
       'Un documento non arriverà in tempo? Chiedi una proroga alla Divisione delle contribuzioni, online su www.ti.ch/pf-proroga con il tuo numero di registro',
+    moreTimeAg:
+      'Un documento non arriverà in tempo? Chiedi all’ufficio delle imposte del tuo comune (Gemeindesteueramt) una proroga del termine (Fristverlängerung), online su www.ag.ch/fristerstreckung',
   },
 } as const;
 

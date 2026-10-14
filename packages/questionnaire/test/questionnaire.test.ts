@@ -4,6 +4,7 @@ import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
+  agQuestionnaire2026,
   beQuestionnaire2026,
   blQuestionnaire2026,
   bsQuestionnaire2026,
@@ -608,6 +609,7 @@ describe('the questions every canton shares', () => {
       'SG',
       'FR',
       'TI',
+      'AG',
       'other',
     ]);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
@@ -618,21 +620,21 @@ describe('the questions every canton shares', () => {
     expect(canton.help?.en).toMatch(/taxes the whole year/);
     // The cantons covered are named from the options themselves: a canton added there is named.
     expect(canton.explain?.en).toMatch(
-      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg and Ticino so far\.$/,
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg, Ticino and Aargau so far\.$/,
     );
     expect(canton.explain?.fr).toMatch(
       new RegExp(
-        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg et Tessin\\.$`,
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg, Tessin et Argovie\\.$`,
       ),
     );
     expect(canton.explain?.de).toMatch(
-      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg und Tessin vor\.$/,
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg, Tessin und Aargau vor\.$/,
     );
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
-      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg or Ticino',
-      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg ou Tessin',
-      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg oder Tessin',
-      it: 'Un Cantone diverso da Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna, San Gallo, Friburgo o Ticino',
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg, Ticino or Aargau',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg, Tessin ou Argovie',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg, Tessin oder Aargau',
+      it: 'Un Cantone diverso da Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna, San Gallo, Friburgo, Ticino o Argovia',
     });
     for (const f of [
       file,
@@ -640,6 +642,7 @@ describe('the questions every canton shares', () => {
       zhQuestionnaire2026(),
       bsQuestionnaire2026(),
       zgQuestionnaire2026(),
+      agQuestionnaire2026(),
     ]) {
       expect(JSON.stringify(f)).not.toMatch(/\{cantons/);
     }
@@ -732,7 +735,7 @@ describe('the questions every canton shares', () => {
     expect(e.next(snap)?.id).toBe('civil_status');
     expect(e.render(slot, snap, 'en')).toMatchObject({ value: 'GE', assumed: true });
     // An answer the key doesn't take is not assumed.
-    const refused = e.snapshot(fresh, { 'profile.canton': 'AG' });
+    const refused = e.snapshot(fresh, { 'profile.canton': 'VS' });
     expect(refused.slots.find((s) => s.id === 'canton')?.value).toBeUndefined();
     // The user's answer wins.
     const answered = e.snapshot(ledger, { 'profile.canton': 'ZH' });

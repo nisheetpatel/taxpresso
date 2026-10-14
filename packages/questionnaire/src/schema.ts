@@ -88,6 +88,7 @@ export const OFFICIAL_HOSTS = [
   'sg.ch', // www.sg.ch (guide, forms, tables, Steuerbuch, E-Tax SG), www.gesetzessammlung.sg.ch (laws)
   'fr.ch', // www.fr.ch (Fribourg's guide, tariffs, FriTax and tax pages), bdlf.fr.ch (laws)
   'ti.ch', // www4.ti.ch (instructions, forms, multipliers, eTax PF), m3.ti.ch (laws), m4.ti.ch
+  'ag.ch', // www.ag.ch (guide, lists, leaflets), gesetzessammlungen.ag.ch (laws)
   'ch.ch',
   'admin.ch', // estv.admin.ch, fedlex.admin.ch, bsv.admin.ch
 ] as const;

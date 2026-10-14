@@ -3,6 +3,7 @@
 // The *.yaml module type must reach every package that imports this one, hence a reference.
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./yaml.d.ts" />
+import ag2026 from '../../../data/ag/2026/questionnaire.yaml';
 import be2026 from '../../../data/be/2026/questionnaire.yaml';
 import bl2026 from '../../../data/bl/2026/questionnaire.yaml';
 import bs2026 from '../../../data/bs/2026/questionnaire.yaml';
@@ -119,4 +120,12 @@ export function frQuestionnaire2026(): QuestionnaireFile {
  */
 export function tiQuestionnaire2026(): QuestionnaireFile {
   return parseQuestionnaire(ti2026, ch2026);
+}
+
+/**
+ * The Aargau questionnaire for tax year 2026, validated. Its wording follows the 2025 guide: the
+ * 2026 guide is not published yet (data/ag/2026/questionnaire.yaml).
+ */
+export function agQuestionnaire2026(): QuestionnaireFile {
+  return parseQuestionnaire(ag2026, ch2026);
 }

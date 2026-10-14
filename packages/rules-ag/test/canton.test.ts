@@ -179,24 +179,39 @@ describe('Aargau through the canton interface', () => {
     for (const e of all) {
       expect(rules.computeReturn(household(e))).toEqual(computeReturn(e));
     }
-    // Most variations compute; the rest say why not (fail closed), the same both ways.
-    const computed = all.filter((e) => computeReturn(e).total !== null).length;
+    // Most variations compute; the rest say why not (fail closed), the same both ways. The federal
+    // tax is not computed for a child who lives elsewhere, a shared child without the parental
+    // scale, or a side job in 2025 (./federal.test.ts).
+    const computed = all.filter((e) => computeReturn(e).icc !== null).length;
     expect(computed).toBeGreaterThan(all.length * 0.8);
+    expect(all.filter((e) => computeReturn(e).total !== null).length).toBeGreaterThan(
+      all.length * 0.3,
+    );
     // Some of them reach the maximum burden (StG § 56).
     expect(all.some((e) => computeReturn(e).icc?.taxes.maxBurden)).toBe(true);
   });
 
-  it('computes the cantonal, communal and church tax of each household; no federal part yet', () => {
+  it('computes the cantonal, communal and church tax of each household, and the federal tax where it can', () => {
+    let federal = 0;
     for (const e of HOUSEHOLDS) {
       const r = rules.computeReturn(household(e));
-      expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
+      expect(r.icc?.taxes.total.amount).toBeGreaterThan(0);
       expect(r.icc?.taxes.church).not.toBeNull();
-      expect(r.ifd).toBeNull();
+      if (r.ifd) {
+        federal++;
+        expect(r.unsupported).toEqual([]);
+        expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd.tax.amount);
+      } else {
+        // A side job in 2025 and a child who lives elsewhere (Baden), a shared child without the
+        // parental scale (Wettingen): the federal tax says why it is not computed.
+        expect(r.unsupported.length).toBeGreaterThan(0);
+        expect(r.total).toBeNull();
+      }
     }
+    expect(federal).toBe(2);
   });
 
-  it('leaves aside the insurance premiums (a flat amount) and the facts only Geneva uses', () => {
+  it('takes the insurance premiums for the federal tax only (the cantonal one is a flat amount), and leaves aside the facts only Geneva uses', () => {
     const e = HOUSEHOLDS[0]!;
     const h = household(e);
     const p1 = h.people[0]!;
@@ -217,18 +232,30 @@ describe('Aargau through the canton interface', () => {
         savingsInterest: amt(80),
         healthSubsidy: amt(500),
       },
-      ifdParentalScale: true,
       movable: h.movable!.map((m) => ({ ...m, withholdingSwiss: amt(28) })),
     };
-    expect(rules.computeReturn(extra)).toEqual(computeReturn(e));
+    const r = rules.computeReturn(extra);
+    const plain = computeReturn(e);
+    expect(r.icc).toEqual(plain.icc);
+    // The federal insurance deduction counts what was paid (here more than without premiums).
+    const insurance = (x: typeof r) => x.ifd!.items.find((i) => i.code === '14')?.amount ?? 0;
+    expect(insurance(r)).toBeLessThan(insurance(plain));
+    expect(rules.computeReturn({ ...extra, household: {} }).ifd).toEqual(plain.ifd);
   });
 
   it('refuses a fact Aargau does not read, and a commune given by BFS number', () => {
     const h = household(HOUSEHOLDS[0]!);
+    const kids = household(HOUSEHOLDS[1]!);
     const refused: HouseholdInput<AargauCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, cantonal: { ...h.cantonal, childBands: ['under14'] } },
+      { ...h, cantonal: { ...h.cantonal, childcare: [amt(1_000)] } },
+      // Childcare given per child and for the household: which is it?
+      {
+        ...kids,
+        children: kids.children!.map((c) => ({ ...c, childcare: amt(1_000) })),
+        household: { ...kids.household, childcare: amt(5_000) },
+      },
       { ...h, commune: 4001 },
       { ...h, commune: 'Zürich' },
     ];
@@ -250,15 +277,30 @@ describe('Aargau through the canton interface', () => {
     expect(() => rules.communes(2027)).toThrow(/not supported/);
   });
 
-  it('gives the shared keys and what a salary certificate gives', () => {
+  it('gives the shared keys, its own and what each document gives', () => {
     expect(rules.canton).toBe('AG');
     expect(rules.taxYears).toEqual([2025, 2026]);
     expect(Object.keys(rules.keys(2026))).toEqual(
-      expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
+      expect.arrayContaining([
+        'salary.gross',
+        'securities.isin',
+        'accounts.number',
+        'profile.commune',
+        'ag.church',
+        'ag.parish',
+        'ag.child_band',
+        'ag.main_upkeep',
+        'ag.child_care',
+      ]),
     );
-    expect(rules.documents(2026)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    const documents = rules.documents(2026);
+    expect(documents[0]).toEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(documents.map((d) => d.kind)).toEqual(
+      expect.arrayContaining(['pillar3a_attestation', 'health_premiums', 'childcare_invoice']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/ag');
   });
 });

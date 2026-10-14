@@ -197,13 +197,21 @@ export const messages = {
     touGenevaOnlyFr:
       'TOU is Geneva’s procedure in Taxpresso. For Fribourg, Taxpresso doesn’t support taxation at source (impôt à la source) and its TOU (taxation ordinaire ultérieure) yet.',
     splitTi: 'Ticino {icc} · federal {ifd}',
+    splitAg: 'Aargau {icc} · federal {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
+    lppOfficialAg: 'Einkäufe Säule 2',
     lppAttestationTi:
       'Your fund confirms the payment with an attestation (attestazione): attach it to your return.',
+    lppAttestationAg:
+      'Your fund confirms the payment with a certificate (Bescheinigung): it goes with your return.',
     cuOfficialTi: 'Riscatto nel 3° pilastro A',
+    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
     cuRuleIncomeTi: 'You must have had earned income subject to AVS in 2025.',
+    cuRuleIncomeAg: 'You must have had earned income subject to AHV in 2025.',
     touGenevaOnlyTi:
       'TOU is Geneva’s procedure. For Ticino, Taxpresso doesn’t support taxation at source (imposta alla fonte) and its ordinary assessment afterwards (tassazione ordinaria ulteriore, TOU) yet.',
+    touGenevaOnlyAg:
+      'TOU is Geneva’s procedure. For Aargau, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
   },
   fr: {
     when: 'Avant le 31 décembre',
@@ -364,12 +372,18 @@ export const messages = {
     touGenevaOnlyFr:
       'Dans Taxpresso, la TOU suit la procédure genevoise. Pour Fribourg, Taxpresso ne prend pas encore en charge l’impôt à la source ni sa taxation ordinaire ultérieure (TOU).',
     splitTi: 'Tessin {icc} · fédéral {ifd}',
+    splitAg: 'Argovie {icc} · fédéral {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
+    lppOfficialAg: 'Einkäufe Säule 2',
     lppAttestationTi: `Votre caisse confirme le versement par une attestation (attestazione)${NB}: joignez-la à votre déclaration.`,
+    lppAttestationAg: `Votre caisse confirme le versement par une attestation (Bescheinigung)${NB}: joignez-la à votre déclaration.`,
     cuOfficialTi: 'Riscatto nel 3° pilastro A',
+    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
     cuRuleIncomeTi: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS.',
+    cuRuleIncomeAg: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
     touGenevaOnlyTi:
       'La TOU est une procédure genevoise. Pour le Tessin, Taxpresso ne prend pas encore en charge l’impôt à la source (imposta alla fonte) ni sa taxation ordinaire ultérieure (tassazione ordinaria ulteriore, TOU).',
+    touGenevaOnlyAg: `La TOU est une procédure genevoise. Pour Argovie, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
   },
   de: {
     when: 'Vor dem 31. Dezember',
@@ -566,13 +580,21 @@ export const messages = {
     touGenevaOnlyFr:
       'Die TOU folgt in Taxpresso dem Genfer Verfahren. Für Freiburg unterstützt Taxpresso die Quellensteuer (impôt à la source) und die nachträgliche ordentliche Veranlagung (taxation ordinaire ultérieure, TOU) noch nicht.',
     splitTi: 'Tessin {icc} · Bund {ifd}',
+    splitAg: 'Aargau {icc} · Bund {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
+    lppOfficialAg: 'Einkäufe Säule 2',
     lppAttestationTi:
       'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung (attestazione): Leg sie deiner Steuererklärung bei.',
+    lppAttestationAg:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung: Sie gehört zu deiner Steuererklärung.',
     cuOfficialTi: 'Riscatto nel 3° pilastro A',
+    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
     cuRuleIncomeTi: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    cuRuleIncomeAg: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
     touGenevaOnlyTi:
       'Die TOU ist ein Genfer Verfahren. Für das Tessin unterstützt Taxpresso die Quellensteuer (imposta alla fonte) und die nachträgliche ordentliche Veranlagung (tassazione ordinaria ulteriore, TOU) noch nicht.',
+    touGenevaOnlyAg:
+      'Die TOU ist ein Genfer Verfahren. Für Aargau unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
   },
   it: {
     when: 'Prima del 31 dicembre',
@@ -769,13 +791,21 @@ export const messages = {
     touGenevaOnlyFr:
       'In Taxpresso la TOU segue la procedura ginevrina. Per Friburgo, Taxpresso non supporta ancora l’imposta alla fonte (impôt à la source) né la relativa tassazione ordinaria ulteriore (TOU, taxation ordinaire ultérieure).',
     splitTi: 'Ticino {icc} · federale {ifd}',
+    splitAg: 'Argovia {icc} · federale {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
+    lppOfficialAg: 'Einkäufe Säule 2',
     lppAttestationTi:
       'La tua cassa conferma il versamento con un’attestazione: allegala alla tua dichiarazione.',
+    lppAttestationAg:
+      'La tua cassa conferma il versamento con un’attestazione (Bescheinigung): allegala alla tua dichiarazione.',
     cuOfficialTi: 'Riscatto nel 3° pilastro A',
+    cuOfficialAg: 'Einkauf in die gebundene Selbstvorsorge Säule 3a',
     cuRuleIncomeTi: 'Nel 2025 devi aver avuto un reddito da attività lucrativa soggetto all’AVS.',
+    cuRuleIncomeAg: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
     touGenevaOnlyTi:
       'La TOU è una procedura ginevrina. Per il Ticino, Taxpresso non supporta ancora l’imposta alla fonte né la tassazione ordinaria ulteriore (TOU) che la segue.',
+    touGenevaOnlyAg:
+      'La TOU è una procedura ginevrina. Per Argovia, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
   },
 } as const;
 

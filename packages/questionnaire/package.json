@@ -12,6 +12,7 @@
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
+    "@taxpresso/rules-ag": "workspace:*",
     "@taxpresso/rules-be": "workspace:*",
     "@taxpresso/rules-bl": "workspace:*",
     "@taxpresso/rules-bs": "workspace:*",
