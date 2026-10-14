@@ -18,8 +18,9 @@
 //   property let, the actual costs only for the cantonal tax (guide p. 35), the actual costs or 10 %
 //   or 20 % of the rents for the federal tax;
 // - the taux d'effort: the cantonal rental value of the main home can't exceed 20 % of the gross
-//   income, at least of the first tax-free bracket (x 2 for spouses), and counts only when the
-//   interest that finances the home is not higher (LIPP art. 24 al. 2; guide p. 51);
+//   income (91.00, the rental value included: guide p. 51), at least of the first tax-free bracket
+//   (x 2 for spouses), and counts only when the interest that finances the home is not higher
+//   (LIPP art. 24 al. 2);
 // - debt interest up to the gross income from wealth, the property's included, plus 50,000 (guide
 //   p. 37; LIFD art. 33 al. 1 let. a);
 // - the impôt immobilier complémentaire: 1 per mille of the tax value, 0.2 per mille for the main
@@ -126,25 +127,26 @@ function chevalley(taxYear: 2025 | 2026): EngineInput {
   };
 }
 
-// P2. Nadia Bertholet, single, Thônex: a salary, savings, and the house she has lived in since
-// 2004 (over 10 years old), with actual upkeep of 14'800 that year (a new roof covering, the
-// building's insurance, the IIC billed). The AFC's values: tax value 1'150'000, rental value 32'400.
-// Abattement: 2004 to 2025, 22 years: at most 40 % (2026: 23 years, 40 %). Tax value 1'150'000 -
-// 460'000 = 690'000; rental value federal 32'400, cantonal 32'400 - 12'960 = 19'440. Upkeep: ICC
-// flat 25 % x 19'440 = 4'860, IFD flat 20 % x 32'400 = 6'480; the actual 14'800 is higher in both.
-// IIC 0.2 per mille x 1'150'000 = 230.00. Taux d'effort: 20 % of 136'600 = 27'320 > 19'440: none.
-// ICC: 11.10 136'000, 31.10 -8'568, 31.12 -10'880, 31.50 -1'812 (3 % x 116'552 above it); 14.00
-// 600; 15.10 19'440; 58.00 -14'800; 52.21 -6'200. 95.00 = 113'780. Scale: 6'996.00 + 36'262 x
-// 14.20 % = 5'149.204 -> 5'149.20: 12'145.20. Centimes 5'768.97 -> 5'768.95; reduction 12 % of
-// 17'914.15 = 2'149.698 -> 2'149.70; home care 121.452 -> 121.45; cantonal 15'885.90. Thônex PP 77 %
-// = 9'351.80 x 44 % = 4'114.79 -> 4'114.80; rest 2'793.40 x 44 % = 1'229.10 (both years).
+// P2. Nadia Bertholet, single, Thônex: a salary, savings without interest, and the house she has
+// lived in since 2004 (over 10 years old), with actual upkeep of 14'800 that year (a new roof
+// covering, the building's insurance, the IIC billed). The AFC's values: tax value 1'150'000,
+// rental value 32'400. Abattement: 2004 to 2025, 22 years: at most 40 % (2026: 23 years, 40 %).
+// Tax value 1'150'000 - 460'000 = 690'000; rental value federal 32'400, cantonal 32'400 - 12'960 =
+// 19'440. Upkeep: ICC flat 25 % x 19'440 = 4'860, IFD flat 20 % x 32'400 = 6'480; the actual
+// 14'800 is higher in both. IIC 0.2 per mille x 1'150'000 = 230.00. Taux d'effort: 20 % of 91.00
+// (136'000 + 19'440 = 155'440) = 31'088 > 19'440: none (2026 the same).
+// ICC: 11.10 136'000, 31.10 -8'568, 31.12 -10'880, 31.50 -1'812 (3 % x 116'552 above it); 15.10
+// 19'440; 58.00 -14'800; 52.21 -6'200. 95.00 = 113'180. Scale: 6'996.00 + 35'662 x 14.20 % =
+// 5'064.004 -> 5'064.00: 12'060.00. Centimes 5'728.50; reduction 12 % of 17'788.50 = 2'134.62 ->
+// 2'134.60; home care 120.60; cantonal 15'774.50. Thônex PP 77 % = 9'286.20 x 44 % = 4'085.93 ->
+// 4'085.95; rest 2'773.80 x 44 % = 1'220.47 -> 1'220.45 (both years).
 // Wealth: 120'000 + 690'000 = 810'000; single 87'632: 722'368. Scale: 1'635.05 + 11'981 x 2.98 per
 // mille = 35.70: 1'670.75; centimes 793.61 -> 793.60; home care 16.71 -> 16.70; supplementary
 // 120.80 + 11'981 x 0.4463 per mille = 5.35: 126.15; cantonal 2'607.20. Communal 77 % = 1'286.48 ->
-// 1'286.50 x 44 % = 566.06 -> 566.05; rest 384.25 -> 169.07 -> 169.05. ICC 24'597.10 (both years).
+// 1'286.50 x 44 % = 566.06 -> 566.05; rest 384.25 -> 169.07 -> 169.05. ICC 24'448.20 (both years).
 // IFD: 31.20 3 % x 116'552 = 3'497 (3'496.56); 15.10 32'400; 58.00 -14'800; 52.00 1'800. 95.00 =
-// 129'455. Single scale at 129'400: 2025 4'694.40 + 44 x 8.80 = 5'081.60; 2026 4'688.55 + 387.20 =
-// 5'075.75.
+// 128'855. Single scale at 128'800: 2025 4'694.40 + 38 x 8.80 = 5'028.80; 2026 4'688.55 + 334.40 =
+// 5'022.95.
 function bertholet(taxYear: 2025 | 2026): EngineInput {
   return {
     taxYear,
@@ -152,7 +154,7 @@ function bertholet(taxYear: 2025 | 2026): EngineInput {
     civilStatus: 'single',
     people: [{ id: 'p1', employments: [job(136_000, 8_568, 10_880)] }],
     household: { healthPremiums: v(6_200) },
-    wealthItems: [w('14.00', 'wealth', 120_000), w('14.00', 'income', 600)],
+    wealthItems: [w('14.00', 'wealth', 120_000)],
     property: {
       owner: 'p1',
       use: 'own_home',
@@ -212,11 +214,11 @@ function sandoz(taxYear: 2025 | 2026): EngineInput {
 // P4. Georges and Monique Perrenoud, married, Onex, retired: two AVS pensions (24'000, 18'000) and
 // the house they have lived in since 1990, no mortgage. The AFC's values: tax value 780'000, rental
 // value 26'000. Cantonal rental value 26'000 - 40 % = 15'600. Taux d'effort: 20 % of the gross
-// income without the rental value (42'000), at least of twice the first tax-free bracket (2 x
-// 18'649 = 37'298): 8'400 at the lowest reading, below 15'600, and no interest finances the home:
-// the taux d'effort may lower the rental value, and the documents don't say whether the gross
-// income counts the rental value itself (guide p. 51: "revenus bruts totaux (code 91.00)"). The
-// cantonal tax fails closed, with its plain reason; the federal tax doesn't have the taux d'effort:
+// income 91.00 (guide p. 51: "revenus bruts totaux (code 91.00)"), 42'000 + 15'600 = 57'600, at
+// least of twice the first tax-free bracket (2 x 18'649 = 37'298): 11'520, below 15'600, and no
+// interest finances the home: the taux d'effort lowers the rental value, and the documents don't
+// say by how much (the reduction changes 91.00 itself). The cantonal tax fails closed, with its
+// plain reason; the federal tax doesn't have the taux d'effort:
 // 17.10 24'000 + 18'000, 15.10 26'000, 58.00 20 % = -5'200, 52.00 couple without 2nd pillar or 3a
 // -5'550, 59.20 -2'800: 95.00 = 54'450; married scale at 54'400: 249.00 + 4 x 2.00 = 257.00 (2025
 // and 2026).
@@ -396,8 +398,9 @@ describe('P1 Julien and Anaïs Chevalley: their PPE flat in Lancy, a mortgage, t
       expect(r.property!.value!.amount).toBe(chf(930_000));
       expect(r.property!.rentalValue!.amount).toBe(chf(27_600));
       expect(r.property!.iic!.amount).toBe(chf(186));
-      // The taux d'effort: 20 % of 200'000 = 40'000, far above the rental value: said, no change.
-      expect(r.property!.effort!.amount).toBe(chf(40_000));
+      // The taux d'effort: 20 % of 91.00 (200'000 + 19'872 in 2025, + 18'768 in 2026) = 43'974.40
+      // or 43'753.60, far above the rental value: said, no change.
+      expect(r.property!.effort!.amount).toBe(chf(year === 2025 ? 43_974 : 43_754));
       expect(r.assumptions).toContainEqual(PROPERTY_NOTE.effortChecked);
       expect(r.unverifiedRules).toContainEqual(PROPERTY_NOTE.iic);
       expect(r.estimates.map((e) => e.id)).toEqual(year === 2025 ? [] : ['ge-2026-unpublished']);
@@ -424,24 +427,23 @@ describe('P2 Nadia Bertholet: her house in Thônex, actual upkeep above the flat
         '31.10 -8568.00',
         '31.12 -10880.00',
         '31.50 -1812.00',
-        '14.00 600.00',
         '15.10 19440.00',
         '58.00 -14800.00',
         '52.21 -6200.00',
       ]);
-      expect(i.totalIncome.amount).toBe(chf(113_780));
+      expect(i.totalIncome.amount).toBe(chf(113_180));
       const x = i.taxes;
-      expect(x.incomeBase.amount).toBe(chf(12_145.2));
-      expect(x.incomeCantonal.amount).toBe(chf(15_885.9));
-      expect(x.communalIncome.privileged.tax.amount).toBe(chf(4_114.8));
-      expect(x.communalIncome.rest.map((s) => s.tax.amount)).toEqual([chf(1_229.1)]);
+      expect(x.incomeBase.amount).toBe(chf(12_060));
+      expect(x.incomeCantonal.amount).toBe(chf(15_774.5));
+      expect(x.communalIncome.privileged.tax.amount).toBe(chf(4_085.95));
+      expect(x.communalIncome.rest.map((s) => s.tax.amount)).toEqual([chf(1_220.45)]);
       expect(codes(i.wealth.items)).toEqual(['14.00 120000.00', '15.10 690000.00']);
       expect(i.wealth.taxableWealth.amount).toBe(chf(722_368));
       expect(x.wealthBase.amount).toBe(chf(1_670.75));
       expect(x.wealthSupplementary.amount).toBe(chf(126.15));
       expect(x.wealthCantonal.amount).toBe(chf(2_607.2));
       expect(x.communalWealthTotal.amount).toBe(chf(566.05 + 169.05));
-      expect(x.total.amount).toBe(chf(24_597.1));
+      expect(x.total.amount).toBe(chf(24_448.2));
 
       const f = r.ifd!;
       expect(codes(f.items)).toEqual([
@@ -449,14 +451,13 @@ describe('P2 Nadia Bertholet: her house in Thônex, actual upkeep above the flat
         '31.10 -8568.00',
         '31.12 -10880.00',
         '31.20 -3497.00',
-        '14.00 600.00',
         '15.10 32400.00',
         '58.00 -14800.00',
         '52.00 -1800.00',
       ]);
-      expect(f.taxableIncome.amount).toBe(chf(129_455));
-      expect(f.tax.amount).toBe(chf(year === 2025 ? 5_081.6 : 5_075.75));
-      expect(r.total).toBe(chf(year === 2025 ? 29_678.7 : 29_672.85));
+      expect(f.taxableIncome.amount).toBe(chf(128_855));
+      expect(f.tax.amount).toBe(chf(year === 2025 ? 5_028.8 : 5_022.95));
+      expect(r.total).toBe(chf(year === 2025 ? 29_477 : 29_471.15));
 
       expect(r.property).toMatchObject({
         abattementBp: 4000,
@@ -547,7 +548,7 @@ describe('P3 Olivier Sandoz: a flat let in Carouge all year, his own home rented
   }
 });
 
-describe('P4 Georges and Monique Perrenoud: the taux d’effort may apply, the cantonal tax fails closed', () => {
+describe('P4 Georges and Monique Perrenoud: the taux d’effort applies, the cantonal tax fails closed', () => {
   for (const year of [2025, 2026] as const) {
     it(`${year}: said plainly; the federal tax is computed`, () => {
       const r = computeReturn(perrenoud(year));
@@ -565,15 +566,16 @@ describe('P4 Georges and Monique Perrenoud: the taux d’effort may apply, the c
       ]);
       expect(f.taxableIncome.amount).toBe(chf(54_450));
       expect(f.tax.amount).toBe(chf(257));
-      // The lowest limit any reading gives: 20 % x max(42'000, 2 x 18'649).
-      expect(r.property!.effort!.amount).toBe(chf(8_400));
+      // The limit: 20 % x max(57'600, 2 x 18'649).
+      expect(r.property!.effort!.amount).toBe(chf(11_520));
     });
   }
 
   it('with interest that finances the home above every limit, nothing is reduced', () => {
     // A mortgage of 30'000 interest: the limited value would count only if the interest were
-    // not higher (LIPP art. 24 al. 2), and it is higher than any reading's limit (at most 20 % x
-    // 57'600 = 11'520, or 25 % x 42'000 = 10'500).
+    // not higher (LIPP art. 24 al. 2), and it is higher than the limited value however it is
+    // read: 20 % of 91.00 before the reduction, 11'520, or after it, at most 25 % x 42'000 =
+    // 10'500.
     const input = perrenoud(2025);
     const r = computeReturn({
       ...input,

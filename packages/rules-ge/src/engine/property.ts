@@ -109,8 +109,8 @@ export const PROPERTY_NOTE = {
     `Entretien de votre immeuble${NB}: pour chaque impôt, le plus élevé du forfait et de vos frais effectifs compte${NB}; le choix peut différer entre l’impôt cantonal et l’impôt fédéral (information AFC 1/2021). Gardez les factures${NB}: elles ne sont pas jointes, seulement montrées sur demande.`,
   ),
   effortChecked: t(
-    'The taux d’effort (LIPP art. 24 al. 2) doesn’t lower your rental value: it is under 20 % of your gross income, whichever way that income is read.',
-    `Le taux d’effort (LIPP art. 24 al. 2) ne réduit pas votre valeur locative${NB}: elle est inférieure à 20${NB}% de votre revenu brut, de quelque façon qu’on le lise.`,
+    'The taux d’effort (LIPP art. 24 al. 2) doesn’t lower your rental value: it is at most 20 % of your gross income (91.00).',
+    `Le taux d’effort (LIPP art. 24 al. 2) ne réduit pas votre valeur locative${NB}: elle ne dépasse pas 20${NB}% de votre revenu brut (91.00).`,
   ),
   effortInterest: t(
     'The taux d’effort (LIPP art. 24 al. 2) doesn’t lower your rental value: the limited value would count only if the interest that finances your home were not higher than it, and yours is higher.',
@@ -137,8 +137,8 @@ export const PROPERTY_NOTE = {
 /** Why the household is outside the simple case, from the figures (fail closed). */
 export const PROPERTY_UNSUPPORTED = {
   effort: t(
-    'Your home’s rental value may be lowered by the taux d’effort: it can’t exceed 20 % of your gross income (LIPP art. 24 al. 2), and the documents don’t say whether that income counts the rental value itself, so Taxpresso can’t prepare it yet and the cantonal and communal tax is not computed. The AFC’s calculation form (search "taux d’effort" on ge.ch) or GeTax works it out. The federal tax is computed.',
-    `La valeur locative de votre logement peut être réduite par le taux d’effort${NB}: elle ne peut pas dépasser 20${NB}% de votre revenu brut (LIPP art. 24 al. 2), et les documents ne disent pas si ce revenu compte la valeur locative elle-même${NB}; Taxpresso ne peut pas encore le préparer, l’impôt cantonal et communal n’est donc pas calculé. Le formulaire de calcul de l’AFC (cherchez «${NB}taux d’effort${NB}» sur ge.ch) ou GeTax le fait. L’impôt fédéral est calculé.`,
+    'Your home’s rental value is lowered by the taux d’effort: it can’t exceed 20 % of your gross income (LIPP art. 24 al. 2), and the documents don’t say by how much, since the reduction changes that gross income itself. Taxpresso can’t prepare it yet, so the cantonal and communal tax is not computed. The AFC’s calculation form (search "taux d’effort" on ge.ch) or GeTax works it out. The federal tax is computed.',
+    `La valeur locative de votre logement est réduite par le taux d’effort${NB}: elle ne peut pas dépasser 20${NB}% de votre revenu brut (LIPP art. 24 al. 2), et les documents ne disent pas de combien, la réduction changeant ce revenu brut lui-même. Taxpresso ne peut pas encore le préparer, l’impôt cantonal et communal n’est donc pas calculé. Le formulaire de calcul de l’AFC (cherchez «${NB}taux d’effort${NB}» sur ge.ch) ou GeTax le fait. L’impôt fédéral est calculé.`,
   ),
   reform: t(
     'From 2029 the rental value of a home its owner lives in is no longer taxed (ch-na-reforme-valeur-locative-2029): Taxpresso has no rules for that year yet, so no tax is computed.',
@@ -519,12 +519,13 @@ export function propertyItems(
 /**
  * The check of the taux d'effort (LIPP art. 24 al. 2) for one's own home in Geneva: the cantonal
  * rental value can't exceed 20 % of the gross income, taken at least at the first tax-free bracket
- * (x 1, 2 or 1.8 by the splitting). The documents name the gross income 91.00 (guide p. 51), which
- * holds the rental value itself, without saying whether the limit is read before or after the
- * reduction, or without the rental value: when no reading lowers the rental value, it is said and
- * nothing changes; when one could, the cantonal tax fails closed. The limited value counts only if
- * the interest that finances the home is not higher than it: interest above every reading's limit
- * also leaves the rental value as it is.
+ * (x 1, 2 or 1.8 by the splitting). The guide names that gross income 91.00 (p. 51), the total the
+ * form adds up with the property's income in it (15.00, ge-2025-declaration-specimen p. 2). Whether
+ * the limit lowers the rental value is the same read before or after the reduction: when the rental
+ * value is at most 20 % of 91.00 (at least of the minimum), nothing changes, and it is said. When
+ * it is above, how much it is lowered is not spelled out (the reduction changes 91.00 itself), and
+ * the cantonal tax fails closed; unless the interest that finances the home is higher than the
+ * limited value under either reading, when the limited value doesn't count (the last sentence).
  */
 export function effortCheck(
   P: YearParams,
@@ -537,7 +538,7 @@ export function effortCheck(
     mortgageInterest?: number;
   },
 ): { line: Line; applies: 'no' | 'interest' | 'maybe' } {
-  const tr = new Trace().from(input.rentalIcc, input.grossIncome);
+  const tr = new Trace().from(input.rentalIcc, input.grossIncome).src(`${SPECIMEN} p. 2`);
   const rule = tr.p(EFFORT);
   const scale = tr.p(P.icc.incomeScale);
   const first = scale.brackets[0]!;
@@ -545,33 +546,37 @@ export function effortCheck(
   const factor = rule.factor[input.splitting];
   const minimum = Math.round((freeBracket * factor) / 10);
   const vla = input.rentalIcc.amount;
-  const other = Math.max(0, input.grossIncome.amount - vla);
+  const gross = Math.max(0, input.grossIncome.amount);
+  const other = Math.max(0, gross - vla);
   const share = (x: number) => roundFranc(x * rule.shareBp, 10_000);
-  /** The smallest limit any reading gives, and the largest. */
-  const lowest = share(Math.max(other, minimum));
-  const highest = Math.max(share(Math.max(other + vla, minimum)), roundFranc(other * 2500, 10_000));
+  /** 20 % of 91.00 as declared, at least of the minimum. */
+  const limit = share(Math.max(gross, minimum));
+  /** The largest limited value either reading gives: 91.00 before the reduction, or after it. */
+  const highest = Math.max(limit, roundFranc(other * 2500, 10_000));
   const interest = input.mortgageInterest;
   const applies: 'no' | 'interest' | 'maybe' =
-    vla <= lowest ? 'no' : interest !== undefined && interest > highest ? 'interest' : 'maybe';
+    vla <= limit ? 'no' : interest !== undefined && interest > highest ? 'interest' : 'maybe';
+  const times = (lang: 'en' | 'fr') =>
+    factor === 10 ? '' : factor === 20 ? ' x 2' : lang === 'en' ? ' x 1.8' : ' x 1,8';
   const line = tr.line(
-    lowest,
+    limit,
     t(
-      'Taux d’effort, the lowest limit of the rental value',
-      'Taux d’effort, limite la plus basse de la valeur locative',
+      'Taux d’effort, the limit of the rental value',
+      'Taux d’effort, limite de la valeur locative',
     ),
     applies === 'no'
       ? t(
-          `20 % of your gross income without the rental value (${chf(other)}), at least of ${chf(minimum)} (the first tax-free bracket${factor === 10 ? '' : factor === 20 ? ' x 2' : ' x 1.8'}): ${chf(lowest)}. Your rental value after the abattement, ${chf(vla)}, is not above it: no reduction.`,
-          `20${NB}% de votre revenu brut sans la valeur locative (${chf(other)}), au moins de ${chf(minimum)} (la première tranche exonérée${factor === 10 ? '' : factor === 20 ? ' x 2' : ' x 1,8'})${NB}: ${chf(lowest)}. Votre valeur locative après abattement, ${chf(vla)}, ne la dépasse pas${NB}: pas de réduction.`,
+          `20 % of your gross income (${chf(gross)}, 91.00, the rental value included), at least of ${chf(minimum)} (the first tax-free bracket${times('en')}): ${chf(limit)}. Your rental value after the abattement, ${chf(vla)}, is not above it: no reduction.`,
+          `20${NB}% de votre revenu brut (${chf(gross)}, 91.00, valeur locative comprise), au moins de ${chf(minimum)} (la première tranche exonérée${times('fr')})${NB}: ${chf(limit)}. Votre valeur locative après abattement, ${chf(vla)}, ne la dépasse pas${NB}: pas de réduction.`,
         )
       : applies === 'interest'
         ? t(
-            `Your rental value after the abattement, ${chf(vla)}, is above 20 % of your gross income (${chf(lowest)} at the lowest, ${chf(highest)} at the highest reading), but the interest that finances your home, ${chf(interest!)}, is higher than any limited value: no reduction (LIPP art. 24 al. 2, last sentence).`,
-            `Votre valeur locative après abattement, ${chf(vla)}, dépasse 20${NB}% de votre revenu brut (${chf(lowest)} au plus bas, ${chf(highest)} au plus haut), mais les intérêts qui financent votre logement, ${chf(interest!)}, dépassent toute valeur limitée${NB}: pas de réduction (LIPP art. 24 al. 2, dernière phrase).`,
+            `Your rental value after the abattement, ${chf(vla)}, is above 20 % of your gross income (${chf(limit)}), but the interest that finances your home, ${chf(interest!)}, is higher than the limited value however it is read (at most ${chf(highest)}): no reduction (LIPP art. 24 al. 2, last sentence).`,
+            `Votre valeur locative après abattement, ${chf(vla)}, dépasse 20${NB}% de votre revenu brut (${chf(limit)}), mais les intérêts qui financent votre logement, ${chf(interest!)}, dépassent la valeur limitée de quelque façon qu’on la lise (au plus ${chf(highest)})${NB}: pas de réduction (LIPP art. 24 al. 2, dernière phrase).`,
           )
         : t(
-            `Your rental value after the abattement, ${chf(vla)}, is above 20 % of your gross income read without it (${chf(lowest)}): the taux d’effort may lower it, and how is not spelled out.`,
-            `Votre valeur locative après abattement, ${chf(vla)}, dépasse 20${NB}% de votre revenu brut lu sans elle (${chf(lowest)})${NB}: le taux d’effort peut la réduire, et la façon n’est pas précisée.`,
+            `Your rental value after the abattement, ${chf(vla)}, is above 20 % of your gross income (${chf(limit)}): the taux d’effort lowers it, and by how much is not spelled out.`,
+            `Votre valeur locative après abattement, ${chf(vla)}, dépasse 20${NB}% de votre revenu brut (${chf(limit)})${NB}: le taux d’effort la réduit, et de combien n’est pas précisé.`,
           ),
   );
   return { line, applies };
