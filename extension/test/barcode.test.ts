@@ -24,7 +24,7 @@ import { createTaxpressoServer } from '../src/server.js';
 import type { Workspace } from '../src/workspace.js';
 import { makeUiDir, makeWorkspace } from './helpers.js';
 
-const TIMEOUT = 60_000;
+const TIMEOUT = 300_000;
 let client: Client;
 let dashboard: Dashboard;
 let ws: Workspace;

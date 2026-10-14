@@ -119,6 +119,11 @@ export const text = {
       'What the cantonal, communal and church tax (Kantons-, Gemeinde- und Kirchensteuer) is made of',
     taxableSg:
       'Taxable income (steuerbares Einkommen): cantonal {icc}, federal {ifd}. Taxable wealth (steuerbares Vermögen): {wealth}.',
+    officialFr: 'impôts {year}',
+    breakdownFr:
+      'What the cantonal, communal and church tax (impôts cantonal, communal et ecclésiastique) is made of',
+    taxableFr:
+      'Taxable income (revenu imposable): cantonal {icc}, federal {ifd}. Taxable wealth (fortune imposable): {wealth}.',
     preview: '{canton} is a preview: what to check',
     previewNote:
       'Taxpresso computes {canton} from the official documents. A few rules aren’t spelled out in them, and some answers were assumed. Here they are.',
@@ -177,6 +182,9 @@ export const text = {
     breakdownSg:
       'Ce qui compose les impôts cantonal, communal et ecclésiastique (Kantons-, Gemeinde- und Kirchensteuer)',
     taxableSg: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
+    officialFr: 'impôts {year}',
+    breakdownFr: 'Ce qui compose les impôts cantonal, communal et ecclésiastique',
+    taxableFr: `Revenu imposable${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable${NB}: {wealth}.`,
     preview: `{canton} est en avant-première${NB}: ce qu’il faut vérifier`,
     previewNote:
       'Taxpresso calcule {canton} à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
@@ -238,6 +246,11 @@ export const text = {
     officialSg: 'Steuern {year}',
     breakdownSg: 'Woraus die Kantons-, Gemeinde- und Kirchensteuer besteht',
     taxableSg: 'Steuerbares Einkommen: Kanton {icc}, Bund {ifd}. Steuerbares Vermögen: {wealth}.',
+    officialFr: 'impôts {year}',
+    breakdownFr:
+      'Woraus die Kantons-, Gemeinde- und Kirchensteuern (impôts cantonal, communal et ecclésiastique) bestehen',
+    taxableFr:
+      'Steuerbares Einkommen (revenu imposable): Kanton {icc}, Bund {ifd}. Steuerbares Vermögen (fortune imposable): {wealth}.',
     preview: '{canton} ist eine Vorschau: Was du prüfen solltest',
     previewNote:
       'Taxpresso berechnet {canton} aus den offiziellen Dokumenten. Ein paar Regeln sind darin nicht genau festgelegt, und einige Antworten wurden angenommen. Hier sind sie.',
@@ -306,6 +319,11 @@ export const text = {
       'Di cosa si compongono le imposte cantonale, comunale e di culto (Kantons-, Gemeinde- und Kirchensteuer)',
     taxableSg:
       'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
+    officialFr: 'impôts {year}',
+    breakdownFr:
+      'Di cosa si compongono le imposte cantonale, comunale e di culto (impôts cantonal, communal et ecclésiastique)',
+    taxableFr:
+      'Reddito imponibile (revenu imposable): cantonale {icc}, federale {ifd}. Sostanza imponibile (fortune imposable): {wealth}.',
     preview: '{canton} in anteprima: cosa controllare',
     previewNote:
       'Taxpresso calcola le imposte del Cantone {canton} a partire dai documenti ufficiali. Alcune regole non vi sono precisate, e alcune risposte sono state presunte. Eccole.',

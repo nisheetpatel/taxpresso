@@ -474,6 +474,7 @@ describe('the questions every canton shares', () => {
       'ZG',
       'LU',
       'SG',
+      'FR',
       'TI',
       'other',
     ]);
@@ -485,21 +486,21 @@ describe('the questions every canton shares', () => {
     expect(canton.help?.en).toMatch(/taxes the whole year/);
     // The cantons covered are named from the options themselves: a canton added there is named.
     expect(canton.explain?.en).toMatch(
-      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen and Ticino so far\.$/,
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg and Ticino so far\.$/,
     );
     expect(canton.explain?.fr).toMatch(
       new RegExp(
-        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall et Tessin\\.$`,
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg et Tessin\\.$`,
       ),
     );
     expect(canton.explain?.de).toMatch(
-      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen und Tessin vor\.$/,
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg und Tessin vor\.$/,
     );
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
-      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen or Ticino',
-      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall ou Tessin',
-      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen oder Tessin',
-      it: 'Un Cantone diverso da Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna, San Gallo o Ticino',
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg or Ticino',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg ou Tessin',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg oder Tessin',
+      it: 'Un Cantone diverso da Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna, San Gallo, Friburgo o Ticino',
     });
     for (const f of [
       file,

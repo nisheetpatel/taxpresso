@@ -178,6 +178,14 @@ export const messages = {
     cuRuleIncomeSg: 'You must have had earned income subject to AHV in 2025.',
     touGenevaOnlySg:
       'TOU is Geneva’s procedure. For St. Gallen, Taxpresso doesn’t support taxation at source (Quellensteuer) and its NOV (nachträgliche ordentliche Veranlagung) yet.',
+    splitFr: 'Fribourg {icc} · federal {ifd}',
+    lppOfficialFr: 'Rachats d’années d’assurance (2e pilier, caisse de pension)',
+    lppAttestationFr:
+      'Your fund confirms the payment with an attestation that states the most you could buy in: attach it to your return.',
+    cuOfficialFr: 'rachat dans le pilier 3a',
+    cuRuleIncomeFr: 'You must have had earned income subject to AVS in 2025.',
+    touGenevaOnlyFr:
+      'TOU is Geneva’s procedure in Taxpresso. For Fribourg, Taxpresso doesn’t support taxation at source (impôt à la source) and its TOU (taxation ordinaire ultérieure) yet.',
     splitTi: 'Ticino {icc} · federal {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
     lppAttestationTi:
@@ -330,6 +338,13 @@ export const messages = {
     cuOfficialSg: 'Nachträgliche Einkäufe Säule 3a',
     cuRuleIncomeSg: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS (AHV).',
     touGenevaOnlySg: `La TOU est une procédure genevoise. Pour Saint-Gall, Taxpresso ne prend pas encore en charge l’impôt à la source (Quellensteuer) ni sa taxation ordinaire ultérieure (NOV, nachträgliche ordentliche Veranlagung).`,
+    splitFr: 'Fribourg {icc} · fédéral {ifd}',
+    lppOfficialFr: 'Rachats d’années d’assurance (2e pilier, caisse de pension)',
+    lppAttestationFr: `Votre caisse confirme le versement par une attestation qui indique le rachat maximal autorisé${NB}: joignez-la à votre déclaration.`,
+    cuOfficialFr: 'rachat dans le pilier 3a',
+    cuRuleIncomeFr: 'Vous devez avoir eu en 2025 un revenu d’activité soumis à l’AVS.',
+    touGenevaOnlyFr:
+      'Dans Taxpresso, la TOU suit la procédure genevoise. Pour Fribourg, Taxpresso ne prend pas encore en charge l’impôt à la source ni sa taxation ordinaire ultérieure (TOU).',
     splitTi: 'Tessin {icc} · fédéral {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
     lppAttestationTi: `Votre caisse confirme le versement par une attestation (attestazione)${NB}: joignez-la à votre déclaration.`,
@@ -514,6 +529,14 @@ export const messages = {
     cuRuleIncomeSg: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
     touGenevaOnlySg:
       'Die TOU ist ein Genfer Verfahren. Für St. Gallen unterstützt Taxpresso die Quellensteuer und die nachträgliche ordentliche Veranlagung (NOV) noch nicht.',
+    splitFr: 'Freiburg {icc} · Bund {ifd}',
+    lppOfficialFr: 'Rachats d’années d’assurance (2e pilier, caisse de pension)',
+    lppAttestationFr:
+      'Deine Kasse bestätigt die Zahlung mit einer Bescheinigung, die den höchstmöglichen Einkauf nennt: Leg sie deiner Steuererklärung bei.',
+    cuOfficialFr: 'rachat dans le pilier 3a',
+    cuRuleIncomeFr: 'Du musst 2025 ein AHV-pflichtiges Erwerbseinkommen gehabt haben.',
+    touGenevaOnlyFr:
+      'Die TOU folgt in Taxpresso dem Genfer Verfahren. Für Freiburg unterstützt Taxpresso die Quellensteuer (impôt à la source) und die nachträgliche ordentliche Veranlagung (taxation ordinaire ultérieure, TOU) noch nicht.',
     splitTi: 'Tessin {icc} · Bund {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
     lppAttestationTi:
@@ -699,6 +722,14 @@ export const messages = {
     cuRuleIncomeSg: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS (AHV).',
     touGenevaOnlySg:
       'La TOU è una procedura ginevrina. Per San Gallo, Taxpresso non supporta ancora l’imposta alla fonte (Quellensteuer) né la relativa tassazione ordinaria ulteriore (NOV, nachträgliche ordentliche Veranlagung).',
+    splitFr: 'Friburgo {icc} · federale {ifd}',
+    lppOfficialFr: 'Rachats d’années d’assurance (2e pilier, caisse de pension)',
+    lppAttestationFr:
+      'La tua cassa conferma il versamento con un’attestazione che indica il riscatto massimo possibile: allegala alla tua dichiarazione.',
+    cuOfficialFr: 'rachat dans le pilier 3a',
+    cuRuleIncomeFr: 'Nel 2025 devi aver avuto un reddito da lavoro soggetto all’AVS.',
+    touGenevaOnlyFr:
+      'In Taxpresso la TOU segue la procedura ginevrina. Per Friburgo, Taxpresso non supporta ancora l’imposta alla fonte (impôt à la source) né la relativa tassazione ordinaria ulteriore (TOU, taxation ordinaire ultérieure).',
     splitTi: 'Ticino {icc} · federale {ifd}',
     lppOfficialTi: 'Riscatti di anni di assicurazione (2° pilastro)',
     lppAttestationTi:

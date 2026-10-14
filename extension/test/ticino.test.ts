@@ -518,5 +518,5 @@ describe('a Ticino return', () => {
       expect(other.taxableIncome).toBe(ti.ifd.taxableIncome);
       expect(other.tax).toBe(ti.ifd.tax);
     }
-  }, 60_000);
+  });
 });

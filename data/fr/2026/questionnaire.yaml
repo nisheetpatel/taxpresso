@@ -1,0 +1,1683 @@
+# Fribourg questionnaire for tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data, not
+# code: packages/questionnaire reads it, and every key and value must exist in Fribourg's keys
+# (packages/rules-fr, src/keys.ts; a test checks).
+#
+# The questions every canton asks come from data/ch/2026/questions.yaml (`use: <id>`), in the order
+# of the Fribourg return as its guide explains it code by code (fr-2025-guide-instructions-generales:
+# the personal situation and the children, p. 7; the income of the codes 1.xxx and its costs 2.xxx,
+# p. 8 to 14; the other income and the wealth 3.xxx, p. 14 to 23; the deductions 4.xxx, p. 24 to
+# 33; the net income, the medical costs and donations, p. 33 to 39), with Fribourg's own
+# explanations and official pages. The questions only Fribourg asks are written out here, as
+# packages/rules-fr reads them (FribourgCantonal): each child's age band (the health insurance flat
+# amount, code 4.110, and childcare under 14, code 4.380) and the childcare paid for each child (the
+# limit is per child); the commune by name and whether you lived there all year; each adult's church
+# and, where the commune's parishes of that church differ, the parish; the health premium subsidy
+# (Fribourg deducts a flat amount per insured person, less the subsidy); the life insurance premiums
+# (code 4.120) and the interest on savings (code 4.150). No question asks the health premiums paid,
+# nor their attestation: Fribourg's deduction is the flat amount, the federal tax takes it too (p. 48).
+#
+# Wording and documents follow the Fribourg guide for 2025 (Instructions générales, the latest
+# published): the 2026 guide is not published yet (docs/sources/fr/NOTES.md, Gaps). "p." is the page
+# of the PDF file, as in the links; the guide prints one less. Tax year 2026's communal coefficients
+# are not published either: the questions, documents and values to type work, the tax waits for them
+# (packages/rules-fr, NOTE.communes2026).
+#
+# Fribourg is bilingual: the guide in the library is the French one, so the official terms are its
+# French ones, next to the gloss in English and German. German: informal "du", Swiss spelling (ss).
+# French: write plain spaces before ? ! : ; and the loader makes them non-breaking.
+
+taxYear: 2026
+
+place: { en: 'Fribourg', fr: 'Fribourg', de: 'Freiburg', it: 'Friburgo' }
+
+people:
+  p1: { en: 'You', fr: 'Vous', de: 'Du', it: 'Tu' }
+  p2:
+    {
+      en: 'Your spouse or partner',
+      fr: 'Votre conjoint ou partenaire',
+      de: 'Dein Partner oder deine Partnerin',
+      it: 'Il tuo coniuge o partner',
+    }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner', it: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}', it: 'Figlio {n}' }
+
+# FriTax is the canton's free program, installed on the computer, the only one that files
+# electronically (docs/sources/fr/NOTES.md, Filing channels; fr-2025-fritax-accueil).
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. FriTax, the canton’s free program (fr.ch/fritax), or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. FriTax, le programme gratuit du canton (fr.ch/fritax), ou une fiduciaire le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. FriTax, das kostenlose Programm des Kantons (fr.ch/fritax), oder eine Treuhand kann es.'
+  it: 'Taxpresso non può ancora preparare questa parte. Può farlo FriTax, il programma gratuito del Cantone (fr.ch/fritax), o una fiduciaria.'
+
+questions:
+  - use: canton
+
+  # fr-2025-guide-instructions-generales p. 7 (IV. Situation personnelle: spouses living together,
+  # and registered partners, file one return together).
+  - use: civil_status
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=7'
+      label:
+        en: 'Fribourg tax guide 2025, p. 7: personal and family situation'
+        fr: 'Instructions générales 2025, p. 7 : Situation personnelle, professionnelle et familiale'
+        de: 'Wegleitung Freiburg 2025, S. 7: persönliche und familiäre Verhältnisse, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 7: situazione personale e familiare'
+    help:
+      en: 'A registered partnership files like a married couple, on one return.'
+      fr: 'Un partenariat enregistré déclare comme un couple marié, sur une seule déclaration.'
+      de: 'Eine eingetragene Partnerschaft füllt wie ein Ehepaar eine gemeinsame Steuererklärung aus.'
+      it: 'Un’unione domestica registrata presenta una sola dichiarazione, come una coppia sposata.'
+
+  # fr-2025-guide-instructions-generales p. 34 and 35 (6.110: children at your charge, minors or in
+  # apprenticeship or studies).
+  - use: children
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=34'
+      label:
+        en: 'Fribourg tax guide 2025, p. 34: child deductions'
+        fr: 'Instructions générales 2025, p. 34 : Déductions sociales pour enfants'
+        de: 'Wegleitung Freiburg 2025, S. 34: Kinderabzüge, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 34: deduzioni per i figli'
+    help:
+      en: 'Minors, and older children in apprenticeship or studies whose upkeep you bear. On the return: code 6.110, déductions sociales pour enfants.'
+      fr: 'Les mineurs, et les enfants plus âgés en apprentissage ou aux études dont vous assumez l’entretien. Sur la déclaration : code 6.110, déductions sociales pour enfants.'
+      de: 'Minderjährige und ältere Kinder in Lehre oder Studium, deren Unterhalt du bestreitest. Auf der Steuererklärung: Code 6.110, déductions sociales pour enfants (Kinderabzüge).'
+      it: 'I figli minorenni, e quelli più grandi in apprendistato o agli studi che mantieni tu. Nella dichiarazione: codice 6.110, déductions sociales pour enfants.'
+
+  # fr-2025-guide-instructions-generales p. 7 (boxes A*, B* and C*: a child in your household, with
+  # the other parent, or alternately).
+  - use: children_custody
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=7'
+      label:
+        en: 'Fribourg tax guide 2025, p. 7: children in your household or alternately'
+        fr: 'Instructions générales 2025, p. 7 : Situation personnelle, professionnelle et familiale'
+        de: 'Wegleitung Freiburg 2025, S. 7: Kinder im Haushalt oder abwechselnd, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 7: figli nella tua economia domestica o in custodia alternata'
+    help:
+      en: 'Page 1 of the return ticks box A* for a child in your household, B* for a child living with the other parent, C* for a child living alternately with you and elsewhere.'
+      fr: 'La page 1 de la déclaration coche la case A* pour un enfant dans votre ménage, B* pour un enfant chez l’autre parent, C* pour un enfant vivant alternativement chez vous et ailleurs.'
+      de: 'Seite 1 der Steuererklärung kreuzt Feld A* für ein Kind in deinem Haushalt an, B* für ein Kind beim anderen Elternteil, C* für ein Kind, das abwechselnd bei dir und anderswo lebt.'
+      it: 'A pagina 1 della dichiarazione si crocia la casella A* per un figlio che vive nella tua economia domestica, B* per un figlio che vive con l’altro genitore, C* per un figlio che vive a turno da te e altrove.'
+
+  # Alternating custody (garde alternée): the SCC gives the child to the parent who receives child
+  # support, none to the parent who pays it (fr-2024-pis-guide p. 7, question 18;
+  # fr-2024-instructions-employeurs-source p. 11 and 12); without child support the documents differ
+  # (the law splits the deduction in proportion, LICD art. 36 al. 3; the source-tax documents give
+  # the child to the parent with the higher income): packages/rules-fr does not compute it
+  # (NOTE.sharedNoSupport), so those answers are said not supported here.
+  - use: child_support
+    explain:
+      en: 'With shared custody (garde alternée), child support decides who counts the children. In Fribourg, the parent who receives child support (contribution d’entretien) counts them; the parent who pays it deducts what was paid instead.'
+      fr: 'En garde alternée, la contribution d’entretien décide qui compte les enfants. À Fribourg, le parent qui la reçoit les compte ; le parent qui la verse déduit à la place ce qu’il a versé.'
+      de: 'Bei alternierender Obhut (garde alternée) entscheiden die Unterhaltsbeiträge (contribution d’entretien), wer die Kinder zählt. In Freiburg zählt sie der Elternteil, der die Beiträge erhält; wer sie zahlt, zieht stattdessen ab, was er bezahlt hat.'
+      it: 'Con la custodia alternata (garde alternée), sono i contributi di mantenimento a decidere chi conta i figli. A Friburgo li conta il genitore che riceve i contributi di mantenimento (contribution d’entretien); il genitore che li versa deduce invece quanto ha versato.'
+    learnMore:
+      url: 'https://www.fr.ch/document/431746#page=7'
+      label:
+        en: 'Fribourg, information for people taxed at source, p. 7: alternating custody'
+        fr: 'Infos pour les personnes imposées à la source (PIS), p. 7 : garde alternée'
+        de: 'Freiburg, Informationen für quellensteuerpflichtige Personen, S. 7: alternierende Obhut, auf Französisch'
+        it: 'Friburgo, informazioni per le persone soggette all’imposta alla fonte, p. 7: custodia alternata'
+    help:
+      en: 'Child support is a regular amount for the children, set by a judgment or an agreement.'
+      fr: 'La contribution d’entretien est un montant régulier pour les enfants, fixé par un jugement ou une convention.'
+      de: 'Unterhaltsbeiträge sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung.'
+      it: 'I contributi di mantenimento sono un importo regolare per i figli, fissato da una sentenza o da una convenzione.'
+    options:
+      - value: i_receive
+        label:
+          {
+            en: 'The other parent paid me child support',
+            fr: 'L’autre parent m’a versé une contribution d’entretien',
+            de: 'Der andere Elternteil hat mir Unterhaltsbeiträge bezahlt',
+            it: 'L’altro genitore mi ha versato contributi di mantenimento',
+          }
+        chip:
+          {
+            en: 'Receives child support',
+            fr: 'Reçoit une contribution',
+            de: 'Erhält Unterhaltsbeiträge',
+            it: 'Riceve contributi di mantenimento',
+          }
+      - value: i_pay
+        label:
+          {
+            en: 'I paid child support to the other parent',
+            fr: 'J’ai versé une contribution d’entretien à l’autre parent',
+            de: 'Ich habe dem anderen Elternteil Unterhaltsbeiträge bezahlt',
+            it: 'Ho versato contributi di mantenimento all’altro genitore',
+          }
+        chip:
+          {
+            en: 'Pays child support',
+            fr: 'Verse une contribution',
+            de: 'Zahlt Unterhaltsbeiträge',
+            it: 'Versa contributi di mantenimento',
+          }
+      - value: none_i_earn_more
+        label:
+          {
+            en: 'No child support, and I earn more than the other parent',
+            fr: 'Pas de contribution, et je gagne plus que l’autre parent',
+            de: 'Keine Unterhaltsbeiträge, und ich verdiene mehr als der andere Elternteil',
+            it: 'Nessun contributo, e guadagno più dell’altro genitore',
+          }
+        notSupported:
+          &noSupport {
+            en: 'Alternating custody without child support (garde alternée sans contribution d’entretien): Fribourg’s documents differ on who counts the children',
+            fr: 'La garde alternée sans contribution d’entretien : les documents fribourgeois divergent sur qui compte les enfants',
+            de: 'Alternierende Obhut ohne Unterhaltsbeiträge (garde alternée sans contribution d’entretien): Die Freiburger Dokumente widersprechen sich, wer die Kinder zählt',
+            it: 'La custodia alternata senza contributi di mantenimento (garde alternée sans contribution d’entretien): i documenti di Friburgo non concordano su chi conta i figli',
+          }
+      - value: none_other_earns_more
+        label:
+          {
+            en: 'No child support, and the other parent earns more',
+            fr: 'Pas de contribution, et l’autre parent gagne plus',
+            de: 'Keine Unterhaltsbeiträge, und der andere Elternteil verdient mehr',
+            it: 'Nessun contributo, e l’altro genitore guadagna di più',
+          }
+        notSupported: *noSupport
+      - value: none_unsure
+        label:
+          {
+            en: 'No child support, and I don’t know who earns more',
+            fr: 'Pas de contribution, et je ne sais pas qui gagne le plus',
+            de: 'Keine Unterhaltsbeiträge, und ich weiss nicht, wer mehr verdient',
+            it: 'Nessun contributo, e non so chi guadagna di più',
+          }
+        notSupported: *noSupport
+
+  # The age band of each child at the end of the year (fr-na-deductions-primes-assurance art. 1 al. 1
+  # and 2, p. 1 and 2; fr-2025-guide-instructions-generales p. 24, code 4.110): the flat health amount
+  # of a child (up to 18), of a young adult in training at your charge (18 to 25), none for an older
+  # child (packages/rules-fr, NOTE.adultChild); and childcare counts for a child under 14 (code 4.380,
+  # p. 32).
+  - id: child_age
+    key: fr.child_age
+    type: choice
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+    explain:
+      en: 'Fribourg deducts a flat amount for each insured person’s health and accident insurance (caisse-maladie et accidents, code 4.110), by age: a child up to 18, a young adult in training up to 25. Childcare (frais de garde, code 4.380) counts for a child under 14.'
+      fr: 'Fribourg déduit un montant forfaitaire pour l’assurance-maladie et accidents de chaque personne assurée (caisse-maladie et accidents, code 4.110), selon l’âge : un enfant jusqu’à 18 ans, un jeune adulte en formation jusqu’à 25 ans. Les frais de garde (code 4.380) comptent pour un enfant de moins de 14 ans.'
+      de: 'Freiburg zieht für die Kranken- und Unfallversicherung jeder versicherten Person einen Pauschalbetrag ab (caisse-maladie et accidents, Code 4.110), nach Alter: ein Kind bis 18, ein junger Erwachsener in Ausbildung bis 25. Die Betreuungskosten (frais de garde, Code 4.380) zählen für ein Kind unter 14.'
+      it: 'Friburgo deduce un importo forfettario per l’assicurazione malattia e infortuni di ogni persona assicurata (caisse-maladie et accidents, codice 4.110), secondo l’età: un figlio fino a 18 anni, un giovane adulto in formazione fino a 25. Le spese di custodia (frais de garde, codice 4.380) contano per un figlio sotto i 14 anni.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=24'
+      label:
+        en: 'Fribourg tax guide 2025, p. 24: health and accident insurance'
+        fr: 'Instructions générales 2025, p. 24 : Caisse-maladie et accidents'
+        de: 'Wegleitung Freiburg 2025, S. 24: Kranken- und Unfallversicherung, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 24: assicurazione malattia e infortuni'
+    text:
+      en: 'How old was child {n} at the end of 2026?'
+      fr: 'Quel âge avait l’enfant {n} à la fin de 2026 ?'
+      de: 'Wie alt war Kind {n} Ende 2026?'
+      it: 'Quanti anni aveva il figlio {n} alla fine del 2026?'
+    help:
+      en: 'Number your children the same way in every answer, for example from the oldest.'
+      fr: 'Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
+    options:
+      - value: under14
+        label: { en: 'Under 14', fr: 'Moins de 14 ans', de: 'Unter 14', it: 'Meno di 14 anni' }
+        chip: { en: 'Under 14', fr: 'Moins de 14 ans', de: 'Unter 14', it: 'Meno di 14 anni' }
+      - value: minor
+        label: { en: '14 to 17', fr: 'De 14 à 17 ans', de: '14 bis 17', it: 'Da 14 a 17 anni' }
+        chip: { en: '14 to 17', fr: '14 à 17 ans', de: '14 bis 17', it: 'Da 14 a 17 anni' }
+      - value: young
+        label:
+          {
+            en: '18 to 25, in training',
+            fr: 'De 18 à 25 ans, en formation',
+            de: '18 bis 25, in Ausbildung',
+            it: 'Da 18 a 25 anni, in formazione',
+          }
+        chip: { en: '18 to 25', fr: '18 à 25 ans', de: '18 bis 25', it: 'Da 18 a 25 anni' }
+      - value: adult
+        label: { en: 'Over 25', fr: 'Plus de 25 ans', de: 'Über 25', it: 'Più di 25 anni' }
+        notSupported:
+          {
+            en: 'A child over 25 at your charge (the flat health amount, code 4.110, has no category for them)',
+            fr: 'Un enfant de plus de 25 ans à charge (la déduction forfaitaire d’assurance-maladie, code 4.110, n’a pas de catégorie pour lui)',
+            de: 'Ein Kind über 25, für das du aufkommst (der Krankenversicherungspauschalbetrag, Code 4.110, hat keine Kategorie dafür)',
+            it: 'Un figlio con più di 25 anni a tuo carico (l’importo forfettario per l’assicurazione malattia, codice 4.110, non ha una categoria per lui)',
+          }
+
+  # fr-2025-guide-instructions-generales p. 32 (4.380: childcare by third parties for each child
+  # under 14 living with you, while you work, train or can't work).
+  - use: childcare
+    explain:
+      en: 'What you paid so someone else looks after your children under 14 while you work, train or can’t work: a crèche, day care or a day mother (frais de garde des enfants, code 4.380).'
+      fr: 'Ce que vous avez payé pour faire garder vos enfants de moins de 14 ans par un tiers pendant que vous travaillez, vous formez ou êtes incapable de travailler : crèche, garderie ou maman de jour (frais de garde des enfants, code 4.380).'
+      de: 'Was du bezahlt hast, damit jemand anderes deine Kinder unter 14 betreut, während du arbeitest, in Ausbildung bist oder nicht arbeiten kannst: Kita, Hort oder Tagesmutter (frais de garde des enfants, Code 4.380).'
+      it: 'Quello che hai pagato perché qualcun altro custodisca i tuoi figli sotto i 14 anni mentre lavori, segui una formazione o non puoi lavorare: un asilo nido, un centro diurno o una mamma diurna (frais de garde des enfants, codice 4.380).'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=32'
+      label:
+        en: 'Fribourg tax guide 2025, p. 32: childcare'
+        fr: 'Instructions générales 2025, p. 32 : Frais de garde des enfants'
+        de: 'Wegleitung Freiburg 2025, S. 32: Kinderbetreuungskosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 32: custodia dei figli'
+    help:
+      en: 'Crèche, day care, after-school care or a day mother. Keep the invoices.'
+      fr: 'Crèche, garderie, accueil extrascolaire ou maman de jour. Gardez les factures.'
+      de: 'Kita, Hort, Tagesstruktur oder Tagesmutter. Bewahr die Rechnungen auf.'
+      it: 'Asilo nido, centro diurno, accoglienza extrascolastica o mamma diurna. Conserva le fatture.'
+
+  # The limit of 4.380 is per child (LICD art. 34 al. 3; fr-2025-guide-instructions-generales p. 32):
+  # with several children, how the invoices' total splits can decide the deduction
+  # (packages/rules-fr, NOTE.childcareSplit). Asked per child.
+  - id: child_care
+    key: fr.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+    explain:
+      en: 'Fribourg’s limit for childcare (frais de garde des enfants, code 4.380) is per child, so the split between your children can change the deduction. Your invoices give the total.'
+      fr: 'La limite fribourgeoise des frais de garde (code 4.380) est par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
+      de: 'Der Freiburger Höchstbetrag für Kinderbetreuung (frais de garde des enfants, Code 4.380) gilt pro Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+      it: 'Il limite di Friburgo per la custodia dei figli (frais de garde des enfants, codice 4.380) vale per ogni figlio: la ripartizione tra i tuoi figli può quindi cambiare la deduzione. Le tue fatture danno il totale.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=32'
+      label:
+        en: 'Fribourg tax guide 2025, p. 32: childcare'
+        fr: 'Instructions générales 2025, p. 32 : Frais de garde des enfants'
+        de: 'Wegleitung Freiburg 2025, S. 32: Kinderbetreuungskosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 32: custodia dei figli'
+    text:
+      en: 'How much of the childcare you paid in 2026 was for child {n}?'
+      fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
+      de: 'Wie viel der 2026 bezahlten Betreuungskosten (frais de garde) war für Kind {n}?'
+      it: 'Quanto delle spese di custodia pagate nel 2026 era per il figlio {n}?'
+    help:
+      en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
+      fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
+
+  # The commune taxes with its coefficient, the same on income and wealth, in percent of the cantonal
+  # base tax (fr-na-law-lico art. 3 al. 3, art. 4 al. 3, p. 2). The list is Fribourg's 2026 communes
+  # by their federal number (packages/rules-fr, communeOptions(2026), from the canton's 2026 parish
+  # tables, which give each commune's number). Their 2026 coefficients are not published yet.
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'Each commune sets its own coefficient (coefficient communal), the same on income and wealth, a percentage of the cantonal base tax (impôt cantonal de base).'
+      fr: 'Chaque commune fixe son propre coefficient communal, le même sur le revenu et la fortune, un pourcentage de l’impôt cantonal de base.'
+      de: 'Jede Gemeinde legt ihren eigenen Steuerfuss (coefficient communal) fest, gleich auf Einkommen und Vermögen, einen Prozentsatz der kantonalen Grundsteuer (impôt cantonal de base).'
+      it: 'Ogni Comune fissa il proprio moltiplicatore (coefficient communal), lo stesso sul reddito e sulla sostanza, una percentuale dell’imposta cantonale di base (impôt cantonal de base).'
+    learnMore:
+      url: 'https://www.fr.ch/impots/personnes-physiques/coefficients-communaux-et-paroisses'
+      label:
+        en: 'Fribourg: communal and parish tax coefficients'
+        fr: 'Coefficients communaux et paroisses'
+        de: 'Freiburg: Gemeinde- und Pfarreisteuerfüsse, auf Französisch'
+        it: 'Friburgo: moltiplicatori d’imposta dei Comuni e delle parrocchie'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale Comune abitavi il 31 dicembre 2026?'
+    help:
+      en: 'The official name, such as Fribourg, Bulle or Düdingen.'
+      fr: 'Le nom officiel, par exemple Fribourg, Bulle ou Düdingen.'
+      de: 'Der offizielle Name, zum Beispiel Fribourg, Bulle oder Düdingen.'
+      it: 'Il nome ufficiale, per esempio Fribourg, Bulle o Düdingen.'
+
+  # Arriving from another canton: Fribourg taxes the whole year (fr-2025-guide-instructions-generales
+  # p. 4) and the commune of arrival collects the communal tax for it (fr-na-law-lico art. 9 al. 3,
+  # p. 3). A move between Fribourg communes splits the communal tax by the time in each (art. 9 al. 2):
+  # not covered by packages/rules-fr (NOTE.wholeYear). Arriving from abroad or leaving Switzerland
+  # means part of the year only (p. 4): not covered either.
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'Arriving from another canton changes nothing: Fribourg taxes your whole year, and your commune of arrival collects the communal tax for it. A move between Fribourg communes splits the communal tax between them by the time in each. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
+      fr: 'Arriver d’un autre canton ne change rien : Fribourg vous impose pour toute l’année, et votre commune d’arrivée perçoit l’impôt communal pour toute l’année. Un déménagement entre communes fribourgeoises répartit l’impôt communal entre elles selon la durée du domicile. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      de: 'Ein Zuzug aus einem anderen Kanton ändert nichts: Freiburg besteuert dein ganzes Jahr, und deine Zuzugsgemeinde erhebt die Gemeindesteuer dafür. Ein Umzug zwischen Freiburger Gemeinden teilt die Gemeindesteuer nach der Wohndauer auf. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+      it: 'Arrivare da un altro Cantone non cambia niente: Friburgo ti tassa per tutto l’anno, e il tuo Comune d’arrivo riscuote l’imposta comunale per tutto l’anno. Un trasloco tra Comuni friburghesi ripartisce l’imposta comunale tra di loro secondo il tempo passato in ciascuno. Arrivare dall’estero, o lasciare la Svizzera, significa che qui hai pagato le imposte solo per una parte dell’anno.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=4'
+      label:
+        en: 'Fribourg tax guide 2025, p. 4: moving during the year'
+        fr: 'Instructions générales 2025, p. 4 : Déplacement de domicile'
+        de: 'Wegleitung Freiburg 2025, S. 4: Wohnsitzwechsel, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 4: trasloco nel corso dell’anno'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+      de: 'Bist du 2026 umgezogen?'
+      it: 'Hai traslocato nel 2026?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein', it: 'No' } }
+      - value: within_fr
+        label:
+          {
+            en: 'Yes, from another Fribourg commune',
+            fr: 'Oui, depuis une autre commune fribourgeoise',
+            de: 'Ja, aus einer anderen Freiburger Gemeinde',
+            it: 'Sì, da un altro Comune friburghese',
+          }
+        notSupported:
+          {
+            en: 'A move between Fribourg communes during the year (the communal tax is shared between them)',
+            fr: 'Un déménagement entre communes fribourgeoises en cours d’année (l’impôt communal est réparti entre elles)',
+            de: 'Ein Umzug zwischen Freiburger Gemeinden während des Jahres (die Gemeindesteuer wird zwischen ihnen aufgeteilt)',
+            it: 'Un trasloco tra Comuni friburghesi nel corso dell’anno (l’imposta comunale viene ripartita tra di loro)',
+          }
+      - value: from_other_canton
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            de: 'Ja, aus einem anderen Kanton',
+            it: 'Sì, da un altro Cantone',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            de: 'Zuzug aus einem anderen Kanton',
+            it: 'Arrivo da un altro Cantone',
+          }
+      - value: from_abroad
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            de: 'Ja, ich bin aus dem Ausland zugezogen',
+            it: 'Sì, sono arrivato o arrivata dall’estero',
+          }
+        notSupported:
+          {
+            en: 'Arriving from abroad during the year',
+            fr: 'Une arrivée de l’étranger en cours d’année',
+            de: 'Ein Zuzug aus dem Ausland während des Jahres',
+            it: 'L’arrivo dall’estero nel corso dell’anno',
+          }
+      - value: leaving_switzerland
+        label:
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+            it: 'Ho lasciato o sto per lasciare la Svizzera',
+          }
+        notSupported:
+          {
+            en: 'Leaving Switzerland',
+            fr: 'Un départ de Suisse',
+            de: 'Ein Wegzug ins Ausland',
+            it: 'La partenza dalla Svizzera',
+          }
+
+  # Church tax (impôt ecclésiastique): the parish's coefficients on income and wealth, in percent of
+  # the cantonal base tax (fr-2025-guide-instructions-generales p. 46; the canton's parish tables).
+  # Two churches levy it in every commune, the Roman Catholic and the Evangelical Reformed. Opt-in:
+  # Taxpresso adds it only for members. Spouses of different churches: not computed
+  # (packages/rules-fr, NOTE.churchMixed).
+  - id: church
+    key: fr.church
+    type: choice
+    perPerson: true
+    explain:
+      en: 'Members of the Roman Catholic or Evangelical Reformed church pay church tax (impôt ecclésiastique) at their parish’s coefficients. Taxpresso adds it only for members.'
+      fr: 'Les membres de l’Église catholique romaine ou évangélique réformée paient l’impôt ecclésiastique selon les coefficients de leur paroisse. Taxpresso ne l’ajoute que pour les membres.'
+      de: 'Mitglieder der römisch-katholischen oder der evangelisch-reformierten Kirche zahlen Kirchensteuer (impôt ecclésiastique) nach den Steuerfüssen ihrer Pfarrei. Taxpresso rechnet sie nur für Mitglieder dazu.'
+      it: 'I membri della Chiesa cattolica romana o evangelica riformata pagano l’imposta di culto (impôt ecclésiastique) secondo i moltiplicatori della loro parrocchia. Taxpresso la aggiunge solo per chi ne è membro.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=46'
+      label:
+        en: 'Fribourg tax guide 2025, p. 46: communal and church tax'
+        fr: 'Instructions générales 2025, p. 46 : Impôt communal et ecclésiastique'
+        de: 'Wegleitung Freiburg 2025, S. 46: Gemeinde- und Kirchensteuer, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 46: imposta comunale e imposta di culto'
+    text:
+      p1:
+        en: 'On 31 December 2026, were you a member of one of these churches?'
+        fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces Églises ?'
+        de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026, eri membro di una di queste Chiese?'
+      p2:
+        en: 'On 31 December 2026, was your spouse or partner a member of one of these churches?'
+        fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces Églises ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026, il tuo coniuge o partner era membro di una di queste Chiese?'
+    help:
+      en: 'Another religion, or none, pays no church tax.'
+      fr: 'Une autre religion, ou aucune, ne paie pas d’impôt ecclésiastique.'
+      de: 'Eine andere Religion oder keine zahlt keine Kirchensteuer.'
+      it: 'Con un’altra religione, o nessuna, non si paga l’imposta di culto.'
+    options:
+      - value: catholic
+        label:
+          {
+            en: 'Roman Catholic (catholique romaine)',
+            fr: 'Catholique romaine',
+            de: 'Römisch-katholisch (catholique romaine)',
+            it: 'Cattolica romana (catholique romaine)',
+          }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch', it: 'Chiesa cattolica' }
+      - value: reformed
+        label:
+          {
+            en: 'Evangelical Reformed (évangélique réformée)',
+            fr: 'Évangélique réformée',
+            de: 'Evangelisch-reformiert (évangélique réformée)',
+            it: 'Evangelica riformata (évangélique réformée)',
+          }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert', it: 'Chiesa riformata' }
+      - value: none
+        label:
+          {
+            en: 'None of these',
+            fr: 'Aucune de ces Églises',
+            de: 'Keine davon',
+            it: 'Nessuna di queste',
+          }
+
+  # In 15 communes the parishes of one church levy different coefficients (the canton's 2026 parish
+  # tables, fr-2026-parish-coefficients-catholic-opendata and -reformed-opendata): asked only there,
+  # of a member of that church; elsewhere the commune's parish applies. The options are
+  # packages/rules-fr's parishOptions(2026), each offered only in its own commune for its church; a
+  # test keeps them equal. The names are the tables'.
+  - id: parish
+    key: fr.parish
+    type: choice
+    when:
+      any:
+        - all:
+            - key: profile.commune
+              in:
+                [
+                  '2113',
+                  '2114',
+                  '2220',
+                  '2236',
+                  '2239',
+                  '2262',
+                  '2293',
+                  '2295',
+                  '2296',
+                  '2304',
+                  '2305',
+                  '2306',
+                ]
+            - { key: fr.church, in: [catholic], anyPerson: true }
+        - all:
+            - { key: profile.commune, in: ['2262', '2275', '2293'] }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+    explain:
+      en: 'Your commune has several parishes of your church, with different coefficients. Choose the parish you belonged to on 31 December.'
+      fr: 'Votre commune compte plusieurs paroisses de votre Église, avec des coefficients différents. Choisissez la paroisse dont vous faisiez partie au 31 décembre.'
+      de: 'Deine Gemeinde hat mehrere Pfarreien deiner Kirche, mit verschiedenen Steuerfüssen. Wähl die Pfarrei, zu der du am 31. Dezember gehört hast.'
+      it: 'Il tuo Comune ha più parrocchie della tua Chiesa, con moltiplicatori diversi. Scegli la parrocchia a cui appartenevi il 31 dicembre.'
+    learnMore:
+      url: 'https://www.fr.ch/impots/personnes-physiques/coefficients-communaux-et-paroisses'
+      label:
+        en: 'Fribourg: communal and parish tax coefficients'
+        fr: 'Coefficients communaux et paroisses'
+        de: 'Freiburg: Gemeinde- und Pfarreisteuerfüsse, auf Französisch'
+        it: 'Friburgo: moltiplicatori d’imposta dei Comuni e delle parrocchie'
+    text:
+      en: 'Which parish did you belong to on 31 December 2026?'
+      fr: 'De quelle paroisse faisiez-vous partie au 31 décembre 2026 ?'
+      de: 'Zu welcher Pfarrei hast du am 31. Dezember 2026 gehört?'
+      it: 'A quale parrocchia appartenevi il 31 dicembre 2026?'
+    help:
+      en: 'Not sure? Your parish or your commune knows.'
+      fr: 'Un doute ? Votre paroisse ou votre commune le sait.'
+      de: 'Unsicher? Deine Pfarrei oder deine Gemeinde weiss es.'
+      it: 'Hai un dubbio? Lo sa la tua parrocchia o il tuo Comune.'
+    options:
+      - value: '2113:catholic:Le Crêt-Progens'
+        label:
+          {
+            en: 'Vuisternens-devant-Romont: Le Crêt-Progens',
+            fr: 'Vuisternens-devant-Romont : Le Crêt-Progens',
+            de: 'Vuisternens-devant-Romont: Le Crêt-Progens',
+            it: 'Vuisternens-devant-Romont: Le Crêt-Progens',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2113' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2113:catholic:Sommentier'
+        label:
+          {
+            en: 'Vuisternens-devant-Romont: Sommentier',
+            fr: 'Vuisternens-devant-Romont : Sommentier',
+            de: 'Vuisternens-devant-Romont: Sommentier',
+            it: 'Vuisternens-devant-Romont: Sommentier',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2113' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2113:catholic:Vuisternens-La Joux'
+        label:
+          {
+            en: 'Vuisternens-devant-Romont: Vuisternens-La Joux',
+            fr: 'Vuisternens-devant-Romont : Vuisternens-La Joux',
+            de: 'Vuisternens-devant-Romont: Vuisternens-La Joux',
+            it: 'Vuisternens-devant-Romont: Vuisternens-La Joux',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2113' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2114:catholic:Villarsiviriaux'
+        label:
+          {
+            en: 'Villorsonnens: Villarsiviriaux',
+            fr: 'Villorsonnens : Villarsiviriaux',
+            de: 'Villorsonnens: Villarsiviriaux',
+            it: 'Villorsonnens: Villarsiviriaux',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2114' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2114:catholic:Villaz'
+        label:
+          {
+            en: 'Villorsonnens: Villaz',
+            fr: 'Villorsonnens : Villaz',
+            de: 'Villorsonnens: Villaz',
+            it: 'Villorsonnens: Villaz',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2114' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2114:catholic:Orsonnens'
+        label:
+          {
+            en: 'Villorsonnens: Orsonnens',
+            fr: 'Villorsonnens : Orsonnens',
+            de: 'Villorsonnens: Orsonnens',
+            it: 'Villorsonnens: Orsonnens',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2114' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2220:catholic:Treyvaux'
+        label:
+          {
+            en: 'Le Mouret: Treyvaux',
+            fr: 'Le Mouret : Treyvaux',
+            de: 'Le Mouret: Treyvaux',
+            it: 'Le Mouret: Treyvaux',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2220' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2220:catholic:Le Mouret'
+        label:
+          {
+            en: 'Le Mouret: Le Mouret',
+            fr: 'Le Mouret : Le Mouret',
+            de: 'Le Mouret: Le Mouret',
+            it: 'Le Mouret: Le Mouret',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2220' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2236:catholic:Corpataux-Magnedens'
+        label:
+          {
+            en: 'Gibloux: Corpataux-Magnedens',
+            fr: 'Gibloux : Corpataux-Magnedens',
+            de: 'Gibloux: Corpataux-Magnedens',
+            it: 'Gibloux: Corpataux-Magnedens',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2236' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2236:catholic:Le Glèbe'
+        label:
+          {
+            en: 'Gibloux: Le Glèbe',
+            fr: 'Gibloux : Le Glèbe',
+            de: 'Gibloux: Le Glèbe',
+            it: 'Gibloux: Le Glèbe',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2236' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2236:catholic:Vuisternens-en-Ogoz'
+        label:
+          {
+            en: 'Gibloux: Vuisternens-en-Ogoz',
+            fr: 'Gibloux : Vuisternens-en-Ogoz',
+            de: 'Gibloux: Vuisternens-en-Ogoz',
+            it: 'Gibloux: Vuisternens-en-Ogoz',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2236' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2236:catholic:Rossens'
+        label:
+          {
+            en: 'Gibloux: Rossens',
+            fr: 'Gibloux : Rossens',
+            de: 'Gibloux: Rossens',
+            it: 'Gibloux: Rossens',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2236' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2236:catholic:Farvagny'
+        label:
+          {
+            en: 'Gibloux: Farvagny',
+            fr: 'Gibloux : Farvagny',
+            de: 'Gibloux: Farvagny',
+            it: 'Gibloux: Farvagny',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2236' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2239:catholic:Ponthaux'
+        label:
+          {
+            en: 'Grolley-Ponthaux: Ponthaux',
+            fr: 'Grolley-Ponthaux : Ponthaux',
+            de: 'Grolley-Ponthaux: Ponthaux',
+            it: 'Grolley-Ponthaux: Ponthaux',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2239' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2239:catholic:Grolley'
+        label:
+          {
+            en: 'Grolley-Ponthaux: Grolley',
+            fr: 'Grolley-Ponthaux : Grolley',
+            de: 'Grolley-Ponthaux: Grolley',
+            it: 'Grolley-Ponthaux: Grolley',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2239' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2262:catholic:Gurmels'
+        label:
+          {
+            en: 'Gurmels: Gurmels',
+            fr: 'Gurmels : Gurmels',
+            de: 'Gurmels: Gurmels',
+            it: 'Gurmels: Gurmels',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2262' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2262:catholic:Murten'
+        label:
+          {
+            en: 'Gurmels: Murten',
+            fr: 'Gurmels : Murten',
+            de: 'Gurmels: Murten',
+            it: 'Gurmels: Murten',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2262' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2262:reformed:Cordast'
+        label:
+          {
+            en: 'Gurmels: Cordast',
+            fr: 'Gurmels : Cordast',
+            de: 'Gurmels: Cordast',
+            it: 'Gurmels: Cordast',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2262' }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+      - value: '2262:reformed:Ferenbalm'
+        label:
+          {
+            en: 'Gurmels: Ferenbalm',
+            fr: 'Gurmels : Ferenbalm',
+            de: 'Gurmels: Ferenbalm',
+            it: 'Gurmels: Ferenbalm',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2262' }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+      - value: '2275:reformed:Murten'
+        label:
+          {
+            en: 'Murten: Murten',
+            fr: 'Murten : Murten',
+            de: 'Murten: Murten',
+            it: 'Murten: Murten',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2275' }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+      - value: '2275:reformed:Ferenbalm'
+        label:
+          {
+            en: 'Murten: Ferenbalm',
+            fr: 'Murten : Ferenbalm',
+            de: 'Murten: Ferenbalm',
+            it: 'Murten: Ferenbalm',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2275' }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+      - value: '2275:reformed:Meyriez'
+        label:
+          {
+            en: 'Murten: Meyriez',
+            fr: 'Murten : Meyriez',
+            de: 'Murten: Meyriez',
+            it: 'Murten: Meyriez',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2275' }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+      - value: '2293:catholic:Düdingen'
+        label:
+          {
+            en: 'Düdingen: Düdingen',
+            fr: 'Düdingen : Düdingen',
+            de: 'Düdingen: Düdingen',
+            it: 'Düdingen: Düdingen',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2293' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2293:catholic:Tafers'
+        label:
+          {
+            en: 'Düdingen: Tafers',
+            fr: 'Düdingen : Tafers',
+            de: 'Düdingen: Tafers',
+            it: 'Düdingen: Tafers',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2293' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2293:reformed:Düdingen'
+        label:
+          {
+            en: 'Düdingen: Düdingen',
+            fr: 'Düdingen : Düdingen',
+            de: 'Düdingen: Düdingen',
+            it: 'Düdingen: Düdingen',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2293' }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+      - value: '2293:reformed:St. Antoni'
+        label:
+          {
+            en: 'Düdingen: St. Antoni',
+            fr: 'Düdingen : St. Antoni',
+            de: 'Düdingen: St. Antoni',
+            it: 'Düdingen: St. Antoni',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2293' }
+            - { key: fr.church, in: [reformed], anyPerson: true }
+      - value: '2295:catholic:Bösingen'
+        label:
+          {
+            en: 'Bösingen: Bösingen',
+            fr: 'Bösingen : Bösingen',
+            de: 'Bösingen: Bösingen',
+            it: 'Bösingen: Bösingen',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2295' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2295:catholic:Schmitten'
+        label:
+          {
+            en: 'Bösingen: Schmitten',
+            fr: 'Bösingen : Schmitten',
+            de: 'Bösingen: Schmitten',
+            it: 'Bösingen: Schmitten',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2295' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2296:catholic:Heitenried'
+        label:
+          {
+            en: 'Heitenried: Heitenried',
+            fr: 'Heitenried : Heitenried',
+            de: 'Heitenried: Heitenried',
+            it: 'Heitenried: Heitenried',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2296' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2296:catholic:St. Antoni'
+        label:
+          {
+            en: 'Heitenried: St. Antoni',
+            fr: 'Heitenried : St. Antoni',
+            de: 'Heitenried: St. Antoni',
+            it: 'Heitenried: St. Antoni',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2296' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2304:catholic:St. Ursen'
+        label:
+          {
+            en: 'St. Ursen: St. Ursen',
+            fr: 'St. Ursen : St. Ursen',
+            de: 'St. Ursen: St. Ursen',
+            it: 'St. Ursen: St. Ursen',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2304' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2304:catholic:Rechthalten-Brünisried'
+        label:
+          {
+            en: 'St. Ursen: Rechthalten-Brünisried',
+            fr: 'St. Ursen : Rechthalten-Brünisried',
+            de: 'St. Ursen: Rechthalten-Brünisried',
+            it: 'St. Ursen: Rechthalten-Brünisried',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2304' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2304:catholic:Alterswil'
+        label:
+          {
+            en: 'St. Ursen: Alterswil',
+            fr: 'St. Ursen : Alterswil',
+            de: 'St. Ursen: Alterswil',
+            it: 'St. Ursen: Alterswil',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2304' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2305:catholic:Schmitten'
+        label:
+          {
+            en: 'Schmitten (FR): Schmitten',
+            fr: 'Schmitten (FR) : Schmitten',
+            de: 'Schmitten (FR): Schmitten',
+            it: 'Schmitten (FR): Schmitten',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2305' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2305:catholic:St. Antoni'
+        label:
+          {
+            en: 'Schmitten (FR): St. Antoni',
+            fr: 'Schmitten (FR) : St. Antoni',
+            de: 'Schmitten (FR): St. Antoni',
+            it: 'Schmitten (FR): St. Antoni',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2305' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2305:catholic:Tafers'
+        label:
+          {
+            en: 'Schmitten (FR): Tafers',
+            fr: 'Schmitten (FR) : Tafers',
+            de: 'Schmitten (FR): Tafers',
+            it: 'Schmitten (FR): Tafers',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2305' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2306:catholic:Schmitten'
+        label:
+          {
+            en: 'Tafers: Schmitten',
+            fr: 'Tafers : Schmitten',
+            de: 'Tafers: Schmitten',
+            it: 'Tafers: Schmitten',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2306' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2306:catholic:St. Antoni'
+        label:
+          {
+            en: 'Tafers: St. Antoni',
+            fr: 'Tafers : St. Antoni',
+            de: 'Tafers: St. Antoni',
+            it: 'Tafers: St. Antoni',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2306' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2306:catholic:Tafers'
+        label:
+          {
+            en: 'Tafers: Tafers',
+            fr: 'Tafers : Tafers',
+            de: 'Tafers: Tafers',
+            it: 'Tafers: Tafers',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2306' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2306:catholic:Heitenried'
+        label:
+          {
+            en: 'Tafers: Heitenried',
+            fr: 'Tafers : Heitenried',
+            de: 'Tafers: Heitenried',
+            it: 'Tafers: Heitenried',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2306' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2306:catholic:Alterswil'
+        label:
+          {
+            en: 'Tafers: Alterswil',
+            fr: 'Tafers : Alterswil',
+            de: 'Tafers: Alterswil',
+            it: 'Tafers: Alterswil',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2306' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+      - value: '2306:catholic:Ueberstorf'
+        label:
+          {
+            en: 'Tafers: Ueberstorf',
+            fr: 'Tafers : Ueberstorf',
+            de: 'Tafers: Ueberstorf',
+            it: 'Tafers: Ueberstorf',
+          }
+        when:
+          all:
+            - { key: profile.commune, eq: '2306' }
+            - { key: fr.church, in: [catholic], anyPerson: true }
+
+  # fr-2025-guide-instructions-generales p. 8 (V. Revenu de l'activité: the net salary of box 11 on
+  # 1.110), p. 10 (1.510 to 1.530, loss-of-earnings allowances), p. 14 (3.110 to 3.140, pensions).
+  - use: income_sources
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=8'
+      label:
+        en: 'Fribourg tax guide 2025, p. 8: income from work'
+        fr: 'Instructions générales 2025, p. 8 : Revenu de l’activité'
+        de: 'Wegleitung Freiburg 2025, S. 8: Einkommen aus Erwerbstätigkeit, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 8: reddito da attività lucrativa'
+    options:
+      - {
+          value: salary,
+          label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn', it: 'Un salario' },
+        }
+      - value: replacement_income
+        label:
+          en: 'Unemployment, sickness or accident benefits'
+          fr: 'Des indemnités (chômage, maladie, accident)'
+          de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
+          it: 'Indennità di disoccupazione, malattia o infortunio'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder', it: 'Indennità' }
+      - value: pension
+        label:
+          {
+            en: 'A pension (AVS, AI or pension fund)',
+            fr: 'Une rente (AVS, AI ou caisse de pension)',
+            de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+            it: 'Una rendita (AVS, AI o cassa pensione)',
+          }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente', it: 'Rendita' }
+      - value: alimony
+        label:
+          {
+            en: 'Alimony or child support received',
+            fr: 'Une pension alimentaire reçue',
+            de: 'Erhaltene Unterhaltsbeiträge',
+            it: 'Alimenti o contributi di mantenimento ricevuti',
+          }
+        chip:
+          {
+            en: 'Receives alimony',
+            fr: 'Reçoit une pension',
+            de: 'Erhält Unterhalt',
+            it: 'Riceve alimenti',
+          }
+      - value: self_employment
+        label:
+          {
+            en: 'Income from self-employment',
+            fr: 'Un revenu d’activité indépendante',
+            de: 'Einkommen aus selbständiger Erwerbstätigkeit',
+            it: 'Reddito da attività lucrativa indipendente',
+          }
+        notSupported:
+          {
+            en: 'Self-employment (activité indépendante, codes 1.210 and 1.220)',
+            fr: 'L’activité indépendante (codes 1.210 et 1.220)',
+            de: 'Die selbständige Erwerbstätigkeit (activité indépendante, Codes 1.210 und 1.220)',
+            it: 'L’attività indipendente (activité indépendante, codici 1.210 e 1.220)',
+          }
+
+  # fr-2025-guide-instructions-generales p. 8 (1.110: proven by the salary certificate of each
+  # employer).
+  - use: employers
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=8'
+      label:
+        en: 'Fribourg tax guide 2025, p. 8: salaried work'
+        fr: 'Instructions générales 2025, p. 8 : Activité salariée principale'
+        de: 'Wegleitung Freiburg 2025, S. 8: unselbständige Erwerbstätigkeit, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 8: attività dipendente'
+    help:
+      en: 'Each one gives you a salary certificate (certificat de salaire).'
+      fr: 'Chacun vous remet un certificat de salaire.'
+      de: 'Jeder gibt dir einen Lohnausweis (certificat de salaire).'
+      it: 'Ognuno ti dà un certificato di salario (certificat de salaire).'
+
+  # Tax at source (impôt à la source): an ordinary assessment afterwards (TOU) automatically above a
+  # salary threshold, or on request by 31 March of the next year, which can't be withdrawn
+  # (fr-2026-source-tax-ordonnance art. 11, 12). Not covered by packages/rules-fr.
+  - use: taxed_at_source
+    yesNotSupported:
+      en: 'Tax at source in Fribourg (impôt à la source) and the ordinary assessment that follows it (taxation ordinaire ultérieure, TOU)'
+      fr: 'L’impôt à la source dans le canton de Fribourg et la taxation ordinaire ultérieure (TOU) qui le suit'
+      de: 'Die Quellensteuer im Kanton Freiburg (impôt à la source) und die nachträgliche ordentliche Veranlagung (taxation ordinaire ultérieure, TOU)'
+      it: 'L’imposta alla fonte nel Cantone di Friburgo (impôt à la source) e la tassazione ordinaria ulteriore che la segue (taxation ordinaire ultérieure, TOU)'
+    learnMore:
+      url: 'https://www.fr.ch/impots/impot-a-la-source'
+      label:
+        en: 'Fribourg: tax at source'
+        fr: 'Impôt à la source'
+        de: 'Freiburg: Quellensteuer, auf Französisch'
+        it: 'Friburgo: imposta alla fonte'
+    help:
+      en: 'If so, it shows on the salary certificate (certificat de salaire).'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire.'
+      de: 'Wenn ja, steht es auf dem Lohnausweis (certificat de salaire).'
+      it: 'Se è così, lo trovi sul certificato di salario (certificat de salaire).'
+
+  # Travel to work (frais de transport, code 2.110): fr-2025-guide-instructions-generales p. 11 (public
+  # transport, what it cost; a bike or moped, a flat amount; a car or motorbike, what public transport
+  # would have cost, or per km with no usable public transport), up to the cantonal limit; the federal
+  # one, p. 47. No "over 2 hours a day" choice: only Geneva's meal rule needs it.
+  - use: commute
+    explain:
+      en: 'Getting to work is deducted as travel costs (frais de transport, code 2.110), for the cantonal tax and, up to its own yearly limit, the federal tax. How you get there decides how they are counted.'
+      fr: 'Le trajet pour le travail se déduit comme frais de transport (code 2.110), pour l’impôt cantonal et, jusqu’à sa propre limite annuelle, pour l’impôt fédéral. Votre moyen de transport décide comment ils sont comptés.'
+      de: 'Der Arbeitsweg wird als Fahrkosten (frais de transport, Code 2.110) abgezogen, bei der Kantonssteuer und, bis zu ihrem eigenen jährlichen Höchstbetrag, bei der Bundessteuer. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+      it: 'Il tragitto per andare al lavoro si deduce come spese di trasporto (frais de transport, codice 2.110), per l’imposta cantonale e, fino al suo limite annuo, per l’imposta federale. Il mezzo che usi decide come vengono calcolate.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=11'
+      label:
+        en: 'Fribourg tax guide 2025, p. 11: travel to work'
+        fr: 'Instructions générales 2025, p. 11 : Frais de transport'
+        de: 'Wegleitung Freiburg 2025, S. 11: Fahrkosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 11: tragitto casa-lavoro'
+    help:
+      en: 'Choose how you went on most work days. On the return: code 2.110, frais de transport (annex 03 gives the details).'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur la déclaration : code 2.110, frais de transport (l’annexe 03 en donne le détail).'
+      de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf der Steuererklärung: Code 2.110, frais de transport (die Beilage 03 gibt die Einzelheiten).'
+      it: 'Scegli come ci andavi nella maggior parte dei giorni di lavoro. Nella dichiarazione: codice 2.110, frais de transport (l’allegato 03 riporta i dettagli).'
+    options:
+      - value: public_transport
+        label:
+          {
+            en: 'Public transport',
+            fr: 'Transports publics',
+            de: 'Öffentlicher Verkehr',
+            it: 'Trasporti pubblici',
+          }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto', it: 'Auto' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+            de: 'Motorrad oder Roller mit weissem Kontrollschild',
+            it: 'Moto o scooter con targa bianca',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+            de: 'Velo, E-Bike oder Mofa mit gelbem Kontrollschild',
+            it: 'Bicicletta, e-bike o ciclomotore con targa gialla',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss', it: 'A piedi' } }
+      - value: mostly_home
+        label:
+          {
+            en: 'From home, almost every day',
+            fr: 'Depuis chez moi, presque tous les jours',
+            de: 'Von zu Hause, fast jeden Tag',
+            it: 'Da casa, quasi tutti i giorni',
+          }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice', it: 'Telelavoro' }
+
+  - use: commute_transit_cost
+    explain:
+      en: 'You deduct what public transport to work cost you, 2nd class (frais de transport, code 2.110), for the cantonal tax and, up to its own yearly limit, the federal tax.'
+      fr: 'Vous déduisez ce que les transports publics vous ont coûté pour aller au travail, en 2e classe (frais de transport, code 2.110), pour l’impôt cantonal et, jusqu’à sa propre limite annuelle, pour l’impôt fédéral.'
+      de: 'Du ziehst ab, was dich der öffentliche Verkehr zur Arbeit gekostet hat, 2. Klasse (frais de transport, Code 2.110), bei der Kantonssteuer und, bis zu ihrem eigenen jährlichen Höchstbetrag, bei der Bundessteuer.'
+      it: 'Deduci quanto ti sono costati i trasporti pubblici per andare al lavoro, in seconda classe (frais de transport, codice 2.110), per l’imposta cantonale e, fino al suo limite annuo, per l’imposta federale.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=11'
+      label:
+        en: 'Fribourg tax guide 2025, p. 11: travel to work'
+        fr: 'Instructions générales 2025, p. 11 : Frais de transport'
+        de: 'Wegleitung Freiburg 2025, S. 11: Fahrkosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 11: tragitto casa-lavoro'
+
+  # fr-2025-guide-instructions-generales p. 11: per km only with proof that there is no public
+  # transport or it can't be used (disability, distance, unsuitable timetable).
+  - use: commute_transit_usable
+    explain:
+      en: 'A driver deducts what public transport would have cost. The kilometres count only if you can show there is no public transport for the trip or you can’t use it: a disability, the distance to a stop, or a timetable that doesn’t fit.'
+      fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics. Les kilomètres ne comptent que si vous prouvez qu’il n’y a pas de transports publics pour ce trajet ou que vous ne pouvez pas les utiliser : infirmité, éloignement, horaire défavorable.'
+      de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte. Die Kilometer zählen nur, wenn du zeigst, dass es für diesen Weg keinen öffentlichen Verkehr gibt oder du ihn nicht benutzen kannst: eine Behinderung, die Entfernung zur Haltestelle oder ein ungünstiger Fahrplan.'
+      it: 'Chi guida deduce quanto sarebbero costati i trasporti pubblici. I chilometri contano solo se puoi dimostrare che per quel tragitto non ci sono trasporti pubblici o che non puoi usarli: una disabilità, la distanza da una fermata o un orario che non va bene.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=11'
+      label:
+        en: 'Fribourg tax guide 2025, p. 11: travel to work'
+        fr: 'Instructions générales 2025, p. 11 : Frais de transport'
+        de: 'Wegleitung Freiburg 2025, S. 11: Fahrkosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 11: tragitto casa-lavoro'
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, I could have used public transport',
+            fr: 'Oui, j’aurais pu prendre les transports publics',
+            de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+            it: 'Sì, avrei potuto usare i trasporti pubblici',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No: none for the trip, a disability, the distance to a stop, or the timetable',
+            fr: 'Non : aucun pour ce trajet, une infirmité, l’éloignement ou l’horaire',
+            de: 'Nein: keiner für diesen Weg, eine Behinderung, die Entfernung oder der Fahrplan',
+            it: 'No: non ce ne sono per quel tragitto, una disabilità, la distanza da una fermata o l’orario',
+          }
+
+  - use: commute_transit_equivalent
+    explain:
+      en: 'That price is what you deduct for driving to work (frais de transport, code 2.110), for the cantonal tax and, up to its own yearly limit, the federal tax.'
+      fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule (frais de transport, code 2.110), pour l’impôt cantonal et, jusqu’à sa propre limite annuelle, pour l’impôt fédéral.'
+      de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab (frais de transport, Code 2.110), bei der Kantonssteuer und, bis zu ihrem eigenen jährlichen Höchstbetrag, bei der Bundessteuer.'
+      it: 'È questo prezzo che deduci per andare al lavoro con il tuo veicolo (frais de transport, codice 2.110), per l’imposta cantonale e, fino al suo limite annuo, per l’imposta federale.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=11'
+      label:
+        en: 'Fribourg tax guide 2025, p. 11: travel to work'
+        fr: 'Instructions générales 2025, p. 11 : Frais de transport'
+        de: 'Wegleitung Freiburg 2025, S. 11: Fahrkosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 11: tragitto casa-lavoro'
+
+  - use: commute_distance
+    explain:
+      en: 'With a reason to drive, Fribourg counts a rate per kilometre, there and back once a day, lower for a long yearly mileage; the federal tax counts its own, each up to a yearly limit.'
+      fr: 'Avec une raison de prendre le véhicule, Fribourg compte un montant par kilomètre, un aller et retour par jour, plus bas pour un long kilométrage annuel ; l’impôt fédéral compte le sien, chacun jusqu’à une limite annuelle.'
+      de: 'Mit einem Grund fürs Fahren zählt Freiburg einen Betrag pro Kilometer, einmal hin und zurück pro Tag, tiefer bei vielen Kilometern im Jahr; die Bundessteuer zählt ihren eigenen, jeweils bis zu einem jährlichen Höchstbetrag.'
+      it: 'Se hai un motivo per usare il veicolo, Friburgo conta un importo per chilometro, andata e ritorno una volta al giorno, più basso se percorri molti chilometri all’anno; l’imposta federale conta il proprio, ciascuno fino a un limite annuo.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=11'
+      label:
+        en: 'Fribourg tax guide 2025, p. 11: travel by car'
+        fr: 'Instructions générales 2025, p. 11 : Frais de transport'
+        de: 'Wegleitung Freiburg 2025, S. 11: Fahrkosten mit dem Auto, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 11: tragitto in auto'
+
+  # fr-2025-guide-instructions-generales p. 12 (220 working days a year; none for telework days).
+  - use: commute_drive_days
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=12'
+      label:
+        en: 'Fribourg tax guide 2025, p. 12: working days'
+        fr: 'Instructions générales 2025, p. 12 : Frais de transport et repas'
+        de: 'Wegleitung Freiburg 2025, S. 12: Arbeitstage, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 12: giorni lavorativi'
+    help:
+      en: 'The days you actually worked there; a full year of work counts 220 days. Leave out holidays, sick days and days worked from home.'
+      fr: 'Les jours effectivement travaillés sur place ; une année entière compte 220 jours. Sans les vacances, les jours de maladie et les jours de télétravail.'
+      de: 'Die effektiven Arbeitstage am Arbeitsort; ein ganzes Jahr zählt 220 Tage. Ohne Ferien, Krankheitstage und Tage im Homeoffice.'
+      it: 'I giorni in cui hai effettivamente lavorato sul posto; un anno intero di lavoro conta 220 giorni. Senza le vacanze, i giorni di malattia e i giorni di telelavoro.'
+
+  # fr-2025-guide-instructions-generales p. 12 (2.120: lunch away from home, a fixed amount per day up
+  # to a yearly limit, half with a canteen or meal vouchers; none for telework days).
+  - use: meal_days
+    explain:
+      en: 'Lunch away from home because of work counts as a fixed amount per day, up to a yearly limit (repas hors du domicile, code 2.120), for both taxes; half of it when your employer pays part of the meal (box G of your salary certificate).'
+      fr: 'Le repas de midi pris hors du domicile à cause du travail compte pour un montant fixe par jour, jusqu’à une limite annuelle (repas hors du domicile, code 2.120), pour les deux impôts ; la moitié quand l’employeur paie une partie du repas (case G du certificat de salaire).'
+      de: 'Das Mittagessen auswärts wegen der Arbeit zählt mit einem festen Betrag pro Tag, bis zu einem jährlichen Höchstbetrag (repas hors du domicile, Code 2.120), bei beiden Steuern; die Hälfte, wenn dein Arbeitgeber einen Teil bezahlt (Feld G des Lohnausweises).'
+      it: 'Il pranzo fuori casa per motivi di lavoro conta come un importo fisso al giorno, fino a un limite annuo (repas hors du domicile, codice 2.120), per entrambe le imposte; la metà quando il tuo datore di lavoro paga una parte del pasto (casella G del tuo certificato di salario).'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=12'
+      label:
+        en: 'Fribourg tax guide 2025, p. 12: lunch away from home'
+        fr: 'Instructions générales 2025, p. 12 : Repas hors du domicile'
+        de: 'Wegleitung Freiburg 2025, S. 12: Mahlzeiten auswärts, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 12: pranzo fuori casa'
+
+  # fr-2025-guide-instructions-generales p. 15 and 16 (annex 01, état des titres: accounts, securities
+  # and other investments, the children's included, code 3.210).
+  - use: banks
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=15'
+      label:
+        en: 'Fribourg tax guide 2025, p. 15: securities and accounts'
+        fr: 'Instructions générales 2025, p. 15 : Titres et autres placements de capitaux'
+        de: 'Wegleitung Freiburg 2025, S. 15: Wertschriften und Guthaben, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 15: titoli e conti'
+    help:
+      en: 'Count PostFinance too, your minor children’s accounts, and online or foreign brokers. On the return: annex 01, état des titres, code 3.210.'
+      fr: 'Comptez aussi PostFinance, les comptes de vos enfants mineurs et les courtiers en ligne ou étrangers. Sur la déclaration : annexe 01, état des titres, code 3.210.'
+      de: 'Zähl auch PostFinance, die Konten deiner minderjährigen Kinder und Online- oder ausländische Broker. Auf der Steuererklärung: Beilage 01, état des titres (Wertschriftenverzeichnis), Code 3.210.'
+      it: 'Conta anche PostFinance, i conti dei tuoi figli minorenni e i broker online o esteri. Nella dichiarazione: allegato 01, état des titres, codice 3.210.'
+
+  # fr-2025-guide-instructions-generales p. 16 (crypto-monnaies in annex 01).
+  - use: crypto
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=16'
+      label:
+        en: 'Fribourg tax guide 2025, p. 16: what to declare in annex 01, crypto-assets included'
+        fr: 'Instructions générales 2025, p. 16 : Ce qu’il faut déclarer dans l’annexe 01'
+        de: 'Wegleitung Freiburg 2025, S. 16: was in die Beilage 01 gehört, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 16: cosa dichiarare nell’allegato 01, criptovalute comprese'
+
+  # fr-2025-guide-instructions-generales p. 24 (4.110: the flat amounts per insured person; those
+  # with a premium reduction deduct only the difference between the flat amount and the subsidy the
+  # ECAS paid; unknown, the tax office counts it itself).
+  - id: health_subsidy
+    key: fr.health_subsidy
+    type: money
+    explain:
+      en: 'Fribourg deducts a flat amount for each insured person’s health and accident insurance (caisse-maladie et accidents, code 4.110), whatever premiums you paid, less any premium subsidy (réduction des primes) you received.'
+      fr: 'Fribourg déduit un montant forfaitaire pour l’assurance-maladie et accidents de chaque personne assurée (caisse-maladie et accidents, code 4.110), quelles que soient les primes payées, moins la réduction des primes que vous avez reçue.'
+      de: 'Freiburg zieht für die Kranken- und Unfallversicherung jeder versicherten Person einen Pauschalbetrag ab (caisse-maladie et accidents, Code 4.110), egal welche Prämien du bezahlt hast, abzüglich einer erhaltenen Prämienverbilligung (réduction des primes).'
+      it: 'Friburgo deduce un importo forfettario per l’assicurazione malattia e infortuni di ogni persona assicurata (caisse-maladie et accidents, codice 4.110), indipendentemente dai premi che hai pagato, meno l’eventuale riduzione dei premi (réduction des primes) che hai ricevuto.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=24'
+      label:
+        en: 'Fribourg tax guide 2025, p. 24: health and accident insurance'
+        fr: 'Instructions générales 2025, p. 24 : Caisse-maladie et accidents'
+        de: 'Wegleitung Freiburg 2025, S. 24: Kranken- und Unfallversicherung, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 24: assicurazione malattia e infortuni'
+    text:
+      en: 'How much premium subsidy (réduction des primes) did your household receive in 2026?'
+      fr: 'Combien de réduction des primes votre ménage a-t-il reçue en 2026 ?'
+      de: 'Wie viel Prämienverbilligung (réduction des primes) hat dein Haushalt 2026 erhalten?'
+      it: 'Quanto ha ricevuto la tua economia domestica nel 2026 come riduzione dei premi (réduction des primes)?'
+    help:
+      en: 'In CHF, 0 if none. The ECAS pays it to your health insurer: its decision or your insurer’s statement shows it. Your answer replaces any Taxpresso read from your documents.'
+      fr: 'En CHF, 0 si aucune. L’ECAS la verse à votre caisse-maladie : sa décision ou le décompte de votre caisse l’indique. Votre réponse remplace celle que Taxpresso aurait lue dans vos documents.'
+      de: 'In CHF, 0, wenn keine. Die ECAS zahlt sie deiner Krankenkasse: Der Entscheid der ECAS oder die Abrechnung deiner Kasse zeigt sie. Deine Antwort ersetzt, was Taxpresso aus deinen Dokumenten gelesen hat.'
+      it: 'In CHF, 0 se nessuna. L’ECAS la versa alla tua cassa malati: lo indica la sua decisione o il conteggio della tua cassa malati. La tua risposta sostituisce l’importo che Taxpresso ha eventualmente letto nei tuoi documenti.'
+
+  # fr-2025-guide-instructions-generales p. 24 (4.120: life insurance with or without a surrender
+  # value, pure-risk, daily-allowance and life annuity insurance not deducted elsewhere, up to a
+  # limit; rubric A of the last page).
+  - id: life_insurance
+    key: fr.life_insurance
+    type: money
+    explain:
+      en: 'Fribourg deducts premiums for life insurance, pure-risk insurance and daily-allowance insurance up to a limit (autres primes et cotisations, 3e pilier b, code 4.120).'
+      fr: 'Fribourg déduit les primes d’assurance-vie, d’assurance risque pur et d’assurance pour indemnités journalières jusqu’à une limite (autres primes et cotisations, 3e pilier b, code 4.120).'
+      de: 'Freiburg zieht Prämien für Lebens-, Risiko- und Taggeldversicherungen bis zu einem Höchstbetrag ab (autres primes et cotisations, 3e pilier b, Code 4.120).'
+      it: 'Friburgo deduce i premi per l’assicurazione sulla vita, l’assicurazione di rischio puro e l’assicurazione d’indennità giornaliera fino a un limite (autres primes et cotisations, 3e pilier b, codice 4.120).'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=24'
+      label:
+        en: 'Fribourg tax guide 2025, p. 24: other insurance premiums'
+        fr: 'Instructions générales 2025, p. 24 : Autres primes et cotisations (3e pilier b)'
+        de: 'Wegleitung Freiburg 2025, S. 24: übrige Versicherungsprämien, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 24: altri premi assicurativi'
+    text:
+      en: 'How much did your household pay in 2026 for life, pure-risk or daily-allowance insurance?'
+      fr: 'Combien votre ménage a-t-il payé en 2026 pour des assurances-vie, risque pur ou indemnités journalières ?'
+      de: 'Wie viel hat dein Haushalt 2026 für Lebens-, Risiko- oder Taggeldversicherungen bezahlt?'
+      it: 'Quanto ha pagato la tua economia domestica nel 2026 per assicurazioni sulla vita, di rischio puro o d’indennità giornaliera?'
+    help:
+      en: 'In CHF, 0 if none. Not your health insurance (Fribourg deducts a flat amount for it), nor pillar 3a. On the return: rubric A of the last page.'
+      fr: 'En CHF, 0 si aucune. Pas votre caisse-maladie (Fribourg déduit un forfait pour elle), ni le pilier 3a. Sur la déclaration : rubrique A de la dernière page.'
+      de: 'In CHF, 0, wenn keine. Nicht deine Krankenkasse (Freiburg zieht dafür einen Pauschalbetrag ab) und nicht die Säule 3a. Auf der Steuererklärung: Rubrik A der letzten Seite.'
+      it: 'In CHF, 0 se nessuna. Non la tua cassa malati (per quella Friburgo deduce un importo forfettario), né il pilastro 3a. Nella dichiarazione: rubrica A dell’ultima pagina.'
+
+  # fr-2025-guide-instructions-generales p. 25 (4.130: only with the attestation).
+  - use: pillar3a
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=25'
+      label:
+        en: 'Fribourg tax guide 2025, p. 25: pillar 3a'
+        fr: 'Instructions générales 2025, p. 25 : Prévoyance individuelle liée (3e pilier a)'
+        de: 'Wegleitung Freiburg 2025, S. 25: Säule 3a, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 25: pilastro 3a'
+    help:
+      en: 'Your bank or insurer sends an attestation: attach it to your return. On the return: code 4.130, formes reconnues de prévoyance individuelle liée (3e pilier a).'
+      fr: 'Votre banque ou votre assurance vous envoie une attestation : joignez-la à votre déclaration. Sur la déclaration : code 4.130, formes reconnues de prévoyance individuelle liée (3e pilier a).'
+      de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung: Leg sie der Steuererklärung bei. Auf der Steuererklärung: Code 4.130, formes reconnues de prévoyance individuelle liée (Säule 3a).'
+      it: 'La tua banca o la tua assicurazione ti manda un’attestazione: allegala alla dichiarazione. Nella dichiarazione: codice 4.130, formes reconnues de prévoyance individuelle liée (3e pilier a).'
+
+  # fr-2025-guide-instructions-generales p. 25 and 26 (4.140: only buy-ins the salary certificate
+  # doesn't show, box 10.2 being already deducted).
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=25'
+      label:
+        en: 'Fribourg tax guide 2025, p. 25: pension fund buy-ins'
+        fr: 'Instructions générales 2025, p. 25 : Rachats d’années d’assurance'
+        de: 'Wegleitung Freiburg 2025, S. 25: Einkäufe in die Pensionskasse, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 25: riscatti nella cassa pensione'
+    help:
+      en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show (box 10.2). On the return: code 4.140.'
+      fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas (chiffre 10.2). Sur la déclaration : code 4.140.'
+      de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt (Ziffer 10.2). Auf der Steuererklärung: Code 4.140.'
+      it: 'Un versamento volontario oltre ai contributi abituali. Conta solo un riscatto che il tuo certificato di salario non indica (cifra 10.2). Nella dichiarazione: codice 4.140.'
+
+  # Interest on savings (code 4.150): only when the accounts and securities have an income, up to a
+  # limit, never more than that income (fr-2025-guide-instructions-generales p. 26). When not
+  # answered, the accounts' interest read from the bank documents is used; an answer replaces it
+  # (packages/rules-fr, canton.ts, FribourgCantonal.savingsInterest).
+  - id: savings_interest
+    key: fr.savings_interest
+    type: money
+    when: { key: profile.banks, gt: 0 }
+    explain:
+      en: 'Fribourg deducts the interest on savings (déduction des intérêts de capitaux d’épargne, code 4.150) up to a limit, never more than the income of your accounts and securities: interest on bank accounts, bonds and loans you made. Not dividends or investment funds.'
+      fr: 'Fribourg déduit les intérêts de capitaux d’épargne (code 4.150) jusqu’à une limite, jamais plus que le rendement de vos titres et placements : intérêts de comptes bancaires, d’obligations et de prêts que vous avez accordés. Pas les dividendes ni les fonds de placement.'
+      de: 'Freiburg zieht die Zinsen auf Sparkapitalien (déduction des intérêts de capitaux d’épargne, Code 4.150) bis zu einem Höchstbetrag ab, nie mehr als der Ertrag deiner Wertschriften und Guthaben: Zinsen von Bankkonten, Obligationen und Darlehen, die du gewährt hast. Nicht Dividenden oder Anlagefonds.'
+      it: 'Friburgo deduce gli interessi sui capitali di risparmio (déduction des intérêts de capitaux d’épargne, codice 4.150) fino a un limite, mai più del reddito dei tuoi conti e titoli: interessi su conti bancari, obbligazioni e prestiti che hai concesso. Non i dividendi né i fondi d’investimento.'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=26'
+      label:
+        en: 'Fribourg tax guide 2025, p. 26: interest on savings'
+        fr: 'Instructions générales 2025, p. 26 : Déduction des intérêts de capitaux d’épargne'
+        de: 'Wegleitung Freiburg 2025, S. 26: Zinsen auf Sparkapitalien, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 26: interessi sui risparmi'
+    text:
+      en: 'How much interest on savings did you receive in 2026?'
+      fr: 'Combien d’intérêts de capitaux d’épargne avez-vous reçus en 2026 ?'
+      de: 'Wie viel Zinsen auf Sparkapitalien (intérêts de capitaux d’épargne) hast du 2026 erhalten?'
+      it: 'Quanti interessi sui risparmi hai ricevuto nel 2026?'
+    help:
+      en: 'In CHF for the household, your children’s accounts included; 0 if none. Your answer replaces the interest Taxpresso reads from your bank documents. Not sure? Skip it: Taxpresso then uses your bank documents.'
+      fr: 'En CHF pour le ménage, comptes de vos enfants compris ; 0 si aucun. Votre réponse remplace les intérêts que Taxpresso lit dans vos documents bancaires. Un doute ? Passez la question : Taxpresso utilise alors vos documents bancaires.'
+      de: 'In CHF für den Haushalt, die Konten deiner Kinder eingeschlossen; 0, wenn keine. Deine Antwort ersetzt die Zinsen, die Taxpresso aus deinen Bankunterlagen liest. Unsicher? Überspring die Frage: Taxpresso nimmt dann deine Bankunterlagen.'
+      it: 'In CHF per tutta l’economia domestica, compresi i conti dei tuoi figli; 0 se nessuno. La tua risposta sostituisce gli interessi che Taxpresso legge nei tuoi documenti bancari. Hai un dubbio? Salta la domanda: Taxpresso usa allora i tuoi documenti bancari.'
+
+  # fr-2025-guide-instructions-generales p. 26 and 27 (4.210, annex 02), p. 31 (4.340), p. 33 and 34
+  # (5.110, 5.120, rubrics B and C of the last page).
+  - use: payments
+    explain:
+      en: 'Each of these can lower your tax if you keep the proof: debt interest (intérêts passifs privés, code 4.210), alimony paid (pension alimentaire versée, 4.340), medical and dental costs (frais médicaux, 5.110) and donations (versements bénévoles, 5.120).'
+      fr: 'Chacun de ces frais peut diminuer votre impôt si vous en gardez la preuve : intérêts passifs privés (code 4.210), pension alimentaire versée (4.340), frais médicaux et dentaires (5.110) et versements bénévoles (5.120).'
+      de: 'Jede dieser Ausgaben kann deine Steuer senken, wenn du den Beleg aufbewahrst: Schuldzinsen (intérêts passifs privés, Code 4.210), bezahlte Unterhaltsbeiträge (pension alimentaire versée, 4.340), Arzt- und Zahnarztkosten (frais médicaux, 5.110) und Spenden (versements bénévoles, 5.120).'
+      it: 'Ognuna di queste spese può ridurre le tue imposte se ne conservi la prova: interessi passivi (intérêts passifs privés, codice 4.210), alimenti versati (pension alimentaire versée, 4.340), spese mediche e dentarie (frais médicaux, 5.110) e donazioni (versements bénévoles, 5.120).'
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=33'
+      label:
+        en: 'Fribourg tax guide 2025, p. 33: medical costs and donations'
+        fr: 'Instructions générales 2025, p. 33 : Frais médicaux'
+        de: 'Wegleitung Freiburg 2025, S. 33: Krankheitskosten und Spenden, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 33: spese di malattia e donazioni'
+
+  # What Taxpresso can't prepare for Fribourg yet: property (3.310 to 3.350, annex 04), inheritances
+  # and gifts, income from abroad, capital payments from pension schemes (taxed apart, rubric E of the
+  # last page, p. 40). FriTax is the canton's free program (fr-2025-fritax-accueil).
+  - use: special
+    learnMore:
+      url: 'https://www.fr.ch/impots/personnes-physiques/fritax'
+      label:
+        en: 'FriTax, the canton’s free program'
+        fr: 'FriTax, le programme gratuit du canton'
+        de: 'FriTax, das kostenlose Programm des Kantons, auf Französisch'
+        it: 'FriTax, il programma gratuito del Cantone'
+    options:
+      - value: real_estate
+        label:
+          {
+            en: 'I own real estate, in Switzerland or abroad',
+            fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
+            de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+            it: 'Sono proprietario o proprietaria di un immobile, in Svizzera o all’estero',
+          }
+        notSupported:
+          {
+            en: 'Real estate (immeubles, annex 04)',
+            fr: 'Les immeubles (annexe 04)',
+            de: 'Liegenschaften (immeubles, Beilage 04)',
+            it: 'Gli immobili (immeubles, allegato 04)',
+          }
+      - value: inheritance_or_gift
+        label:
+          {
+            en: 'I received an inheritance or a large gift',
+            fr: 'J’ai reçu un héritage ou une donation importante',
+            de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+            it: 'Ho ricevuto un’eredità o una donazione importante',
+          }
+        notSupported:
+          {
+            en: 'An inheritance or a gift',
+            fr: 'Un héritage ou une donation',
+            de: 'Eine Erbschaft oder Schenkung',
+            it: 'Un’eredità o una donazione',
+          }
+      - value: foreign_income
+        label:
+          {
+            en: 'I had income from abroad (salary, pension, rent)',
+            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+            de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+            it: 'Ho avuto redditi dall’estero (salario, rendita, affitto)',
+          }
+        notSupported:
+          {
+            en: 'Income from abroad',
+            fr: 'Des revenus de l’étranger',
+            de: 'Einkünfte aus dem Ausland',
+            it: 'Redditi dall’estero',
+          }
+      - value: pension_capital
+        label:
+          {
+            en: 'I withdrew pension capital (2nd or 3rd pillar)',
+            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
+            de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+            it: 'Ho prelevato un capitale di previdenza (2° o 3° pilastro)',
+          }
+        notSupported:
+          {
+            en: 'A pension capital withdrawal (prestations en capital)',
+            fr: 'Un retrait de capital de prévoyance (prestations en capital)',
+            de: 'Ein Kapitalbezug aus der Vorsorge (prestations en capital)',
+            it: 'Un prelievo di capitale di previdenza (prestations en capital)',
+          }
+
+# The documents, with the page of the Fribourg guide for 2025. No attestation of health premiums:
+# Fribourg deducts a flat amount per insured person (p. 24), and the federal tax takes it (p. 48).
+requirements:
+  - use: salary_certificate
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=8'
+      label:
+        en: 'Fribourg tax guide 2025, p. 8: salaried work'
+        fr: 'Instructions générales 2025, p. 8 : Activité salariée principale'
+        de: 'Wegleitung Freiburg 2025, S. 8: unselbständige Erwerbstätigkeit, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 8: attività dipendente'
+    source: 'fr-2025-guide-instructions-generales p. 8'
+
+  - use: replacement_income
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=10'
+      label:
+        en: 'Fribourg tax guide 2025, p. 10: loss-of-earnings allowances'
+        fr: 'Instructions générales 2025, p. 10 : Indemnités pour perte de gain'
+        de: 'Wegleitung Freiburg 2025, S. 10: Erwerbsausfallentschädigungen, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 10: indennità per perdita di guadagno'
+    source: 'fr-2025-guide-instructions-generales p. 10'
+
+  - use: pension
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=14'
+      label:
+        en: 'Fribourg tax guide 2025, p. 14: pensions'
+        fr: 'Instructions générales 2025, p. 14 : Rentes et pensions'
+        de: 'Wegleitung Freiburg 2025, S. 14: Renten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 14: rendite'
+    source: 'fr-2025-guide-instructions-generales p. 14'
+
+  - use: pillar3a
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=25'
+      label:
+        en: 'Fribourg tax guide 2025, p. 25: pillar 3a'
+        fr: 'Instructions générales 2025, p. 25 : Prévoyance individuelle liée (3e pilier a)'
+        de: 'Wegleitung Freiburg 2025, S. 25: Säule 3a, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 25: pilastro 3a'
+    source: 'fr-2025-guide-instructions-generales p. 25'
+
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=26'
+      label:
+        en: 'Fribourg tax guide 2025, p. 26: pension fund buy-ins'
+        fr: 'Instructions générales 2025, p. 26 : Rachats d’années d’assurance'
+        de: 'Wegleitung Freiburg 2025, S. 26: Einkäufe in die Pensionskasse, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 26: riscatti nella cassa pensione'
+    source: 'fr-2025-guide-instructions-generales p. 26'
+
+  - use: banks
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=15'
+      label:
+        en: 'Fribourg tax guide 2025, p. 15: securities and accounts'
+        fr: 'Instructions générales 2025, p. 15 : Titres et autres placements de capitaux'
+        de: 'Wegleitung Freiburg 2025, S. 15: Wertschriften und Guthaben, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 15: titoli e conti'
+    source: 'fr-2025-guide-instructions-generales p. 15'
+
+  - use: crypto
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=16'
+      label:
+        en: 'Fribourg tax guide 2025, p. 16: what to declare in annex 01, crypto-assets included'
+        fr: 'Instructions générales 2025, p. 16 : Ce qu’il faut déclarer dans l’annexe 01'
+        de: 'Wegleitung Freiburg 2025, S. 16: was in die Beilage 01 gehört, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 16: cosa dichiarare nell’allegato 01, criptovalute comprese'
+    source: 'fr-2025-guide-instructions-generales p. 16'
+
+  - use: childcare
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=32'
+      label:
+        en: 'Fribourg tax guide 2025, p. 32: childcare'
+        fr: 'Instructions générales 2025, p. 32 : Frais de garde des enfants'
+        de: 'Wegleitung Freiburg 2025, S. 32: Kinderbetreuungskosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 32: custodia dei figli'
+    source: 'fr-2025-guide-instructions-generales p. 32'
+
+  - use: medical
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=33'
+      label:
+        en: 'Fribourg tax guide 2025, p. 33: medical costs'
+        fr: 'Instructions générales 2025, p. 33 : Frais médicaux'
+        de: 'Wegleitung Freiburg 2025, S. 33: Krankheitskosten, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 33: spese di malattia'
+    source: 'fr-2025-guide-instructions-generales p. 33'
+
+  - use: donations
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=34'
+      label:
+        en: 'Fribourg tax guide 2025, p. 34: donations'
+        fr: 'Instructions générales 2025, p. 34 : Versements bénévoles'
+        de: 'Wegleitung Freiburg 2025, S. 34: Spenden, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 34: donazioni'
+    source: 'fr-2025-guide-instructions-generales p. 34'
+
+  - use: loan_interest
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=26'
+      label:
+        en: 'Fribourg tax guide 2025, p. 26: debt interest'
+        fr: 'Instructions générales 2025, p. 26 : Intérêts passifs privés et dettes privées'
+        de: 'Wegleitung Freiburg 2025, S. 26: Schuldzinsen, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 26: interessi passivi'
+    source: 'fr-2025-guide-instructions-generales p. 26'
+
+  - use: alimony
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=31'
+      label:
+        en: 'Fribourg tax guide 2025, p. 31: alimony and child support'
+        fr: 'Instructions générales 2025, p. 31 : Pension alimentaire versée'
+        de: 'Wegleitung Freiburg 2025, S. 31: Unterhaltsbeiträge, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 31: alimenti e contributi di mantenimento'
+    source: 'fr-2025-guide-instructions-generales p. 15, p. 31'
+
+  - use: separation_judgment
+    learnMore:
+      url: 'https://www.fr.ch/document/57721#page=7'
+      label:
+        en: 'Fribourg tax guide 2025, p. 7: personal and family situation'
+        fr: 'Instructions générales 2025, p. 7 : Situation personnelle, professionnelle et familiale'
+        de: 'Wegleitung Freiburg 2025, S. 7: persönliche und familiäre Verhältnisse, auf Französisch'
+        it: 'Guida fiscale di Friburgo 2025, p. 7: situazione personale e familiare'
+    source: 'fr-2025-guide-instructions-generales p. 7'

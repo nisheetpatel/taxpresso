@@ -90,6 +90,18 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
     },
   },
   {
+    code: 'FR',
+    status: 'preview',
+    name: {
+      en: 'Fribourg',
+      fr: 'Fribourg',
+      de: 'Freiburg',
+      it: 'Friburgo',
+      es: 'Friburgo',
+      pt: 'Friburgo',
+    },
+  },
+  {
     code: 'TI',
     status: 'preview',
     name: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino', es: 'Tesino', pt: 'Ticino' },
@@ -111,18 +123,6 @@ export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
       it: 'Argovia',
       es: 'Argovia',
       pt: 'Argóvia',
-    },
-  },
-  {
-    code: 'FR',
-    when: 'then',
-    name: {
-      en: 'Fribourg',
-      fr: 'Fribourg',
-      de: 'Freiburg',
-      it: 'Friburgo',
-      es: 'Friburgo',
-      pt: 'Friburgo',
     },
   },
 ];
