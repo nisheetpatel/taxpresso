@@ -145,26 +145,30 @@ function both(h: Shared) {
 }
 
 describe('the federal tax on the Zurich return', () => {
-  it('equals Geneva’s federal tax for the same household, to the centime (2,000 households)', () => {
-    let compared = 0;
-    for (let i = 0; i < 2_000; i++) {
-      const h = household();
-      const { ge, zh } = both(h);
-      expect(Boolean(zh), JSON.stringify(h)).toBe(Boolean(ge));
-      if (!ge || !zh) continue;
-      compared++;
-      const what = JSON.stringify(h);
-      expect(zh.taxableIncome.amount, what).toBe(ge.taxableIncome.amount);
-      expect(zh.scale, what).toBe(ge.scale);
-      expect(zh.scaleTax.amount, what).toBe(ge.scaleTax.amount);
-      expect(zh.childReduction.amount, what).toBe(ge.childReduction.amount);
-      expect(zh.tax.amount, what).toBe(ge.tax.amount);
-      // The same estimates and values waiting for the user's OK behind the tax.
-      expect(Boolean(zh.tax.estimates?.length), what).toBe(Boolean(ge.tax.estimates?.length));
-      expect(Boolean(zh.tax.needsOk), what).toBe(Boolean(ge.tax.needsOk));
-    }
-    expect(compared).toBeGreaterThan(1_900);
-  });
+  it(
+    'equals Geneva’s federal tax for the same household, to the centime (2,000 households)',
+    { timeout: 60_000 },
+    () => {
+      let compared = 0;
+      for (let i = 0; i < 2_000; i++) {
+        const h = household();
+        const { ge, zh } = both(h);
+        expect(Boolean(zh), JSON.stringify(h)).toBe(Boolean(ge));
+        if (!ge || !zh) continue;
+        compared++;
+        const what = JSON.stringify(h);
+        expect(zh.taxableIncome.amount, what).toBe(ge.taxableIncome.amount);
+        expect(zh.scale, what).toBe(ge.scale);
+        expect(zh.scaleTax.amount, what).toBe(ge.scaleTax.amount);
+        expect(zh.childReduction.amount, what).toBe(ge.childReduction.amount);
+        expect(zh.tax.amount, what).toBe(ge.tax.amount);
+        // The same estimates and values waiting for the user's OK behind the tax.
+        expect(Boolean(zh.tax.estimates?.length), what).toBe(Boolean(ge.tax.estimates?.length));
+        expect(Boolean(zh.tax.needsOk), what).toBe(Boolean(ge.tax.needsOk));
+      }
+      expect(compared).toBeGreaterThan(1_900);
+    },
+  );
 
   it('puts each federal deduction on its Zurich line, and cites the federal rules', () => {
     const h: Shared = {

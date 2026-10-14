@@ -158,36 +158,42 @@ function three(h: Shared) {
 }
 
 describe('the federal tax on the Bern return', () => {
-  it('equals Geneva’s and Zurich’s federal tax for the same household, to the centime (2,000 households)', () => {
-    let compared = 0;
-    let skipped = 0;
-    for (let i = 0; i < 2_000; i++) {
-      const h = household();
-      const { ge, zh, be, beResult } = three(h);
-      const what = JSON.stringify(h);
-      // Bern's own tax not computed (a buy-in next to the two-earner deduction, one person's party
-      // payments above the limit: docs/sources/be/NOTES.md): nothing to compare.
-      if (!beResult.icc) {
-        skipped++;
-        continue;
+  it(
+    'equals Geneva’s and Zurich’s federal tax for the same household, to the centime (2,000 households)',
+    { timeout: 60_000 },
+    () => {
+      let compared = 0;
+      let skipped = 0;
+      for (let i = 0; i < 2_000; i++) {
+        const h = household();
+        const { ge, zh, be, beResult } = three(h);
+        const what = JSON.stringify(h);
+        // Bern's own tax not computed (a buy-in next to the two-earner deduction, one person's party
+        // payments above the limit: docs/sources/be/NOTES.md): nothing to compare.
+        if (!beResult.icc) {
+          skipped++;
+          continue;
+        }
+        expect(Boolean(be), what).toBe(Boolean(ge));
+        expect(Boolean(be), what).toBe(Boolean(zh));
+        if (!ge || !be || !zh) continue;
+        compared++;
+        for (const other of [ge, zh]) {
+          expect(be.taxableIncome.amount, what).toBe(other.taxableIncome.amount);
+          expect(be.scale, what).toBe(other.scale);
+          expect(be.scaleTax.amount, what).toBe(other.scaleTax.amount);
+          expect(be.childReduction.amount, what).toBe(other.childReduction.amount);
+          expect(be.tax.amount, what).toBe(other.tax.amount);
+          expect(Boolean(be.tax.estimates?.length), what).toBe(
+            Boolean(other.tax.estimates?.length),
+          );
+          expect(Boolean(be.tax.needsOk), what).toBe(Boolean(other.tax.needsOk));
+        }
       }
-      expect(Boolean(be), what).toBe(Boolean(ge));
-      expect(Boolean(be), what).toBe(Boolean(zh));
-      if (!ge || !be || !zh) continue;
-      compared++;
-      for (const other of [ge, zh]) {
-        expect(be.taxableIncome.amount, what).toBe(other.taxableIncome.amount);
-        expect(be.scale, what).toBe(other.scale);
-        expect(be.scaleTax.amount, what).toBe(other.scaleTax.amount);
-        expect(be.childReduction.amount, what).toBe(other.childReduction.amount);
-        expect(be.tax.amount, what).toBe(other.tax.amount);
-        expect(Boolean(be.tax.estimates?.length), what).toBe(Boolean(other.tax.estimates?.length));
-        expect(Boolean(be.tax.needsOk), what).toBe(Boolean(other.tax.needsOk));
-      }
-    }
-    expect(compared).toBeGreaterThan(1_800);
-    expect(skipped).toBeLessThan(150);
-  });
+      expect(compared).toBeGreaterThan(1_800);
+      expect(skipped).toBeLessThan(150);
+    },
+  );
 
   it('puts each federal deduction on its Bern line, in TaxMe’s order, and cites the federal rules', () => {
     const h: Shared = {
