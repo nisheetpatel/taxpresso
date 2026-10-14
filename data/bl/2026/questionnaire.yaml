@@ -1,0 +1,903 @@
+# Basel-Landschaft questionnaire for tax year 2026 (SPEC.md section 6; docs/design/cantons.md). Data,
+# not code: packages/questionnaire reads it, and every key and value must exist in Basel-Landschaft's
+# keys (packages/rules-bl, src/keys.ts; a test checks).
+#
+# The questions every canton asks come from data/ch/2026/questions.yaml (`use: <id>`), in the order
+# of the Basel-Landschaft return (bl-2026-steuererklaerung-form, p. 1 to 4), with Basel-Landschaft's
+# own explanations and official pages. The questions only Basel-Landschaft asks are written out
+# here, as packages/rules-bl reads them (BaselLandCantonal): who mainly bears the upkeep of children
+# in shared custody without child support, whether each child has taxable income of its own (the
+# form's column "stb. Einkommen vorhanden?"), the childcare paid for each child (the limit is per
+# child), the commune and the move, each adult's church, and each pensioner's kind of pension (AHV
+# or IV, 770 and 771 from 2026).
+#
+# Wording and documents follow the Basel-Landschaft guide for 2026 (bl-2026-wegleitung, the edition
+# of 20 March 2026); "p." is the page of the PDF file, as in the links, and the guide prints the
+# same page numbers. The return and the guide are in German: the questions give the German term
+# next to the gloss.
+#
+# German: informal "du", Swiss spelling (ss), the official German term next to its gloss. French:
+# write plain spaces before ? ! : ; and the loader makes them non-breaking.
+
+taxYear: 2026
+
+place: { en: 'Basel-Landschaft', fr: 'Bâle-Campagne', de: 'Basel-Landschaft' }
+
+people:
+  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p2:
+    {
+      en: 'Your spouse or partner',
+      fr: 'Votre conjoint ou partenaire',
+      de: 'Dein Partner oder deine Partnerin',
+    }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+
+# E-Tax BL is the canton's online return, at etax.bl.ch (docs/sources/bl/NOTES.md, Filing channels;
+# bl-na-efiling-verordnung-331-21 § 1). No document of the library says it is free, so the text
+# doesn't.
+notSupported:
+  en: 'Taxpresso can’t prepare this part yet. E-Tax BL, the canton’s online return (etax.bl.ch), or a fiduciary can.'
+  fr: 'Taxpresso ne peut pas encore préparer cette partie. E-Tax BL, la déclaration en ligne du canton (etax.bl.ch), ou une fiduciaire le peuvent.'
+  de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. E-Tax BL, die Online-Steuererklärung des Kantons (etax.bl.ch), oder eine Treuhand kann es.'
+
+questions:
+  - use: canton
+
+  # bl-2026-wegleitung p. 3 (registered partners are taxed as married couples; marriage, divorce
+  # and separation in the year).
+  - use: civil_status
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=3'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 3: marriage, partnership, separation'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 3 : Mariage, partenariat, séparation'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 3: Heirat, Partnerschaft, Trennung'
+    help:
+      en: 'A registered partnership files like a married couple, on one return.'
+      fr: 'Un partenariat enregistré déclare comme un couple marié, sur une seule déclaration.'
+      de: 'Eine eingetragene Partnerschaft füllt wie ein Ehepaar eine gemeinsame Steuererklärung aus.'
+
+  # bl-2026-wegleitung p. 37 (750, Abzug für Kinder: minors, or children in training or unable to
+  # work, in your parental care); page 1 of the return lists them (bl-2026-steuererklaerung-form
+  # p. 1).
+  - use: children
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=37'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 37: children'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 37 : Enfants'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 37: Abzug für Kinder'
+    help:
+      en: 'Minors, and children in training whose upkeep you mainly bear. On page 1 of the return: Minderjährige oder in beruflicher Ausbildung stehende Kinder.'
+      fr: 'Les mineurs, et les enfants en formation dont vous assumez l’essentiel de l’entretien. En page 1 de la déclaration : Minderjährige oder in beruflicher Ausbildung stehende Kinder (enfants mineurs ou en formation).'
+      de: 'Minderjährige und Kinder in Ausbildung, deren Unterhalt du zur Hauptsache bestreitest. Auf Seite 1 der Steuererklärung: Minderjährige oder in beruflicher Ausbildung stehende Kinder.'
+
+  # bl-2026-wegleitung p. 37 (the child reduction needs a common household); the return asks "In
+  # Ihrem Haushalt lebend?" for each child (bl-2026-steuererklaerung-form p. 1).
+  - use: children_custody
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=37'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 37: children'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 37 : Enfants'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 37: Abzug für Kinder'
+    help:
+      en: 'On page 1 of the return, for each child: In Ihrem Haushalt lebend? (living in your household).'
+      fr: 'En page 1 de la déclaration, pour chaque enfant : In Ihrem Haushalt lebend? (vivant dans votre ménage).'
+      de: 'Auf Seite 1 der Steuererklärung, für jedes Kind: In Ihrem Haushalt lebend?'
+
+  # Parents taxed apart with joint custody: for the federal tax, half the child deduction each
+  # without child support, the parental scale to the one who earns more (bl-2026-wegleitung p. 37;
+  # ch-na-circulaire-30-epoux-famille p. 24); for the state tax, the children count for the parent
+  # who receives child support or, without it, mainly bears their upkeep (bl-na-steuerbuch p. 211 to
+  # 213, 34 Nr. 1, Ziffer 5 and 7).
+  - use: child_support
+    explain:
+      en: 'With shared custody, child support decides who counts the children. The parent who receives it counts them; without child support, the state tax counts them for the parent who mainly bears their upkeep, and the federal tax gives each parent half the child deduction and the parental scale (Elterntarif), a lower rate, to the one who earns more.'
+      fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit les compte ; sans contribution, l’impôt cantonal les compte pour le parent qui assume l’essentiel de leur entretien, et l’impôt fédéral donne à chacun la moitié de la déduction pour enfant et le barème parental (Elterntarif), un taux plus bas, à celui qui gagne le plus.'
+      de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, zählt die Kinder; ohne Unterhaltsbeiträge zählt die Staatssteuer sie für den Elternteil, der ihren Unterhalt zur Hauptsache bestreitet, und die Bundessteuer gibt jedem den halben Kinderabzug und den Elterntarif, einen tieferen Satz, dem, der mehr verdient.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=37'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 37: children of parents taxed apart'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 37 : Enfants de parents taxés séparément'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 37: Kinder getrennt besteuerter Eltern'
+    help:
+      en: 'Child support (Unterhaltsbeiträge, Alimente) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
+      fr: 'La contribution d’entretien (Unterhaltsbeiträge, Alimente) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
+      de: 'Unterhaltsbeiträge (Alimente) sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+
+  # StG § 34 Abs. 4 (bl-na-steuergesetz-331 p. 28): the child counts for the parent who mainly bears
+  # its upkeep; the canton's practice gives it, without child support, to the parent with the
+  # higher income (bl-na-steuerbuch p. 212 and 213, 34 Nr. 1, Ziffer 7). packages/rules-bl asks
+  # rather than guess (NOTE.mainUpkeep).
+  - id: main_upkeep
+    key: bl.main_upkeep
+    type: yesno
+    when:
+      all:
+        - { key: profile.civil_status, in: [single, separated, divorced, widowed] }
+        - { key: profile.children_custody, in: [shared] }
+        - { key: profile.child_support, in: [none_i_earn_more, none_other_earns_more, none_unsure] }
+    explain:
+      en: 'With shared custody and no child support, Basel-Landschaft counts the children for the parent who mainly bears their upkeep (Unterhalt zur Hauptsache): that parent gets the child reduction (Kinderabzug), the lower rate of Vollsplitting and the higher tax-free wealth. In practice, it is the parent with the higher income.'
+      fr: 'En garde partagée sans contribution d’entretien, Bâle-Campagne compte les enfants pour le parent qui assume l’essentiel de leur entretien (Unterhalt zur Hauptsache) : ce parent a la réduction pour enfant (Kinderabzug), le taux plus bas du Vollsplitting et la fortune exonérée plus élevée. En pratique, c’est le parent au revenu le plus élevé.'
+      de: 'Bei geteilter Obhut ohne Unterhaltsbeiträge zählt Basel-Landschaft die Kinder für den Elternteil, der ihren Unterhalt zur Hauptsache bestreitet: Er erhält den Kinderabzug, den tieferen Satz des Vollsplittings und den höheren steuerfreien Betrag auf dem Vermögen. In der Praxis ist es der Elternteil mit dem höheren Einkommen.'
+    learnMore:
+      url: 'https://kanton.baselland.ch/finanz-und-kirchendirektion/steuerverwaltung-steuerbuch/downloads-1/steuerbuch_bl_band1.pdf#page=211'
+      label:
+        en: 'Basel-Landschaft tax handbook (Steuerbuch), p. 211: children of parents taxed apart'
+        fr: 'Manuel fiscal de Bâle-Campagne (Steuerbuch), p. 211 : Enfants de parents taxés séparément'
+        de: 'Baselbieter Steuerbuch, S. 211: Kinder getrennt besteuerter Eltern'
+    text:
+      en: 'In 2026, did you mainly bear the children’s upkeep (Unterhalt zur Hauptsache)?'
+      fr: 'En 2026, assumiez-vous l’essentiel de l’entretien des enfants (Unterhalt zur Hauptsache) ?'
+      de: 'Hast du 2026 den Unterhalt der Kinder zur Hauptsache bestritten?'
+    help:
+      en: 'Page 1 of the return lists the children whose upkeep you mainly bear. Not sure? Your last assessment shows whether you got the child reduction.'
+      fr: 'La page 1 de la déclaration liste les enfants dont vous assumez l’essentiel de l’entretien. Un doute ? Votre dernière taxation indique si vous avez eu la réduction pour enfant.'
+      de: 'Seite 1 der Steuererklärung listet die Kinder, deren Unterhalt du zur Hauptsache bestreitest. Unsicher? Deine letzte Veranlagung zeigt, ob du den Kinderabzug erhalten hast.'
+    chip: { en: 'Bears the upkeep', fr: 'Assume l’entretien', de: 'Bestreitet den Unterhalt' }
+
+  # The 2026 return asks for each child: "stb. Einkommen vorhanden?" (bl-2026-steuererklaerung-form
+  # p. 1). The child reduction falls away when the child's own income is above the tax-free amount
+  # (bl-na-steuergesetz-331 § 34 Abs. 4, p. 28; bl-2026-wegleitung p. 37).
+  - id: child_income
+    key: bl.child_income
+    type: yesno
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 0 }
+        - { key: profile.children_custody, in: [with_household, shared] }
+    explain:
+      en: 'Basel-Landschaft takes an amount off your income tax for each child (Kinderabzug vom Steuerbetrag), unless the child’s own taxable income, an apprentice’s wage for example, is above the tax-free amount (steuerfreier Betrag) of the state tax.'
+      fr: 'Bâle-Campagne déduit un montant de votre impôt sur le revenu pour chaque enfant (Kinderabzug vom Steuerbetrag), sauf si le revenu imposable propre de l’enfant, un salaire d’apprenti par exemple, dépasse le montant exonéré (steuerfreier Betrag) de l’impôt cantonal.'
+      de: 'Basel-Landschaft zieht für jedes Kind einen Betrag von deiner Einkommenssteuer ab (Kinderabzug vom Steuerbetrag), ausser das eigene steuerbare Einkommen des Kindes, zum Beispiel ein Lehrlingslohn, liegt über dem steuerfreien Betrag der Staatssteuer.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=37'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 37: children'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 37 : Enfants'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 37: Abzug für Kinder'
+    text:
+      en: 'In 2026, did child {n} have taxable income of their own above the tax-free amount (steuerfreier Betrag)?'
+      fr: 'En 2026, l’enfant {n} avait-il un revenu imposable propre au-dessus du montant exonéré (steuerfreier Betrag) ?'
+      de: 'Hatte Kind {n} 2026 ein eigenes steuerbares Einkommen über dem steuerfreien Betrag?'
+    help:
+      en: 'Most children have none. On page 1 of the return, for child {n}: stb. Einkommen vorhanden? Number your children the same way in every answer, for example from the oldest.'
+      fr: 'La plupart des enfants n’en ont pas. En page 1 de la déclaration, pour l’enfant {n} : stb. Einkommen vorhanden? (revenu imposable ?). Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'Die meisten Kinder haben keines. Auf Seite 1 der Steuererklärung, für Kind {n}: stb. Einkommen vorhanden? Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # bl-2026-wegleitung p. 32 (640, Abzug für Kinderbetreuung durch Drittpersonen: children under 14
+  # living with you, while you work; meals don't count; subsidies come off first).
+  - use: childcare
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=32'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 32: childcare'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 32 : Frais de garde'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 32: Kinderbetreuung durch Drittpersonen'
+    help:
+      en: 'A crèche (KiTa), day care or a nanny, for a child under 14, while you work or train. Meals don’t count, and any subsidy comes off the invoice first. On the return: 640, Kinderbetreuung durch Dritte.'
+      fr: 'Une crèche (KiTa), une garderie ou une nourrice, pour un enfant de moins de 14 ans, pendant que vous travaillez ou êtes en formation. Les repas ne comptent pas, et une subvention se déduit d’abord de la facture. Sur la déclaration : 640, Kinderbetreuung durch Dritte (garde par des tiers).'
+      de: 'Eine KiTa, ein Hort oder eine Nanny, für ein Kind unter 14, während du arbeitest oder in Ausbildung bist. Mahlzeiten zählen nicht, und Subventionen gehen zuerst von der Rechnung ab. Auf der Steuererklärung: 640, Kinderbetreuung durch Dritte.'
+
+  # The limit is per child (bl-na-steuergesetz-331 § 29 Abs. 1 lit. c, p. 23; bl-2026-wegleitung
+  # p. 32), and the return asks for each child whether it is looked after by others
+  # (bl-2026-steuererklaerung-form p. 1). With several children, how the invoices' total splits can
+  # decide the deduction: asked per child.
+  - id: child_care
+    key: bl.child_care
+    type: money
+    perChild: true
+    when:
+      all:
+        - { key: profile.children_count, gt: 1 }
+        - { key: profile.childcare, in: [creche_or_daycare, nanny] }
+    explain:
+      en: 'Basel-Landschaft’s limit on childcare is per child, so the split between your children can change the deduction. Your invoices give the total.'
+      fr: 'La limite de Bâle-Campagne pour les frais de garde est par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
+      de: 'Der Höchstbetrag für die Kinderbetreuung gilt in Basel-Landschaft pro Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=32'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 32: childcare'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 32 : Frais de garde'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 32: Kinderbetreuung durch Drittpersonen'
+    text:
+      en: 'How much of the childcare you paid in 2026 was for child {n}?'
+      fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
+      de: 'Wie viel der 2026 bezahlten Kosten der Kinderbetreuung war für Kind {n}?'
+    help:
+      en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
+      fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
+      de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+
+  # The commune of 31 December taxes the whole year; a move inside the canton does not split the
+  # communal tax (bl-2026-wegleitung p. 3). The list is Basel-Landschaft's 86 communes of 2026 by
+  # name (packages/rules-bl, from bl-2026-communal-steuerfuesse; the table has no BFS numbers). Each
+  # commune levies its tax in percent of the state tax (StG § 18bis and § 19 Abs. 2,
+  # bl-na-steuergesetz-331 p. 11).
+  - id: commune
+    key: profile.commune
+    type: commune
+    explain:
+      en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own Steuerfuss, a percentage of the state tax (Staatssteuer).'
+      fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année. Chaque commune fixe son propre coefficient (Steuerfuss), un pourcentage de l’impôt cantonal (Staatssteuer).'
+      de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr. Jede Gemeinde legt ihren eigenen Steuerfuss fest, einen Prozentsatz der Staatssteuer.'
+    learnMore:
+      url: 'https://statistik.bl.ch/web_portal/18_4'
+      label:
+        en: 'Communal and church tax rates 2022 to 2026 (statistik.bl.ch)'
+        fr: 'Coefficients communaux et taux des impôts ecclésiastiques 2022 à 2026 (statistik.bl.ch)'
+        de: 'Steuerfüsse und Steuersätze der Einwohner- und Kirchgemeinden 2022 bis 2026 (statistik.bl.ch)'
+    text:
+      en: 'Which commune did you live in on 31 December 2026?'
+      fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
+      de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+    help:
+      en: 'The official name, such as Liestal, Allschwil or Münchenstein.'
+      fr: 'Le nom officiel, par exemple Liestal, Allschwil ou Münchenstein.'
+      de: 'Der offizielle Name, zum Beispiel Liestal, Allschwil oder Münchenstein.'
+
+  # Who files in Basel-Landschaft: everyone living in the canton on 31 December; arriving from
+  # another canton, the whole year is declared here (bl-2026-wegleitung p. 3 and 4). Arriving from
+  # abroad or leaving Switzerland means a return for part of the year (p. 4 and 5, unterjährige
+  # Steuerpflicht): not covered by rules-bl.
+  - id: moved
+    key: profile.moved
+    type: choice
+    explain:
+      en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Basel-Landschaft taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
+      fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Bâle-Campagne vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
+      de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Basel-Landschaft besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=3'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 3: who files a return'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 3 : Obligation de déclarer'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 3: Wer hat eine Steuererklärung einzureichen?'
+    text:
+      en: 'Did you move in 2026?'
+      fr: 'Avez-vous déménagé en 2026 ?'
+      de: 'Bist du 2026 umgezogen?'
+    options:
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - value: within_bl
+        label:
+          {
+            en: 'Yes, within Basel-Landschaft',
+            fr: 'Oui, dans le canton de Bâle-Campagne',
+            de: 'Ja, innerhalb des Kantons Basel-Landschaft',
+          }
+        chip: { en: 'Moved in the canton', fr: 'Déménagé dans le canton', de: 'Umzug im Kanton' }
+      - value: from_other_canton
+        label:
+          {
+            en: 'Yes, from another canton',
+            fr: 'Oui, depuis un autre canton',
+            de: 'Ja, aus einem anderen Kanton',
+          }
+        chip:
+          {
+            en: 'Moved from another canton',
+            fr: 'Arrivé(e) d’un autre canton',
+            de: 'Zuzug aus einem anderen Kanton',
+          }
+      - value: from_abroad
+        label:
+          {
+            en: 'Yes, I arrived from abroad',
+            fr: 'Oui, je suis arrivé(e) de l’étranger',
+            de: 'Ja, ich bin aus dem Ausland zugezogen',
+          }
+        notSupported:
+          {
+            en: 'Arriving from abroad during the year (Zuzug aus dem Ausland)',
+            fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland)',
+            de: 'Ein Zuzug aus dem Ausland während des Jahres',
+          }
+      - value: leaving_switzerland
+        label:
+          {
+            en: 'I left, or I’m leaving, Switzerland',
+            fr: 'J’ai quitté ou je quitte la Suisse',
+            de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+          }
+        notSupported:
+          {
+            en: 'Leaving Switzerland (Wegzug ins Ausland)',
+            fr: 'Un départ de Suisse (Wegzug ins Ausland)',
+            de: 'Ein Wegzug ins Ausland',
+          }
+
+  # Church tax (Kirchensteuer): the canton's table gives the parishes' rates for 2026, the Roman
+  # Catholic church in percent of the state tax, the Evangelical Reformed and the Christ Catholic
+  # churches in percent of the taxable income and wealth (bl-2026-communal-steuerfuesse, footnotes 2
+  # and 3). Opt-in: Taxpresso adds it only for a member; packages/rules-bl computes the Roman
+  # Catholic church tax and says plainly when it can't compute the others.
+  - id: church
+    key: bl.church
+    type: choice
+    perPerson: true
+    explain:
+      en: 'Members of the Roman Catholic, Evangelical Reformed or Christ Catholic church pay church tax (Kirchensteuer) at their parish’s rate. Taxpresso adds it only for a member.'
+      fr: 'Les membres de l’Église catholique romaine, évangélique réformée ou catholique chrétienne paient l’impôt ecclésiastique (Kirchensteuer) au taux de leur paroisse. Taxpresso ne l’ajoute que pour un membre.'
+      de: 'Mitglieder der römisch-katholischen, der evangelisch-reformierten oder der christkatholischen Kirche zahlen Kirchensteuer zum Satz ihrer Kirchgemeinde. Taxpresso rechnet sie nur für Mitglieder dazu.'
+    learnMore:
+      url: 'https://statistik.bl.ch/web_portal/18_4'
+      label:
+        en: 'Communal and church tax rates 2022 to 2026 (statistik.bl.ch)'
+        fr: 'Coefficients communaux et taux des impôts ecclésiastiques 2022 à 2026 (statistik.bl.ch)'
+        de: 'Steuerfüsse und Steuersätze der Einwohner- und Kirchgemeinden 2022 bis 2026 (statistik.bl.ch)'
+    text:
+      p1:
+        en: 'On 31 December 2026, were you a member of one of these churches?'
+        fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces Églises ?'
+        de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+      p2:
+        en: 'On 31 December 2026, was your spouse or partner a member of one of these churches?'
+        fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces Églises ?'
+        de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+    help:
+      en: 'Another religion, or none, pays no church tax.'
+      fr: 'Une autre religion, ou aucune, ne paie pas d’impôt ecclésiastique.'
+      de: 'Eine andere Religion oder keine zahlt keine Kirchensteuer.'
+    options:
+      - value: catholic
+        label:
+          {
+            en: 'Roman Catholic (römisch-katholisch)',
+            fr: 'Catholique romaine (römisch-katholisch)',
+            de: 'Römisch-katholisch',
+          }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch' }
+      - value: reformed
+        label:
+          {
+            en: 'Evangelical Reformed (evangelisch-reformiert)',
+            fr: 'Évangélique réformée (evangelisch-reformiert)',
+            de: 'Evangelisch-reformiert',
+          }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert' }
+      - value: christ_catholic
+        label:
+          {
+            en: 'Christ Catholic (christkatholisch)',
+            fr: 'Catholique chrétienne (christkatholisch)',
+            de: 'Christkatholisch',
+          }
+        chip: { en: 'Christ Catholic', fr: 'Catholique chrétien(ne)', de: 'Christkatholisch' }
+      - value: none
+        label: { en: 'None of these', fr: 'Aucune de ces Églises', de: 'Keine davon' }
+
+  # bl-2026-wegleitung p. 12 (Einkünfte im In- und Ausland) to p. 17.
+  - use: income_sources
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=12'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 12: income'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 12 : Revenus'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 12: Einkünfte im In- und Ausland'
+    options:
+      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - value: replacement_income
+        label:
+          en: 'Unemployment, sickness or accident benefits'
+          fr: 'Des indemnités (chômage, maladie, accident)'
+          de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+      - value: pension
+        label:
+          {
+            en: 'A pension (AHV, IV or pension fund)',
+            fr: 'Une rente (AVS, AI ou caisse de pension)',
+            de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+          }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+      - value: alimony
+        label:
+          {
+            en: 'Alimony or child support received',
+            fr: 'Une pension alimentaire reçue',
+            de: 'Erhaltene Unterhaltsbeiträge',
+          }
+        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+      - value: self_employment
+        label:
+          {
+            en: 'Income from self-employment',
+            fr: 'Un revenu d’activité indépendante',
+            de: 'Einkommen aus selbständiger Erwerbstätigkeit',
+          }
+        notSupported:
+          {
+            en: 'Self-employment (selbständige Erwerbstätigkeit, 150 to 165)',
+            fr: 'L’activité indépendante (selbständige Erwerbstätigkeit, 150 à 165)',
+            de: 'Die selbständige Erwerbstätigkeit (150 bis 165)',
+          }
+
+  # From 2026 the pensioners' deduction of the state tax has one table for AHV pensions (770) and
+  # one for IV pensions (771), because of the 13th AHV pension (bl-2026-steuererklaerung-form p. 3;
+  # bl-2026-wegleitung p. 39 and 40; bl-2026-guide-informationen-neuerungen p. 1).
+  - id: pension_kind
+    key: bl.pension_kind
+    type: choice
+    perPerson: true
+    when: { key: profile.income_sources, includes: pension }
+    explain:
+      en: 'Basel-Landschaft has a deduction for pensioners with a modest income. From 2026 it differs for an old-age pension (AHV-Rente, line 770) and a disability pension (IV-Rente, line 771).'
+      fr: 'Bâle-Campagne a une déduction pour les rentiers aux revenus modestes. Dès 2026, elle diffère pour une rente de vieillesse (AHV-Rente, ligne 770) et une rente d’invalidité (IV-Rente, ligne 771).'
+      de: 'Basel-Landschaft hat einen Abzug für Rentnerinnen und Rentner mit bescheidenem Einkommen. Ab 2026 ist er für eine Altersrente (AHV-Rente, Ziffer 770) und eine Invalidenrente (IV-Rente, Ziffer 771) verschieden.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=39'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 39: deduction for AHV pensioners'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 39 : Déduction pour rentiers AVS'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 39: Abzug für AHV-Rentnerinnen und -Rentner'
+    text:
+      p1:
+        en: 'Is your first-pillar pension an old-age pension (AHV) or a disability pension (IV)?'
+        fr: 'Votre rente du 1er pilier est-elle une rente de vieillesse (AVS, AHV) ou d’invalidité (AI, IV) ?'
+        de: 'Ist deine Rente der 1. Säule eine Altersrente (AHV) oder eine Invalidenrente (IV)?'
+      p2:
+        en: 'Is your spouse or partner’s first-pillar pension an old-age pension (AHV) or a disability pension (IV)?'
+        fr: 'La rente du 1er pilier de votre conjoint ou partenaire est-elle une rente de vieillesse (AVS, AHV) ou d’invalidité (AI, IV) ?'
+        de: 'Ist die Rente der 1. Säule deines Partners oder deiner Partnerin eine Altersrente (AHV) oder eine Invalidenrente (IV)?'
+    help:
+      en: 'The pension statement of the compensation office (Ausgleichskasse) says which.'
+      fr: 'L’attestation de rente de la caisse de compensation (Ausgleichskasse) l’indique.'
+      de: 'Die Rentenbescheinigung der Ausgleichskasse zeigt es.'
+    options:
+      - value: ahv
+        label:
+          {
+            en: 'An old-age pension (AHV-Rente)',
+            fr: 'Une rente de vieillesse (AHV-Rente)',
+            de: 'Eine Altersrente (AHV-Rente)',
+          }
+        chip: { en: 'AHV pension', fr: 'Rente AVS', de: 'AHV-Rente' }
+      - value: iv
+        label:
+          {
+            en: 'A disability pension (IV-Rente)',
+            fr: 'Une rente d’invalidité (IV-Rente)',
+            de: 'Eine Invalidenrente (IV-Rente)',
+          }
+        chip: { en: 'IV pension', fr: 'Rente AI', de: 'IV-Rente' }
+      - value: none
+        label:
+          {
+            en: 'Neither: only a pension fund or another pension',
+            fr: 'Aucune : seulement une rente de caisse de pension ou une autre rente',
+            de: 'Keine: nur eine Rente der Pensionskasse oder eine andere Rente',
+          }
+
+  # bl-2026-wegleitung p. 12 (100/105, Haupterwerbstätigkeit: one salary certificate per employer).
+  - use: employers
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=12'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 12: main employment'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 12 : Activité principale'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 12: Haupterwerbstätigkeit'
+    help:
+      en: 'Each one gives you a salary certificate (Lohnausweis).'
+      fr: 'Chacun vous remet un certificat de salaire (Lohnausweis).'
+      de: 'Jeder gibt dir einen Lohnausweis.'
+
+  # People taxed at source (Quellensteuer) file an ordinary return only when they must or ask for
+  # it by 31 March of the next year (nachträgliche ordentliche Veranlagung, NOV):
+  # bl-na-quellensteuer-faq; bl-2026-wegleitung p. 3. Not covered by rules-bl.
+  - use: taxed_at_source
+    yesNotSupported:
+      en: 'Tax at source in Basel-Landschaft (Quellensteuer) and the ordinary assessment that follows it (nachträgliche ordentliche Veranlagung, NOV)'
+      fr: 'L’impôt à la source à Bâle-Campagne (Quellensteuer) et la taxation ordinaire ultérieure qui suit (nachträgliche ordentliche Veranlagung, NOV)'
+      de: 'Die Quellensteuer im Kanton Basel-Landschaft und die nachträgliche ordentliche Veranlagung (NOV)'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/quellensteuer/quellensteuer-dokumente-faq-und-weitere/faq_qst.pdf'
+      label:
+        en: 'Tax at source: questions and answers (Basel-Landschaft tax administration)'
+        fr: 'Impôt à la source : questions et réponses (administration fiscale de Bâle-Campagne)'
+        de: 'FAQ Quellensteuer (Steuerverwaltung Basel-Landschaft)'
+    help:
+      en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
+      fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, Ziffer 12).'
+      de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+
+  # bl-2026-wegleitung p. 30 (610, Beiträge an die Säule 3a: only with the attestations) and p. 31
+  # (the catch-up, nachträglicher Einkauf, from 2026).
+  - use: pillar3a
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=30'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 30: pillar 3a'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 30 : Pilier 3a'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 30: Beiträge an die Säule 3a'
+    help:
+      en: 'Your bank or insurer sends an attestation, and the canton counts the payments only with it. On the return: 610, Beiträge 3. Säule.'
+      fr: 'Votre banque ou votre assurance vous envoie une attestation, et le canton ne compte les versements qu’avec elle. Sur la déclaration : 610, Beiträge 3. Säule (cotisations au 3e pilier).'
+      de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung, und der Kanton berücksichtigt die Einzahlungen nur damit. Auf der Steuererklärung: 610, Beiträge 3. Säule.'
+
+  # bl-2026-wegleitung p. 30 (600, Einkäufe in die 2. Säule: only what the salary certificate
+  # doesn't already show).
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=30'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 30: pension fund buy-ins'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 30 : Rachats au 2e pilier'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 30: Einkäufe in die 2. Säule'
+    help:
+      en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On the return: 600, Einkäufe 2. Säule.'
+      fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas. Sur la déclaration : 600, Einkäufe 2. Säule (rachats au 2e pilier).'
+      de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. Auf der Steuererklärung: 600, Einkäufe 2. Säule.'
+
+  # Travel to work (500/505, Fahrtkosten zwischen Wohn- und Arbeitsstätte) for both taxes, each up to
+  # its own yearly limit: bl-2026-wegleitung p. 25 and 26; ch-2026-ifd-instructions-personnes-
+  # physiques p. 6. No "over 2 hours a day" choice: only Geneva's meal rule needs it.
+  - use: commute
+    explain:
+      en: 'Getting to work is deducted as travel costs (Fahrtkosten), for the state and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
+      fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrtkosten), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
+      de: 'Der Arbeitsweg wird als Fahrtkosten abgezogen, bei der Staats- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=25'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 25: travel to work'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 25 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 25: Fahrtkosten'
+    help:
+      en: 'Choose how you went on most work days. On the return: 500, Fahrtkosten zwischen Wohn- und Arbeitsstätte.'
+      fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur la déclaration : 500, Fahrtkosten zwischen Wohn- und Arbeitsstätte (frais de déplacement).'
+      de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf der Steuererklärung: 500, Fahrtkosten zwischen Wohn- und Arbeitsstätte.'
+    options:
+      - value: public_transport
+        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+      - value: motorbike
+        label:
+          {
+            en: 'Motorbike or scooter with a white number plate',
+            fr: 'Moto ou scooter à plaque blanche',
+            de: 'Motorrad oder Roller mit weissem Kontrollschild',
+          }
+      - value: bike
+        label:
+          {
+            en: 'Bike, e-bike or moped with a yellow number plate',
+            fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
+            de: 'Velo, E-Bike oder Motorfahrrad mit gelbem Kontrollschild',
+          }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - value: mostly_home
+        label:
+          {
+            en: 'From home, almost every day',
+            fr: 'Depuis chez moi, presque tous les jours',
+            de: 'Von zu Hause, fast jeden Tag',
+          }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+
+  # bl-2026-wegleitung p. 25 (Abonnementskosten)
+  - use: commute_transit_cost
+    explain:
+      en: 'You deduct the public transport you paid to get to work, for the state and the federal tax, each up to its own yearly limit.'
+      fr: 'Vous déduisez les transports publics payés pour aller au travail, pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Du ziehst den bezahlten öffentlichen Verkehr zur Arbeit ab, bei der Staats- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=25'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 25: travel to work'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 25 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 25: Fahrtkosten'
+
+  # Basel-Landschaft counts the kilometres only for one of its reasons: no public transport, the car
+  # used at work at the employer's request, illness or frailty, a stop more than 1.5 km away, or
+  # more than 2 1/2 hours a day by public transport (bl-2026-wegleitung p. 25); otherwise what public
+  # transport would have cost.
+  - use: commute_transit_usable
+    explain:
+      en: 'A driver deducts what public transport would have cost, for both taxes. The kilometres count only if you had a reason: no public transport for the trip, the car needed at work at your employer’s request, a health reason, a stop more than 1.5 km from your home or workplace, or over two and a half hours a day by public transport.'
+      fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics, pour les deux impôts. Les kilomètres ne comptent que si vous aviez une raison : pas de transport public pour ce trajet, la voiture nécessaire au travail à la demande de l’employeur, une raison de santé, un arrêt à plus de 1,5 km de votre domicile ou de votre lieu de travail, ou plus de deux heures et demie par jour en transports publics.'
+      de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Die Kilometer zählen nur mit einem Grund: kein öffentliches Verkehrsmittel für diesen Weg, das Auto während der Arbeitszeit auf Verlangen der Arbeitgeberfirma, ein gesundheitlicher Grund, eine Haltestelle mehr als 1,5 km von Wohn- oder Arbeitsort, oder mehr als zweieinhalb Stunden pro Tag mit dem öffentlichen Verkehr.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=25'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 25: travel to work'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 25 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 25: Fahrtkosten'
+    options:
+      - value: 'yes'
+        label:
+          {
+            en: 'Yes, I could have used public transport',
+            fr: 'Oui, j’aurais pu prendre les transports publics',
+            de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+          }
+      - value: 'no'
+        label:
+          {
+            en: 'No, one of those reasons applies',
+            fr: 'Non, l’une de ces raisons s’applique',
+            de: 'Nein, einer dieser Gründe trifft zu',
+          }
+
+  - use: commute_transit_equivalent
+    explain:
+      en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
+      fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab, bei beiden Steuern, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=25'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 25: travel to work'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 25 : Frais de déplacement'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 25: Fahrtkosten'
+
+  # bl-2026-wegleitung p. 26 (Einzelweg x Fahrten pro Tag x Arbeitstage x Ansatz pro km).
+  - use: commute_distance
+    explain:
+      en: 'With one of those reasons, both taxes count a fixed amount per kilometre, there and back once a day, each up to its own yearly limit.'
+      fr: 'Avec l’une de ces raisons, les deux impôts comptent un montant fixe par kilomètre, un aller et retour par jour, chacun jusqu’à sa propre limite annuelle.'
+      de: 'Mit einem dieser Gründe zählen beide Steuern einen festen Betrag pro Kilometer, einmal hin und zurück pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=26'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 26: travel by car'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 26 : Trajets en voiture'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 26: Berechnung des Arbeitswegs'
+
+  - use: commute_drive_days
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=26'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 26: travel by car'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 26 : Trajets en voiture'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 26: Berechnung des Arbeitswegs'
+    help:
+      en: 'Leave out holidays, sick days and days worked from home (Homeoffice).'
+      fr: 'Sans les vacances, les jours de maladie et les jours de télétravail (Homeoffice).'
+      de: 'Ohne Ferien, Krankheitstage und Tage im Homeoffice.'
+
+  # Meals away from home (510/515, Mehrkosten für auswärtige Verpflegung), for both taxes:
+  # bl-2026-wegleitung p. 27.
+  - use: meal_days
+    explain:
+      en: 'Lunch away from home because of work costs more than at home (Mehrkosten für auswärtige Verpflegung). A fixed amount per day counts for both taxes, up to a yearly limit, half of it when your employer pays part of your meals (box G of your salary certificate).'
+      fr: 'Manger à l’extérieur à cause du travail coûte plus cher qu’à la maison (Mehrkosten für auswärtige Verpflegung). Un montant fixe par jour compte pour les deux impôts, jusqu’à une limite annuelle, la moitié quand votre employeur paie une partie de vos repas (case G du certificat de salaire).'
+      de: 'Auswärts essen wegen der Arbeit kostet mehr als zu Hause (Mehrkosten für auswärtige Verpflegung). Für beide Steuern zählt ein fester Betrag pro Tag, bis zu einem jährlichen Höchstbetrag, die Hälfte davon, wenn dein Arbeitgeber einen Teil deiner Mahlzeiten bezahlt (Feld G des Lohnausweises).'
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=27'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 27: meals'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 27 : Frais de repas'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 27: Mehrkosten der auswärtigen Verpflegung'
+
+  # bl-2026-wegleitung p. 46 (Erläuterungen zum Wertschriften- und Guthabenverzeichnis).
+  - use: banks
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=46'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 46: securities and accounts'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 46 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 46: Wertschriften- und Guthabenverzeichnis'
+    help:
+      en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers. On the return: Wertschriften- und Guthabenverzeichnis.'
+      fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers. Sur la déclaration : Wertschriften- und Guthabenverzeichnis (état des titres et avoirs).'
+      de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker. Auf der Steuererklärung: Wertschriften- und Guthabenverzeichnis.'
+
+  # bl-2026-wegleitung p. 50 (Kryptowährungen: wealth, a wallet printout at year end).
+  - use: crypto
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=50'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 50: cryptocurrencies'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 50 : Cryptomonnaies'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 50: Kryptowährungen'
+
+  # bl-2026-wegleitung p. 35 (720, Krankheits- und Unfallkosten), p. 36 (735 and 738), p. 29 (555,
+  # 570, 575).
+  - use: payments
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=35'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 35: illness costs and donations'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 35 : Frais de maladie et dons'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 35: Krankheitskosten und Zuwendungen'
+
+  # What Taxpresso can't prepare for Basel-Landschaft yet: property (400 to 470, 831 to 851),
+  # inheritances and gifts (954, 955), income from abroad, capital benefits (965 to 968). E-Tax BL is
+  # the canton's online return (bl-na-e-tax-bl).
+  - use: special
+    learnMore:
+      url: 'https://www.baselland.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/steuererklaerung-natuerliche-personen-und-e-tax-bl/e-tax-bl-1'
+      label:
+        en: 'E-Tax BL, the canton’s online return (baselland.ch)'
+        fr: 'E-Tax BL, la déclaration en ligne du canton (baselland.ch)'
+        de: 'E-Tax BL, die Online-Steuererklärung des Kantons (baselland.ch)'
+    options:
+      - value: real_estate
+        label:
+          {
+            en: 'I own real estate, in Switzerland or abroad',
+            fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
+            de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+          }
+        notSupported:
+          {
+            en: 'Real estate (Liegenschaften)',
+            fr: 'Les immeubles (Liegenschaften)',
+            de: 'Liegenschaften',
+          }
+      - value: inheritance_or_gift
+        label:
+          {
+            en: 'I received an inheritance or a large gift',
+            fr: 'J’ai reçu un héritage ou une donation importante',
+            de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+          }
+        notSupported:
+          {
+            en: 'An inheritance or a gift (Erbanfall, Schenkung)',
+            fr: 'Un héritage ou une donation (Erbanfall, Schenkung)',
+            de: 'Ein Erbanfall oder eine Schenkung',
+          }
+      - value: foreign_income
+        label:
+          {
+            en: 'I had income from abroad (salary, pension, rent)',
+            fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
+            de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+          }
+        notSupported:
+          {
+            en: 'Income from abroad',
+            fr: 'Des revenus de l’étranger',
+            de: 'Einkünfte aus dem Ausland',
+          }
+      - value: pension_capital
+        label:
+          {
+            en: 'I withdrew pension capital (2nd or 3rd pillar)',
+            fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
+            de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+          }
+        notSupported:
+          {
+            en: 'A pension capital withdrawal (Kapitalleistungen aus Vorsorge)',
+            fr: 'Un retrait de capital de prévoyance (Kapitalleistungen aus Vorsorge)',
+            de: 'Ein Kapitalbezug aus der Vorsorge (Kapitalleistungen aus Vorsorge)',
+          }
+
+# The documents, with the page of the Basel-Landschaft guide for 2026 (bl-2026-wegleitung p. 8
+# lists the attachments).
+requirements:
+  - use: salary_certificate
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=12'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 12: main employment'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 12 : Activité principale'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 12: Haupterwerbstätigkeit'
+    source: 'bl-2026-wegleitung p. 12'
+
+  - use: replacement_income
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=17'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 17: allowances'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 17 : Indemnités'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 17: Erwerbsausfallentschädigungen'
+    source: 'bl-2026-wegleitung p. 17'
+
+  - use: pension
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=16'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 16: pensions'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 16 : Rentes'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 16: Renten'
+    source: 'bl-2026-wegleitung p. 16'
+
+  - use: pillar3a
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=30'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 30: pillar 3a'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 30 : Pilier 3a'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 30: Beiträge an die Säule 3a'
+    source: 'bl-2026-wegleitung p. 30'
+
+  - use: lpp_buyin
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=30'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 30: pension fund buy-ins'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 30 : Rachats au 2e pilier'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 30: Einkäufe in die 2. Säule'
+    source: 'bl-2026-wegleitung p. 30'
+
+  - use: health_premiums
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=31'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 31: insurance premiums'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 31 : Primes d’assurances'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 31: Versicherungsprämien'
+    source: 'bl-2026-wegleitung p. 31'
+
+  - use: banks
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=46'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 46: securities and accounts'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 46 : Titres et avoirs'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 46: Wertschriften- und Guthabenverzeichnis'
+    source: 'bl-2026-wegleitung p. 46'
+
+  - use: crypto
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=50'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 50: cryptocurrencies'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 50 : Cryptomonnaies'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 50: Kryptowährungen'
+    source: 'bl-2026-wegleitung p. 50'
+
+  - use: childcare
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=32'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 32: childcare'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 32 : Frais de garde'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 32: Kinderbetreuung durch Drittpersonen'
+    source: 'bl-2026-wegleitung p. 32'
+
+  - use: medical
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=35'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 35: illness and accident costs'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 35 : Frais de maladie et d’accident'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 35: Krankheits- und Unfallkosten'
+    source: 'bl-2026-wegleitung p. 35'
+
+  - use: donations
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=36'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 36: donations'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 36 : Dons'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 36: Freiwillige Zuwendungen'
+    source: 'bl-2026-wegleitung p. 36'
+
+  - use: loan_interest
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=29'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 29: debt interest'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 29 : Intérêts passifs'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 29: Schuldzinsen'
+    source: 'bl-2026-wegleitung p. 29'
+
+  - use: alimony
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=29'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 29: alimony and child support'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 29 : Contributions d’entretien'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 29: Unterhaltsbeiträge'
+    source: 'bl-2026-wegleitung p. 17, p. 29'
+
+  - use: separation_judgment
+    learnMore:
+      url: 'https://bl-api.webcloud7.ch/politik-und-behorden/direktionen/finanz-und-kirchendirektion/steuerverwaltung/onlineformulare-merkblaetter-formulare-wegleitungen/unselbstaendigerwerbende-2026/wegleitung-zur-steuererklaerung-2026_int_2_w_2026_260320.pdf#page=3'
+      label:
+        en: 'Basel-Landschaft tax guide 2026, p. 3: separation and divorce'
+        fr: 'Guide fiscal de Bâle-Campagne 2026, p. 3 : Séparation et divorce'
+        de: 'Wegleitung zur Steuererklärung 2026, S. 3: Trennung und Scheidung'
+    source: 'bl-2026-wegleitung p. 3'

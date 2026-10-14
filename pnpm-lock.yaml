@@ -404,6 +404,9 @@ importers:
       '@taxpresso/rules-be':
         specifier: workspace:*
         version: link:../rules-be
+      '@taxpresso/rules-bl':
+        specifier: workspace:*
+        version: link:../rules-bl
       '@taxpresso/rules-ch':
         specifier: workspace:*
         version: link:../rules-ch
