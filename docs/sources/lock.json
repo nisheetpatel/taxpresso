@@ -5762,5 +5762,15 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-14T02:47:06.172Z",
     "status": "ok"
+  },
+  "bl-na-law-steuerfussdekret-331-2": {
+    "url": "https://bl.clex.ch/api/de/versions/4401/pdf_file",
+    "final_url": "https://bl.clex.ch/api/de/versions/4401/pdf_file",
+    "file": "bl/files/bl-na-law-steuerfussdekret-331-2.pdf",
+    "bytes": 140767,
+    "sha256": "1ef63e1dd380ad2bc3acd6cc5eb7fad9b084ac28f661f680c0123f9c7a1ac80e",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T03:31:45.972Z",
+    "status": "ok"
   }
 }
