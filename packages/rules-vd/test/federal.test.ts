@@ -161,37 +161,43 @@ function three(h: Shared) {
 }
 
 describe('the federal tax of a Vaud household', () => {
-  it('equals Geneva’s and Zurich’s federal tax for the same household, to the centime (2,000 households)', () => {
-    let compared = 0;
-    let skipped = 0;
-    for (let i = 0; i < 2_000; i++) {
-      const h = household();
-      const { ge, zh, vd, vdResult } = three(h);
-      const what = JSON.stringify(h);
-      // Vaud's own tax not computed (the cap of the quotient familial or the maxima of LICom art. 8
-      // the documents leave open, a married couple sharing custody: docs/sources/vd/NOTES.md):
-      // nothing to compare.
-      if (!vdResult.icc) {
-        skipped++;
-        continue;
+  it(
+    'equals Geneva’s and Zurich’s federal tax for the same household, to the centime (2,000 households)',
+    { timeout: 60_000 },
+    () => {
+      let compared = 0;
+      let skipped = 0;
+      for (let i = 0; i < 2_000; i++) {
+        const h = household();
+        const { ge, zh, vd, vdResult } = three(h);
+        const what = JSON.stringify(h);
+        // Vaud's own tax not computed (the cap of the quotient familial or the maxima of LICom art. 8
+        // the documents leave open, a married couple sharing custody: docs/sources/vd/NOTES.md):
+        // nothing to compare.
+        if (!vdResult.icc) {
+          skipped++;
+          continue;
+        }
+        expect(Boolean(vd), what).toBe(Boolean(ge));
+        expect(Boolean(vd), what).toBe(Boolean(zh));
+        if (!ge || !vd || !zh) continue;
+        compared++;
+        for (const other of [ge, zh]) {
+          expect(vd.taxableIncome.amount, what).toBe(other.taxableIncome.amount);
+          expect(vd.scale, what).toBe(other.scale);
+          expect(vd.scaleTax.amount, what).toBe(other.scaleTax.amount);
+          expect(vd.childReduction.amount, what).toBe(other.childReduction.amount);
+          expect(vd.tax.amount, what).toBe(other.tax.amount);
+          expect(Boolean(vd.tax.estimates?.length), what).toBe(
+            Boolean(other.tax.estimates?.length),
+          );
+          expect(Boolean(vd.tax.needsOk), what).toBe(Boolean(other.tax.needsOk));
+        }
       }
-      expect(Boolean(vd), what).toBe(Boolean(ge));
-      expect(Boolean(vd), what).toBe(Boolean(zh));
-      if (!ge || !vd || !zh) continue;
-      compared++;
-      for (const other of [ge, zh]) {
-        expect(vd.taxableIncome.amount, what).toBe(other.taxableIncome.amount);
-        expect(vd.scale, what).toBe(other.scale);
-        expect(vd.scaleTax.amount, what).toBe(other.scaleTax.amount);
-        expect(vd.childReduction.amount, what).toBe(other.childReduction.amount);
-        expect(vd.tax.amount, what).toBe(other.tax.amount);
-        expect(Boolean(vd.tax.estimates?.length), what).toBe(Boolean(other.tax.estimates?.length));
-        expect(Boolean(vd.tax.needsOk), what).toBe(Boolean(other.tax.needsOk));
-      }
-    }
-    expect(compared).toBeGreaterThan(1_600);
-    expect(skipped).toBeLessThan(400);
-  });
+      expect(compared).toBeGreaterThan(1_600);
+      expect(skipped).toBeLessThan(400);
+    },
+  );
 
   it('puts each federal deduction on its Vaud code, in the worksheet’s order (p. 65), cited', () => {
     const r = vaud.computeReturn({

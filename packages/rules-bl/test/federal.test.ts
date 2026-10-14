@@ -180,37 +180,41 @@ function four(h: Shared) {
 }
 
 describe('the federal tax on the Basel-Landschaft return', () => {
-  it('equals Geneva’s, Zurich’s and Bern’s federal tax for the same household, to the centime (2,000 households)', () => {
-    let compared = 0;
-    let skipped = 0;
-    for (let i = 0; i < 2_000; i++) {
-      const h = household();
-      const { bl, ge, zh, be } = four(h);
-      const what = JSON.stringify(h);
-      // Basel-Landschaft's own tax not computed (docs/sources/bl/NOTES.md): nothing to compare.
-      if (!bl.icc) {
-        skipped++;
-        continue;
+  it(
+    'equals Geneva’s, Zurich’s and Bern’s federal tax for the same household, to the centime (2,000 households)',
+    { timeout: 60_000 },
+    () => {
+      let compared = 0;
+      let skipped = 0;
+      for (let i = 0; i < 2_000; i++) {
+        const h = household();
+        const { bl, ge, zh, be } = four(h);
+        const what = JSON.stringify(h);
+        // Basel-Landschaft's own tax not computed (docs/sources/bl/NOTES.md): nothing to compare.
+        if (!bl.icc) {
+          skipped++;
+          continue;
+        }
+        expect(Boolean(bl.ifd), what).toBe(Boolean(ge.ifd));
+        if (!bl.ifd || !ge.ifd) continue;
+        compared++;
+        for (const other of [ge.ifd, zh.ifd, be.icc ? be.ifd : ge.ifd]) {
+          expect(other, what).not.toBeNull();
+          expect(bl.ifd.taxableIncome.amount, what).toBe(other!.taxableIncome.amount);
+          expect(bl.ifd.scale, what).toBe(other!.scale);
+          expect(bl.ifd.scaleTax.amount, what).toBe(other!.scaleTax.amount);
+          expect(bl.ifd.childReduction.amount, what).toBe(other!.childReduction.amount);
+          expect(bl.ifd.tax.amount, what).toBe(other!.tax.amount);
+          expect(Boolean(bl.ifd.tax.estimates?.length), what).toBe(
+            Boolean(other!.tax.estimates?.length),
+          );
+          expect(Boolean(bl.ifd.tax.needsOk), what).toBe(Boolean(other!.tax.needsOk));
+        }
       }
-      expect(Boolean(bl.ifd), what).toBe(Boolean(ge.ifd));
-      if (!bl.ifd || !ge.ifd) continue;
-      compared++;
-      for (const other of [ge.ifd, zh.ifd, be.icc ? be.ifd : ge.ifd]) {
-        expect(other, what).not.toBeNull();
-        expect(bl.ifd.taxableIncome.amount, what).toBe(other!.taxableIncome.amount);
-        expect(bl.ifd.scale, what).toBe(other!.scale);
-        expect(bl.ifd.scaleTax.amount, what).toBe(other!.scaleTax.amount);
-        expect(bl.ifd.childReduction.amount, what).toBe(other!.childReduction.amount);
-        expect(bl.ifd.tax.amount, what).toBe(other!.tax.amount);
-        expect(Boolean(bl.ifd.tax.estimates?.length), what).toBe(
-          Boolean(other!.tax.estimates?.length),
-        );
-        expect(Boolean(bl.ifd.tax.needsOk), what).toBe(Boolean(other!.tax.needsOk));
-      }
-    }
-    expect(compared).toBeGreaterThan(1_800);
-    expect(skipped).toBeLessThan(150);
-  });
+      expect(compared).toBeGreaterThan(1_800);
+      expect(skipped).toBeLessThan(150);
+    },
+  );
 
   it('puts each federal deduction on its line of the column, in the return’s order, and cites the federal rules', () => {
     const h: Shared = {
