@@ -267,6 +267,7 @@ const GIVEN: Record<string, Text> = {
   '71.00': t('Medical costs', 'Frais médicaux'),
   '73.00': t('Donations', 'Dons'),
   '74.00': t('Paid to political parties', 'Versé aux partis politiques'),
+  '51.60': t('Half of your business’s equity', 'La moitié des fonds propres de votre activité'),
 };
 
 /** Taxpayer B's code read as A's (41.40 -> 31.40), for the words above. */

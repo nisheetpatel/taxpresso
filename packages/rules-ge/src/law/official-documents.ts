@@ -206,6 +206,18 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf',
     pdf: true,
   },
+  'ch-2025-ifd-instructions-personnes-physiques': {
+    title:
+      '2a - Instructions 2025 concernant la déclaration des personnes physiques (Formulaire 2)',
+    url: 'https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf',
+    pdf: true,
+  },
+  'ge-2025-guide-independants': {
+    title:
+      'Guide déclaration 2025 Indépendants, impôt cantonal et communal (ICC), impôt fédéral direct (IFD)',
+    url: 'https://www.ge.ch/document/44809/annexe/file/751631',
+    pdf: true,
+  },
   'ch-2025-oiis-dff-annexe': {
     title:
       "Ordonnance 1 du DFF relative à l'imputation d'impôts étrangers prélevés à la source, RS 672.201.1, avec son annexe (liste des États contractants)",

@@ -88,4 +88,16 @@ export const KIND_LABELS: Record<DocumentKind, { en: string; fr: string; de: str
     fr: 'Déclaration de cette année (PDF à vérifier)',
     de: 'Steuererklärung dieses Jahres (PDF zum Prüfen)',
   },
+  // ge-2025-guide-independants p. 6 and 25: the accounts or simple records of a self-employed person.
+  business_accounts: {
+    en: 'Business accounts or records',
+    fr: 'Comptes commerciaux ou relevés',
+    de: 'Geschäftsabschluss oder Aufzeichnungen',
+  },
+  // ge-2025-guide-independants p. 25: "un relevé des cotisations sociales ou des acomptes".
+  avs_contributions: {
+    en: 'AVS contributions statement',
+    fr: 'Relevé des cotisations AVS',
+    de: 'AHV-Beitragsabrechnung',
+  },
 };

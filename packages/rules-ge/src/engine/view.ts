@@ -46,6 +46,20 @@ function lines(r: TaxResult): ViewLine[] {
     );
     if (i.credits.withholdingTax) out.push(['icc.credit.withholdingTax', i.credits.withholdingTax]);
   }
+  // Annexe B: the totals the form adds up itself, per person and column.
+  for (const s of r.business ?? []) {
+    for (const [col, list] of [
+      ['icc', s.icc],
+      ['ifd', s.ifd],
+      ['wealth', s.wealth],
+    ] as const) {
+      for (const i of list) {
+        if (['12.17', '12.45', '12.46', '57.00', '12.52', '32.00'].includes(i.code)) {
+          out.push([`business.${s.person}.${col}.${i.code}`, i]);
+        }
+      }
+    }
+  }
   if (r.ifd) {
     const f = r.ifd;
     out.push(

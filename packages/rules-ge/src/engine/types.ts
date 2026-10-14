@@ -9,6 +9,7 @@ import type {
   CivilStatus,
   ChildInput as HouseholdChild,
   EmploymentInput as HouseholdEmployment,
+  EnginePerson,
   HouseholdAmounts,
   IfdResult as FederalResult,
   Item,
@@ -124,6 +125,11 @@ export interface EngineInput {
    * 56.20, 56.30, credits F1.IA and F1.IES). When given, it is the only source of these amounts.
    */
   wealthItems?: readonly WealthItemInput[];
+  /**
+   * Parts of the household the engine can't compute (self-employment beyond the simple case, read
+   * from the answers): when there are any, neither tax is computed (fail closed), and each says why.
+   */
+  unsupported?: readonly Text[];
 }
 
 export interface CommunalShare {
@@ -208,6 +214,22 @@ export interface TaxResult extends SharedTaxResult<IccResult> {
   total: number | null;
   /** Every cap, threshold, minimum and flat-or-actual choice applied, in the order computed. */
   limits: LimitApplied[];
+  /**
+   * Annexe B, one sheet per self-employed person: the lines the form adds up itself (12.17, 12.45,
+   * 12.46, 57.00, 12.52, 32.00) with the ones the return carries. Absent without self-employment.
+   */
+  business?: BusinessSheet[];
+}
+
+/** One sheet of annexe B, for one person: its lines per column, in the form's order. */
+export interface BusinessSheet {
+  person: EnginePerson;
+  /** "1. Revenu" (ICC) of B2 and B4. */
+  icc: Item[];
+  /** "2. Revenu" (IFD) of B2 and B4. */
+  ifd: Item[];
+  /** "3. Fortune" (ICC) of B2, and the deduction 51.60 of PG4. */
+  wealth: Item[];
 }
 
 export type { EstimateReason, Text };

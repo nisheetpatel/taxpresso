@@ -24,12 +24,10 @@ describe('the 2025 form map', () => {
       expectCited(p.source, p.id);
       expect(p.source, p.id).toContain(`ge-2025-declaration-specimen p. ${p.pdfPage}`);
     }
-    // Self-employment and property are listed as placeholders: out of scope for now.
+    // Property is listed as placeholders, out of scope for now; of annexe B (self-employment, the
+    // simple case), B3's stock and depreciation tables are the user's to copy from the accounts.
     expect(pages.filter((p) => !p.supported).map((p) => p.id)).toEqual([
-      'B1',
-      'B2',
       'B3',
-      'B4',
       'D1',
       'D2',
       'D3',
@@ -127,7 +125,10 @@ describe('the 2025 form map', () => {
     expect(find('A1', '31.20')).toMatchObject({ role: 'computed', columns: ['ifd'] });
     expect(find('A1', '11.00').role).toBe('total');
     expect(find('PG2', '11.00')).toMatchObject({ role: 'report', person: 'A' });
-    expect(find('PG2', '12.00').supported).toBe(false);
+    // Self-employment, the simple case: its totals on the summary pages are supported, property's not.
+    expect(find('PG2', '12.00')).toMatchObject({ role: 'report', supported: true });
+    expect(find('PG3', '57.00')).toMatchObject({ role: 'report', supported: true });
+    expect(find('PG2', '15.00').supported).toBe(false);
     expect(find('PG3', '71.00')).toMatchObject({ role: 'input', parts: ['A', 'B', 'children'] });
     expect(find('F1', 'F1-RSI').format).toBe('money_cents');
     expect(find('C3', '52.21').columns).toEqual(['icc_ifd']);

@@ -11,9 +11,10 @@
 //   guide's title for that code.
 // Labels keep the form's spelling ("2ème", "Etat des titres", apostrophes ’).
 //
-// Self-employment (annexe B) and property (annexe D) are out of scope for now (SPEC.md section 1):
-// their pages are listed, their totals on the main form are marked unsupported, their own rubrics
-// come with their phase.
+// Self-employment (annexe B): the simple case of SPEC.md section 1 (a sole proprietorship), one
+// sheet per taxpayer; its lines for partnerships and the cases Taxpresso doesn't prepare are listed,
+// not supported. Property (annexe D) is out of scope for now: its pages are listed, its totals on
+// the main form are marked unsupported, its own rubrics come with its phase.
 import type {
   FormColumn,
   FormMap,
@@ -130,7 +131,6 @@ const PG2 = [
     'Revenu de l’activité indépendante',
     'Self-employed income (from B2)',
     'Revenu indépendant (de B2)',
-    { supported: false },
   ),
   pg2(
     '13.00',
@@ -299,7 +299,6 @@ const PG3 = [
     'Déductions liées à l’activité indépendante',
     'Deductions for self-employment (from B4)',
     'Déductions du travail indépendant (de B4)',
-    { supported: false },
   ),
   pg3(
     '56.20',
@@ -357,7 +356,6 @@ const PG3 = [
     'Pertes commerciales et/ou pertes non compensées',
     'Business losses (from B2)',
     'Pertes commerciales (de B2)',
-    { supported: false },
   ),
   pg3(
     '92.20',
@@ -442,7 +440,6 @@ const PG4 = [
     'Actifs commerciaux bruts et/ou fonds propres',
     'Business assets (from B2)',
     'Actifs commerciaux (de B2)',
-    { supported: false },
   ),
   pg4(
     '14.00',
@@ -478,21 +475,20 @@ const PG4 = [
     'Passifs commerciaux et/ou découvert commercial',
     'Business debts (from B2)',
     'Dettes commerciales (de B2)',
-    { supported: false },
   ),
   pg4d(
     '51.60',
     'Déduction sur la fortune commerciale investie',
     'Deduction on business assets, taxpayer A',
     'Déduction sur la fortune commerciale, contribuable A',
-    { person: 'A', role: 'computed', supported: false, guide: 16 },
+    { person: 'A', role: 'computed', guide: 16 },
   ),
   pg4d(
     '51.60',
     'Déduction sur la fortune commerciale investie',
     'Deduction on business assets, taxpayer B',
     'Déduction sur la fortune commerciale, contribuable B',
-    { person: 'B', role: 'computed', supported: false, guide: 16 },
+    { person: 'B', role: 'computed', guide: 16 },
   ),
   pg4d(
     '51.62',
@@ -743,6 +739,342 @@ function annexA(page: 'A1' | 'A2', pdfPage: number, person: FormPerson): FormRub
       `Total deductions for salaried work, ${who.en}`,
       `Total des déductions du travail salarié, ${who.fr}`,
       { role: 'total' },
+    ),
+  ];
+}
+
+// --- Annexe B: self-employment, one sheet per taxpayer and business ----------------------------
+
+const INDEP = 'ge-2025-guide-independants';
+
+/**
+ * Annexe B for one taxpayer: the same codes for A and B, one sheet per person and per business,
+ * ticked "Contribuable A" or "Contribuable B" (ge-2025-declaration-specimen p. 7 to 10). Explained
+ * in the guide for the self-employed (ge-2025-guide-independants p. 10 to 24). Taxpresso prepares the
+ * simple case (a sole proprietorship): the lines of partnerships (12.70, 57.51), qualified
+ * participations, the patent box and research (12.18, 12.28, 12.29), the AVS provision (12.13,
+ * 12.14) and the owner's own pension fund (32.12, 32.30) are listed, not supported.
+ */
+function annexB(person: 'A' | 'B'): FormRubric[] {
+  const who =
+    person === 'A' ? g('taxpayer A', 'contribuable A') : g('taxpayer B', 'contribuable B');
+  /** A rubric maker for one section of annexe B, cited to the guide for the self-employed. */
+  const onB = (page: FormPageId, pdfPage: number, section: string, defaults: Options) => {
+    const make = on(page, pdfPage, `${section}-${person}`, { person, ...defaults });
+    return (key: string, label: string, en: string, fr: string, options: Options = {}) => {
+      const { guide, ...rest } = { ...defaults, ...options };
+      return {
+        ...make(key, label, en, fr, rest),
+        source: `${SPEC} p. ${pdfPage}${guide !== undefined ? `; ${INDEP} p. ${guide}` : ''}`,
+      };
+    };
+  };
+  const b1 = onB('B1', 7, 'renseignements', {
+    nature: 'identity',
+    format: 'text',
+    columns: [],
+    guide: 10,
+  });
+  const res = onB('B2', 8, 'resultat', { columns: ICC_IFD, guide: 12 });
+  const bil = onB('B2', 8, 'bilan', { nature: 'wealth', columns: WEALTH, guide: 17 });
+  const ded = onB('B4', 10, 'deductions', { nature: 'deduction', columns: ICC_IFD, guide: 22 });
+  return [
+    b1(
+      `B1-${person}`,
+      `Contribuable ${person}`,
+      `Tick: this sheet is for ${who.en}`,
+      `Cochez : cette feuille est celle du ${who.fr}`,
+      { format: 'tick' },
+    ),
+    b1(
+      'B1-NOM',
+      'Nom et /ou raison sociale de l’activité professionnelle',
+      'The name of your business',
+      'Le nom de votre activité',
+    ),
+    b1(
+      'B1-COMMUNE',
+      'Code commune',
+      'Code of the commune of the business: here your home commune',
+      'Code de la commune de l’activité : ici votre commune de domicile',
+      { guide: 11 },
+    ),
+    b1(
+      'B1-RI',
+      'Raison individuelle',
+      'Tick: you run the business in your own name (nature juridique)',
+      'Cochez : vous exploitez l’activité en votre nom (nature juridique)',
+      { format: 'tick', guide: 11 },
+    ),
+    b1(
+      'B1-DU',
+      'Exercice comptable du',
+      'First day of the business year',
+      'Premier jour de l’exercice comptable',
+      { format: 'date', guide: 11 },
+    ),
+    b1('B1-AU', 'au', 'Last day of the business year', 'Dernier jour de l’exercice comptable', {
+      format: 'date',
+      guide: 11,
+    }),
+    b1(
+      'B1-FACT',
+      'Méthode à la facturation',
+      'Tick: you count income and costs when invoiced',
+      'Cochez : recettes et charges comptent à la facturation',
+      { format: 'tick', guide: 11 },
+    ),
+    b1(
+      'B1-ENC',
+      'Méthode de l’encaissement-décaissement',
+      'Tick: you count income and costs when paid',
+      'Cochez : recettes et charges comptent à l’encaissement et au décaissement',
+      { format: 'tick', guide: 11 },
+    ),
+    b1(
+      'B1-DEBUT',
+      'L’activité indépendante débute-t-elle durant cette période fiscale ?',
+      'Did the business start this year? Oui (yes) or Non (no)',
+      'L’activité a-t-elle débuté cette année ? Oui ou Non',
+      { guide: 11 },
+    ),
+    b1(
+      'B1-FIN',
+      'L’activité indépendante cesse-t-elle durant cette période fiscale ?',
+      'Does the business stop this year? Oui (yes) or Non (no)',
+      'L’activité cesse-t-elle cette année ? Oui ou Non',
+      { guide: 11 },
+    ),
+    res(
+      '12.08',
+      'Chiffre d’affaires brut',
+      'Turnover: fees, operating income, sales',
+      'Chiffre d’affaires : honoraires, produits d’exploitation, ventes',
+    ),
+    res(
+      '12.09',
+      'Indemnités pour pertes de gains reçues',
+      'Benefits received for lost earnings',
+      'Indemnités reçues pour pertes de gains',
+    ),
+    res(
+      '12.15',
+      'Produits financiers',
+      'Financial income of the business’s assets',
+      'Rendement des actifs de l’activité',
+    ),
+    res(
+      '12.16',
+      'Autres produits',
+      'Other income of the business, not above',
+      'Autres produits de l’activité, non déclarés ci-dessus',
+      { guide: 13 },
+    ),
+    res('12.17', 'Total des recettes', 'Total revenue', 'Total des recettes', {
+      role: 'computed',
+      guide: 13,
+    }),
+    res(
+      '12.21',
+      'Charges de matières premières, de marchandises et de services',
+      'Materials, goods and services bought',
+      'Achats de matières, de marchandises et de services',
+      { nature: 'deduction', guide: 13 },
+    ),
+    res(
+      '12.22',
+      'Charges du personnel',
+      'Staff costs, your own pay excluded',
+      'Charges de personnel, sans votre propre salaire',
+      { nature: 'deduction', guide: 13 },
+    ),
+    res('12.23', 'Amortissements', 'Depreciation (from B3)', 'Amortissements (de B3)', {
+      nature: 'deduction',
+      guide: 14,
+    }),
+    res('12.24', 'Provisions', 'Provisions', 'Provisions', { nature: 'deduction', guide: 14 }),
+    res(
+      '12.41',
+      'Intérêts de dettes',
+      'Interest on business debts',
+      'Intérêts des dettes commerciales',
+      {
+        nature: 'deduction',
+        guide: 14,
+      },
+    ),
+    res(
+      '12.42',
+      'Frais généraux et autres charges d’exploitation',
+      'Overheads and other operating costs, not above',
+      'Frais généraux et autres charges, non déclarés ci-dessus',
+      { nature: 'deduction', guide: 15 },
+    ),
+    res(
+      '12.45',
+      'Total des charges commerciales',
+      'Total business charges',
+      'Total des charges commerciales',
+      { nature: 'deduction', role: 'computed', guide: 15 },
+    ),
+    res('12.46', 'Bénéfice/(Perte)', 'Result: profit, or a loss', 'Résultat : bénéfice ou perte', {
+      role: 'computed',
+      guide: 15,
+    }),
+    res(
+      '12.18',
+      'Déduction pour participations qualifiées',
+      'Deduction for qualified participations',
+      'Déduction pour participations qualifiées',
+      { nature: 'deduction', supported: false, guide: 15 },
+    ),
+    res(
+      '12.28',
+      'Réduction liée aux brevets et droits comparables',
+      'Patent box reduction, Geneva tax',
+      'Réduction pour brevets, impôt cantonal',
+      { nature: 'deduction', columns: ['icc'], supported: false, guide: 16 },
+    ),
+    res(
+      '12.29',
+      'Réduction liée aux dépenses de recherche et de développement',
+      'Research and development reduction, Geneva tax',
+      'Réduction pour recherche et développement, impôt cantonal',
+      { nature: 'deduction', columns: ['icc'], supported: false, guide: 16 },
+    ),
+    res(
+      '12.01',
+      'Bénéfice net',
+      'Net profit, to PG2 12.00',
+      'Bénéfice net, à reporter en PG2 12.00',
+      {
+        role: 'computed',
+        guide: 16,
+      },
+    ),
+    res('57.10', 'Perte commerciale', 'Business loss of the year', 'Perte commerciale de l’année', {
+      nature: 'deduction',
+      role: 'computed',
+      guide: 16,
+    }),
+    res(
+      '57.20',
+      'Pertes non compensées',
+      'Losses of the seven previous years not deducted yet',
+      'Pertes des sept exercices précédents pas encore déduites',
+      { nature: 'deduction', guide: 16 },
+    ),
+    res('57.00', 'Perte nette', 'Net loss, to PG3 57.00', 'Perte nette, à reporter en PG3 57.00', {
+      nature: 'deduction',
+      role: 'computed',
+      guide: 16,
+    }),
+    bil('12.48', 'Actifs circulants', 'Current assets', 'Actifs circulants'),
+    bil('12.49', 'Actifs immobilisés', 'Fixed assets', 'Actifs immobilisés'),
+    bil(
+      '12.50',
+      'Actifs commerciaux bruts',
+      'Gross business assets, to PG4 12.00',
+      'Actifs commerciaux bruts, à reporter en PG4 12.00',
+      { role: 'computed' },
+    ),
+    bil(
+      '57.50',
+      'Passifs commerciaux (dettes)',
+      'Business debts, to PG4 57.00',
+      'Dettes commerciales, à reporter en PG4 57.00',
+    ),
+    bil(
+      '12.52',
+      // As printed, the form's own spelling ("inviduelle").
+      'Capital propre/(Découvert) de la société simple ou la raison inviduelle',
+      'Equity of your business: assets less debts',
+      'Fonds propres de l’activité : actifs moins dettes',
+      { role: 'computed' },
+    ),
+    bil(
+      '12.70',
+      'Fonds propres d’une société en nom collectif ou en commandite simple',
+      'Equity in a partnership',
+      'Fonds propres dans une société de personnes',
+      { supported: false },
+    ),
+    bil(
+      '57.51',
+      'Découvert commercial d’une société en nom collectif ou en commandite simple',
+      'Deficit in a partnership',
+      'Découvert dans une société de personnes',
+      { supported: false },
+    ),
+    ded(
+      '32.10',
+      'Acompte(s) AVS/AI, APG, AF, AMat de l’exploitant versés',
+      'Your own AVS/AI/APG contributions for the business year',
+      'Vos cotisations AVS/AI, APG pour l’exercice',
+    ),
+    ded(
+      '32.11',
+      'Cotisations complémentaires AVS/AI, APG, AF, AMat de l’exploitant',
+      'Further contributions after final decisions for earlier years',
+      'Cotisations complémentaires selon les décisions pour des années antérieures',
+    ),
+    ded(
+      '12.13',
+      'Montant de la provision AVS constituée',
+      'AVS provision made for the business year',
+      'Provision AVS constituée pour l’exercice',
+      { nature: 'info', columns: ['amount'], supported: false },
+    ),
+    ded(
+      '12.14',
+      'Montant de la provision AVS dissoute',
+      'AVS provision released',
+      'Provision AVS dissoute',
+      { nature: 'info', columns: ['amount'], supported: false },
+    ),
+    ded(
+      '32.12',
+      'Prévoyance 2ème pilier de l’exploitant (cotisations)',
+      'Your own pension fund contributions',
+      'Vos cotisations au 2e pilier',
+      { supported: false, guide: 23 },
+    ),
+    ded(
+      '32.30',
+      'Rachat(s) de la prévoyance professionnelle',
+      'Your own pension fund buy-ins',
+      'Vos rachats au 2e pilier',
+      { supported: false, guide: 23 },
+    ),
+    ded(
+      '32.40',
+      'Cotisations au 3ème pilier A',
+      'Payments into pillar 3a',
+      'Versements au 3e pilier A',
+      {
+        guide: 23,
+      },
+    ),
+    ded(
+      '32.90',
+      'Déduction sur le gain de l’un des époux/partenaires',
+      'Two-earner couple deduction, federal tax (lower income only)',
+      'Déduction pour couple à deux revenus, impôt fédéral (revenu le plus bas)',
+      { role: 'computed', columns: ['ifd'], guide: 23 },
+    ),
+    ded(
+      '32.95',
+      'Déduction sur le gain de l’un des époux/partenaires',
+      'Two-earner couple deduction, Geneva tax (lower income only)',
+      'Déduction pour couple à deux revenus, impôt cantonal (revenu le plus bas)',
+      { role: 'computed', columns: ['icc'], guide: 24 },
+    ),
+    ded(
+      '32.00',
+      'Total',
+      `Total deductions for self-employment, ${who.en}, to PG3 32.00`,
+      `Total des déductions de l’activité indépendante, ${who.fr}, à reporter en PG3 32.00`,
+      { role: 'computed' },
     ),
   ];
 }
@@ -1358,6 +1690,19 @@ const page = (
 });
 
 const SELF = g('Self-employment', 'Travail indépendant');
+
+/**
+ * The sections of an annexe B page, once for taxpayer A and once for B: one sheet per person
+ * ("Contribuable A", "Contribuable B", specimen p. 7). The title as printed, the gloss says whose.
+ */
+const perTaxpayer = (sections: [string, string, Gloss][]): [string, string, Gloss][] =>
+  (['A', 'B'] as const).flatMap((p) =>
+    sections.map(([id, title, gloss]): [string, string, Gloss] => [
+      `${id}-${p}`,
+      title,
+      g(`${gloss.en}, taxpayer ${p}`, `${gloss.fr}, contribuable ${p}`),
+    ]),
+  );
 const PROPERTY = g('Property', 'Immeubles');
 
 export const FORM_PAGES_2025: readonly FormPage[] = [
@@ -1448,30 +1793,31 @@ export const FORM_PAGES_2025: readonly FormPage[] = [
     ],
     { person: 'B', guide: 17 },
   ),
+  // Annexe B: one sheet per taxpayer and business, so each section once per taxpayer (A, B).
   page(
     'B1',
     7,
     'Activité indépendante 2025',
     SELF,
-    [
+    perTaxpayer([
       [
         'renseignements',
         'Renseignements généraux',
         g('General information', 'Renseignements généraux'),
       ],
-    ],
-    { supported: false, guide: 24 },
+    ]),
+    { guide: 24 },
   ),
   page(
     'B2',
     8,
     'Activité indépendante 2025',
     SELF,
-    [
+    perTaxpayer([
       ['resultat', 'Compte de pertes et profits', g('Profit and loss', 'Compte de résultat')],
       ['bilan', 'Bilan comptable', g('Balance sheet', 'Bilan')],
-    ],
-    { supported: false, guide: 24 },
+    ]),
+    { guide: 24 },
   ),
   page(
     'B3',
@@ -1492,14 +1838,14 @@ export const FORM_PAGES_2025: readonly FormPage[] = [
     10,
     'Activité indépendante 2025',
     SELF,
-    [
+    perTaxpayer([
       [
         'deductions',
         'Déductions liées aux revenus de la feuille B2',
         g('Deductions', 'Déductions'),
       ],
-    ],
-    { supported: false, guide: 24 },
+    ]),
+    { guide: 24 },
   ),
   page(
     'C1',
@@ -1733,6 +2079,8 @@ export const FORM_RUBRICS_2025: readonly FormRubric[] = [
   ...PG4,
   ...annexA('A1', 5, 'A'),
   ...annexA('A2', 6, 'B'),
+  ...annexB('A'),
+  ...annexB('B'),
   ...C1,
   ...C2,
   ...C3,

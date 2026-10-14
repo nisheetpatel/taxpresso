@@ -99,7 +99,8 @@ describe('limits the engine applied', () => {
       given: chf(7_258),
       limit: chf(7_258),
       counted: chf(7_258),
-      source: 'ge-2025-guide-declaration-pp p. 11, p. 18 (31.40)',
+      // The 2025 limits as the federal instructions for 2025 give them (Form. 2a, chiffre 13).
+      source: 'ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)',
     });
     // 2 x 17'122 + 2 x 3'965 (guide p. 29); IFD 3'700 + 2 x 700 (federal circular 2025, p. 2).
     expect(by('52.21', 'icc')).toMatchObject({ given: chf(16_000), limit: chf(42_174) });
@@ -207,7 +208,7 @@ describe('final check: Dupont', () => {
       '31.40 Pillar 3a (Cotisations au 3ème pilier A), you, ICC and IFD',
     );
     expect(pillar.sources[0]?.url).toBe(
-      'https://www.ge.ch/document/41995/annexe/file/573038#page=18',
+      'https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf#page=7',
     );
     // What the engine leaves out, assumes or can't verify, in plain words.
     expect(check.know.map((i) => i.kind)).toEqual(

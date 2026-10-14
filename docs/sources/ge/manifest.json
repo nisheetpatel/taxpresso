@@ -542,5 +542,21 @@
     "priority": "core",
     "why_needed": "The privileged share (part privilégiée) of each of the 45 communes for tax year 2026, needed to split the communal tax between the commune of residence and the commune of work.",
     "notes": "21-page weekly communiqué; the table is on p. 11 (Fixation de la part privilégiée de chaque commune pour 2026). The AFC table ge-2025-communal-centimes-pdf stops at 2025. The Conseil d'Etat fixes the share for the next year each October (the 2027 shares are in the communiqué of 7 October 2026)."
+  },
+  {
+    "id": "ge-2025-guide-independants",
+    "canton": "GE",
+    "doc_type": "guide",
+    "title": "Guide déclaration 2025 Indépendants, impôt cantonal et communal (ICC), impôt fédéral direct (IFD)",
+    "tax_year": 2025,
+    "language": "fr",
+    "url": "https://www.ge.ch/document/44809/annexe/file/751631",
+    "format": "pdf",
+    "publisher": "Administration fiscale cantonale (AFC), Genève",
+    "published": "2026-09-08",
+    "verified_on": "2026-10-14",
+    "priority": "core",
+    "why_needed": "The guide for the self-employed the main guide refers to (ge-2025-guide-declaration-pp p. 23): annexe B code by code (B1 to B4), the accounts or simple records to attach, the AVS/AI/APG contributions of the self-employed (32.10, 32.11), pillar 3a without a pension fund (32.40), losses of the seven previous years (57.20), the business wealth and its deduction (12.50, 57.50, 51.60).",
+    "notes": "36 pages, file guide-independants-2025.pdf. Landing page: https://www.ge.ch/document/guide-fiscal-2025-independants (published 8 September 2026). PDF page n is printed page n. Annexe B: p. 10 to 24; documents to attach: p. 25; the simplified declaration: p. 26 to 28. Added by the self-employment agent on 14 October 2026."
   }
 ]

@@ -132,6 +132,11 @@ export function commuteBase(
  * from 2026, Form. 2a p. 8) on top, its own limits checked by the planner. The same limits serve the
  * cantonal tax: `cantonalLaw` is the canton's article that says so (Geneva: LIPP art. 31 let. c).
  * `earnedFrom` are the traces of the salary and contributions the limit without a fund rests on.
+ *
+ * A self-employed person (`business`): the earned income adds the business result less the owner's
+ * AVS/AI/APG contributions, and when the activities make a loss in all, nothing is deducted (Form. 2a
+ * p. 7, chiffre 13: "Aucune déduction ne peut être faite lorsqu'il résulte une perte de l'activité
+ * lucrative"; `instructions` is that year's Form. 2a).
  */
 export function pillar3a(
   F: Pick<IfdParams, 'pillar3a'>,
@@ -144,6 +149,7 @@ export function pillar3a(
     self: number;
     earnedFrom: readonly Trace[];
     cantonalLaw?: readonly string[];
+    business?: { earned: number; known: boolean; trace: Trace; instructions?: string };
   },
 ): RuleResult<'pillar3a'> & { paid: number } {
   const tTrace = new Trace();
@@ -153,6 +159,45 @@ export function pillar3a(
   const out: RuleResult<'pillar3a'> & { paid: number } = { ...none(), paid };
   const lim = tTrace.p(F.pillar3a);
   tTrace.src(...(a.cantonalLaw ?? []));
+  if (a.business) {
+    // Every activity counts, the business's result after the owner's AVS contributions included.
+    tTrace.with(...a.earnedFrom, a.business.trace);
+    if (a.business.instructions) tTrace.src(`${a.business.instructions} p. 7`);
+    const earned = a.gross - a.social + a.self + a.business.earned;
+    if (a.business.known && earned <= 0) {
+      out.notCounted.push(
+        t(
+          `Pillar 3a: your activities make a loss in all this year (${chf(earned)}), so no 3a payment can be deducted.`,
+          `3e pilier A${NB}: vos activités se soldent par une perte cette année (${chf(earned)}), aucun versement au 3e pilier A ne peut donc être déduit.`,
+        ),
+      );
+      out.limits.push({
+        concept: 'pillar3a',
+        param: F.pillar3a,
+        kind: 'cap',
+        given: paid,
+        limit: 0,
+        counted: 0,
+      });
+      return out;
+    }
+    if (!a.hasFund) {
+      const cap = pillar3aCapWithoutFund(earned, lim);
+      const capHow = t(
+        `without a pension fund, 20 % of the income of all your activities (${chf(earned)}: salary after social contributions, business result after your AVS contributions) up to ${chf(lim.withoutFundMax)}: ${chf(cap)}`,
+        `sans caisse de pension, 20${NB}% du revenu de toutes vos activités (${chf(earned)}${NB}: salaire après cotisations sociales, résultat de l’activité indépendante après vos cotisations AVS) jusqu’à ${chf(lim.withoutFundMax)}${NB}: ${chf(cap)}`,
+      );
+      if (earned <= 0) {
+        out.notCounted.push(
+          t(
+            'Pillar 3a needs earned income: none was given, so nothing is deducted.',
+            `Le 3e pilier A suppose un revenu d’activité${NB}: aucun n’est indiqué, rien n’est déduit.`,
+          ),
+        );
+      }
+      return capped(out, F, tTrace, paid, catchUp, cap, capHow);
+    }
+  }
   let cap = lim.withFund;
   let capHow = t(
     `the limit with a pension fund, ${chf(cap)}`,
@@ -175,6 +220,19 @@ export function pillar3a(
       );
     }
   }
+  return capped(out, F, tTrace, paid, catchUp, cap, capHow);
+}
+
+/** The 3a deduction: what was paid up to the limit (`capHow` says which), plus a catch-up. */
+function capped(
+  out: RuleResult<'pillar3a'> & { paid: number },
+  F: Pick<IfdParams, 'pillar3a'>,
+  tTrace: Trace,
+  paid: number,
+  catchUp: number,
+  cap: number,
+  capHow: Text,
+): RuleResult<'pillar3a'> & { paid: number } {
   const v = Math.min(paid, cap);
   if (paid)
     out.limits.push({

@@ -17,6 +17,12 @@ const r = (fr: string, en: string, form: string, guide: string): Rubric => ({
   source: `${SPECIMEN} ${form}; ${GUIDE} ${guide}`,
 });
 
+/** A rubric of annexe B (self-employment), explained in the guide for the self-employed. */
+const b = (fr: string, en: string, form: string, guide: string): Rubric => ({
+  label: { fr, en: `${en} (${fr})` },
+  source: `${SPECIMEN} ${form}; ge-2025-guide-independants ${guide}`,
+});
+
 export const RUBRICS = {
   // Income.
   '11.10': r('Salaires bruts', 'Gross salaries', 'p. 5', 'p. 17'),
@@ -26,7 +32,53 @@ export const RUBRICS = {
     'p. 5',
     'p. 17',
   ),
-  '12.01': r('Bénéfice net de l’activité indépendante', 'Self-employment income', 'p. 8', 'p. 21'),
+  // Self-employment, annexe B (specimen p. 8 to 10), the same codes for taxpayers A and B.
+  '12.01': b('Bénéfice net', 'Net profit of your business', 'p. 8', 'p. 16'),
+  '12.17': b('Total des recettes', 'Total revenue of your business', 'p. 8', 'p. 13'),
+  '12.45': b('Total des charges commerciales', 'Total business charges', 'p. 8', 'p. 15'),
+  '12.46': b('Bénéfice/(Perte)', 'Result of your accounts', 'p. 8', 'p. 15'),
+  '57.10': b('Perte commerciale', 'Business loss', 'p. 8', 'p. 16'),
+  '57.20': b('Pertes non compensées', 'Losses of earlier years not deducted yet', 'p. 8', 'p. 16'),
+  '57.00': b('Perte nette', 'Net loss, to PG3 57.00', 'p. 8', 'p. 16'),
+  '12.50': b('Actifs commerciaux bruts', 'Gross business assets', 'p. 8', 'p. 17'),
+  '57.50': b('Passifs commerciaux (dettes)', 'Business debts', 'p. 8', 'p. 17'),
+  '12.52': b(
+    'Capital propre/(Découvert) de la société simple ou la raison inviduelle',
+    'Equity of your business',
+    'p. 8',
+    'p. 17',
+  ),
+  '32.10': b(
+    'Acompte(s) AVS/AI, APG, AF, AMat de l’exploitant versés',
+    'Your own AVS/AI/APG contributions for the business year',
+    'p. 10',
+    'p. 22',
+  ),
+  '32.11': b(
+    'Cotisations complémentaires AVS/AI, APG, AF, AMat de l’exploitant',
+    'Further AVS/AI/APG contributions for earlier years',
+    'p. 10',
+    'p. 22',
+  ),
+  '32.90': b(
+    'Déduction sur le gain de l’un des époux/partenaires (IFD)',
+    'Two-earner deduction, federal, on annexe B',
+    'p. 10',
+    'p. 23',
+  ),
+  '32.95': b(
+    'Déduction sur le gain de l’un des époux/partenaires (ICC)',
+    'Two-earner deduction, cantonal, on annexe B',
+    'p. 10',
+    'p. 24',
+  ),
+  '32.00': b('Total', 'Deductions for self-employment, to PG3 32.00', 'p. 10', 'p. 22 to 24'),
+  '51.60': b(
+    'Déduction sur la fortune commerciale investie',
+    'Deduction on the business wealth invested',
+    'p. 4',
+    'p. 17 and 18',
+  ),
   '13.10': r(
     'Pensions alimentaires, contributions d’entretien',
     'Alimony received',
@@ -91,11 +143,11 @@ export const RUBRICS = {
     'p. 5',
     'p. 21',
   ),
-  '32.40': r(
+  '32.40': b(
     'Cotisations au 3ème pilier A (activité indépendante)',
     'Pillar 3a, self-employed',
     'p. 10',
-    'p. 18',
+    'p. 23',
   ),
   // Other deductions.
   '51.50': r('Déduction sociale sur la fortune', 'Social deduction on wealth', 'p. 4', 'p. 16'),
@@ -146,11 +198,13 @@ export const RUBRICS = {
 
 export type RubricCode = keyof typeof RUBRICS;
 
-/** Codes with a taxpayer B twin (2x.xx for 1x.xx, 4x.xx for 3x.xx). */
+/**
+ * Codes with a taxpayer B twin (2x.xx for 1x.xx, 4x.xx for 3x.xx). Annexe B's codes (12.xx, 32.xx,
+ * 57.xx) have none: one sheet per person, ticked "Contribuable A" or "B" (specimen p. 7).
+ */
 const PER_PERSON = new Set([
   '11.10',
   '11.50',
-  '12.01',
   '31.10',
   '31.12',
   '31.20',
@@ -163,7 +217,6 @@ const PER_PERSON = new Set([
   '31.71',
   '31.90',
   '31.95',
-  '32.40',
 ]);
 
 /** The code as printed for this person: '31.10' for A becomes '41.10' for B. */

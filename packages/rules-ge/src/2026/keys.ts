@@ -9,6 +9,7 @@ import {
   KEYS_SECURITIES_2026,
   KEYS_WEALTH_2026,
 } from '@taxpresso/rules-ch';
+import { KEYS_BUSINESS_PROFILE_2026 } from './business-keys.js';
 import { COMMUNES_2026 } from './communes.js';
 import { DOCUMENT_KEYS_2026 } from './document-keys.js';
 import { sourceTaxTariffs } from '../source-tax/index.js';
@@ -45,6 +46,10 @@ export const KEYS_2026 = {
     },
     official: 'taxation ordinaire ultérieure (TOU)',
   },
+  // Self-employment (annexe B), the simple case: how the business is run, its year, its place,
+  // what Taxpresso can't prepare yet, earlier losses, and the year's expected profit for the plans
+  // (./business-keys.ts).
+  ...KEYS_BUSINESS_PROFILE_2026,
   'profile.pillar3a': H['profile.pillar3a'],
   'profile.lpp_buyin': H['profile.lpp_buyin'],
   // Travel to work and lunches away from home (frais de déplacement, frais de repas): what people

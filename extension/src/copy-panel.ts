@@ -6,6 +6,7 @@
 // ticks are stored, in entered.json in the vault, never in the ledger.
 import type { FactStatus, Owner } from '@taxpresso/ledger';
 import {
+  annexBItems,
   buildCopyPanel,
   ENGINE_RUBRICS_2026,
   enteredValue,
@@ -13,12 +14,14 @@ import {
   FORM_2026,
   itemsFromLedger,
   mergeItems,
+  selfEmployed3a,
   type CopyPanel,
   type CopyRow,
   type FormColumn,
   type FormItem,
 } from '@taxpresso/filing-ge';
 import type { Line } from '@taxpresso/rules-ch';
+import type { CommuneSlug } from '@taxpresso/rules-ge';
 import { CANTONS } from './cantons.js';
 import type { ContentLang as Lang } from './lang.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
@@ -79,7 +82,28 @@ export function engineItems(ws: Workspace): FormItem[] {
     add('95.00', 'household', ifd.totalIncome, 'ifd');
     add('99.00', 'household', ifd.taxableIncome, 'ifd');
   }
+  // Annexe B, one sheet per self-employed person (@taxpresso/filing-ge, annex-b.ts).
+  if (r.business?.length) {
+    const commune = ws.snapshot().answers.get('profile.commune|household');
+    out.push(
+      ...annexBItems({
+        sheets: r.business,
+        facts: ws.countedFacts(),
+        ...(typeof commune === 'string' ? { commune: commune as CommuneSlug } : {}),
+        status,
+      }),
+    );
+  }
   return out;
+}
+
+/** The people whose pillar 3a the engine puts on annexe B (32.40): self-employed without a salary. */
+function on32_40(ws: Workspace): Set<'p1' | 'p2'> {
+  const r = ws.taxEstimate().result;
+  const people = [...(r?.icc?.items ?? []), ...(r?.ifd?.items ?? [])]
+    .filter((i) => i.code === '32.40')
+    .map((i) => i.person);
+  return new Set(people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2'));
 }
 
 export type CopyPanelRowView = Omit<CopyRow, 'documents'> & {
@@ -135,7 +159,7 @@ function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPane
   const form = ws.engine.taxYear === 2025 ? FORM_2025 : FORM_2026;
   const built = buildCopyPanel({
     form,
-    items: mergeItems(engineItems(ws), items),
+    items: mergeItems(engineItems(ws), selfEmployed3a(items, on32_40(ws))),
     lang,
     entered: (id) => ws.formEntered(id),
   });
