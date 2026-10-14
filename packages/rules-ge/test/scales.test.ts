@@ -8,13 +8,17 @@ import {
   ICC_2025_WEALTH_SUPPLEMENTARY_SCALE,
 } from '../src/2025/icc-wealth.js';
 import {
+  bracketTax,
+  federalScaleTax,
   IFD_2025_MARRIED,
   IFD_2025_SINGLE,
   IFD_2026_MARRIED,
   IFD_2026_SINGLE,
   ifdScaleTax2026,
+  round5,
+  roundFranc,
+  roundTo,
 } from '@taxpresso/rules-ch';
-import { bracketTax, federalScaleTax, round5, roundFranc, roundTo } from '@taxpresso/rules-ch';
 import { paramsFor } from '../src/engine/params.js';
 
 const W = ICC_2025_WEALTH_SCALE.value;
