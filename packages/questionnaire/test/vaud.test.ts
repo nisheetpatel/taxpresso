@@ -1,8 +1,8 @@
 // The Vaud questionnaire (data/vd/2026/questionnaire.yaml): in step with Vaud's keys, communes and
-// parts of communes (packages/rules-vd), every text in English, French and German, every page an
-// official Vaud one, and the questions only Vaud asks (a household alone with the children and their
-// main upkeep, childcare per child, the commune, its part and the move, the household contents, the
-// interest on savings, the net rent) only where they apply. Synthetic answers only.
+// parts of communes (packages/rules-vd), every text in English, French, German and Italian, every
+// page an official Vaud one, and the questions only Vaud asks (a household alone with the children
+// and their main upkeep, childcare per child, the commune, its part and the move, the household
+// contents, the interest on savings, the net rent) only where they apply. Synthetic answers only.
 import { readFileSync } from 'node:fs';
 import { Ledger } from '@taxpresso/ledger';
 import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
@@ -145,19 +145,26 @@ describe('Vaud questionnaire 2026', () => {
       'loan_interest',
       'alimony_paid',
     ]);
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'Vaud', fr: 'Vaud', de: 'Waadt' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({ en: 'Vaud', fr: 'Vaud', de: 'Waadt', it: 'Vaud' });
   });
 
-  it('says everything in English, French and German, with an official Vaud page', () => {
+  it('says everything in English, French, German and Italian, with an official Vaud page', () => {
     const file = vdQuestionnaire2026();
     const missing: string[] = [];
+    const missingIt: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missingIt.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -165,6 +172,7 @@ describe('Vaud questionnaire 2026', () => {
     };
     visit(file, 'vd');
     expect(missing).toEqual([]);
+    expect(missingIt).toEqual([]);
     // No em or en dash anywhere; amounts only in the household contents question, whose page
     // prints them.
     expect(JSON.stringify(file)).not.toMatch(/[—–]/);
@@ -176,6 +184,7 @@ describe('Vaud questionnaire 2026', () => {
     for (const item of [...file.questions, ...file.requirements]) {
       expect(item.explain?.de, item.id).toBeTruthy();
       const { url, label } = item.learnMore!;
+      expect(label.it, item.id).toBeTruthy();
       // Vaud's own documents; the canton question keeps its federal page (shared).
       expect(item.id === 'canton' ? ALL_URLS : VAUD_URLS, item.id).toContain(
         url.replace(/#page=\d+$/, ''),
