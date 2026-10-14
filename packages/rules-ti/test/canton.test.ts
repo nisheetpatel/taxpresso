@@ -201,13 +201,45 @@ describe('Ticino through the canton interface', () => {
     expect(computed).toBeLessThan(all.length);
   });
 
-  it('computes the cantonal and communal tax of each household; the federal tax is not here', () => {
+  it('computes the cantonal and communal tax of each household, and the federal tax derived from it', () => {
     for (const e of HOUSEHOLDS) {
-      const r = rules.computeReturn(household(e));
+      const r = rules.computeReturn(household({ ...e, ifdParentalScale: true }));
       expect(r.unsupported).toEqual([]);
-      expect(r.total).toBeGreaterThan(0);
-      expect(r.ifd).toBeNull();
+      expect(r.ifd).not.toBeNull();
+      expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     }
+  });
+
+  it('takes childcare given for the household as the one child’s, or per child', () => {
+    const one = household(HOUSEHOLDS[3]!);
+    const { childcare, ...child } = one.children![0]!;
+    const given = rules.computeReturn({
+      ...one,
+      ifdParentalScale: true,
+      children: [child],
+      household: { ...one.household, childcare: childcare! },
+    });
+    const direct = rules.computeReturn({ ...one, ifdParentalScale: true });
+    expect(given.icc!.items.find((i) => i.code === '20')!.amount).toBe(-chf(4_000));
+    expect(given.total).toBe(direct.total);
+    // Two children under 14, the invoices' total above one child's limit: the split decides the
+    // deduction, so it is asked per child (cantonal.childcare); until then, not computed.
+    const two = household(HOUSEHOLDS[1]!);
+    const kids = two.children!.map((c) => ({ custody: c.custody, under14: true }));
+    const split = rules.computeReturn({
+      ...two,
+      children: kids,
+      household: { ...two.household, childcare: amt(40_000) },
+    });
+    expect(split.icc).toBeNull();
+    expect(split.unsupported.map((n) => n.en).join(' ')).toMatch(/per child under 14/);
+    const perChild = rules.computeReturn({
+      ...two,
+      children: kids,
+      household: { ...two.household, childcare: amt(40_000) },
+      cantonal: { ...two.cantonal, childcare: [amt(30_000), amt(10_000)] },
+    });
+    expect(perChild.icc!.items.find((i) => i.code === '20')!.amount).toBe(-chf(26_200 + 10_000));
   });
 
   it('leaves aside the facts that do not change Ticino’s tax', () => {
@@ -233,7 +265,6 @@ describe('Ticino through the canton interface', () => {
   it('refuses a fact Ticino does not read, and a commune given by number', () => {
     const h = household(HOUSEHOLDS[0]!);
     const refused: HouseholdInput<TicinoCantonal>[] = [
-      { ...h, household: { childcare: amt(5_000) } },
       { ...h, movable: [{ owner: 'someone', value: amt(1_000) }] as never },
       { ...h, commune: 5192 },
       { ...h, commune: 'Basel' },
@@ -265,9 +296,13 @@ describe('Ticino through the canton interface', () => {
     expect(Object.keys(rules.keys(2026))).toEqual(
       expect.arrayContaining(['salary.gross', 'securities.isin', 'accounts.number']),
     );
-    expect(rules.documents(2025)).toEqual([
-      { kind: 'salary_certificate', keys: SALARY_CERTIFICATE_FIELDS_2026 },
-    ]);
+    expect(rules.documents(2025)).toContainEqual({
+      kind: 'salary_certificate',
+      keys: SALARY_CERTIFICATE_FIELDS_2026,
+    });
+    expect(rules.documents(2026).map((d) => d.kind)).toEqual(
+      expect.arrayContaining(['pillar3a_attestation', 'health_premiums', 'bank_attestation']),
+    );
     expect(rules.sourcesIndex).toBe('docs/sources/ti');
   });
 });

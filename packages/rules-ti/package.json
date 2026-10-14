@@ -2,7 +2,7 @@
   "name": "@taxpresso/rules-ti",
   "version": "0.0.0",
   "private": true,
-  "description": "Deterministic Ticino cantonal and communal income and wealth tax (imposta cantonale e comunale sul reddito e sulla sostanza, with the communal multipliers and the personal tax), every constant cited (SPEC.md section 7). Not wired into the extension yet (docs/design/cantons.md).",
+  "description": "Deterministic Ticino cantonal and communal income and wealth tax (imposta cantonale e comunale sul reddito e sulla sostanza, with the communal multipliers and the personal tax), and the federal tax the authority derives from the same return, every constant cited (SPEC.md section 7). Wired into the extension as a preview (docs/design/cantons.md).",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "exports": {
@@ -12,10 +12,17 @@
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
+    "@taxpresso/rules-be": "workspace:*",
+    "@taxpresso/rules-bl": "workspace:*",
+    "@taxpresso/rules-ge": "workspace:*",
+    "@taxpresso/rules-sg": "workspace:*",
+    "@taxpresso/rules-zg": "workspace:*",
+    "@taxpresso/rules-zh": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@taxpresso/ledger": "workspace:*",
     "@taxpresso/rules-ch": "workspace:*"
   }
 }

@@ -141,19 +141,26 @@ describe('Bern questionnaire 2026', () => {
       'alimony_paid',
     ]);
     // The children of a question asked per child are named "Child {n}".
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'Bern', fr: 'Berne', de: 'Bern' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({ en: 'Bern', fr: 'Berne', de: 'Bern', it: 'Berna' });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = beQuestionnaire2026();
     const missing: string[] = [];
+    const noItalian: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) noItalian.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -161,6 +168,7 @@ describe('Bern questionnaire 2026', () => {
     };
     visit(file, 'be');
     expect(missing).toEqual([]);
+    expect(noItalian).toEqual([]);
     // No em-dash anywhere, no amount or limit in a question's own words.
     const all = JSON.stringify(file);
     expect(all).not.toMatch(/—/);
@@ -184,6 +192,7 @@ describe('Bern questionnaire 2026', () => {
         expect(label.de, item.id).toMatch(
           new RegExp(`^Wegleitung zur Steuererklärung 2025, S\\. ${page}: `),
         );
+        expect(label.it, item.id).toBeTruthy();
       }
     }
     // Every document cites the Bern guide, by the page of the PDF.

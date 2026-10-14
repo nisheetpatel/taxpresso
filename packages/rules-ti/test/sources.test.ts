@@ -11,8 +11,15 @@ import {
   ASSESS_RULES,
   COMPUTE_RULES,
   ESTIMATE_TEXT,
+  FEDERAL_NOTE,
+  FEDERAL_RUBRICS,
+  MODULO4,
   NOTE,
+  NOTE_VALUABLES,
   RUBRICS,
+  TI_OFFICIAL_DOCUMENTS,
+  TI_TERMS,
+  tiKeys,
   tiParamsFor,
   WEALTH_RUBRICS,
   type Cited,
@@ -79,9 +86,24 @@ describe('citations', () => {
     }
   });
 
-  it('every line of the return', () => {
+  it('every line of the return and of Modulo 4, and the federal deduction it has no line for', () => {
     for (const [code, r] of Object.entries(RUBRICS)) expectCited(r.source, code);
     for (const [code, r] of Object.entries(WEALTH_RUBRICS)) expectCited(r.source, `wealth ${code}`);
+    for (const [code, r] of Object.entries(MODULO4)) expectCited(r.source, `Modulo 4 ${code}`);
+    for (const [code, r] of Object.entries(FEDERAL_RUBRICS)) {
+      expectCited(r.source, `federal ${code}`);
+    }
+  });
+
+  it('every key Ticino defines, and the page to ask for more time', () => {
+    for (const year of [2025, 2026] as const) {
+      for (const [key, def] of Object.entries(tiKeys(year))) {
+        if (key.startsWith('ti.') || key === 'profile.commune' || key === 'profile.moved') {
+          expectCited(def.source ?? '', `${year} key ${key}`);
+        }
+      }
+    }
+    expectCited(TI_TERMS.moreTimeSource, 'more time');
   });
 
   it('the pillar 3a limits are the federal ones', () => {
@@ -91,13 +113,37 @@ describe('citations', () => {
   });
 
   it('the texts shown to the user have no en or em dash (CLAUDE.md, user-facing copy)', () => {
-    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT })) {
-      expect(`${text.en} ${text.fr}`, name).not.toMatch(/[–—]/);
+    for (const [name, text] of Object.entries({
+      ...NOTE,
+      ...ESTIMATE_TEXT,
+      ...FEDERAL_NOTE,
+      NOTE_VALUABLES,
+    })) {
+      expect(`${text.en} ${text.fr} ${text.it ?? ''}`, name).not.toMatch(/[–—]/);
+    }
+    // Every note the dashboard shows says it in Italian too, with typographic apostrophes.
+    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT, NOTE_VALUABLES })) {
+      expect(text.it, name).toBeTruthy();
+      expect(text.it, name).not.toMatch(/\p{L}'\p{L}/u);
     }
     for (const year of [2025, 2026] as const) {
       for (const [name, c] of [...constants(year), ...rules(year)]) {
         expect(c.source, name).not.toMatch(/[–—]/);
       }
+    }
+  });
+});
+
+describe('the official Ticino documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/ti/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    expect(Object.keys(TI_OFFICIAL_DOCUMENTS).sort()).toEqual(manifest.map((m) => m.id).sort());
+    for (const [id, doc] of Object.entries(TI_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id)!;
+      expect(doc, id).toEqual({ title: m.title, url: m.url, pdf: m.format === 'pdf' });
     }
   });
 });

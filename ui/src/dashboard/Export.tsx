@@ -12,7 +12,7 @@ type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
 
 const NB = String.fromCharCode(0xa0);
 
-const text = {
+export const text = {
   en: {
     title: 'A copy of your folder',
     lead: 'One ZIP file with your {year} documents and everything Taxpresso keeps for that year, saved in your Taxpresso folder on this computer. Nothing is sent anywhere.',
@@ -40,6 +40,15 @@ const text = {
     saved: '«{file}» in {folder} gespeichert: {n} Dateien.',
     private:
       'Sie enthält deine Dokumente: Bewahre sie an einem privaten Ort auf, wie den Ordner selbst.',
+  },
+  it: {
+    title: 'Una copia della tua cartella',
+    lead: 'Un file ZIP con i tuoi documenti del {year} e tutto ciò che Taxpresso conserva per quell’anno, salvato nella tua cartella Taxpresso su questo computer. Non viene inviato niente da nessuna parte.',
+    button: 'Salva una copia (ZIP)',
+    saving: 'Salvataggio della copia…',
+    savedOne: '“{file}” salvato in {folder}: 1 file.',
+    saved: '“{file}” salvato in {folder}: {n} file.',
+    private: 'Contiene i tuoi documenti: conservalo in un posto privato, come la cartella stessa.',
   },
 } as const;
 

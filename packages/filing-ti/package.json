@@ -1,0 +1,24 @@
+{
+  "name": "@taxpresso/filing-ti",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ticino's return (Modulo 1, and Moduli 4, 5 and 6) map and the values to type on it, in the form's order (SPEC.md section 10).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@taxpresso/filing-ge": "workspace:*",
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
+    "@taxpresso/rules-ti": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

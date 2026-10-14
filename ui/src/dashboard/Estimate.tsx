@@ -58,7 +58,7 @@ interface Row {
 
 const NB = String.fromCharCode(0xa0);
 
-const text = {
+export const text = {
   en: {
     title: 'Your estimate',
     official: 'impôts {year}',
@@ -127,6 +127,10 @@ const text = {
     preview: '{canton} is a preview: what to check',
     previewNote:
       'Taxpresso computes {canton} from the official documents. A few rules aren’t spelled out in them, and some answers were assumed. Here they are.',
+    officialTi: 'imposte {year}',
+    breakdownTi: 'What the cantonal and communal tax (imposta cantonale e comunale) is made of',
+    taxableTi:
+      'Taxable income (reddito imponibile): cantonal {icc}, federal {ifd}. Taxable wealth (sostanza imponibile): {wealth}.',
   },
   fr: {
     title: 'Votre estimation',
@@ -184,6 +188,9 @@ const text = {
     preview: `{canton} est en avant-première${NB}: ce qu’il faut vérifier`,
     previewNote:
       'Taxpresso calcule {canton} à partir des documents officiels. Quelques règles n’y sont pas détaillées, et certaines réponses ont été supposées. Les voici.',
+    officialTi: 'imposte {year}',
+    breakdownTi: 'Ce qui compose les impôts cantonal et communal (imposta cantonale e comunale)',
+    taxableTi: `Revenu imposable (reddito imponibile)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (sostanza imponibile)${NB}: {wealth}.`,
   },
   de: {
     title: 'Deine Schätzung',
@@ -247,11 +254,88 @@ const text = {
     preview: '{canton} ist eine Vorschau: Was du prüfen solltest',
     previewNote:
       'Taxpresso berechnet {canton} aus den offiziellen Dokumenten. Ein paar Regeln sind darin nicht genau festgelegt, und einige Antworten wurden angenommen. Hier sind sie.',
+    officialTi: 'imposte {year}',
+    breakdownTi: 'Woraus die Kantons- und Gemeindesteuer (imposta cantonale e comunale) besteht',
+    taxableTi:
+      'Steuerbares Einkommen (reddito imponibile): Kanton {icc}, Bund {ifd}. Steuerbares Vermögen (sostanza imponibile): {wealth}.',
+  },
+  it: {
+    title: 'La tua stima',
+    official: 'impôts {year}',
+    estimate: 'Stima',
+    computed: 'Calcolato',
+    total: 'Totale',
+    missing: 'Per calcolare le tue imposte, Taxpresso deve prima conoscere {what}.',
+    notComputed: 'Non calcolato',
+    breakdown: 'Di cosa si compone l’imposta cantonale e comunale',
+    taxable:
+      'Reddito imponibile (revenu imposable): cantonale {icc}, federale {ifd}. Sostanza imponibile (fortune imposable): {wealth}.',
+    items: 'Voci principali',
+    estimated: 'Cosa è stimato',
+    needsOk:
+      '{n} valori letti dai tuoi documenti aspettano ancora la tua conferma: le cifre cambieranno se li correggi.',
+    needsOkOne:
+      '1 valore letto dai tuoi documenti aspetta ancora la tua conferma: le cifre cambieranno se lo correggi.',
+    notes: 'Non compreso in queste cifre',
+    incomplete: 'Almeno',
+    lastYearTitle: 'Quest’anno e l’anno scorso',
+    lastYearNote:
+      'Le cifre dell’anno scorso vengono dalla tua dichiarazione precedente. Servono solo per il confronto e non cambiano mai l’imposta di quest’anno.',
+    lastYearCol: 'Anno scorso',
+    thisYearCol: 'Quest’anno',
+    icc: 'cantonale',
+    ifd: 'federale',
+    foot: 'Calcolato da Taxpresso su questo computer a partire dai documenti ufficiali. Chiedi a Claude perché una cifra è quella che è.',
+    officialZh: 'Steuern {year}',
+    breakdownZh: 'Di cosa si compone l’imposta cantonale e comunale (Staats- und Gemeindesteuern)',
+    taxableZh:
+      'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
+    officialBe: 'Steuern {year}',
+    breakdownBe:
+      'Di cosa si compongono le imposte cantonale, comunale e di culto (Kantons-, Gemeinde- und Kirchensteuern)',
+    taxableBe:
+      'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
+    officialBl: 'Steuern {year}',
+    breakdownBl:
+      'Di cosa si compongono le imposte cantonale, comunale e di culto (Staats-, Gemeinde- und Kirchensteuer)',
+    taxableBl:
+      'Reddito imponibile (steuerbares Einkommen): imposta cantonale {icc}, imposta federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
+    officialBs: 'Steuern {year}',
+    breakdownBs: 'Di cosa si compone l’imposta cantonale e comunale (Kantons- und Gemeindesteuern)',
+    taxableBs:
+      'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
+    officialZg: 'Steuern {year}',
+    breakdownZg:
+      'Di cosa si compone l’imposta cantonale e comunale (Kantons- und Gemeindesteuern), con l’imposta di culto e quella della Bürgergemeinde',
+    taxableZg:
+      'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Gesamtvermögen): {wealth}.',
+    officialLu: 'Steuern {year}',
+    breakdownLu:
+      'Di cosa si compongono le imposte cantonale e comunale (Staats- und Gemeindesteuern), con l’imposta di culto e la Personalsteuer',
+    taxableLu:
+      'Reddito imponibile (steuerbares Einkommen): imposta cantonale {icc}, imposta federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
+    officialSg: 'Steuern {year}',
+    breakdownSg:
+      'Di cosa si compongono le imposte cantonale, comunale e di culto (Kantons-, Gemeinde- und Kirchensteuer)',
+    taxableSg:
+      'Reddito imponibile (steuerbares Einkommen): cantonale {icc}, federale {ifd}. Sostanza imponibile (steuerbares Vermögen): {wealth}.',
+    officialFr: 'impôts {year}',
+    breakdownFr:
+      'Di cosa si compongono le imposte cantonale, comunale e di culto (impôts cantonal, communal et ecclésiastique)',
+    taxableFr:
+      'Reddito imponibile (revenu imposable): cantonale {icc}, federale {ifd}. Sostanza imponibile (fortune imposable): {wealth}.',
+    preview: '{canton} in anteprima: cosa controllare',
+    previewNote:
+      'Taxpresso calcola le imposte del Cantone {canton} a partire dai documenti ufficiali. Alcune regole non vi sono precisate, e alcune risposte sono state presunte. Eccole.',
+    officialTi: 'imposte {year}',
+    breakdownTi: 'Di cosa si compone l’imposta cantonale e comunale',
+    taxableTi:
+      'Reddito imponibile: cantonale {icc}, federale {ifd}. Sostanza imponibile: {wealth}.',
   },
 } as const;
 
 type Key = keyof (typeof text)['en'];
-const AND: Record<Language, string> = { en: ' and ', fr: ' et ', de: ' und ' };
+const AND: Record<Language, string> = { en: ' and ', fr: ' et ', de: ' und ', it: ' e ' };
 const tr = (lang: Language, key: Key, vars: Record<string, string | number> = {}) =>
   text[lang][key].replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
 
