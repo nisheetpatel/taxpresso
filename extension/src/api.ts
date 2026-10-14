@@ -39,7 +39,7 @@ const Answer = z.object({
 const Id = z.object({ id: z.string().max(80) });
 const Plan = z.object({
   person: z.enum(['p1', 'p2']),
-  field: z.enum(['gross', 'net', 'pensionFund', 'paid']),
+  field: z.enum(['gross', 'net', 'pensionFund', 'paid', 'business']),
   value: z.union([z.number().min(0).max(10_000_000), z.boolean()]),
 });
 const PLAN_FIELD = {
@@ -47,6 +47,8 @@ const PLAN_FIELD = {
   net: 'plan.net_salary',
   pensionFund: 'plan.has_pension_fund',
   paid: 'plan.pillar3a_paid',
+  // Geneva: a self-employed person's expected profit, for the 3a room (annexe B).
+  business: 'plan.business_profit',
 } as const;
 const Waive = z.object({ id: z.string().max(80), waived: z.boolean().default(true) });
 const Kind = z.object({
@@ -73,8 +75,16 @@ const LineOwnerChange = z.object({
   origin: z.enum(['broker_export', 'document', 'you']),
   owner: z.enum(['p1', 'p2', 'joint', 'children']),
 });
+/** The person said they have income from self-employment. */
+const selfEmployed = (snap: ReturnType<Workspace['snapshot']>, person: string) => {
+  const sources = snap.answers.get(`profile.income_sources|${person}`);
+  return Array.isArray(sources) && sources.includes('self_employment');
+};
+
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
+/** Kinds only Geneva reads so far: self-employment, the simple case (SPEC.md section 1). */
+const GENEVA_ONLY: ReadonlySet<string> = new Set(['business_accounts', 'avs_contributions']);
 
 /** Where a question's suggestion comes from: last year's declaration, its year and page. */
 function suggestedFrom(ws: Workspace, slot: Slot) {
@@ -152,7 +162,9 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
     })),
-    kinds: KIND_ORDER.map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
+    kinds: KIND_ORDER.filter((k) => canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)).map(
+      (k) => ({ value: k, label: say(KIND_LABELS[k], lang) }),
+    ),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
     // 10.5 second view, 10.8): ./document-views.ts.
     cards: documentCards(ws, content),
@@ -194,6 +206,10 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
         net: p.netCentimes ?? null,
         hasPensionFund: p.hasPensionFund,
         paid: p.paidCentimes,
+        // Self-employed in Geneva: the year's expected profit counts for the 3a room.
+        ...(canton.canton?.code === 'GE' && selfEmployed(snap, p.person)
+          ? { selfEmployed: true, business: p.businessCentimes ?? null }
+          : {}),
       })),
       result: ws.plan(),
     },

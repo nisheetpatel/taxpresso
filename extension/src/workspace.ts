@@ -142,6 +142,8 @@ export const PLAN_KEYS = [
   'plan.source_tax_tariff',
   'plan.tou_other_income',
   'plan.tou_taxable_wealth',
+  // Geneva: a self-employed person's expected profit for the year, for the 3a room.
+  'plan.business_profit',
 ] as const;
 export type PlanKey = (typeof PLAN_KEYS)[number];
 
@@ -512,12 +514,20 @@ export class Workspace {
         const person = p as 'p1' | 'p2';
         const gross = money('plan.gross_salary', person);
         const net = money('plan.net_salary', person);
+        // Self-employed (Geneva, annexe B): the year's expected profit counts for the 3a room.
+        const sources = snap.answers.get(`profile.income_sources|${person}`);
+        const self = Array.isArray(sources) && sources.includes('self_employment');
+        const salaried = Array.isArray(sources) && sources.includes('salary');
+        const business = self ? money('plan.business_profit', person) : undefined;
+        const fund = this.ledger.get('plan.has_pension_fund', person)?.value;
         return {
           person,
           ...(gross !== undefined ? { grossCentimes: gross } : {}),
           ...(net !== undefined ? { netCentimes: net } : {}),
-          // Most employees have one; the user can say otherwise.
-          hasPensionFund: this.ledger.get('plan.has_pension_fund', person)?.value !== false,
+          ...(business !== undefined ? { businessCentimes: business } : {}),
+          // Most employees have one, the self-employed without a salary usually not; the user can
+          // say otherwise.
+          hasPensionFund: self && !salaried ? fund === true : fund !== false,
           paidCentimes: money('plan.pillar3a_paid', person) ?? 0,
         };
       }),
@@ -595,7 +605,9 @@ export class Workspace {
     return this.#write(async () => {
       this.#usable();
       if (!PLAN_KEYS.includes(key)) throw new WorkspaceError(`Not a planning value: ${key}`);
-      const def = this.keys[key]!;
+      const def = this.keys[key];
+      // A figure only some cantons plan with (Geneva's business profit).
+      if (!def) throw new WorkspaceError(`Not a planning value in this canton: ${key}`);
       const owner: Owner = def.perPerson ? (person as 'p1' | 'p2') : 'household';
       if (def.perPerson && !this.snapshot().people.includes(person as 'p1' | 'p2')) {
         throw new WorkspaceError(`No ${person} in this household.`);

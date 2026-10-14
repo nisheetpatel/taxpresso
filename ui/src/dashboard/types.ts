@@ -111,6 +111,9 @@ export interface State extends DocumentsState {
       net: number | null;
       hasPensionFund: boolean;
       paid: number;
+      /** Self-employed in Geneva: the year's expected profit counts for the 3a room. */
+      selfEmployed?: boolean;
+      business?: number | null;
     }[];
     result: {
       people: {

@@ -33,7 +33,7 @@ import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
 import { CANTONS, cantonNames, fullCantons, germanCantons, previewCantons } from './cantons.js';
-import { PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
+import { PILLAR3A_2026, PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
 import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
 
@@ -496,6 +496,17 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       } else {
         lines.push(
           'No salary yet: ask for a rough yearly salary and save it with set_fact (plan.gross_salary) to estimate the saving.',
+        );
+      }
+      // Self-employed in Geneva (annexe B): the year's expected profit counts for the 3a room.
+      const answers = ws.snapshot().answers;
+      const self = plan.people.filter((p) => {
+        const sources = answers.get(`profile.income_sources|${p.person}`);
+        return Array.isArray(sources) && sources.includes('self_employment');
+      });
+      if (canton?.code === 'GE' && self.length) {
+        lines.push(
+          `Self-employed (${self.map((p) => WHO[p.person]).join(', ')}): without a pension fund the limit is 20 % of what every activity earns, the business's profit after the person's own AVS contributions included (${PILLAR3A_2026.source}). If the profit isn't saved yet, ask for a rough figure for this year and save it with set_fact (plan.business_profit).`,
         );
       }
       lines.push(

@@ -1533,6 +1533,115 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a self-employed Geneva return: annexe B, its tax and the values to type, offline', async () => {
+    // Léa Martin, single, in Carouge, a graphic design studio in her own name without a pension
+    // fund (S1 of packages/rules-ge/test/self-employment.test.ts, derived by hand from the official
+    // documents), in her own folder and server process with the same guard. Synthetic documents
+    // dropped in the folder; the values Claude read in them, confirmed by the user in the chat.
+    const seVault = path.join(work, 'Independante');
+    const seTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: seVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    seTransport.stderr?.on('data', (d) => (stderr += d));
+    const se = new Client({ name: 'taxpresso-offline-test-self-employed', version: '0.0.0' });
+    await se.connect(seTransport);
+    const call = async (name, args = {}) => {
+      const res = await se.callTool({ name, arguments: args });
+      assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+      return res;
+    };
+    try {
+      for (const [id, value] of [
+        ['canton', 'GE'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Carouge'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['self_employment']],
+        ['business_form:p1', 'sole_proprietor'],
+        ['business_year:p1', 'calendar'],
+        ['business_place:p1', 'home_commune'],
+        ['business_method:p1', 'invoice'],
+        ['business_special:p1', []],
+        ['business_losses:p1', false],
+        ['pillar3a:p1', true],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+      ]) {
+        await call('answer_question', { id, value });
+      }
+      const docs = {
+        'comptes-2026.pdf': [
+          'business_accounts',
+          [
+            ['business.turnover', "120'000.00"],
+            ['business.other_income', '500.00'],
+            ['business.costs_goods', "8'000.00"],
+            ['business.depreciation', "3'000.00"],
+            ['business.costs_other', "14'500.00"],
+            ['business.current_assets', "230'000.00"],
+            ['business.fixed_assets', "20'000.00"],
+            ['business.liabilities', "10'000.00"],
+          ],
+        ],
+        'avs-2026.pdf': ['avs_contributions', [['avs.contributions_year', "9'000.00"]]],
+        'troisieme-pilier-2026.pdf': ['pillar3a_attestation', [['pillar3a.paid', "18'000.00"]]],
+        'lamal-2026.pdf': ['health_premiums', [['health.premiums', "6'000.00"]]],
+      };
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(seVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, values]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: {
+            kind,
+            taxYear: 2026,
+            person: kind === 'health_premiums' ? 'household' : 'p1',
+          },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+
+      const tax = await call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, 874_685);
+      assert.equal(tax.structuredContent.ifd.tax, 87_930);
+      assert.deepEqual(tax.structuredContent.notSupported, []);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+
+      const sections = await call('get_form_values');
+      const pages = sections.structuredContent.sections.map((s) => s.page);
+      for (const page of ['B2', 'B4']) assert.ok(pages.includes(page), `${page} in ${pages}`);
+      const b2 = await call('get_form_values', { section: 'B2' });
+      assert.match(b2.content[0].text, /12\.01 Bénéfice net/);
+      assert.match(b2.content[0].text, /12\.52 Capital propre/);
+      const b4 = await call('get_form_values', { section: 'B4' });
+      assert.match(b4.content[0].text, /32\.40 Cotisations au 3ème pilier A/);
+
+      const check = await call('final_check');
+      assert.ok(check.structuredContent.know.some((i) => i.code === '32.40'));
+      const plans = await call('list_optimizations');
+      assert.match(plans.content[0].text, /plan\.business_profit/);
+    } finally {
+      await se.close();
+    }
+  });
+
   test('no outbound network attempt was made (C2)', () => {
     const attempts = existsSync(guardLog) ? readFileSync(guardLog, 'utf8').trim() : '';
     assert.equal(attempts, '', `outbound attempts:\n${attempts}`);

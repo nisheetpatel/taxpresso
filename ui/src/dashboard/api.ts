@@ -44,7 +44,7 @@ export const api = {
   scan: (lang: Language) => post('/scan', lang, {}),
   plan: (
     person: string,
-    field: 'gross' | 'net' | 'pensionFund' | 'paid',
+    field: 'gross' | 'net' | 'pensionFund' | 'paid' | 'business',
     value: number | boolean,
     lang: Language,
   ) => post('/plan', lang, { person, field, value }),

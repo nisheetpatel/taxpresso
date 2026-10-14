@@ -942,9 +942,9 @@ requirements:
       fr: 'Comptes commerciaux (bilan et compte de résultat)'
       de: 'Geschäftsabschluss (bilan et compte de résultat)'
     explain:
-      en: 'Your signed accounts for the business year closed in 2026: balance sheet and profit and loss account. Without full accounts (under 500,000 francs of turnover), your records of income and expenses, of what the business owns and owes, and of what you took out or put in privately.'
-      fr: 'Vos comptes annuels signés de l’exercice clos en 2026 : bilan et compte de résultat. Sans comptabilité complète (moins de 500 000 francs de chiffre d’affaires), vos relevés des recettes et des dépenses, de l’état des actifs et passifs et des prélèvements et apports privés.'
-      de: 'Dein unterschriebener Jahresabschluss des 2026 abgeschlossenen Geschäftsjahrs: Bilanz und Erfolgsrechnung. Ohne vollständige Buchhaltung (unter 500 000 Franken Umsatz) deine Aufzeichnungen über Einnahmen und Ausgaben, Aktiven und Passiven sowie Privatbezüge und -einlagen.'
+      en: 'Your signed accounts for the business year closed in 2026: balance sheet and profit and loss account. Without full accounts (under 500,000 francs of turnover), your records of income and expenses, of what the business owns and owes, and of what you took out or put in privately. Your own AVS contributions are not among the charges: they are declared apart (32.10, 32.11).'
+      fr: 'Vos comptes annuels signés de l’exercice clos en 2026 : bilan et compte de résultat. Sans comptabilité complète (moins de 500 000 francs de chiffre d’affaires), vos relevés des recettes et des dépenses, de l’état des actifs et passifs et des prélèvements et apports privés. Vos propres cotisations AVS ne font pas partie des charges : elles se déclarent à part (32.10, 32.11).'
+      de: 'Dein unterschriebener Jahresabschluss des 2026 abgeschlossenen Geschäftsjahrs: Bilanz und Erfolgsrechnung. Ohne vollständige Buchhaltung (unter 500 000 Franken Umsatz) deine Aufzeichnungen über Einnahmen und Ausgaben, Aktiven und Passiven sowie Privatbezüge und -einlagen. Deine eigenen AHV-Beiträge gehören nicht zum Aufwand: Sie werden separat deklariert (32.10, 32.11).'
     # ge-2025-guide-independants p. 25
     learnMore:
       url: 'https://www.ge.ch/document/44809/annexe/file/751631#page=25'

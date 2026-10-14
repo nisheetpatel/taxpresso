@@ -363,7 +363,8 @@ function PlanPerson({
   const shown = (c: number | null) => (c ? String(Math.round(c / 100)) : '');
   const [gross, setGross] = useState(shown(input.gross));
   const [paid, setPaid] = useState(shown(input.paid));
-  const save = (field: 'gross' | 'paid', text: string, current: number | null) => {
+  const [business, setBusiness] = useState(shown(input.business ?? null));
+  const save = (field: 'gross' | 'paid' | 'business', text: string, current: number | null) => {
     const value = parseChf(text);
     if (value === undefined || value * 100 === (current ?? 0)) return;
     void act(() => api.plan(input.person, field, value, lang));
@@ -383,6 +384,23 @@ function PlanPerson({
         onBlur={() => save('gross', gross, input.gross)}
         onKeyDown={(e) => e.key === 'Enter' && save('gross', gross, input.gross)}
       />
+      {input.selfEmployed ? (
+        <>
+          <label for={`${id}-business`}>{t(lang, 'planBusiness')}</label>
+          <input
+            id={`${id}-business`}
+            class="tnum"
+            inputMode="numeric"
+            placeholder="CHF"
+            value={business}
+            onInput={(e) => setBusiness((e.target as HTMLInputElement).value)}
+            onBlur={() => save('business', business, input.business ?? null)}
+            onKeyDown={(e) =>
+              e.key === 'Enter' && save('business', business, input.business ?? null)
+            }
+          />
+        </>
+      ) : null}
       <label for={`${id}-paid`}>{t(lang, 'planPaid')}</label>
       <input
         id={`${id}-paid`}
