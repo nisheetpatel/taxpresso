@@ -95,6 +95,9 @@ export interface RenderedQuestion {
   none?: string;
   min?: number;
   max?: number;
+  /** A date question: the first and last day it takes, YYYY-MM-DD (the tax year). */
+  minDate?: string;
+  maxDate?: string;
   value?: FactValue;
   /** Not an answer yet: a value read from a document, for the user to confirm or change. */
   suggested?: FactValue;
@@ -173,6 +176,7 @@ export class QuestionnaireEngine {
       number: 'integer',
       money: 'money',
       multi: 'enum_list',
+      date: 'date',
     };
     const checkCondition = (c: Condition | undefined, where: string): void => {
       if (!c) return;
@@ -510,6 +514,9 @@ export class QuestionnaireEngine {
       ...(q.none ? { none: say(q.none, lang) } : {}),
       ...(q.min !== undefined ? { min: q.min } : {}),
       ...(q.max !== undefined ? { max: q.max } : {}),
+      ...(q.type === 'date'
+        ? { minDate: `${this.taxYear}-01-01`, maxDate: `${this.taxYear}-12-31` }
+        : {}),
       ...(slot.value !== undefined ? { value: slot.value } : {}),
       ...(slot.suggested !== undefined ? { suggested: slot.suggested } : {}),
       ...(slot.assumed ? { assumed: true } : {}),
@@ -524,6 +531,7 @@ export class QuestionnaireEngine {
     if (q.type === 'yesno') return YES_NO[lang][value ? 0 : 1];
     if (q.type === 'number') return String(value);
     if (q.type === 'money') return typeof value === 'number' ? chfText(value) : String(value);
+    if (q.type === 'date') return typeof value === 'string' ? dayText(value, lang) : String(value);
     const labels = this.#selected(slot, value).map((o) => say(o.label, lang));
     return labels.length ? labels.join(', ') : q.none ? say(q.none, lang) : '';
   }
@@ -661,8 +669,94 @@ export class QuestionnaireEngine {
         if (max !== undefined && parsed.value > max) return bad(`expected at most ${chfText(max)}`);
         return parsed.value;
       }
+      case 'date': {
+        // A day of the tax year: 2026-04-01, or as people write it in Switzerland, 1.4.2026.
+        const text = typeof raw === 'string' ? raw.trim() : '';
+        const swiss = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text);
+        const iso = swiss
+          ? `${swiss[3]}-${swiss[2]!.padStart(2, '0')}-${swiss[1]!.padStart(2, '0')}`
+          : text;
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+        const real =
+          m &&
+          new Date(`${iso}T00:00:00Z`).toISOString().slice(0, 10) === iso &&
+          Number(m[1]) === this.taxYear;
+        if (!real) return bad(`expected a day of ${this.taxYear}, e.g. ${this.taxYear}-04-01`);
+        return iso;
+      }
     }
   }
+}
+
+const MONTHS: Record<Lang, readonly string[]> = {
+  en: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ],
+  fr: [
+    'janvier',
+    'février',
+    'mars',
+    'avril',
+    'mai',
+    'juin',
+    'juillet',
+    'août',
+    'septembre',
+    'octobre',
+    'novembre',
+    'décembre',
+  ],
+  de: [
+    'Januar',
+    'Februar',
+    'März',
+    'April',
+    'Mai',
+    'Juni',
+    'Juli',
+    'August',
+    'September',
+    'Oktober',
+    'November',
+    'Dezember',
+  ],
+  it: [
+    'gennaio',
+    'febbraio',
+    'marzo',
+    'aprile',
+    'maggio',
+    'giugno',
+    'luglio',
+    'agosto',
+    'settembre',
+    'ottobre',
+    'novembre',
+    'dicembre',
+  ],
+};
+
+/** A day in words: "1 April 2026", "1er avril 2026", "1. April 2026", "1° aprile 2026". */
+export function dayText(iso: string, lang: Lang): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  const [y, mo, d] = [m[1], Number(m[2]), Number(m[3])];
+  const month = MONTHS[lang][mo - 1] ?? '';
+  if (lang === 'fr') return `${d === 1 ? '1er' : d} ${month} ${y}`;
+  if (lang === 'de') return `${d}. ${month} ${y}`;
+  if (lang === 'it') return `${d === 1 ? '1°' : d} ${month} ${y}`;
+  return `${d} ${month} ${y}`;
 }
 
 /** "CHF 1250.50": centimes as the form writes them, with the currency. */

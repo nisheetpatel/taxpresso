@@ -27,6 +27,7 @@ import {
   floorFranc,
   ifdTax,
   ifdTaxAtRate,
+  ifdTaxPartYear,
   percent,
   round5,
   roundFranc,
@@ -34,8 +35,10 @@ import {
   Trace,
   type IfdScale,
   type IncomeSplit,
+  type PartYear,
 } from '@taxpresso/rules-ch';
 import { ABROAD_SOURCES } from './abroad.js';
+import { partYearRules } from './part-year.js';
 import { paramsFor, type TaxYear, type YearParams } from './params.js';
 import { AFTER_9220, AFTER_9240, isIncomeCode, rubric, SOCIAL } from './rubrics.js';
 import type {
@@ -80,6 +83,12 @@ export interface AssessInput {
    * share not taxed here is 97.00, and the rate is the one of the whole (95.00).
    */
   abroad?: { icc: IncomeSplit; ifd: IncomeSplit; wealth: { foreign: number; total: number } };
+  /**
+   * A year of arrival from abroad or of departure abroad (./part-year.ts): the year's taxable
+   * income in each tax (periodic income converted), the rate the income of the period is taxed at
+   * (LIPP art. 62 al. 3; LIFD art. 40 al. 3). Null where the year's tax can't be computed.
+   */
+  partYear?: { py: PartYear; rate: { icc: Line | null; ifd: Line | null } };
 }
 
 const t = (en: string, fr: string): Text => ({ en, fr });
@@ -244,6 +253,25 @@ function exemptIncomeLines(
   return { rateBase, exempt, taxable };
 }
 
+/**
+ * A part year's 99.00: the income of the period of tax liability, in whole francs, never below
+ * zero (the same figure as incomeTotals, said as what it is).
+ */
+function periodTaxable(line: Line, tax: 'ICC' | 'IFD'): Line {
+  return {
+    ...line,
+    how: t(
+      `The total net income of your months in Switzerland, in whole francs, never below zero: ${chf(line.amount)}. It is taxed at the rate of a full year's income.`,
+      `Le revenu net total de votre période en Suisse, en francs entiers, jamais négatif${NB}: ${chf(line.amount)}. Il est imposé au taux d’un revenu annuel.`,
+    ),
+    sources: [...new Set([...line.sources, 'ge-na-law-lipp art. 62 al. 3'])],
+    label:
+      tax === 'ICC'
+        ? t('Taxable income, ICC (revenu imposable, 99.00)', 'Revenu imposable ICC (99.00)')
+        : t('Taxable income, IFD (revenu imposable, 99.00)', 'Revenu imposable IFD (99.00)'),
+  };
+}
+
 function communalSplit(
   P: YearParams,
   commune: CommuneSlug,
@@ -363,6 +391,11 @@ export interface Assessment {
   ifd: IfdResult;
   /** The tax shield (LIPP art. 60) may apply: the ICC is then not computed (fail closed). */
   shieldMayApply: boolean;
+  /**
+   * A part year: the taxe personnelle's exemption differs with the income of the period and with
+   * the year's (LCP art. 377), which no document settles: the ICC is then not computed.
+   */
+  personalTaxUnclear?: boolean;
 }
 
 export function assess(input: AssessInput): Assessment {
@@ -378,29 +411,68 @@ export function assess(input: AssessInput): Assessment {
   const iccExempt = input.abroad
     ? exemptIncomeLines(iccTotals0, input.abroad.icc, 'ICC')
     : undefined;
-  const iccTotals = iccExempt ? { ...iccTotals0, taxableIncome: iccExempt.taxable } : iccTotals0;
+  // A year of arrival or departure: 99.00 is the income of the period, taxed at the rate of the
+  // year's income (periodic income converted; LIPP art. 62 al. 3).
+  const part = input.partYear;
+  const partRules = part ? partYearRules(input.taxYear) : undefined;
+  const iccTotals = iccExempt
+    ? { ...iccTotals0, taxableIncome: iccExempt.taxable }
+    : part
+      ? { ...iccTotals0, taxableIncome: periodTaxable(iccTotals0.taxableIncome, 'ICC') }
+      : iccTotals0;
   const taxable = iccTotals.taxableIncome.amount;
-  /** The income the rate is read at: the taxable income, or with a property abroad 95.00. */
-  const rateBase = iccExempt ? iccExempt.rateBase : taxable;
+  /**
+   * The income the rate is read at: the taxable income, with a property abroad 95.00, in a part
+   * year the year's taxable income.
+   */
+  const rateBase = iccExempt
+    ? iccExempt.rateBase
+    : part
+      ? Math.max(0, part.rate.icc?.amount ?? taxable)
+      : taxable;
   const splitting = input.splitting;
-  const rateTrace = new Trace().from(iccExempt ? iccTotals.totalIncome : iccTotals.taxableIncome);
+  const rateTrace = new Trace().from(
+    iccExempt
+      ? iccTotals.totalIncome
+      : part
+        ? (part.rate.icc ?? iccTotals.taxableIncome)
+        : iccTotals.taxableIncome,
+  );
   if (iccExempt) rateTrace.src(...ABROAD_SOURCES.income);
+  if (partRules) rateTrace.src(partRules.rate, partRules.conversion);
+  const yearWords = t(
+    ' (your income converted to a full year)',
+    ' (votre revenu converti sur une année entière)',
+  );
   let rateIncome = rateBase;
   let rateHow = iccExempt
     ? t(
         `No splitting: the rate is the one for your whole income, ${chf(rateBase)} (95.00), your property abroad included.`,
         `Pas de splitting${NB}: le taux est celui de l’ensemble de votre revenu, ${chf(rateBase)} (95.00), votre immeuble à l’étranger compris.`,
       )
-    : t(
-        `No splitting: the rate is the one for the whole income, ${chf(taxable)}.`,
-        `Pas de splitting${NB}: le taux est celui du revenu entier, ${chf(taxable)}.`,
-      );
+    : part
+      ? t(
+          `No splitting: the rate is the one for a full year’s income, ${chf(rateBase)}${yearWords.en}.`,
+          `Pas de splitting${NB}: le taux est celui du revenu d’une année entière, ${chf(rateBase)}${yearWords.fr}.`,
+        )
+      : t(
+          `No splitting: the rate is the one for the whole income, ${chf(taxable)}.`,
+          `Pas de splitting${NB}: le taux est celui du revenu entier, ${chf(taxable)}.`,
+        );
   if (splitting !== 'none') {
     const share = rateTrace.p(I.splittingShare)[splitting];
     rateIncome = roundFranc(rateBase * share, 10_000);
+    const what = iccExempt
+      ? t(
+          ' (95.00, your property abroad included)',
+          ' (95.00, votre immeuble à l’étranger compris)',
+        )
+      : part
+        ? yearWords
+        : t('', '');
     rateHow = t(
-      `${splitting === 'full' ? 'Full' : 'Partial'} splitting: the rate is the one for ${percent(share, 'en')} of ${chf(rateBase)}${iccExempt ? ' (95.00, your property abroad included)' : ''}, to the franc: ${chf(rateIncome)}.`,
-      `Splitting ${splitting === 'full' ? 'intégral' : 'partiel'}${NB}: le taux est celui de ${percent(share, 'fr')} de ${chf(rateBase)}${iccExempt ? ' (95.00, votre immeuble à l’étranger compris)' : ''}, au franc${NB}: ${chf(rateIncome)}.`,
+      `${splitting === 'full' ? 'Full' : 'Partial'} splitting: the rate is the one for ${percent(share, 'en')} of ${chf(rateBase)}${what.en}, to the franc: ${chf(rateIncome)}.`,
+      `Splitting ${splitting === 'full' ? 'intégral' : 'partiel'}${NB}: le taux est celui de ${percent(share, 'fr')} de ${chf(rateBase)}${what.fr}, au franc${NB}: ${chf(rateIncome)}.`,
     );
   }
   const rateLine = rateTrace.line(
@@ -412,31 +484,37 @@ export function assess(input: AssessInput): Assessment {
   const baseTrace = new Trace().from(rateLine);
   const incomeScale = baseTrace.p(I.incomeScale);
   const rateTax = bracketTax(incomeScale, rateIncome);
-  if (iccExempt) baseTrace.from(iccTotals.taxableIncome);
-  const incomeBase = iccExempt
-    ? rateIncome === 0
-      ? 0
-      : round5(taxable * rateTax, rateIncome)
-    : splitting === 'none' || rateIncome === 0
-      ? rateTax
-      : round5(taxable * rateTax, rateIncome);
+  if (iccExempt || part) baseTrace.from(iccTotals.taxableIncome);
+  const incomeBase =
+    iccExempt || part
+      ? rateIncome === 0
+        ? 0
+        : round5(taxable * rateTax, rateIncome)
+      : splitting === 'none' || rateIncome === 0
+        ? rateTax
+        : round5(taxable * rateTax, rateIncome);
   const incomeBaseLine = baseTrace.line(
     incomeBase,
     t('Base income tax (impôt de base sur le revenu)', 'Impôt de base sur le revenu'),
-    iccExempt
+    part && !iccExempt
       ? t(
-          `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the income taxed here (99.00): ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
-          `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu imposable ici (99.00)${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
+          `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the income of your months here (99.00): ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
+          `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu de votre période ici (99.00)${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
         )
-      : splitting === 'none'
+      : iccExempt
         ? t(
-            `The scale applied to ${chf(taxable)}, bracket by bracket, each to 5 centimes: ${chf(incomeBase)}.`,
-            `Le barème appliqué à ${chf(taxable)}, tranche par tranche, chacune aux 5 centimes${NB}: ${chf(incomeBase)}.`,
+            `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the income taxed here (99.00): ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
+            `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu imposable ici (99.00)${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
           )
-        : t(
-            `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the whole income: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
-            `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu entier${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
-          ),
+        : splitting === 'none'
+          ? t(
+              `The scale applied to ${chf(taxable)}, bracket by bracket, each to 5 centimes: ${chf(incomeBase)}.`,
+              `Le barème appliqué à ${chf(taxable)}, tranche par tranche, chacune aux 5 centimes${NB}: ${chf(incomeBase)}.`,
+            )
+          : t(
+              `The scale gives ${chf(rateTax)} on the rate income ${chf(rateIncome)}; applied to the whole income: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, to 5 centimes: ${chf(incomeBase)}.`,
+              `Le barème donne ${chf(rateTax)} sur le revenu déterminant le taux ${chf(rateIncome)}${NB}; appliqué au revenu entier${NB}: ${chf(taxable)} x ${chf(rateTax)} / ${chf(rateIncome)}, aux 5 centimes${NB}: ${chf(incomeBase)}.`,
+            ),
   );
 
   const ccTrace = new Trace().from(incomeBaseLine);
@@ -707,6 +785,13 @@ export function assess(input: AssessInput): Assessment {
   const pt = ptTrace.p(P.personalTax);
   const limit = pt.exemptUpTo[splitting];
   const exempt = input.personalTaxExempt === true || (taxableWealth === 0 && taxable <= limit);
+  // A part year: due from the first day of residence, 25 francs a year (the source-tax directives,
+  // ch. 8.8). Its exemption depends on the taxable income (LCP art. 377 let. c): with the period's
+  // and with the year's, it must come out the same, or it is not settled.
+  if (partRules) ptTrace.src(partRules.personalTax);
+  const yearRate = part?.rate.icc ? Math.max(0, part.rate.icc.amount) : taxable;
+  const exemptYear = input.personalTaxExempt === true || (taxableWealth === 0 && yearRate <= limit);
+  const personalTaxUnclear = part !== undefined && exempt !== exemptYear;
   const personalTax = ptTrace.line(
     exempt ? 0 : pt.amount,
     t('Personal tax (taxe personnelle)', 'Taxe personnelle'),
@@ -760,32 +845,52 @@ export function assess(input: AssessInput): Assessment {
   const ifdExempt = input.abroad
     ? exemptIncomeLines(ifdTotals0, input.abroad.ifd, 'IFD')
     : undefined;
-  const ifdTotals = ifdExempt ? { ...ifdTotals0, taxableIncome: ifdExempt.taxable } : ifdTotals0;
-  const federal = ifdExempt
-    ? ifdTaxAtRate(
-        P.ifd,
-        new Trace()
-          .src(...ABROAD_SOURCES.ifd)
-          .from(ifdTotals.totalIncome)
-          .line(
-            ifdExempt.rateBase,
-            t('Federal rate income (revenu déterminant le taux)', 'Revenu déterminant le taux IFD'),
-            t(
-              `The total net income in whole francs, your property abroad included: ${chf(ifdExempt.rateBase)}.`,
-              `Le revenu net total en francs entiers, votre immeuble à l’étranger compris${NB}: ${chf(ifdExempt.rateBase)}.`,
-            ),
-          ),
-        ifdTotals.taxableIncome,
-        input.ifdScale,
-        input.ifdScaleSources,
-      )
-    : ifdTax(
-        P.ifd,
-        ifdTotals.taxableIncome,
-        input.ifdScale,
-        input.ifdChildReductions,
-        input.ifdScaleSources,
-      );
+  const ifdTotals = ifdExempt
+    ? { ...ifdTotals0, taxableIncome: ifdExempt.taxable }
+    : part
+      ? { ...ifdTotals0, taxableIncome: periodTaxable(ifdTotals0.taxableIncome, 'IFD') }
+      : ifdTotals0;
+  // A part year: the income of the period at the rate of the year's (LIFD art. 40 al. 3), the
+  // reduction per child in proportion (ch-na-circulaire-30-epoux-famille p. 26, ch. 13.4.6).
+  const federal =
+    part && !ifdExempt
+      ? ifdTaxPartYear(
+          P.ifd,
+          ifdTotals.taxableIncome,
+          part.rate.ifd ?? ifdTotals.taxableIncome,
+          input.ifdScale,
+          input.ifdChildReductions,
+          input.taxYear,
+          input.ifdScaleSources,
+        )
+      : ifdExempt
+        ? ifdTaxAtRate(
+            P.ifd,
+            new Trace()
+              .src(...ABROAD_SOURCES.ifd)
+              .from(ifdTotals.totalIncome)
+              .line(
+                ifdExempt.rateBase,
+                t(
+                  'Federal rate income (revenu déterminant le taux)',
+                  'Revenu déterminant le taux IFD',
+                ),
+                t(
+                  `The total net income in whole francs, your property abroad included: ${chf(ifdExempt.rateBase)}.`,
+                  `Le revenu net total en francs entiers, votre immeuble à l’étranger compris${NB}: ${chf(ifdExempt.rateBase)}.`,
+                ),
+              ),
+            ifdTotals.taxableIncome,
+            input.ifdScale,
+            input.ifdScaleSources,
+          )
+        : ifdTax(
+            P.ifd,
+            ifdTotals.taxableIncome,
+            input.ifdScale,
+            input.ifdChildReductions,
+            input.ifdScaleSources,
+          );
 
   return {
     icc: {
@@ -830,6 +935,7 @@ export function assess(input: AssessInput): Assessment {
       ...(ifdExempt ? { exemptIncome: ifdExempt.exempt } : {}),
     },
     shieldMayApply,
+    ...(personalTaxUnclear ? { personalTaxUnclear } : {}),
   };
 }
 

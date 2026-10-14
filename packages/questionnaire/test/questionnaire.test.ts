@@ -154,10 +154,14 @@ describe('Geneva questionnaire 2026', () => {
       childcare: 'nanny',
       commune: 'Ville de Genève',
       moved: 'from_abroad',
+      // An arrival from abroad asks each person's day (both the same: a couple taxed together).
+      'arrival_date:p1': '1.4.2026',
+      'arrival_date:p2': '2026-04-01',
       'income_sources:p1': ['salary'],
     });
     const snap = e.snapshot(ledger);
     expect(snap.people).toEqual(['p1', 'p2']);
+    expect(snap.answers.get('profile.arrival_date|p1')).toBe('2026-04-01');
     const next = e.next(snap)!;
     expect(next.id).toBe('income_sources:p2');
     expect(e.render(next, snap, 'fr')).toMatchObject({

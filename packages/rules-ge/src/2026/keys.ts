@@ -34,6 +34,23 @@ export const KEYS_2026 = {
     perPerson: false,
     label: { en: 'Moves in the year', fr: 'Déménagements dans l’année' },
   },
+  // A year of arrival from abroad or departure abroad: the day, per person (a couple taxed
+  // together must give the same day). Geneva taxes the income of the period at the rate of a full
+  // year's income (ge-2025-guide-declaration-pp p. 53 and 54; ge-na-law-lipp art. 7, 62 and 64).
+  'profile.arrival_date': {
+    type: 'date',
+    perPerson: true,
+    label: { en: 'Day you arrived in Switzerland', fr: 'Date d’arrivée en Suisse' },
+    official: 'date d’arrivée',
+    source: 'ge-2025-declaration-specimen p. 1; ge-2025-guide-declaration-pp p. 53',
+  },
+  'profile.departure_date': {
+    type: 'date',
+    perPerson: true,
+    label: { en: 'Day you left Switzerland', fr: 'Date de départ de Suisse' },
+    official: 'date de départ',
+    source: 'ge-2025-guide-declaration-pp p. 54; ge-na-law-lipp art. 7 al. 2',
+  },
   'profile.income_sources': H['profile.income_sources'],
   'profile.employers': H['profile.employers'],
   'profile.residence': H['profile.residence'],

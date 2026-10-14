@@ -32,6 +32,7 @@ import type {
   CapitalReason,
   EngineInput,
   EnginePerson,
+  PeriodInput,
   PersonInput,
   Text,
   WealthItemInput,
@@ -306,6 +307,18 @@ export function engineInputFromFacts(
     return { input: null, missing: [...missing, ...abroad.missing], notes };
   }
 
+  // A year of arrival from abroad or of departure abroad (./part-year.ts): the day, the pay that
+  // isn't monthly salary on each certificate, and what can't be prepared yet.
+  const period = periodFromFacts(taxYear, counted, documents, self.people);
+  if (period.missing.length) {
+    return { input: null, missing: [...missing, ...period.missing], notes };
+  }
+  if (period.input?.kind === 'departure') {
+    // Lump sums of a year of departure: taxed at source around a departure (./capital.ts).
+    if (capital) capital.leftSwitzerland = true;
+  }
+  const unsupported = [...self.unsupported, ...period.unsupported];
+
   // Childcare paid for each child, asked when the invoices for the household need splitting
   // (data/ge/2026/questionnaire.yaml, ge.child_care): it takes the place of the household's total.
   const kids = input.children ?? [];
@@ -328,17 +341,125 @@ export function engineInputFromFacts(
           }
         : {}),
       ...(household ? { household } : {}),
-      people: self.people,
+      people: period.people,
       taxYear: input.taxYear as EngineInput['taxYear'],
       commune: input.commune as CommuneSlug,
       wealthItems,
-      ...(self.unsupported.length ? { unsupported: self.unsupported } : {}),
+      ...(unsupported.length ? { unsupported } : {}),
+      ...(period.input ? { period: period.input } : {}),
       ...(capital ? { capital } : {}),
       ...(abroad.input ? { abroad: abroad.input } : {}),
     },
     missing,
     notes,
   };
+}
+
+/** Salary certificate boxes 3 to 7: pay that isn't monthly salary (./part-year.ts). */
+const NON_PERIODIC_BOXES = [
+  'salary.non_periodic',
+  'salary.capital',
+  'salary.participations',
+  'salary.board_fees',
+  'salary.other_benefits',
+] as const;
+
+/**
+ * The year of arrival from abroad or of departure abroad, from the answers: the move (profile.moved)
+ * and each person's day (profile.arrival_date, profile.departure_date). A couple taxed together
+ * must have the same day: a spouse who arrived or left on another day is not spelled out in the
+ * documents (fail closed). A salary certificate that starts before the arrival, or ends after the
+ * departure, shows pay for a time abroad that Switzerland may tax at source (fail closed). Each
+ * certificate's boxes 3 to 7 are read, for a part year only.
+ */
+export function periodFromFacts(
+  taxYear: number,
+  facts: readonly Fact[],
+  documents: readonly VaultDocument[],
+  people: readonly PersonInput[],
+): {
+  input?: PeriodInput;
+  people: PersonInput[];
+  missing: Text[];
+  unsupported: Text[];
+} {
+  const answer = (key: string, person: Fact['person']) =>
+    facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
+  const moved = answer('profile.moved', 'household');
+  const kind =
+    moved === 'from_abroad' ? 'arrival' : moved === 'leaving_switzerland' ? 'departure' : undefined;
+  if (!kind) return { people: [...people], missing: [], unsupported: [] };
+  const key = kind === 'arrival' ? 'profile.arrival_date' : 'profile.departure_date';
+  const couple = people.length > 1;
+  const dates = people.map((p) => answer(key, p.id));
+  const missing: Text[] = [];
+  const unsupported: Text[] = [];
+  if (dates.some((d) => typeof d !== 'string')) {
+    missing.push(
+      kind === 'arrival'
+        ? t('the day you arrived in Switzerland', 'le jour de votre arrivée en Suisse')
+        : t('the day you left Switzerland', 'le jour de votre départ de Suisse'),
+    );
+    return { people: [...people], missing, unsupported };
+  }
+  const date = dates[0] as string;
+  if (couple && dates.some((d) => d !== date)) {
+    unsupported.push(
+      kind === 'arrival'
+        ? t(
+            'You and your spouse or partner arrived in Switzerland on different days: the documents don’t say how a couple taxed together is taxed then, so no tax is computed.',
+            `Vous et votre conjoint ou partenaire êtes arrivés en Suisse à des dates différentes${NB}: les documents ne disent pas comment un couple imposé ensemble l’est alors, aucun impôt n’est donc calculé.`,
+          )
+        : t(
+            'You and your spouse or partner left Switzerland on different days: the documents don’t say how a couple taxed together is taxed then, so no tax is computed.',
+            `Vous et votre conjoint ou partenaire avez quitté la Suisse à des dates différentes${NB}: les documents ne disent pas comment un couple imposé ensemble l’est alors, aucun impôt n’est donc calculé.`,
+          ),
+    );
+  }
+  // A certificate for days outside the period: pay for a time abroad (a cross-border worker before
+  // arriving or after leaving), which Switzerland taxes at source and Taxpresso doesn't prepare.
+  const docs = new Map(documents.map((d) => [d.id, d]));
+  const outside = documents.some(
+    (d) =>
+      d.kind === 'salary_certificate' &&
+      !d.replacedBy &&
+      (d.taxYear === undefined || d.taxYear === taxYear) &&
+      ((kind === 'arrival' && d.periodFrom !== undefined && d.periodFrom < date) ||
+        (kind === 'departure' && d.periodTo !== undefined && d.periodTo > date)),
+  );
+  if (outside) {
+    unsupported.push(
+      kind === 'arrival'
+        ? t(
+            'A salary certificate starts before the day you arrived: pay for a time you lived abroad and worked in Switzerland is taxed at source, which Taxpresso doesn’t prepare yet, so no tax is computed.',
+            `Un certificat de salaire commence avant le jour de votre arrivée${NB}: le salaire d’une période où vous viviez à l’étranger en travaillant en Suisse est imposé à la source, ce que Taxpresso ne prépare pas encore, aucun impôt n’est donc calculé.`,
+          )
+        : t(
+            'A salary certificate ends after the day you left: pay for a time you lived abroad and worked in Switzerland is taxed at source, which Taxpresso doesn’t prepare yet, so no tax is computed.',
+            `Un certificat de salaire se termine après le jour de votre départ${NB}: le salaire d’une période où vous viviez à l’étranger en travaillant en Suisse est imposé à la source, ce que Taxpresso ne prépare pas encore, aucun impôt n’est donc calculé.`,
+          ),
+    );
+  }
+  const withBoxes = people.map((p) => ({
+    ...p,
+    ...(p.employments
+      ? {
+          employments: p.employments.map((e) => {
+            const box = amountOf(
+              facts.filter(
+                (f) =>
+                  (NON_PERIODIC_BOXES as readonly string[]).includes(f.key) &&
+                  f.person === p.id &&
+                  (f.instance ?? f.id) === e.id &&
+                  (!f.source.docId || docs.has(f.source.docId)),
+              ),
+            );
+            return box && box.value > 0 ? { ...e, nonPeriodic: box } : e;
+          }),
+        }
+      : {}),
+  }));
+  return { input: { kind, date }, people: withBoxes, missing, unsupported };
 }
 
 /** The French name of each country asked, as the form's Situation wants it ("nom du pays"). */
