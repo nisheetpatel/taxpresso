@@ -17,6 +17,7 @@
     "@taxpresso/ledger": "workspace:*",
     "@taxpresso/optimizer": "workspace:*",
     "@taxpresso/questionnaire": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*",
     "zod": "catalog:"
   },

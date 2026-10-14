@@ -13,21 +13,24 @@ import {
   assess,
   codeFor,
   isTaxYear,
+  rubric,
+  type AssessedTax,
+  type AssessmentView,
+  type CommuneSlug,
+  type ObjectionDeadline,
+  type PriorLine,
+  type RubricCode,
+} from '@taxpresso/rules-ge';
+import {
+  federalScale,
   LPP_BUYIN_FACTS,
   PILLAR3A_2025,
   PILLAR3A_CATCHUP_2026,
   PILLAR3A_CATCHUP_FACTS,
   pillar3aCapWithoutFund,
-  rubric,
-  type AssessedTax,
-  type AssessmentView,
-  type CommuneSlug,
   type ItemAmount,
   type ItemPerson,
-  type ObjectionDeadline,
-  type PriorLine,
-  type RubricCode,
-} from '@taxpresso/rules-ge';
+} from '@taxpresso/rules-ch';
 import { pillar3aCatchUpPlan, type CatchUpPersonResult } from './pillar3a-catchup.js';
 import type { TaxEstimate } from './tax-with.js';
 
@@ -352,21 +355,25 @@ interface Run {
   first: ReturnType<typeof assess>;
 }
 
-/** The household's scales, as computeReturn derives them (../../rules-ge/src/engine/compute.ts). */
+/**
+ * The household's scales, as computeReturn derives them: Geneva's splitting
+ * (../../rules-ge/src/engine/compute.ts) and the federal scale (rules-ch, federalScale), which with
+ * shared custody and no answer on child support is unknown.
+ */
 function scales(h: Required<Pick<ReviewHousehold, 'couple'>> & ReviewHousehold) {
   const kids = h.custody === 'elsewhere' ? 0 : (h.children ?? 0);
   const full = h.custody === 'shared' ? 0 : kids;
   const shared = h.custody === 'shared' ? kids : 0;
   const splitting = h.couple || full > 0 ? 'full' : shared > 0 ? 'partial' : 'none';
-  const ifdScale = h.couple ? 'married' : full > 0 ? 'parental' : 'single';
+  const federal = federalScale({ couple: h.couple, full, shared });
   return {
     couple: h.couple,
     splitting,
-    ifdScale,
-    ifdChildReductions: ifdScale === 'single' ? 0 : full + shared,
+    ifdScale: federal.scale,
+    ifdChildReductions: federal.childReductions,
     wealthCharges: full + shared / 2,
     singleWithChildren: !h.couple && full + shared > 0,
-    ifdUnknown: !h.couple && full === 0 && shared > 0,
+    ifdUnknown: federal.unsupported.length > 0,
   } as const;
 }
 

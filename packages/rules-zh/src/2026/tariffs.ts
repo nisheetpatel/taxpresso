@@ -2,7 +2,7 @@
 // § 47 (wealth) in the text in force on 1 April 2026 (zh-2026-law-steuergesetz-631-1-stand-2026,
 // Nachtrag 132), as set by the cold-progression ordinance from 1 January 2026 (zh-2026-tariff-
 // kalte-progression-ab-2026, StG footnote 113); both print the same figures.
-import type { Cited } from '../cited.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { StepTariff } from '../tariff.js';
 
 const LAW = 'zh-2026-law-steuergesetz-631-1-stand-2026';

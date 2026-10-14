@@ -2,12 +2,9 @@
 // and the document details, never a model. Derived on every read, never stored; only the user's
 // note that settles one is stored (key check.note, instance = the check id).
 import type { Fact, Owner, VaultDocument } from '@taxpresso/ledger';
-import { PILLAR3A_2026_FACTS } from './pillar3a.js';
+import { PILLAR3A_2026_FACTS, type Text } from '@taxpresso/rules-ch';
 
-export interface Text {
-  en: string;
-  fr: string;
-}
+export type { Text };
 
 export type CheckRule =
   'other_year' | 'pillar3a_year' | 'salary_period' | 'replacement_in_salary' | 'duplicate';

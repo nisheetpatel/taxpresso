@@ -14,7 +14,7 @@ import {
 } from '@taxpresso/intake';
 import type { Fact, FactStatus, Ledger, Vault, VaultDocument } from '@taxpresso/ledger';
 import type { Lang } from '@taxpresso/questionnaire';
-import type { SecurityKey } from '@taxpresso/rules-ge';
+import type { SecurityKey } from '@taxpresso/rules-ch';
 
 const NAME_MAX = 200;
 const NOT_READ = {

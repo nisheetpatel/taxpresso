@@ -2,7 +2,7 @@
   "name": "@taxpresso/rules-ge",
   "version": "0.0.0",
   "private": true,
-  "description": "Deterministic Geneva ICC and federal IFD engine, every constant cited (SPEC.md section 7).",
+  "description": "Deterministic Geneva cantonal and communal tax (ICC) on the Geneva form, with the federal tax (IFD) from @taxpresso/rules-ch, every constant cited (SPEC.md section 7).",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "exports": {
@@ -16,6 +16,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@taxpresso/ledger": "workspace:*"
+    "@taxpresso/ledger": "workspace:*",
+    "@taxpresso/rules-ch": "workspace:*"
   }
 }

@@ -17,6 +17,7 @@
     "vitest": "catalog:"
   },
   "dependencies": {
+    "@taxpresso/rules-ch": "workspace:*",
     "@taxpresso/rules-ge": "workspace:*"
   }
 }

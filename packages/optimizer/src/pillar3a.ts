@@ -1,7 +1,7 @@
 // "Before 31 December": pillar 3a room and the tax it would save (SPEC.md section 8, group B).
 // The saving is the rules engine run twice, with and without paying the room in. It is an
 // estimate: Geneva's 2025 scale (2026 is published in January 2027), and only flat deductions.
-import { PILLAR3A_2026 } from '@taxpresso/rules-ge';
+import { PILLAR3A_2026 } from '@taxpresso/rules-ch';
 import {
   type Assumption,
   ESTIMATE_SOURCES,

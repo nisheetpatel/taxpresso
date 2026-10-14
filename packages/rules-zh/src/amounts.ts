@@ -1,7 +1,7 @@
 // The deduction amounts of one Zurich tax year, as the engine reads them. Money in centimes,
 // rates in basis points (1 % = 100). Each tax year's values, with their citations, are in
 // ./<year>/amounts.ts.
-import type { Cited } from './cited.js';
+import type { Cited } from '@taxpresso/rules-ch';
 
 export interface ZhAmounts {
   /** Travel to work: at most this a year (StG § 26 Abs. 1 lit. a). */

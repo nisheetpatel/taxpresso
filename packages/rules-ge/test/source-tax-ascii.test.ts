@@ -1,7 +1,7 @@
 // The reader of the ESTV tariff record format (ch-na-is-recordformat-salaires), on a small
 // synthetic file laid out like the official ones: every surprise must stop the conversion.
 import { describe, expect, it } from 'vitest';
-import { compactTariff, expandTariff, parseTariffFile } from '../src/source-tax/ascii.js';
+import { compactTariff, expandTariff, parseTariffFile } from '@taxpresso/rules-ch';
 
 const pad = (s: string, n: number) => s.padEnd(n, ' ');
 /** One record 06: code, monthly income from and step in centimes, children, rate in 1/100 %. */

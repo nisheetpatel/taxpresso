@@ -1,15 +1,18 @@
-// Deterministic Geneva ICC and federal IFD engine, every constant cited (SPEC.md section 7).
-// So far: the 2026 keys and communes, the Geneva 2025 income scale (latest published), the federal
-// 2026 scale and deductions, the 2026 pillar 3a limits, the keys for values read from documents,
-// the consistency checks across documents, and the assessment check with its objection deadline.
+// Deterministic Geneva engine, every constant cited (SPEC.md section 7): the cantonal and communal
+// tax (ICC) on the Geneva form, with the federal tax (IFD) and what every canton shares from
+// packages/rules-ch. So far: the 2026 keys and communes, the Geneva 2025 income scale (latest
+// published), the keys for values read from documents, the consistency checks across documents,
+// and the assessment check with its objection deadline. The names that moved to rules-ch (the
+// federal constants, pillar 3a and pension limits, withholding tax, the shared keys and shapes)
+// are still exported from here, so importers can move at their own pace.
 export {
   iccBaseIncomeTax2025,
   iccTotalIncomeTax2025,
   ICC_2025_INCOME_SCALE,
   ICC_2025_PROFESSIONAL_FLAT,
-  type Cited,
   type IccSplitting,
 } from './2025/icc.js';
+export type { Cited } from '@taxpresso/rules-ch';
 export {
   COMMUNE_CENTIMES_2026,
   COMMUNES_2026,
@@ -21,9 +24,9 @@ export {
   IFD_PROFESSIONAL_FLAT_RATE_BP,
   ifdScaleTax2026,
   ifdTax2026,
-} from './2026/ifd.js';
+} from '@taxpresso/rules-ch';
 export { KEYS_2026, type Key2026 } from './2026/keys.js';
-export { KEYS_SECURITIES_2026, type SecurityKey } from './2026/keys-securities.js';
+export { KEYS_SECURITIES_2026, type SecurityKey } from '@taxpresso/rules-ch';
 // The securities list (état des titres), other movable wealth and the withholding tax claimed back.
 export {
   KEYS_WEALTH_2026,
@@ -65,12 +68,12 @@ export {
   iaClaim,
   iaOn,
   residualRate,
-  roundFranc,
+  roundFrancExact as roundFranc,
   splitForeignTax,
   type ForeignIncomeKind,
   type ResidualRate,
-} from './2026/withholding.js';
-export { OFFICIAL_RATES, officialChf, type Conversion } from './2026/exchange-rates.js';
+} from '@taxpresso/rules-ch';
+export { OFFICIAL_RATES, officialChf, type Conversion } from '@taxpresso/rules-ch';
 export {
   KEYS_PRIOR_2026,
   parsePriorInstance,
@@ -92,8 +95,8 @@ export {
   communeByName,
   foldName,
 } from './2026/commune-codes.js';
-export { KEYS_ECH0196_2026, type Ech0196Key } from './2026/keys-ech0196.js';
-export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './2026/pillar3a.js';
+export { KEYS_ECH0196_2026, type Ech0196Key } from '@taxpresso/rules-ch';
+export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ch';
 // Source tax (2025, 2026), TOU, pension fund buy-ins and the 3a catch-up (SPEC.md section 8).
 export {
   normalizeTariff,
@@ -118,7 +121,7 @@ export {
   PILLAR3A_2025,
   PILLAR3A_CATCHUP_2026,
   PILLAR3A_CATCHUP_FACTS,
-} from './2026/pension.js';
+} from '@taxpresso/rules-ch';
 export {
   DOCUMENT_FIELDS_2026,
   DOCUMENT_KEYS_2026,
@@ -158,9 +161,9 @@ export {
 } from './engine/assess.js';
 export { paramsFor, isTaxYear, TAX_YEARS, type TaxYear, type YearParams } from './engine/params.js';
 export { RUBRICS, rubric, codeFor, type RubricCode } from './engine/rubrics.js';
-export { pillar3aCapWithoutFund } from './engine/rules.js';
+export { pillar3aCapWithoutFund } from '@taxpresso/rules-ch';
 export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
-export { bracketTax, federalScaleTax, chf } from './engine/calc.js';
+export { bracketTax, federalScaleTax, chf } from '@taxpresso/rules-ch';
 export type * from './engine/types.js';
 export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';
@@ -185,3 +188,5 @@ export {
   type OfficialDocument,
   type OfficialLink,
 } from './law/official-documents.js';
+// Geneva behind the canton interface (packages/rules-ch, canton.ts).
+export { genevaInput, rules, type GenevaCantonal } from './canton.js';

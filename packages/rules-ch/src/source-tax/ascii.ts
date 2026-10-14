@@ -1,5 +1,6 @@
 // Reads a cantonal source-tax tariff file (tarjjkt.txt) in the ESTV record format, and packs its
-// progressive tariffs into the compact form stored under data/ge/<year>/source-tax/.
+// progressive tariffs into the compact form stored under data/<canton>/<year>/source-tax/ (so far
+// Geneva's, data/ge/). The format is federal; each canton's tables stay with that canton.
 // Layout: ch-na-is-recordformat-salaires (record 00 p. 2, record 06 p. 3, records 11 to 13 pp. 3
 // and 4, record 99 p. 5, tariff codes p. 6 and 7, monthly incomes p. 8, minimum tax p. 8).
 // scripts/source-tax-tables.mjs reads and packs with it; at runtime only expandTariff runs. No

@@ -3,43 +3,25 @@
 // never files the objection.
 //
 // The deadline, read in the law itself:
-// - Cantonal and communal tax (ICC): LPFisc, rsGE D 3 17 (ge-na-law-lpfisc). Art. 39 al. 1: a
-//   written réclamation "dans les 30 jours qui suivent sa notification". Art. 41 al. 1: the time
-//   limit starts the day after notification; when its last day is a Saturday, a Sunday or an
-//   official public holiday, it ends on the next working day.
-// - Federal direct tax (IFD): LIFD, RS 642.11 (ch-na-law-lifd, p. 71). Art. 132 al. 1: 30 days
-//   after notification. Art. 133 al. 1: the same counting and the same weekend and holiday rule.
+// - Cantonal and communal tax (ICC): LPFisc, rsGE D 3 17 (ge-na-law-lpfisc), ./objection.ts.
+// - Federal direct tax (IFD): LIFD, RS 642.11 (ch-na-law-lifd, p. 71), the same in every canton:
+//   packages/rules-ch (ifd/objection.ts). Art. 132 al. 1: 30 days after notification. Art. 133
+//   al. 1: the same counting and the same weekend and holiday rule.
 // Public holidays are not computed here (no official calendar in the sources yet), so the date
 // shown is never later than the real deadline: it can only be earlier, by the holiday. The deadline
 // printed on the assessment always wins.
 import type { Fact, VaultDocument } from '@taxpresso/ledger';
-import type { Cited } from '../2025/icc.js';
+import { IFD_OBJECTION, type ObjectionRule } from '@taxpresso/rules-ch';
 import type { Text } from './checks.js';
+import { ICC_OBJECTION_2026 } from './objection.js';
 
 export type AssessedTax = 'icc' | 'ifd';
 
-export interface ObjectionRule {
-  days: Cited<number>;
-  /** Counting starts the day after notification; a weekend last day moves to the next working day. */
-  counting: string;
-  law: string;
-  /** Where the objection goes, in the law's words. */
-  to: string;
-}
+export type { ObjectionRule };
 
 export const OBJECTION_2026: Record<AssessedTax, ObjectionRule> = {
-  icc: {
-    days: { value: 30, source: 'ge-na-law-lpfisc art. 39 al. 1' },
-    counting: 'ge-na-law-lpfisc art. 41 al. 1',
-    law: 'LPFisc (rsGE D 3 17)',
-    to: 'ge-na-law-lpfisc art. 39 al. 1 (réclamation écrite au département)',
-  },
-  ifd: {
-    days: { value: 30, source: 'ch-na-law-lifd art. 132 al. 1 (p. 71)' },
-    counting: 'ch-na-law-lifd art. 133 al. 1 (p. 71)',
-    law: 'LIFD (RS 642.11)',
-    to: 'ch-na-law-lifd art. 132 al. 1 (p. 71) (réclamation écrite à l’autorité de taxation)',
-  },
+  icc: ICC_OBJECTION_2026,
+  ifd: IFD_OBJECTION,
 };
 
 export interface ObjectionDeadline {

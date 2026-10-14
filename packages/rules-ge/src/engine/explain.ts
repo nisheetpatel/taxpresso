@@ -1,6 +1,7 @@
 // Plain-words texts the engine attaches to a result (SPEC.md section 11b: second person, plain
 // words, official French terms next to their gloss), so Claude can explain without stating rules
 // from memory.
+import { IFD_NOTE } from '@taxpresso/rules-ch';
 import type { EstimateReason, Text } from './types.js';
 
 const NB = '\u00a0';
@@ -29,10 +30,7 @@ export const NOTE = {
     en: 'Shared custody without child support: each child counts as half a family charge (half the cantonal and federal child deductions, half the federal insurance amount per child, half the wealth deduction per child); the parent on the federal parental scale gets the whole reduction per child.',
     fr: `Garde alternée sans contribution d’entretien${NB}: chaque enfant compte pour une demi-charge de famille (moitié des déductions pour enfants, cantonale et fédérale, du montant fédéral d’assurance par enfant et de la déduction sur la fortune par enfant)${NB}; le parent au barème parental fédéral a toute la réduction par enfant.`,
   },
-  ifdShared: {
-    en: 'Federal tax not computed: with shared custody, the parental scale (barème parental) goes to the parent who receives child support or, without child support, to the parent who earns more (ESTV circular 30). Answer the question on child support so Taxpresso knows which parent you are.',
-    fr: `Impôt fédéral non calculé${NB}: en garde alternée, le barème parental revient au parent qui reçoit la contribution d’entretien ou, sans contribution, au parent qui gagne le plus (circulaire AFC n° 30). Répondez à la question sur la contribution d’entretien pour que Taxpresso sache quel parent vous êtes.`,
-  },
+  ifdShared: IFD_NOTE.ifdShared,
   supportReceived: {
     en: 'Shared custody, child support received: you count as the parent who mainly supports the children, so they are full family charges here, with full splitting and the federal parental scale (barème parental).',
     fr: `Garde alternée, contribution d’entretien reçue${NB}: vous êtes le parent qui assure l’essentiel de l’entretien, les enfants sont donc des charges de famille entières ici, avec le splitting intégral et le barème parental fédéral.`,
@@ -45,10 +43,7 @@ export const NOTE = {
     en: 'Travel costs, cantonal tax: the Geneva guide caps them whatever the means of transport (p. 19 and 21) without saying how a bike or the kilometres are priced; Taxpresso prices them as the federal tax does (Form. 2a 2026 p. 6), then applies the Geneva cap.',
     fr: `Frais de déplacement, impôt cantonal${NB}: le guide genevois les plafonne quel que soit le moyen de transport (p. 19 et 21) sans dire comment compter un vélo ou les kilomètres${NB}; Taxpresso les compte comme l’impôt fédéral (formule 2a 2026 p. 6), puis applique le plafond genevois.`,
   },
-  bikeFlat: {
-    en: 'Bike or moped: the federal flat amount is for a year of trips; the federal instructions reduce it for part of a year or part-time work without saying how (Form. 2a 2026 p. 6), so it is counted in full.',
-    fr: `Vélo ou cyclomoteur${NB}: le forfait fédéral vaut pour une année de trajets${NB}; les instructions fédérales le réduisent pour une partie de l’année ou un temps partiel sans dire comment (formule 2a 2026 p. 6), il est donc compté en entier.`,
-  },
+  bikeFlat: IFD_NOTE.bikeFlat,
   mealsIccLimited: {
     en: 'Meals (frais de repas), cantonal tax: counted only when the trip to work by public transport takes over 2 hours a day (guide p. 19), so here they count for the federal tax only.',
     fr: `Frais de repas, impôt cantonal${NB}: comptés seulement si le trajet en transports publics dépasse 2 heures par jour (guide p. 19)${NB}; ici, ils comptent pour l’impôt fédéral seulement.`,

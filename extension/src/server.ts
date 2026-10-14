@@ -25,7 +25,8 @@ import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
-import { formatDay, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ge';
+import { PILLAR3A_2026_FACTS } from '@taxpresso/rules-ch';
+import { formatDay } from '@taxpresso/rules-ge';
 import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
 
 // MCP Apps: the dashboard in the conversation, and the tool it talks through (./dashboard-view.ts).

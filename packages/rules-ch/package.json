@@ -1,0 +1,21 @@
+{
+  "name": "@taxpresso/rules-ch",
+  "version": "0.0.0",
+  "private": true,
+  "description": "What every canton shares: the federal direct tax (IFD), cited constants and integer arithmetic on centimes, the household input and the result, pillar 3a and pension limits, withholding tax, the shared ledger keys and the canton interface (docs/design/cantons.md).",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@taxpresso/ledger": "workspace:*"
+  }
+}

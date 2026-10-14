@@ -27,8 +27,8 @@ import {
   type CommuneSlug,
   type ConsistencyCheck,
   type TaxResult,
-  type Text,
 } from '@taxpresso/rules-ge';
+import type { Text } from '@taxpresso/rules-ch';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import { displayPath, type Config } from './config.js';
 import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';

@@ -18,8 +18,8 @@
 // The rules (ge-2025-guide-declaration-pp): what belongs in it, wherever it is held (p. 38); IA
 // (p. 39, 40); accounts (p. 40, 41); securities and their taxable value from the ESTV price list
 // (p. 41); tax statements (p. 43); crypto with the accounts (p. 40); other wealth (p. 27); life
-// insurance (p. 26, 28); debts (p. 37). Withholding rules: ./withholding.ts. Exchange rates:
-// ./exchange-rates.ts.
+// insurance (p. 26, 28); debts (p. 37). Withholding rules and exchange rates: packages/rules-ch
+// (withholding/).
 //
 // Not covered, so never guessed: qualified participations (F5, F6, p. 44), business assets (FC),
 // the US additional withholding (RSI, form R-US 164, p. 39), lottery winnings (p. 42), bonds and
@@ -32,18 +32,18 @@ import {
   type Owner,
   type VaultDocument,
 } from '@taxpresso/ledger';
-import type { Text } from './checks.js';
-import { officialChf } from './exchange-rates.js';
-import { OWNERS, type LineOwner, type WealthKind } from './keys-wealth.js';
 import {
   IA_DEPOSIT_INTEREST_EXEMPT,
   IES_MINIMUM,
   iaClaim,
   iaOn,
+  officialChf,
   residualRate,
-  roundFranc,
+  roundFrancExact as roundFranc,
   splitForeignTax,
-} from './withholding.js';
+  type Text,
+} from '@taxpresso/rules-ch';
+import { OWNERS, type LineOwner, type WealthKind } from './keys-wealth.js';
 
 const SPECIMEN = 'ge-2025-declaration-specimen';
 const GUIDE = 'ge-2025-guide-declaration-pp';

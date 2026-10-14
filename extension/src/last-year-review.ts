@@ -18,12 +18,8 @@ import {
   type ReviewQuestionId,
   type ReviewUnsupported,
 } from '@taxpresso/optimizer';
-import {
-  assessmentViews,
-  COMMUNES_2026,
-  PILLAR3A_CATCHUP_FACTS,
-  type CommuneSlug,
-} from '@taxpresso/rules-ge';
+import { PILLAR3A_CATCHUP_FACTS } from '@taxpresso/rules-ch';
+import { assessmentViews, COMMUNES_2026, type CommuneSlug } from '@taxpresso/rules-ge';
 import * as z from 'zod/v4';
 import { room2026 } from './planning.js';
 import { chfText, lastYearLines } from './prior.js';

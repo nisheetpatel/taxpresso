@@ -20,7 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import * as prettier from 'prettier';
-import { compactTariff, parseTariffFile } from '../packages/rules-ge/src/source-tax/ascii.ts';
+import { compactTariff, parseTariffFile } from '../packages/rules-ch/src/source-tax/ascii.ts';
 
 const YEARS = [2025, 2026];
 /** The tariffs Taxpresso uses (RISP art. 1 al. 1 let. a, b, c, h): A0 to A5, B0 to B5, C0 to C5, H1 to H5. */

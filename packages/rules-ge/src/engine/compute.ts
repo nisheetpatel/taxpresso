@@ -2,24 +2,41 @@
 // person, the totals, the ICC (cantonal, communal, wealth, personal tax) and the IFD, each line
 // explained with its sources and estimates. First stage here (household figures to admitted
 // items, every cap and threshold of the 2025 guide and the federal documents), second stage in
-// ./assess.ts (items to taxes).
+// ./assess.ts (items to taxes). The federal deductions are packages/rules-ch's (ifd/items.ts),
+// keyed by concept: this file puts each on its Geneva rubric (RUBRIC_OF), at its place in the form.
 import type { IccSplitting } from '../2025/icc.js';
 import type { CommuneSlug } from '../2026/communes.js';
-import { assess, incomeTotals, type Assessment } from './assess.js';
-import { chf, roundFranc, Trace } from './calc.js';
-import { ESTIMATE_TEXT, NOTE } from './explain.js';
 import {
-  avsDeduction,
+  chf,
+  childcareCosts,
+  childDeduction,
+  commuteBase,
+  commuteCosts,
+  debtInterest,
   donationDeduction,
+  donations,
+  federalScale,
   flatProfessional,
-  lifeInsuranceCap,
-  mealsDeduction,
-  medicalDeduction,
-  pillar3aCapWithoutFund,
-  twoEarnerFederal,
-} from './rules.js';
-import type { MealAmounts } from '../2025/ifd.js';
-import type { Param } from './param.js';
+  francTotal as total,
+  insurancePremiums,
+  marriedCouple,
+  mealsCosts,
+  medicalCosts,
+  pillar3a,
+  politicalParty,
+  professionalCosts,
+  roundFranc,
+  Trace,
+  trainingCosts,
+  twoEarner,
+  type Deduction,
+  type FederalConcept,
+  type RuleLimit,
+  type RuleResult,
+} from '@taxpresso/rules-ch';
+import { assess, incomeTotals, type Assessment } from './assess.js';
+import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import { avsDeduction, lifeInsuranceCap } from './rules.js';
 import { paramsFor, type YearParams } from './params.js';
 import { codeFor, rubric, RUBRICS, type RubricCode } from './rubrics.js';
 import type {
@@ -63,7 +80,7 @@ class Notes {
    * `person` in `tax`, `given` before the rule, `limit` as applied, `counted` after it.
    */
   limit(
-    p: Pick<Param<unknown>, 'source' | 'estimate'>,
+    p: RuleLimit['param'],
     kind: LimitApplied['kind'],
     [code, person, tax]: [string, ItemPerson, LimitApplied['tax']],
     given: number,
@@ -83,7 +100,51 @@ class Notes {
       ...estimate,
     });
   }
+  /**
+   * What a shared rule (packages/rules-ch) noted, and the limits it applied, each on its Geneva
+   * rubric (`code`, by default the concept's) for `person` in `tax`.
+   */
+  apply(
+    r: RuleResult<FederalConcept>,
+    person: ItemPerson,
+    tax: LimitApplied['tax'],
+    code?: RubricCode,
+  ) {
+    for (const x of r.notCounted) this.add(this.notCounted, x);
+    for (const x of r.unverified) this.add(this.unverified, x);
+    for (const l of r.limits) {
+      const rubricCode = codeFor(code ?? RUBRIC_OF[l.concept], person);
+      this.limit(l.param, l.kind, [rubricCode, person, tax], l.given, l.limit, l.counted);
+    }
+  }
 }
+
+/**
+ * The Geneva rubric of each deduction a shared rule computes (packages/rules-ch): the IFD column,
+ * and for meals and medical costs the same rubric in the ICC column (ge-2025-declaration-specimen
+ * p. 3 and 5). Pillar 3a goes to 32.40 instead for a self-employed person without salary.
+ */
+const RUBRIC_OF: Record<FederalConcept, RubricCode> = {
+  pillar3a: '31.40',
+  'professional.flat': '31.20',
+  'professional.other': '31.63',
+  commute: '31.71',
+  meals: '31.60',
+  training: '59.50',
+  two_earner: '31.90',
+  insurance: '52.00',
+  debt_interest: '55.10',
+  childcare: '59.12',
+  married: '59.20',
+  medical: '71.00',
+  donations: '73.00',
+  party: '74.00',
+  child: '61.20',
+};
+
+/** The subtotals the federal and cantonal shares are taken of, as the form names them. */
+const SUBTOTAL_9220 = t('the subtotal 92.20', 'du sous-total 92.20');
+const SUBTOTAL_9240 = t('the subtotal 92.40', 'du sous-total 92.40');
 
 /** An item for this rubric and person; its label and rubric source come from the catalogue. */
 function item(
@@ -99,87 +160,21 @@ function item(
   return { code: codeFor(code, person), person, ...tr.line(amount, label ?? r.label, how) };
 }
 
+/** A deduction a shared rule computed (packages/rules-ch), as an item on its Geneva rubric. */
+function deductionItem(
+  d: Deduction<FederalConcept>,
+  person: ItemPerson,
+  code: RubricCode = RUBRIC_OF[d.concept],
+): Item {
+  return item(code, person, d.trace, d.amount, d.how);
+}
+
 /** A value of the état des titres as the engine reads it: its status and whether it is complete. */
 const wealthAmount = (w: WealthItemInput): Amount => ({
   value: w.centimes,
   status: w.estimate ? 'estimate' : 'stated',
   complete: w.complete,
 });
-
-/** Sum of amounts read into a trace, to the franc (the form takes whole francs, guide p. 9). */
-function total(tr: Trace, amounts: readonly (Amount | undefined)[]): number {
-  return roundFranc(amounts.reduce((s, a) => s + tr.a(a), 0));
-}
-
-/** A trace that carries the facts of answers (counts of days, ways to work): no amount of its own. */
-function answered(facts: readonly string[] | undefined, status?: Amount['status']): Trace {
-  const tr = new Trace();
-  tr.a({ value: 0, facts: facts ?? [], ...(status ? { status } : {}) });
-  return tr;
-}
-
-interface CommuteBase {
-  /** The yearly cost of getting to work before the caps, to the franc. */
-  cost: number;
-  /** How it was found, in words, with the numbers (no final full stop). */
-  how: Text;
-  /** Priced by a federal rule the Geneva guide doesn't repeat (a bike, the kilometres). */
-  federalPricing: boolean;
-}
-
-/**
- * Travel to work before the caps (ch-2026-ifd-instructions-personnes-physiques p. 6; ge-2025-
- * guide-declaration-pp p. 20): the public transport paid, or for a driver who could have used it,
- * its price; a flat amount for a bike or a moped with a yellow plate; per kilometre, there and back
- * once a day, for a car or a motorbike when no public transport can be used. Undefined when nothing
- * is known, or nothing is spent (on foot, from home).
- */
-function commuteBase(F: YearParams['ifd'], p: PersonInput, tr: Trace): CommuteBase | undefined {
-  const mode = p.commuteMode;
-  if (mode)
-    tr.a({ value: 0, facts: mode.facts ?? [], ...(mode.status ? { status: mode.status } : {}) });
-  const vehicle = mode?.by === 'car' || mode?.by === 'motorbike' ? mode.by : undefined;
-  const by = vehicle && t(vehicle, vehicle === 'car' ? 'voiture' : 'moto');
-  if (p.commuteCost) {
-    const cost = total(tr, [p.commuteCost]);
-    return {
-      cost,
-      federalPricing: false,
-      how: by
-        ? t(
-            `By ${by.en}, public transport possible: what it would have cost, ${chf(cost)}`,
-            `En ${by.fr}, transports publics possibles${NB}: ce qu’ils auraient coûté, ${chf(cost)}`,
-          )
-        : mode?.by === 'public_transport'
-          ? t(`Public transport paid: ${chf(cost)}`, `Transports publics payés${NB}: ${chf(cost)}`)
-          : t(`Commuting costs: ${chf(cost)}`, `Frais de déplacement${NB}: ${chf(cost)}`),
-    };
-  }
-  if (mode?.by === 'bike') {
-    const cost = tr.p(F.commuteBike);
-    return {
-      cost,
-      federalPricing: true,
-      how: t(
-        `Bike, e-bike or moped with a yellow plate: the flat amount of ${chf(cost)}`,
-        `Vélo, vélo électrique ou cyclomoteur à plaque jaune${NB}: le forfait de ${chf(cost)}`,
-      ),
-    };
-  }
-  if (vehicle && by && mode?.transitUsable === false && mode.kmOneWay && mode.days) {
-    const rate = tr.p(F.commuteKm)[vehicle];
-    const cost = roundFranc(mode.kmOneWay * 2 * mode.days * rate);
-    return {
-      cost,
-      federalPricing: true,
-      how: t(
-        `By ${by.en}, no public transport you can use: ${mode.kmOneWay} km x 2 x ${mode.days} days x ${chf(rate)} a km = ${chf(cost)}`,
-        `En ${by.fr}, sans transport public utilisable${NB}: ${mode.kmOneWay} km x 2 x ${mode.days} jours x ${chf(rate)} le km = ${chf(cost)}`,
-      ),
-    };
-  }
-  return undefined;
-}
 
 interface PersonFigures {
   id: EnginePerson;
@@ -324,53 +319,21 @@ function personItems(
 
   // Pillar 3a: federal limits, the same for the cantonal tax (LIPP art. 31 let. c).
   const hasFund = p.hasPensionFund ?? pensionFund > 0;
-  const tTrace = new Trace();
-  const paid = total(tTrace, [p.pillar3a]);
-  const catchUp = total(tTrace, [p.pillar3aCatchUp]);
+  const p3a = pillar3a(F, {
+    paid: p.pillar3a,
+    catchUp: p.pillar3aCatchUp,
+    hasFund,
+    gross,
+    social,
+    self,
+    earnedFrom: [gTrace, sTrace],
+    cantonalLaw: ['ge-na-law-lipp art. 31 let. c'],
+  });
+  const paid = p3a.paid;
   // A self-employed person without salary declares it on the annexe B (32.40, specimen p. 10).
   const code3a: RubricCode = gross + replacement === 0 && self > 0 ? '32.40' : '31.40';
-  if (paid > 0 || catchUp > 0) {
-    const lim = tTrace.p(F.pillar3a);
-    tTrace.src('ge-na-law-lipp art. 31 let. c');
-    let cap = lim.withFund;
-    let capHow = t(
-      `the limit with a pension fund, ${chf(cap)}`,
-      `la limite avec caisse de pension, ${chf(cap)}`,
-    );
-    if (!hasFund) {
-      tTrace.with(gTrace, sTrace);
-      const earned = Math.max(0, gross - social + self);
-      cap = pillar3aCapWithoutFund(earned, lim);
-      capHow = t(
-        `without a pension fund, 20 % of earned income (${chf(earned)}) up to ${chf(lim.withoutFundMax)}: ${chf(cap)}`,
-        `sans caisse de pension, 20${NB}% du revenu d’activité (${chf(earned)}) jusqu’à ${chf(lim.withoutFundMax)}${NB}: ${chf(cap)}`,
-      );
-      if (earned === 0) {
-        notes.add(
-          notes.notCounted,
-          t(
-            'Pillar 3a needs earned income: none was given, so nothing is deducted.',
-            `Le 3e pilier A suppose un revenu d’activité${NB}: aucun n’est indiqué, rien n’est déduit.`,
-          ),
-        );
-      }
-    }
-    const v = Math.min(paid, cap);
-    if (paid) notes.limit(F.pillar3a, 'cap', [codeFor(code3a, p.id), p.id, 'both'], paid, cap, v);
-    if (catchUp) tTrace.src('ch-2026-ifd-instructions-personnes-physiques p. 8');
-    both(
-      item(
-        code3a,
-        p.id,
-        tTrace,
-        -(v + catchUp),
-        t(
-          `Paid ${chf(paid)}; at most ${capHow.en}: ${chf(v)}.${catchUp ? ` Plus a catch-up payment for earlier years (rachat 3a) of ${chf(catchUp)}.` : ''}`,
-          `Versé ${chf(paid)}${NB}; au plus ${capHow.fr}${NB}: ${chf(v)}.${catchUp ? ` Plus un rachat 3a pour des années précédentes de ${chf(catchUp)}.` : ''}`,
-        ),
-      ),
-    );
-  }
+  notes.apply(p3a, p.id, 'both', code3a);
+  if (p3a.deduction) both(deductionItem(p3a.deduction, p.id, code3a));
 
   // Professional expenses, for salaried work and the benefits that replace it: the flat
   // deductions are 3 % of the code 11.00 (annexe A income) less 31.10 and 31.12 (guide p. 19).
@@ -409,22 +372,9 @@ function personItems(
     if (gross > 0 && days > 0 && !p.mealsIccAllowed) {
       notes.add(notes.notCounted, NOTE.mealsIccLimited);
     }
-    const meals = (params: MealAmounts) => (gross > 0 ? mealsDeduction(days, canteen, params) : 0);
-    /** How the meals deduction was found, with the day rate and the yearly limit. */
-    const mealsHow = (m: MealAmounts, v: number): Text => {
-      const [perDay, perYear] = canteen ? [m.halfPerDay, m.halfPerYear] : [m.perDay, m.perYear];
-      return t(
-        `${days} days of lunch away from home x ${chf(perDay)}${canteen ? ' (half: your employer pays part of it, box G)' : ''}, at most ${chf(perYear)} a year: ${chf(v)}.`,
-        `${days} jours de repas hors du domicile x ${chf(perDay)}${canteen ? ' (moitié${NB}: l’employeur en paie une partie, case G)' : ''}, au plus ${chf(perYear)} par an${NB}: ${chf(v)}.`,
-      );
-    };
-    /** The yearly limit of the meals deduction, as applied. */
-    const mealsLimit = (m: Param<MealAmounts>, v: number, tax: 'icc' | 'ifd') => {
-      const [day, year] = canteen
-        ? [m.value.halfPerDay, m.value.halfPerYear]
-        : [m.value.perDay, m.value.perYear];
-      notes.limit(m, 'cap', [codeFor('31.60', p.id), p.id, tax], days * day, year, v);
-    };
+    /** Meals away from home, for someone with a salary, at the day rate and yearly limit of `m`. */
+    const meals = (m: Parameters<typeof mealsCosts>[0]) =>
+      mealsCosts(m, { days: gross > 0 ? days : 0, canteen, facts: p.mealFacts });
 
     // ICC: the flat 3 % covers every professional cost (LIPP art. 29 al. 2); actual costs instead
     // when higher (guide p. 22).
@@ -433,17 +383,13 @@ function personItems(
     const flat = flatProfessional(net, fl);
     const cTrace = new Trace().with(costTrace).src(...costTrace.sources);
     const commuteIcc = freeTransport ? 0 : Math.min(commute, cTrace.p(I.commuteMax));
-    const mTrace = answered(p.mealFacts);
-    const mealsIccParams = mTrace.p(I.meals);
-    const mealsIcc = p.mealsIccAllowed ? meals(mealsIccParams) : 0;
+    const mealsIccRule = meals(I.meals);
+    const mealsIcc =
+      p.mealsIccAllowed && mealsIccRule.deduction ? -mealsIccRule.deduction.amount : 0;
     const actual = commuteIcc + mealsIcc + other;
-    const choice = (tax: 'icc' | 'ifd'): [string, ItemPerson, 'icc' | 'ifd'] => [
-      codeFor(tax === 'icc' ? '31.50' : '31.20', p.id),
-      p.id,
-      tax,
-    ];
+    const choice: [string, ItemPerson, 'icc'] = [codeFor('31.50', p.id), p.id, 'icc'];
     const usedIcc = Math.max(actual, flat);
-    if (actual) notes.limit(I.professionalFlat, 'choice', choice('icc'), actual, flat, usedIcc);
+    if (actual) notes.limit(I.professionalFlat, 'choice', choice, actual, flat, usedIcc);
     if (actual > flat) {
       notes.add(
         notes.assumptions,
@@ -469,9 +415,9 @@ function personItems(
           ),
         );
       }
-      if (mealsIcc) {
-        mealsLimit(I.meals, mealsIcc, 'icc');
-        icc.push(item('31.60', p.id, mTrace, -mealsIcc, mealsHow(mealsIccParams, mealsIcc)));
+      if (mealsIcc && mealsIccRule.deduction) {
+        notes.apply(mealsIccRule, p.id, 'icc');
+        icc.push(deductionItem(mealsIccRule.deduction, p.id));
       }
       if (other)
         icc.push(
@@ -499,57 +445,13 @@ function personItems(
     }
 
     // IFD: commuting and meals on their own, the flat 3 % for the other costs (LIFD art. 26).
-    const fTrace = new Trace().with(gTrace, sTrace, lTrace);
-    const ff = fTrace.p(F.professionalFlat);
-    const flatIfd = flatProfessional(net, ff);
-    const usedIfd = Math.max(other, flatIfd);
-    if (other) notes.limit(F.professionalFlat, 'choice', choice('ifd'), other, flatIfd, usedIfd);
-    if (other > flatIfd) {
-      ifd.push(
-        item(
-          '31.63',
-          p.id,
-          new Trace().with(costTrace),
-          -other,
-          t(
-            `Other actual costs, higher than the flat deduction: ${chf(other)}.`,
-            `Autres frais effectifs, supérieurs au forfait${NB}: ${chf(other)}.`,
-          ),
-        ),
-      );
-    } else {
-      ifd.push(
-        item(
-          '31.20',
-          p.id,
-          fTrace,
-          -flatIfd,
-          t(
-            `3 % of the salary after social and pension fund contributions (${chf(net)}), to the franc, between ${chf(ff.min)} and ${chf(ff.max)}: ${chf(flatIfd)}.`,
-            `3${NB}% du salaire après cotisations AVS et 2e pilier (${chf(net)}), au franc, entre ${chf(ff.min)} et ${chf(ff.max)}${NB}: ${chf(flatIfd)}.`,
-          ),
-        ),
-      );
-    }
+    const prof = professionalCosts(F, net, other, [gTrace, sTrace, lTrace], costTrace);
+    notes.apply(prof, p.id, 'ifd');
+    if (prof.deduction) ifd.push(deductionItem(prof.deduction, p.id));
     if (!freeTransport && commute > 0 && way) {
-      if (p.commuteMode?.by === 'bike' && !p.commuteCost)
-        notes.add(notes.unverified, NOTE.bikeFlat);
-      const tr = new Trace().with(costTrace).src(...costTrace.sources);
-      const v = Math.min(commute, tr.p(F.commuteMax));
-      const at: [string, ItemPerson, 'ifd'] = [codeFor('31.71', p.id), p.id, 'ifd'];
-      notes.limit(F.commuteMax, 'cap', at, commute, F.commuteMax.value, v);
-      ifd.push(
-        item(
-          '31.71',
-          p.id,
-          tr,
-          -v,
-          t(
-            `${way.how.en}, at most ${chf(F.commuteMax.value)}: ${chf(v)}.`,
-            `${way.how.fr}, au plus ${chf(F.commuteMax.value)}${NB}: ${chf(v)}.`,
-          ),
-        ),
-      );
+      const travel = commuteCosts(F, p, way, costTrace);
+      notes.apply(travel, p.id, 'ifd');
+      if (travel.deduction) ifd.push(deductionItem(travel.deduction, p.id));
     }
     if (freeTransport) {
       notes.add(
@@ -560,12 +462,10 @@ function personItems(
         ),
       );
     }
-    const mfTrace = answered(p.mealFacts);
-    const mealsIfdParams = mfTrace.p(F.meals);
-    const mealsIfd = meals(mealsIfdParams);
-    if (mealsIfd) {
-      mealsLimit(F.meals, mealsIfd, 'ifd');
-      ifd.push(item('31.60', p.id, mfTrace, -mealsIfd, mealsHow(mealsIfdParams, mealsIfd)));
+    const mealsIfd = meals(F.meals);
+    if (mealsIfd.deduction) {
+      notes.apply(mealsIfd, p.id, 'ifd');
+      ifd.push(deductionItem(mealsIfd.deduction, p.id));
     }
   }
 
@@ -588,21 +488,9 @@ function personItems(
         ),
       ),
     );
-    const tf = new Trace().with(trTrace);
-    const vf = Math.min(training, tf.p(F.trainingMax));
-    notes.limit(F.trainingMax, 'cap', ['59.50', p.id, 'ifd'], training, F.trainingMax.value, vf);
-    ifd.push(
-      item(
-        '59.50',
-        p.id,
-        tf,
-        -vf,
-        t(
-          `Paid ${chf(training)}, at most ${chf(F.trainingMax.value)}: ${chf(vf)}.`,
-          `Payé ${chf(training)}, au plus ${chf(F.trainingMax.value)}${NB}: ${chf(vf)}.`,
-        ),
-      ),
-    );
+    const federal = trainingCosts(F, training, trTrace);
+    notes.apply(federal, p.id, 'ifd');
+    if (federal.deduction) ifd.push(deductionItem(federal.deduction, p.id));
   }
 
   const own = (list: Item[], from: number) =>
@@ -841,22 +729,9 @@ export function computeReturn(input: EngineInput): TaxResult {
     }
     const lowIfd = a.earnedIfd <= b.earnedIfd ? a : b;
     if (lowIfd.earnedIfd > 0) {
-      const tr = new Trace().from(...ifd.filter((i) => i.person === lowIfd.id));
-      const te = tr.p(F.twoEarner);
-      const e = lowIfd.earnedIfd;
-      const v = twoEarnerFederal(e, te);
-      ifd.push(
-        item(
-          '31.90',
-          lowIfd.id,
-          tr,
-          -v,
-          t(
-            `Both spouses work: 50 % of the lower earned income (${chf(e)}), at least ${chf(te.min)} (never more than that income), at most ${chf(te.max)}: ${chf(v)}.`,
-            `Les deux conjoints travaillent${NB}: 50${NB}% du revenu d’activité le plus bas (${chf(e)}), au moins ${chf(te.min)} (jamais plus que ce revenu), au plus ${chf(te.max)}${NB}: ${chf(v)}.`,
-          ),
-        ),
-      );
+      const lower = ifd.filter((i) => i.person === lowIfd.id);
+      const federal = twoEarner(F, lowIfd.earnedIfd, lower);
+      if (federal.deduction) ifd.push(deductionItem(federal.deduction, lowIfd.id));
     }
   }
 
@@ -915,54 +790,18 @@ export function computeReturn(input: EngineInput): TaxResult {
   }
 
   // Insurance premiums and savings interest, IFD 52.00 (premiums net of any subsidy).
-  const insTrace = new Trace().with(hTrace, lifeTrace, subTrace);
-  const insurance = Math.max(0, premiums - subsidy) + life;
-  if (insurance > 0) {
-    const ins = insTrace.p(F.insurance);
-    const anyContributes = contributing > 0;
-    const base = couple
-      ? anyContributes
-        ? ins.married
-        : ins.marriedNone
-      : anyContributes
-        ? ins.other
-        : ins.otherNone;
-    // The amount per child follows the child deduction: half of it for a child in shared custody,
-    // where each parent has half the child deduction (circular 30, ch. 7 and 14.4.1).
-    const halfChild = ins.perChild / 2;
-    if (shared) insTrace.src(`${CIRCULAR30} p. 11 and 32 (ch. 7, 14.4.1)`);
-    const cap = base + ins.perChild * full + halfChild * shared;
-    const v = Math.min(insurance, cap);
-    notes.limit(F.insurance, 'cap', ['52.00', 'household', 'ifd'], insurance, cap, v);
-    const plus = (perChild: number, n: number, en: string, fr: string) =>
-      n
-        ? { en: ` + ${chf(perChild)} x ${n} ${en}`, fr: ` + ${chf(perChild)} x ${n} ${fr}` }
-        : { en: '', fr: '' };
-    const fullPart = plus(
-      ins.perChild,
-      full,
-      full > 1 ? 'children' : 'child',
-      full > 1 ? 'enfants' : 'enfant',
-    );
-    const sharedPart = plus(
-      halfChild,
-      shared,
-      `child${shared > 1 ? 'ren' : ''} in shared custody`,
-      `enfant${shared > 1 ? 's' : ''} en garde alternée`,
-    );
-    ifd.push(
-      item(
-        '52.00',
-        'household',
-        insTrace,
-        -v,
-        t(
-          `Premiums and savings interest ${chf(insurance)}${subsidy ? ' (after the subsidy)' : ''}; at most ${chf(base)}${fullPart.en}${sharedPart.en}: ${chf(v)}.`,
-          `Primes et intérêts d’épargne ${chf(insurance)}${subsidy ? ' (après subside)' : ''}${NB}; au plus ${chf(base)}${fullPart.fr}${sharedPart.fr}${NB}: ${chf(v)}.`,
-        ),
-      ),
-    );
-  }
+  const insurance = insurancePremiums(F, {
+    premiums,
+    subsidy,
+    life,
+    couple,
+    contributing: contributing > 0,
+    full,
+    shared,
+    inputs: [hTrace, lifeTrace, subTrace],
+  });
+  notes.apply(insurance, 'household', 'ifd');
+  if (insurance.deduction) ifd.push(deductionItem(insurance.deduction, 'household'));
 
   // Alimony paid, debt interest, bank costs: the same in both taxes.
   const both = (it: Item) => (icc.push(it), ifd.push(it));
@@ -1001,23 +840,9 @@ export function computeReturn(input: EngineInput): TaxResult {
         ),
       ),
     );
-    const cf = new Trace().with(diTrace);
-    const ef = cf.p(F.debtInterestExtra);
-    const vf = Math.min(interest, wealthIncome + ef);
-    const capF = wealthIncome + ef;
-    notes.limit(F.debtInterestExtra, 'cap', ['55.10', 'household', 'ifd'], interest, capF, vf);
-    ifd.push(
-      item(
-        '55.10',
-        'household',
-        cf,
-        -vf,
-        t(
-          `Interest ${chf(interest)}; at most the income from wealth (${chf(wealthIncome)}) + ${chf(ef)}: ${chf(vf)}.`,
-          `Intérêts ${chf(interest)}${NB}; au plus le rendement de la fortune (${chf(wealthIncome)}) + ${chf(ef)}${NB}: ${chf(vf)}.`,
-        ),
-      ),
-    );
+    const federal = debtInterest(F, interest, wealthIncome, diTrace);
+    notes.apply(federal, 'household', 'ifd');
+    if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
   }
   const fTrace = new Trace();
   const fees = total(fTrace, [hh.bankFees]);
@@ -1070,43 +895,17 @@ export function computeReturn(input: EngineInput): TaxResult {
           ),
         ),
       );
-      const cf = new Trace().with(ccTrace);
-      const maxF = cf.p(F.childcareMax);
-      const vf = Math.min(care, maxF * counted.length);
-      const capF = maxF * counted.length;
-      notes.limit(F.childcareMax, 'cap', ['59.12', 'household', 'ifd'], care, capF, vf);
-      ifd.push(
-        item(
-          '59.12',
-          'household',
-          cf,
-          -vf,
-          t(
-            `Paid ${chf(care)}; at most ${chf(maxF)} per child under 14 (${counted.length}): ${chf(vf)}.`,
-            `Payé ${chf(care)}${NB}; au plus ${chf(maxF)} par enfant de moins de 14 ans (${counted.length})${NB}: ${chf(vf)}.`,
-          ),
-        ),
-      );
+      const federal = childcareCosts(F, care, counted.length, ccTrace);
+      notes.apply(federal, 'household', 'ifd');
+      if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
     }
   }
 
   // Married couple deduction, IFD (59.20). The Geneva form takes it among the other deductions,
   // before the subtotal 92.20 (guide p. 13 and 31).
   if (couple) {
-    const tr = new Trace();
-    const v = tr.p(F.married);
-    ifd.push(
-      item(
-        '59.20',
-        'household',
-        tr,
-        -v,
-        t(
-          `Married couple living together: ${chf(v)}.`,
-          `Époux vivant en ménage commun${NB}: ${chf(v)}.`,
-        ),
-      ),
-    );
+    const federal = marriedCouple(F);
+    if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
     if ((hh.medicalCosts?.value ?? 0) > 0 || (hh.donations?.value ?? 0) > 0)
       notes.add(notes.unverified, NOTE.coupleOrder);
   }
@@ -1114,34 +913,15 @@ export function computeReturn(input: EngineInput): TaxResult {
   // Medical costs (71.00): the part above 0.5 % (ICC) or 5 % (IFD) of the subtotal 92.20.
   const mTrace = new Trace();
   const medical = total(mTrace, [hh.medicalCosts]);
-  const thresholdItem = (list: Item[], bp: Param<number>, tax: 'ICC' | 'IFD') => {
-    const s9220 = incomeTotals(list, tax).subtotal9220;
-    const tr = new Trace().with(mTrace).from(s9220);
-    const rate = tr.p(bp);
-    const { threshold: floor, deduction: v } = medicalDeduction(medical, s9220.amount, rate);
-    const taxId = tax === 'ICC' ? 'icc' : 'ifd';
-    notes.limit(bp, 'threshold', ['71.00', 'household', taxId], medical, floor, v);
-    if (v > 0)
-      list.push(
-        item(
-          '71.00',
-          'household',
-          tr,
-          -v,
-          t(
-            `Costs ${chf(medical)} less ${rate / 100} % of the subtotal 92.20 (${chf(s9220.amount)}), that is ${chf(floor)}: ${chf(v)}.`,
-            `Frais ${chf(medical)} moins ${String(rate / 100).replace('.', ',')}${NB}% du sous-total 92.20 (${chf(s9220.amount)}), soit ${chf(floor)}${NB}: ${chf(v)}.`,
-          ),
-        ),
-      );
-    else
-      notes.add(
-        notes.notCounted,
-        t(
-          `Medical costs (${tax}): below the threshold, nothing to deduct.`,
-          `Frais médicaux (${tax})${NB}: sous le seuil, rien à déduire.`,
-        ),
-      );
+  const thresholdItem = (
+    list: Item[],
+    bp: Parameters<typeof medicalCosts>[0],
+    tax: 'ICC' | 'IFD',
+  ) => {
+    const base = { line: incomeTotals(list, tax).subtotal9220, name: SUBTOTAL_9220 };
+    const r = medicalCosts(bp, medical, base, mTrace, tax);
+    notes.apply(r, 'household', tax === 'ICC' ? 'icc' : 'ifd');
+    if (r.deduction) list.push(deductionItem(r.deduction, 'household'));
   };
   if (medical > 0) {
     thresholdItem(icc, I.medicalThresholdBp, 'ICC');
@@ -1174,33 +954,9 @@ export function computeReturn(input: EngineInput): TaxResult {
         ),
       );
     const sf = incomeTotals(ifd, 'IFD').subtotal9240;
-    const tf = new Trace().with(gTrace).from(sf);
-    const d = tf.p(F.donations);
-    const { cap: capF, deduction: vf } = donationDeduction(gifts, sf.amount, d.shareBp, d.min);
-    notes.limit(F.donations, 'minimum', ['73.00', 'household', 'ifd'], gifts, d.min, vf);
-    if (gifts >= d.min)
-      notes.limit(F.donations, 'cap', ['73.00', 'household', 'ifd'], gifts, capF, vf);
-    if (vf > 0)
-      ifd.push(
-        item(
-          '73.00',
-          'household',
-          tf,
-          -vf,
-          t(
-            `Donations ${chf(gifts)} (at least ${chf(d.min)} in the year); at most 20 % of the subtotal 92.40 (${chf(sf.amount)}), ${chf(capF)}: ${chf(vf)}.`,
-            `Dons ${chf(gifts)} (au moins ${chf(d.min)} dans l’année)${NB}; au plus 20${NB}% du sous-total 92.40 (${chf(sf.amount)}), ${chf(capF)}${NB}: ${chf(vf)}.`,
-          ),
-        ),
-      );
-    else
-      notes.add(
-        notes.notCounted,
-        t(
-          `Donations under ${chf(d.min)} in the year are not deducted for the federal tax.`,
-          `Les dons de moins de ${chf(d.min)} dans l’année ne sont pas déduits pour l’impôt fédéral.`,
-        ),
-      );
+    const federal = donations(F, gifts, { line: sf, name: SUBTOTAL_9240 }, gTrace);
+    notes.apply(federal, 'household', 'ifd');
+    if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
   }
   const pTrace = new Trace();
   const party = total(pTrace, [hh.politicalParty]);
@@ -1220,21 +976,9 @@ export function computeReturn(input: EngineInput): TaxResult {
         ),
       ),
     );
-    const tf = new Trace().with(pTrace);
-    const vf = Math.min(party, tf.p(F.partyMax));
-    notes.limit(F.partyMax, 'cap', ['74.00', 'household', 'ifd'], party, F.partyMax.value, vf);
-    ifd.push(
-      item(
-        '74.00',
-        'household',
-        tf,
-        -vf,
-        t(
-          `Paid ${chf(party)}, at most ${chf(F.partyMax.value)}: ${chf(vf)}.`,
-          `Versé ${chf(party)}, au plus ${chf(F.partyMax.value)}${NB}: ${chf(vf)}.`,
-        ),
-      ),
-    );
+    const federal = politicalParty(F, party, pTrace);
+    notes.apply(federal, 'household', 'ifd');
+    if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
   }
 
   // Family charges (61.25 ICC, 61.20 IFD).
@@ -1268,21 +1012,8 @@ export function computeReturn(input: EngineInput): TaxResult {
         ),
       ),
     );
-    const tf = new Trace().src(...custody.ifd);
-    const per = tf.p(F.child);
-    const vf = per * full + (per / 2) * shared;
-    ifd.push(
-      item(
-        '61.20',
-        'household',
-        tf,
-        -vf,
-        t(
-          `${chf(per)} per child${shared ? ', half in shared custody' : ''}: ${chf(vf)}.`,
-          `${chf(per)} par enfant${shared ? ', moitié en garde alternée' : ''}${NB}: ${chf(vf)}.`,
-        ),
-      ),
-    );
+    const federal = childDeduction(F, full, shared, custody.ifd);
+    if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
   }
 
   // AVS/AI pensioners (61.30 ICC), on the subtotal 92.40.
@@ -1316,25 +1047,15 @@ export function computeReturn(input: EngineInput): TaxResult {
     notes.add(notes.assumptions, NOTE.partialSplitting);
   }
   if (input.splitting) splitting = input.splitting;
-  let ifdScale: 'single' | 'married' | 'parental' = couple
-    ? 'married'
-    : full > 0
-      ? 'parental'
-      : 'single';
-  let ifdUnsupported = false;
-  if (shared > 0) {
-    notes.add(notes.assumptions, NOTE.sharedCharges);
-    // Without child support, the parent who earns more has the parental scale (circular 30,
-    // ch. 13.4.2 and 14.4.2): unknown, the federal tax is not computed (fail closed).
-    if (!couple && full === 0) {
-      if (input.ifdParentalScale === undefined) {
-        ifdUnsupported = true;
-        notes.add(notes.unsupported, NOTE.ifdShared);
-      } else if (input.ifdParentalScale) ifdScale = 'parental';
-    }
-  }
-  // The parental scale can't be split: its parent has the whole reduction per child (ch. 13.4.1).
-  const ifdChildReductions = ifdScale === 'single' ? 0 : full + shared;
+  if (shared > 0) notes.add(notes.assumptions, NOTE.sharedCharges);
+  // Without child support, the parent who earns more has the parental scale (circular 30,
+  // ch. 13.4.2 and 14.4.2): unknown, the federal tax is not computed (fail closed). The parental
+  // scale can't be split: its parent has the whole reduction per child (ch. 13.4.1).
+  const scale = federalScale({ couple, full, shared, parentalScale: input.ifdParentalScale });
+  for (const u of scale.unsupported) notes.add(notes.unsupported, u);
+  const ifdScale = scale.scale;
+  const ifdUnsupported = scale.unsupported.length > 0;
+  const ifdChildReductions = scale.childReductions;
 
   // Imputations (guide p. 38 and 39): shown next to the tax, never part of it. The état des titres
   // gives them when it is there; otherwise the withholding tax of the movable inputs.

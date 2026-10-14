@@ -4,7 +4,7 @@
 // art. 59 (ge-na-law-lipp): al. 1 the scale, the same for a single person and for spouses living
 // together (no splitting on wealth); al. 2 the supplementary tax, on which no centime additionnel
 // is levied.
-import type { Cited } from './icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { BracketScale } from '../engine/param.js';
 
 /** Base wealth tax (impôt de base sur la fortune), rates in 1/100_000 (1.49 per mille = 149). */

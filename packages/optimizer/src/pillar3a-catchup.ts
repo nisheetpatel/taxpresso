@@ -2,7 +2,7 @@
 // group B). Who paid less than the 2025 maximum may make up that gap in 2026, at most the "small"
 // 3a limit, once the full 2026 payment is made (OPP 3 art. 7a; ch-2026-ifd-instructions p. 8).
 // Gaps before 2025 can never be made up (OPP 3, transitional provision).
-import { PILLAR3A_2025, PILLAR3A_CATCHUP_2026, PILLAR3A_CATCHUP_FACTS } from '@taxpresso/rules-ge';
+import { PILLAR3A_2025, PILLAR3A_CATCHUP_2026, PILLAR3A_CATCHUP_FACTS } from '@taxpresso/rules-ch';
 import {
   type Assumption,
   type Deduction,

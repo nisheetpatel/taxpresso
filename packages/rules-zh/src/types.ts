@@ -1,30 +1,23 @@
 // The Zurich engine's input and result. Money is integer centimes everywhere. Field names follow
-// packages/rules-ge/src/engine/types.ts (EngineInput, TaxResult) wherever the concept is the
-// same, so one ledger mapping can feed both cantons (docs/design/cantons.md, section 2). Items
+// the household input of packages/rules-ch (core/types.ts, HouseholdInput) wherever the concept is
+// the same, so one ledger mapping can feed both cantons (docs/design/cantons.md, section 2). Items
 // carry the line code printed on the Zurich return (StA Form. 300, zh-2025-form-steuererklaerung-
 // hauptformular), deductions negative, income and assets positive.
+// The shapes every canton shares (Text, Amount, Line, the way to work) are packages/rules-ch's.
+import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
 import type { ZhTaxYear } from './params.js';
 
-/** Plain words for the user; German official terms appear in parentheses. */
-export interface Text {
-  en: string;
-  fr: string;
-}
+export type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  InputStatus,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 
-export type EnginePerson = 'p1' | 'p2';
+/** Whose an item is in Zurich: taxpayer A (p1), B (p2) or the household. */
 export type ItemPerson = EnginePerson | 'household';
-
-/** How sure a value given to the engine is (SPEC.md section 4 statuses). */
-export type InputStatus = 'verified' | 'stated' | 'extracted' | 'estimate';
-
-export interface Amount {
-  /** Centimes, zero or more. */
-  value: number;
-  status?: InputStatus;
-  facts?: readonly string[];
-  /** False when part of the amount is unknown: it is then a floor. */
-  complete?: boolean;
-}
 
 /** One salary certificate (Lohnausweis). */
 export interface EmploymentInput {
@@ -43,18 +36,6 @@ export interface EmploymentInput {
   freeTransport?: boolean;
   /** A side job (Nebenerwerb, line 102/103): its costs are the 20 % flat, nothing else. */
   side?: boolean;
-}
-
-/** The way to work, for travel costs (Fahrkosten). */
-export interface CommuteMode {
-  by: 'public_transport' | 'car' | 'motorbike' | 'bike' | 'walk' | 'home';
-  /** Car or motorbike: whether public transport could have been used. */
-  transitUsable?: boolean;
-  /** Car or motorbike without usable public transport: kilometres one way, and days driven. */
-  kmOneWay?: number;
-  days?: number;
-  status?: InputStatus;
-  facts?: readonly string[];
 }
 
 export interface PersonInput {
@@ -176,19 +157,6 @@ export interface ZhEngineInput {
   movable?: readonly { owner: ItemPerson; value?: Amount; income?: Amount }[];
 }
 
-/** A computed figure with its explanation. The same shape as Line in packages/rules-ge. */
-export interface Line {
-  amount: number;
-  label: Text;
-  how: Text;
-  /** Official sources: manifest id plus page, paragraph or sheet. */
-  sources: string[];
-  estimates?: string[];
-  needsOk?: boolean;
-  incomplete?: boolean;
-  facts?: string[];
-}
-
 export interface Item extends Line {
   /** The line code printed on the return, e.g. '220'. */
   code: string;
@@ -253,7 +221,10 @@ export interface ZhTaxResult {
   taxYear: ZhTaxYear;
   commune: CommuneRef;
   icc: ZhIccResult | null;
-  /** The federal tax comes from packages/rules-ch once it is split out of rules-ge. */
+  /**
+   * The federal tax is packages/rules-ch's; Zurich's result shows it once the federal column of the
+   * Zurich form is mapped (docs/design/cantons.md, section 6).
+   */
   ifd: null;
   /** The cantonal and communal tax, when computed. */
   total: number | null;

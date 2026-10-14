@@ -1,7 +1,7 @@
 // Rules of the Geneva general law on public contributions (LCP, rsGE D 3 05, ge-na-law-lcp,
 // consolidated to 1 January 2026) that the engine applies. Not indexed: the amounts are in the law
 // itself, the same for tax years 2025 and 2026.
-import type { Cited } from '../2025/icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
 
 /**
  * Taxe personnelle (art. 374 to 377): 25 francs a year, one per married couple or registered

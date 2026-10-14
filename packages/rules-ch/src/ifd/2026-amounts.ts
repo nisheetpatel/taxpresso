@@ -1,11 +1,11 @@
 // Federal direct tax (IFD), tax year 2026: every deduction the engine uses, next to the scales in
-// ./ifd.ts. All money in integer centimes.
+// ./2026.ts. All money in integer centimes.
 // Sources: ch-2026-ifd-progression-deductions (ESTV circular of 11 September 2025), p. 1 and p. 2
 // (the table of deductions for 2026, art. 26, 33, 33a, 35 and 36 LIFD); ch-2026-ifd-instructions-
 // personnes-physiques (Form. 2a 2026), p. 6 (3 % flat) and p. 7 (pillar 3a); ch-2026-ifd-tarif-
 // personnes-physiques (Form. 58c 2026) notes 1 and 2 for rounding; ch-na-law-lifd for the rules.
-import type { IfdAmounts } from '../2025/ifd.js';
-import { PILLAR3A_2026 } from './pillar3a.js';
+import { PILLAR3A_2026 } from '../pension/pillar3a.js';
+import type { IfdAmounts } from './2025.js';
 
 const CIRCULAR = 'ch-2026-ifd-progression-deductions';
 const INSTRUCTIONS = 'ch-2026-ifd-instructions-personnes-physiques';

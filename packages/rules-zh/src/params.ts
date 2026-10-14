@@ -22,7 +22,7 @@ import {
   WEALTH_MARRIED_2026,
 } from './2026/tariffs.js';
 import type { ZhAmounts } from './amounts.js';
-import type { Cited } from './cited.js';
+import type { Cited } from '@taxpresso/rules-ch';
 import type { CommuneRates } from './communes.js';
 import type { StepTariff } from './tariff.js';
 

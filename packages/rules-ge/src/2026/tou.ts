@@ -2,7 +2,7 @@
 // tax year 2026 (SPEC.md section 8, group C). Sources: the cantonal law and regulation on source
 // tax (ge-na-law-lisp, ge-na-law-risp), the federal law (ch-na-law-lifd), the AFC's 2026 directives
 // (ge-2026-source-directives) and its TOU pages (ge-2025-dris-tou-page, ge-na-tou-quand-page).
-import type { Cited } from '../2025/icc.js';
+import type { Cited } from '@taxpresso/rules-ch';
 
 /** Compulsory TOU: gross salary taxed at source of at least this much in the year (per spouse). */
 export const TOU_2026_GROSS_THRESHOLD: Cited<number> = {
