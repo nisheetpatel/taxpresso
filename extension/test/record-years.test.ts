@@ -14,6 +14,11 @@
 // get_status's fact ids and its "Facts:" line, a dashboard state's facts and its answer chips. They
 // are kept in full beside the data's hash, so a change of the facts' words and shape alone can be
 // proved and listed too.
+// TAXPRESSO_RECORD_PAGES=1, with the split, takes out of the data what the three pages added
+// (docs/design/three-pages.md): a dashboard state's page, confidence, groups and rough (kept beside
+// the hash, groups as their own hash), get_status's line of stages or pages (kept in full), and
+// the dashboard named in a value's "what makes it final" (Documents, then Your tax). So the rest
+// can be proved unchanged, and the additions listed.
 //
 //   TAXPRESSO_RECORD=/tmp/before.jsonl TAXPRESSO_RECORD_N=20 pnpm vitest run extension/test/record-years.test.ts
 import { createHash } from 'node:crypto';
@@ -33,6 +38,7 @@ const N = Number(process.env.TAXPRESSO_RECORD_N ?? 20);
 const HASH = process.env.TAXPRESSO_RECORD_HASH === '1';
 const SPLIT = process.env.TAXPRESSO_RECORD_SPLIT === '1';
 const FACTS = SPLIT && process.env.TAXPRESSO_RECORD_FACTS === '1';
+const PAGES = SPLIT && process.env.TAXPRESSO_RECORD_PAGES === '1';
 const ONLY = process.env.TAXPRESSO_RECORD_ONLY?.split(',');
 const CANTONS = (process.env.TAXPRESSO_RECORD_CANTONS ?? 'GE,ZH,BE,BL,VD,BS,ZG,LU,SG').split(',');
 /** Another tax year than the default, opened first with open_tax_year (only once it exists). */
@@ -131,6 +137,43 @@ function splitFacts(kind: string, data: unknown): { data: unknown; facts: unknow
   return { data: { ...r, body: { ...more, journey } }, facts: { about, chips } };
 }
 
+const sha16 = (value: unknown) =>
+  createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);
+
+/**
+ * What the three pages added, out of a record's data (TAXPRESSO_RECORD_PAGES): a dashboard state's
+ * page, confidence, groups (as a hash) and rough, and get_status's line of stages or pages.
+ */
+function splitPages(kind: string, data: unknown): { data: unknown; pages: unknown } {
+  if (!data || typeof data !== 'object') return { data, pages: null };
+  if (kind === 'tool') {
+    const r = data as { structured?: Record<string, unknown> };
+    const lines = r.structured?.journey;
+    if (!Array.isArray(lines)) return { data, pages: null };
+    const named = (l: unknown) =>
+      typeof l === 'string' && (l.startsWith('Stages') || l.startsWith('Pages'));
+    return {
+      data: { ...r, structured: { ...r.structured, journey: lines.filter((l) => !named(l)) } },
+      pages: { journey: lines.filter(named) },
+    };
+  }
+  const r = data as { body?: Record<string, unknown> };
+  const body = r.body;
+  if (!body || typeof body !== 'object' || !('journey' in body)) return { data, pages: null };
+  const { page, confidence, groups, rough, ...rest } = body;
+  const pages = {
+    ...(page !== undefined ? { page } : {}),
+    ...(confidence !== undefined ? { confidence } : {}),
+    ...(rough !== undefined ? { rough } : {}),
+    ...(groups !== undefined ? { groups: sha16(groups) } : {}),
+  };
+  return { data: { ...r, body: rest }, pages: Object.keys(pages).length ? pages : null };
+}
+
+/** The dashboard named in a value's "what makes it final": Documents, then the page Your tax. */
+const pageWords = (line: string) =>
+  line.replace(/(dashboard|tableau de bord) \((?:Documents|Your tax|Votre impôt)\)/g, '$1 (<PAGE>)');
+
 interface Household {
   id: string;
   canton: string;
@@ -212,10 +255,12 @@ async function run(h: Household): Promise<void> {
   const record = (kind: string, name: string, args: unknown, result: unknown) => {
     if (SPLIT) {
       const split = splitForClaude(kind, result);
-      const { data, facts } = FACTS
+      const { data: kept, facts } = FACTS
         ? splitFacts(kind, split.data)
         : { data: split.data, facts: null };
-      const line = normalize({ h: h.id, n, kind, name, args, result: data }, root);
+      const { data, pages } = PAGES ? splitPages(kind, kept) : { data: kept, pages: null };
+      const normalized = normalize({ h: h.id, n, kind, name, args, result: data }, root);
+      const line = PAGES ? pageWords(normalized) : normalized;
       const sha = createHash('sha256').update(line).digest('hex').slice(0, 16);
       const said = JSON.parse(normalize(split.text, root)) as string[];
       appendFileSync(
@@ -228,6 +273,7 @@ async function run(h: Household): Promise<void> {
           sha,
           text: said,
           ...(facts ? { facts: JSON.parse(normalize(facts, root)) as unknown } : {}),
+          ...(pages ? { pages: JSON.parse(normalize(pages, root)) as unknown } : {}),
         }) + '\n',
         'utf8',
       );
