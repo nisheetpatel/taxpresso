@@ -9,16 +9,11 @@ export { ApiError };
 
 /**
  * A plan value POST /plan takes: the gross salary, net salary, pension fund and 3a paid; and the
- * rough incomes of the basics card (benefits, pension, a business's profit), estimates.
+ * basics card's rough incomes besides a salary (benefits, a pension, a business's profit), in
+ * francs, estimates; 0 clears one (extension/src/api.ts, PLAN_FIELD).
  */
 export type PlanField =
-  | 'gross'
-  | 'net'
-  | 'pensionFund'
-  | 'paid'
-  | 'replacementIncome'
-  | 'pensionIncome'
-  | 'businessProfit';
+  'gross' | 'net' | 'pensionFund' | 'paid' | 'benefits' | 'pension' | 'business';
 
 let transport: Transport | undefined;
 let csrf = '';
@@ -69,10 +64,9 @@ export const api = {
   answer: (id: string, value: Value, lang: Language) => post('/answer', lang, { id, value }),
   skip: (id: string, lang: Language) => post('/skip', lang, { id }),
   waive: (id: string, waived: boolean, lang: Language) => post('/waive', lang, { id, waived }),
-  scan: (lang: Language) => post('/scan', lang, {}),
   plan: (person: string, field: PlanField, value: number | boolean, lang: Language) =>
     post('/plan', lang, { person, field, value }),
-  /** Opens the open year's folder in Finder or Explorer, on this computer (three-pages.md 4). */
+  /** Opens the open year's folder in Finder or Explorer, made if missing (three-pages.md 4). */
   openFolder: (lang: Language) => post('/folder/open', lang, {}),
   // Pension fund buy-in, 3a catch-up and TOU (extension/src/planning.ts).
   planning: (

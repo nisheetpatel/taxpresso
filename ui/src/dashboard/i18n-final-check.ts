@@ -7,8 +7,6 @@ const NB = String.fromCharCode(0xa0);
 
 export const messages = {
   en: {
-    ready: 'Ready to fill in',
-    more: 'What Taxpresso assumed or left out ({n})',
     source: 'Source',
     sources: 'Sources',
     moreTime: 'A document won’t arrive in time? Ask the tax office (AFC) for more time to file',
@@ -38,8 +36,6 @@ export const messages = {
       'A document won’t arrive in time? Ask your commune’s tax office (Gemeindesteueramt) for more time to file (Fristverlängerung), online at www.ag.ch/fristerstreckung',
   },
   fr: {
-    ready: 'Prêt à remplir',
-    more: 'Ce que Taxpresso a supposé ou laissé de côté ({n})',
     source: 'Source',
     sources: 'Sources',
     moreTime: `Un document n’arrivera pas à temps${NB}? Demandez un délai à l’administration fiscale (AFC)`,
@@ -58,8 +54,6 @@ export const messages = {
     moreTimeAg: `Un document n’arrivera pas à temps${NB}? Demandez une prolongation du délai (Fristverlängerung) au service des impôts de votre commune (Gemeindesteueramt), en ligne sur www.ag.ch/fristerstreckung`,
   },
   de: {
-    ready: 'Bereit zum Ausfüllen',
-    more: 'Was Taxpresso angenommen oder weggelassen hat ({n})',
     source: 'Quelle',
     sources: 'Quellen',
     moreTime:
@@ -90,8 +84,6 @@ export const messages = {
       'Kommt ein Dokument nicht rechtzeitig? Beantrage beim Gemeindesteueramt eine Fristverlängerung, online unter www.ag.ch/fristerstreckung',
   },
   it: {
-    ready: 'Tutto pronto per compilare',
-    more: 'Cosa ha ipotizzato o tralasciato Taxpresso ({n})',
     source: 'Fonte',
     sources: 'Fonti',
     moreTime:

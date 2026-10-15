@@ -3,7 +3,6 @@
 // or no documents yet (the basics card). The panel never needs the chat; the chat can do it all.
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
-import { api } from './api';
 import { t, type Language } from './i18n';
 import { pg } from './i18n-pages';
 import type { PageProps } from './page-props';
@@ -54,20 +53,15 @@ export function DropZone({
 
 /** "Open my Taxpresso folder", and where it is. */
 export function FolderDoor({ p }: { p: PageProps }): JSX.Element {
-  const { state, lang, act } = p;
-  // The folder's path is in the menu; here the button opens it.
+  const { lang } = p;
+  // The folder's path is in the menu; here the button opens it, and what lands there is sorted
+  // within a second (extension/src/folder-watch.ts).
   return (
     <div class="folder-door">
       <button type="button" class="ghost wide" onClick={() => p.add()}>
         <Icon.folder />
         <span>{pg(lang, 'openFolder')}</span>
       </button>
-      {state.page ? null : (
-        // Until the extension sorts new files as they land (three-pages.md, section 4).
-        <button type="button" class="link" onClick={() => void act(() => api.scan(lang))}>
-          {pg(lang, 'checkFolder')}
-        </button>
-      )}
     </div>
   );
 }

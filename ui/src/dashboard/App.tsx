@@ -9,12 +9,13 @@ import { api, ApiError, embedded } from './api';
 import { BasicsCard, type Write } from './Basics';
 import { FilePage } from './File';
 import { t, type Language } from './i18n';
+import { tj } from './i18n-journey';
 import { pg } from './i18n-pages';
 import { Menu } from './Menu';
 import type { Act, PageProps } from './page-props';
 import { PayLess } from './PayLess';
 import { Start } from './Start';
-import { followPage, pagesOf, useKnownQuestions, type PageId } from './state-adapter';
+import { followPage, shownPage, useCommunes, type PageId } from './state-adapter';
 import type { State } from './types';
 import { YourTax } from './YourTax';
 
@@ -84,8 +85,7 @@ export function App({ menuExtra }: { menuExtra?: ComponentChildren } = {}): JSX.
   const preset = useRef<{ kind: string; person?: string } | undefined>(undefined);
   const L: Language = lang ?? state?.lang ?? 'en';
   const inside = embedded();
-  const known = useKnownQuestions(state, L);
-  const pages = state ? pagesOf(state, known) : null;
+  const pages = useCommunes(state, L);
   const current = pages?.page.current;
 
   const refresh = useCallback(async () => {
@@ -159,12 +159,8 @@ export function App({ menuExtra }: { menuExtra?: ComponentChildren } = {}): JSX.
       await act(() => api.upload(file, L, p), t(L, 'uploading', { name: file.name }));
     }
   };
-  // Finder or Explorer opens on this computer; if it can't, the folder's path says where it is.
-  const openFolder = () =>
-    void api.openFolder(L).then(
-      (next) => (setError(''), setState(next)),
-      () => setError(pg(L, 'folderFailed', { path: state?.vault.path ?? '' })),
-    );
+  // Finder or Explorer opens on this computer; if it can't, the message says where the folder is.
+  const openFolder = () => void act(() => api.openFolder(L));
 
   if (!state || !pages) {
     return <main class="app">{lost ? <p class="banner banner-fix">{t(L, 'lost')}</p> : null}</main>;
@@ -176,7 +172,7 @@ export function App({ menuExtra }: { menuExtra?: ComponentChildren } = {}): JSX.
     pages.confidence === 'rough' && total !== null
       ? remembered(roughKey, total)
       : remembered(roughKey);
-  const shown: PageId = current === 'start' ? 'start' : (tab ?? current ?? 'tax');
+  const shown = shownPage(pages.page, tab);
   const props: PageProps = {
     state,
     pages,
@@ -240,7 +236,7 @@ export function App({ menuExtra }: { menuExtra?: ComponentChildren } = {}): JSX.
                 aria-current={shown === id ? 'page' : undefined}
                 onClick={() => props.go(id)}
               >
-                {pg(L, `tab.${id}`)}
+                {tj(L, `page.${id}`)}
               </button>
             ))}
           </nav>

@@ -7,15 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { setTransport } from './api';
 import { AskOne } from './Ask';
 import { Assessment } from './Assessment';
-import {
-  BasicsCard,
-  confirmAll,
-  filingWrite,
-  incomeWrites,
-  KIND_FIELD,
-  KIND_SOURCE,
-  type Write,
-} from './Basics';
+import { BasicsCard, confirmAll, filingWrite, incomeWrites, type Write } from './Basics';
 import { CheckItem } from './Checks';
 import { CopyPanel } from './CopyPanel';
 import { ValueCheck } from './DocumentCards';
@@ -31,14 +23,13 @@ import { Reconcile } from './Reconcile';
 import { Review } from './Review';
 import { DropZone, Start } from './Start';
 import {
-  confidenceOf,
   followPage,
-  pageOf,
-  pagesOf,
+  shownPage,
+  withCommunes,
   type Confidence,
   type GroupQuestion,
   type Groups,
-  type RoughKind,
+  type RoughView,
 } from './state-adapter';
 import { TaxCard } from './TaxCard';
 import type { ApiRequest } from './transport';
@@ -171,6 +162,31 @@ function groups(change: Partial<Groups> = {}): Groups {
     ...change,
   };
 }
+
+/** The rough income view: Geneva's four kinds, each person's latest figure counted. */
+function rough(
+  people: {
+    person: 'p1' | 'p2';
+    amount: number | null;
+    kind: RoughView['kinds'][number]['kind'] | null;
+  }[],
+  open = true,
+): RoughView {
+  return {
+    open,
+    kinds: [
+      { kind: 'salary', key: 'plan.gross_salary', field: 'gross' },
+      { kind: 'replacement_income', key: 'plan.replacement_income', field: 'benefits' },
+      { kind: 'pension', key: 'plan.pension_income', field: 'pension' },
+      { kind: 'self_employment', key: 'plan.business_profit', field: 'business' },
+    ],
+    people: people.map((x) => ({
+      ...x,
+      figures: x.amount !== null && x.kind ? [{ kind: x.kind, amount: x.amount, used: true }] : [],
+    })),
+  };
+}
+const pagesOf = (state: State) => withCommunes(state, undefined);
 
 /** A made-up single person in Carouge with a rough salary of CHF 95,000. */
 function household(change: Record<string, unknown> = {}): State {
@@ -319,7 +335,7 @@ function household(change: Record<string, unknown> = {}): State {
     page: { current: 'tax', tabs: true },
     confidence: 'rough',
     groups: groups(),
-    rough: [{ person: 'p1', amount: 9_500_000, kind: 'salary' }],
+    rough: rough([{ person: 'p1', amount: 9_500_000, kind: 'salary' }]),
     ...change,
   } as unknown as State;
 }
@@ -361,22 +377,12 @@ afterEach(() => {
 });
 
 describe('Start', () => {
-  it('shows only while nothing is known (or the folder can’t be used)', () => {
-    const at = (id: string, stage: string | null) =>
-      pageOf(
-        household({
-          page: undefined,
-          journey: { ...household().journey, next: { id, stage, vars: {} } },
-        }),
-      );
-    expect(at('start', 'about')).toEqual({ current: 'start', tabs: false });
-    expect(at('folder', null)).toEqual({ current: 'start', tabs: false });
-    expect(at('canton', 'about')).toEqual({ current: 'tax', tabs: true });
-    // The extension's own page wins once it gives one.
-    expect(pageOf(household({ page: { current: 'file', tabs: true } }))).toEqual({
-      current: 'file',
-      tabs: true,
-    });
+  it('shows only while nothing is known', () => {
+    const start = { current: 'start', tabs: false } as const;
+    expect(shownPage(start, null)).toBe('start');
+    // A tab chosen earlier doesn't bring the pages back while nothing is known.
+    expect(shownPage(start, 'save')).toBe('start');
+    expect(shownPage({ current: 'tax', tabs: true }, null)).toBe('tax');
   });
 
   it('has two doors: in Claude Desktop the folder opens, in the browser a drop zone', () => {
@@ -424,50 +430,64 @@ describe('the basics card', () => {
       options: opts('salary', 'replacement_income', 'pension', 'self_employment'),
     });
 
+  const kinds = rough([]).kinds;
+
   it.each([
-    ['salary', 'salary', 'gross'],
-    ['benefits', 'replacement_income', 'replacementIncome'],
-    ['pension', 'pension', 'pensionIncome'],
-    ['business', 'self_employment', 'businessProfit'],
-  ] as const)('writes %s as the source %s and the rough key %s', (kind, source, field) => {
-    expect(KIND_SOURCE[kind]).toBe(source);
-    expect(KIND_FIELD[kind]).toBe(field);
+    ['salary', 'gross'],
+    ['replacement_income', 'benefits'],
+    ['pension', 'pension'],
+    ['self_employment', 'business'],
+  ] as const)('writes %s as the income source and its rough field %s', (kind, field) => {
     const writes = incomeWrites({
       person: 'p1',
       kind,
       francs: 60_000,
       rough: undefined,
       sources: sources(),
+      kinds,
     });
     expect(writes).toEqual([
-      { answer: { id: 'income_sources:p1', value: [source] } },
+      { answer: { id: 'income_sources:p1', value: [kind] } },
       { plan: { person: 'p1', field, value: 60_000 } },
     ]);
   });
 
-  it('moves a rough figure to the new kind and takes the old source out', () => {
+  it('moves a rough figure to the new kind: 0 to the old field, then the amount to the new one', () => {
     const writes = incomeWrites({
       person: 'p1',
       kind: 'pension',
       francs: null,
-      rough: { person: 'p1', amount: 4_000_000, kind: 'salary' },
+      rough: rough([{ person: 'p1', amount: 4_000_000, kind: 'salary' }]).people[0],
       sources: sources(['salary', 'alimony']),
+      kinds,
     });
     expect(writes).toEqual([
       { answer: { id: 'income_sources:p1', value: ['alimony', 'pension'] } },
       { plan: { person: 'p1', field: 'gross', value: 0 } },
-      { plan: { person: 'p1', field: 'pensionIncome', value: 40_000 } },
+      { plan: { person: 'p1', field: 'pension', value: 40_000 } },
     ]);
     // Only the kind, with no amount yet: the source alone.
     expect(
       incomeWrites({
         person: 'p1',
-        kind: 'benefits',
+        kind: 'replacement_income',
         francs: null,
         rough: undefined,
         sources: sources(),
+        kinds,
       }),
     ).toEqual([{ answer: { id: 'income_sources:p1', value: ['replacement_income'] } }]);
+    // A kind the canton doesn't take writes no figure (a business is Geneva's only).
+    expect(
+      incomeWrites({
+        person: 'p1',
+        kind: 'self_employment',
+        francs: 50_000,
+        rough: undefined,
+        sources: undefined,
+        kinds: kinds.filter((k) => k.kind !== 'self_employment'),
+      }),
+    ).toEqual([]);
   });
 
   it('says "Just me" or "Me and my partner", keeping a status that already fits', () => {
@@ -542,10 +562,10 @@ describe('the basics card', () => {
         { id: 'p1', label: 'You' },
         { id: 'p2', label: 'Your spouse or partner' },
       ],
-      rough: [
+      rough: rough([
         { person: 'p1', amount: 9_500_000, kind: 'salary' },
         { person: 'p2', amount: null, kind: null },
-      ],
+      ]),
     });
     const two = card(couple).tree;
     expect(ofType(two, 'select')).toHaveLength(2); // the canton, then the commune
@@ -556,7 +576,12 @@ describe('the basics card', () => {
   });
 
   it('asks no rough income for a year that is over: the documents give it', () => {
-    const { tree } = card(household({ yearOver: { year: 2025, plansIn: 2026, paidInYear: 'x' } }));
+    const { tree } = card(
+      household({
+        yearOver: { year: 2025, plansIn: 2026, paidInYear: 'x' },
+        rough: rough([{ person: 'p1', amount: null, kind: null }], false),
+      }),
+    );
     expect(ofType(tree, 'AmountInput')).toHaveLength(0);
     expect(textOf(tree)).toContain('Add your documents: they give the exact figures.');
   });
@@ -577,21 +602,9 @@ describe('the basics card', () => {
 });
 
 describe('tabs and the page opened', () => {
-  it('opens the page of the next step: Your tax, Pay less or File', () => {
-    const at = (stage: string) =>
-      pageOf(
-        household({
-          page: undefined,
-          journey: { ...household().journey, next: { id: 'x', stage, vars: {} } },
-        }),
-      ).current;
-    expect(['about', 'documents', 'tax', 'save', 'file'].map(at)).toEqual([
-      'tax',
-      'tax',
-      'tax',
-      'save',
-      'file',
-    ]);
+  it('opens the page of the next step, or the tab you chose', () => {
+    expect(shownPage({ current: 'save', tabs: true }, null)).toBe('save');
+    expect(shownPage({ current: 'save', tabs: true }, 'file')).toBe('file');
   });
 
   it('follows the next step only while you are on its page', () => {
@@ -654,30 +667,6 @@ describe('the number', () => {
     const said = plain(textOf(tree));
     expect(said).toContain('From your documents and what you told us.');
     expect(said).toMatch(/CHF 660 less than your rough numbers said\./);
-  });
-
-  it('works out how sure from today’s state until the extension says it', () => {
-    const without = (change: Record<string, unknown>) =>
-      confidenceOf(household({ confidence: undefined, ...change }));
-    expect(without({})).toBe('rough');
-    const certificate = [
-      {
-        id: 'd1',
-        filename: 'c.pdf',
-        bytes: 1,
-        addedAt: '',
-        kind: 'salary_certificate',
-        person: 'p1',
-      },
-    ];
-    expect(without({ documents: certificate })).toBe('close');
-    expect(
-      without({
-        documents: certificate,
-        estimate: { ...household().estimate, estimate: false },
-      }),
-    ).toBe('exact');
-    expect(without({ journey: { ...household().journey, hasFigures: false } })).toBeNull();
   });
 });
 
@@ -1044,39 +1033,19 @@ describe('File', () => {
   });
 });
 
-describe('the questions by group, until the extension gives them', () => {
-  it('places the next question and the answers in their group', () => {
-    const state = household({
-      groups: undefined,
-      question: {
-        id: 'commute:p1',
-        questionId: 'commute',
-        person: 'p1',
-        type: 'choice',
-        text: 'How?',
-      },
-      answers: [
-        { id: 'canton', question: 'Canton?', answer: 'Geneva' },
-        { id: 'pillar3a:p1', question: '3a?', answer: 'Yes' },
-        { id: 'moved', question: 'Moved?', answer: 'No' },
-        { id: 'banks', question: 'Banks?', answer: '1' },
-      ],
-    });
-    const g = pagesOf(state).groups;
-    expect(g.deduction.map((x) => [x.id, x.answered])).toEqual([['commute:p1', false]]);
-    expect(g.basics.map((x) => x.id)).toEqual(['canton']);
-    expect(g.plan.map((x) => x.id)).toEqual(['pillar3a:p1']);
-    expect(g.special.map((x) => x.id)).toEqual(['moved']);
-    expect(g.detail.map((x) => x.id)).toEqual(['banks']);
+describe('the commune', () => {
+  it('gets its options from GET /question: the state leaves them out', () => {
+    const basics = [
+      q('canton', { answered: true, value: 'GE' }),
+      q('commune', { type: 'commune', answered: true, value: 'carouge' }),
+    ];
+    const state = household({ groups: groups({ basics }) });
+    expect(withCommunes(state, undefined).groups.basics[1]!.options).toBeUndefined();
+    const options = [{ value: 'carouge', label: 'Carouge', notSupported: false }];
+    const pages = withCommunes(state, options);
+    expect(pages.groups.basics[1]!.options).toEqual(options);
+    // The rest of the state as GET /state gives it.
+    expect(pages.page).toBe(state.page);
+    expect(pages.rough).toBe(state.rough);
   });
-
-  it.each(['salary', 'benefits', 'pension', 'business'] as RoughKind[])(
-    'reads a rough %s income from the plan until the extension says its kind',
-    (kind) => {
-      const state = household({ rough: undefined });
-      expect(pagesOf(state).rough).toEqual([{ person: 'p1', amount: 9_500_000, kind: 'salary' }]);
-      const given = household({ rough: [{ person: 'p1', amount: 100, kind }] });
-      expect(pagesOf(given).rough[0]!.kind).toBe(kind);
-    },
-  );
 });

@@ -5,8 +5,14 @@
 import type { JSX } from 'preact';
 import type { PlanField } from './api';
 import { t, type Language } from './i18n';
-import { pg, type PagesMessageKey } from './i18n-pages';
-import type { GroupQuestion, PagesFields, RoughIncome, RoughKind } from './state-adapter';
+import { pg } from './i18n-pages';
+import type {
+  GroupQuestion,
+  PagesFields,
+  RoughKind,
+  RoughPerson,
+  RoughView,
+} from './state-adapter';
 import type { State, Value } from './types';
 import { AmountInput, Icon, Segmented, Stepper } from './ui';
 
@@ -20,70 +26,58 @@ export interface BasicsActions {
   close: () => void;
 }
 
-export const KINDS: RoughKind[] = ['salary', 'benefits', 'pension', 'business'];
-/** The income source each kind answers (income_sources). */
-export const KIND_SOURCE: Record<RoughKind, string> = {
-  salary: 'salary',
-  benefits: 'replacement_income',
-  pension: 'pension',
-  business: 'self_employment',
-};
-/** The rough figure each kind writes (POST /plan). */
-export const KIND_FIELD: Record<RoughKind, PlanField> = {
-  salary: 'gross',
-  benefits: 'replacementIncome',
-  pension: 'pensionIncome',
-  business: 'businessProfit',
-};
-
 const COUPLE = new Set(['married', 'registered_partnership']);
 const sourcesOf = (q: GroupQuestion | undefined): string[] =>
   Array.isArray(q?.value) ? q.value : Array.isArray(q?.suggested) ? q.suggested : [];
 
-/** The one kind an answer of income_sources says, when it says exactly one. */
-function onlyKind(q: GroupQuestion | undefined): RoughKind | null {
-  const kinds = KINDS.filter((k) => sourcesOf(q).includes(KIND_SOURCE[k]));
-  return kinds.length === 1 ? kinds[0]! : null;
+/** The one kind an answer of income_sources says, when it says exactly one of those offered. */
+function onlyKind(q: GroupQuestion | undefined, kinds: RoughView['kinds']): RoughKind | null {
+  const said = kinds.filter((k) => sourcesOf(q).includes(k.kind));
+  return said.length === 1 ? said[0]!.kind : null;
 }
 
 /** The kind the card shows chosen: the rough figure's, the answer's, else a salary. */
-export const shownKind = (rough: RoughIncome | undefined, q: GroupQuestion | undefined) =>
-  rough?.kind ?? onlyKind(q) ?? 'salary';
+export const shownKind = (
+  rough: RoughPerson | undefined,
+  q: GroupQuestion | undefined,
+  kinds: RoughView['kinds'],
+): RoughKind => rough?.kind ?? onlyKind(q, kinds) ?? 'salary';
 
 const same = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
 
 /**
  * What choosing a kind, or typing an amount, changes for one person: income_sources says the kind
- * (the one it replaces taken out), the rough figure of that kind is written, and the figure of a
- * kind it replaces is set to zero.
+ * (the one it replaces taken out); the figure of a kind it replaces is cleared (0), then the
+ * amount goes to the new kind's field (extension/src/api.ts, POST /plan).
  */
 export function incomeWrites(p: {
   person: 'p1' | 'p2';
   kind: RoughKind;
   /** The amount typed now, whole francs; null when only the kind changes. */
   francs: number | null;
-  rough: RoughIncome | undefined;
+  rough: RoughPerson | undefined;
   sources: GroupQuestion | undefined;
+  kinds: RoughView['kinds'];
 }): Write[] {
+  const field = (k: RoughKind) => p.kinds.find((x) => x.kind === k)?.field;
   const out: Write[] = [];
-  const before = p.rough?.kind ?? onlyKind(p.sources);
+  const before = p.rough?.kind ?? onlyKind(p.sources, p.kinds);
   if (p.sources) {
     const current = Array.isArray(p.sources.value) ? p.sources.value : [];
-    const kept =
-      before && before !== p.kind ? current.filter((v) => v !== KIND_SOURCE[before]) : current;
-    const want = kept.includes(KIND_SOURCE[p.kind]) ? kept : [...kept, KIND_SOURCE[p.kind]];
+    const kept = before && before !== p.kind ? current.filter((v) => v !== before) : current;
+    const want = kept.includes(p.kind) ? kept : [...kept, p.kind];
     if (!p.sources.answered || !same(want, current)) {
       out.push({ answer: { id: p.sources.id, value: want } });
     }
   }
   const had = p.rough?.amount ?? null;
   const amount = p.francs ?? (had !== null ? Math.round(had / 100) : null);
-  if (amount === null) return out;
-  const moved = p.rough?.kind && p.rough.kind !== p.kind && had !== null;
-  if (moved) out.push({ plan: { person: p.person, field: KIND_FIELD[p.rough!.kind!], value: 0 } });
-  if (p.francs !== null || moved) {
-    out.push({ plan: { person: p.person, field: KIND_FIELD[p.kind], value: amount } });
-  }
+  const to = field(p.kind);
+  if (amount === null || !to) return out;
+  const old =
+    p.rough?.kind && p.rough.kind !== p.kind && had !== null ? field(p.rough.kind) : undefined;
+  if (old) out.push({ plan: { person: p.person, field: old, value: 0 } });
+  if (p.francs !== null || old) out.push({ plan: { person: p.person, field: to, value: amount } });
   return out;
 }
 
@@ -141,7 +135,8 @@ export function BasicsCard({
   const civil = find('civil_status');
   const children = find('children');
   const pending = confirmAll(basics);
-  const over = state.yearOver !== null;
+  const over = !pages.rough.open;
+  const kinds = pages.rough.kinds;
   const civilValue = typeof civil?.value === 'string' ? civil.value : undefined;
   const civilSuggested = typeof civil?.suggested === 'string' ? civil.suggested : undefined;
   const filing = (v: string | undefined) =>
@@ -292,8 +287,8 @@ export function BasicsCard({
           <div class={`people${couple ? ' people-two' : ''}`}>
             {people.map((p) => {
               const sources = find('income_sources', p);
-              const rough = pages.rough.find((r) => r.person === p);
-              const kind = shownKind(rough, sources);
+              const rough = pages.rough.people.find((r) => r.person === p);
+              const kind = shownKind(rough, sources, kinds);
               const who = whoLabel(p);
               return (
                 <div class="person" key={p}>
@@ -307,7 +302,9 @@ export function BasicsCard({
                       centimes={rough?.amount ?? null}
                       describedBy="b-income-hint"
                       onSave={(francs) =>
-                        actions.write(incomeWrites({ person: p, kind, francs, rough, sources }))
+                        actions.write(
+                          incomeWrites({ person: p, kind, francs, rough, sources, kinds }),
+                        )
                       }
                     />
                   )}
@@ -317,11 +314,11 @@ export function BasicsCard({
                   <Segmented
                     labelledBy={`b-kind-${p}`}
                     columns={2}
-                    options={KINDS.filter(
-                      (k) =>
-                        !sources?.options ||
-                        sources.options.some((o) => o.value === KIND_SOURCE[k]),
-                    ).map((k) => ({ value: k, label: pg(lang, `kind.${k}` as PagesMessageKey) }))}
+                    options={kinds
+                      .filter(
+                        (k) => !sources?.options || sources.options.some((o) => o.value === k.kind),
+                      )
+                      .map((k) => ({ value: k.kind, label: pg(lang, `kind.${k.kind}`) }))}
                     value={kind}
                     onPick={(k) =>
                       actions.write(
@@ -331,6 +328,7 @@ export function BasicsCard({
                           francs: null,
                           rough,
                           sources,
+                          kinds,
                         }),
                       )
                     }

@@ -7,7 +7,7 @@ import { Estimate } from './Estimate';
 import type { Language } from './i18n';
 import { pck, tp } from './i18n-planning';
 import { isJourneyKey, tj } from './i18n-journey';
-import { pg, type PagesMessageKey } from './i18n-pages';
+import { pg } from './i18n-pages';
 import { day } from './i18n-planning';
 import { LastYear } from './LastYear';
 import { aboutFrancs, francs, roughFrancs } from './money';
@@ -52,7 +52,8 @@ export function Meter({ confidence, lang }: { confidence: Confidence; lang: Lang
 
 /** "From what you told us: about CHF 95,000 in salary, a couple, 1 child, Carouge." */
 export function restsOn(state: State, pages: PagesFields, lang: Language): string | null {
-  const told = pages.rough.filter((r) => r.amount !== null && r.kind !== null);
+  // The rough figures the tax counts now: those no document replaces yet.
+  const told = pages.rough.people.flatMap((p) => p.figures.filter((f) => f.used));
   const docs = state.documents.some(
     (d) => d.kind && !['prior_declaration', 'official_declaration', 'other'].includes(d.kind),
   );
@@ -64,9 +65,7 @@ export function restsOn(state: State, pages: PagesFields, lang: Language): strin
   const commune = find('commune');
   const place = commune?.options?.find((o) => o.value === commune.value)?.label;
   const facts = [
-    ...told.map((r) =>
-      pg(lang, `told.${r.kind}` as PagesMessageKey, { amount: francs(r.amount!, lang) }),
-    ),
+    ...told.map((f) => pg(lang, `told.${f.kind}`, { amount: francs(f.amount, lang) })),
     ...(typeof civil === 'string'
       ? [
           pg(

@@ -157,7 +157,7 @@ export interface Journey {
 }
 
 /** Values read from documents, checks and the assessment: ./types-docs.ts. */
-export interface State extends DocumentsState, Partial<PagesFields> {
+export interface State extends DocumentsState, PagesFields {
   /** The next step and the stages (docs/design/simple.md). */
   journey: Journey;
   version: string;
