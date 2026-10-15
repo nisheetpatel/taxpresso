@@ -9,6 +9,9 @@ import {
   KEYS_SECURITIES_2026,
   KEYS_WEALTH_2026,
 } from '@taxpresso/rules-ch';
+import { KEYS_ABROAD_PROFILE_2026 } from './abroad-keys.js';
+import { KEYS_PROPERTY_PROFILE_2026 } from './property-keys.js';
+import { KEYS_BUSINESS_PROFILE_2026 } from './business-keys.js';
 import { COMMUNES_2026 } from './communes.js';
 import { DOCUMENT_KEYS_2026 } from './document-keys.js';
 import { sourceTaxTariffs } from '../source-tax/index.js';
@@ -32,19 +35,69 @@ export const KEYS_2026 = {
     perPerson: false,
     label: { en: 'Moves in the year', fr: 'Déménagements dans l’année' },
   },
+  // A year of arrival from abroad or departure abroad: the day, per person (a couple taxed
+  // together must give the same day). Geneva taxes the income of the period at the rate of a full
+  // year's income (ge-2025-guide-declaration-pp p. 53 and 54; ge-na-law-lipp art. 7, 62 and 64).
+  'profile.arrival_date': {
+    type: 'date',
+    perPerson: true,
+    label: { en: 'Day you arrived in Switzerland', fr: 'Date d’arrivée en Suisse' },
+    official: 'date d’arrivée',
+    source: 'ge-2025-declaration-specimen p. 1; ge-2025-guide-declaration-pp p. 53',
+  },
+  'profile.departure_date': {
+    type: 'date',
+    perPerson: true,
+    label: { en: 'Day you left Switzerland', fr: 'Date de départ de Suisse' },
+    official: 'date de départ',
+    source: 'ge-2025-guide-declaration-pp p. 54; ge-na-law-lipp art. 7 al. 2',
+  },
   'profile.income_sources': H['profile.income_sources'],
   'profile.employers': H['profile.employers'],
-  'profile.taxed_at_source': H['profile.taxed_at_source'],
-  'profile.tou': {
-    type: 'enum',
-    values: ['already', 'considering', 'no'],
+  'profile.residence': H['profile.residence'],
+  // Paid by an employer in Switzerland (or its Swiss branch, or the Swiss company in the end): a
+  // salary paid directly from abroad is taxed ordinarily (ge-na-law-risp art. 5).
+  'profile.employer_in_switzerland': {
+    type: 'boolean',
     perPerson: true,
     label: {
-      en: 'Ordinary taxation instead of source tax',
-      fr: 'Taxation ordinaire ultérieure (TOU)',
+      en: 'Salary paid by an employer in Switzerland',
+      fr: 'Salaire versé par un employeur en Suisse',
+    },
+    official: 'débiteur de la prestation imposable (DPI)',
+    source: 'ge-na-law-risp art. 5; ge-2026-source-directives p. 6 (ch. 1.1.2)',
+  },
+  'profile.taxed_at_source': H['profile.taxed_at_source'],
+  // Already taxed ordinarily after source tax (TOU) before this year: a fact, which keeps TOU every
+  // year while taxed at source (ge-na-law-lisp art. 4 al. 5, art. 5 al. 5). Whether to ask for it is
+  // the TOU card's decision, not an answer ('considering' was one until October 2026: asked again).
+  'profile.tou': {
+    type: 'enum',
+    values: ['already', 'no'],
+    perPerson: true,
+    label: {
+      en: 'Already taxed ordinarily after source tax (TOU)',
+      fr: 'Déjà en taxation ordinaire ultérieure (TOU)',
     },
     official: 'taxation ordinaire ultérieure (TOU)',
+    source: 'ge-na-law-lisp art. 4 al. 5, art. 5 al. 5',
   },
+  // A single parent taxed at source living with the children's other parent: barème A0, not H
+  // (./../source-tax/tariff.ts).
+  'profile.lives_with_other_parent': {
+    type: 'boolean',
+    perPerson: false,
+    label: {
+      en: 'Lives with the children’s other parent, unmarried',
+      fr: 'Vit en couple avec l’autre parent des enfants, sans être marié(e)',
+    },
+    official: 'concubins avec enfant(s) à charge',
+    source: 'ge-2026-source-directives p. 30 (ch. 5.5.1)',
+  },
+  // Self-employment (annexe B), the simple case: how the business is run, its year, its place,
+  // what Taxpresso can't prepare yet, earlier losses, and the year's expected profit for the plans
+  // (./business-keys.ts).
+  ...KEYS_BUSINESS_PROFILE_2026,
   'profile.pillar3a': H['profile.pillar3a'],
   'profile.lpp_buyin': H['profile.lpp_buyin'],
   // Travel to work and lunches away from home (frais de déplacement, frais de repas): what people
@@ -67,13 +120,52 @@ export const KEYS_2026 = {
   // (ge-2025-guide-declaration-pp p. 45 and 46).
   'profile.child_support': H['profile.child_support'],
   'profile.childcare': H['profile.childcare'],
+  // Childcare paid for each child: asked only when the invoices for the household pass one child's
+  // maximum and there are several children, since the maximum is per child and the split then
+  // decides the deduction (ge-2025-guide-declaration-pp p. 30, 59.10 and 59.12).
+  'ge.child_care': {
+    type: 'money',
+    perPerson: true,
+    label: { en: 'Childcare paid for this child', fr: 'Frais de garde payés pour cet enfant' },
+    official: 'frais de garde des enfants',
+    source: 'ge-2025-guide-declaration-pp p. 30 (59.10, 59.12)',
+  },
   'profile.banks': H['profile.banks'],
   'profile.crypto': H['profile.crypto'],
   'profile.payments': H['profile.payments'],
-  'profile.special': H['profile.special'],
+  // A home or land abroad is Geneva's own option (data/ge/2026/questionnaire.yaml, special): the
+  // other cantons keep the shared list, where real estate anywhere is not supported. Geneva supports
+  // real estate in Switzerland too, the simple case of a property in Geneva (./property-keys.ts).
+  'profile.special': {
+    ...H['profile.special'],
+    values: [...H['profile.special'].values, 'property_abroad'],
+  },
+  // A home or land abroad (immeuble à l'étranger, annexe D), the simple case: what it is and how it
+  // is used, whose it is, its country and its age, and the household's rough figures until its
+  // documents are in (./abroad-keys.ts; ../engine/abroad.ts).
+  ...KEYS_ABROAD_PROFILE_2026,
+  // A property in Geneva (annexe D), the simple case: the household's home or one property let all
+  // year, whose it is, since when, its age, what Taxpresso can't prepare yet, a mortgage, and the
+  // household's rough figures until its documents are in (./property-keys.ts;
+  // ../engine/property.ts).
+  ...KEYS_PROPERTY_PROFILE_2026,
+  // A lump sum from the 2nd pillar (pension fund, vested benefits) or pillar 3a, taxed apart at a
+  // fifth of the scale (ge-na-law-lipp art. 45; ch-na-law-lifd art. 38, p. 32), declared at 98.12
+  // (ge-2025-guide-declaration-pp p. 13): who received which (../engine/capital.ts). The amount, the
+  // date and the reason are read on the attestation (./document-keys.ts).
+  'profile.pension_capital': {
+    type: 'enum_list',
+    values: ['pillar2', 'pillar3a'],
+    perPerson: true,
+    label: { en: 'Pension capital received', fr: 'Prestations en capital reçues' },
+    official: 'prestations en capital du 2e et 3e pilier A',
+    source: 'ge-2025-guide-declaration-pp p. 13; ch-na-law-lifd art. 22 al. 1 (p. 17)',
+  },
   // Planning inputs for "before 31 December" (SPEC.md section 8, group B). Rough figures the user
   // gives for an estimate; never filed.
   'plan.gross_salary': H['plan.gross_salary'],
+  'plan.replacement_income': H['plan.replacement_income'],
+  'plan.pension_income': H['plan.pension_income'],
   'plan.net_salary': H['plan.net_salary'],
   'plan.has_pension_fund': H['plan.has_pension_fund'],
   'plan.pillar3a_paid': H['plan.pillar3a_paid'],

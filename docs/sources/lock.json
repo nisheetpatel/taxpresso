@@ -5792,5 +5792,175 @@
     "content_type": "application/pdf",
     "retrieved_at": "2026-10-14T03:31:45.972Z",
     "status": "ok"
+  },
+  "ch-2025-ifd-instructions-personnes-physiques": {
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf",
+    "file": "ch/files/ch-2025-ifd-instructions-personnes-physiques.pdf",
+    "bytes": 510337,
+    "sha256": "d2946db6c15f78a4db2cc09efdbafe66366f437992d1805a9853e71a923ed336",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:12:48.163Z",
+    "status": "ok"
+  },
+  "ge-2025-guide-independants": {
+    "url": "https://www.ge.ch/document/44809/annexe/file/751631",
+    "final_url": "https://www.ge.ch/document/44809/annexe/file/751631",
+    "file": "ge/files/ge-2025-guide-independants.pdf",
+    "bytes": 775829,
+    "sha256": "c3dd11bc31b6b72bc1bdeccea23f617bd75b8e9fe02f3c03f059a11dc71c3579",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:12:48.225Z",
+    "status": "ok"
+  },
+  "ge-na-law-ldirpp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",
+    "file": "ge/files/ge-na-law-ldirpp.html",
+    "bytes": 14294,
+    "sha256": "aac5f6aa7a085cdf53e7fcdd6cd62fb97382b9bd7a93203dc572894723b85c2b",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T13:14:20.640Z",
+    "status": "ok"
+  },
+  "ge-na-law-lcacant": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_07.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_07.htm",
+    "file": "ge/files/ge-na-law-lcacant.html",
+    "bytes": 16564,
+    "sha256": "dbe6eac7fcfd400ad59ebfec1888e7da7ec566f25064c4c06334e1aa38412cb9",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T13:14:20.642Z",
+    "status": "ok"
+  },
+  "ge-2026-source-capital-icc-tariff": {
+    "url": "https://www.ge.ch/document/41804/telecharger",
+    "final_url": "https://www.ge.ch/document/41804/telecharger",
+    "file": "ge/files/ge-2026-source-capital-icc-tariff.pdf",
+    "bytes": 76480,
+    "sha256": "2f1cd19647e0baa7f930a9f364571908df7b5fd29568b21132677f0860132e63",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:14:20.704Z",
+    "status": "ok"
+  },
+  "ge-2025-source-capital-icc-tariff": {
+    "url": "https://www.ge.ch/document/38083/telecharger",
+    "final_url": "https://www.ge.ch/document/38083/telecharger",
+    "file": "ge/files/ge-2025-source-capital-icc-tariff.pdf",
+    "bytes": 155772,
+    "sha256": "bd8012f29b25b8606282091fb28fc045d671741bb1f8a1a9ab61d40ca568437a",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T13:14:20.828Z",
+    "status": "ok"
+  },
+  "ch-na-ordonnance-frais-professionnels": {
+    "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1993/1363_1363_1363/20230101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1993-1363_1363_1363-20230101-fr-pdf-a.pdf",
+    "final_url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1993/1363_1363_1363/20230101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1993-1363_1363_1363-20230101-fr-pdf-a.pdf",
+    "file": "ch/files/ch-na-ordonnance-frais-professionnels.pdf",
+    "bytes": 348656,
+    "sha256": "6d2f07a94a85f280309e78244f46fbbf141b88a698b6dcdd9ad17bec762e5f4f",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T19:00:10.528Z",
+    "status": "ok"
+  },
+  "ch-2026-afc-guide-futur-contribuable": {
+    "url": "https://www.efd.admin.ch/dam/fr/sd-web/SPiTLcf5pKap/leitfaden-steuerpflichtige-fr.pdf",
+    "final_url": "https://www.efd.admin.ch/dam/fr/sd-web/SPiTLcf5pKap/leitfaden-steuerpflichtige-fr.pdf",
+    "file": "ch/files/ch-2026-afc-guide-futur-contribuable.pdf",
+    "bytes": 2477565,
+    "sha256": "13a5f54be8588040785c919ef89b909269e9a40d5e6a2fceeec0ae958d1ad5b4",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T19:00:11.088Z",
+    "status": "ok"
+  },
+  "ge-na-valeur-fiscale-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
+    "file": "ge/files/ge-na-valeur-fiscale-page.html",
+    "bytes": 116001,
+    "sha256": "8432cf61fc27e64803f488c8ef6e828340849ea0a3da732b151bb85280d1825f",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T17:40:45.406Z",
+    "status": "ok"
+  },
+  "zh-na-zstb-5-3": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf",
+    "file": "zh/files/zh-na-zstb-5-3.pdf",
+    "bytes": 109532,
+    "sha256": "024e11eb9ff58b2e9c6a28699a94847026c40d06e83d671c86e3bef2afd7a8dd",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T17:40:45.488Z",
+    "status": "ok"
+  },
+  "ge-na-revenu-immobilier-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
+    "file": "ge/files/ge-na-revenu-immobilier-page.html",
+    "bytes": 114679,
+    "sha256": "33fe00e82621188066c546532bdbedac9c7e628a2114adaa0675aa419bcf063d",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T17:46:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-charges-deductibles-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
+    "file": "ge/files/ge-na-charges-deductibles-page.html",
+    "bytes": 119314,
+    "sha256": "4d95c6556c9fc6e593edd94c104941a5dfb098a0bc91b3b6a32242d656c1328d",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T19:17:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-information-1-2021-frais-entretien": {
+    "url": "https://www.ge.ch/document/23670/telecharger",
+    "final_url": "https://www.ge.ch/document/23670/telecharger",
+    "file": "ge/files/ge-na-information-1-2021-frais-entretien.pdf",
+    "bytes": 2493865,
+    "sha256": "6dfc7c0e0e4303cd765b8a34367400c9e911882a181a065c8ba747fc4c093f43",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-iic-page": {
+    "url": "https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire",
+    "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire",
+    "file": "ge/files/ge-na-iic-page.html",
+    "bytes": 114164,
+    "sha256": "fc4655474908ea8a486f900071ba28c567d4d52088a572dcb6a746861b464417",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-law-lefi": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_10.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_10.htm",
+    "file": "ge/files/ge-na-law-lefi.html",
+    "bytes": 27027,
+    "sha256": "ae54d9c174dcf9da36060f68140311c8754f6f6bd1e5482c788d738a1eb1749c",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ge-na-law-rivfi": {
+    "url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm",
+    "final_url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm",
+    "file": "ge/files/ge-na-law-rivfi.html",
+    "bytes": 34747,
+    "sha256": "d8c38fd40bc11333e173b38c8d5e2e919721e705863b5c31cc2e4c69270aa0d5",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
+  },
+  "ch-na-reforme-valeur-locative-2029": {
+    "url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
+    "final_url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
+    "file": "ch/files/ch-na-reforme-valeur-locative-2029.html",
+    "bytes": 334860,
+    "sha256": "f76e2201f462429f00360477d9ab7784dd05ba7c3e20d5dc08ea159850667c02",
+    "content_type": "text/html;charset=UTF-8",
+    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "status": "ok"
   }
 }

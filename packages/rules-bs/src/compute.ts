@@ -7,6 +7,7 @@
 import {
   answered,
   chf,
+  ifdParamsFor,
   pillar3a as federalPillar3a,
   roundFranc,
   Trace,
@@ -738,8 +739,17 @@ export function computeReturn(input: BsEngineInput): BsTaxResult {
   // Given for the household as a whole, it counts where every split between the children gives the
   // same deduction: one child, or a total within the smallest limit of a child (the limit is per
   // child, form F; bs-2025-guide-wegleitung p. 36); otherwise the split decides, and is asked.
+  // Each child's care counts up to the 14th birthday ("das 14. Altersjahr noch nicht vollendet":
+  // bs-2025-law-stg and bs-na-law-stg p. 15; bs-2025-guide-wegleitung and bs-2026-guide-wegleitung-b
+  // p. 36): the costs given for an older child are left out.
   const careChildren = childcareOf(input, A.childcare.value, notes);
   const withCare = careChildren.filter((ch) => Boolean(ch.childcare));
+  if (
+    withCare.some(
+      (ch) => ch.under14 === false && ch.livesWithYou !== false && (ch.childcare?.value ?? 0) > 0,
+    )
+  )
+    notes.add(notes.notCounted, NOTE.childcareAge);
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)
@@ -1195,7 +1205,10 @@ function childcareOf(input: BsEngineInput, cap: number, notes: Notes): readonly 
       : input.childSupport === 'none'
         ? cap / 2
         : 0;
-  if (young.length > 1 && paid.value > Math.min(...young.map(limitOf))) {
+  // The federal maximum is per child too (ch-2026-ifd-instructions-personnes-physiques p. 8), and
+  // lower than the canton's: within it, every split gives the same for both taxes.
+  const federal = ifdParamsFor(input.taxYear).childcareMax.value;
+  if (young.length > 1 && paid.value > Math.min(...young.map(limitOf), federal)) {
     notes.add(notes.unsupported, NOTE.childcareSplit);
     return children;
   }

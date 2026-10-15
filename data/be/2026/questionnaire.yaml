@@ -22,18 +22,19 @@
 
 taxYear: 2026
 
-place: { en: 'Bern', fr: 'Berne', de: 'Bern' }
+place: { en: 'Bern', fr: 'Berne', de: 'Bern', it: 'Berna' }
 
 people:
-  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p1: { en: 'You', fr: 'Vous', de: 'Du', it: 'Tu' }
   p2:
     {
       en: 'Your spouse or partner',
       fr: 'Votre conjoint ou partenaire',
       de: 'Dein Partner oder deine Partnerin',
+      it: 'Il tuo coniuge o partner',
     }
-  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
-  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner', it: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}', it: 'Figlio {n}' }
 
 # TaxMe-Online is the canton's online return, logged in with BE-Login at www.taxme.ch
 # (be-2025-wegleitung-np-de p. 1 and p. 18; be-2025-info-np-jan2026-de p. 3). No document of the
@@ -42,6 +43,7 @@ notSupported:
   en: 'Taxpresso can’t prepare this part yet. TaxMe-Online, the canton’s online return (www.taxme.ch, with BE-Login), or a fiduciary can.'
   fr: 'Taxpresso ne peut pas encore préparer cette partie. TaxMe-Online, la déclaration en ligne du canton (www.taxme.ch, avec BE-Login), ou une fiduciaire le peuvent.'
   de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. TaxMe-Online, die Online-Steuererklärung des Kantons (www.taxme.ch, mit BE-Login), oder eine Treuhand kann es.'
+  it: 'Taxpresso non può ancora preparare questa parte. Può farlo TaxMe-Online, la dichiarazione online del Cantone (www.taxme.ch, con BE-Login), o una fiduciaria.'
 
 questions:
   - use: canton
@@ -56,10 +58,12 @@ questions:
         en: 'Bern tax guide 2025, p. 20: married couples'
         fr: 'Guide fiscal bernois 2025, p. 20 : Époux'
         de: 'Wegleitung zur Steuererklärung 2025, S. 20: Eheleute'
+        it: 'Guida fiscale di Berna 2025, p. 20: coniugi'
     help:
       en: 'On form 1.2: Zivilstand am 31.12. A registered partnership files like a married couple.'
       fr: 'Sur le formulaire 1.2 : Zivilstand am 31.12. (état civil au 31 décembre). Un partenariat enregistré déclare comme un couple marié.'
       de: 'Auf dem Formular 1.2: Zivilstand am 31.12. Eine eingetragene Partnerschaft füllt die Steuererklärung wie ein Ehepaar aus.'
+      it: 'Sul modulo 1.2: Zivilstand am 31.12. Chi vive in unione domestica registrata fa la dichiarazione come una coppia sposata.'
 
   # Form 1.2, "Führen Sie alleine einen eigenen Haushalt?" (be-2025-steuererklaerung-formulare-de
   # p. 1); be-2025-wegleitung-np-de p. 19 (Seite 10, Alleinstehende); be-2026-stg-de Art. 40 Abs. 2
@@ -68,27 +72,38 @@ questions:
   # (be-2026-stg-de Art. 67 Abs. 3, p. 42).
   - id: own_household
     key: be.own_household
+    group: detail
     type: yesno
     when: { key: profile.civil_status, in: [single, separated, divorced, widowed] }
     explain:
       en: 'You keep your own household alone if you live alone, only with your own children who give you a child deduction, or with a person in need who can’t work and whom you support. Living with a partner (Konkubinat) or in a flat share (Wohngemeinschaft) doesn’t count. A yes gives you the deduction for people living alone (Abzug für Alleinstehende).'
       fr: 'Vous tenez ménage indépendant seul si vous vivez seul, seulement avec vos enfants donnant droit à la déduction pour enfant, ou avec une personne dans le besoin incapable d’exercer une activité rémunérée que vous entretenez. Vivre en concubinage ou en communauté ne compte pas. Un oui vous donne la déduction pour personne seule (Abzug für Alleinstehende).'
       de: 'Du führst alleine einen eigenen Haushalt, wenn du allein lebst, nur mit deinen eigenen Kindern, für die du den Kinderabzug erhältst, oder mit einer unterstützungsbedürftigen, erwerbsunfähigen Person. Im Konkubinat oder in einer Wohngemeinschaft zählt es nicht. Ein Ja gibt dir den Abzug für Alleinstehende.'
+      it: 'Tieni da solo o da sola un’economia domestica propria se vivi per conto tuo, solo con i tuoi figli che ti danno diritto alla deduzione per figli, o con una persona bisognosa e incapace di lavorare che mantieni tu. La convivenza con un partner (Konkubinat) o in un appartamento condiviso (Wohngemeinschaft) non conta. Un sì ti dà la deduzione per persone sole (Abzug für Alleinstehende).'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=19'
       label:
         en: 'Bern tax guide 2025, p. 19: people living alone'
         fr: 'Guide fiscal bernois 2025, p. 19 : Personne seule'
         de: 'Wegleitung zur Steuererklärung 2025, S. 19: Alleinstehende'
+        it: 'Guida fiscale di Berna 2025, p. 19: persone sole'
     text:
       en: 'On 31 December 2026, did you keep your own household alone?'
       fr: 'Au 31 décembre 2026, teniez-vous ménage indépendant seul ou seule ?'
       de: 'Hast du am 31. Dezember 2026 alleine einen eigenen Haushalt geführt?'
+      it: 'Il 31 dicembre 2026 tenevi da solo o da sola un’economia domestica propria?'
     help:
       en: 'On form 1.2: Führen Sie alleine einen eigenen Haushalt?'
       fr: 'Sur le formulaire 1.2 : Führen Sie alleine einen eigenen Haushalt? (Tenez-vous ménage indépendant seul·e ?)'
       de: 'Auf dem Formular 1.2: Führen Sie alleine einen eigenen Haushalt?'
-    chip: { en: 'Own household', fr: 'Ménage indépendant', de: 'Eigener Haushalt' }
+      it: 'Sul modulo 1.2: Führen Sie alleine einen eigenen Haushalt?'
+    chip:
+      {
+        en: 'Own household',
+        fr: 'Ménage indépendant',
+        de: 'Eigener Haushalt',
+        it: 'Economia domestica propria',
+      }
 
   # be-2025-wegleitung-np-de p. 30 (Seite 21, Kinderabzug für minderjährige Kinder) and p. 31
   # (Seite 22, volljährige Kinder); form 2.1 (be-2025-steuererklaerung-formulare-de p. 2).
@@ -99,10 +114,12 @@ questions:
         en: 'Bern tax guide 2025, p. 30: child deduction'
         fr: 'Guide fiscal bernois 2025, p. 30 : Déduction pour enfant'
         de: 'Wegleitung zur Steuererklärung 2025, S. 30: Kinderabzug'
+        it: 'Guida fiscale di Berna 2025, p. 30: deduzione per figli'
     help:
       en: 'On form 2.1: Kinder (children).'
       fr: 'Sur le formulaire 2.1 : Kinder (enfants).'
       de: 'Auf dem Formular 2.1: Kinder.'
+      it: 'Sul modulo 2.1: Kinder (figli).'
 
   # be-2025-wegleitung-np-de p. 29 (Seite 20, Kind wohnt bei mir/uns?: yes also when the child
   # lives with each parent in turn).
@@ -113,10 +130,12 @@ questions:
         en: 'Bern tax guide 2025, p. 29: does the child live with you?'
         fr: 'Guide fiscal bernois 2025, p. 29 : L’enfant habite-t-il chez vous ?'
         de: 'Wegleitung zur Steuererklärung 2025, S. 29: Kind wohnt bei mir/uns?'
+        it: 'Guida fiscale di Berna 2025, p. 29: i figli vivono con te?'
     help:
       en: 'On form 2.1, column wohnt bei mir/uns (lives with me or us): yes also when the children live with each parent in turn.'
       fr: 'Sur le formulaire 2.1, colonne wohnt bei mir/uns (habite chez moi ou chez nous) : oui aussi quand les enfants vivent alternativement chez chaque parent.'
       de: 'Auf dem Formular 2.1, Spalte wohnt bei mir/uns: Ja auch dann, wenn die Kinder abwechselnd bei beiden Elternteilen leben.'
+      it: 'Sul modulo 2.1, colonna wohnt bei mir/uns (vive con me o con noi): sì anche quando i figli vivono a turno con ciascun genitore.'
 
   # Parents taxed apart in two homes: with child support, the parent taxed on it has the child
   # deduction; without, each has half (be-2025-wegleitung-np-de p. 30, Seite 21; be-2026-stg-de
@@ -127,16 +146,19 @@ questions:
       en: 'With shared custody, child support decides who counts the children. The parent who receives it gets the child deduction (Kinderabzug) in full; without child support, you each get half. For the federal tax, the parental scale (Elterntarif), a lower rate, goes to the parent who receives child support or, without it, to the one who earns more.'
       fr: 'En garde partagée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit a droit à toute la déduction pour enfant (Kinderabzug) ; sans contribution, chacun en a la moitié. Pour l’impôt fédéral, le barème parental, un taux plus bas, revient au parent qui reçoit la contribution ou, sans contribution, à celui qui gagne le plus.'
       de: 'Bei geteilter Obhut entscheiden die Unterhaltsbeiträge, wer die Kinder zählt. Wer sie erhält, bekommt den ganzen Kinderabzug; ohne Unterhaltsbeiträge erhält jeder die Hälfte. Bei der Bundessteuer geht der Elterntarif, ein tieferer Satz, an den Elternteil, der Unterhaltsbeiträge erhält, oder ohne Unterhaltsbeiträge an den, der mehr verdient.'
+      it: 'Con la custodia alternata, sono i contributi di mantenimento a decidere chi conta i figli. Il genitore che li riceve ha diritto all’intera deduzione per figli (Kinderabzug); senza contributi, ognuno ne ha la metà. Per l’imposta federale, la tariffa per genitori (Elterntarif), un’aliquota più bassa, va al genitore che riceve i contributi di mantenimento o, senza contributi, a quello che guadagna di più.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=30'
       label:
         en: 'Bern tax guide 2025, p. 30: child deduction of parents taxed apart'
         fr: 'Guide fiscal bernois 2025, p. 30 : Déduction pour enfant des parents taxés séparément'
         de: 'Wegleitung zur Steuererklärung 2025, S. 30: Kinderabzug getrennt veranlagter Eltern'
+        it: 'Guida fiscale di Berna 2025, p. 30: deduzione per figli dei genitori tassati separatamente'
     help:
       en: 'Child support (Kinderalimente, Unterhaltsbeiträge) is a regular amount for the children, set by a judgment or an agreement. Earning more means a higher net income.'
       fr: 'La contribution d’entretien (Kinderalimente, Unterhaltsbeiträge) est un montant régulier pour les enfants, fixé par un jugement ou une convention. Gagner plus signifie un revenu net plus élevé.'
       de: 'Kinderalimente (Unterhaltsbeiträge) sind ein regelmässiger Betrag für die Kinder, festgelegt durch ein Urteil oder eine Vereinbarung. Mehr verdienen heisst ein höheres Nettoeinkommen.'
+      it: 'I contributi di mantenimento (Kinderalimente, Unterhaltsbeiträge) sono un importo regolare per i figli, stabilito da una sentenza o da una convenzione. Guadagnare di più significa avere un reddito netto più alto.'
 
   # The tariff for married couples and single parents (be-2026-stg-de Art. 42 Abs. 1, p. 31) goes
   # to a parent who lives with the children and mainly bears their upkeep; the canton's page names
@@ -146,6 +168,7 @@ questions:
   # applied (packages/rules-be, explain.ts, NOTE.marriedTariff).
   - id: married_tariff
     key: be.married_tariff
+    group: detail
     type: yesno
     when:
       all:
@@ -156,21 +179,31 @@ questions:
       en: 'Bern has two income tax tariffs: a lower one for married couples and single parents (Tarif für Verheiratete und Einelternfamilien), and one for everyone else. With shared custody and no child support, the lower one goes to the parent who mainly supports the children, and Bern’s documents don’t say how that is decided between two homes. Taxpresso uses what your last assessment applied.'
       fr: 'Berne a deux barèmes de l’impôt sur le revenu : un plus bas pour les couples mariés et les familles monoparentales (Tarif für Verheiratete und Einelternfamilien), et un pour toutes les autres personnes. En garde partagée sans contribution d’entretien, le plus bas revient au parent qui assume l’essentiel de l’entretien des enfants, et les documents bernois ne disent pas comment on le décide entre deux ménages. Taxpresso reprend ce que votre dernière taxation a appliqué.'
       de: 'Bern hat zwei Tarife für die Einkommenssteuer: einen tieferen für Verheiratete und Einelternfamilien (Verheiratetentarif) und einen für alle übrigen Personen. Bei geteilter Obhut ohne Unterhaltsbeiträge erhält den tieferen der Elternteil, der hauptsächlich für die Kinder aufkommt, und die Berner Unterlagen sagen nicht, wie das zwischen zwei Haushalten entschieden wird. Taxpresso übernimmt, was deine letzte Veranlagung angewendet hat.'
+      it: 'Berna ha due tariffe per l’imposta sul reddito: una più bassa per le coppie sposate e le famiglie monoparentali (Tarif für Verheiratete und Einelternfamilien), e una per tutti gli altri. Con la custodia alternata e senza contributi di mantenimento, quella più bassa va al genitore che provvede principalmente al mantenimento dei figli, e i documenti bernesi non dicono come lo si decide tra due case. Taxpresso riprende quanto applicato dalla tua ultima decisione di tassazione.'
     learnMore:
       url: 'https://www.taxinfo.sv.fin.be.ch/taxinfo/f3ad83d5-30d6-41c9-8f79-c34e192c57ad'
       label:
         en: 'Income tax tariffs (TaxInfo, Bern tax administration)'
         fr: 'Barèmes de l’impôt sur le revenu (TaxInfo, Intendance des impôts)'
         de: 'Tarif Einkommenssteuer (TaxInfo, Steuerverwaltung)'
+        it: 'Tariffe dell’imposta sul reddito (TaxInfo, amministrazione fiscale di Berna)'
     text:
       en: 'Did your last assessment (Veranlagungsverfügung) tax you at the tariff for married couples and single parents?'
       fr: 'Votre dernière décision de taxation (Veranlagungsverfügung) vous a-t-elle appliqué le barème des couples mariés et des familles monoparentales ?'
       de: 'Hat dich deine letzte Veranlagungsverfügung zum Tarif für Verheiratete und Einelternfamilien besteuert?'
+      it: 'La tua ultima decisione di tassazione (Veranlagungsverfügung) ti ha applicato la tariffa per coppie sposate e famiglie monoparentali?'
     help:
       en: 'Your last assessment names the tariff it used. No assessment yet, or not sure? The tax administration (Steuerverwaltung) can tell you.'
       fr: 'Votre dernière décision de taxation indique le barème appliqué. Pas encore de décision, ou un doute ? L’Intendance des impôts (Steuerverwaltung) peut vous le dire.'
       de: 'Deine letzte Veranlagungsverfügung nennt den angewendeten Tarif. Noch keine Veranlagung, oder unsicher? Die Steuerverwaltung kann es dir sagen.'
-    chip: { en: 'Married tariff', fr: 'Barème des familles', de: 'Verheiratetentarif' }
+      it: 'La tua ultima decisione di tassazione indica la tariffa applicata. Non hai ancora una decisione, o hai un dubbio? L’amministrazione fiscale (Steuerverwaltung) può dirtelo.'
+    chip:
+      {
+        en: 'Married tariff',
+        fr: 'Barème des familles',
+        de: 'Verheiratetentarif',
+        it: 'Tariffa per coniugati',
+      }
 
   # The wealth deduction per child goes with the child deduction (be-2026-stg-de Art. 64 Abs. 1
   # Bst. b, p. 41); Art. 40 Abs. 8 (p. 31) halves only the income deductions it lists. Whether a
@@ -178,6 +211,7 @@ questions:
   # NOTES.md, Open points for the rules; packages/rules-be, explain.ts, NOTE.sharedChildWealth).
   - id: child_wealth
     key: be.child_wealth
+    group: detail
     type: choice
     when:
       all:
@@ -188,20 +222,24 @@ questions:
       en: 'Each child who gives a child deduction also lowers your taxable wealth (Kinderabzug auf dem Vermögen). With shared custody and no child support, you each get half the child deduction on income, but the law doesn’t say whether the one on wealth is halved too. Taxpresso uses what your last assessment applied.'
       fr: 'Chaque enfant donnant droit à la déduction pour enfant diminue aussi votre fortune imposable (Kinderabzug auf dem Vermögen). En garde partagée sans contribution d’entretien, chacun a la moitié de la déduction pour enfant sur le revenu, mais la loi ne dit pas si celle sur la fortune est aussi partagée. Taxpresso reprend ce que votre dernière taxation a appliqué.'
       de: 'Jedes Kind, für das du den Kinderabzug erhältst, senkt auch dein steuerbares Vermögen (Kinderabzug auf dem Vermögen). Bei geteilter Obhut ohne Unterhaltsbeiträge erhält jeder die Hälfte des Kinderabzugs auf dem Einkommen, aber das Gesetz sagt nicht, ob auch der Abzug auf dem Vermögen halbiert wird. Taxpresso übernimmt, was deine letzte Veranlagung angewendet hat.'
+      it: 'Ogni figlio che dà diritto alla deduzione per figli riduce anche la tua sostanza imponibile (Kinderabzug auf dem Vermögen). Con la custodia alternata e senza contributi di mantenimento, ognuno ha la metà della deduzione per figli sul reddito, ma la legge non dice se anche quella sulla sostanza è dimezzata. Taxpresso riprende quanto applicato dalla tua ultima decisione di tassazione.'
     learnMore:
       url: 'https://www.belex.sites.be.ch/api/de/versions/3330/pdf_file#page=41'
       label:
         en: 'Bern tax law (Steuergesetz), Art. 64: deductions from wealth'
         fr: 'Loi bernoise sur les impôts (Steuergesetz), art. 64 : Déductions sur la fortune'
         de: 'Steuergesetz, Art. 64: Sozialabzüge auf dem Vermögen'
+        it: 'Legge tributaria di Berna (Steuergesetz), art. 64: deduzioni dalla sostanza'
     text:
       en: 'On your last assessment (Veranlagungsverfügung), how much of the wealth deduction per child did you get?'
       fr: 'Sur votre dernière décision de taxation (Veranlagungsverfügung), quelle part de la déduction sur la fortune par enfant avez-vous obtenue ?'
       de: 'Wie viel vom Kinderabzug auf dem Vermögen hast du auf deiner letzten Veranlagungsverfügung erhalten?'
+      it: 'Nella tua ultima decisione di tassazione (Veranlagungsverfügung), quanta parte della deduzione sulla sostanza per figlio hai ottenuto?'
     help:
       en: 'It changes only your wealth tax (Vermögenssteuer). Not sure, or no assessment yet? The tax administration (Steuerverwaltung) can tell you.'
       fr: 'Cela ne change que votre impôt sur la fortune (Vermögenssteuer). Un doute, ou pas encore de décision ? L’Intendance des impôts (Steuerverwaltung) peut vous le dire.'
       de: 'Es ändert nur deine Vermögenssteuer. Unsicher, oder noch keine Veranlagung? Die Steuerverwaltung kann es dir sagen.'
+      it: 'Cambia solo la tua imposta sulla sostanza (Vermögenssteuer). Hai un dubbio, o non hai ancora una decisione? L’amministrazione fiscale (Steuerverwaltung) può dirtelo.'
     options:
       - value: full
         label:
@@ -209,6 +247,7 @@ questions:
             en: 'The full deduction for each child',
             fr: 'La déduction entière pour chaque enfant',
             de: 'Den ganzen Abzug für jedes Kind',
+            it: 'L’intera deduzione per ogni figlio',
           }
       - value: half
         label:
@@ -216,6 +255,7 @@ questions:
             en: 'Half of it for each child',
             fr: 'La moitié pour chaque enfant',
             de: 'Die Hälfte für jedes Kind',
+            it: 'La metà per ogni figlio',
           }
 
   # be-2025-wegleitung-np-de p. 23 (Seite 14, Kinderdrittbetreuungskosten) and p. 24 (Seite 15:
@@ -227,10 +267,12 @@ questions:
         en: 'Childcare costs (TaxInfo, Bern tax administration)'
         fr: 'Frais de garde des enfants par des tiers (TaxInfo, Intendance des impôts)'
         de: 'Kinderdrittbetreuungskosten (TaxInfo, Steuerverwaltung)'
+        it: 'Spese di custodia dei figli (TaxInfo, amministrazione fiscale di Berna)'
     help:
       en: 'A crèche (Kita), a day school (Tagesschule) or day parents (Tageseltern), while you work or study. Meals don’t count. On form 2.1: Bezahlte Kinderdrittbetreuungskosten, with the name and address of whoever looked after the child.'
       fr: 'Une crèche, une école à journée continue ou des parents de jour, pendant que vous travaillez ou étudiez. Les repas ne comptent pas. Sur le formulaire 2.1 : Bezahlte Kinderdrittbetreuungskosten (frais de garde des enfants par des tiers), avec le nom et l’adresse de la personne qui a gardé l’enfant.'
       de: 'Kita, Tagesschule oder Tageseltern, während du arbeitest oder in Ausbildung bist. Mahlzeiten zählen nicht. Auf dem Formular 2.1: Bezahlte Kinderdrittbetreuungskosten, mit Name und Adresse der betreuenden Person.'
+      it: 'Un asilo nido (Kita), una scuola diurna (Tagesschule) o una famiglia diurna (Tageseltern), mentre lavori o studi. I pasti non contano. Sul modulo 2.1: Bezahlte Kinderdrittbetreuungskosten, con il nome e l’indirizzo di chi si è occupato dei figli.'
 
   # Form 2.1 asks the childcare paid per child, and the limit is per child (be-2025-steuererklaerung-
   # formulare-de p. 2; be-2025-wegleitung-np-de p. 23, Seite 14; be-na-deductions-taxinfo-
@@ -238,6 +280,7 @@ questions:
   # deduction: asked per child.
   - id: child_care
     key: be.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -248,20 +291,24 @@ questions:
       en: 'Form 2.1 asks the childcare paid for each child, and Bern’s limit is per child, so the split between your children can change the deduction. Your invoices give the total.'
       fr: 'Le formulaire 2.1 demande les frais de garde payés pour chaque enfant (Bezahlte Kinderdrittbetreuungskosten), et la limite bernoise est par enfant : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
       de: 'Das Formular 2.1 fragt die bezahlten Kinderdrittbetreuungskosten für jedes Kind, und der Berner Höchstbetrag gilt pro Kind: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+      it: 'Il modulo 2.1 chiede le spese di custodia pagate per ogni figlio, e il limite bernese vale per figlio: la ripartizione tra i tuoi figli può cambiare la deduzione. Le tue fatture danno il totale.'
     learnMore:
       url: 'https://www.taxinfo.sv.fin.be.ch/taxinfo/291bf1b9-10c8-42eb-bdd4-fd54f1a8e708'
       label:
         en: 'Childcare costs (TaxInfo, Bern tax administration)'
         fr: 'Frais de garde des enfants par des tiers (TaxInfo, Intendance des impôts)'
         de: 'Kinderdrittbetreuungskosten (TaxInfo, Steuerverwaltung)'
+        it: 'Spese di custodia dei figli (TaxInfo, amministrazione fiscale di Berna)'
     text:
       en: 'How much of the childcare you paid in 2026 was for child {n}?'
       fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
       de: 'Wie viel der 2026 bezahlten Kinderdrittbetreuungskosten war für Kind {n}?'
+      it: 'Quanto delle spese di custodia che hai pagato nel 2026 era per il figlio {n}?'
     help:
       en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
       fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
 
   # Form 2.1, column "Auswärtige bzw. zusätzliche Ausbildungskosten" (be-2025-steuererklaerung-
   # formulare-de p. 2); be-2025-wegleitung-np-de p. 25 (Seite 16, Ausbildungskosten: cantonal and
@@ -269,6 +316,7 @@ questions:
   # with children who live with you, also in turn (p. 29, Seite 20).
   - id: education
     key: be.education
+    group: deduction
     type: yesno
     when:
       all:
@@ -278,26 +326,37 @@ questions:
       en: 'For each child who gives you a child deduction, Bern also deducts the extra costs of an education away from home, or other education costs you can prove (auswärtige bzw. zusätzliche Ausbildungskosten), up to a limit per child. Only the cantonal and communal tax have this deduction, not the federal tax.'
       fr: 'Pour chaque enfant donnant droit à la déduction pour enfant, Berne déduit aussi les frais supplémentaires d’une instruction à l’extérieur, ou d’autres frais de formation que vous pouvez prouver (auswärtige bzw. zusätzliche Ausbildungskosten), jusqu’à une limite par enfant. Seuls les impôts cantonal et communal ont cette déduction, pas l’impôt fédéral.'
       de: 'Für jedes Kind, für das du den Kinderabzug erhältst, zieht Bern auch die Mehrkosten einer auswärtigen Ausbildung oder andere nachgewiesene zusätzliche Ausbildungskosten ab, bis zu einem Höchstbetrag pro Kind. Diesen Abzug gibt es nur bei den Kantons- und Gemeindesteuern, nicht bei der Bundessteuer.'
+      it: 'Per ogni figlio che ti dà diritto alla deduzione per figli, Berna deduce anche le spese supplementari di una formazione fuori sede, o altre spese di formazione che puoi provare (auswärtige bzw. zusätzliche Ausbildungskosten), fino a un limite per figlio. Questa deduzione c’è solo per l’imposta cantonale e comunale, non per l’imposta federale.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=25'
       label:
         en: 'Bern tax guide 2025, p. 25: education costs'
         fr: 'Guide fiscal bernois 2025, p. 25 : Frais de formation'
         de: 'Wegleitung zur Steuererklärung 2025, S. 25: Ausbildungskosten'
+        it: 'Guida fiscale di Berna 2025, p. 25: spese di formazione'
     text:
       en: 'In 2026, did you pay for a child’s education away from home, or extra education costs you can prove?'
       fr: 'En 2026, avez-vous payé pour un enfant des frais d’instruction à l’extérieur, ou des frais supplémentaires de formation que vous pouvez prouver ?'
       de: 'Hast du 2026 für ein Kind auswärtige Ausbildungskosten oder nachgewiesene zusätzliche Ausbildungskosten bezahlt?'
+      it: 'Nel 2026 hai pagato per un figlio una formazione fuori sede, o spese di formazione supplementari che puoi provare?'
     help:
       en: 'On form 2.1, column Auswärtige bzw. zusätzliche Ausbildungskosten. Keep the proof.'
       fr: 'Sur le formulaire 2.1, colonne Auswärtige bzw. zusätzliche Ausbildungskosten (frais d’instruction à l’extérieur ou supplémentaires). Gardez les justificatifs.'
       de: 'Auf dem Formular 2.1, Spalte Auswärtige bzw. zusätzliche Ausbildungskosten. Bewahr die Belege auf.'
-    chip: { en: 'Education costs', fr: 'Frais de formation', de: 'Ausbildungskosten' }
+      it: 'Sul modulo 2.1, colonna Auswärtige bzw. zusätzliche Ausbildungskosten. Conserva i giustificativi.'
+    chip:
+      {
+        en: 'Education costs',
+        fr: 'Frais de formation',
+        de: 'Ausbildungskosten',
+        it: 'Spese di formazione',
+      }
 
   # The amount per child, for the column of form 2.1 (be-2025-steuererklaerung-formulare-de p. 2);
   # be-2025-wegleitung-np-de p. 25 (Seite 16: the limit applies per child).
   - id: child_education
     key: be.child_education
+    group: deduction
     type: money
     perChild: true
     when: { key: be.education, is: true }
@@ -305,20 +364,24 @@ questions:
       en: 'The extra education costs of this child that you paid yourself. Taxpresso applies the limit per child.'
       fr: 'Les frais supplémentaires de formation de cet enfant que vous avez payés vous-même. Taxpresso applique la limite par enfant.'
       de: 'Die zusätzlichen Ausbildungskosten dieses Kindes, die du selbst bezahlt hast. Taxpresso rechnet mit dem Höchstbetrag pro Kind.'
+      it: 'Le spese di formazione supplementari di questo figlio che hai pagato tu. Taxpresso applica il limite per figlio.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=25'
       label:
         en: 'Bern tax guide 2025, p. 25: education costs'
         fr: 'Guide fiscal bernois 2025, p. 25 : Frais de formation'
         de: 'Wegleitung zur Steuererklärung 2025, S. 25: Ausbildungskosten'
+        it: 'Guida fiscale di Berna 2025, p. 25: spese di formazione'
     text:
       en: 'How much did you pay in 2026 for child {n}’s education away from home or extra education costs?'
       fr: 'Combien avez-vous payé en 2026 pour l’enfant {n} en frais d’instruction à l’extérieur ou en frais supplémentaires de formation ?'
       de: 'Wie viel hast du 2026 für Kind {n} an auswärtigen oder zusätzlichen Ausbildungskosten bezahlt?'
+      it: 'Quanto hai pagato nel 2026 per il figlio {n} per una formazione fuori sede o spese di formazione supplementari?'
     help:
       en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
       fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
 
   # The commune of 31 December taxes the whole year (be-2026-stg-de Art. 165 Abs. 1 and 4, p. 89;
   # Art. 251 Abs. 1, p. 127). The list is Bern's 334 communes of 2026 by BFS number (packages/
@@ -327,25 +390,30 @@ questions:
   # the einfache Steuer (be-2026-steueranlagen-gemeinden-de p. 3 and 13).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own Steueranlage, a multiple of the simple tax (einfache Steuer), as the canton does.'
       fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année. Chaque commune fixe sa propre quotité d’impôt (Steueranlage), un multiple de l’impôt simple (einfache Steuer), comme le canton.'
       de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr. Jede Gemeinde legt ihre eigene Steueranlage fest, ein Vielfaches der einfachen Steuer, wie der Kanton.'
+      it: 'Il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno. Ogni Comune fissa la propria Steueranlage, un multiplo dell’imposta semplice (einfache Steuer), come fa il Cantone.'
     learnMore:
       url: 'https://www.fin.be.ch/content/dam/fin/dokumente/de/finanzverwaltung/finanzausgleich/publikationen/fv-stat-steueranlage_2026_1.pdf#page=13'
       label:
         en: 'Communal tax multipliers and church tax rates 2026, p. 13'
         fr: 'Quotités d’impôt des communes et taux des impôts paroissiaux 2026, p. 13'
         de: 'Steueranlagen der Gemeinden und Steuersätze der Kirchgemeinden 2026, S. 13'
+        it: 'Moltiplicatori d’imposta comunali e aliquote dell’imposta di culto 2026, p. 13'
     text:
       en: 'Which commune did you live in on 31 December 2026?'
       fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
       de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale Comune abitavi il 31 dicembre 2026?'
     help:
       en: 'The official name, such as Biel/Bienne. In a few communes, the parishes of different parts levy different church tax rates: Taxpresso asks for your part later, only if it changes your tax.'
       fr: 'Le nom officiel, par exemple Biel/Bienne. Dans quelques communes, les paroisses de différentes parties prélèvent des taux d’impôt paroissial différents : Taxpresso vous demande votre partie plus tard, seulement si cela change votre impôt.'
       de: 'Der offizielle Name, zum Beispiel Biel/Bienne. In einigen Gemeinden erheben die Kirchgemeinden verschiedener Teile verschiedene Kirchensteuersätze: Taxpresso fragt später nach deinem Teil, nur wenn er deine Steuer ändert.'
+      it: 'Il nome ufficiale, per esempio Biel/Bienne. In alcuni Comuni, le parrocchie di parti diverse prelevano aliquote diverse per l’imposta di culto: Taxpresso ti chiede la tua parte più avanti, solo se cambia la tua imposta.'
 
   # Who files in Bern: everyone living in the canton at the end of the year (be-2025-wegleitung-np-
   # de p. 10, Seite 1); a move within Switzerland follows the federal harmonisation law
@@ -355,43 +423,56 @@ questions:
   # be-2026-stg-de Art. 9 Abs. 1 and 2, p. 6): not covered by rules-be.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Bern taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
       fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Berne vous impose pour toute l’année, comme si vous y aviez vécu depuis janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
       de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Bern besteuert dein ganzes Jahr, als hättest du seit Januar hier gewohnt. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+      it: 'Un trasloco all’interno del Cantone non cambia nulla: il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno. Nemmeno arrivare da un altro Cantone cambia qualcosa: Berna ti tassa per tutto l’anno, come se avessi abitato qui da gennaio. Arrivare dall’estero, o lasciare la Svizzera, significa che qui hai pagato le imposte solo per una parte dell’anno.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=10'
       label:
         en: 'Bern tax guide 2025, p. 10: who files a return'
         fr: 'Guide fiscal bernois 2025, p. 10 : Obligation de déclarer'
         de: 'Wegleitung zur Steuererklärung 2025, S. 10: Steuererklärungspflicht'
+        it: 'Guida fiscale di Berna 2025, p. 10: chi deve presentare la dichiarazione'
     text:
       en: 'Did you move in 2026?'
       fr: 'Avez-vous déménagé en 2026 ?'
       de: 'Bist du 2026 umgezogen?'
+      it: 'Hai traslocato nel 2026?'
     options:
-      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein', it: 'No' } }
       - value: within_bern
         label:
           {
             en: 'Yes, within the canton of Bern',
             fr: 'Oui, dans le canton de Berne',
             de: 'Ja, innerhalb des Kantons Bern',
+            it: 'Sì, all’interno del Cantone di Berna',
           }
-        chip: { en: 'Moved in Bern', fr: 'Déménagé à Berne', de: 'Umzug im Kanton' }
+        chip:
+          {
+            en: 'Moved in Bern',
+            fr: 'Déménagé à Berne',
+            de: 'Umzug im Kanton',
+            it: 'Trasloco nel Cantone',
+          }
       - value: from_other_canton
         label:
           {
             en: 'Yes, from another canton',
             fr: 'Oui, depuis un autre canton',
             de: 'Ja, aus einem anderen Kanton',
+            it: 'Sì, da un altro Cantone',
           }
         chip:
           {
             en: 'Moved from another canton',
             fr: 'Arrivé(e) d’un autre canton',
             de: 'Zuzug aus einem anderen Kanton',
+            it: 'Arrivo da un altro Cantone',
           }
       - value: from_abroad
         label:
@@ -399,12 +480,14 @@ questions:
             en: 'Yes, I arrived from abroad',
             fr: 'Oui, je suis arrivé(e) de l’étranger',
             de: 'Ja, ich bin aus dem Ausland zugezogen',
+            it: 'Sì, dall’estero',
           }
         notSupported:
           {
             en: 'Arriving from abroad during the year (Zuzug aus dem Ausland)',
             fr: 'Une arrivée de l’étranger en cours d’année (Zuzug aus dem Ausland)',
             de: 'Ein Zuzug aus dem Ausland während des Jahres',
+            it: 'L’arrivo dall’estero durante l’anno (Zuzug aus dem Ausland)',
           }
       - value: leaving_switzerland
         label:
@@ -412,12 +495,14 @@ questions:
             en: 'I left, or I’m leaving, Switzerland',
             fr: 'J’ai quitté ou je quitte la Suisse',
             de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+            it: 'Ho lasciato la Svizzera, o sto per lasciarla',
           }
         notSupported:
           {
             en: 'Leaving Switzerland (Wegzug ins Ausland)',
             fr: 'Un départ de Suisse (Wegzug ins Ausland)',
             de: 'Ein Wegzug ins Ausland',
+            it: 'La partenza dalla Svizzera (Wegzug ins Ausland)',
           }
 
   # Church tax (Kirchensteuer, impôt paroissial): each parish sets its rate as a fraction of the
@@ -428,31 +513,37 @@ questions:
   # be-2025-steuererklaerung-formulare-de p. 9). Opt-in: Taxpresso adds it only for a member.
   - id: church
     key: be.church
+    group: detail
     type: choice
     perPerson: true
     explain:
       en: 'Members of the Reformed, Roman Catholic or Christ Catholic church pay church tax (Kirchensteuer), a fraction of the simple tax (einfache Steuer) set by their parish (Kirchgemeinde). Taxpresso adds it only for a member.'
       fr: 'Les membres de l’Église réformée, catholique romaine ou catholique chrétienne paient l’impôt paroissial (Kirchensteuer), un multiplicateur de l’impôt simple (einfache Steuer) fixé par leur paroisse (Kirchgemeinde). Taxpresso ne l’ajoute que pour un membre.'
       de: 'Mitglieder der reformierten, der römisch-katholischen oder der christkatholischen Kirche zahlen Kirchensteuer, einen Bruchteil der einfachen Steuer, den ihre Kirchgemeinde festlegt. Taxpresso rechnet sie nur für Mitglieder dazu.'
+      it: 'I membri della Chiesa riformata, cattolica romana o cattolica cristiana pagano l’imposta di culto (Kirchensteuer), una frazione dell’imposta semplice (einfache Steuer) fissata dalla loro parrocchia (Kirchgemeinde). Taxpresso la aggiunge solo per chi ne è membro.'
     learnMore:
       url: 'https://www.fin.be.ch/content/dam/fin/dokumente/de/finanzverwaltung/finanzausgleich/publikationen/fv-stat-steueranlage_2026_1.pdf#page=13'
       label:
         en: 'Communal tax multipliers and church tax rates 2026, p. 13'
         fr: 'Quotités d’impôt des communes et taux des impôts paroissiaux 2026, p. 13'
         de: 'Steueranlagen der Gemeinden und Steuersätze der Kirchgemeinden 2026, S. 13'
+        it: 'Moltiplicatori d’imposta comunali e aliquote dell’imposta di culto 2026, p. 13'
     text:
       p1:
         en: 'On 31 December 2026, were you a member of one of these churches?'
         fr: 'Au 31 décembre 2026, étiez-vous membre de l’une de ces Églises ?'
         de: 'Warst du am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026 eri membro di una di queste Chiese?'
       p2:
         en: 'On 31 December 2026, was your spouse or partner a member of one of these churches?'
         fr: 'Au 31 décembre 2026, votre conjoint ou partenaire était-il membre de l’une de ces Églises ?'
         de: 'War dein Partner oder deine Partnerin am 31. Dezember 2026 Mitglied einer dieser Kirchen?'
+        it: 'Il 31 dicembre 2026 il tuo coniuge o partner era membro di una di queste Chiese?'
     help:
       en: 'Your commune’s tax register (Steuerregister) records it on 31 December, as Konfession. Another religion, or none, pays no church tax.'
       fr: 'Le registre de l’impôt de votre commune l’indique au 31 décembre, sous Konfession (confession). Une autre religion, ou aucune, ne paie pas d’impôt paroissial.'
       de: 'Das Steuerregister deiner Gemeinde führt sie per 31. Dezember als Konfession. Eine andere Religion oder keine zahlt keine Kirchensteuer.'
+      it: 'Il registro fiscale del tuo Comune (Steuerregister) la indica al 31 dicembre, come Konfession. Chi ha un’altra religione, o nessuna, non paga l’imposta di culto.'
     options:
       - value: reformed
         label:
@@ -460,26 +551,41 @@ questions:
             en: 'Reformed (evangelisch-reformiert)',
             fr: 'Réformée évangélique (evangelisch-reformiert)',
             de: 'Evangelisch-reformiert',
+            it: 'Riformata (evangelisch-reformiert)',
           }
-        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert' }
+        chip: { en: 'Reformed', fr: 'Réformé(e)', de: 'Reformiert', it: 'Chiesa riformata' }
       - value: catholic
         label:
           {
             en: 'Roman Catholic (römisch-katholisch)',
             fr: 'Catholique romaine (römisch-katholisch)',
             de: 'Römisch-katholisch',
+            it: 'Cattolica romana (römisch-katholisch)',
           }
-        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch' }
+        chip: { en: 'Catholic', fr: 'Catholique', de: 'Katholisch', it: 'Chiesa cattolica' }
       - value: christ_catholic
         label:
           {
             en: 'Christ Catholic (christkatholisch)',
             fr: 'Catholique chrétienne (christkatholisch)',
             de: 'Christkatholisch',
+            it: 'Cattolica cristiana (christkatholisch)',
           }
-        chip: { en: 'Christ Catholic', fr: 'Catholique chrétien(ne)', de: 'Christkatholisch' }
+        chip:
+          {
+            en: 'Christ Catholic',
+            fr: 'Catholique chrétien(ne)',
+            de: 'Christkatholisch',
+            it: 'Chiesa cattolica cristiana',
+          }
       - value: none
-        label: { en: 'None of these', fr: 'Aucune de ces Églises', de: 'Keine davon' }
+        label:
+          {
+            en: 'None of these',
+            fr: 'Aucune de ces Églises',
+            de: 'Keine davon',
+            it: 'Nessuna di queste',
+          }
 
   # In 21 communes the parishes of different parts (Unterabteilungen, sections) levy different
   # church tax rates in 2026 (be-na-communal-steueranlagen-1983-2026 sheet Daten Gde, one row per
@@ -489,6 +595,7 @@ questions:
   # and the condition equal to it. The names are the table's, sometimes shortened.
   - id: parish
     key: be.parish
+    group: detail
     type: choice
     when:
       any:
@@ -529,23 +636,33 @@ questions:
       en: 'Your commune has parts whose parishes levy different church tax rates for your church. Choose the part you lived in on 31 December. The names are those of the canton’s table, sometimes shortened.'
       fr: 'Votre commune a des parties dont les paroisses prélèvent des taux d’impôt paroissial différents pour votre Église. Choisissez la partie où vous habitiez au 31 décembre. Les noms sont ceux du tableau du canton, parfois abrégés.'
       de: 'Deine Gemeinde hat Teile, deren Kirchgemeinden für deine Kirche verschiedene Kirchensteuersätze erheben. Wähl den Teil, in dem du am 31. Dezember gewohnt hast. Die Namen sind die der Tabelle des Kantons, teils abgekürzt.'
+      it: 'Il tuo Comune ha delle parti le cui parrocchie prelevano aliquote diverse per l’imposta di culto della tua Chiesa. Scegli la parte in cui abitavi il 31 dicembre. I nomi sono quelli della tabella del Cantone, a volte abbreviati.'
     learnMore:
       url: 'https://www.fin.be.ch/content/dam/fin/dokumente/de/finanzverwaltung/finanzausgleich/publikationen/fv-stat-steueranlage_2026_1.pdf#page=13'
       label:
         en: 'Communal tax multipliers and church tax rates 2026, p. 13'
         fr: 'Quotités d’impôt des communes et taux des impôts paroissiaux 2026, p. 13'
         de: 'Steueranlagen der Gemeinden und Steuersätze der Kirchgemeinden 2026, S. 13'
+        it: 'Moltiplicatori d’imposta comunali e aliquote dell’imposta di culto 2026, p. 13'
     text:
       en: 'Which part of your commune did you live in on 31 December 2026?'
       fr: 'Dans quelle partie de votre commune habitiez-vous au 31 décembre 2026 ?'
       de: 'In welchem Teil deiner Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale parte del tuo Comune abitavi il 31 dicembre 2026?'
     help:
       en: 'Not sure? Your parish (Kirchgemeinde) or your commune’s tax office (Steuerbüro) knows.'
       fr: 'Un doute ? Votre paroisse (Kirchgemeinde) ou le service des impôts de votre commune (Steuerbüro) le sait.'
       de: 'Unsicher? Deine Kirchgemeinde oder das Steuerbüro deiner Gemeinde weiss es.'
+      it: 'Hai un dubbio? La tua parrocchia (Kirchgemeinde) o l’ufficio delle imposte del tuo Comune (Steuerbüro) lo sa.'
     options:
       - value: '304:Golaten'
-        label: { en: 'Kallnach: Golaten', fr: 'Kallnach : Golaten', de: 'Kallnach: Golaten' }
+        label:
+          {
+            en: 'Kallnach: Golaten',
+            fr: 'Kallnach : Golaten',
+            de: 'Kallnach: Golaten',
+            it: 'Kallnach: Golaten',
+          }
         when: { key: profile.commune, eq: '304' }
       - value: '304:Kallnach/Niederried'
         label:
@@ -553,13 +670,20 @@ questions:
             en: 'Kallnach: Kallnach/Niederried',
             fr: 'Kallnach : Kallnach/Niederried',
             de: 'Kallnach: Kallnach/Niederried',
+            it: 'Kallnach: Kallnach/Niederried',
           }
         when: { key: profile.commune, eq: '304' }
       - value: '306:Busswil BE'
-        label: { en: 'Lyss: Busswil BE', fr: 'Lyss : Busswil BE', de: 'Lyss: Busswil BE' }
+        label:
+          {
+            en: 'Lyss: Busswil BE',
+            fr: 'Lyss : Busswil BE',
+            de: 'Lyss: Busswil BE',
+            it: 'Lyss: Busswil BE',
+          }
         when: { key: profile.commune, eq: '306' }
       - value: '306:Lyss'
-        label: { en: 'Lyss: Lyss', fr: 'Lyss : Lyss', de: 'Lyss: Lyss' }
+        label: { en: 'Lyss: Lyss', fr: 'Lyss : Lyss', de: 'Lyss: Lyss', it: 'Lyss: Lyss' }
         when: { key: profile.commune, eq: '306' }
       - value: '310:Rapp./Bangerten'
         label:
@@ -567,6 +691,7 @@ questions:
             en: 'Rapperswil: Rapp./Bangerten',
             fr: 'Rapperswil : Rapp./Bangerten',
             de: 'Rapperswil: Rapp./Bangerten',
+            it: 'Rapperswil: Rapp./Bangerten',
           }
         when: { key: profile.commune, eq: '310' }
       - value: '310:Ruppoldsried'
@@ -575,6 +700,7 @@ questions:
             en: 'Rapperswil: Ruppoldsried',
             fr: 'Rapperswil : Ruppoldsried',
             de: 'Rapperswil: Ruppoldsried',
+            it: 'Rapperswil: Ruppoldsried',
           }
         when: { key: profile.commune, eq: '310' }
       - value: '329:Langent./Unterst.'
@@ -583,6 +709,7 @@ questions:
             en: 'Langenthal: Langent./Unterst.',
             fr: 'Langenthal : Langent./Unterst.',
             de: 'Langenthal: Langent./Unterst.',
+            it: 'Langenthal: Langent./Unterst.',
           }
         when: { key: profile.commune, eq: '329' }
       - value: '329:Obersteckholz'
@@ -591,6 +718,7 @@ questions:
             en: 'Langenthal: Obersteckholz',
             fr: 'Langenthal : Obersteckholz',
             de: 'Langenthal: Obersteckholz',
+            it: 'Langenthal: Obersteckholz',
           }
         when: { key: profile.commune, eq: '329' }
       - value: '538:Fraubrunnen'
@@ -599,6 +727,7 @@ questions:
             en: 'Fraubrunnen: Fraubrunnen',
             fr: 'Fraubrunnen : Fraubrunnen',
             de: 'Fraubrunnen: Fraubrunnen',
+            it: 'Fraubrunnen: Fraubrunnen',
           }
         when: { key: profile.commune, eq: '538' }
       - value: '538:Etzelkof/Mülchi'
@@ -607,6 +736,7 @@ questions:
             en: 'Fraubrunnen: Etzelkof/Mülchi',
             fr: 'Fraubrunnen : Etzelkof/Mülchi',
             de: 'Fraubrunnen: Etzelkof/Mülchi',
+            it: 'Fraubrunnen: Etzelkof/Mülchi',
           }
         when: { key: profile.commune, eq: '538' }
       - value: '540:Jegenstorf'
@@ -615,11 +745,17 @@ questions:
             en: 'Jegenstorf: Jegenstorf',
             fr: 'Jegenstorf : Jegenstorf',
             de: 'Jegenstorf: Jegenstorf',
+            it: 'Jegenstorf: Jegenstorf',
           }
         when: { key: profile.commune, eq: '540' }
       - value: '540:Scheunen'
         label:
-          { en: 'Jegenstorf: Scheunen', fr: 'Jegenstorf : Scheunen', de: 'Jegenstorf: Scheunen' }
+          {
+            en: 'Jegenstorf: Scheunen',
+            fr: 'Jegenstorf : Scheunen',
+            de: 'Jegenstorf: Scheunen',
+            it: 'Jegenstorf: Scheunen',
+          }
         when: { key: profile.commune, eq: '540' }
       - value: '567:Reichenbach-1'
         label:
@@ -627,6 +763,7 @@ questions:
             en: 'Reichenbach: Reichenbach-1',
             fr: 'Reichenbach : Reichenbach-1',
             de: 'Reichenbach: Reichenbach-1',
+            it: 'Reichenbach: Reichenbach-1',
           }
         when: { key: profile.commune, eq: '567' }
       - value: '567:Reichenbach-9'
@@ -635,6 +772,7 @@ questions:
             en: 'Reichenbach: Reichenbach-9',
             fr: 'Reichenbach : Reichenbach-9',
             de: 'Reichenbach: Reichenbach-9',
+            it: 'Reichenbach: Reichenbach-9',
           }
         when: { key: profile.commune, eq: '567' }
       - value: '608:Grosshöchs.'
@@ -643,6 +781,7 @@ questions:
             en: 'Grosshöchstetten: Grosshöchs.',
             fr: 'Grosshöchstetten : Grosshöchs.',
             de: 'Grosshöchstetten: Grosshöchs.',
+            it: 'Grosshöchstetten: Grosshöchs.',
           }
         when: { key: profile.commune, eq: '608' }
       - value: '608:Schlosswil'
@@ -651,6 +790,7 @@ questions:
             en: 'Grosshöchstetten: Schlosswil',
             fr: 'Grosshöchstetten : Schlosswil',
             de: 'Grosshöchstetten: Schlosswil',
+            it: 'Grosshöchstetten: Schlosswil',
           }
         when: { key: profile.commune, eq: '608' }
       - value: '716:Chât/Mon/Sorn/Soub'
@@ -659,6 +799,7 @@ questions:
             en: 'Petit-Val: Chât/Mon/Sorn/Soub',
             fr: 'Petit-Val : Chât/Mon/Sorn/Soub',
             de: 'Petit-Val: Chât/Mon/Sorn/Soub',
+            it: 'Petit-Val: Chât/Mon/Sorn/Soub',
           }
         when: { key: profile.commune, eq: '716' }
       - value: '716:Châtelat/Fornet-d.'
@@ -667,18 +808,35 @@ questions:
             en: 'Petit-Val: Châtelat/Fornet-d.',
             fr: 'Petit-Val : Châtelat/Fornet-d.',
             de: 'Petit-Val: Châtelat/Fornet-d.',
+            it: 'Petit-Val: Châtelat/Fornet-d.',
           }
         when: { key: profile.commune, eq: '716' }
       - value: '767:Reutigen'
-        label: { en: 'Reutigen: Reutigen', fr: 'Reutigen : Reutigen', de: 'Reutigen: Reutigen' }
+        label:
+          {
+            en: 'Reutigen: Reutigen',
+            fr: 'Reutigen : Reutigen',
+            de: 'Reutigen: Reutigen',
+            it: 'Reutigen: Reutigen',
+          }
         when: { key: profile.commune, eq: '767' }
       - value: '767:Zwieselberg'
         label:
-          { en: 'Reutigen: Zwieselberg', fr: 'Reutigen : Zwieselberg', de: 'Reutigen: Zwieselberg' }
+          {
+            en: 'Reutigen: Zwieselberg',
+            fr: 'Reutigen : Zwieselberg',
+            de: 'Reutigen: Zwieselberg',
+            it: 'Reutigen: Zwieselberg',
+          }
         when: { key: profile.commune, eq: '767' }
       - value: '770:Höfen'
         label:
-          { en: 'Stocken-Höfen: Höfen', fr: 'Stocken-Höfen : Höfen', de: 'Stocken-Höfen: Höfen' }
+          {
+            en: 'Stocken-Höfen: Höfen',
+            fr: 'Stocken-Höfen : Höfen',
+            de: 'Stocken-Höfen: Höfen',
+            it: 'Stocken-Höfen: Höfen',
+          }
         when: { key: profile.commune, eq: '770' }
       - value: '770:Ober-/Niederst'
         label:
@@ -686,11 +844,17 @@ questions:
             en: 'Stocken-Höfen: Ober-/Niederst',
             fr: 'Stocken-Höfen : Ober-/Niederst',
             de: 'Stocken-Höfen: Ober-/Niederst',
+            it: 'Stocken-Höfen: Ober-/Niederst',
           }
         when: { key: profile.commune, eq: '770' }
       - value: '784:Gadmen'
         label:
-          { en: 'Innertkirchen: Gadmen', fr: 'Innertkirchen : Gadmen', de: 'Innertkirchen: Gadmen' }
+          {
+            en: 'Innertkirchen: Gadmen',
+            fr: 'Innertkirchen : Gadmen',
+            de: 'Innertkirchen: Gadmen',
+            it: 'Innertkirchen: Gadmen',
+          }
         when: { key: profile.commune, eq: '784' }
       - value: '784:Innertkirchen'
         label:
@@ -698,6 +862,7 @@ questions:
             en: 'Innertkirchen: Innertkirchen',
             fr: 'Innertkirchen : Innertkirchen',
             de: 'Innertkirchen: Innertkirchen',
+            it: 'Innertkirchen: Innertkirchen',
           }
         when: { key: profile.commune, eq: '784' }
       - value: '872:Gelterfingen'
@@ -706,6 +871,7 @@ questions:
             en: 'Kirchdorf: Gelterfingen',
             fr: 'Kirchdorf : Gelterfingen',
             de: 'Kirchdorf: Gelterfingen',
+            it: 'Kirchdorf: Gelterfingen',
           }
         when: { key: profile.commune, eq: '872' }
       - value: '872:Kirchdorf, Noflen'
@@ -714,11 +880,17 @@ questions:
             en: 'Kirchdorf: Kirchdorf, Noflen',
             fr: 'Kirchdorf : Kirchdorf, Noflen',
             de: 'Kirchdorf: Kirchdorf, Noflen',
+            it: 'Kirchdorf: Kirchdorf, Noflen',
           }
         when: { key: profile.commune, eq: '872' }
       - value: '872:Mühledorf'
         label:
-          { en: 'Kirchdorf: Mühledorf', fr: 'Kirchdorf : Mühledorf', de: 'Kirchdorf: Mühledorf' }
+          {
+            en: 'Kirchdorf: Mühledorf',
+            fr: 'Kirchdorf : Mühledorf',
+            de: 'Kirchdorf: Mühledorf',
+            it: 'Kirchdorf: Mühledorf',
+          }
         when: { key: profile.commune, eq: '872' }
       - value: '879:Riggisberg/Rüti'
         label:
@@ -726,11 +898,17 @@ questions:
             en: 'Riggisberg: Riggisberg/Rüti',
             fr: 'Riggisberg : Riggisberg/Rüti',
             de: 'Riggisberg: Riggisberg/Rüti',
+            it: 'Riggisberg: Riggisberg/Rüti',
           }
         when: { key: profile.commune, eq: '879' }
       - value: '879:Rümligen'
         label:
-          { en: 'Riggisberg: Rümligen', fr: 'Riggisberg : Rümligen', de: 'Riggisberg: Rümligen' }
+          {
+            en: 'Riggisberg: Rümligen',
+            fr: 'Riggisberg : Rümligen',
+            de: 'Riggisberg: Rümligen',
+            it: 'Riggisberg: Rümligen',
+          }
         when: { key: profile.commune, eq: '879' }
       - value: '889:Kirchenthurnen'
         label:
@@ -738,6 +916,7 @@ questions:
             en: 'Thurnen: Kirchenthurnen',
             fr: 'Thurnen : Kirchenthurnen',
             de: 'Thurnen: Kirchenthurnen',
+            it: 'Thurnen: Kirchenthurnen',
           }
         when: { key: profile.commune, eq: '889' }
       - value: '889:Lohnstorf/Mühleth.'
@@ -746,21 +925,38 @@ questions:
             en: 'Thurnen: Lohnstorf/Mühleth.',
             fr: 'Thurnen : Lohnstorf/Mühleth.',
             de: 'Thurnen: Lohnstorf/Mühleth.',
+            it: 'Thurnen: Lohnstorf/Mühleth.',
           }
         when: { key: profile.commune, eq: '889' }
       - value: '908:Trub'
-        label: { en: 'Trub: Trub', fr: 'Trub : Trub', de: 'Trub: Trub' }
+        label: { en: 'Trub: Trub', fr: 'Trub : Trub', de: 'Trub: Trub', it: 'Trub: Trub' }
         when: { key: profile.commune, eq: '908' }
       - value: '908:Kröschenbrunnen'
         label:
-          { en: 'Trub: Kröschenbrunnen', fr: 'Trub : Kröschenbrunnen', de: 'Trub: Kröschenbrunnen' }
+          {
+            en: 'Trub: Kröschenbrunnen',
+            fr: 'Trub : Kröschenbrunnen',
+            de: 'Trub: Kröschenbrunnen',
+            it: 'Trub: Kröschenbrunnen',
+          }
         when: { key: profile.commune, eq: '908' }
       - value: '938:Sigriswil'
         label:
-          { en: 'Sigriswil: Sigriswil', fr: 'Sigriswil : Sigriswil', de: 'Sigriswil: Sigriswil' }
+          {
+            en: 'Sigriswil: Sigriswil',
+            fr: 'Sigriswil : Sigriswil',
+            de: 'Sigriswil: Sigriswil',
+            it: 'Sigriswil: Sigriswil',
+          }
         when: { key: profile.commune, eq: '938' }
       - value: '938:Reust'
-        label: { en: 'Sigriswil: Reust', fr: 'Sigriswil : Reust', de: 'Sigriswil: Reust' }
+        label:
+          {
+            en: 'Sigriswil: Reust',
+            fr: 'Sigriswil : Reust',
+            de: 'Sigriswil: Reust',
+            it: 'Sigriswil: Reust',
+          }
         when: { key: profile.commune, eq: '938' }
       - value: '939:Schwendibach'
         label:
@@ -768,6 +964,7 @@ questions:
             en: 'Steffisburg: Schwendibach',
             fr: 'Steffisburg : Schwendibach',
             de: 'Steffisburg: Schwendibach',
+            it: 'Steffisburg: Schwendibach',
           }
         when: { key: profile.commune, eq: '939' }
       - value: '939:Steffisburg'
@@ -776,6 +973,7 @@ questions:
             en: 'Steffisburg: Steffisburg',
             fr: 'Steffisburg : Steffisburg',
             de: 'Steffisburg: Steffisburg',
+            it: 'Steffisburg: Steffisburg',
           }
         when: { key: profile.commune, eq: '939' }
       - value: '948:Forst'
@@ -784,6 +982,7 @@ questions:
             en: 'Forst-Längenbühl: Forst',
             fr: 'Forst-Längenbühl : Forst',
             de: 'Forst-Längenbühl: Forst',
+            it: 'Forst-Längenbühl: Forst',
           }
         when: { key: profile.commune, eq: '948' }
       - value: '948:Längenbühl'
@@ -792,14 +991,26 @@ questions:
             en: 'Forst-Längenbühl: Längenbühl',
             fr: 'Forst-Längenbühl : Längenbühl',
             de: 'Forst-Längenbühl: Längenbühl',
+            it: 'Forst-Längenbühl: Längenbühl',
           }
         when: { key: profile.commune, eq: '948' }
       - value: '957:Sumiswald'
         label:
-          { en: 'Sumiswald: Sumiswald', fr: 'Sumiswald : Sumiswald', de: 'Sumiswald: Sumiswald' }
+          {
+            en: 'Sumiswald: Sumiswald',
+            fr: 'Sumiswald : Sumiswald',
+            de: 'Sumiswald: Sumiswald',
+            it: 'Sumiswald: Sumiswald',
+          }
         when: { key: profile.commune, eq: '957' }
       - value: '957:Wasen'
-        label: { en: 'Sumiswald: Wasen', fr: 'Sumiswald : Wasen', de: 'Sumiswald: Wasen' }
+        label:
+          {
+            en: 'Sumiswald: Wasen',
+            fr: 'Sumiswald : Wasen',
+            de: 'Sumiswald: Wasen',
+            it: 'Sumiswald: Wasen',
+          }
         when: { key: profile.commune, eq: '957' }
       - value: '981:Niederbipp'
         label:
@@ -807,6 +1018,7 @@ questions:
             en: 'Niederbipp: Niederbipp',
             fr: 'Niederbipp : Niederbipp',
             de: 'Niederbipp: Niederbipp',
+            it: 'Niederbipp: Niederbipp',
           }
         when: { key: profile.commune, eq: '981' }
       - value: '981:Wolfisberg'
@@ -815,6 +1027,7 @@ questions:
             en: 'Niederbipp: Wolfisberg',
             fr: 'Niederbipp : Wolfisberg',
             de: 'Niederbipp: Wolfisberg',
+            it: 'Niederbipp: Wolfisberg',
           }
         when: { key: profile.commune, eq: '981' }
 
@@ -828,42 +1041,57 @@ questions:
         en: 'Bern tax guide 2025, p. 35: employment income'
         fr: 'Guide fiscal bernois 2025, p. 35 : Activité dépendante'
         de: 'Wegleitung zur Steuererklärung 2025, S. 35: Unselbstständiger Erwerb'
+        it: 'Guida fiscale di Berna 2025, p. 35: reddito da attività dipendente'
     options:
-      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - {
+          value: salary,
+          label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn', it: 'Un salario' },
+        }
       - value: replacement_income
         label:
           en: 'Unemployment, sickness or accident benefits'
           fr: 'Des indemnités (chômage, maladie, accident)'
           de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
-        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+          it: 'Indennità di disoccupazione, malattia o infortunio'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder', it: 'Indennità' }
       - value: pension
         label:
           {
             en: 'A pension (AHV, IV or pension fund)',
             fr: 'Une rente (AVS, AI ou caisse de pension)',
             de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+            it: 'Una rendita (AVS, AI o cassa pensione)',
           }
-        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente', it: 'Rendita' }
       - value: alimony
         label:
           {
             en: 'Alimony or child support received',
             fr: 'Une pension alimentaire reçue',
             de: 'Erhaltene Unterhaltsbeiträge',
+            it: 'Alimenti o contributi di mantenimento ricevuti',
           }
-        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+        chip:
+          {
+            en: 'Receives alimony',
+            fr: 'Reçoit une pension',
+            de: 'Erhält Unterhalt',
+            it: 'Riceve alimenti',
+          }
       - value: self_employment
         label:
           {
             en: 'Income from self-employment',
             fr: 'Un revenu d’activité indépendante',
             de: 'Einkommen aus selbstständiger Erwerbstätigkeit',
+            it: 'Reddito da attività lucrativa indipendente',
           }
         notSupported:
           {
             en: 'Self-employment (Formular 9)',
             fr: 'L’activité indépendante (formulaire 9)',
             de: 'Die selbstständige Erwerbstätigkeit (Formular 9)',
+            it: 'L’attività lucrativa indipendente (Formular 9)',
           }
 
   # be-2025-wegleitung-np-de p. 36 (Seite 27, Haupterwerb: one entry per salary certificate) and
@@ -876,10 +1104,16 @@ questions:
         en: 'Bern tax guide 2025, p. 36: main employment'
         fr: 'Guide fiscal bernois 2025, p. 36 : Activité principale'
         de: 'Wegleitung zur Steuererklärung 2025, S. 36: Haupterwerb'
+        it: 'Guida fiscale di Berna 2025, p. 36: attività principale'
     help:
       en: 'Each one gives you a salary certificate (Lohnausweis). An employer in Bern also sends it to the tax administration; one outside the canton gives you two copies.'
       fr: 'Chacun vous remet un certificat de salaire (Lohnausweis). Un employeur bernois l’envoie aussi à l’Intendance des impôts ; un employeur hors du canton vous en remet deux exemplaires.'
       de: 'Jeder gibt dir einen Lohnausweis. Ein Arbeitgeber im Kanton Bern schickt ihn auch der Steuerverwaltung; einer ausserhalb des Kantons gibt dir zwei Exemplare.'
+      it: 'Ognuno ti dà un certificato di salario (Lohnausweis). Un datore di lavoro nel Cantone di Berna lo manda anche all’amministrazione fiscale; uno fuori dal Cantone te ne dà due copie.'
+
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
 
   # People taxed at source (Quellensteuer) file an ordinary return only when they must or ask for
   # it by 31 March of the next year (nachträgliche ordentliche Veranlagung, NOV): be-2025-nov-info-de
@@ -889,16 +1123,19 @@ questions:
       en: 'Tax at source in Bern (Quellensteuer) and the ordinary assessment that follows it (nachträgliche ordentliche Veranlagung, NOV)'
       fr: 'L’impôt à la source à Berne (Quellensteuer) et la taxation ordinaire ultérieure qui suit (nachträgliche ordentliche Veranlagung, NOV)'
       de: 'Die Quellensteuer im Kanton Bern und die nachträgliche ordentliche Veranlagung (NOV)'
+      it: 'L’imposta alla fonte a Berna (Quellensteuer) e la tassazione ordinaria che ne segue (nachträgliche ordentliche Veranlagung, NOV)'
     learnMore:
       url: 'https://www.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/info_10minuten/info-nov_de.pdf'
       label:
         en: 'Ordinary assessment after tax at source (NOV), Bern tax administration'
         fr: 'Taxation ordinaire ultérieure (NOV), Intendance des impôts du canton de Berne'
         de: 'Nachträgliche ordentliche Veranlagung (NOV), Steuerverwaltung des Kantons Bern'
+        it: 'Tassazione ordinaria dopo l’imposta alla fonte (NOV), amministrazione fiscale di Berna'
     help:
       en: 'If so, it shows on the salary certificate (Lohnausweis, Ziffer 12).'
       fr: 'Si c’est le cas, cela figure sur le certificat de salaire (Lohnausweis, Ziffer 12).'
       de: 'Wenn ja, steht es auf dem Lohnausweis (Ziffer 12).'
+      it: 'Se è così, risulta dal certificato di salario (Lohnausweis, Ziffer 12).'
 
   # be-na-deductions-taxinfo-saeule-3a; be-2025-wegleitung-np-de p. 201 (Seite 192: counted only
   # with the attestation); form 1.1 (be-2025-steuererklaerung-formulare-de p. 1).
@@ -909,10 +1146,12 @@ questions:
         en: 'Pillar 3a contributions (TaxInfo, Bern tax administration)'
         fr: 'Cotisations au pilier 3a (TaxInfo, Intendance des impôts)'
         de: 'Beiträge an die Säule 3a (TaxInfo, Steuerverwaltung)'
+        it: 'Contributi al pilastro 3a (TaxInfo, amministrazione fiscale di Berna)'
     help:
       en: 'Your bank or insurer sends an attestation, and Bern counts the payments only with it. On form 1.1: Beiträge an die Säule 3a.'
       fr: 'Votre banque ou votre assurance vous envoie une attestation, et Berne ne compte les versements qu’avec elle. Sur le formulaire 1.1 : Beiträge an die Säule 3a (cotisations au pilier 3a).'
       de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung, und Bern berücksichtigt die Einzahlungen nur damit. Auf dem Formular 1.1: Beiträge an die Säule 3a.'
+      it: 'La tua banca o la tua assicurazione ti manda un’attestazione, e Berna conta i versamenti solo con questa. Sul modulo 1.1: Beiträge an die Säule 3a.'
 
   # be-2025-wegleitung-np-de p. 199 (Seite 190, Einkauf 2. Säule: only buy-ins the salary
   # certificate doesn't show); form 1.1 (be-2025-steuererklaerung-formulare-de p. 1).
@@ -923,10 +1162,12 @@ questions:
         en: 'Bern tax guide 2025, p. 199: pension fund buy-ins'
         fr: 'Guide fiscal bernois 2025, p. 199 : Rachat au 2e pilier'
         de: 'Wegleitung zur Steuererklärung 2025, S. 199: Einkauf 2. Säule'
+        it: 'Guida fiscale di Berna 2025, p. 199: riscatti nella cassa pensione'
     help:
       en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On form 1.1: Beiträge an die 2. Säule.'
       fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas. Sur le formulaire 1.1 : Beiträge an die 2. Säule (cotisations au 2e pilier).'
       de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. Auf dem Formular 1.1: Beiträge an die 2. Säule.'
+      it: 'Un versamento volontario in aggiunta ai contributi abituali. Conta solo un riscatto che il tuo certificato di salario non indica. Sul modulo 1.1: Beiträge an die 2. Säule.'
 
   # Travel to work (Fahrkosten, form 6.1) for both taxes, each up to its own cap:
   # be-na-deductions-taxinfo-fahrkosten; be-2025-wegleitung-np-de p. 184 to 188 (Seite 175 to 179);
@@ -937,26 +1178,36 @@ questions:
       en: 'Getting to work is deducted as travel costs (Fahrkosten), for the cantonal and the federal tax, each up to its own yearly limit. How you get there decides how they are counted.'
       fr: 'Le trajet pour le travail se déduit comme frais de déplacement (Fahrkosten), pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle. Votre moyen de transport décide comment ils sont comptés.'
       de: 'Der Arbeitsweg wird als Fahrkosten abgezogen, bei der Kantons- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+      it: 'Il tragitto per andare al lavoro si deduce come spese di trasporto (Fahrkosten), per l’imposta cantonale e per quella federale, ognuna fino al proprio limite annuo. Il mezzo che usi decide come vengono calcolate.'
     learnMore:
       url: 'https://www.taxinfo.sv.fin.be.ch/taxinfo/1613b2e2-276f-4293-ad05-3995d29b40cb'
       label:
         en: 'Travel to work (TaxInfo, Bern tax administration)'
         fr: 'Frais de déplacement (TaxInfo, Intendance des impôts)'
         de: 'Fahrkosten für den Arbeitsweg (TaxInfo, Steuerverwaltung)'
+        it: 'Spese di trasporto per il tragitto casa-lavoro (TaxInfo, amministrazione fiscale di Berna)'
     help:
       en: 'Choose how you went on most work days. On form 6.1: Fahrkosten.'
       fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur le formulaire 6.1 : Fahrkosten (frais de déplacement).'
       de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf dem Formular 6.1: Fahrkosten.'
+      it: 'Scegli come ci andavi nella maggior parte dei giorni lavorativi. Sul modulo 6.1: Fahrkosten.'
     options:
       - value: public_transport
-        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
-      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+        label:
+          {
+            en: 'Public transport',
+            fr: 'Transports publics',
+            de: 'Öffentlicher Verkehr',
+            it: 'Trasporti pubblici',
+          }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto', it: 'Auto' } }
       - value: motorbike
         label:
           {
             en: 'Motorbike or scooter with a white number plate',
             fr: 'Moto ou scooter à plaque blanche',
             de: 'Motorrad oder Roller mit weissem Kontrollschild',
+            it: 'Moto o scooter con targa bianca',
           }
       - value: bike
         label:
@@ -964,16 +1215,18 @@ questions:
             en: 'Bike, e-bike or moped with a yellow number plate',
             fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
             de: 'Velo, E-Bike oder Motorfahrrad mit gelbem Kontrollschild',
+            it: 'Bicicletta, e-bike o ciclomotore con targa gialla',
           }
-      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss', it: 'A piedi' } }
       - value: mostly_home
         label:
           {
             en: 'From home, almost every day',
             fr: 'Depuis chez moi, presque tous les jours',
             de: 'Von zu Hause, fast jeden Tag',
+            it: 'Da casa, quasi tutti i giorni',
           }
-        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice', it: 'Telelavoro' }
 
   # be-2025-wegleitung-np-de p. 186 (Seite 177, Fahrkosten Öffentlicher Verkehr)
   - use: commute_transit_cost
@@ -981,12 +1234,14 @@ questions:
       en: 'You deduct the public transport you paid to get to work, for the cantonal and the federal tax, each up to its own yearly limit.'
       fr: 'Vous déduisez les transports publics payés pour aller au travail, pour l’impôt cantonal et pour l’impôt fédéral, chacun jusqu’à sa propre limite annuelle.'
       de: 'Du ziehst den bezahlten öffentlichen Verkehr zur Arbeit ab, bei der Kantons- und bei der Bundessteuer, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Deduci i trasporti pubblici che hai pagato per andare al lavoro, per l’imposta cantonale e per quella federale, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=186'
       label:
         en: 'Bern tax guide 2025, p. 186: public transport'
         fr: 'Guide fiscal bernois 2025, p. 186 : Frais de déplacement en transports publics'
         de: 'Wegleitung zur Steuererklärung 2025, S. 186: Fahrkosten Öffentlicher Verkehr'
+        it: 'Guida fiscale di Berna 2025, p. 186: trasporti pubblici'
 
   # Bern counts the kilometres only for one of four reasons: no public transport, illness or
   # frailty, a stop far from home or work, or more than one hour more per day by public transport
@@ -997,12 +1252,14 @@ questions:
       en: 'A driver deducts what public transport would have cost, for both taxes. The kilometres count only if you had a reason: no public transport for the trip, a health reason, a stop far from your home or workplace, or public transport taking over an hour more per day.'
       fr: 'Un conducteur déduit ce qu’auraient coûté les transports publics, pour les deux impôts. Les kilomètres ne comptent que si vous aviez une raison : pas de transport public pour ce trajet, une raison de santé, un arrêt éloigné de votre domicile ou de votre lieu de travail, ou des transports publics qui prennent plus d’une heure de plus par jour.'
       de: 'Wer fährt, zieht ab, was der öffentliche Verkehr gekostet hätte, bei beiden Steuern. Die Kilometer zählen nur mit einem Grund: kein öffentliches Verkehrsmittel für diesen Weg, ein gesundheitlicher Grund, eine Haltestelle weit weg von Wohn- oder Arbeitsort, oder ein zeitlicher Mehraufwand mit dem öffentlichen Verkehr von mehr als einer Stunde pro Tag.'
+      it: 'Chi va al lavoro con un veicolo deduce quanto sarebbero costati i trasporti pubblici, per entrambe le imposte. I chilometri contano solo se avevi un motivo: nessun trasporto pubblico per quel tragitto, un motivo di salute, una fermata lontana da casa o dal posto di lavoro, o trasporti pubblici che richiedono più di un’ora in più al giorno.'
     learnMore:
       url: 'https://www.taxinfo.sv.fin.be.ch/taxinfo/1613b2e2-276f-4293-ad05-3995d29b40cb'
       label:
         en: 'Travel to work (TaxInfo, Bern tax administration)'
         fr: 'Frais de déplacement (TaxInfo, Intendance des impôts)'
         de: 'Fahrkosten für den Arbeitsweg (TaxInfo, Steuerverwaltung)'
+        it: 'Spese di trasporto per il tragitto casa-lavoro (TaxInfo, amministrazione fiscale di Berna)'
     options:
       - value: 'yes'
         label:
@@ -1010,6 +1267,7 @@ questions:
             en: 'Yes, I could have used public transport',
             fr: 'Oui, j’aurais pu prendre les transports publics',
             de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+            it: 'Sì, avrei potuto usare i trasporti pubblici',
           }
       - value: 'no'
         label:
@@ -1017,6 +1275,7 @@ questions:
             en: 'No: none for the trip, a health reason, a stop far away, or over an hour more per day',
             fr: 'Non : aucun pour ce trajet, une raison de santé, un arrêt éloigné, ou plus d’une heure de plus par jour',
             de: 'Nein: keiner für diesen Weg, ein gesundheitlicher Grund, eine weit entfernte Haltestelle oder über eine Stunde mehr pro Tag',
+            it: 'No: nessuno per quel tragitto, un motivo di salute, una fermata lontana, o più di un’ora in più al giorno',
           }
 
   # be-2025-wegleitung-np-de p. 187 (Seite 178)
@@ -1025,12 +1284,14 @@ questions:
       en: 'That price is what you deduct for driving to work, for both taxes, each up to its own yearly limit.'
       fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule, pour les deux impôts, chacun jusqu’à sa propre limite annuelle.'
       de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab, bei beiden Steuern, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Questo prezzo è quanto deduci per andare al lavoro con un veicolo, per entrambe le imposte, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=187'
       label:
         en: 'Bern tax guide 2025, p. 187: driving to work'
         fr: 'Guide fiscal bernois 2025, p. 187 : Frais de déplacement en véhicule privé'
         de: 'Wegleitung zur Steuererklärung 2025, S. 187: Fahrkosten für private Motorfahrzeuge'
+        it: 'Guida fiscale di Berna 2025, p. 187: tragitto con un veicolo privato'
 
   # be-2025-wegleitung-np-de p. 188 (Seite 179: a rate per kilometre, once there and back a day)
   - use: commute_distance
@@ -1038,12 +1299,14 @@ questions:
       en: 'With a reason to drive, both taxes count a fixed amount per kilometre, there and back once a day, each up to its own yearly limit.'
       fr: 'Avec une raison de prendre votre véhicule, les deux impôts comptent un montant fixe par kilomètre, un aller et retour par jour, chacun jusqu’à sa propre limite annuelle.'
       de: 'Mit einem Grund zu fahren zählen beide Steuern einen festen Betrag pro Kilometer, einmal hin und zurück pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag.'
+      it: 'Con un motivo per usare il veicolo, entrambe le imposte contano un importo fisso per chilometro, andata e ritorno una volta al giorno, ognuna fino al proprio limite annuo.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=188'
       label:
         en: 'Bern tax guide 2025, p. 188: working out travel costs'
         fr: 'Guide fiscal bernois 2025, p. 188 : Calcul des frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 188: Berechnung der Fahrkosten'
+        it: 'Guida fiscale di Berna 2025, p. 188: calcolo delle spese di trasporto'
 
   # be-2025-wegleitung-np-de p. 188 (Seite 179: 220 working days a year for full-time work, as a
   # rule; fewer for part-time).
@@ -1054,10 +1317,12 @@ questions:
         en: 'Bern tax guide 2025, p. 188: working out travel costs'
         fr: 'Guide fiscal bernois 2025, p. 188 : Calcul des frais de déplacement'
         de: 'Wegleitung zur Steuererklärung 2025, S. 188: Berechnung der Fahrkosten'
+        it: 'Guida fiscale di Berna 2025, p. 188: calcolo delle spese di trasporto'
     help:
       en: 'Leave out holidays, sick days and days worked from home. The guide counts 220 days for a full year of full-time work, as a rule, and fewer for part-time work.'
       fr: 'Sans les vacances, les jours de maladie et les jours de télétravail. Le guide compte en règle générale 220 jours pour une année entière à plein temps, et moins à temps partiel.'
       de: 'Ohne Ferien, Krankheitstage und Tage im Homeoffice. Die Wegleitung zählt in der Regel 220 Tage für ein ganzes Jahr Vollzeit, bei Teilzeit weniger.'
+      it: 'Escludi le vacanze, i giorni di malattia e quelli di telelavoro. Di regola, la guida conta 220 giorni per un anno intero a tempo pieno, e meno a tempo parziale.'
 
   # Meals away from home (auswärtige Verpflegung, form 6.2), for both taxes: a fixed amount per
   # day, half of it when the employer makes meals cheaper, none when expenses cover them
@@ -1067,16 +1332,19 @@ questions:
       en: 'Lunch away from home because of work, when you can’t go home, costs more than at home (auswärtige Verpflegung). A fixed amount per day counts for both taxes, each up to its own yearly limit, half of it when your employer makes your meals cheaper (a canteen, Lunch-Checks).'
       fr: 'Manger à l’extérieur à cause du travail, quand vous ne pouvez pas rentrer, coûte plus cher qu’à la maison (auswärtige Verpflegung). Un montant fixe par jour compte pour les deux impôts, chacun jusqu’à sa propre limite annuelle, la moitié quand votre employeur vous offre des repas meilleur marché (cantine, Lunch-Checks).'
       de: 'Auswärts essen wegen der Arbeit, wenn du nicht nach Hause kannst, kostet mehr als zu Hause (auswärtige Verpflegung). Für beide Steuern zählt ein fester Betrag pro Tag, jeweils bis zu einem eigenen jährlichen Höchstbetrag, die Hälfte davon, wenn dein Arbeitgeber die Verpflegung verbilligt (Kantine, Lunch-Checks).'
+      it: 'Pranzare fuori casa per lavoro, quando non puoi rientrare, costa più che a casa (auswärtige Verpflegung). Per entrambe le imposte conta un importo fisso al giorno, ognuna fino al proprio limite annuo, la metà se il tuo datore di lavoro ti offre pasti a prezzo ridotto (una mensa, Lunch-Checks).'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=189'
       label:
         en: 'Bern tax guide 2025, p. 189: meals away from home'
         fr: 'Guide fiscal bernois 2025, p. 189 : Repas pris à l’extérieur'
         de: 'Wegleitung zur Steuererklärung 2025, S. 189: Auswärtige Verpflegung'
+        it: 'Guida fiscale di Berna 2025, p. 189: pasti fuori casa'
     help:
       en: 'Count the work days you couldn’t eat lunch at home; 0 if you usually did. Leave out days your employer paid for the meal as expenses.'
       fr: 'Comptez les jours de travail où vous ne pouviez pas manger à la maison à midi ; 0 si vous le pouviez en général. Sans les jours où votre employeur a payé le repas comme frais.'
       de: 'Zähl die Arbeitstage, an denen du mittags nicht zu Hause essen konntest; 0, wenn du es meistens konntest. Ohne die Tage, an denen dein Arbeitgeber das Essen als Spesen bezahlt hat.'
+      it: 'Conta i giorni lavorativi in cui non potevi pranzare a casa; 0 se di solito potevi. Escludi i giorni in cui il tuo datore di lavoro ha pagato il pasto come spese.'
 
   # be-2025-wegleitung-np-de p. 129 (Seite 120, Vermögenswerte/Wertschriften) and p. 130 (Seite
   # 121, eSteuerauszug); form 3 (be-2025-steuererklaerung-formulare-de p. 3).
@@ -1087,10 +1355,12 @@ questions:
         en: 'Bern tax guide 2025, p. 129: securities and accounts'
         fr: 'Guide fiscal bernois 2025, p. 129 : Éléments de fortune et titres'
         de: 'Wegleitung zur Steuererklärung 2025, S. 129: Vermögenswerte und Wertschriften'
+        it: 'Guida fiscale di Berna 2025, p. 129: titoli e conti'
     help:
       en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers (Interactive Brokers, DEGIRO). If a bank offers an e-tax statement (eSteuerauszug), ask for it: it has everything in one document. On form 3: Wertschriftenverzeichnis.'
       fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers (Interactive Brokers, DEGIRO). Si une banque propose un relevé fiscal numérique (eSteuerauszug), demandez-le : il contient tout en un seul document. Sur le formulaire 3 : Wertschriftenverzeichnis (état des titres).'
       de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker (Interactive Brokers, DEGIRO). Bietet eine Bank einen eSteuerauszug an, verlang ihn: Er enthält alles in einem Dokument. Auf dem Formular 3: Wertschriftenverzeichnis.'
+      it: 'Conta anche PostFinance, i conti dei tuoi figli e i broker online o esteri (Interactive Brokers, DEGIRO). Se una banca offre un estratto fiscale elettronico (eSteuerauszug), chiedilo: contiene tutto in un solo documento. Sul modulo 3: Wertschriftenverzeichnis.'
 
   # be-2025-wegleitung-np-de p. 144 (Seite 135, Kryptowährungen under the other investments);
   # be-2025-info-np-jan2026-de p. 2 (in the securities list, valued on 31 December).
@@ -1101,10 +1371,12 @@ questions:
         en: 'Bern tax guide 2025, p. 144: cryptocurrencies and other investments'
         fr: 'Guide fiscal bernois 2025, p. 144 : Cryptomonnaies et autres capitaux'
         de: 'Wegleitung zur Steuererklärung 2025, S. 144: Kryptowährungen und sonstige Kapitalanlagen'
+        it: 'Guida fiscale di Berna 2025, p. 144: criptovalute e altri investimenti'
     help:
       en: 'They go in the securities list (Wertschriftenverzeichnis, form 3), at their value on 31 December.'
       fr: 'Elles figurent dans l’état des titres (Wertschriftenverzeichnis, formulaire 3), à leur valeur au 31 décembre.'
       de: 'Sie gehören ins Wertschriftenverzeichnis (Formular 3), zum Wert per 31. Dezember.'
+      it: 'Vanno nell’elenco dei titoli (Wertschriftenverzeichnis, modulo 3), al loro valore al 31 dicembre.'
 
   # Payments to political parties are a deduction of their own (form 4.4; be-2025-wegleitung-np-de
   # p. 207, Seite 198), apart from donations to tax-exempt institutions (form 5.3; p. 208, Seite
@@ -1116,16 +1388,19 @@ questions:
       en: 'Each of these can lower your tax if you keep the proof. In Bern, payments to political parties are a deduction of their own, apart from donations to charities.'
       fr: 'Chacun de ces frais peut diminuer votre impôt si vous en gardez la preuve. À Berne, les versements aux partis politiques sont une déduction à part, distincte des dons aux associations.'
       de: 'Jede dieser Ausgaben kann deine Steuer senken, wenn du den Beleg aufbewahrst. In Bern sind Beiträge an politische Parteien ein eigener Abzug, getrennt von Spenden an gemeinnützige Organisationen.'
+      it: 'Ognuna di queste spese può ridurre la tua imposta se conservi i giustificativi. A Berna, i versamenti ai partiti politici sono una deduzione a sé, separata dalle donazioni a enti di pubblica utilità.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=207'
       label:
         en: 'Bern tax guide 2025, p. 207: political parties'
         fr: 'Guide fiscal bernois 2025, p. 207 : Cotisations et dons aux partis politiques'
         de: 'Wegleitung zur Steuererklärung 2025, S. 207: Mitgliederbeiträge und Spenden an politische Parteien'
+        it: 'Guida fiscale di Berna 2025, p. 207: partiti politici'
     help:
       en: 'Choose all that apply. Leasing interest doesn’t count as loan interest.'
       fr: 'Choisissez tout ce qui s’applique. Les intérêts d’un leasing ne comptent pas comme intérêts d’emprunt.'
       de: 'Wähl alles, was zutrifft. Leasingzinsen zählen nicht als Schuldzinsen.'
+      it: 'Scegli tutto ciò che vale per te. Gli interessi di un leasing non contano come interessi su un prestito.'
     options:
       - value: medical_costs
         label:
@@ -1133,46 +1408,71 @@ questions:
             en: 'Medical or dental costs that insurance didn’t cover',
             fr: 'Des frais médicaux ou dentaires non remboursés',
             de: 'Arzt- oder Zahnarztkosten, die die Versicherung nicht bezahlt hat',
+            it: 'Spese mediche o dentarie non coperte dall’assicurazione',
           }
-        chip: { en: 'Medical costs', fr: 'Frais médicaux', de: 'Krankheitskosten' }
+        chip:
+          { en: 'Medical costs', fr: 'Frais médicaux', de: 'Krankheitskosten', it: 'Spese mediche' }
       - value: donations
         label:
           {
             en: 'Donations to charities in Switzerland',
             fr: 'Des dons à des associations d’utilité publique en Suisse',
             de: 'Spenden an gemeinnützige Organisationen in der Schweiz',
+            it: 'Donazioni a enti di pubblica utilità in Svizzera',
           }
-        chip: { en: 'Donations', fr: 'Dons', de: 'Spenden' }
+        chip: { en: 'Donations', fr: 'Dons', de: 'Spenden', it: 'Donazioni' }
       - value: political_party
         label:
           {
             en: 'Membership fees or donations to political parties',
             fr: 'Des cotisations ou des dons à des partis politiques',
             de: 'Mitgliederbeiträge oder Spenden an politische Parteien',
+            it: 'Quote sociali o donazioni a partiti politici',
           }
-        chip: { en: 'Political party', fr: 'Parti politique', de: 'Politische Partei' }
+        chip:
+          {
+            en: 'Political party',
+            fr: 'Parti politique',
+            de: 'Politische Partei',
+            it: 'Partito politico',
+          }
       - value: loan_interest
         label:
           {
             en: 'Interest on a loan, such as a consumer or car loan',
             fr: 'Des intérêts d’emprunt, par exemple un crédit ou un prêt auto',
             de: 'Schuldzinsen, zum Beispiel für einen Konsum- oder Autokredit',
+            it: 'Interessi su un prestito, per esempio un credito al consumo o per l’auto',
           }
-        chip: { en: 'Loan interest', fr: 'Intérêts d’emprunt', de: 'Schuldzinsen' }
+        chip:
+          {
+            en: 'Loan interest',
+            fr: 'Intérêts d’emprunt',
+            de: 'Schuldzinsen',
+            it: 'Interessi su prestiti',
+          }
       - value: alimony_paid
         label:
           {
             en: 'Alimony or child support',
             fr: 'Une pension alimentaire',
             de: 'Unterhaltsbeiträge',
+            it: 'Alimenti o contributi di mantenimento',
           }
-        chip: { en: 'Pays alimony', fr: 'Verse une pension', de: 'Zahlt Unterhalt' }
+        chip:
+          {
+            en: 'Pays alimony',
+            fr: 'Verse une pension',
+            de: 'Zahlt Unterhalt',
+            it: 'Versa alimenti',
+          }
 
   # Form 4.4, Mitgliederbeiträge und Zuwendungen an politische Parteien (be-2025-steuererklaerung-
   # formulare-de p. 4); be-2025-wegleitung-np-de p. 207 (Seite 198: which parties count; the
   # cantonal limit is per person, spouses each up to it; the federal one is for the return).
   - id: party
     key: be.party
+    group: deduction
     type: money
     perPerson: true
     when: { key: profile.payments, includes: political_party }
@@ -1180,25 +1480,30 @@ questions:
       en: 'Membership fees and donations to political parties (Mitgliederbeiträge und Zuwendungen an politische Parteien) are deducted up to a limit per person for the cantonal and communal tax, and up to one limit for the whole return for the federal tax. That’s why Taxpresso asks each of you.'
       fr: 'Les cotisations et les dons aux partis politiques (Mitgliederbeiträge und Zuwendungen an politische Parteien) se déduisent jusqu’à une limite par personne pour les impôts cantonal et communal, et jusqu’à une seule limite pour toute la déclaration pour l’impôt fédéral. C’est pourquoi Taxpresso le demande à chacun de vous.'
       de: 'Mitgliederbeiträge und Zuwendungen an politische Parteien werden bei den Kantons- und Gemeindesteuern bis zu einem Höchstbetrag pro Person abgezogen, bei der Bundessteuer bis zu einem einzigen Höchstbetrag für die ganze Steuererklärung. Darum fragt Taxpresso jede Person einzeln.'
+      it: 'Le quote sociali e le donazioni ai partiti politici (Mitgliederbeiträge und Zuwendungen an politische Parteien) si deducono fino a un limite per persona per l’imposta cantonale e comunale, e fino a un unico limite per tutta la dichiarazione per l’imposta federale. Per questo Taxpresso lo chiede per ogni persona.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=207'
       label:
         en: 'Bern tax guide 2025, p. 207: political parties'
         fr: 'Guide fiscal bernois 2025, p. 207 : Cotisations et dons aux partis politiques'
         de: 'Wegleitung zur Steuererklärung 2025, S. 207: Mitgliederbeiträge und Spenden an politische Parteien'
+        it: 'Guida fiscale di Berna 2025, p. 207: partiti politici'
     text:
       p1:
         en: 'How much did you pay to political parties in 2026, in membership fees and donations?'
         fr: 'Combien avez-vous versé à des partis politiques en 2026, en cotisations et en dons ?'
         de: 'Wie viel hast du 2026 an politische Parteien bezahlt, an Mitgliederbeiträgen und Spenden?'
+        it: 'Quanto hai versato a partiti politici nel 2026, in quote sociali e donazioni?'
       p2:
         en: 'How much did your spouse or partner pay to political parties in 2026, in membership fees and donations?'
         fr: 'Combien votre conjoint ou partenaire a-t-il versé à des partis politiques en 2026, en cotisations et en dons ?'
         de: 'Wie viel hat dein Partner oder deine Partnerin 2026 an politische Parteien bezahlt, an Mitgliederbeiträgen und Spenden?'
+        it: 'Quanto ha versato il tuo coniuge o partner a partiti politici nel 2026, in quote sociali e donazioni?'
     help:
       en: 'In CHF, 0 if none. A party counts if it is in the party register (Parteienregister), sits in a cantonal parliament, or had enough votes at a canton’s last election; gifts to candidates, campaign or initiative committees, or unions don’t.'
       fr: 'En CHF, 0 si rien. Un parti compte s’il est inscrit au registre des partis (Parteienregister), siège dans un parlement cantonal ou a obtenu assez de voix aux dernières élections d’un canton ; les dons à des candidats, à des comités de campagne ou d’initiative, ou à des syndicats ne comptent pas.'
       de: 'In CHF, 0, wenn nichts. Eine Partei zählt, wenn sie im Parteienregister eingetragen ist, in einem kantonalen Parlament sitzt oder bei den letzten Wahlen in einem Kanton genug Stimmen erreicht hat; Spenden an Kandidierende, Wahlkampf- oder Initiativkomitees oder Gewerkschaften zählen nicht.'
+      it: 'In CHF, 0 se niente. Un partito conta se è iscritto nel registro dei partiti (Parteienregister), siede in un parlamento cantonale o ha ottenuto abbastanza voti alle ultime elezioni di un Cantone; le donazioni a candidati, a comitati elettorali o d’iniziativa, o a sindacati non contano.'
 
   # What Taxpresso can't prepare for Bern yet: property (form 7, be-2025-wegleitung-np-de p. 156,
   # Seite 147), inheritances and gifts (form 8, p. 126 and 127, Seite 117 and 118), income from
@@ -1211,6 +1516,7 @@ questions:
         en: 'Filling in your return online in BE-Login (Bern tax administration, January 2026)'
         fr: 'Remplir sa déclaration en ligne dans BE-Login (Intendance des impôts, janvier 2026)'
         de: 'Steuererklärung in BE-Login online ausfüllen (Steuerverwaltung, Januar 2026)'
+        it: 'Compilare la dichiarazione online in BE-Login (amministrazione fiscale di Berna, gennaio 2026)'
     options:
       - value: real_estate
         label:
@@ -1218,12 +1524,14 @@ questions:
             en: 'I own real estate, in Switzerland or abroad',
             fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
             de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+            it: 'Possiedo un immobile, in Svizzera o all’estero',
           }
         notSupported:
           {
             en: 'Real estate (Formular 7, Grundstücke)',
             fr: 'Les immeubles (formulaire 7, Grundstücke)',
             de: 'Grundstücke (Formular 7)',
+            it: 'Gli immobili (Formular 7, Grundstücke)',
           }
       - value: inheritance_or_gift
         label:
@@ -1231,12 +1539,14 @@ questions:
             en: 'I received an inheritance or a large gift',
             fr: 'J’ai reçu un héritage ou une donation importante',
             de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+            it: 'Ho ricevuto un’eredità o una donazione importante',
           }
         notSupported:
           {
             en: 'An inheritance or a gift (Formular 8, Erbschaften, Schenkungen)',
             fr: 'Un héritage ou une donation (formulaire 8, Erbschaften, Schenkungen)',
             de: 'Eine Erbschaft oder Schenkung (Formular 8)',
+            it: 'Un’eredità o una donazione (Formular 8, Erbschaften, Schenkungen)',
           }
       - value: foreign_income
         label:
@@ -1244,12 +1554,14 @@ questions:
             en: 'I had income from abroad (salary, pension, rent)',
             fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
             de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+            it: 'Ho avuto redditi dall’estero (salario, rendita, affitto)',
           }
         notSupported:
           {
             en: 'Income from abroad',
             fr: 'Des revenus de l’étranger',
             de: 'Einkünfte aus dem Ausland',
+            it: 'Redditi dall’estero',
           }
       - value: pension_capital
         label:
@@ -1257,12 +1569,14 @@ questions:
             en: 'I withdrew pension capital (2nd or 3rd pillar)',
             fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
             de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+            it: 'Ho prelevato un capitale di previdenza (2° o 3° pilastro)',
           }
         notSupported:
           {
             en: 'A pension capital withdrawal (Kapitalleistung)',
             fr: 'Un retrait de capital de prévoyance (Kapitalleistung)',
             de: 'Ein Kapitalbezug aus der Vorsorge (Kapitalleistung)',
+            it: 'Un prelievo di capitale di previdenza (Kapitalleistung)',
           }
 
 # The documents, with the page of the Bern guide (be-2025-wegleitung-np-de, contents p. 2 to 9).
@@ -1274,6 +1588,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 35: employment income'
         fr: 'Guide fiscal bernois 2025, p. 35 : Activité dépendante'
         de: 'Wegleitung zur Steuererklärung 2025, S. 35: Unselbstständiger Erwerb'
+        it: 'Guida fiscale di Berna 2025, p. 35: reddito da attività dipendente'
     source: 'be-2025-wegleitung-np-de p. 35'
 
   - use: replacement_income
@@ -1283,6 +1598,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 115: benefits'
         fr: 'Guide fiscal bernois 2025, p. 115 : Indemnités pour perte de gain'
         de: 'Wegleitung zur Steuererklärung 2025, S. 115: Entschädigungen Erwerbsausfall'
+        it: 'Guida fiscale di Berna 2025, p. 115: indennità'
     source: 'be-2025-wegleitung-np-de p. 115'
 
   - use: pension
@@ -1292,6 +1608,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 112: pensions'
         fr: 'Guide fiscal bernois 2025, p. 112 : Rentes, pensions, rentes d’orphelin'
         de: 'Wegleitung zur Steuererklärung 2025, S. 112: Renten, Pensionen, Waisenrenten'
+        it: 'Guida fiscale di Berna 2025, p. 112: rendite'
     source: 'be-2025-wegleitung-np-de p. 112'
 
   - use: pillar3a
@@ -1301,6 +1618,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 201: pillar 3a'
         fr: 'Guide fiscal bernois 2025, p. 201 : Cotisations au pilier 3a'
         de: 'Wegleitung zur Steuererklärung 2025, S. 201: Beiträge Säule 3a'
+        it: 'Guida fiscale di Berna 2025, p. 201: pilastro 3a'
     source: 'be-2025-wegleitung-np-de p. 201'
 
   - use: lpp_buyin
@@ -1310,6 +1628,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 199: pension fund buy-ins'
         fr: 'Guide fiscal bernois 2025, p. 199 : Rachat au 2e pilier'
         de: 'Wegleitung zur Steuererklärung 2025, S. 199: Einkauf 2. Säule'
+        it: 'Guida fiscale di Berna 2025, p. 199: riscatti nella cassa pensione'
     source: 'be-2025-wegleitung-np-de p. 199'
 
   - use: health_premiums
@@ -1319,6 +1638,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 204: health insurance premiums'
         fr: 'Guide fiscal bernois 2025, p. 204 : Primes d’assurance-maladie'
         de: 'Wegleitung zur Steuererklärung 2025, S. 204: Prämien für Krankenkasse'
+        it: 'Guida fiscale di Berna 2025, p. 204: premi dell’assicurazione malattia'
     source: 'be-2025-wegleitung-np-de p. 204'
 
   - use: banks
@@ -1328,6 +1648,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 129: securities and accounts'
         fr: 'Guide fiscal bernois 2025, p. 129 : Éléments de fortune et titres'
         de: 'Wegleitung zur Steuererklärung 2025, S. 129: Vermögenswerte und Wertschriften'
+        it: 'Guida fiscale di Berna 2025, p. 129: titoli e conti'
     source: 'be-2025-wegleitung-np-de p. 129, p. 130'
 
   - use: crypto
@@ -1337,6 +1658,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 144: cryptocurrencies and other investments'
         fr: 'Guide fiscal bernois 2025, p. 144 : Cryptomonnaies et autres capitaux'
         de: 'Wegleitung zur Steuererklärung 2025, S. 144: Kryptowährungen und sonstige Kapitalanlagen'
+        it: 'Guida fiscale di Berna 2025, p. 144: criptovalute e altri investimenti'
     source: 'be-2025-wegleitung-np-de p. 144'
 
   - use: childcare
@@ -1346,6 +1668,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 23: childcare costs'
         fr: 'Guide fiscal bernois 2025, p. 23 : Frais de garde des enfants par des tiers'
         de: 'Wegleitung zur Steuererklärung 2025, S. 23: Kinderdrittbetreuungskosten'
+        it: 'Guida fiscale di Berna 2025, p. 23: spese di custodia dei figli'
     source: 'be-2025-wegleitung-np-de p. 23, p. 24'
 
   - use: medical
@@ -1355,6 +1678,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 213: medical and accident costs'
         fr: 'Guide fiscal bernois 2025, p. 213 : Frais de maladie et d’accident'
         de: 'Wegleitung zur Steuererklärung 2025, S. 213: Krankheits- und Unfallkosten'
+        it: 'Guida fiscale di Berna 2025, p. 213: spese di malattia e infortunio'
     source: 'be-2025-wegleitung-np-de p. 213'
 
   # Donations (form 5.3, p. 208: proof of every amount) and payments to political parties (form
@@ -1365,12 +1689,14 @@ requirements:
       en: 'Receipts from the charities or political parties you gave to. Bern asks you to be able to prove every donation.'
       fr: 'Les reçus des associations ou des partis politiques à qui vous avez donné. Berne demande de pouvoir prouver chaque don.'
       de: 'Die Belege der Organisationen oder Parteien, denen du gespendet hast. Bern verlangt, dass du jede Spende belegen kannst.'
+      it: 'Le ricevute degli enti di pubblica utilità o dei partiti politici a cui hai donato. Berna chiede che tu possa provare ogni donazione.'
     learnMore:
       url: 'https://www.wegleitung.sv.fin.be.ch/content/dam/sv_fin/dokumente/de/wegleitungen/2025/wl_natuerliche-personen_2025_de.pdf#page=208'
       label:
         en: 'Bern tax guide 2025, p. 208: donations'
         fr: 'Guide fiscal bernois 2025, p. 208 : Dons en faveur d’institutions exonérées d’impôt'
         de: 'Wegleitung zur Steuererklärung 2025, S. 208: Spenden an steuerbefreite Institutionen'
+        it: 'Guida fiscale di Berna 2025, p. 208: donazioni'
     source: 'be-2025-wegleitung-np-de p. 207, p. 208'
 
   - use: loan_interest
@@ -1380,6 +1706,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 183: debt interest'
         fr: 'Guide fiscal bernois 2025, p. 183 : Intérêts passifs'
         de: 'Wegleitung zur Steuererklärung 2025, S. 183: Schuldzinsen'
+        it: 'Guida fiscale di Berna 2025, p. 183: interessi passivi'
     source: 'be-2025-wegleitung-np-de p. 182, p. 183'
 
   - use: alimony
@@ -1389,6 +1716,7 @@ requirements:
         en: 'Bern tax guide 2025, p. 209: alimony and child support paid'
         fr: 'Guide fiscal bernois 2025, p. 209 : Contributions d’entretien versées'
         de: 'Wegleitung zur Steuererklärung 2025, S. 209: Bezahlte Unterhaltsbeiträge'
+        it: 'Guida fiscale di Berna 2025, p. 209: alimenti e contributi di mantenimento versati'
     source: 'be-2025-wegleitung-np-de p. 116, p. 209'
 
   - use: separation_judgment
@@ -1398,4 +1726,5 @@ requirements:
         en: 'Bern tax guide 2025, p. 20: married couples, separation and divorce'
         fr: 'Guide fiscal bernois 2025, p. 20 : Époux, séparation et divorce'
         de: 'Wegleitung zur Steuererklärung 2025, S. 20: Eheleute, Trennung und Scheidung'
+        it: 'Guida fiscale di Berna 2025, p. 20: coniugi, separazione e divorzio'
     source: 'be-2025-wegleitung-np-de p. 20'

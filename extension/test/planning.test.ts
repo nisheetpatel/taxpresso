@@ -1,6 +1,6 @@
 // Pension fund buy-in, 3a catch-up and TOU through the dashboard API and the MCP tools, with the
 // decision stored in decisions.json. Synthetic household: Ana Ribeiro, Meyrin, single parent with
-// one child, taxed at source, considering TOU (SPEC.md section 13, item 9).
+// one child, a B permit: taxed at source, worked out from that (SPEC.md section 13, item 9).
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
@@ -34,8 +34,11 @@ const RIBEIRO: [string, unknown][] = [
   ['moved', 'no'],
   ['income_sources:p1', ['salary']],
   ['employers:p1', 1],
-  ['taxed_at_source:p1', true],
-  ['tou:p1', 'considering'],
+  // The plain fact; taxed at source follows from it (LISP art. 1, LIFD art. 83).
+  ['residence:p1', 'permit_other'],
+  ['employer_in_switzerland:p1', true],
+  ['tou:p1', 'no'],
+  ['lives_with_other_parent', false],
 ];
 
 async function ribeiro(ws: Workspace) {
@@ -55,16 +58,16 @@ describe('TOU in the dashboard', () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
     let { state } = await planning(api, '/planning', { field: 'withheld', value: 9_850 });
-    let tou = state.planning.tou;
+    let tou = state.planning!.tou;
     expect(tou).toMatchObject({ applies: true, compulsory: 'unknown', deadline: '2027-03-31' });
     expect(tou.withheld).toMatchObject({ totalCentimes: 985_000 });
     expect(tou.differenceCentimes).toBe(985_000 - tou.ordinary!.totalCentimes);
-    expect(state.planning.needsTou).toBe(true);
+    expect(state.planning!.needsTou).toBe(true);
 
     // TOU is not compulsory once the two remaining questions are answered no.
     await planning(api, '/planning', { field: 'otherIncome', value: false });
     ({ state } = await planning(api, '/planning', { field: 'taxableWealth', value: false }));
-    tou = state.planning.tou;
+    tou = state.planning!.tou;
     expect(tou.compulsory).toBe('no');
 
     const unconfirmed = await planning(api, '/decide', {
@@ -75,13 +78,13 @@ describe('TOU in the dashboard', () => {
     expect(unconfirmed.status).toBe(400);
     const ok = await planning(api, '/decide', { id: 'tou', choice: 'request', confirmed: true });
     expect(ok.status).toBe(200);
-    expect(ok.state.planning.tou.decision).toMatchObject({
+    expect(ok.state.planning!.tou.decision).toMatchObject({
       optimizationId: 'tou',
       choice: 'request',
       deltaCentimes: tou.differenceCentimes,
       via: 'dashboard',
     });
-    expect(ok.state.planning.needsTou).toBe(false);
+    expect(ok.state.planning!.needsTou).toBe(false);
     expect(ok.state.activity[0]).toMatchObject({ by: 'you', what: 'decide' });
     const file = JSON.parse(await readFile(path.join(ws.vault.dir, 'decisions.json'), 'utf8')) as {
       decisions: unknown[];
@@ -94,7 +97,7 @@ describe('TOU in the dashboard', () => {
       choice: 'decline',
       confirmed: false,
     });
-    expect(decline.state.planning.tou.decision?.choice).toBe('decline');
+    expect(decline.state.planning!.tou.decision?.choice).toBe('decline');
 
     // Another session on the same folder reads it back.
     const again = new Workspace(
@@ -109,19 +112,22 @@ describe('TOU in the dashboard', () => {
   it('records nothing without the comparison, when compulsory, or after the deadline', async () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
-    const noFigure = await planning(api, '/decide', {
+    // Whether TOU is compulsory isn't known yet: nothing to decide before that.
+    const unknown = await planning(api, '/decide', {
       id: 'tou',
       choice: 'decline',
       confirmed: false,
     });
-    expect(noFigure.status).toBe(400);
-    expect((noFigure.state as unknown as { error: string }).error).toMatch(/comparison first/);
+    expect(unknown.status).toBe(400);
+    expect((unknown.state as unknown as { error: string }).error).toMatch(
+      /needs to know first whether TOU is compulsory/,
+    );
 
     await planning(api, '/planning', { field: 'withheld', value: 30_000 });
     await api(req('POST', '/plan', { person: 'p1', field: 'gross', value: 130_000 }));
     const { state } = await planning(api, '/planning', { field: 'otherIncome', value: false });
-    expect(state.planning.tou.compulsory).toBe('yes');
-    expect(state.planning.needsTou).toBe(false);
+    expect(state.planning!.tou.compulsory).toBe('yes');
+    expect(state.planning!.needsTou).toBe(false);
     const compulsory = await planning(api, '/decide', {
       id: 'tou',
       choice: 'decline',
@@ -130,15 +136,46 @@ describe('TOU in the dashboard', () => {
     expect(compulsory.status).toBe(400);
   });
 
-  it('estimates the tax withheld from the payslip tariff, and refuses unknown tariffs', async () => {
+  it('estimates the tax withheld with the barème it works out, a payslip’s winning', async () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
-    let res = await planning(api, '/planning', { field: 'tariff', value: 'h1' });
-    expect(res.state.planning.inputs[0]?.tariff).toBe('H1N');
-    const withheld = res.state.planning.tou.withheld!;
+    // Nothing asked: a single parent with one child in main custody is at H1 (directives ch. 5.2.1.4).
+    let res = await planning(api, '/planning', { field: 'otherIncome', value: false });
+    let withheld = res.state.planning!.tou.withheld!;
     expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'H1N' });
     expect(withheld.totalCentimes).toBeGreaterThan(0);
-    expect(res.state.planning.tou.assumptions).toContain('withheld_from_tariff');
+    expect(res.state.planning!.tou.assumptions).toContain('withheld_from_tariff');
+    // Each fact one sentence, why behind it.
+    const facts = (st: DashboardState) =>
+      st.journey.about
+        .filter((f) => f.id === 'source_tax')
+        .map((f) => `${f.text?.en ?? ''}${f.why ? ` | ${f.why.en}` : ''}`);
+    expect(facts(res.state)).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(
+          /^Your barème is H1N\. \| Single parent, the children living with you/,
+        ),
+        expect.stringMatching(
+          /^Your tax taken at source for 2026: about CHF [\d,]+\. \| Estimated with barème H1N on the gross salary\.$/,
+        ),
+      ]),
+    );
+    expect(res.state.journey.about.find((f) => /about CHF/.test(f.text?.en ?? ''))?.estimate).toBe(
+      true,
+    );
+    // A barème read from a payslip wins, and both show.
+    res = await planning(api, '/planning', { field: 'tariff', value: 'a0' });
+    expect(res.state.planning!.inputs[0]?.tariff).toBe('A0N');
+    withheld = res.state.planning!.tou.withheld!;
+    expect(withheld.people[0]).toMatchObject({ from: 'tariff', tariff: 'A0N' });
+    expect(res.state.planning!.sourceTax?.people[0]).toMatchObject({
+      tariff: 'A0N',
+      derivedTariff: { code: 'H1N' },
+      documentTariff: 'A0N',
+    });
+    expect(facts(res.state)).toContain(
+      'Your barème is A0N, from a payslip. | It wins over the one Taxpresso works out, H1N.',
+    );
     res = await planning(api, '/planning', { field: 'tariff', value: 'A0Y' });
     expect(res.status).toBe(400);
     res = await planning(api, '/planning', { field: 'tariff', value: 'D0' });
@@ -174,26 +211,26 @@ describe('pension fund buy-in and 3a catch-up in the dashboard', () => {
     const api = await ribeiro(ws);
     await planning(api, '/planning', { field: 'lppCapacity', value: 31_000 });
     let { state } = await planning(api, '/planning', { field: 'lppAmount', value: 5_000 });
-    expect(state.planning.inputs[0]).toMatchObject({ lppCapacity: 3_100_000, lppAmount: 500_000 });
-    expect(state.planning.lpp.saving?.totalCentimes).toBeGreaterThan(0);
+    expect(state.planning!.inputs[0]).toMatchObject({ lppCapacity: 3_100_000, lppAmount: 500_000 });
+    expect(state.planning!.lpp.saving?.totalCentimes).toBeGreaterThan(0);
     ({ state } = await planning(api, '/planning', { field: 'lppAmount', value: 40_000 }));
-    expect(state.planning.lpp.problem).toBe('over_capacity');
-    expect(state.planning.lpp.saving).toBeUndefined();
+    expect(state.planning!.lpp.problem).toBe('over_capacity');
+    expect(state.planning!.lpp.saving).toBeUndefined();
   });
 
   it('makes up a 2025 gap once the 2026 3a is paid in full', async () => {
     const ws = await makeWorkspace();
     const api = await ribeiro(ws);
     const { state } = await planning(api, '/planning', { field: 'paid2025', value: 0 });
-    expect(state.planning.inputs[0]?.paid2025).toBe(0);
-    expect(state.planning.catchUp.people[0]).toMatchObject({
+    expect(state.planning!.inputs[0]?.paid2025).toBe(0);
+    expect(state.planning!.catchUp.people[0]).toMatchObject({
       status: 'pay_this_year_first',
       catchUpCentimes: 725_800,
     });
     await api(req('POST', '/plan', { person: 'p1', field: 'paid', value: 7_258 }));
     const after = (await api(req('GET', '/state'))).body as DashboardState;
-    expect(after.planning.catchUp.people[0]?.status).toBe('possible');
-    expect(after.planning.catchUp.saving?.totalCentimes).toBeGreaterThan(0);
+    expect(after.planning!.catchUp.people[0]?.status).toBe('possible');
+    expect(after.planning!.catchUp.saving?.totalCentimes).toBeGreaterThan(0);
   });
 });
 
@@ -218,6 +255,9 @@ describe('the MCP tools', () => {
     try {
       for (const [id, value] of RIBEIRO) await call('answer_question', { id, value });
       await call('set_fact', { key: 'plan.gross_salary', value: 80_000 });
+      // The two plain questions that decide whether TOU is compulsory, answered no.
+      await call('set_fact', { key: 'plan.tou_other_income', value: false });
+      await call('set_fact', { key: 'plan.tou_taxable_wealth', value: false });
       const tariff = await call('set_fact', { key: 'plan.source_tax_tariff', value: 'h1' });
       expect(tariff.isError).toBeFalsy();
       expect(ws.ledger.get('plan.source_tax_tariff', 'p1')?.value).toBe('H1N');

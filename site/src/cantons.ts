@@ -89,28 +89,9 @@ export const CANTONS: readonly (Canton & { status: CantonStatus })[] = [
       pt: 'São Galo',
     },
   },
-];
-
-/** When a canton that doesn't work yet should come: the next ones, then the ones after. */
-export type CantonWhen = 'next' | 'then';
-
-/** The cantons coming next, in order. Not in the extension yet. */
-export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
-  {
-    code: 'AG',
-    when: 'next',
-    name: {
-      en: 'Aargau',
-      fr: 'Argovie',
-      de: 'Aargau',
-      it: 'Argovia',
-      es: 'Argovia',
-      pt: 'Argóvia',
-    },
-  },
   {
     code: 'FR',
-    when: 'then',
+    status: 'preview',
     name: {
       en: 'Fribourg',
       fr: 'Fribourg',
@@ -122,10 +103,28 @@ export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [
   },
   {
     code: 'TI',
-    when: 'then',
+    status: 'preview',
     name: { en: 'Ticino', fr: 'Tessin', de: 'Tessin', it: 'Ticino', es: 'Tesino', pt: 'Ticino' },
   },
+  {
+    code: 'AG',
+    status: 'preview',
+    name: {
+      en: 'Aargau',
+      fr: 'Argovie',
+      de: 'Aargau',
+      it: 'Argovia',
+      es: 'Argovia',
+      pt: 'Argóvia',
+    },
+  },
 ];
+
+/** When a canton that doesn't work yet should come: the next ones, then the ones after. */
+export type CantonWhen = 'next' | 'then';
+
+/** The cantons coming next, in order. Not in the extension yet. */
+export const NEXT_CANTONS: readonly (Canton & { when: CantonWhen })[] = [];
 
 const AND: Record<Lang, string> = { en: 'and', fr: 'et', de: 'und', it: 'e', es: 'y', pt: 'e' };
 

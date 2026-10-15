@@ -1,83 +1,32 @@
-// "What Claude read in your documents" (SPEC.md 5.5 and 10.5, second view): one card per document,
-// each value with its official French label and its gloss, a one-tap OK, a correction, a copy
-// button with the value as typed on the official form, and an "Entered" tick kept on this computer.
+// A value Claude read in a document, inline in "Make it exact" (three-pages.md, A4): the value,
+// "Is that right?", Yes or Fix it, the same one-tap OK and correction as before (SPEC.md 5.5).
+// One value at a time; the others of the same document wait their turn, or "All of it is right".
+import type { JSX } from 'preact';
 import { useRef, useState } from 'preact/hooks';
-import './documents.css';
 import { api, ApiError } from './api';
 import type { Language } from './i18n';
-import { formatChf, showOfficial, td } from './i18n-docs';
-import type { State } from './types';
-import type { CardValue, DocumentCard } from './types-docs';
+import { formatChf, td } from './i18n-docs';
+import { pg } from './i18n-pages';
+import type { Act } from './page-props';
+import type { DocumentCard } from './types-docs';
 
-type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
-
-export function StatusChip({ v, lang }: { v: CardValue; lang: Language }) {
-  const [cls, key] =
-    v.status === 'extracted'
-      ? ['chip-needs-ok', 'statusNeedsOk' as const]
-      : v.status === 'verified'
-        ? [
-            'chip-verified',
-            v.method === 'barcode'
-              ? ('statusVerifiedBarcode' as const)
-              : ('statusVerified' as const),
-          ]
-        : v.status === 'estimate'
-          ? ['chip-estimate', 'statusEstimate' as const]
-          : [
-              'chip-stated',
-              v.via === 'chat' ? ('statusConfirmedChat' as const) : ('statusConfirmed' as const),
-            ];
-  return <span class={`chip ${cls}`}>{td(lang, key)}</span>;
-}
-
-/** Copies the value as typed on the official form; shows it if the clipboard is not available. */
-function CopyButton({ value, label, lang }: { value: string; label: string; lang: Language }) {
-  const [state, setState] = useState<'idle' | 'done' | 'failed'>('idle');
-  return (
-    <>
-      <button
-        type="button"
-        class="ghost small"
-        aria-label={td(lang, 'copyLabel', { label })}
-        onClick={() =>
-          void navigator.clipboard.writeText(value).then(
-            () => setState('done'),
-            () => setState('failed'),
-          )
-        }
-      >
-        {td(lang, state === 'done' ? 'copied' : 'copy')}
-      </button>
-      {state === 'failed' ? (
-        <span class="small-text tnum dc-copy-fallback">{td(lang, 'copyFailed', { value })}</span>
-      ) : null}
-    </>
-  );
-}
-
-function ValueRow({
-  v,
+export function ValueCheck({
   card,
   lang,
   act,
 }: {
-  v: CardValue;
   card: DocumentCard;
   lang: Language;
   act: Act;
-}) {
+}): JSX.Element | null {
+  const pending = card.values.filter((v) => v.status === 'extracted');
+  const v = pending[0];
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(v.copy ?? '');
+  const [draft, setDraft] = useState(v?.copy ?? '');
   const [problem, setProblem] = useState('');
+  if (!v) return null;
   const shown = v.centimes !== undefined ? formatChf(v.centimes, lang) : (v.text ?? '');
-  const editable = v.copy !== undefined || v.type === 'boolean';
-  const where = [
-    v.box ? td(lang, 'box', { box: v.box }) : '',
-    v.page ? td(lang, 'page', { page: v.page }) : '',
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const numeric = v.centimes !== undefined || v.type === 'date' || v.type === 'integer';
   // Saved here rather than through `act`, so a value Taxpresso can't read is explained next to it.
   const save = async (value: string | boolean) => {
     setProblem('');
@@ -92,103 +41,96 @@ function ValueRow({
       );
     }
   };
-  const numeric = v.centimes !== undefined || v.type === 'date' || v.type === 'integer';
+  const rest = pending.length - 1;
   return (
-    <li class={`dc-row${v.status === 'extracted' ? ' dc-row-pending' : ''}`}>
-      <div class="dc-label">
-        {v.item ? <span class="muted small-text">{v.item}</span> : null}
-        <span class="dc-gloss">{v.label}</span>
-        {showOfficial(v.label, v.official) ? (
-          <span class="dc-official" lang="fr">
-            {v.official}
-          </span>
+    <div class="value-check">
+      <p class="value-line">
+        <span>{v.item ? `${v.item} · ${v.label}` : v.label}</span>{' '}
+        <strong class={numeric ? 'tnum' : undefined}>{shown}</strong>
+        {v.page ? (
+          <span class="muted small-text"> · {pg(lang, 'doc.page', { page: v.page })}</span>
         ) : null}
-        {where ? <span class="muted small-text">{where}</span> : null}
-      </div>
-      <div class="dc-value">
-        {editing && v.type === 'boolean' ? (
-          <div class="plan-toggle" role="group" aria-label={v.label}>
-            {[true, false].map((b) => (
-              <button type="button" key={String(b)} onClick={() => void save(b)}>
-                {td(lang, b ? 'yes' : 'no')}
-              </button>
-            ))}
-          </div>
-        ) : editing ? (
-          <form
-            class="dc-edit"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void save(draft);
-            }}
-          >
-            <input
-              class="tnum"
-              value={draft}
-              aria-label={v.label}
-              placeholder={td(lang, 'editHint')}
-              onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
-            />
-            <button type="submit" class="primary dc-small">
-              {td(lang, 'save')}
+        <span class="value-ask"> {pg(lang, 'doc.right')}</span>
+      </p>
+      {editing && v.type === 'boolean' ? (
+        <div class="row-actions" role="group" aria-label={v.label}>
+          {[true, false].map((b) => (
+            <button type="button" class="ghost" key={String(b)} onClick={() => void save(b)}>
+              {pg(lang, b ? 'yes' : 'no')}
             </button>
-          </form>
-        ) : (
-          <strong class={numeric ? 'tnum' : undefined}>{shown}</strong>
-        )}
-        <StatusChip v={v} lang={lang} />
-        {editing && problem ? (
-          <span class="small-text dc-problem" role="alert">
-            {td(lang, 'editProblem')} <span class="muted">{problem}</span>
-          </span>
-        ) : null}
-      </div>
-      <div class="dc-actions">
-        {v.status === 'extracted' && !editing ? (
+          ))}
+          <button type="button" class="link" onClick={() => setEditing(false)}>
+            {pg(lang, 'cancel')}
+          </button>
+        </div>
+      ) : editing ? (
+        <form
+          class="row-actions"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void save(draft);
+          }}
+        >
+          <input
+            class="tnum fix-input"
+            value={draft}
+            aria-label={v.label}
+            placeholder={td(lang, 'editHint')}
+            onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
+          />
+          <button type="submit" class="primary">
+            {pg(lang, 'save')}
+          </button>
+          <button type="button" class="link" onClick={() => setEditing(false)}>
+            {pg(lang, 'cancel')}
+          </button>
+        </form>
+      ) : (
+        <div class="row-actions">
           <button
             type="button"
-            class="primary dc-small"
+            class="primary"
             onClick={() => void act(() => api.confirmFact(v.factId, lang))}
           >
-            {td(lang, 'ok')}
+            {pg(lang, 'yes')}
           </button>
-        ) : null}
-        {editable ? (
+          {v.copy !== undefined || v.type === 'boolean' ? (
+            <button
+              type="button"
+              class="ghost"
+              onClick={() => {
+                setDraft(v.copy ?? '');
+                setProblem('');
+                setEditing(true);
+              }}
+            >
+              {pg(lang, 'fix')}
+            </button>
+          ) : null}
+        </div>
+      )}
+      {editing && problem ? (
+        <p class="small-text problem" role="alert">
+          {td(lang, 'editProblem')} <span class="muted">{problem}</span>
+        </p>
+      ) : null}
+      {rest > 0 ? (
+        <p class="small-text muted value-rest">
+          {pg(lang, rest === 1 ? 'doc.moreOne' : 'doc.more', { n: rest })}{' '}
           <button
             type="button"
             class="link"
-            onClick={() => {
-              setDraft(v.copy ?? '');
-              setProblem('');
-              setEditing(!editing);
-            }}
+            onClick={() => void act(() => api.confirmDocument(card.docId, lang))}
           >
-            {td(lang, editing ? 'cancel' : 'edit')}
+            {pg(lang, 'doc.allRight')}
           </button>
-        ) : null}
-        {card.enterable && v.copy !== undefined && !editing ? (
-          <CopyButton value={v.copy} label={v.label} lang={lang} />
-        ) : null}
-        {card.enterable ? (
-          <label class="dc-entered">
-            <input
-              type="checkbox"
-              checked={v.entered}
-              onChange={(e) =>
-                void act(() =>
-                  api.setEntered(v.factId, (e.target as HTMLInputElement).checked, lang),
-                )
-              }
-            />
-            {td(lang, 'entered')}
-          </label>
-        ) : null}
-      </div>
-    </li>
+        </p>
+      ) : null}
+    </div>
   );
 }
 
-/** A hidden file field that uploads a file in place of another document. */
+/** A hidden file field that uploads a file in place of another document (the browser page). */
 export function useReplace(lang: Language, act: Act) {
   const input = useRef<HTMLInputElement>(null);
   const target = useRef('');
@@ -213,101 +155,4 @@ export function useReplace(lang: Language, act: Act) {
     />
   );
   return { pick, field };
-}
-
-function Card({ card, lang, act }: { card: DocumentCard; lang: Language; act: Act }) {
-  const replace = useReplace(lang, act);
-  const details = [
-    card.who,
-    card.period
-      ? td(lang, 'period', card.period)
-      : card.taxYear
-        ? td(lang, 'yearShort', { year: card.taxYear })
-        : '',
-    card.issuer,
-  ].filter(Boolean);
-  return (
-    <article class="card dc-card" aria-labelledby={`dc-${card.docId}`}>
-      <header class="dc-head">
-        <div class="dc-title">
-          <h3 id={`dc-${card.docId}`}>{card.kindLabel ?? card.filename}</h3>
-          <span class="muted small-text">
-            {card.kindLabel ? card.filename : ''}
-            {details.length ? `${card.kindLabel ? ' · ' : ''}${details.join(' · ')}` : ''}
-          </span>
-          {card.kindSource === 'claude' ? (
-            <span class="small-text dc-claude">{td(lang, 'kindByClaude')}</span>
-          ) : null}
-        </div>
-        <div class="dc-head-side">
-          {card.toConfirm ? (
-            <span class="chip chip-needs-ok">{td(lang, 'toConfirm', { n: card.toConfirm })}</span>
-          ) : card.values.length ? (
-            <span class="chip chip-stated">{td(lang, 'allConfirmed')}</span>
-          ) : null}
-          {card.enterable && card.total ? (
-            <span class="muted small-text tnum">
-              {td(lang, 'enteredCount', { n: card.entered, total: card.total })}
-            </span>
-          ) : null}
-        </div>
-      </header>
-      {card.values.length ? (
-        <ul class="dc-values">
-          {card.values.map((v) => (
-            <ValueRow key={v.factId} v={v} card={card} lang={lang} act={act} />
-          ))}
-        </ul>
-      ) : (
-        <p class="muted small-text dc-empty">{td(lang, 'nothingRead')}</p>
-      )}
-      <footer class="dc-foot">
-        {card.toConfirm || card.kindSource === 'claude' ? (
-          <button
-            type="button"
-            class="ghost small"
-            onClick={() => void act(() => api.confirmDocument(card.docId, lang))}
-          >
-            {td(lang, 'confirmAll')}
-          </button>
-        ) : null}
-        <button type="button" class="link" onClick={() => replace.pick(card.docId)}>
-          {td(lang, 'replaceFile')}
-        </button>
-        {replace.field}
-      </footer>
-    </article>
-  );
-}
-
-export function DocumentCards({ state, lang, act }: { state: State; lang: Language; act: Act }) {
-  if (state.cards.length === 0 && state.replaced.length === 0) return null;
-  return (
-    <section aria-labelledby="dc-title" class="stack">
-      <div class="section-head">
-        <h2 id="dc-title">{td(lang, 'cardsTitle')}</h2>
-        {state.toConfirm ? (
-          <span class="chip chip-needs-ok">{td(lang, 'toConfirm', { n: state.toConfirm })}</span>
-        ) : null}
-      </div>
-      <p class="muted dc-lead">{td(lang, 'cardsLead')}</p>
-      {state.cards.map((card) => (
-        <Card key={card.docId} card={card} lang={lang} act={act} />
-      ))}
-      {state.replaced.length ? (
-        <details class="got">
-          <summary>
-            {td(lang, 'replacedTitle')} <span class="muted tnum">{state.replaced.length}</span>
-          </summary>
-          <ul class="plain-list">
-            {state.replaced.map((r) => (
-              <li key={r.id}>
-                {r.filename} <span class="muted small-text">({td(lang, 'replacedBy')})</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      ) : null}
-    </section>
-  );
 }

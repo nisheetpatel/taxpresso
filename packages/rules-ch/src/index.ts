@@ -89,12 +89,14 @@ export {
   type IfdTaxYear,
 } from './ifd/params.js';
 export {
+  capPerChild,
   childcareCosts,
   childDeduction,
   commuteBase,
   commuteCosts,
   debtInterest,
   donations,
+  federalChildcare,
   federalScale,
   IFD_NOTE,
   insurancePremiums,
@@ -104,10 +106,30 @@ export {
   professionalCosts,
   trainingCosts,
   twoEarner,
+  type CaredChild,
+  type ChildCare,
   type CommuteBase,
+  type FederalChildcare,
   type FederalConcept,
 } from './ifd/items.js';
 export { ifdTax } from './ifd/assess.js';
+// A year of arrival from abroad or of departure abroad: the days of tax liability, the conversion
+// of periodic income to a year, the federal deductions reduced in proportion, the tax at the rate.
+export {
+  days360,
+  forDays,
+  ifdPartYearParams,
+  ifdTaxPartYear,
+  partYear,
+  PartYearError,
+  partYearSources,
+  toYear,
+  type IfdPartYearTax,
+  type PartYear,
+  type PartYearKind,
+} from './ifd/part-year.js';
+// The federal tax on lump sums from the 2nd pillar and pillar 3a (art. 38 LIFD).
+export { IFD_CAPITAL_FIFTH, IFD_CAPITAL_NOTE, ifdCapitalTax } from './ifd/capital.js';
 export { IFD_OBJECTION, type ObjectionRule } from './ifd/objection.js';
 // The canton interface (docs/design/cantons.md, section 2).
 export type {
@@ -121,6 +143,7 @@ export type {
 // How a canton's result reads: one generic view for every canton (compute_tax, the estimate card,
 // the final check, the plans).
 export type {
+  CapitalView,
   IncomeTax,
   ResultView,
   ViewLine,
@@ -130,6 +153,22 @@ export type {
 } from './view.js';
 // The official terms of a canton's form, for the generic texts (final check, plans, copy panel).
 export type { CantonTerms, OfficialDocument } from './terms.js';
+// Self-employment, the simple case: a sole proprietorship's year from its accounts, the owner's
+// AVS/AI/APG contributions, the losses of earlier years (Geneva's annexe B reads it).
+export {
+  businessLine,
+  businessYear,
+  CHARGE_LINES,
+  lossWindow,
+  resultHow,
+  REVENUE_LINES,
+  SELF_EMPLOYMENT_FEDERAL,
+  SELF_EMPLOYMENT_RULES,
+  type BusinessFigure,
+  type BusinessYear,
+  type ChargeLine,
+  type RevenueLine,
+} from './business/self-employment.js';
 // Pillar 3a and the pension fund (2nd pillar): the federal limits, the same for every canton's tax.
 export { PILLAR3A_2026, PILLAR3A_2026_FACTS } from './pension/pillar3a.js';
 export {
@@ -159,9 +198,33 @@ export {
 export {
   OFFICIAL_RATES,
   officialChf,
+  officialChfOrLatest,
   type Conversion,
   type OfficialRate,
 } from './withholding/exchange-rates.js';
+// Real estate abroad: exempt, counted for the rate; debts and interest split by where the assets
+// lie; the federal tax at the rate of the whole income (every canton's).
+export {
+  ABROAD_RULES,
+  exemptPart,
+  IFD_UPKEEP_FLAT,
+  ifdTaxAtRate,
+  shareAbroad,
+  splitProblem,
+  type IfdAtRate,
+  type IncomeSplit,
+} from './abroad/property.js';
+// A property in Switzerland its owner lives in or lets: the federal rules (the rental value the
+// canton sets, the upkeep, flat or actual), and the reform that ends the rental value in 2029.
+export {
+  federalUpkeep,
+  federalUpkeepLine,
+  RENTAL_VALUE_REFORM,
+  rentalValueTaxed,
+  SWISS_PROPERTY_INSTRUCTIONS,
+  SWISS_PROPERTY_RULES,
+  type FederalUpkeep,
+} from './property/swiss.js';
 // The ESTV record format of the source-tax tariff files (every canton publishes its tariffs in it).
 export {
   compactTariff,

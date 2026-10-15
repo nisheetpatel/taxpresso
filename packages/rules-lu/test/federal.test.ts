@@ -10,7 +10,7 @@ import {
   rules as baselLand,
   type BaselLandCantonal,
 } from '@taxpresso/rules-bl';
-import type { HouseholdInput, PersonInput } from '@taxpresso/rules-ch';
+import { IFD_NOTE, type HouseholdInput, type PersonInput } from '@taxpresso/rules-ch';
 import { COMMUNES_2026, rules as geneva } from '@taxpresso/rules-ge';
 import { communesFor as zugCommunes, rules as zug, type ZugCantonal } from '@taxpresso/rules-zg';
 import { communesFor as zurichCommunes, rules as zurich } from '@taxpresso/rules-zh';
@@ -18,6 +18,7 @@ import { describe, expect, it } from 'vitest';
 import {
   communesFor,
   federalTotals,
+  NOTE,
   rules as lucerne,
   type Item,
   type LucerneCantonal,
@@ -502,5 +503,85 @@ describe('where Lucerne’s documents take a federal deduction otherwise than Ge
     expect(zg25.ifd).toBeNull();
     expect(lu25.ifd).not.toBeNull();
     expect(lu25.icc!.items.find((i) => i.code === '236')?.amount).toBe(chf(-800));
+  });
+});
+
+describe('childcare of a child of 14 or more', () => {
+  it('counts for neither tax, and the result says so', () => {
+    // Two children: the younger under 14 with childcare of 8,000, the elder 14 or more at the end
+    // of the year with 5,000. Only the younger child’s counts: cantonal 8,000 (360, at most 18,200
+    // on top of own care) and own care of 2,000 for the younger only (353, StG § 42 Abs. 1 lit. b);
+    // federal 8,000 (at most 25,800, Form. 2a 2026 p. 8), where the federal sum used to take both,
+    // 13,000, within the cap of the one child under 14.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(8_000) } },
+        { custody: 'full', under14: false, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = lucerne.computeReturn({
+      ...h,
+      commune: 'Luzern',
+      cantonal: {
+        church: { p1: 'none', p2: 'none', children: ['none', 'none'] },
+        children: [
+          { under14: true, livesWithYou: true },
+          { under14: false, livesWithYou: true },
+        ],
+      },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '360')).toBe(chf(8_000));
+    expect(ded(r.icc!.items, '353')).toBe(chf(2_000));
+    expect(ded(r.ifd!.items, 'E18')).toBe(chf(8_000));
+    expect(r.notCounted).toContainEqual(NOTE.childcareNotCounted);
+    expect(r.notCounted).toContainEqual(IFD_NOTE.childcareAge);
+  });
+});
+
+describe('childcare of one child above the maximum, next to another under it', () => {
+  it('caps each child’s costs, then adds them up', () => {
+    // Two children under 14, childcare of 30,000 and 5,000: each child’s costs count at most the
+    // maximum, then they are added up: cantonal childcare by others 18,200 + 5,000 = 23,200 (360,
+    // at most 18,200 per child on top of own care) and own care 2 x 2,000 (353, StG § 42 Abs. 1
+    // lit. b); federal 25,800 + 5,000 = 30,800 (Form. 2a 2026 p. 8: "25 800 fr. par enfant"), where
+    // the federal sum used to take 35,000 within twice the maximum.
+    const h: Shared = {
+      taxYear: 2026,
+      commune: '',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(30_000) } },
+        { custody: 'full', under14: true, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = lucerne.computeReturn({
+      ...h,
+      commune: 'Luzern',
+      cantonal: {
+        church: { p1: 'none', p2: 'none', children: ['none', 'none'] },
+        children: [
+          { under14: true, livesWithYou: true },
+          { under14: true, livesWithYou: true },
+        ],
+      },
+    });
+    const ded = (items: readonly { code: string; amount: number }[], code: string) =>
+      -(items.find((i) => i.code === code)?.amount ?? 0);
+    expect(ded(r.icc!.items, '360')).toBe(chf(23_200));
+    expect(ded(r.icc!.items, '353')).toBe(chf(4_000));
+    expect(ded(r.ifd!.items, 'E18')).toBe(chf(30_800));
   });
 });

@@ -29,7 +29,7 @@ import {
   pillar3aCap,
   twoEarner,
 } from './rules.js';
-import type { FederalConcept, LimitApplied } from '@taxpresso/rules-ch';
+import { ifdParamsFor, type FederalConcept, type LimitApplied } from '@taxpresso/rules-ch';
 import { federalReturn, type FederalChild } from './ifd.js';
 import type {
   Amount,
@@ -637,10 +637,19 @@ export function computeReturn(input: ZhEngineInput): ZhTaxResult {
   }
 
   // Childcare (StG § 31 Abs. 1 lit. j; Weisung ZStB 34.1): both spouses, or the parent, must work.
-  // Given for the household (one amount from the invoices), it is capped for all the children under
-  // 14 who live with you together; given per child, per child.
+  // The limit is per child ("höchstens Fr. 25 300, für die Drittbetreuung jedes Kindes",
+  // zh-2026-law-steuergesetz-631-1-stand-2026 p. 18; zh-2025-law-steuergesetz-631-1-stand-2025
+  // p. 18), as the federal one. Given for the household (one amount from the invoices), it is one
+  // child's when one child under 14 lives with you, or when it is within the smallest limit of a
+  // child, the federal one included; otherwise how it splits decides, and the tax is not computed
+  // until it is given per child (NOTE.childcareSplit; the question zh.child_care).
   const household = (hh.childcare?.value ?? 0) > 0;
   const withCare = counted.filter((ch) => (household || ch.childcare) && ch.livesWithYou);
+  // Each child's care counts up to the 14th birthday ("das 14. Altersjahr noch nicht vollendet":
+  // zh-2025-law-steuergesetz-631-1-stand-2025 and zh-2026-law-steuergesetz-631-1-stand-2026 p. 18;
+  // zh-2026-tariff-weisung-sozialabzuege p. 5): the costs given for an older child are left out.
+  if (!household && withCare.some((ch) => ch.under14 === false && (ch.childcare?.value ?? 0) > 0))
+    notes.add(notes.notCounted, NOTE.childcareAge);
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)
@@ -659,10 +668,18 @@ export function computeReturn(input: ZhEngineInput): ZhTaxResult {
         const young = withCare.filter((ch) => ch.under14 !== false);
         if (young.some((ch) => ch.under14 === undefined))
           notes.add(notes.assumptions, NOTE.under14);
-        limit = young.reduce((s, ch) => s + (ch.weight === 1 ? max : max / 2), 0);
-        given = paid;
-        ded = Math.min(paid, limit);
-        if (young.length) parts.push(`${chf(ded)} (${young.length} x ${chf(max)} at most)`);
+        const smallest = Math.min(
+          ...young.map((ch) => (ch.weight === 1 ? max : max / 2)),
+          ifdParamsFor(input.taxYear).childcareMax.value,
+        );
+        if (young.length > 1 && paid > smallest) {
+          notes.add(notes.unsupported, NOTE.childcareSplit);
+        } else {
+          limit = young.reduce((s, ch) => s + (ch.weight === 1 ? max : max / 2), 0);
+          given = paid;
+          ded = Math.min(paid, limit);
+          if (young.length) parts.push(`${chf(ded)} (${young.length} x ${chf(max)} at most)`);
+        }
       } else {
         for (const ch of withCare) {
           if (ch.under14 === false) continue;

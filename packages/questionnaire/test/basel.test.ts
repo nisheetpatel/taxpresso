@@ -1,6 +1,6 @@
 // The Basel-Stadt questionnaire (data/bs/2026/questionnaire.yaml): in step with Basel-Stadt's keys
-// and communes (packages/rules-bs), every text in English, French and German, every page an
-// official one, and the questions only Basel-Stadt asks (the AHV reference age, a single parent
+// and communes (packages/rules-bs), every text in English, French, German and Italian, every page
+// an official one, and the questions only Basel-Stadt asks (the AHV reference age, a single parent
 // living as a couple, the main upkeep of a child in shared custody, each child under 18, the
 // childcare per child, church membership, the work rate, payments to political parties) only where
 // they apply. Synthetic answers only.
@@ -61,7 +61,7 @@ const SINGLE_IN_RIEHEN = {
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
   'work_rate:p1': 80,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'pillar3a:p1': true,
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -104,6 +104,7 @@ describe('Basel-Stadt questionnaire 2026', () => {
       'income_sources',
       'employers',
       'work_rate',
+      'residence',
       'taxed_at_source',
       'pillar3a',
       'lpp_buyin',
@@ -145,11 +146,21 @@ describe('Basel-Stadt questionnaire 2026', () => {
       'loan_interest',
       'alimony_paid',
     ]);
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'Basel-Stadt', fr: 'Bâle-Ville', de: 'Basel-Stadt' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({
+      en: 'Basel-Stadt',
+      fr: 'Bâle-Ville',
+      de: 'Basel-Stadt',
+      it: 'Basilea Città',
+    });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = bsQuestionnaire2026();
     const missing: string[] = [];
     const visit = (v: unknown, where: string): void => {
@@ -158,6 +169,7 @@ describe('Basel-Stadt questionnaire 2026', () => {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missing.push(`${where} (it)`);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -173,11 +185,14 @@ describe('Basel-Stadt questionnaire 2026', () => {
     );
     for (const item of [...file.questions, ...file.requirements]) {
       expect(item.explain?.de, item.id).toBeTruthy();
+      expect(item.explain?.it, item.id).toBeTruthy();
       const { url, label } = item.learnMore!;
+      expect(label.it, item.id).toBeTruthy();
       // Basel-Stadt's own documents; the canton question keeps its federal page (shared).
-      expect(item.id === 'canton' ? ALL_URLS : BASEL_URLS, item.id).toContain(
-        url.replace(/#page=\d+$/, ''),
-      );
+      expect(
+        item.id === 'canton' || item.id === 'residence' ? ALL_URLS : BASEL_URLS,
+        item.id,
+      ).toContain(url.replace(/#page=\d+$/, ''));
       // A page of the guide is named by the page the link opens; the guide is in German.
       const page = /15500-fw-np-ste-25-05-wegleitung-bf-1\.pdf#page=(\d+)$/.exec(url)?.[1];
       if (page) {
@@ -190,6 +205,9 @@ describe('Basel-Stadt questionnaire 2026', () => {
         );
         expect(label.de, item.id).toMatch(
           new RegExp(`^Wegleitung zur Steuererklärung 2025, S\\. ${page}: `),
+        );
+        expect(label.it, item.id).toMatch(
+          new RegExp(`^Guida fiscale di Basilea Città 2025, p\\. ${page}: .*, in tedesco$`),
         );
       }
     }
@@ -307,7 +325,7 @@ describe('Basel-Stadt questionnaire 2026', () => {
     const second = e.render(slots[1]!, snap, 'en');
     expect(second.who).toBe('Child 2');
     expect(second.text).toBe('How much of the childcare you paid in 2026 was for child 2?');
-    for (const lang of ['en', 'fr', 'de'] as const) {
+    for (const lang of ['en', 'fr', 'de', 'it'] as const) {
       const r = e.render(slots[0]!, snap, lang);
       expect(JSON.stringify([r.text, r.help, r.explain, r.who])).not.toMatch(/\{n\}/);
     }
@@ -355,7 +373,7 @@ describe('Basel-Stadt questionnaire 2026', () => {
       'income_sources:p1': ['salary', 'self_employment'],
       'employers:p1': 1,
       'work_rate:p1': 100,
-      'taxed_at_source:p1': true,
+      'residence:p1': 'permit_other',
     });
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.de)).toEqual([
       'Ein Zuzug aus dem Ausland während des Jahres',

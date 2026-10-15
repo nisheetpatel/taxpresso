@@ -30,7 +30,15 @@ import {
   wealthRubric,
 } from './rubrics.js';
 import { incomeBaseTax, incomeRate, rateIncome as rateIncomeOf, wealthBaseTax } from './tariff.js';
-import type { CommuneRef, FrIccResult, Item, ItemAmount, Line, Text } from './types.js';
+import type {
+  CommuneRef,
+  FrIccResult,
+  FrReturnLines,
+  Item,
+  ItemAmount,
+  Line,
+  Text,
+} from './types.js';
 
 export class FrInputError extends Error {}
 
@@ -130,18 +138,19 @@ export function communeRef(taxYear: FrTaxYear, ref: string | number): CommuneRef
   return { bfs: c.bfs, name: c.name, rate: c.rate };
 }
 
-export function assess(input: FrAssessInput): FrIccResult {
-  const P = frParamsFor(input.taxYear);
-  const C = communeOf(input.taxYear, input.commune);
-  if (C.rate === null) throw new FrUnsupported(NOTE.communes2026);
-  const communalRate = C.rate;
+/**
+ * The lines of the return and its totals down to the taxable income and wealth (7.910): no rate and
+ * no coefficient needed, so they are the same whether or not the taxes can be computed.
+ */
+export function formLines(
+  input: Pick<FrAssessInput, 'incomeItems' | 'wealthItems'>,
+): FrReturnLines {
   const items = input.incomeItems.map(asIncomeItem);
   const wealthItems = input.wealthItems.map(asWealthItem);
   only(items, [INCOME, DEDUCTIONS, COSTS, SOCIAL, MODEST], 'an income line');
   only(wealthItems, [ASSETS, DEBTS, WEALTH_SOCIAL], 'a wealth line');
   const steps = amountSteps();
   const s = subtotals(items);
-
   // Income: the totals of the form.
   const incomeLines = of(items, INCOME);
   const deductionLines = of(items, DEDUCTIONS);
@@ -207,27 +216,6 @@ export function assess(input: FrAssessInput): FrIccResult {
     ),
   );
 
-  // The rate.
-  const scale = P.incomeScale;
-  const trRate = new Trace().from(taxableIncome).src(...(input.familySources ?? []));
-  trRate.p(scale);
-  if (input.family) trRate.p(familyRate());
-  const rateAt = rateIncomeOf(scale.value, taxable, input.family);
-  const rate = incomeRate(scale.value, taxable, input.family);
-  const rateIncome = trRate.line(
-    rateAt,
-    t('Income that sets the rate', 'Revenu déterminant le taux'),
-    input.family
-      ? t(
-          `Married couple or single parent: the rate of half the taxable income, ${chf(rateAt)} (splitting); at least ${rateText(scale.value.minimumRate, 'en')}: ${rateText(rate, 'en')}.`,
-          `Couple marié ou famille monoparentale${NB}: le taux de la moitié du revenu imposable, ${chf(rateAt)} (splitting)${NB}; au moins ${rateText(scale.value.minimumRate, 'fr')}${NB}: ${rateText(rate, 'fr')}.`,
-        )
-      : t(
-          `The taxable income itself, ${chf(rateAt)}: ${rateText(rate, 'en')}.`,
-          `Le revenu imposable lui-même, ${chf(rateAt)}${NB}: ${rateText(rate, 'fr')}.`,
-        ),
-  );
-
   // Wealth.
   const assets = of(wealthItems, ASSETS);
   const debts = of(wealthItems, DEBTS);
@@ -267,6 +255,49 @@ export function assess(input: FrAssessInput): FrIccResult {
       `${chf(netAmount)} less the social deduction on wealth (${chf(-sum(wealthSocial))}); in whole CHF 1,000, never below zero: ${chf(taxableWealthAmount)}.`,
       `${chf(netAmount)} moins la déduction sociale sur la fortune (${chf(-sum(wealthSocial))})${NB}; par CHF 1’000 entiers, jamais négatif${NB}: ${chf(taxableWealthAmount)}.`,
     ),
+  );
+
+  return {
+    items,
+    grossIncome,
+    netIncome,
+    incomeAfterCosts,
+    socialIncome,
+    taxableIncome,
+    wealth: { items: wealthItems, grossWealth, netWealth, taxableWealth },
+  };
+}
+
+export function assess(input: FrAssessInput): FrIccResult {
+  const P = frParamsFor(input.taxYear);
+  const C = communeOf(input.taxYear, input.commune);
+  if (C.rate === null) throw new FrUnsupported(NOTE.communes2026);
+  const communalRate = C.rate;
+  const form = formLines(input);
+  const { taxableIncome } = form;
+  const { taxableWealth } = form.wealth;
+  const taxable = taxableIncome.amount;
+  const taxableWealthAmount = taxableWealth.amount;
+
+  // The rate.
+  const scale = P.incomeScale;
+  const trRate = new Trace().from(taxableIncome).src(...(input.familySources ?? []));
+  trRate.p(scale);
+  if (input.family) trRate.p(familyRate());
+  const rateAt = rateIncomeOf(scale.value, taxable, input.family);
+  const rate = incomeRate(scale.value, taxable, input.family);
+  const rateIncome = trRate.line(
+    rateAt,
+    t('Income that sets the rate', 'Revenu déterminant le taux'),
+    input.family
+      ? t(
+          `Married couple or single parent: the rate of half the taxable income, ${chf(rateAt)} (splitting); at least ${rateText(scale.value.minimumRate, 'en')}: ${rateText(rate, 'en')}.`,
+          `Couple marié ou famille monoparentale${NB}: le taux de la moitié du revenu imposable, ${chf(rateAt)} (splitting)${NB}; au moins ${rateText(scale.value.minimumRate, 'fr')}${NB}: ${rateText(rate, 'fr')}.`,
+        )
+      : t(
+          `The taxable income itself, ${chf(rateAt)}: ${rateText(rate, 'en')}.`,
+          `Le revenu imposable lui-même, ${chf(rateAt)}${NB}: ${rateText(rate, 'fr')}.`,
+        ),
   );
 
   // The cantonal base tax on income.
@@ -432,16 +463,16 @@ export function assess(input: FrAssessInput): FrIccResult {
     );
 
   return {
-    items,
-    grossIncome,
-    netIncome,
-    incomeAfterCosts,
-    socialIncome,
+    items: form.items,
+    grossIncome: form.grossIncome,
+    netIncome: form.netIncome,
+    incomeAfterCosts: form.incomeAfterCosts,
+    socialIncome: form.socialIncome,
     taxableIncome,
     family: input.family,
     rateIncome,
     rate,
-    wealth: { items: wealthItems, grossWealth, netWealth, taxableWealth },
+    wealth: form.wealth,
     taxes: {
       incomeBase,
       cantonalIncome,

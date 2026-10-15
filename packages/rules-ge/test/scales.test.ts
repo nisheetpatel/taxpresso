@@ -20,6 +20,13 @@ import {
   roundTo,
 } from '@taxpresso/rules-ch';
 import { paramsFor } from '../src/engine/params.js';
+import { ABATTEMENT, EFFORT, IIC } from '../src/law/property.js';
+import {
+  CAPITAL_ADDED_UP,
+  CAPITAL_CENTIMES,
+  CAPITAL_COMMUNE,
+  CAPITAL_FIFTH,
+} from '../src/law/capital.js';
 
 const W = ICC_2025_WEALTH_SCALE.value;
 const S = ICC_2025_WEALTH_SUPPLEMENTARY_SCALE.value;
@@ -364,6 +371,15 @@ describe('tax years', () => {
         p.communes.privilegedShare,
         p.personalTax,
         ...Object.values(RUBRICS),
+        // The tax on pension capital (../src/law/capital.ts).
+        CAPITAL_FIFTH,
+        CAPITAL_ADDED_UP,
+        CAPITAL_COMMUNE,
+        ...Object.values(CAPITAL_CENTIMES).map((source) => ({ source })),
+        // A property in Geneva (../src/law/property.ts).
+        ABATTEMENT,
+        IIC,
+        EFFORT,
       ];
       for (const v of all) {
         const ids = v.source.match(/\b(?:ge|ch)-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]/g) ?? [];

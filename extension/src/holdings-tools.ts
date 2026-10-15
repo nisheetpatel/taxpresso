@@ -12,6 +12,7 @@ import {
 import * as z from 'zod/v4';
 import { chf, holdings, holdingsStatusText, saveHolding } from './holdings.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 const ANNOTATIONS = { destructiveHint: false, openWorldHint: false } as const;
 
@@ -42,7 +43,9 @@ function lineText(l: EtatLine): string {
   return `- [${l.id}] ${parts.join('; ')}`;
 }
 
-export function registerHoldingTools(server: McpServer, ws: Workspace): void {
+export function registerHoldingTools(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'get_holdings',
     {
@@ -66,6 +69,7 @@ export function registerHoldingTools(server: McpServer, ws: Workspace): void {
       },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       const etat = holdings(ws);
       const summary =
@@ -93,7 +97,7 @@ export function registerHoldingTools(server: McpServer, ws: Workspace): void {
       if (missing.length) text.push(...missing);
       if (etat.lines.some((l) => l.valueBasis === 'broker')) {
         text.push(
-          'Official values: the user looks them up in the ESTV price list (ictax.admin.ch) and you save what they give with set_holding. Never give a value from your own knowledge.',
+          'Official values: Taxpresso never fetches them. The user looks them up in the ESTV price list (liste des cours, ictax.admin.ch) and you save what they give with set_holding (security = ISIN, officialValue, from). Never give a value or a rate from your own knowledge.',
         );
       }
       const items = detail
@@ -176,6 +180,7 @@ export function registerHoldingTools(server: McpServer, ws: Workspace): void {
       },
     },
     async (args) => {
+      const ws = years.current;
       try {
         const saved = await saveHolding(ws, args, 'chat');
         const summary = holdingsStatusText(holdings(ws));

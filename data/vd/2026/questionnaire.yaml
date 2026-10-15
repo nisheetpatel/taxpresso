@@ -24,18 +24,19 @@
 
 taxYear: 2026
 
-place: { en: 'Vaud', fr: 'Vaud', de: 'Waadt' }
+place: { en: 'Vaud', fr: 'Vaud', de: 'Waadt', it: 'Vaud' }
 
 people:
-  p1: { en: 'You', fr: 'Vous', de: 'Du' }
+  p1: { en: 'You', fr: 'Vous', de: 'Du', it: 'Tu' }
   p2:
     {
       en: 'Your spouse or partner',
       fr: 'Votre conjoint ou partenaire',
       de: 'Dein Partner oder deine Partnerin',
+      it: 'Il tuo coniuge o partner',
     }
-  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner' }
-  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' }
+  p2Chip: { en: 'Partner', fr: 'Conjoint', de: 'Partner', it: 'Partner' }
+  child: { en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}', it: 'Figlio {n}' }
 
 # VaudTax is the canton's online service for the return, at www.vd.ch/vaudtax (vd-2025-guide p. 12;
 # vd-2025-vaudtax-general). No document read says it is free, so the text doesn't.
@@ -43,6 +44,7 @@ notSupported:
   en: 'Taxpresso can’t prepare this part yet. VaudTax, the canton’s online service for the return (www.vd.ch/vaudtax), or a fiduciary can.'
   fr: 'Taxpresso ne peut pas encore préparer cette partie. La prestation en ligne VaudTax du canton (www.vd.ch/vaudtax), ou une fiduciaire, le peuvent.'
   de: 'Diesen Teil kann Taxpresso noch nicht vorbereiten. VaudTax, der Online-Dienst des Kantons für die Steuererklärung (www.vd.ch/vaudtax), oder eine Treuhand kann es.'
+  it: 'Taxpresso non può ancora preparare questa parte. Può farlo VaudTax, il servizio online del Cantone per la dichiarazione (www.vd.ch/vaudtax), oppure una fiduciaria.'
 
 questions:
   - use: canton
@@ -57,10 +59,12 @@ questions:
         en: 'Vaud tax guide 2025, p. 10: personal and family situation'
         fr: 'Instructions générales 2025, p. 10 : Situation personnelle, professionnelle et familiale'
         de: 'Wegleitung Waadt 2025, S. 10: persönliche und familiäre Situation, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 10: situazione personale e familiare'
     help:
       en: 'Page 1 of the return prints your civil status (état civil) from your commune’s register: the one on 31 December counts. A registered partnership files like a married couple.'
       fr: 'La page 1 de la déclaration indique votre état civil selon le contrôle des habitants : celui du 31 décembre compte. Un partenariat enregistré déclare comme un couple marié.'
       de: 'Seite 1 der Steuererklärung zeigt deinen Zivilstand (état civil) aus dem Register deiner Gemeinde: Es zählt der am 31. Dezember. Eine eingetragene Partnerschaft füllt die Steuererklärung wie ein Ehepaar aus.'
+      it: 'La pagina 1 della dichiarazione riporta il tuo stato civile (état civil) secondo il registro del tuo Comune: conta quello del 31 dicembre. Un’unione domestica registrata presenta la dichiarazione come una coppia sposata.'
 
   # vd-2025-guide p. 10 (enfant mineur; annex 03) and p. 51 (code 810: a part of 0.5 for each minor
   # child, or child in apprenticeship or studies, whose upkeep you fully bear).
@@ -69,16 +73,19 @@ questions:
       en: 'Count your minor children and your adult children in apprenticeship or studies whom you support. Each child you fully support gives a part of 0.5 in the family quotient (quotient familial), which lowers your tax rate.'
       fr: 'Comptez vos enfants mineurs et vos enfants majeurs en apprentissage ou aux études que vous entretenez. Chaque enfant dont vous assurez l’entretien complet donne une part de 0,5 au quotient familial, qui abaisse votre taux d’impôt.'
       de: 'Zähl deine minderjährigen Kinder und deine volljährigen Kinder in Lehre oder Ausbildung, für die du aufkommst. Jedes Kind, für dessen Unterhalt du ganz aufkommst, gibt einen Anteil von 0,5 im Familienquotienten (quotient familial), der deinen Steuersatz senkt.'
+      it: 'Conta i tuoi figli minorenni e i figli maggiorenni in apprendistato o agli studi che mantieni. Ogni figlio che mantieni completamente dà una quota di 0,5 nel quoziente familiare (quotient familial), che abbassa la tua aliquota d’imposta.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=10'
       label:
         en: 'Vaud tax guide 2025, p. 10: minor children'
         fr: 'Instructions générales 2025, p. 10 : Enfant mineur'
         de: 'Wegleitung Waadt 2025, S. 10: minderjährige Kinder, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 10: figli minorenni'
     help:
       en: 'On annex 03 (situation familiale): enfants mineurs (minor children) and enfants majeurs en apprentissage ou aux études (adult children in apprenticeship or studies).'
       fr: 'Sur l’annexe 03 (situation familiale) : enfants mineurs, et enfants majeurs en apprentissage ou aux études.'
       de: 'Auf dem Anhang 03 (situation familiale): enfants mineurs (minderjährige Kinder) und enfants majeurs en apprentissage ou aux études (volljährige Kinder in Lehre oder Ausbildung).'
+      it: 'Nell’allegato 03 (situation familiale): enfants mineurs (figli minorenni) e enfants majeurs en apprentissage ou aux études (figli maggiorenni in apprendistato o agli studi).'
 
   # vd-2025-guide p. 51 (code 810: garde alternée, and the part of 0.5 shared by half).
   - use: children_custody
@@ -88,10 +95,12 @@ questions:
         en: 'Vaud tax guide 2025, p. 51: parts of the family quotient'
         fr: 'Instructions générales 2025, p. 51 : Parts résultant de la situation de famille (quotient familial)'
         de: 'Wegleitung Waadt 2025, S. 51: Anteile im Familienquotienten (quotient familial), auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 51: quote del quoziente familiare'
     help:
       en: 'Shared custody (garde alternée): the children live with each parent in turn, about half the time each.'
       fr: 'Garde alternée : les enfants vivent tour à tour chez chaque parent, environ la moitié du temps chacun.'
       de: 'Geteilte Obhut (garde alternée): Die Kinder leben abwechselnd bei jedem Elternteil, etwa je die Hälfte der Zeit.'
+      it: 'Custodia alternata (garde alternée): i figli vivono a turno con ciascun genitore, circa metà del tempo ciascuno.'
 
   # Parents taxed apart with shared custody: the parent taxed on the child support has the part of
   # 0.5 (vd-2025-guide p. 51, code 810; vd-na-law-rifam art. 5 al. 1, p. 3); the one who pays deducts
@@ -103,12 +112,14 @@ questions:
       en: 'With shared custody (garde alternée), child support (contribution d’entretien) decides who counts the children. The parent who receives it has the part of 0.5 per child in the family quotient (quotient familial); the one who pays deducts it. Without child support, you each have half the part. For the federal tax, the parental scale (barème parental), a lower rate, goes to the parent who receives child support or, without it, to the one who earns more.'
       fr: 'En garde alternée, la contribution d’entretien décide qui compte les enfants. Le parent qui la reçoit a la part de 0,5 par enfant au quotient familial ; celui qui la verse la déduit. Sans contribution d’entretien, chacun a la moitié de la part. Pour l’impôt fédéral, le barème parental, un taux plus bas, revient au parent qui reçoit la contribution ou, sans contribution, à celui qui gagne le plus.'
       de: 'Bei geteilter Obhut (garde alternée) entscheiden die Unterhaltsbeiträge (contribution d’entretien), wer die Kinder zählt. Wer sie erhält, hat den Anteil von 0,5 pro Kind im Familienquotienten (quotient familial); wer sie bezahlt, zieht sie ab. Ohne Unterhaltsbeiträge hat jeder die Hälfte des Anteils. Bei der Bundessteuer geht der Elterntarif (barème parental), ein tieferer Satz, an den Elternteil, der Unterhaltsbeiträge erhält, oder ohne Unterhaltsbeiträge an den, der mehr verdient.'
+      it: 'Con la custodia alternata (garde alternée), sono i contributi di mantenimento (contribution d’entretien) a decidere chi conta i figli. Il genitore che li riceve ha la quota di 0,5 per figlio nel quoziente familiare (quotient familial); chi li versa li deduce. Senza contributi di mantenimento, ognuno dei due genitori ha metà della quota. Per l’imposta federale, la tariffa per genitori (barème parental), un’aliquota più bassa, va al genitore che riceve i contributi di mantenimento o, senza contributi, a quello che guadagna di più.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=51'
       label:
         en: 'Vaud tax guide 2025, p. 51: parts of the family quotient'
         fr: 'Instructions générales 2025, p. 51 : Parts résultant de la situation de famille (quotient familial)'
         de: 'Wegleitung Waadt 2025, S. 51: Anteile im Familienquotienten (quotient familial), auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 51: quote del quoziente familiare'
 
   # Annex 03 asks a taxpayer who is single, widowed, separated or divorced: "Tenez-vous un ménage
   # indépendant seul avec cet (ces) enfant(s) ?" (vd-2025-annexes-02-03 p. 1, annexe 03). Only someone
@@ -119,6 +130,7 @@ questions:
   # other parent don't count here (packages/rules-ch, core/from-ledger.ts), so it isn't asked then.
   - id: own_household
     key: vd.own_household
+    group: detail
     type: yesno
     when:
       all:
@@ -129,21 +141,31 @@ questions:
       en: 'A parent who isn’t married and keeps a household alone with their children is a single-parent family (famille monoparentale): a part of 1.3 in the family quotient (quotient familial) instead of 1, and more in several deductions. Living as a couple (concubinage) means no, even with your children.'
       fr: 'Un parent non marié qui tient un ménage indépendant seul avec ses enfants forme une famille monoparentale : une part de 1,3 au quotient familial au lieu de 1, et davantage dans plusieurs déductions. Vivre en concubinage signifie non, même avec vos enfants.'
       de: 'Ein nicht verheirateter Elternteil, der allein mit seinen Kindern einen eigenen Haushalt führt, ist eine Einelternfamilie (famille monoparentale): ein Anteil von 1,3 im Familienquotienten (quotient familial) statt 1, und mehr bei mehreren Abzügen. Wer im Konkubinat (concubinage) lebt, antwortet Nein, auch mit den Kindern.'
+      it: 'Un genitore non sposato che tiene un’economia domestica propria da solo con i suoi figli forma una famiglia monoparentale (famille monoparentale): una quota di 1,3 nel quoziente familiare (quotient familial) invece di 1, e di più in diverse deduzioni. Se vivi in coppia (concubinage), la risposta è no, anche con i tuoi figli.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=10'
       label:
         en: 'Vaud tax guide 2025, p. 10: single-parent families'
         fr: 'Instructions générales 2025, p. 10 : Famille monoparentale'
         de: 'Wegleitung Waadt 2025, S. 10: Einelternfamilie, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 10: famiglie monoparentali'
     text:
       en: 'On 31 December 2026, did you keep a household of your own, alone with your children?'
       fr: 'Au 31 décembre 2026, teniez-vous un ménage indépendant seul ou seule avec vos enfants ?'
       de: 'Hast du am 31. Dezember 2026 allein mit deinen Kindern einen eigenen Haushalt geführt?'
+      it: 'Il 31 dicembre 2026, tenevi un’economia domestica propria, da solo o da sola con i tuoi figli?'
     help:
       en: 'Annex 03 asks: Tenez-vous un ménage indépendant seul avec cet (ces) enfant(s) ? Only someone who doesn’t live as a couple can answer yes.'
       fr: 'L’annexe 03 demande : Tenez-vous un ménage indépendant seul avec cet (ces) enfant(s) ? Seule une personne qui ne vit pas en concubinage peut répondre oui.'
       de: 'Der Anhang 03 fragt: Tenez-vous un ménage indépendant seul avec cet (ces) enfant(s) ? (Führst du allein mit diesem Kind oder diesen Kindern einen eigenen Haushalt?) Nur wer nicht im Konkubinat lebt, kann Ja antworten.'
-    chip: { en: 'Single-parent family', fr: 'Famille monoparentale', de: 'Einelternfamilie' }
+      it: 'L’allegato 03 chiede: Tenez-vous un ménage indépendant seul avec cet (ces) enfant(s) ? Può rispondere sì solo chi non vive in coppia.'
+    chip:
+      {
+        en: 'Single-parent family',
+        fr: 'Famille monoparentale',
+        de: 'Einelternfamilie',
+        it: 'Famiglia monoparentale',
+      }
 
   # Shared custody without deductible child support: the part of 0.5 is shared by half, and the part
   # of 1.3 goes to the parent who mainly bears the child's upkeep, if they keep a household alone
@@ -151,6 +173,7 @@ questions:
   # (vd-2026-law-li art. 43 al. 2 lit. c, p. 26; vd-2025-guide p. 51).
   - id: main_upkeep
     key: vd.main_upkeep
+    group: detail
     type: yesno
     when:
       all:
@@ -162,21 +185,31 @@ questions:
       en: 'With shared custody (garde alternée) and no child support, you and the other parent each have half the part of 0.5 per child. The part of 1.3 of a single-parent family goes to one of you only: the parent who mainly bears the children’s upkeep (assume principalement l’entretien), when keeping a household alone with them.'
       fr: 'En garde alternée sans contribution d’entretien, l’autre parent et vous avez chacun la moitié de la part de 0,5 par enfant. La part de 1,3 de la famille monoparentale ne revient qu’à l’un de vous : le parent qui assume principalement l’entretien des enfants, s’il tient un ménage indépendant seul avec eux.'
       de: 'Bei geteilter Obhut (garde alternée) ohne Unterhaltsbeiträge habt ihr beide, du und der andere Elternteil, je die Hälfte des Anteils von 0,5 pro Kind. Den Anteil von 1,3 der Einelternfamilie erhält nur einer von euch: der Elternteil, der hauptsächlich für den Unterhalt der Kinder aufkommt (assume principalement l’entretien), wenn er allein mit ihnen einen eigenen Haushalt führt.'
+      it: 'Con la custodia alternata (garde alternée) e senza contributi di mantenimento, ognuno dei due genitori ha metà della quota di 0,5 per figlio. La quota di 1,3 della famiglia monoparentale va a un solo genitore: quello che provvede principalmente al mantenimento dei figli (assume principalement l’entretien), se tiene un’economia domestica propria da solo con loro.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=51'
       label:
         en: 'Vaud tax guide 2025, p. 51: parts of the family quotient'
         fr: 'Instructions générales 2025, p. 51 : Parts résultant de la situation de famille (quotient familial)'
         de: 'Wegleitung Waadt 2025, S. 51: Anteile im Familienquotienten (quotient familial), auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 51: quote del quoziente familiare'
     text:
       en: 'Do you bear most of the children’s upkeep, more than the other parent?'
       fr: 'Assumez-vous principalement l’entretien des enfants, plus que l’autre parent ?'
       de: 'Kommst du hauptsächlich für den Unterhalt der Kinder auf, mehr als der andere Elternteil?'
+      it: 'Provvedi tu principalmente al mantenimento dei figli, più dell’altro genitore?'
     help:
       en: 'The law gives the part of 1.3 to only one parent for the same children, so your answer and the other parent’s should match.'
       fr: 'La loi n’accorde la part de 1,3 qu’à un seul parent pour les mêmes enfants : votre réponse et celle de l’autre parent devraient concorder.'
       de: 'Das Gesetz gibt den Anteil von 1,3 für dieselben Kinder nur einem Elternteil, deine Antwort und die des anderen Elternteils sollten also übereinstimmen.'
-    chip: { en: 'Main upkeep', fr: 'Entretien principal', de: 'Hauptunterhalt' }
+      it: 'La legge dà la quota di 1,3 a un solo genitore per gli stessi figli: la tua risposta e quella dell’altro genitore dovrebbero quindi coincidere.'
+    chip:
+      {
+        en: 'Main upkeep',
+        fr: 'Entretien principal',
+        de: 'Hauptunterhalt',
+        it: 'Mantenimento principale',
+      }
 
   # vd-2025-guide p. 44 (code 670: per child under 14 living with you, care by a third party while
   # the parents work, train or can't work; only the care, not food or housework) and p. 15 (the
@@ -186,22 +219,26 @@ questions:
       en: 'What you paid so someone else looks after your children under 14 while you work, train or can’t work: a crèche, day care or a day mother (maman de jour). Only the care counts, not meals or housework (déduction pour frais de garde, code 670).'
       fr: 'Ce que vous avez payé pour faire garder vos enfants de moins de 14 ans par un tiers pendant que vous travaillez, vous formez ou êtes incapable de travailler : crèche, garderie ou maman de jour. Seule la garde compte, pas la nourriture ni les tâches ménagères (déduction pour frais de garde, code 670).'
       de: 'Was du bezahlt hast, damit jemand anderes deine Kinder unter 14 betreut, während du arbeitest, in Ausbildung bist oder nicht arbeiten kannst: Kita, Hort oder Tagesmutter (maman de jour). Nur die Betreuung zählt, nicht Essen oder Hausarbeit (déduction pour frais de garde, Code 670).'
+      it: 'Quello che hai pagato perché qualcun altro custodisca i tuoi figli sotto i 14 anni mentre lavori, segui una formazione o non puoi lavorare: un asilo nido, un centro diurno o una mamma diurna (maman de jour). Conta solo la custodia, non i pasti né i lavori domestici (déduction pour frais de garde, codice 670).'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=44'
       label:
         en: 'Vaud tax guide 2025, p. 44: childcare deduction'
         fr: 'Instructions générales 2025, p. 44 : Déduction pour frais de garde'
         de: 'Wegleitung Waadt 2025, S. 44: Abzug für Kinderbetreuungskosten, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 44: deduzione per le spese di custodia'
     help:
       en: 'Crèche, day care, after-school care or a day mother. Vaud asks for the invoices with the return.'
       fr: 'Crèche, garderie, accueil parascolaire ou maman de jour. Vaud demande les justificatifs avec la déclaration.'
       de: 'Kita, Hort, Tagesstruktur oder Tagesmutter. Die Waadt verlangt die Belege mit der Steuererklärung.'
+      it: 'Asilo nido, centro diurno, accoglienza extrascolastica o mamma diurna. Vaud chiede le fatture con la dichiarazione.'
 
   # The limit of code 670 is per child under 14 (vd-2025-guide p. 44): with several children, how
   # the invoices' total splits can decide the deduction (packages/rules-vd, explain.ts,
   # NOTE.childcareSplit). Asked per child.
   - id: child_care
     key: vd.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -212,20 +249,24 @@ questions:
       en: 'Vaud’s limit for childcare (déduction pour frais de garde, code 670) is per child under 14 who lives with you, so the split between your children can change the deduction. Your invoices give the total.'
       fr: 'La limite vaudoise de la déduction pour frais de garde (code 670) est par enfant de moins de 14 ans qui vit avec vous : la répartition entre vos enfants peut changer la déduction. Vos factures donnent le total.'
       de: 'Der Waadtländer Höchstbetrag für Kinderbetreuung (déduction pour frais de garde, Code 670) gilt pro Kind unter 14, das bei dir lebt: Die Aufteilung auf deine Kinder kann den Abzug ändern. Deine Rechnungen geben das Total.'
+      it: 'Il limite di Vaud per la custodia dei figli (déduction pour frais de garde, codice 670) vale per ogni figlio sotto i 14 anni che vive con te: la ripartizione tra i tuoi figli può cambiare la deduzione. Le tue fatture danno il totale.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=44'
       label:
         en: 'Vaud tax guide 2025, p. 44: childcare deduction'
         fr: 'Instructions générales 2025, p. 44 : Déduction pour frais de garde'
         de: 'Wegleitung Waadt 2025, S. 44: Abzug für Kinderbetreuungskosten, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 44: deduzione per le spese di custodia'
     text:
       en: 'How much of the childcare you paid in 2026 was for child {n}?'
       fr: 'Combien des frais de garde payés en 2026 étaient pour l’enfant {n} ?'
       de: 'Wie viel der 2026 bezahlten Betreuungskosten (frais de garde) war für Kind {n}?'
+      it: 'Quanto delle spese di custodia pagate nel 2026 era per il figlio {n}?'
     help:
       en: 'In CHF, 0 if child {n} had none. Number your children the same way in every answer, for example from the oldest.'
       fr: 'En CHF, 0 si l’enfant {n} n’en a pas eu. Numérotez vos enfants de la même façon dans chaque réponse, par exemple du plus âgé au plus jeune.'
       de: 'In CHF, 0, wenn Kind {n} keine hatte. Nummerier deine Kinder in jeder Antwort gleich, zum Beispiel vom ältesten an.'
+      it: 'In CHF, 0 se il figlio {n} non ne ha avute. Numera i tuoi figli allo stesso modo in ogni risposta, per esempio dal più grande.'
 
   # The commune of 31 December taxes the whole year, also after a move within the canton
   # (vd-na-law-licom art. 9, p. 6, and art. 15 al. 1, p. 7; vd-2025-guide p. 60: "la situation au 31
@@ -235,25 +276,30 @@ questions:
   # communeOptions(2026)): the table carries no federal commune number.
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year, also after a move within the canton. Each commune sets its own rate (coefficient communal), a percentage of the cantonal base tax (impôt cantonal de base).'
       fr: 'La commune où vous habitiez au 31 décembre vous impose pour toute l’année, même après un déménagement dans le canton. Chaque commune fixe son propre coefficient communal, un pourcentage de l’impôt cantonal de base.'
       de: 'Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert dein ganzes Jahr, auch nach einem Umzug innerhalb des Kantons. Jede Gemeinde legt ihren eigenen Steuerfuss (coefficient communal) fest, einen Prozentsatz der kantonalen Grundsteuer (impôt cantonal de base).'
+      it: 'Il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno, anche dopo un trasloco all’interno del Cantone. Ogni Comune fissa il proprio moltiplicatore (coefficient communal), una percentuale dell’imposta cantonale di base (impôt cantonal de base).'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=60'
       label:
         en: 'Vaud tax guide 2025, p. 60: computing the cantonal and communal tax'
         fr: 'Instructions générales 2025, p. 60 : Calcul de l’impôt cantonal et communal'
         de: 'Wegleitung Waadt 2025, S. 60: Berechnung der Kantons- und Gemeindesteuer, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 60: calcolo dell’imposta cantonale e comunale'
     text:
       en: 'Which commune did you live in on 31 December 2026?'
       fr: 'Dans quelle commune habitiez-vous au 31 décembre 2026 ?'
       de: 'In welcher Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale Comune abitavi il 31 dicembre 2026?'
     help:
       en: 'The official name, such as Lausanne or Yverdon-les-Bains. In L’Abbaye and Le Chenit, Taxpresso then asks which part of the commune you live in.'
       fr: 'Le nom officiel, par exemple Lausanne ou Yverdon-les-Bains. À L’Abbaye et au Chenit, Taxpresso vous demande ensuite dans quelle partie de la commune vous habitez.'
       de: 'Der offizielle Name, zum Beispiel Lausanne oder Yverdon-les-Bains. In L’Abbaye und Le Chenit fragt Taxpresso danach, in welchem Teil der Gemeinde du wohnst.'
+      it: 'Il nome ufficiale, per esempio Lausanne o Yverdon-les-Bains. A L’Abbaye e a Le Chenit, Taxpresso ti chiede poi in quale parte del Comune abiti.'
 
   # Fractions of communes may levy their own taxes (vd-na-law-licom art. 1 al. 1, p. 1); the communal
   # table lists four, with their own rate, after their commune (vd-2026-communal-arretes-imposition,
@@ -263,52 +309,81 @@ questions:
   # keeps them equal. The names are the table's.
   - id: commune_part
     key: vd.commune_part
+    group: detail
     type: choice
     when: { key: profile.commune, in: [l-abbaye, le-chenit] }
     explain:
       en: 'Your commune has fractions (fractions de commune) that levy their own tax on top of the commune’s: Les Bioux in L’Abbaye; Le Brassus, Le Sentier and L’Orient in Le Chenit. Choose the part you lived in on 31 December.'
       fr: 'Votre commune a des fractions de commune qui prélèvent leur propre impôt en plus de celui de la commune : Les Bioux à L’Abbaye ; Le Brassus, Le Sentier et L’Orient au Chenit. Choisissez la partie où vous habitiez au 31 décembre.'
       de: 'Deine Gemeinde hat Fraktionen (fractions de commune), die zusätzlich zur Gemeinde eine eigene Steuer erheben: Les Bioux in L’Abbaye; Le Brassus, Le Sentier und L’Orient in Le Chenit. Wähl den Teil, in dem du am 31. Dezember gewohnt hast.'
+      it: 'Il tuo Comune ha delle frazioni (fractions de commune) che riscuotono una propria imposta oltre a quella del Comune: Les Bioux a L’Abbaye; Le Brassus, Le Sentier e L’Orient a Le Chenit. Scegli la parte in cui abitavi il 31 dicembre.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/themes/territoire/communes/finances_communales/fichiers_xls/Arr%C3%AAt%C3%A9s_d_imposition_2026.xls'
       label:
         en: 'Communal tax rates 2026 (arrêtés d’imposition), spreadsheet in French'
         fr: 'Taux d’impôt 2026, arrêtés d’imposition des communes vaudoises'
         de: 'Gemeindesteuersätze 2026 (arrêtés d’imposition), Tabelle auf Französisch'
+        it: 'Aliquote d’imposta comunali 2026 (arrêtés d’imposition), tabella in francese'
     text:
       en: 'Which part of your commune did you live in on 31 December 2026?'
       fr: 'Dans quelle partie de votre commune habitiez-vous au 31 décembre 2026 ?'
       de: 'In welchem Teil deiner Gemeinde hast du am 31. Dezember 2026 gewohnt?'
+      it: 'In quale parte del tuo Comune abitavi il 31 dicembre 2026?'
     help:
       en: 'Not sure? Your commune’s residents’ office (contrôle des habitants) knows.'
       fr: 'Un doute ? Le contrôle des habitants de votre commune le sait.'
       de: 'Unsicher? Die Einwohnerkontrolle (contrôle des habitants) deiner Gemeinde weiss es.'
+      it: 'Hai un dubbio? Lo sa l’ufficio controllo abitanti (contrôle des habitants) del tuo Comune.'
     options:
       - value: 'l-abbaye:l-abbaye'
         label:
           en: "L'Abbaye: the rest of the commune, outside Les Bioux"
           fr: "L'Abbaye : le reste de la commune, hors des Bioux"
           de: "L'Abbaye: die übrige Gemeinde, ausserhalb von Les Bioux"
+          it: "L'Abbaye: il resto del Comune, fuori da Les Bioux"
         when: { key: profile.commune, eq: l-abbaye }
       - value: 'l-abbaye:les-bioux'
-        label: { en: "L'Abbaye: Les Bioux", fr: "L'Abbaye : Les Bioux", de: "L'Abbaye: Les Bioux" }
+        label:
+          {
+            en: "L'Abbaye: Les Bioux",
+            fr: "L'Abbaye : Les Bioux",
+            de: "L'Abbaye: Les Bioux",
+            it: "L'Abbaye: Les Bioux",
+          }
         when: { key: profile.commune, eq: l-abbaye }
       - value: 'le-chenit:le-chenit'
         label:
           en: "Le Chenit: the rest of the commune, outside Le Brassus, Le Sentier and L'Orient"
           fr: "Le Chenit : le reste de la commune, hors du Brassus, du Sentier et de L'Orient"
           de: "Le Chenit: die übrige Gemeinde, ausserhalb von Le Brassus, Le Sentier und L'Orient"
+          it: "Le Chenit: il resto del Comune, fuori da Le Brassus, Le Sentier e L'Orient"
         when: { key: profile.commune, eq: le-chenit }
       - value: 'le-chenit:le-brassus'
         label:
-          { en: 'Le Chenit: Le Brassus', fr: 'Le Chenit : Le Brassus', de: 'Le Chenit: Le Brassus' }
+          {
+            en: 'Le Chenit: Le Brassus',
+            fr: 'Le Chenit : Le Brassus',
+            de: 'Le Chenit: Le Brassus',
+            it: 'Le Chenit: Le Brassus',
+          }
         when: { key: profile.commune, eq: le-chenit }
       - value: 'le-chenit:le-sentier'
         label:
-          { en: 'Le Chenit: Le Sentier', fr: 'Le Chenit : Le Sentier', de: 'Le Chenit: Le Sentier' }
+          {
+            en: 'Le Chenit: Le Sentier',
+            fr: 'Le Chenit : Le Sentier',
+            de: 'Le Chenit: Le Sentier',
+            it: 'Le Chenit: Le Sentier',
+          }
         when: { key: profile.commune, eq: le-chenit }
       - value: 'le-chenit:l-orient'
-        label: { en: "Le Chenit: L'Orient", fr: "Le Chenit : L'Orient", de: "Le Chenit: L'Orient" }
+        label:
+          {
+            en: "Le Chenit: L'Orient",
+            fr: "Le Chenit : L'Orient",
+            de: "Le Chenit: L'Orient",
+            it: "Le Chenit: L'Orient",
+          }
         when: { key: profile.commune, eq: le-chenit }
 
   # Who is taxed in Vaud for the year (vd-2025-guide p. 6 to 8, Début et fin de l'assujettissement):
@@ -318,43 +393,56 @@ questions:
   # (p. 60; vd-na-law-licom art. 15 al. 1, p. 7). Part-year liability is not covered by rules-vd.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Vaud taxes your whole year, from 1 January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
       fr: 'Un déménagement dans le canton ne change rien : la commune où vous habitiez au 31 décembre vous impose pour toute l’année. Arriver d’un autre canton non plus : Vaud vous impose pour toute l’année, dès le 1er janvier. Arriver de l’étranger, ou quitter la Suisse, signifie que vous n’étiez imposé ici qu’une partie de l’année.'
       de: 'Ein Umzug innerhalb des Kantons ändert nichts: Die Gemeinde, in der du am 31. Dezember gewohnt hast, besteuert das ganze Jahr. Ein Zuzug aus einem anderen Kanton ändert auch nichts: Die Waadt besteuert dein ganzes Jahr, ab dem 1. Januar. Ein Zuzug aus dem Ausland oder ein Wegzug aus der Schweiz heisst, dass du nur einen Teil des Jahres hier steuerpflichtig warst.'
+      it: 'Un trasloco all’interno del Cantone non cambia niente: il Comune in cui abitavi il 31 dicembre ti tassa per tutto l’anno. Nemmeno l’arrivo da un altro Cantone cambia qualcosa: Vaud ti tassa per tutto l’anno, dal 1° gennaio. Arrivare dall’estero, o lasciare la Svizzera, significa invece che qui hai pagato le imposte solo per una parte dell’anno.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=6'
       label:
         en: 'Vaud tax guide 2025, p. 6: start and end of tax liability'
         fr: 'Instructions générales 2025, p. 6 : Début et fin de l’assujettissement'
         de: 'Wegleitung Waadt 2025, S. 6: Beginn und Ende der Steuerpflicht, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 6: inizio e fine dell’assoggettamento'
     text:
       en: 'Did you move in 2026?'
       fr: 'Avez-vous déménagé en 2026 ?'
       de: 'Bist du 2026 umgezogen?'
+      it: 'Hai traslocato nel 2026?'
     options:
-      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein' } }
+      - { value: 'no', label: { en: 'No', fr: 'Non', de: 'Nein', it: 'No' } }
       - value: within_vaud
         label:
           {
             en: 'Yes, within the canton of Vaud',
             fr: 'Oui, dans le canton de Vaud',
             de: 'Ja, innerhalb des Kantons Waadt',
+            it: 'Sì, all’interno del Cantone di Vaud',
           }
-        chip: { en: 'Moved within Vaud', fr: 'Déménagé dans le canton', de: 'Umzug im Kanton' }
+        chip:
+          {
+            en: 'Moved within Vaud',
+            fr: 'Déménagé dans le canton',
+            de: 'Umzug im Kanton',
+            it: 'Trasloco nel Cantone',
+          }
       - value: from_other_canton
         label:
           {
             en: 'Yes, from another canton',
             fr: 'Oui, depuis un autre canton',
             de: 'Ja, aus einem anderen Kanton',
+            it: 'Sì, da un altro Cantone',
           }
         chip:
           {
             en: 'Moved from another canton',
             fr: 'Arrivé(e) d’un autre canton',
             de: 'Zuzug aus einem anderen Kanton',
+            it: 'Arrivo da un altro Cantone',
           }
       - value: from_abroad
         label:
@@ -362,12 +450,14 @@ questions:
             en: 'Yes, I arrived from abroad',
             fr: 'Oui, je suis arrivé(e) de l’étranger',
             de: 'Ja, ich bin aus dem Ausland zugezogen',
+            it: 'Sì, sono arrivato o arrivata dall’estero',
           }
         notSupported:
           {
             en: 'Arriving from abroad during the year (arrivée de l’étranger)',
             fr: 'Une arrivée de l’étranger en cours d’année',
             de: 'Ein Zuzug aus dem Ausland während des Jahres (arrivée de l’étranger)',
+            it: 'L’arrivo dall’estero nel corso dell’anno (arrivée de l’étranger)',
           }
       - value: leaving_switzerland
         label:
@@ -375,12 +465,14 @@ questions:
             en: 'I left, or I’m leaving, Switzerland',
             fr: 'J’ai quitté ou je quitte la Suisse',
             de: 'Ich habe die Schweiz verlassen oder verlasse sie',
+            it: 'Ho lasciato o sto per lasciare la Svizzera',
           }
         notSupported:
           {
             en: 'Leaving Switzerland (départ à l’étranger)',
             fr: 'Un départ à l’étranger',
             de: 'Ein Wegzug ins Ausland (départ à l’étranger)',
+            it: 'La partenza dalla Svizzera (départ à l’étranger)',
           }
 
   # Form 21010 page 2: salaries (codes 100 and 105), benefits (200 to 220), pensions (240 to 270),
@@ -393,46 +485,62 @@ questions:
         en: 'Vaud tax guide 2025, p. 17: employment income'
         fr: 'Instructions générales 2025, p. 17 : Activités salariées'
         de: 'Wegleitung Waadt 2025, S. 17: unselbständige Erwerbstätigkeit, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 17: reddito da attività dipendente'
     help:
       en: 'Choose all that apply. On the return: salaries under codes 100 and 105, benefits 200 to 220, pensions 240 to 270, alimony received 280. Interest and dividends come later, with your bank documents.'
       fr: 'Choisissez tout ce qui s’applique. Sur la déclaration : salaires sous codes 100 et 105, indemnités 200 à 220, rentes 240 à 270, pensions alimentaires obtenues 280. Les intérêts et dividendes viennent plus tard, avec vos documents bancaires.'
       de: 'Wähl alles, was zutrifft. Auf der Steuererklärung: Löhne unter den Codes 100 und 105, Taggelder 200 bis 220, Renten 240 bis 270, erhaltene Unterhaltsbeiträge (pensions alimentaires obtenues) 280. Zinsen und Dividenden kommen später, mit deinen Bankunterlagen.'
+      it: 'Scegli tutto quello che vale per te. Nella dichiarazione: salari ai codici 100 e 105, indennità da 200 a 220, rendite da 240 a 270, alimenti ricevuti 280. Interessi e dividendi vengono dopo, con i tuoi documenti bancari.'
     options:
-      - { value: salary, label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn' } }
+      - {
+          value: salary,
+          label: { en: 'A salary', fr: 'Un salaire', de: 'Ein Lohn', it: 'Un salario' },
+        }
       - value: replacement_income
         label:
           en: 'Unemployment, sickness or accident benefits'
           fr: 'Des indemnités (chômage, maladie, accident)'
           de: 'Taggelder (Arbeitslosigkeit, Krankheit, Unfall)'
-        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder' }
+          it: 'Indennità di disoccupazione, malattia o infortunio'
+        chip: { en: 'Benefits', fr: 'Indemnités', de: 'Taggelder', it: 'Indennità' }
       - value: pension
         label:
           {
             en: 'A pension (AVS, AI or pension fund)',
             fr: 'Une rente (AVS, AI ou caisse de pension)',
             de: 'Eine Rente (AHV, IV oder Pensionskasse)',
+            it: 'Una rendita (AVS, AI o cassa pensione)',
           }
-        chip: { en: 'Pension', fr: 'Rente', de: 'Rente' }
+        chip: { en: 'Pension', fr: 'Rente', de: 'Rente', it: 'Rendita' }
       - value: alimony
         label:
           {
             en: 'Alimony or child support received',
             fr: 'Une pension alimentaire reçue',
             de: 'Erhaltene Unterhaltsbeiträge',
+            it: 'Alimenti o contributi di mantenimento ricevuti',
           }
-        chip: { en: 'Receives alimony', fr: 'Reçoit une pension', de: 'Erhält Unterhalt' }
+        chip:
+          {
+            en: 'Receives alimony',
+            fr: 'Reçoit une pension',
+            de: 'Erhält Unterhalt',
+            it: 'Riceve alimenti',
+          }
       - value: self_employment
         label:
           {
             en: 'Income from self-employment',
             fr: 'Un revenu d’activité indépendante',
             de: 'Einkommen aus selbständiger Erwerbstätigkeit',
+            it: 'Reddito da attività lucrativa indipendente',
           }
         notSupported:
           {
             en: 'Self-employment (activité indépendante, codes 180 to 190)',
             fr: 'L’activité indépendante (codes 180 à 190)',
             de: 'Die selbständige Erwerbstätigkeit (activité indépendante, Codes 180 bis 190)',
+            it: 'L’attività indipendente (activité indépendante, codici da 180 a 190)',
           }
 
   # vd-2025-guide p. 17 (code 100: each salary certificate, annex 03 Relevé des certificats de
@@ -444,10 +552,16 @@ questions:
         en: 'Vaud tax guide 2025, p. 17: employment income'
         fr: 'Instructions générales 2025, p. 17 : Activités salariées'
         de: 'Wegleitung Waadt 2025, S. 17: unselbständige Erwerbstätigkeit, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 17: reddito da attività dipendente'
     help:
       en: 'Each one gives you a salary certificate (certificat de salaire), which Vaud asks for with the return. On annex 03: relevé des certificats de salaire.'
       fr: 'Chacun vous remet un certificat de salaire, que Vaud demande avec la déclaration. Sur l’annexe 03 : relevé des certificats de salaire.'
       de: 'Jeder gibt dir einen Lohnausweis (certificat de salaire), den die Waadt mit der Steuererklärung verlangt. Auf dem Anhang 03: relevé des certificats de salaire (Liste der Lohnausweise).'
+      it: 'Ognuno ti dà un certificato di salario (certificat de salaire), che Vaud chiede con la dichiarazione. Nell’allegato 03: relevé des certificats de salaire.'
+
+  # Swiss, a C permit or another permit: whether tax is taken at source follows from it and the
+  # income (ch-na-law-lifd p. 49, art. 83 al. 1 and 2; data/ch/2026/questions.yaml).
+  - use: residence
 
   # People taxed at source file an ordinary return when they must, or ask for it in writing by
   # 31 March of the next year (taxation ordinaire ultérieure, TOU): vd-2025-guide p. 8 and 9;
@@ -457,16 +571,19 @@ questions:
       en: 'Tax at source in Vaud (impôt à la source) and the ordinary assessment that follows it (taxation ordinaire ultérieure, TOU)'
       fr: 'L’impôt à la source dans le canton de Vaud et la taxation ordinaire ultérieure (TOU) qui le suit'
       de: 'Die Quellensteuer im Kanton Waadt (impôt à la source) und die nachträgliche ordentliche Veranlagung (taxation ordinaire ultérieure, TOU)'
+      it: 'L’imposta alla fonte nel Cantone di Vaud (impôt à la source) e la tassazione ordinaria ulteriore che la segue (taxation ordinaire ultérieure, TOU)'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=9'
       label:
         en: 'Vaud tax guide 2025, p. 9: ordinary assessment after tax at source'
         fr: 'Instructions générales 2025, p. 9 : Taxation ordinaire ultérieure sur demande'
         de: 'Wegleitung Waadt 2025, S. 9: nachträgliche ordentliche Veranlagung, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 9: tassazione ordinaria dopo l’imposta alla fonte'
     help:
       en: 'If so, it shows on the salary certificate (certificat de salaire).'
       fr: 'Si c’est le cas, cela figure sur le certificat de salaire.'
       de: 'Wenn ja, steht es auf dem Lohnausweis (certificat de salaire).'
+      it: 'Se è così, lo trovi sul certificato di salario (certificat de salaire).'
 
   # Travel to work (frais de transport, code 140): vd-2025-guide p. 19 (only costs the employer
   # doesn't pay back; public transport) and p. 20 (other means of transport only with a reason);
@@ -477,26 +594,36 @@ questions:
       en: 'Getting to work is deducted as travel costs (frais de transport, code 140), when your employer doesn’t pay them back, for the cantonal tax and, up to its own yearly limit, the federal tax. How you get there decides how they are counted.'
       fr: 'Le trajet pour le travail se déduit comme frais de transport (code 140), s’ils ne vous sont pas remboursés par votre employeur, pour l’impôt cantonal et, jusqu’à sa propre limite annuelle, pour l’impôt fédéral. Votre moyen de transport décide comment ils sont comptés.'
       de: 'Der Arbeitsweg wird als Fahrkosten (frais de transport, Code 140) abgezogen, wenn dein Arbeitgeber sie nicht zurückzahlt, bei der Kantonssteuer und, bis zu ihrem eigenen jährlichen Höchstbetrag, bei der Bundessteuer. Wie du hinkommst, entscheidet, wie sie gezählt werden.'
+      it: 'Il tragitto per andare al lavoro si deduce come spese di trasporto (frais de transport, codice 140), se il tuo datore di lavoro non te le rimborsa, per l’imposta cantonale e, fino al suo limite annuo, per l’imposta federale. Il mezzo che usi decide come vengono calcolate.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=19'
       label:
         en: 'Vaud tax guide 2025, p. 19: travel to work'
         fr: 'Instructions générales 2025, p. 19 : Frais de transport du domicile au lieu de travail'
         de: 'Wegleitung Waadt 2025, S. 19: Fahrkosten zur Arbeit, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 19: tragitto casa-lavoro'
     help:
       en: 'Choose how you went on most work days. On the return: code 140, Transport.'
       fr: 'Choisissez comment vous y alliez la plupart des jours de travail. Sur la déclaration : code 140, Transport.'
       de: 'Wähl, wie du an den meisten Arbeitstagen hingekommen bist. Auf der Steuererklärung: Code 140, Transport.'
+      it: 'Scegli come ci andavi nella maggior parte dei giorni di lavoro. Nella dichiarazione: codice 140, Transport.'
     options:
       - value: public_transport
-        label: { en: 'Public transport', fr: 'Transports publics', de: 'Öffentlicher Verkehr' }
-      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto' } }
+        label:
+          {
+            en: 'Public transport',
+            fr: 'Transports publics',
+            de: 'Öffentlicher Verkehr',
+            it: 'Trasporti pubblici',
+          }
+      - { value: car, label: { en: 'Car', fr: 'Voiture', de: 'Auto', it: 'Auto' } }
       - value: motorbike
         label:
           {
             en: 'Motorbike or scooter with a white number plate',
             fr: 'Moto ou scooter à plaque blanche',
             de: 'Motorrad oder Roller mit weissem Kontrollschild',
+            it: 'Moto o scooter con targa bianca',
           }
       - value: bike
         label:
@@ -504,16 +631,18 @@ questions:
             en: 'Bike, e-bike or moped with a yellow number plate',
             fr: 'Vélo, vélo électrique ou cyclomoteur à plaque jaune',
             de: 'Velo, E-Bike oder Mofa mit gelbem Kontrollschild',
+            it: 'Bicicletta, e-bike o ciclomotore con targa gialla',
           }
-      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss' } }
+      - { value: walk, label: { en: 'On foot', fr: 'À pied', de: 'Zu Fuss', it: 'A piedi' } }
       - value: mostly_home
         label:
           {
             en: 'From home, almost every day',
             fr: 'Depuis chez moi, presque tous les jours',
             de: 'Von zu Hause, fast jeden Tag',
+            it: 'Da casa, quasi tutti i giorni',
           }
-        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice' }
+        chip: { en: 'Works from home', fr: 'Télétravail', de: 'Homeoffice', it: 'Telelavoro' }
 
   # vd-2025-guide p. 19 (public transport; the proof on request) and p. 62 (the federal limit).
   - use: commute_transit_cost
@@ -521,12 +650,14 @@ questions:
       en: 'You deduct what public transport to work cost you (frais de transport, code 140), for the cantonal tax and, up to its own yearly limit, the federal tax. Keep the receipts: the tax office can ask for them.'
       fr: 'Vous déduisez ce que les transports publics pour aller au travail vous ont coûté (frais de transport, code 140), pour l’impôt cantonal et, jusqu’à sa propre limite annuelle, pour l’impôt fédéral. Gardez les justificatifs : l’autorité fiscale peut les demander.'
       de: 'Du ziehst ab, was dich der öffentliche Verkehr zur Arbeit gekostet hat (frais de transport, Code 140), bei der Kantonssteuer und, bis zu ihrem eigenen jährlichen Höchstbetrag, bei der Bundessteuer. Bewahr die Belege auf: Die Steuerbehörde kann sie verlangen.'
+      it: 'Deduci quanto ti sono costati i trasporti pubblici per andare al lavoro (frais de transport, codice 140), per l’imposta cantonale e, fino al suo limite annuo, per l’imposta federale. Conserva le ricevute: l’amministrazione fiscale può chiederle.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=19'
       label:
         en: 'Vaud tax guide 2025, p. 19: travel to work'
         fr: 'Instructions générales 2025, p. 19 : Frais de transport du domicile au lieu de travail'
         de: 'Wegleitung Waadt 2025, S. 19: Fahrkosten zur Arbeit, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 19: tragitto casa-lavoro'
 
   # Vaud counts another means of transport only when there is no public transport, it can't be used
   # (infirmity, a stop notably far away, many changes...) or the vehicle is needed for the work;
@@ -536,12 +667,14 @@ questions:
       en: 'Vaud counts a car or a motorbike only if there is no public transport for the trip, you can’t use it (for example a disability, a stop far away or many changes), or you need the vehicle for your work; saving time is not enough. Otherwise you deduct what public transport would have cost.'
       fr: 'Vaud ne compte la voiture ou la moto que s’il n’y a aucun transport public pour ce trajet, si vous ne pouvez pas l’utiliser (par exemple une infirmité, un arrêt très éloigné ou de nombreux transbordements) ou si vous dépendez du véhicule pour votre profession ; le seul gain de temps ne suffit pas. Sinon, vous déduisez ce qu’auraient coûté les transports publics.'
       de: 'Die Waadt berücksichtigt Auto oder Motorrad nur, wenn es für den Weg keinen öffentlichen Verkehr gibt, du ihn nicht nutzen kannst (zum Beispiel wegen einer Behinderung, einer weit entfernten Haltestelle oder vieler Umstiege) oder du das Fahrzeug für deinen Beruf brauchst; Zeitgewinn allein genügt nicht. Sonst ziehst du ab, was der öffentliche Verkehr gekostet hätte.'
+      it: 'Vaud conta l’auto o la moto solo se per quel tragitto non ci sono trasporti pubblici, se non puoi usarli (per esempio per una disabilità, una fermata lontana o molti cambi) o se ti serve il veicolo per il tuo lavoro; risparmiare tempo non basta. Altrimenti deduci quanto sarebbero costati i trasporti pubblici.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=20'
       label:
         en: 'Vaud tax guide 2025, p. 20: other means of transport'
         fr: 'Instructions générales 2025, p. 20 : Usage d’autres moyens de transport'
         de: 'Wegleitung Waadt 2025, S. 20: andere Verkehrsmittel, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 20: altri mezzi di trasporto'
     options:
       - value: 'yes'
         label:
@@ -549,6 +682,7 @@ questions:
             en: 'Yes, I could have used public transport',
             fr: 'Oui, j’aurais pu prendre les transports publics',
             de: 'Ja, ich hätte den öffentlichen Verkehr nutzen können',
+            it: 'Sì, avrei potuto usare i trasporti pubblici',
           }
       - value: 'no'
         label:
@@ -556,6 +690,7 @@ questions:
             en: 'No: none for the trip, a health reason, a stop far away, many changes, or I need the vehicle for my work',
             fr: 'Non : aucun pour ce trajet, une infirmité, un arrêt éloigné, de nombreux transbordements, ou j’ai besoin du véhicule pour ma profession',
             de: 'Nein: keiner für diesen Weg, ein gesundheitlicher Grund, eine weit entfernte Haltestelle, viele Umstiege, oder ich brauche das Fahrzeug für meinen Beruf',
+            it: 'No: non ce ne sono per quel tragitto, un motivo di salute, una fermata lontana, molti cambi, oppure mi serve il veicolo per il mio lavoro',
           }
 
   # vd-2025-guide p. 19 (the flat amount of public transport) and p. 62 (the federal limit).
@@ -564,12 +699,14 @@ questions:
       en: 'That price is what you deduct for driving to work (frais de transport, code 140), for the cantonal tax and, up to its own yearly limit, the federal tax.'
       fr: 'C’est ce prix que vous déduisez pour le trajet en véhicule (frais de transport, code 140), pour l’impôt cantonal et, jusqu’à sa propre limite annuelle, pour l’impôt fédéral.'
       de: 'Diesen Preis ziehst du für die Fahrt zur Arbeit ab (frais de transport, Code 140), bei der Kantonssteuer und, bis zu ihrem eigenen jährlichen Höchstbetrag, bei der Bundessteuer.'
+      it: 'È questo prezzo che deduci per andare al lavoro con il tuo veicolo (frais de transport, codice 140), per l’imposta cantonale e, fino al suo limite annuo, per l’imposta federale.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=19'
       label:
         en: 'Vaud tax guide 2025, p. 19: travel to work'
         fr: 'Instructions générales 2025, p. 19 : Frais de transport du domicile au lieu de travail'
         de: 'Wegleitung Waadt 2025, S. 19: Fahrkosten zur Arbeit, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 19: tragitto casa-lavoro'
 
   # vd-2025-guide p. 20 (a rate per kilometre by kind of vehicle) and p. 21 (examples: km x 2 x the
   # days); the federal limit, p. 62.
@@ -578,12 +715,14 @@ questions:
       en: 'With a reason to drive, Vaud counts a rate per kilometre, there and back once a day, by kind of vehicle; the federal tax counts its own, up to a yearly limit.'
       fr: 'Avec une raison de prendre votre véhicule, Vaud compte un montant par kilomètre, un aller et retour par jour, selon le véhicule ; l’impôt fédéral compte le sien, jusqu’à une limite annuelle.'
       de: 'Mit einem Grund zu fahren zählt die Waadt einen Betrag pro Kilometer, einmal hin und zurück pro Tag, je nach Fahrzeug; die Bundessteuer zählt ihren eigenen, bis zu einem jährlichen Höchstbetrag.'
+      it: 'Se hai un motivo per usare il veicolo, Vaud conta un importo per chilometro, andata e ritorno una volta al giorno, secondo il tipo di veicolo; l’imposta federale conta il proprio, fino a un limite annuo.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=20'
       label:
         en: 'Vaud tax guide 2025, p. 20: other means of transport'
         fr: 'Instructions générales 2025, p. 20 : Usage d’autres moyens de transport'
         de: 'Wegleitung Waadt 2025, S. 20: andere Verkehrsmittel, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 20: altri mezzi di trasporto'
 
   # vd-2025-guide p. 19 (a year counts 240 working days, fewer for part of the year or work from
   # home) and p. 21 (the examples count 240 days).
@@ -594,10 +733,12 @@ questions:
         en: 'Vaud tax guide 2025, p. 21: examples of travel by car'
         fr: 'Instructions générales 2025, p. 21 : Exemples de trajets en véhicule'
         de: 'Wegleitung Waadt 2025, S. 21: Beispiele für Fahrten mit dem Auto, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 21: esempi di tragitti in auto'
     help:
       en: 'Leave out holidays, sick days and days worked from home. The guide counts 240 working days for a full year.'
       fr: 'Sans les vacances, les jours de maladie et les jours de télétravail. Le guide compte 240 jours ouvrables pour une année entière.'
       de: 'Ohne Ferien, Krankheitstage und Tage im Homeoffice. Die Wegleitung zählt 240 Arbeitstage für ein ganzes Jahr.'
+      it: 'Senza le vacanze, i giorni di malattia e i giorni di telelavoro. La guida conta 240 giorni lavorativi per un anno intero.'
 
   # Meals away from home (repas pris hors du domicile, code 150): a fixed amount a year when lunch
   # is regularly taken away from home, half with a canteen or an employer's contribution, none when
@@ -608,16 +749,19 @@ questions:
       en: 'Lunch regularly taken away from home because of work (repas pris hors du domicile, code 150) counts as a fixed amount a year, for 240 working days; half of it with a canteen or when your employer pays part of your meals, nothing when the meal costs you no more than at home.'
       fr: 'Les repas de midi pris régulièrement hors du domicile à cause du travail (code 150) comptent pour un montant fixe par an, pour 240 jours de travail ; la moitié avec une cantine ou quand votre employeur paie une partie des repas, rien quand le repas ne vous coûte pas plus qu’à la maison.'
       de: 'Regelmässig auswärts eingenommene Mittagessen wegen der Arbeit (repas pris hors du domicile, Code 150) zählen als fester Betrag pro Jahr, für 240 Arbeitstage; die Hälfte mit einer Kantine oder wenn dein Arbeitgeber einen Teil der Mahlzeiten bezahlt, nichts, wenn dich das Essen nicht mehr kostet als zu Hause.'
+      it: 'Il pranzo consumato regolarmente fuori casa per lavoro (repas pris hors du domicile, codice 150) conta come un importo fisso all’anno, per 240 giorni lavorativi; la metà con una mensa o se il tuo datore di lavoro paga una parte dei pasti, niente se il pasto non ti costa più che a casa.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=21'
       label:
         en: 'Vaud tax guide 2025, p. 21: meals away from home'
         fr: 'Instructions générales 2025, p. 21 : Repas pris hors du domicile'
         de: 'Wegleitung Waadt 2025, S. 21: auswärtige Verpflegung, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 21: pasti fuori casa'
     help:
       en: 'Count the work days you couldn’t eat lunch at home; 0 if you usually did. Leave out days worked from home.'
       fr: 'Comptez les jours de travail où vous ne pouviez pas manger à la maison à midi ; 0 si vous le pouviez en général. Sans les jours de télétravail.'
       de: 'Zähl die Arbeitstage, an denen du mittags nicht zu Hause essen konntest; 0, wenn du es meistens konntest. Ohne die Tage im Homeoffice.'
+      it: 'Conta i giorni di lavoro in cui non potevi pranzare a casa; 0 se di solito potevi. Senza i giorni di telelavoro.'
 
   # vd-2025-guide p. 30 (code 310) and p. 15 (the attestations are a required document).
   - use: pillar3a
@@ -627,10 +771,12 @@ questions:
         en: 'Vaud tax guide 2025, p. 30: pillar 3a'
         fr: 'Instructions générales 2025, p. 30 : Prévoyance individuelle liée (3e pilier A)'
         de: 'Wegleitung Waadt 2025, S. 30: Säule 3a, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 30: pilastro 3a'
     help:
       en: 'Your bank or insurer sends an attestation, which Vaud asks for with the return. On the return: code 310, formes reconnues de prévoyance individuelle liée (3e pilier A).'
       fr: 'Votre banque ou votre assurance vous envoie une attestation, que Vaud demande avec la déclaration. Sur la déclaration : code 310, formes reconnues de prévoyance individuelle liée (3e pilier A).'
       de: 'Deine Bank oder Versicherung schickt dir eine Bescheinigung, die die Waadt mit der Steuererklärung verlangt. Auf der Steuererklärung: Code 310, formes reconnues de prévoyance individuelle liée (Säule 3a).'
+      it: 'La tua banca o la tua assicurazione ti manda un’attestazione, che Vaud chiede con la dichiarazione. Nella dichiarazione: codice 310, formes reconnues de prévoyance individuelle liée (3e pilier A).'
 
   # vd-2025-guide p. 31 (code 320: only buy-ins not already taken off the salary of code 100).
   - use: lpp_buyin
@@ -640,10 +786,12 @@ questions:
         en: 'Vaud tax guide 2025, p. 31: pension fund buy-ins'
         fr: 'Instructions générales 2025, p. 31 : Rachats d’années d’assurance (2e pilier)'
         de: 'Wegleitung Waadt 2025, S. 31: Einkauf in die Pensionskasse, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 31: riscatti nella cassa pensione'
     help:
       en: 'A voluntary payment on top of the usual contributions. Count only a buy-in your salary certificate doesn’t show. On the return: code 320, rachats d’années d’assurance (2e pilier).'
       fr: 'Un versement volontaire en plus des cotisations habituelles. Ne comptez qu’un rachat que votre certificat de salaire n’indique pas. Sur la déclaration : code 320, rachats d’années d’assurance (2e pilier).'
       de: 'Eine freiwillige Zahlung zusätzlich zu den üblichen Beiträgen. Zähl nur einen Einkauf, den dein Lohnausweis nicht zeigt. Auf der Steuererklärung: Code 320, rachats d’années d’assurance (Einkauf in die 2. Säule).'
+      it: 'Un versamento volontario oltre ai contributi abituali. Conta solo un riscatto che il tuo certificato di salario non indica. Nella dichiarazione: codice 320, rachats d’années d’assurance (2e pilier).'
 
   # vd-2025-guide p. 32 (code 410, annex 01 état des titres; a minor child's wealth is declared by
   # the parent, p. 37) and p. 15 (bank statements are a required document); the electronic bank
@@ -655,10 +803,12 @@ questions:
         en: 'Vaud tax guide 2025, p. 32: securities and accounts'
         fr: 'Instructions générales 2025, p. 32 : État des titres'
         de: 'Wegleitung Waadt 2025, S. 32: Wertschriften und Konten, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 32: titoli e conti'
     help:
       en: 'Count PostFinance too, your children’s accounts, and online or foreign brokers (Interactive Brokers, DEGIRO). If a bank offers an electronic tax statement (eRelevé fiscal), ask for it: it has everything in one document. On the return: annex 01, état des titres, code 410.'
       fr: 'Comptez aussi PostFinance, les comptes de vos enfants et les courtiers en ligne ou étrangers (Interactive Brokers, DEGIRO). Si une banque propose un eRelevé fiscal, demandez-le : il contient tout en un seul document. Sur la déclaration : annexe 01, état des titres, code 410.'
       de: 'Zähl auch PostFinance, die Konten deiner Kinder und Online- oder ausländische Broker (Interactive Brokers, DEGIRO). Bietet eine Bank einen elektronischen Steuerauszug (eRelevé fiscal) an, verlang ihn: Er enthält alles in einem Dokument. Auf der Steuererklärung: Anhang 01, état des titres (Wertschriftenverzeichnis), Code 410.'
+      it: 'Conta anche PostFinance, i conti dei tuoi figli e i broker online o esteri (Interactive Brokers, DEGIRO). Se una banca offre un estratto fiscale elettronico (eRelevé fiscal), chiedilo: contiene tutto in un solo documento. Nella dichiarazione: allegato 01, état des titres, codice 410.'
 
   # vd-2025-guide p. 38 (code 420: crypto-assets at their market value, the federal list of rates
   # for common ones); the form prints them under 420 (vd-2025-form-21010 p. 2, form page 3).
@@ -669,10 +819,12 @@ questions:
         en: 'Vaud tax guide 2025, p. 38: cash, precious metals and crypto-assets'
         fr: 'Instructions générales 2025, p. 38 : Numéraire, billets de banque, or, autres métaux précieux et crypto-monnaies'
         de: 'Wegleitung Waadt 2025, S. 38: Bargeld, Edelmetalle und Kryptowährungen, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 38: contanti, metalli preziosi e criptovalute'
     help:
       en: 'On the return: code 420, at their market value (valeur vénale) on 31 December. The federal list of rates (liste des cours) gives it for common coins.'
       fr: 'Sur la déclaration : code 420, à leur valeur vénale au 31 décembre. La liste des cours de l’Administration fédérale des contributions la donne pour les cryptos courantes.'
       de: 'Auf der Steuererklärung: Code 420, zum Verkehrswert (valeur vénale) per 31. Dezember. Die Kursliste der ESTV (liste des cours) gibt ihn für gängige Kryptowährungen.'
+      it: 'Nella dichiarazione: codice 420, al loro valore venale (valeur vénale) al 31 dicembre. Il listino dei corsi federale (liste des cours) lo indica per le criptovalute più comuni.'
 
   # Household contents (objets mobiliers, code 440): 30% of the fire insurance value, less CHF 60,000
   # for someone taxed alone and CHF 120,000 for spouses taxed together (vd-2025-guide p. 39; the
@@ -682,50 +834,60 @@ questions:
   # safe bound for 2026. Registered partners are taxed like spouses (vd-2025-guide p. 10).
   - id: contents_high
     key: vd.contents_high
+    group: detail
     type: yesno
     explain:
       en: 'Your household contents (objets mobiliers, code 440) count in your wealth at 30% of their fire insurance value (valeur d’assurance incendie), less a deduction of CHF 60,000, or CHF 120,000 for a couple filing together. Up to those values nothing is declared.'
       fr: 'Vos objets mobiliers (code 440) comptent dans votre fortune pour 30% de leur valeur d’assurance incendie, moins une déduction de CHF 60’000, ou CHF 120’000 pour un couple qui déclare ensemble. Jusqu’à ces valeurs, rien n’est déclaré.'
       de: 'Dein Hausrat (objets mobiliers, Code 440) zählt zu deinem Vermögen mit 30% seines Feuerversicherungswerts (valeur d’assurance incendie), abzüglich CHF 60’000, oder CHF 120’000 für ein Paar mit gemeinsamer Steuererklärung. Bis zu diesen Werten wird nichts deklariert.'
+      it: 'La tua mobilia domestica (objets mobiliers, codice 440) conta nella tua sostanza per il 30% del suo valore d’assicurazione contro l’incendio (valeur d’assurance incendie), meno una deduzione di CHF 60’000, o di CHF 120’000 per una coppia che presenta una dichiarazione comune. Fino a questi valori non si dichiara niente.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=39'
       label:
         en: 'Vaud tax guide 2025, p. 39: household contents'
         fr: 'Instructions générales 2025, p. 39 : Objets mobiliers'
         de: 'Wegleitung Waadt 2025, S. 39: Hausrat, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 39: mobilia domestica'
     text:
       en: 'Are your household contents insured against fire for more than CHF 200,000, or more than CHF 400,000 if you file together as a married couple or registered partners?'
       fr: 'Vos objets mobiliers sont-ils assurés contre l’incendie pour plus de CHF 200’000, ou plus de CHF 400’000 si vous déclarez ensemble comme couple marié ou partenaires enregistrés ?'
       de: 'Ist dein Hausrat für mehr als CHF 200’000 gegen Feuer versichert, oder für mehr als CHF 400’000, wenn ihr als Ehepaar oder eingetragene Partnerschaft eine gemeinsame Steuererklärung ausfüllt?'
+      it: 'La tua mobilia domestica è assicurata contro l’incendio per più di CHF 200’000, o per più di CHF 400’000 se fai una dichiarazione comune come coppia sposata o in unione domestica registrata?'
     help:
       en: 'Your household insurance policy (assurance ménage) gives the fire insurance value. These are the amounts of the 2025 guide: the 2026 ones are not published yet and can’t be lower.'
       fr: 'Votre police d’assurance ménage indique la valeur d’assurance incendie. Ce sont les montants du guide 2025 : ceux de 2026 ne sont pas encore publiés et ne peuvent pas être plus bas.'
       de: 'Deine Hausratversicherung (assurance ménage) nennt den Feuerversicherungswert. Das sind die Beträge der Wegleitung 2025: Die für 2026 sind noch nicht veröffentlicht und können nicht tiefer sein.'
+      it: 'La tua polizza di assicurazione mobilia domestica (assurance ménage) indica il valore d’assicurazione contro l’incendio. Sono gli importi della guida 2025: quelli del 2026 non sono ancora pubblicati e non possono essere più bassi.'
 
   # vd-2025-guide p. 39 (code 440: 30% of the fire insurance value, less the deduction); the wealth
   # on 31 December counts (p. 6).
   - id: contents_value
     key: vd.contents_value
+    group: detail
     type: money
     when: { key: vd.contents_high, is: true }
     explain:
       en: 'Taxpresso declares 30% of it, less the deduction for household contents (objets mobiliers, code 440).'
       fr: 'Taxpresso en déclare 30%, moins la déduction pour les objets mobiliers (code 440).'
       de: 'Taxpresso deklariert 30% davon, abzüglich des Abzugs für den Hausrat (objets mobiliers, Code 440).'
+      it: 'Taxpresso ne dichiara il 30%, meno la deduzione per la mobilia domestica (objets mobiliers, codice 440).'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=39'
       label:
         en: 'Vaud tax guide 2025, p. 39: household contents'
         fr: 'Instructions générales 2025, p. 39 : Objets mobiliers'
         de: 'Wegleitung Waadt 2025, S. 39: Hausrat, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 39: mobilia domestica'
     text:
       en: 'What is the fire insurance value of your household contents?'
       fr: 'Quelle est la valeur d’assurance incendie de vos objets mobiliers ?'
       de: 'Wie hoch ist der Feuerversicherungswert deines Hausrats?'
+      it: 'Qual è il valore d’assicurazione contro l’incendio della tua mobilia domestica?'
     help:
       en: 'In CHF, as your household insurance policy (assurance ménage) gives it on 31 December 2026.'
       fr: 'En CHF, selon votre police d’assurance ménage au 31 décembre 2026.'
       de: 'In CHF, wie ihn deine Hausratversicherung (assurance ménage) per 31. Dezember 2026 nennt.'
+      it: 'In CHF, come lo indica la tua polizza di assicurazione mobilia domestica (assurance ménage) al 31 dicembre 2026.'
 
   # Interest on savings (code 480): savings and deposit books, current and postal accounts, Swiss or
   # foreign bonds, cash bonds, mortgage loans and other claims; not shares, funds or similar
@@ -735,26 +897,31 @@ questions:
   # minor child's accounts are the parent's (p. 37).
   - id: savings_interest
     key: vd.savings_interest
+    group: detail
     type: money
     when: { key: profile.banks, gt: 0 }
     explain:
       en: 'Vaud deducts the interest on savings (déduction des intérêts de capitaux d’épargne, code 480) up to a limit: savings, deposit, current and postal accounts, Swiss or foreign bonds, cash bonds (bons de caisse), mortgage loans and other loans you made. Not dividends, investment funds or similar products.'
       fr: 'Vaud déduit les intérêts de capitaux d’épargne (code 480) jusqu’à une limite : carnets d’épargne, livrets de dépôt, comptes courants et postaux, obligations suisses ou étrangères, bons de caisse, prêts hypothécaires et autres créances. Pas les dividendes, fonds de placement ou produits semblables.'
       de: 'Die Waadt zieht die Zinsen auf Sparkapitalien (déduction des intérêts de capitaux d’épargne, Code 480) bis zu einem Höchstbetrag ab: Spar-, Depositen-, Kontokorrent- und Postkonten, schweizerische oder ausländische Obligationen, Kassenobligationen (bons de caisse), Hypothekardarlehen und andere Darlehen, die du gewährt hast. Nicht Dividenden, Anlagefonds oder ähnliche Produkte.'
+      it: 'Vaud deduce gli interessi sui capitali di risparmio (déduction des intérêts de capitaux d’épargne, codice 480) fino a un limite: conti di risparmio, di deposito, correnti e postali, obbligazioni svizzere o estere, obbligazioni di cassa (bons de caisse), prestiti ipotecari e altri prestiti che hai concesso. Non i dividendi, i fondi d’investimento o prodotti simili.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=40'
       label:
         en: 'Vaud tax guide 2025, p. 40: interest on savings'
         fr: 'Instructions générales 2025, p. 40 : Déduction des intérêts de capitaux d’épargne'
         de: 'Wegleitung Waadt 2025, S. 40: Abzug der Zinsen auf Sparkapitalien, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 40: interessi sui risparmi'
     text:
       en: 'How much interest on savings did you receive in 2026?'
       fr: 'Combien d’intérêts de capitaux d’épargne avez-vous reçus en 2026 ?'
       de: 'Wie viel Zinsen auf Sparkapitalien (intérêts de capitaux d’épargne) hast du 2026 erhalten?'
+      it: 'Quanti interessi sui risparmi hai ricevuto nel 2026?'
     help:
       en: 'In CHF for the household, your children’s accounts included; 0 if none. Your answer replaces the interest Taxpresso reads from your bank documents, so include your accounts’ interest. Not sure? Skip it: Taxpresso then uses your bank documents.'
       fr: 'En CHF pour le ménage, comptes de vos enfants compris ; 0 si aucun. Votre réponse remplace les intérêts que Taxpresso lit dans vos documents bancaires : comptez donc aussi ceux de vos comptes. Un doute ? Passez la question : Taxpresso utilise alors vos documents bancaires.'
       de: 'In CHF für den Haushalt, die Konten deiner Kinder eingeschlossen; 0, wenn keine. Deine Antwort ersetzt die Zinsen, die Taxpresso aus deinen Bankunterlagen liest, zähl also auch die Zinsen deiner Konten mit. Unsicher? Überspring die Frage: Taxpresso nimmt dann deine Bankunterlagen.'
+      it: 'In CHF per tutta l’economia domestica, compresi i conti dei tuoi figli; 0 se nessuno. La tua risposta sostituisce gli interessi che Taxpresso legge nei tuoi documenti bancari: conta quindi anche gli interessi dei tuoi conti. Hai un dubbio? Salta la domanda: Taxpresso usa allora i tuoi documenti bancari.'
 
   # Loan interest (intérêts passifs, code 610; leasing is rent, p. 42), alimony paid (630, p. 43),
   # medical and dental costs (710, p. 48), donations (720, p. 49) in vd-2025-guide; payments to
@@ -765,16 +932,19 @@ questions:
       en: 'Each of these can lower your tax if you keep the proof: loan interest (intérêts passifs, code 610), alimony paid (pensions alimentaires versées, 630), medical and dental costs (frais médicaux et dentaires, 710) and donations (dons, 720). In Vaud, payments to political parties have their own line (code 620).'
       fr: 'Chacun de ces frais peut diminuer votre impôt si vous en gardez la preuve : intérêts passifs (code 610), pensions alimentaires versées (630), frais médicaux et dentaires (710) et dons (720). À Vaud, les versements aux partis politiques ont leur propre ligne (code 620).'
       de: 'Jede dieser Ausgaben kann deine Steuer senken, wenn du den Beleg aufbewahrst: Schuldzinsen (intérêts passifs, Code 610), bezahlte Unterhaltsbeiträge (pensions alimentaires versées, 630), Arzt- und Zahnarztkosten (frais médicaux et dentaires, 710) und Spenden (dons, 720). In der Waadt haben Beiträge an politische Parteien eine eigene Zeile (Code 620).'
+      it: 'Ognuna di queste spese può ridurre le tue imposte se ne conservi la prova: interessi passivi (intérêts passifs, codice 610), alimenti versati (pensions alimentaires versées, 630), spese mediche e dentarie (frais médicaux et dentaires, 710) e donazioni (dons, 720). A Vaud, i versamenti ai partiti politici hanno una riga propria (codice 620).'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/Tableau_des_d%C3%A9ductions_2026.pdf'
       label:
         en: 'Vaud deductions table 2026, in French'
         fr: 'Tableau des principales déductions vaudoises 2026'
         de: 'Tabelle der wichtigsten Waadtländer Abzüge 2026, auf Französisch'
+        it: 'Tabella delle deduzioni di Vaud 2026, in francese'
     help:
       en: 'Choose all that apply. Leasing payments don’t count as loan interest.'
       fr: 'Choisissez tout ce qui s’applique. Les versements d’un leasing ne comptent pas comme intérêts d’emprunt.'
       de: 'Wähl alles, was zutrifft. Leasingraten zählen nicht als Schuldzinsen.'
+      it: 'Scegli tutto quello che vale per te. Le rate di leasing non contano come interessi passivi.'
 
   # The housing deduction (déduction sociale pour le logement, code 660): the net rent without
   # charges of the main home, above 20% of the net income (code 650), with a limit; the form asks
@@ -783,25 +953,30 @@ questions:
   # `special` question below says so.
   - id: rent
     key: vd.rent
+    group: deduction
     type: money
     explain:
       en: 'Vaud has a housing deduction (déduction sociale pour le logement, code 660) for your main home: the part of the rent above 20% of your net income, up to a limit.'
       fr: 'Vaud accorde une déduction sociale pour le logement (code 660) pour votre domicile principal : la part du loyer qui dépasse 20% de votre revenu net, jusqu’à une limite.'
       de: 'Die Waadt kennt einen Abzug für die Wohnung (déduction sociale pour le logement, Code 660) für deinen Hauptwohnsitz: den Teil der Miete über 20% deines Nettoeinkommens, bis zu einem Höchstbetrag.'
+      it: 'Vaud prevede una deduzione per l’alloggio (déduction sociale pour le logement, codice 660) per la tua abitazione principale: la parte dell’affitto che supera il 20% del tuo reddito netto, fino a un limite.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=44'
       label:
         en: 'Vaud tax guide 2025, p. 44: housing deduction'
         fr: 'Instructions générales 2025, p. 44 : Déduction sociale pour le logement'
         de: 'Wegleitung Waadt 2025, S. 44: Abzug für die Wohnung, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 44: deduzione per l’alloggio'
     text:
       en: 'What yearly net rent did you pay in 2026 for your main home, without charges?'
       fr: 'Quel loyer annuel net avez-vous payé en 2026 pour votre logement principal, sans les charges ?'
       de: 'Wie viel Nettomiete hast du 2026 für deine Hauptwohnung bezahlt, ohne Nebenkosten?'
+      it: 'Quanto affitto netto annuo hai pagato nel 2026 per la tua abitazione principale, senza le spese accessorie?'
     help:
       en: 'In CHF, the rent actually paid in the year, without charges: the form asks it next to code 660 (Loyer annuel net). 0 if you paid no rent. Taxpresso can’t prepare the return of a homeowner yet.'
       fr: 'En CHF, le loyer effectivement payé dans l’année, sans les charges : la déclaration le demande à côté du code 660 (Loyer annuel net). 0 si vous n’avez pas payé de loyer. Taxpresso ne peut pas encore préparer la déclaration d’un propriétaire.'
       de: 'In CHF, die im Jahr tatsächlich bezahlte Miete, ohne Nebenkosten (charges): Die Steuererklärung fragt sie neben Code 660 (Loyer annuel net). 0, wenn du keine Miete bezahlt hast. Die Steuererklärung von Wohneigentümern kann Taxpresso noch nicht vorbereiten.'
+      it: 'In CHF, l’affitto effettivamente pagato nell’anno, senza le spese accessorie: il modulo lo chiede accanto al codice 660 (Loyer annuel net). 0 se non hai pagato affitto. Taxpresso non può ancora preparare la dichiarazione di chi è proprietario della propria abitazione.'
 
   # What Taxpresso can't prepare for Vaud yet: property (annex 07, vd-2025-guide p. 41), inheritances
   # and gifts (form page 4, chiffre 6; code 425, p. 38), income from abroad, capital payments taxed
@@ -813,6 +988,7 @@ questions:
         en: 'Filling in your return with VaudTax (State of Vaud), in French'
         fr: 'Remplir ma déclaration d’impôt avec VaudTax (État de Vaud)'
         de: 'Steuererklärung mit VaudTax ausfüllen (Kanton Waadt), auf Französisch'
+        it: 'Compilare la dichiarazione con VaudTax (Stato di Vaud), in francese'
     options:
       - value: real_estate
         label:
@@ -820,12 +996,14 @@ questions:
             en: 'I own real estate, in Switzerland or abroad',
             fr: 'Je suis propriétaire d’un bien immobilier, en Suisse ou à l’étranger',
             de: 'Ich besitze eine Liegenschaft, in der Schweiz oder im Ausland',
+            it: 'Sono proprietario o proprietaria di un immobile, in Svizzera o all’estero',
           }
         notSupported:
           {
             en: 'Real estate (immeubles, annex 07)',
             fr: 'Les immeubles (annexe 07)',
             de: 'Liegenschaften (immeubles, Anhang 07)',
+            it: 'Gli immobili (immeubles, allegato 07)',
           }
       - value: inheritance_or_gift
         label:
@@ -833,12 +1011,14 @@ questions:
             en: 'I received an inheritance or a large gift',
             fr: 'J’ai reçu un héritage ou une donation importante',
             de: 'Ich habe eine Erbschaft oder eine grosse Schenkung erhalten',
+            it: 'Ho ricevuto un’eredità o una donazione importante',
           }
         notSupported:
           {
             en: 'An inheritance or a gift (succession, donation)',
             fr: 'Un héritage ou une donation',
             de: 'Eine Erbschaft oder Schenkung (succession, donation)',
+            it: 'Un’eredità o una donazione (succession, donation)',
           }
       - value: foreign_income
         label:
@@ -846,12 +1026,14 @@ questions:
             en: 'I had income from abroad (salary, pension, rent)',
             fr: 'J’ai eu des revenus de l’étranger (salaire, rente, loyer)',
             de: 'Ich hatte Einkünfte aus dem Ausland (Lohn, Rente, Miete)',
+            it: 'Ho avuto redditi dall’estero (salario, rendita, affitto)',
           }
         notSupported:
           {
             en: 'Income from abroad',
             fr: 'Des revenus de l’étranger',
             de: 'Einkünfte aus dem Ausland',
+            it: 'Redditi dall’estero',
           }
       - value: pension_capital
         label:
@@ -859,12 +1041,14 @@ questions:
             en: 'I withdrew pension capital (2nd or 3rd pillar)',
             fr: 'J’ai retiré un capital de prévoyance (2e ou 3e pilier)',
             de: 'Ich habe Vorsorgekapital bezogen (2. Säule oder Säule 3a)',
+            it: 'Ho prelevato un capitale di previdenza (2° o 3° pilastro)',
           }
         notSupported:
           {
             en: 'A pension capital withdrawal (prestation en capital, taxed separately)',
             fr: 'Un retrait de capital de prévoyance (prestation en capital, imposée séparément)',
             de: 'Ein Kapitalbezug aus der Vorsorge (prestation en capital, separat besteuert)',
+            it: 'Un prelievo di capitale di previdenza (prestation en capital, tassato separatamente)',
           }
 
 # The documents, with the page of the Vaud guide (vd-2025-guide, contents p. 2 and 3); the
@@ -877,6 +1061,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 17: employment income'
         fr: 'Instructions générales 2025, p. 17 : Activités salariées'
         de: 'Wegleitung Waadt 2025, S. 17: unselbständige Erwerbstätigkeit, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 17: reddito da attività dipendente'
     source: 'vd-2025-guide p. 15, p. 17'
 
   - use: replacement_income
@@ -886,6 +1071,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 26: benefits'
         fr: 'Instructions générales 2025, p. 26 : Indemnités pour perte de gain'
         de: 'Wegleitung Waadt 2025, S. 26: Erwerbsausfallentschädigungen, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 26: indennità'
     source: 'vd-2025-guide p. 26'
 
   - use: pension
@@ -895,6 +1081,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 27: pensions'
         fr: 'Instructions générales 2025, p. 27 : Rentes et pensions'
         de: 'Wegleitung Waadt 2025, S. 27: Renten, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 27: rendite'
     source: 'vd-2025-guide p. 27, p. 28'
 
   - use: pillar3a
@@ -904,6 +1091,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 30: pillar 3a'
         fr: 'Instructions générales 2025, p. 30 : Prévoyance individuelle liée (3e pilier A)'
         de: 'Wegleitung Waadt 2025, S. 30: Säule 3a, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 30: pilastro 3a'
     source: 'vd-2025-guide p. 15, p. 30'
 
   - use: lpp_buyin
@@ -913,6 +1101,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 31: pension fund buy-ins'
         fr: 'Instructions générales 2025, p. 31 : Rachats d’années d’assurance (2e pilier)'
         de: 'Wegleitung Waadt 2025, S. 31: Einkauf in die Pensionskasse, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 31: riscatti nella cassa pensione'
     source: 'vd-2025-guide p. 15, p. 31'
 
   # The premiums and any subsidy received are given on form page 4, chiffre 10 (vd-2025-guide p. 29).
@@ -923,6 +1112,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 29: health and accident insurance'
         fr: 'Instructions générales 2025, p. 29 : Assurances-maladie et accidents, assurances sur la vie'
         de: 'Wegleitung Waadt 2025, S. 29: Kranken- und Unfallversicherung, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 29: assicurazione malattia e infortuni'
     source: 'vd-2025-guide p. 29'
 
   - use: banks
@@ -932,6 +1122,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 32: securities and accounts'
         fr: 'Instructions générales 2025, p. 32 : État des titres'
         de: 'Wegleitung Waadt 2025, S. 32: Wertschriften und Konten, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 32: titoli e conti'
     source: 'vd-2025-guide p. 15, p. 32'
 
   - use: crypto
@@ -941,6 +1132,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 38: cash, precious metals and crypto-assets'
         fr: 'Instructions générales 2025, p. 38 : Numéraire, billets de banque, or, autres métaux précieux et crypto-monnaies'
         de: 'Wegleitung Waadt 2025, S. 38: Bargeld, Edelmetalle und Kryptowährungen, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 38: contanti, metalli preziosi e criptovalute'
     source: 'vd-2025-guide p. 38'
 
   - use: childcare
@@ -950,6 +1142,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 44: childcare deduction'
         fr: 'Instructions générales 2025, p. 44 : Déduction pour frais de garde'
         de: 'Wegleitung Waadt 2025, S. 44: Abzug für Kinderbetreuungskosten, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 44: deduzione per le spese di custodia'
     source: 'vd-2025-guide p. 15, p. 44'
 
   - use: medical
@@ -959,6 +1152,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 48: medical and dental costs'
         fr: 'Instructions générales 2025, p. 48 : Frais médicaux et dentaires'
         de: 'Wegleitung Waadt 2025, S. 48: Arzt- und Zahnarztkosten, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 48: spese mediche e dentarie'
     source: 'vd-2025-guide p. 48'
 
   # Donations (code 720, p. 49) and payments to political parties (code 620, p. 43) are separate
@@ -968,12 +1162,14 @@ requirements:
       en: 'Receipts from the charities or political parties you gave to. In Vaud, donations to charities (dons, code 720) and payments to political parties (code 620) are separate lines.'
       fr: 'Les reçus des associations ou des partis politiques à qui vous avez donné. À Vaud, les dons à des institutions d’utilité publique (code 720) et les versements aux partis politiques (code 620) sont des lignes séparées.'
       de: 'Die Belege der Organisationen oder Parteien, denen du gespendet hast. In der Waadt sind Spenden an gemeinnützige Institutionen (dons, Code 720) und Beiträge an politische Parteien (Code 620) getrennte Zeilen.'
+      it: 'Le ricevute degli enti di pubblica utilità o dei partiti politici a cui hai fatto delle donazioni. A Vaud, le donazioni a enti di pubblica utilità (dons, codice 720) e i versamenti ai partiti politici (codice 620) sono righe separate.'
     learnMore:
       url: 'https://www.vd.ch/fileadmin/user_upload/organisation/dfin/aci/fichiers_pdf/21001_2025.pdf#page=49'
       label:
         en: 'Vaud tax guide 2025, p. 49: donations'
         fr: 'Instructions générales 2025, p. 49 : Dons à des institutions d’utilité publique'
         de: 'Wegleitung Waadt 2025, S. 49: Spenden, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 49: donazioni'
     source: 'vd-2025-guide p. 43, p. 49'
 
   - use: loan_interest
@@ -983,6 +1179,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 41: debt interest'
         fr: 'Instructions générales 2025, p. 41 : Intérêts et dettes'
         de: 'Wegleitung Waadt 2025, S. 41: Schuldzinsen und Schulden, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 41: interessi passivi'
     source: 'vd-2025-guide p. 41, p. 42'
 
   - use: alimony
@@ -992,6 +1189,7 @@ requirements:
         en: 'Vaud tax guide 2025, p. 43: alimony paid'
         fr: 'Instructions générales 2025, p. 43 : Pensions alimentaires versées'
         de: 'Wegleitung Waadt 2025, S. 43: bezahlte Unterhaltsbeiträge, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 43: alimenti versati'
     source: 'vd-2025-guide p. 28, p. 43'
 
   # Form page 4, chiffre 1: a copy of the financial clauses of the separation agreement or the
@@ -1003,4 +1201,5 @@ requirements:
         en: 'Vaud tax guide 2025, p. 43: alimony paid'
         fr: 'Instructions générales 2025, p. 43 : Pensions alimentaires versées'
         de: 'Wegleitung Waadt 2025, S. 43: bezahlte Unterhaltsbeiträge, auf Französisch'
+        it: 'Guida fiscale di Vaud 2025, p. 43: alimenti versati'
     source: 'vd-2025-guide p. 28, p. 43; vd-2025-form-21010 p. 1 (form page 4, chiffre 1)'

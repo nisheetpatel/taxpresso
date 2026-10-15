@@ -6,6 +6,8 @@
 // with `detail`.
 import {
   chf,
+  type CapitalTax,
+  type CapitalView,
   type Item,
   type Line,
   type ResultView,
@@ -15,11 +17,12 @@ import {
 } from '@taxpresso/rules-ch';
 import { contentLang, say, type UiLang } from './lang.js';
 import type { Workspace } from './workspace.js';
+import { partYearGuide } from './part-year.js';
 
 const WHO: Record<string, Text> = {
-  p1: { en: 'you', fr: 'vous', de: 'du' },
-  p2: { en: 'your spouse', fr: 'votre conjoint', de: 'dein Partner' },
-  household: { en: 'household', fr: 'ménage', de: 'Haushalt' },
+  p1: { en: 'you', fr: 'vous', de: 'du', it: 'tu' },
+  p2: { en: 'your spouse', fr: 'votre conjoint', de: 'dein Partner', it: 'il tuo coniuge' },
+  household: { en: 'household', fr: 'ménage', de: 'Haushalt', it: 'economia domestica' },
 };
 
 /** The largest items first, at most `n`, shown in the order of the form. */
@@ -77,10 +80,57 @@ function lastYearText(x: YearComparisonRow): string {
   return `${x.code} ${x.official} (${PERSON[x.person].en}): ${cols}${x.lastYearNeedsOk ? ' [last year read, not checked by the user]' : ''}${x.thisYearProvisional ? ' [this year not final]' : ''}`;
 }
 
+/** The tax on pension capital, for Claude: the amount, each tax, and that it is apart. */
+function capitalText(c: CapitalView, capital: CapitalTax): string {
+  const each = capital.items
+    .map(
+      (i) =>
+        `${i.code} (${WHO[i.person]?.en ?? i.person}) ${chf(i.amount)}${i.needsOk ? " [needs the user's OK]" : ''}`,
+    )
+    .join('; ');
+  const taxes = [
+    capital.icc ? `cantonal and communal ${chf(capital.icc.tax.amount)}` : '',
+    capital.ifd ? `federal ${chf(capital.ifd.tax.amount)}` : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+  return `${c.amount.label.en}: ${chf(c.amount.line.amount)} (${each}). A tax of its own, apart from the tax on income, at a fifth of the scale, never in the total${taxes ? `: ${taxes}` : ': not computed (see "Not computed")'}${c.total ? `; together ${chf(c.total.line.amount)}` : ''}.`;
+}
+
+/**
+ * What Claude does with the tax on pension capital: say it apart, and ask why a lump sum was paid
+ * when its attestation doesn't say (the engine then takes retirement, a home or self-employment).
+ */
+function capitalGuide(ws: Workspace): string {
+  const facts = ws.countedFacts();
+  const docs = (key: string) =>
+    new Set(facts.filter((f) => f.key === key).map((f) => f.source.docId ?? ''));
+  const reasons = docs('capital.reason');
+  const unread = [...docs('capital.amount')].some((id) => !reasons.has(id));
+  return `Say it is a tax of its own, and never add it to the total.${unread ? " Where the reason wasn't read, ask the user why it was paid: if they left Switzerland, or for another reason, save that reason on the attestation (set_fact, key capital.reason, instance = its id) and say plainly that Taxpresso can't compute its tax yet." : ''}`;
+}
+
 /** The canton's result and its view, or why there is none. */
 function current(ws: Workspace) {
   const e = ws.estimate();
   return { e, view: e.entry?.view, result: e.result };
+}
+
+/**
+ * The tax rests on at least one income or wealth figure (items: income and assets positive). Without
+ * one there is nothing real to show: no CHF 0.00 estimate, no breakdown of nothing, no copy panel
+ * line computed from nothing (docs/design/simple.md). compute_tax itself is unchanged.
+ */
+export function hasFigures(ws: Workspace): boolean {
+  const r = ws.estimate().result;
+  if (!r) return false;
+  return (
+    (r.icc?.grossIncome.amount ?? 0) > 0 ||
+    (r.ifd?.grossIncome.amount ?? 0) > 0 ||
+    (r.icc?.wealth.items ?? []).some((i) => i.amount > 0) ||
+    // A lump sum of pension capital has its own tax, apart from the total.
+    (r.capital?.amount.amount ?? 0) > 0
+  );
 }
 
 /** compute_tax: text for Claude and the structured result. */
@@ -94,7 +144,7 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     return {
       text,
       structured: {
-        taxYear: ws.config.taxYear,
+        taxYear: ws.taxYear,
         ...tag,
         computed: false,
         missing: en(missing),
@@ -106,7 +156,7 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   const say: string[] = [];
   const estimated = r.estimates.length > 0;
   say.push(
-    `Tax year ${r.taxYear}, ${view.where(r)}. ${estimated ? 'An estimate: see "Estimates" below.' : 'From official values only.'}${view.previewNote ? ` ${view.previewNote}` : ''}`,
+    `Tax year ${r.taxYear}, ${view.where(r)}. ${estimated ? 'An estimate: see "Estimates" below.' : 'From official values only.'}${view.previewNote ? ` ${view.previewNote} Say so once, with those rules.` : ''}`,
   );
   if (icc) say.push(...view.cantonal(icc));
   if (ifd) {
@@ -115,6 +165,24 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     );
   }
   if (r.total !== null) say.push(`Total: ${chf(r.total)}.`);
+  const capital = view.capital?.(r);
+  if (capital && r.capital) say.push(capitalText(capital, r.capital), capitalGuide(ws));
+  // A home or land abroad (Geneva, annexe D): exempt here, counted for the rate.
+  if ((r as { abroad?: unknown }).abroad) {
+    say.push(
+      'Property abroad: Taxpresso counts it only to set the rate (exemption avec réserve de progression) and shares the debts, their interest and the deductions with it (97.00). Give these figures as they are, and say the rules it lists as not spelled out in the documents.',
+    );
+  }
+  // A property in Geneva (annexe D): the AFC's values, the abattement, the upkeep, the IIC apart.
+  const property = (r as { property?: { iic?: Line; use: string } }).property;
+  if (property) {
+    say.push(
+      `Property in Geneva (annexe D): its tax value and ${property.use === 'let' ? 'its rents' : 'rental value'} are the AFC’s or the user’s documents’ for the year (the user’s rough figures count as estimates); Taxpresso applies the abattement, the flat or actual upkeep for each tax (the higher one) and checks the taux d’effort.${property.iic ? ` The impôt immobilier complémentaire (IIC), ${chf(property.iic.amount)}, is a tax of its own, not in the total.` : ''} Give these figures as they are; never state a tax value, a rental value or a rate from your own knowledge.`,
+    );
+  }
+  // A year of arrival from abroad or of departure abroad (Geneva): the period, at a full year's rate.
+  const partYear = partYearGuide(r as Parameters<typeof partYearGuide>[0]);
+  if (partYear) say.push(partYear);
   const items = icc ? mainItems(icc.items, 8) : [];
   if (items.length) {
     say.push(
@@ -150,6 +218,12 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
   if (r.unverifiedRules.length) {
     say.push(`Rules the documents don't spell out: ${en(r.unverifiedRules).join(' ')}`);
   }
+  // A canton whose tax can't be computed for the year (Fribourg 2026: no communal coefficients).
+  if (ws.canton().canton?.plan?.noTax?.years.includes(r.taxYear)) {
+    say.push(
+      'Say so plainly; never estimate the tax, a rate or a saving yourself, not even from another year’s.',
+    );
+  }
   const structured: Record<string, unknown> = {
     taxYear: r.taxYear,
     ...tag,
@@ -166,6 +240,21 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     unsupported: en(r.unsupported),
     notSupported,
     unverifiedRules: en(r.unverifiedRules),
+    ...(capital && r.capital
+      ? {
+          capital: {
+            amount: capital.amount.line.amount,
+            items: r.capital.items.map((i) => ({
+              code: i.code,
+              person: i.person,
+              amount: i.amount,
+            })),
+            icc: r.capital.icc?.tax.amount ?? null,
+            ifd: r.capital.ifd?.tax.amount ?? null,
+            total: capital.total?.line.amount ?? null,
+          },
+        }
+      : {}),
     complete: r.complete,
     ...(r.incomplete.length ? { incomplete: en(r.incomplete) } : {}),
     ...(lastYear.length
@@ -196,9 +285,15 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
     const all = [
       ...(icc ? [...icc.items, ...wealth] : []),
       ...(ifd ? ifd.items.map((i) => ({ ...i, code: `${view.ifdCode} ${i.code}` })) : []),
+      ...(r.capital?.items ?? []),
     ];
+    if (r.capital) {
+      (structured.detail as Record<string, unknown>).capitalItems = r.capital.items.map((i) =>
+        itemOut(view, i),
+      );
+    }
     say.push(
-      `Detail, each item with how it was computed and its source${view.detailNote}:`,
+      `Detail, each item with how it was computed and its source${view.detailNote}. Explain a figure from these, in the user's language, with its official term and code:`,
       ...all.map(
         (i) =>
           `- ${i.code} ${view.term(i)} (${WHO[i.person]?.en ?? i.person}): ${chf(i.amount)}. ${i.how.en} [${i.sources.join('; ')}]`,
@@ -218,8 +313,10 @@ export function computeTaxOutput(ws: Workspace, detail: boolean) {
 /** "Your estimate" in the dashboard, in the UI language. */
 export function estimateView(ws: Workspace, lang: UiLang) {
   const { e, view, result: r } = current(ws);
-  // A canton without German content shows English on a German page (./lang.ts).
-  const l: UiLang = view?.german ? lang : contentLang(lang);
+  // A canton without German (or Italian) content shows English on a German (or Italian) page
+  // (./lang.ts).
+  const own = (lang === 'de' && view?.german) || (lang === 'it' && view?.italian);
+  const l: UiLang = own ? lang : contentLang(lang);
   if (!r || !view) return { computed: false as const, missing: e.missing.map((m) => say(m, l)) };
   const icc = r.icc;
   const ifd = r.ifd;
@@ -231,20 +328,24 @@ export function estimateView(ws: Workspace, lang: UiLang) {
     needsOk: Boolean(line.needsOk),
   });
   const couple = ws.snapshot().people.length > 1;
+  const capital = view.capital?.(r);
   return {
     computed: true as const,
     ...(view.preview ? { canton: view.canton } : {}),
     taxYear: r.taxYear,
     total: r.total,
     estimate: r.estimates.length > 0,
-    rows: view.rows(r).map(row),
+    // The tax on pension capital, a tax of its own: its rows follow, each saying it is not in the
+    // total (only when there is one).
+    rows: [...view.rows(r), ...(capital?.rows ?? [])].map(row),
     parts: view.parts(r).map(row),
     taxable: {
       icc: icc?.taxableIncome.amount ?? null,
       ifd: ifd?.taxableIncome.amount ?? null,
       wealth: icc?.wealth.taxableWealth.amount ?? null,
     },
-    items: (icc ? mainItems(icc.items, 8) : []).map((i) => ({
+    // The form's main lines, then each lump sum of pension capital (98.12).
+    items: [...(icc ? mainItems(icc.items, 8) : []), ...(r.capital?.items ?? [])].map((i) => ({
       code: i.code,
       label: say(i.label, l),
       who: i.person !== 'household' && couple ? say(WHO[i.person] ?? WHO.household!, l) : '',

@@ -16,10 +16,18 @@ import {
   type OfficialDocument,
   type OfficialLink,
 } from '../law/official-documents.js';
-import { chf } from '@taxpresso/rules-ch';
+import { chf, type CapitalTax } from '@taxpresso/rules-ch';
 import { ESTIMATE_TEXT } from './explain.js';
 import { rubric } from './rubrics.js';
-import type { EstimateReason, LimitApplied, TaxResult } from './types.js';
+import { dayText } from './part-year.js';
+import type {
+  AbroadResult,
+  EstimateReason,
+  LimitApplied,
+  PropertyResult,
+  PartYearResult,
+  TaxResult,
+} from './types.js';
 
 const NB = '\u00a0';
 const t = (en: string, fr: string): Text => ({ en, fr });
@@ -105,7 +113,17 @@ export type OfficialPdfState =
 export type FinalCheckResult = Pick<
   TaxResult,
   'estimates' | 'incomplete' | 'assumptions' | 'notCounted' | 'unsupported' | 'unverifiedRules'
-> & { limits: readonly LimitApplied[] };
+> & {
+  limits: readonly LimitApplied[];
+  /** The separate tax on pension capital, in a canton that computes it (Geneva). */
+  capital?: CapitalTax;
+  /** A property abroad, counted for the rate (Geneva). */
+  abroad?: AbroadResult;
+  /** A property in Geneva, the household's home or one let (Geneva). */
+  property?: PropertyResult;
+  /** A year of arrival from abroad or of departure abroad (Geneva). */
+  partYear?: PartYearResult;
+};
 
 /**
  * What the check says differently in another canton: its form's labels, its software, the names of
@@ -172,6 +190,10 @@ export type FinalCheckKind =
   | 'incomplete'
   | 'official_pdf'
   | 'limit'
+  | 'capital'
+  | 'abroad'
+  | 'property'
+  | 'part_year'
   | 'best_figure'
   | 'holding_check'
   | 'not_counted'
@@ -226,6 +248,10 @@ const FIX_ORDER: FinalCheckKind[] = [
   'official_pdf',
 ];
 const KNOW_ORDER: FinalCheckKind[] = [
+  'part_year',
+  'capital',
+  'abroad',
+  'property',
   'limit',
   'best_figure',
   'holding_check',
@@ -267,6 +293,16 @@ const GIVEN: Record<string, Text> = {
   '71.00': t('Medical costs', 'Frais médicaux'),
   '73.00': t('Donations', 'Dons'),
   '74.00': t('Paid to political parties', 'Versé aux partis politiques'),
+  '51.60': t('Half of your business’s equity', 'La moitié des fonds propres de votre activité'),
+  '58.00': t('Your actual upkeep costs', 'Vos frais d’entretien effectifs'),
+};
+
+/** Lines whose label in the catalogue is a property abroad's, said for any property here. */
+const ANY_PROPERTY: Record<string, Text> = {
+  '58.00': t(
+    'Upkeep costs of your property (charges et frais d’entretien d’immeuble)',
+    'Charges et frais d’entretien d’immeuble',
+  ),
 };
 
 /** Taxpayer B's code read as A's (41.40 -> 31.40), for the words above. */
@@ -283,7 +319,7 @@ const IN_BOTH_TAXES = new Set(['31.60', '55.10', '59.50', '71.00', '73.00', '74.
 
 /** Geneva's words, the check's default. */
 const GENEVA: FinalCheckCanton = {
-  label: (code) => rubric(code)?.label,
+  label: (code) => ANY_PROPERTY[code] ?? rubric(code)?.label,
   given: (l) => GIVEN[aCode(l.code)],
   inBothTaxes: (code) => IN_BOTH_TAXES.has(aCode(code)),
   taxes: TAX,
@@ -471,6 +507,343 @@ const ESTIMATE_RULE_TODO: Record<EstimateReason, (year: number) => Text> = {
       `Rien à faire de votre côté${NB}: quand Genève publie son guide ${year} (janvier ${year + 1}), installez la version de Taxpresso qui le contient. Ses montants sont alors définitifs.`,
     ),
 };
+
+/**
+ * The lump sums from the 2nd pillar and pillar 3a: unusual items, each with the rule that governs
+ * it (SPEC.md 10.0). The tax apart, and the three-year rule on buy-ins for a 2nd pillar lump sum.
+ */
+function capitalItems(input: FinalCheckInput): FinalCheckItem[] {
+  const c = input.result?.capital;
+  if (!c) return [];
+  const links = (source: string) => officialLinks(source, input.canton?.documents);
+  const out: FinalCheckItem[] = [];
+  const taxes =
+    c.icc && c.ifd && c.total
+      ? t(
+          ` Its tax: cantonal and communal ${chf(c.icc.tax.amount)}, federal ${chf(c.ifd.tax.amount)}, ${chf(c.total.amount)} together.`,
+          ` Son impôt${NB}: cantonal et communal ${chf(c.icc.tax.amount)}, fédéral ${chf(c.ifd.tax.amount)}, ${chf(c.total.amount)} au total.`,
+        )
+      : t(
+          ' Its tax is not computed: see above.',
+          ` Son impôt n’est pas calculé${NB}: voir plus haut.`,
+        );
+  out.push({
+    id: 'capital:taxed_apart',
+    kind: 'capital',
+    code: '98.12',
+    title: t(
+      '98.12 Pension capital, taxed apart (prestations en capital du 2e et 3e pilier A)',
+      '98.12 Prestations en capital du 2e et 3e pilier A, imposées à part',
+    ),
+    detail: t(
+      `${chf(c.amount.amount)} received this year, taxed apart from the rest of your income at a fifth of the scale, every lump sum of the year together.${taxes.en}`,
+      `${chf(c.amount.amount)} reçus cette année, imposés à part du reste de vos revenus au cinquième du barème, tous les capitaux de l’année ensemble.${taxes.fr}`,
+    ),
+    todo: t(
+      'Declare the amount at 98.12 and attach each attestation.',
+      'Déclarez le montant au 98.12 et joignez chaque attestation.',
+    ),
+    // The federal instructions exist for 2026 only (docs/design/tax-years.md).
+    sources: links(
+      `ge-2025-guide-declaration-pp p. 13; ge-na-law-lipp art. 45; ch-na-law-lifd art. 38 (p. 32)${input.taxYear >= 2026 ? '; ch-2026-ifd-instructions-personnes-physiques p. 9' : ''}`,
+    ),
+  });
+  if (c.secondPillar) {
+    out.push({
+      id: 'capital:buy_ins',
+      kind: 'capital',
+      code: '98.12',
+      title: t(
+        'Buy-ins of the three years before a 2nd pillar lump sum',
+        'Rachats des trois années avant un capital du 2e pilier',
+      ),
+      detail: t(
+        'Benefits that come from a buy-in can’t be paid as a lump sum for three years. If you bought into your pension fund in the three years before, the tax office can take back those buy-ins’ deductions (rappel d’impôt).',
+        `Les prestations qui résultent d’un rachat ne peuvent pas être versées en capital pendant trois ans. Si vous avez fait un rachat dans votre caisse de pension pendant les trois années précédentes, l’administration peut reprendre la déduction de ces rachats (rappel d’impôt).`,
+      ),
+      todo: t(
+        'If you made such a buy-in, ask the AFC what it means for you.',
+        'Si vous avez fait un tel rachat, demandez à l’AFC ce que cela implique pour vous.',
+      ),
+      sources: links('ge-2025-guide-declaration-pp p. 18; ch-na-law-lpp art. 79b al. 3 (p. 66)'),
+    });
+  }
+  return out;
+}
+
+/**
+ * A property in Geneva: what is declared on annexe D and how its figures were reached, what to keep
+ * or attach, and the impôt immobilier complémentaire apart (SPEC.md 10.0).
+ */
+function propertyItems(input: FinalCheckInput): FinalCheckItem[] {
+  const p = input.result?.property;
+  if (!p) return [];
+  const links = (source: string) => officialLinks(source, input.canton?.documents);
+  const own = p.use === 'own_home';
+  const code = own ? '15.10' : '15.20';
+  const value = p.wealth.find((i) => i.code === code)?.amount;
+  const icc = p.icc.find((i) => i.code === code)?.amount;
+  const ifd = p.ifd.find((i) => i.code === code)?.amount;
+  const upkeepIcc = p.icc.find((i) => i.code === '58.00')?.amount;
+  const upkeepIfd = p.ifd.find((i) => i.code === '58.00')?.amount;
+  const pct = p.abattementBp !== undefined ? `${p.abattementBp / 100}` : undefined;
+  const out: FinalCheckItem[] = [];
+  const figures = (lang: 'en' | 'fr') =>
+    [
+      p.value
+        ? lang === 'en'
+          ? `tax value ${chf(p.value.amount)}`
+          : `valeur fiscale ${chf(p.value.amount)}`
+        : '',
+      own && pct !== undefined && value !== undefined
+        ? lang === 'en'
+          ? `less the abattement of ${pct} % (occupé dès ${p.since}): ${chf(value)}`
+          : `moins l’abattement de ${pct}${NB}% (occupé dès ${p.since})${NB}: ${chf(value)}`
+        : '',
+      own && ifd !== undefined
+        ? lang === 'en'
+          ? `rental value ${chf(ifd)} (federal), ${chf(icc ?? 0)} after the abattement (cantonal)`
+          : `valeur locative ${chf(ifd)} (fédéral), ${chf(icc ?? 0)} après abattement (cantonal)`
+        : '',
+      !own && icc !== undefined ? (lang === 'en' ? `rents ${chf(icc)}` : `loyers ${chf(icc)}`) : '',
+    ]
+      .filter(Boolean)
+      .join(lang === 'en' ? ', ' : ', ');
+  out.push({
+    id: own ? 'property:home' : 'property:let',
+    kind: 'property',
+    code,
+    title: own
+      ? t(
+          `${code} Your home in Geneva (immeubles occupés par le propriétaire)`,
+          `${code} Votre logement à Genève (immeubles occupés par le propriétaire)`,
+        )
+      : t(
+          `${code} Your property let in Geneva (immeubles locatifs ou loués)`,
+          `${code} Votre immeuble loué à Genève (immeubles locatifs ou loués)`,
+        ),
+    detail: t(
+      `On annexe ${own ? 'D1' : 'D2'}${figures('en') ? `: ${figures('en')}` : ''}. The tax value and the rental value are the AFC’s for the year (its letter before 31 March); Taxpresso doesn’t compute them.`,
+      `À l’annexe ${own ? 'D1' : 'D2'}${figures('fr') ? `${NB}: ${figures('fr')}` : ''}. La valeur fiscale et la valeur locative sont celles de l’AFC pour l’année (son courrier avant le 31 mars)${NB}; Taxpresso ne les calcule pas.`,
+    ),
+    todo: own
+      ? t(
+          'Copy the cadastral commune and parcel number from your avis de taxation immobilier. The questionnaire valeur locative is needed only after a purchase or works that change the home.',
+          'Reprenez la commune cadastrale et le numéro de parcelle de votre avis de taxation immobilier. Le questionnaire valeur locative n’est demandé qu’après un achat ou des travaux qui modifient le logement.',
+        )
+      : t(
+          'Attach the management account (compte de gestion) to your declaration.',
+          'Joignez le compte de gestion à votre déclaration.',
+        ),
+    sources: links(
+      `ge-2025-guide-declaration-pp p. 32 to 35; ge-2025-declaration-specimen p. 15 and 16; ge-na-revenu-immobilier-page (Votre bien est situé dans le canton de Genève); ge-na-valeur-fiscale-page (Votre bien est situé dans le canton de Genève); ge-na-law-lipp art. 24 and 50 let. e`,
+    ),
+  });
+  if (upkeepIcc !== undefined || upkeepIfd !== undefined) {
+    const how = (u: 'flat' | 'actual' | 'none', lang: 'en' | 'fr') =>
+      u === 'flat'
+        ? lang === 'en'
+          ? 'the flat deduction'
+          : 'le forfait'
+        : u === 'actual'
+          ? lang === 'en'
+            ? 'your actual costs'
+            : 'vos frais effectifs'
+          : lang === 'en'
+            ? 'nothing'
+            : 'rien';
+    out.push({
+      id: 'property:upkeep',
+      kind: 'property',
+      code: '58.00',
+      title: t(
+        '58.00 Upkeep of your property (charges et frais d’entretien d’immeuble)',
+        '58.00 Entretien de votre immeuble (charges et frais d’entretien d’immeuble)',
+      ),
+      detail: t(
+        `Cantonal: ${how(p.upkeep.icc, 'en')}${upkeepIcc !== undefined ? `, ${chf(-upkeepIcc)}` : ''}; federal: ${how(p.upkeep.ifd, 'en')}${upkeepIfd !== undefined ? `, ${chf(-upkeepIfd)}` : ''}. For each tax the higher one counts, and the choice can differ between the two.`,
+        `Cantonal${NB}: ${how(p.upkeep.icc, 'fr')}${upkeepIcc !== undefined ? `, ${chf(-upkeepIcc)}` : ''}${NB}; fédéral${NB}: ${how(p.upkeep.ifd, 'fr')}${upkeepIfd !== undefined ? `, ${chf(-upkeepIfd)}` : ''}. Pour chaque impôt, le plus élevé compte, et le choix peut différer entre les deux.`,
+      ),
+      todo:
+        p.upkeep.icc === 'actual' || p.upkeep.ifd === 'actual'
+          ? t(
+              'List the invoices in the online form’s upkeep sheet (annexe D4, déductions sur immeubles) and keep them: they are shown only on request.',
+              'Listez les factures dans la feuille des frais d’entretien du formulaire en ligne (annexe D4, déductions sur immeubles) et gardez-les${NB}: elles ne sont montrées que sur demande.'.replace(
+                '${NB}',
+                NB,
+              ),
+            )
+          : t('Nothing to attach for the flat deduction.', 'Rien à joindre pour le forfait.'),
+      sources: links(
+        'ge-2025-guide-declaration-pp p. 33 to 35; ge-na-information-1-2021-frais-entretien p. 2 and 4; ge-2025-declaration-specimen p. 18; ch-na-law-lifd art. 32 al. 2 and 4 (p. 24)',
+      ),
+    });
+  }
+  if (p.iic) {
+    out.push({
+      id: 'property:iic',
+      kind: 'property',
+      title: t(
+        'Impôt immobilier complémentaire (IIC), apart from the total',
+        'Impôt immobilier complémentaire (IIC), hors du total',
+      ),
+      detail: t(
+        `${chf(p.iic.amount)}: ${own ? '0.2' : '1'} per mille of the tax value, without the abattement or debts. A building with a high energy performance standard (HPE, THPE) attested by the OCEN is exempt for 20 years.`,
+        `${chf(p.iic.amount)}${NB}: ${own ? '0,2' : '1'} pour mille de la valeur fiscale, sans abattement ni dettes. Un bâtiment de haute ou très haute performance énergétique (HPE, THPE) attesté par l’OCEN en est exonéré 20 ans.`,
+      ),
+      sources: links('ge-na-law-lcp art. 76 and 78; ge-na-iic-page (Vous êtes un particulier)'),
+    });
+  }
+  return out;
+}
+
+/**
+ * A year of arrival from abroad or of departure abroad: an unusual item (SPEC.md 10.0). The income
+ * of the period (99.00) is taxed at the rate of a full year's income (95.00, revenu net pour le
+ * taux; 97.00 the rest), with the documents that govern it.
+ */
+function partYearItems(input: FinalCheckInput): FinalCheckItem[] {
+  const p = input.result?.partYear;
+  if (!p) return [];
+  const arrival = p.kind === 'arrival';
+  const day = dayText(arrival ? p.from : p.to);
+  const rates = (lang: 'en' | 'fr') =>
+    [
+      p.icc ? `${chf(p.icc.rateTotal.amount)} ${lang === 'en' ? 'cantonal' : 'cantonal'}` : '',
+      p.ifd ? `${chf(p.ifd.rateTotal.amount)} ${lang === 'en' ? 'federal' : 'fédéral'}` : '',
+    ]
+      .filter(Boolean)
+      .join(lang === 'en' ? ' and ' : ' et ');
+  const r = { en: rates('en'), fr: rates('fr') };
+  return [
+    {
+      id: 'part_year:period',
+      kind: 'part_year',
+      title: arrival
+        ? t(
+            `You arrived on ${day.en}: your income from then, at the rate of a full year (date d’arrivée)`,
+            `Arrivée le ${day.fr}${NB}: votre revenu dès cette date, au taux d’une année entière (date d’arrivée)`,
+          )
+        : t(
+            `You leave on ${day.en}: your income until then, at the rate of a full year`,
+            `Départ le ${day.fr}${NB}: votre revenu jusqu’à cette date, au taux d’une année entière`,
+          ),
+      detail: t(
+        `Geneva and the federal tax tax the income of your ${p.days} of 360 days (99.00) at the rate of a full year’s income${r.en ? `: the net income for the rate (95.00, revenu net pour le taux) is ${r.en}, and 97.00 is the part not taxed here` : ''}.`,
+        `Genève et l’impôt fédéral imposent le revenu de vos ${p.days} jours sur 360 (99.00) au taux d’un revenu annuel${r.fr ? `${NB}: le revenu net pour le taux (95.00) est de ${r.fr}, et le 97.00 est la part non imposable ici` : ''}.`,
+      ),
+      todo: arrival
+        ? t(
+            'Write the day you arrived on the first page of the declaration (date d’arrivée), and declare only your income from that day.',
+            'Inscrivez le jour de votre arrivée en première page de la déclaration (date d’arrivée), et ne déclarez que vos revenus dès ce jour.',
+          )
+        : t(
+            'Go to the tax office at least 15 days before you leave, with the departure form (questionnaire de départ), last year’s declaration if it isn’t sent, and this year’s, filled in up to the day you leave (GeTax: Fichier > Déclaration Départ/Décès).',
+            'Présentez-vous à l’administration fiscale au moins 15 jours avant votre départ, avec le questionnaire de départ, la déclaration de l’an dernier si elle n’est pas envoyée, et celle de cette année, remplie jusqu’au jour du départ (GeTax${NB}: Fichier > Déclaration Départ/Décès).'.replace(
+              '${NB}',
+              NB,
+            ),
+          ),
+      sources: officialLinks(
+        `${arrival ? 'ge-2025-guide-declaration-pp p. 53' : 'ge-2025-guide-declaration-pp p. 54'}; ge-2025-declaration-specimen p. 1 and 3; ge-na-law-lipp art. 62 al. 3 and 4, art. 64 and 65; ch-na-law-lifd art. 40 al. 3 (p. 33); ch-2026-afc-guide-futur-contribuable p. 30`,
+        input.canton?.documents,
+      ),
+    },
+  ];
+}
+
+/**
+ * A property abroad: an unusual item, with the rules that govern it (SPEC.md 10.0). It is on annexe
+ * D and counted only for the rate; the debts and their interest are shared with it.
+ */
+function abroadItems(input: FinalCheckInput): FinalCheckItem[] {
+  const a = input.result?.abroad;
+  if (!a) return [];
+  const links = (source: string) => officialLinks(source, input.canton?.documents);
+  const code = a.use === 'own_use' ? '15.10' : '15.20';
+  const value = a.wealth.find((i) => i.code === code)?.amount;
+  const icc = a.icc.find((i) => i.code === code)?.amount;
+  const ifd = a.ifd.find((i) => i.code === code)?.amount;
+  const where = a.country ? t(` in ${a.country.en}`, ` en ${a.country.fr}`) : t('', '');
+  const figures = t(
+    [
+      value !== undefined ? `its value ${chf(value)}` : '',
+      icc !== undefined ? `its ${a.use === 'own_use' ? 'rental value' : 'rents'} ${chf(icc)}` : '',
+    ]
+      .filter(Boolean)
+      .join(', '),
+    [
+      value !== undefined ? `sa valeur ${chf(value)}` : '',
+      icc !== undefined
+        ? `${a.use === 'own_use' ? 'sa valeur locative' : 'ses loyers'} ${chf(icc)}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(', '),
+  );
+  const out: FinalCheckItem[] = [
+    {
+      id: 'abroad:rate',
+      kind: 'abroad',
+      code,
+      title: t(
+        `${code} Your property abroad${where.en}, counted for the rate only (exemption avec réserve de progression)`,
+        `${code} Votre immeuble à l’étranger${where.fr}, compté seulement pour le taux (exemption avec réserve de progression)`,
+      ),
+      detail: t(
+        `It is taxed where it lies. Declare it on annexe D with its country${figures.en ? `: ${figures.en}` : ''}${ifd !== undefined && ifd !== icc ? ` (federal ${chf(ifd)})` : ''}. Geneva and the federal tax set your rate on your whole income and wealth (95.00), and tax only the rest (99.00): its share is 97.00.`,
+        `Il est imposé là où il se trouve. Déclarez-le à l’annexe D avec son pays${figures.fr ? `${NB}: ${figures.fr}` : ''}${ifd !== undefined && ifd !== icc ? ` (fédéral ${chf(ifd)})` : ''}. Genève et l’impôt fédéral fixent votre taux sur l’ensemble de votre revenu et de votre fortune (95.00), et n’imposent que le reste (99.00)${NB}: sa part est le 97.00.`,
+      ),
+      todo: t(
+        a.use === 'let'
+          ? 'Attach the country’s tax value attestation or the deed, and the management account (compte de gestion).'
+          : 'Attach the country’s tax value attestation or the deed, and the document of its rental value (in France the taxe d’habitation or taxes foncières), if any.',
+        a.use === 'let'
+          ? 'Joignez l’attestation de valeur fiscale du pays ou l’acte d’acquisition, et le compte de gestion.'
+          : 'Joignez l’attestation de valeur fiscale du pays ou l’acte d’acquisition, et le justificatif de sa valeur locative (en France la taxe d’habitation ou les taxes foncières), s’il y en a un.',
+      ),
+      sources: links(
+        `ge-2025-guide-declaration-pp p. 32 and 33; ge-2025-declaration-specimen p. 3, 4, 15 and 16; ge-na-revenu-immobilier-page (Votre bien est situé à l’étranger); ge-na-valeur-fiscale-page (Votre bien est situé à l’étranger); ge-na-law-lipp art. 5 and 6; ch-na-law-lifd art. 6 al. 1 and art. 7 al. 1 (p. 4 and 5)`,
+      ),
+    },
+  ];
+  if (a.debts || a.interestIcc) {
+    const pct = `${(a.shareBp / 100).toFixed(2)}`;
+    const parts = (lang: 'en' | 'fr') =>
+      [
+        a.debts ? chf(a.debts.amount) + (lang === 'en' ? ' of your debts' : ' de vos dettes') : '',
+        a.interestIcc
+          ? chf(a.interestIcc.amount) + (lang === 'en' ? ' of your interest' : ' de vos intérêts')
+          : '',
+      ]
+        .filter(Boolean)
+        .join(lang === 'en' ? ' and ' : ' et ');
+    out.push({
+      id: 'abroad:debts',
+      kind: 'abroad',
+      code: '55.00',
+      title: t(
+        '55.00 Your debts and interest, shared with your property abroad',
+        '55.00 Vos dettes et intérêts, répartis avec votre immeuble à l’étranger',
+      ),
+      detail: t(
+        `${parts('en')} go abroad, in proportion to where your gross assets lie (${pct} % abroad), wherever the loan was taken out. They come out of what is taxed here through 97.00.`,
+        `${parts('fr')} sont attribués à l’étranger, au prorata de la situation de vos actifs bruts (${pct.replace('.', ',')}${NB}% à l’étranger), où que l’emprunt ait été contracté. Ils sortent de ce qui est imposé ici par le 97.00.`,
+      ),
+      todo: t(
+        'Declare every debt on annexe E as usual, the mortgage abroad included (55.20): the form does the split.',
+        'Déclarez toutes vos dettes à l’annexe E comme d’habitude, l’hypothèque à l’étranger comprise (55.20)${NB}: le formulaire fait la répartition.'.replace(
+          '${NB}',
+          NB,
+        ),
+      ),
+      sources: links(
+        'ge-na-law-lipp art. 57 and 58 al. 3; ch-na-law-lifd art. 6 al. 3 (p. 4); zh-na-zstb-5-3 p. 1',
+      ),
+    });
+  }
+  return out;
+}
 
 export function finalCheck(input: FinalCheckInput): FinalCheck {
   const links = (source: string) => officialLinks(source, input.canton?.documents);
@@ -776,7 +1149,12 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
     });
   }
 
-  // Good to know: limits, what the engine doesn't count, assumes or can't verify.
+  // Good to know: the lump sums taxed apart, limits, what the engine doesn't count, assumes or
+  // can't verify.
+  know.push(...capitalItems(input));
+  know.push(...abroadItems(input));
+  know.push(...propertyItems(input));
+  know.push(...partYearItems(input));
   know.push(...limitItems(input));
   (r?.notCounted ?? []).forEach((n, i) =>
     know.push({

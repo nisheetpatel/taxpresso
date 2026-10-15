@@ -8,6 +8,7 @@ import {
   type Deduction,
   estimateSources,
   type HouseholdInput,
+  noTaxOf,
   ordinaryTaxEstimator,
   savingOf,
   type TaxEstimate,
@@ -106,6 +107,11 @@ export function pillar3aCatchUpPlan(
   const unknownRule = h.other?.plan.catchUp.unknownRule;
   if (unknownRule && catchUpCentimes > 0) {
     return { ...result, assumptions: [...result.assumptions, unknownRule] };
+  }
+  // The canton's tax can't be computed for the year: no saving, and why.
+  const noTax = noTaxOf(h);
+  if (noTax && catchUpCentimes > 0) {
+    return { ...result, assumptions: [...result.assumptions, noTax] };
   }
   const estimator = catchUpCentimes > 0 ? ordinaryTaxEstimator(h) : undefined;
   if (!estimator) return result;

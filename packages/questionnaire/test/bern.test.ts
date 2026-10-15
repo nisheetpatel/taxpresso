@@ -58,7 +58,7 @@ const SINGLE_IN_BIEL = {
   'church:p1': 'none',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'pillar3a:p1': true,
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -98,6 +98,7 @@ describe('Bern questionnaire 2026', () => {
       'parish',
       'income_sources',
       'employers',
+      'residence',
       'taxed_at_source',
       'pillar3a',
       'lpp_buyin',
@@ -141,19 +142,26 @@ describe('Bern questionnaire 2026', () => {
       'alimony_paid',
     ]);
     // The children of a question asked per child are named "Child {n}".
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'Bern', fr: 'Berne', de: 'Bern' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({ en: 'Bern', fr: 'Berne', de: 'Bern', it: 'Berna' });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = beQuestionnaire2026();
     const missing: string[] = [];
+    const noItalian: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) noItalian.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -161,6 +169,7 @@ describe('Bern questionnaire 2026', () => {
     };
     visit(file, 'be');
     expect(missing).toEqual([]);
+    expect(noItalian).toEqual([]);
     // No em-dash anywhere, no amount or limit in a question's own words.
     const all = JSON.stringify(file);
     expect(all).not.toMatch(/—/);
@@ -171,9 +180,10 @@ describe('Bern questionnaire 2026', () => {
       expect(item.explain?.de, item.id).toBeTruthy();
       const { url, label } = item.learnMore!;
       // Bern's own documents; the canton question keeps its federal page (shared).
-      expect(item.id === 'canton' ? ALL_URLS : BERN_URLS, item.id).toContain(
-        url.replace(/#page=\d+$/, ''),
-      );
+      expect(
+        item.id === 'canton' || item.id === 'residence' ? ALL_URLS : BERN_URLS,
+        item.id,
+      ).toContain(url.replace(/#page=\d+$/, ''));
       // A page of the guide is named by the page the link opens.
       const page = /wl_natuerliche-personen_2025_de\.pdf#page=(\d+)$/.exec(url)?.[1];
       if (page) {
@@ -184,6 +194,7 @@ describe('Bern questionnaire 2026', () => {
         expect(label.de, item.id).toMatch(
           new RegExp(`^Wegleitung zur Steuererklärung 2025, S\\. ${page}: `),
         );
+        expect(label.it, item.id).toBeTruthy();
       }
     }
     // Every document cites the Bern guide, by the page of the PDF.
@@ -435,7 +446,7 @@ describe('Bern questionnaire 2026', () => {
       'church:p1': 'none',
       'income_sources:p1': ['salary', 'self_employment'],
       'employers:p1': 1,
-      'taxed_at_source:p1': true,
+      'residence:p1': 'permit_other',
     });
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.de)).toEqual([
       'Ein Zuzug aus dem Ausland während des Jahres',

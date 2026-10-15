@@ -89,6 +89,8 @@ export interface Gloss {
   fr: string;
   /** German, for a canton whose form is in German (Zurich): optional, English otherwise. */
   de?: string;
+  /** Italian, for a canton whose form is in Italian (Ticino): optional, English otherwise. */
+  it?: string;
 }
 
 /** A field written on each line of a repeating rubric (an employer's name, a creditor). */
@@ -202,6 +204,13 @@ export interface FormItem {
   fields?: Readonly<Record<string, string>>;
   status: FactStatus;
   source?: ItemSource;
+  /** What this value is, when it says more than the rubric's own gloss (a part year's 95.00). */
+  gloss?: Gloss;
+  /**
+   * A line the form works out whose value the documents don't say how the form computes (a part
+   * year's 95.00 and 97.00): shown, never compared with the official PDF.
+   */
+  noCheck?: boolean;
 }
 
 /** Values that are not final: they still need the user's OK, or they are estimates (SPEC.md 9). */

@@ -1,8 +1,8 @@
 // The Basel-Landschaft questionnaire (data/bl/2026/questionnaire.yaml): in step with Basel-Landschaft's
-// keys and communes (packages/rules-bl), every text in English, French and German, every page an
-// official one, and the questions only Basel-Landschaft asks (who mainly bears a shared child's
-// upkeep, each child's own income and childcare, the church, the kind of pension) only where they
-// apply. Synthetic answers only.
+// keys and communes (packages/rules-bl), every text in English, French, German and Italian, every
+// page an official one, and the questions only Basel-Landschaft asks (who mainly bears a shared
+// child's upkeep, each child's own income and childcare, the church, the kind of pension) only
+// where they apply. Synthetic answers only.
 import { readFileSync } from 'node:fs';
 import { Ledger } from '@taxpresso/ledger';
 import { blKeys, communeOptions } from '@taxpresso/rules-bl';
@@ -55,7 +55,7 @@ const SINGLE_IN_LIESTAL = {
   'church:p1': 'none',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'pillar3a:p1': true,
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -92,6 +92,7 @@ describe('Basel-Landschaft questionnaire 2026', () => {
       'income_sources',
       'pension_kind',
       'employers',
+      'residence',
       'taxed_at_source',
       'pillar3a',
       'lpp_buyin',
@@ -121,15 +122,21 @@ describe('Basel-Landschaft questionnaire 2026', () => {
     const options = (id: string) => file.questions.find((q) => q.id === id)!.options!;
     expect(options('commute').map((o) => o.value)).not.toContain('public_transport_long');
     expect(options('commute_transit_usable').map((o) => o.value)).toEqual(['yes', 'no']);
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
     expect(file.place).toEqual({
       en: 'Basel-Landschaft',
       fr: 'Bâle-Campagne',
       de: 'Basel-Landschaft',
+      it: 'Basilea Campagna',
     });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = blQuestionnaire2026();
     const missing: string[] = [];
     const visit = (v: unknown, where: string): void => {
@@ -138,6 +145,7 @@ describe('Basel-Landschaft questionnaire 2026', () => {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missing.push(`${where} (it)`);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -153,11 +161,14 @@ describe('Basel-Landschaft questionnaire 2026', () => {
     );
     for (const item of [...file.questions, ...file.requirements]) {
       expect(item.explain?.de, item.id).toBeTruthy();
+      expect(item.explain?.it, item.id).toBeTruthy();
       const { url, label } = item.learnMore!;
+      expect(label.it, item.id).toBeTruthy();
       // Basel-Landschaft's own documents; the canton question keeps its federal page (shared).
-      expect(item.id === 'canton' ? ALL_URLS : BL_URLS, item.id).toContain(
-        url.replace(/#page=\d+$/, ''),
-      );
+      expect(
+        item.id === 'canton' || item.id === 'residence' ? ALL_URLS : BL_URLS,
+        item.id,
+      ).toContain(url.replace(/#page=\d+$/, ''));
       // A page of the guide is named by the page the link opens.
       if (url.startsWith(`${GUIDE}#page=`)) {
         const page = url.slice(`${GUIDE}#page=`.length);
@@ -170,10 +181,16 @@ describe('Basel-Landschaft questionnaire 2026', () => {
         expect(label.de, item.id).toMatch(
           new RegExp(`^Wegleitung zur Steuererklärung 2026, S\\. ${page}: `),
         );
+        expect(label.it, item.id).toMatch(
+          new RegExp(`^Guida fiscale di Basilea Campagna 2026, p\\. ${page}: `),
+        );
       }
       if (url.startsWith(`${BOOK}#page=`)) {
         expect(label.en, item.id).toMatch(
           /^Basel-Landschaft tax handbook \(Steuerbuch\), p\. \d+: /,
+        );
+        expect(label.it, item.id).toMatch(
+          /^Manuale fiscale di Basilea Campagna \(Steuerbuch\), p\. \d+: /,
         );
       }
     }
@@ -268,7 +285,7 @@ describe('Basel-Landschaft questionnaire 2026', () => {
     expect(e.render(second, snap, 'en').text).toBe(
       'In 2026, did child 2 have taxable income of their own above the tax-free amount (steuerfreier Betrag)?',
     );
-    for (const lang of ['en', 'fr', 'de'] as const) {
+    for (const lang of ['en', 'fr', 'de', 'it'] as const) {
       const r = e.render(second, snap, lang);
       expect(JSON.stringify([r.text, r.help, r.explain, r.who])).not.toMatch(/\{n\}/);
     }
@@ -323,7 +340,7 @@ describe('Basel-Landschaft questionnaire 2026', () => {
       'church:p1': 'none',
       'income_sources:p1': ['salary', 'self_employment'],
       'employers:p1': 1,
-      'taxed_at_source:p1': true,
+      'residence:p1': 'permit_other',
     });
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.de)).toEqual([
       'Ein Zuzug aus dem Ausland während des Jahres',

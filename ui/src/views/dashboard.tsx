@@ -23,6 +23,8 @@ const strings = {
   en: {
     full: 'Full screen',
     exitFull: 'Exit full screen',
+    pip: 'Keep beside the chat',
+    inline: 'Back into the chat',
     browser: 'Open in your browser',
     copyLink: 'If nothing opens, copy this link into a browser on this computer:',
     alone: 'Ask Claude to open your Taxpresso dashboard.',
@@ -31,6 +33,8 @@ const strings = {
   fr: {
     full: 'Plein écran',
     exitFull: 'Quitter le plein écran',
+    pip: 'Garder à côté de la conversation',
+    inline: 'Remettre dans la conversation',
     browser: 'Ouvrir dans le navigateur',
     copyLink: 'Si rien ne s’ouvre, copiez ce lien dans un navigateur de cet ordinateur :',
     alone: 'Demandez à Claude d’ouvrir votre tableau de bord Taxpresso.',
@@ -40,16 +44,29 @@ const strings = {
   de: {
     full: 'Vollbild',
     exitFull: 'Vollbild verlassen',
+    pip: 'Neben dem Chat behalten',
+    inline: 'Zurück in den Chat',
     browser: 'Im Browser öffnen',
     copyLink: 'Wenn sich nichts öffnet, kopiere diesen Link in einen Browser auf diesem Computer:',
     alone: 'Bitte Claude, dein Taxpresso-Dashboard zu öffnen.',
     noTools:
       'Dein Dashboard kann in diesem Chat nicht laufen. Öffne es im Browser auf diesem Computer.',
   },
+  it: {
+    full: 'Schermo intero',
+    exitFull: 'Esci dallo schermo intero',
+    pip: 'Tieni accanto alla chat',
+    inline: 'Rimetti nella chat',
+    browser: 'Apri nel browser',
+    copyLink: 'Se non si apre niente, copia questo link in un browser su questo computer:',
+    alone: 'Chiedi a Claude di aprire la tua dashboard Taxpresso.',
+    noTools:
+      'La tua dashboard non può funzionare in questa chat. Aprila nel browser su questo computer.',
+  },
 };
 type Lang = keyof typeof strings;
 const asLang = (value: unknown): Lang | undefined =>
-  value === 'fr' || value === 'en' || value === 'de' ? value : undefined;
+  value === 'fr' || value === 'en' || value === 'de' || value === 'it' ? value : undefined;
 
 /** The open_dashboard result: the private link for the browser. */
 interface OpenResult {
@@ -82,8 +99,7 @@ function update(next: McpUiHostContext): void {
   root.dataset.display = view.ctx.displayMode ?? 'inline';
   const room = view.ctx.containerDimensions;
   const limit = room && 'height' in room ? room.height : room?.maxHeight;
-  const bar = document.querySelector('.embed-bar')?.getBoundingClientRect().height ?? 0;
-  if (limit) root.style.setProperty('--embed-max', `${Math.max(240, Math.floor(limit - bar))}px`);
+  if (limit) root.style.setProperty('--embed-max', `${Math.max(240, Math.floor(limit))}px`);
   else root.style.removeProperty('--embed-max');
   const inset = view.ctx.safeAreaInsets;
   for (const side of ['top', 'right', 'bottom', 'left'] as const) {
@@ -92,16 +108,20 @@ function update(next: McpUiHostContext): void {
   changed();
 }
 
-function Bar({ host }: { host: Host }) {
+/**
+ * The host's own choices: beside the chat (pip), full screen, back into the chat, the browser. In
+ * the dashboard's menu (three-pages.md: nothing else on the top bar), or alone when the view can't
+ * run the dashboard.
+ */
+function HostActions({ host }: { host: Host }) {
   const { ctx, url, lang } = useView();
   const [showLink, setShowLink] = useState(false);
   const s = strings[lang];
   const mode = ctx.displayMode ?? 'inline';
-  const canFull = (ctx.availableDisplayModes ?? []).includes('fullscreen');
-  if (!canFull && !url) return null;
+  const can = (m: McpUiDisplayMode) => (ctx.availableDisplayModes ?? []).includes(m);
+  if (!can('fullscreen') && !can('pip') && !url) return null;
 
-  const toggle = async () => {
-    const want: McpUiDisplayMode = mode === 'fullscreen' ? 'inline' : 'fullscreen';
+  const ask = async (want: McpUiDisplayMode) => {
     try {
       update({ displayMode: (await host.requestDisplayMode({ mode: want })).mode });
     } catch {
@@ -118,11 +138,25 @@ function Bar({ host }: { host: Host }) {
   };
 
   return (
-    <nav class="embed-bar" aria-label="Taxpresso">
+    <div class="embed-bar">
       <div class="embed-actions">
-        {canFull ? (
-          <button type="button" onClick={() => void toggle()}>
+        {/* Beside the chat (pip) is the companion panel; full screen, or back into the chat. */}
+        {can('pip') && mode !== 'pip' ? (
+          <button type="button" onClick={() => void ask('pip')}>
+            {s.pip}
+          </button>
+        ) : null}
+        {can('fullscreen') ? (
+          <button
+            type="button"
+            onClick={() => void ask(mode === 'fullscreen' ? 'inline' : 'fullscreen')}
+          >
             {mode === 'fullscreen' ? s.exitFull : s.full}
+          </button>
+        ) : null}
+        {mode === 'pip' ? (
+          <button type="button" onClick={() => void ask('inline')}>
+            {s.inline}
           </button>
         ) : null}
         {url ? (
@@ -137,7 +171,7 @@ function Bar({ host }: { host: Host }) {
           {s.copyLink} <code>{url}</code>
         </p>
       ) : null}
-    </nav>
+    </div>
   );
 }
 
@@ -145,10 +179,9 @@ function Embedded({ host }: { host: Host }) {
   useEffect(() => update({}), []);
   return (
     <div class="embed">
-      <Bar host={host} />
       <div class="embed-scroll">
         <div id="app">
-          <App />
+          <App menuExtra={<HostActions host={host} />} />
         </div>
       </div>
     </div>
@@ -160,15 +193,16 @@ function BrowserOnly({ host }: { host: Host }) {
   const { lang } = useView();
   return (
     <div class="embed">
-      <Bar host={host} />
       <p class="embed-alone">{strings[lang].noTools}</p>
+      <HostActions host={host} />
     </div>
   );
 }
 
 const host = new Host(
   { name: 'Taxpresso dashboard', version: '0.1.0' },
-  { availableDisplayModes: ['inline', 'fullscreen'] },
+  // Beside the chat (pip) where the host offers it: the panel the chat leads (docs/design/simple.md).
+  { availableDisplayModes: ['inline', 'fullscreen', 'pip'] },
 );
 host.ontoolresult = ({ structuredContent }) => {
   const result = structuredContent as OpenResult | undefined;
@@ -204,6 +238,15 @@ try {
   } else {
     setTransport(mcpTransport(host, viewKey()));
     render(<Embedded host={host} />, root);
+    // The dashboard is a companion to the chat: once, at the start, ask to float beside it (pip)
+    // when the host offers that; the user can put it back into the chat with one click.
+    const ctx = host.getHostContext();
+    if (ctx?.displayMode !== 'pip' && ctx?.availableDisplayModes?.includes('pip')) {
+      void host
+        .requestDisplayMode({ mode: 'pip' })
+        .then(({ mode }) => update({ displayMode: mode }))
+        .catch(() => undefined);
+    }
   }
 } catch {
   render(<p class="embed-alone">{strings[view.lang].alone}</p>, root);

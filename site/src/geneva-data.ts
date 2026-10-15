@@ -61,14 +61,42 @@ interface Entry {
 }
 const ENTRIES = new Map((manifest.entries as Entry[]).map((e) => [e.id, e]));
 
+/** A source cut at its semicolons, except those inside brackets: "id p. 1 (a; b); id p. 2". */
+function sourceParts(source: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === '(') depth++;
+    else if (ch === ')') depth = Math.max(0, depth - 1);
+    else if (ch === ';' && depth === 0) {
+      parts.push(source.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(source.slice(start));
+  return parts.map((p) => p.trim()).filter(Boolean);
+}
+
+/** A manifest id at the start of a part: lower case words joined by hyphens. */
+const ID = /^([a-z0-9]+(?:-[a-z0-9]+)+)(?:\s+(.+))?$/;
+
 /**
  * The documents a constant cites. A source reads "id place; id place", for example
  * "ch-na-law-lifd art. 132 al. 1 (p. 71)" or "ge-na-law-risp art. 8 al. 1; ch-na-law-lifd p. 51".
+ * A part that doesn't start with an id is a remark on the document before it ("...; no communal
+ * coefficient for 2026 in the sources library") and stays with it.
  */
 export function cite(...sources: string[]): Citation[] {
-  const parts = [...new Set(sources.flatMap((s) => s.split(/;\s*/).map((p) => p.trim())))];
+  const merged: string[] = [];
+  for (const part of sources.flatMap(sourceParts)) {
+    if (ID.test(part) || merged.length === 0) merged.push(part);
+    else merged[merged.length - 1] += `; ${part}`;
+  }
+  const parts = [...new Set(merged)];
   return parts.map((part) => {
-    const m = /^([a-z0-9]+(?:-[a-z0-9]+)+)(?:\s+(.+))?$/.exec(part);
+    const m = ID.exec(part);
     if (!m) throw new Error(`Unreadable citation "${part}"`);
     const [, id = '', at = ''] = m;
     const entry = ENTRIES.get(id);
@@ -94,6 +122,8 @@ export type Figure =
   | { n: number }
   /** Communal centimes in hundredths (4549 = 45.49). */
   | { centimes: number }
+  /** A multiple in ten-thousandths (15400 = 1.54): Bern's Steueranlage, Lucerne's units. */
+  | { units: number }
   /** A day, YYYY-MM-DD. */
   | { date: string };
 

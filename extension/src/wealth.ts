@@ -71,10 +71,13 @@ export function movableWealth(
         addTo('otherAssets', item.centimes, item.estimate, item.complete);
         if (valuables && !notes.includes(valuables)) notes.push(valuables);
         break;
+      // A mortgage statement (Geneva, a property's mortgage) is a debt like any other here.
       case 'debts':
+      case 'mortgages':
         addTo('debts', item.centimes, item.estimate, item.complete);
         break;
       case 'debtInterest':
+      case 'mortgageInterest':
         addTo('debtInterest', item.centimes, item.estimate, item.complete);
         break;
       // The withholding tax claimed back and the foreign tax credit: next to the tax, not in it.

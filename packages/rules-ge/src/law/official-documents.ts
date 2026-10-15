@@ -86,6 +86,57 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://silgeneve.ch/legis/data/rsg_d3_08.htm',
     pdf: false,
   },
+  // A property abroad: its rental value and rents, its tax value (engine/abroad.ts), and the
+  // federal rules on the split between Switzerland and abroad as the Zurich tax manual sets them out.
+  'ge-na-revenu-immobilier-page': {
+    title: "L'impôt des propriétaires immobiliers: le revenu immobilier (impôt sur le revenu)",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu',
+    pdf: false,
+  },
+  'ge-na-valeur-fiscale-page': {
+    title: "L'impôt des propriétaires immobiliers: la valeur fiscale (impôt sur la fortune)",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune',
+    pdf: false,
+  },
+  // A property in Geneva (../engine/property.ts).
+  'ge-na-charges-deductibles-page': {
+    title: "L'impôt des propriétaires immobiliers: les charges et frais déductibles",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles',
+    pdf: false,
+  },
+  'ge-na-information-1-2021-frais-entretien': {
+    title: "Information N° 1/2021: Déductibilité des frais d'entretien des immeubles privés",
+    url: 'https://www.ge.ch/document/23670/telecharger',
+    pdf: true,
+  },
+  'ge-na-iic-page': {
+    title: "L'impôt des propriétaires immobiliers: l'impôt immobilier complémentaire",
+    url: 'https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire',
+    pdf: false,
+  },
+  'ge-na-law-lefi': {
+    title: 'Loi sur les estimations fiscales de certains immeubles (LEFI), rsGE D 3 10',
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_10.htm',
+    pdf: false,
+  },
+  'ge-na-law-rivfi': {
+    title:
+      "Règlement fixant l'indexation de la valeur fiscale de certains immeubles (RIVFI), rsGE D 3 10.03",
+    url: 'https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm',
+    pdf: false,
+  },
+  'ch-na-reforme-valeur-locative-2029': {
+    title:
+      "Le Conseil fédéral met en vigueur l'abolition de l'imposition de la valeur locative (communiqué de presse, 1er avril 2026)",
+    url: 'https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q',
+    pdf: false,
+  },
+  'zh-na-zstb-5-3': {
+    title:
+      'Zürcher Steuerbuch Nr. 5.3: Internationale Steuerausscheidung bei Grundstücken, Geschäftsbetrieben und Betriebsstätten',
+    url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf',
+    pdf: true,
+  },
   'ge-na-law-lisp': {
     title:
       "Loi sur l'imposition à la source des personnes physiques et morales (LISP), rsGE D 3 20",
@@ -189,6 +240,29 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://www.ge.ch/document/38036/annexe/file/374849',
     pdf: true,
   },
+  'ge-na-law-ldirpp': {
+    title:
+      "Loi relative à la diminution de l'impôt sur le revenu des personnes physiques (LDIRPP), rsGE D 3 06",
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_06.htm',
+    pdf: false,
+  },
+  'ge-na-law-lcacant': {
+    title: 'Loi sur les centimes additionnels cantonaux (LCACant), rsGE D 3 07',
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_07.htm',
+    pdf: false,
+  },
+  'ge-2025-source-capital-icc-tariff': {
+    title:
+      "Barème 2025 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+    url: 'https://www.ge.ch/document/38083/telecharger',
+    pdf: true,
+  },
+  'ge-2026-source-capital-icc-tariff': {
+    title:
+      "Barème 2026 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+    url: 'https://www.ge.ch/document/41804/telecharger',
+    pdf: true,
+  },
   'ch-2026-ifd-progression-deductions': {
     title:
       "Compensation des effets de la progression à froid et taux d'intérêt pour l'impôt fédéral direct pour l'année fiscale 2026",
@@ -204,6 +278,18 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
   'ch-2026-ifd-instructions-personnes-physiques': {
     title: '2a - Instruction concernant la déclaration des personnes physiques (Formulaire 2)',
     url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf',
+    pdf: true,
+  },
+  'ch-2025-ifd-instructions-personnes-physiques': {
+    title:
+      '2a - Instructions 2025 concernant la déclaration des personnes physiques (Formulaire 2)',
+    url: 'https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf',
+    pdf: true,
+  },
+  'ge-2025-guide-independants': {
+    title:
+      'Guide déclaration 2025 Indépendants, impôt cantonal et communal (ICC), impôt fédéral direct (IFD)',
+    url: 'https://www.ge.ch/document/44809/annexe/file/751631',
     pdf: true,
   },
   'ch-2025-oiis-dff-annexe': {

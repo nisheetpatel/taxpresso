@@ -5,14 +5,13 @@ import type { JSX } from 'preact';
 import './export.css';
 import { api } from './api';
 import type { Language } from './i18n';
+import type { Act } from './page-props';
 import type { State } from './types';
 import type { FolderExportState } from './types-export';
 
-type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
-
 const NB = String.fromCharCode(0xa0);
 
-const text = {
+export const text = {
   en: {
     title: 'A copy of your folder',
     lead: 'One ZIP file with your {year} documents and everything Taxpresso keeps for that year, saved in your Taxpresso folder on this computer. Nothing is sent anywhere.',
@@ -41,12 +40,22 @@ const text = {
     private:
       'Sie enthält deine Dokumente: Bewahre sie an einem privaten Ort auf, wie den Ordner selbst.',
   },
+  it: {
+    title: 'Una copia della tua cartella',
+    lead: 'Un file ZIP con i tuoi documenti del {year} e tutto ciò che Taxpresso conserva per quell’anno, salvato nella tua cartella Taxpresso su questo computer. Non viene inviato niente da nessuna parte.',
+    button: 'Salva una copia (ZIP)',
+    saving: 'Salvataggio della copia…',
+    savedOne: '“{file}” salvato in {folder}: 1 file.',
+    saved: '“{file}” salvato in {folder}: {n} file.',
+    private: 'Contiene i tuoi documenti: conservalo in un posto privato, come la cartella stessa.',
+  },
 } as const;
 
 type Key = keyof (typeof text)['en'];
 const tx = (lang: Language, key: Key, vars: Record<string, string | number> = {}) =>
   text[lang][key].replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
 
+/** In the menu (three-pages.md): one line that opens. */
 export function ExportCard({
   state,
   lang,
@@ -60,11 +69,29 @@ export function ExportCard({
 }): JSX.Element | null {
   // Nothing to copy before the year's folder exists.
   if (!state.vault.exists || state.vault.problem) return null;
+  return (
+    <details class="menu-more" open={state.folderExport?.last !== undefined}>
+      <summary>{tx(lang, 'title')}</summary>
+      <ExportBody state={state} lang={lang} busy={busy} act={act} />
+    </details>
+  );
+}
+
+function ExportBody({
+  state,
+  lang,
+  busy,
+  act,
+}: {
+  state: State & { folderExport?: FolderExportState };
+  lang: Language;
+  busy: string;
+  act: Act;
+}): JSX.Element {
   const last = state.folderExport?.last;
   const saving = busy === tx(lang, 'saving');
   return (
-    <section class="card side-card" aria-labelledby="ex-title">
-      <h2 id="ex-title">{tx(lang, 'title')}</h2>
+    <>
       <p class="muted">{tx(lang, 'lead', { year: state.taxYear })}</p>
       <button
         type="button"
@@ -84,6 +111,6 @@ export function ExportCard({
           <span class="muted">{tx(lang, 'private')}</span>
         </p>
       ) : null}
-    </section>
+    </>
   );
 }

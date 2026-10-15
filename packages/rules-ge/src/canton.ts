@@ -19,6 +19,7 @@ import { KEYS_2026 } from './2026/keys.js';
 import { computeReturn, EngineInputError } from './engine/compute.js';
 import { paramsFor, TAX_YEARS } from './engine/params.js';
 import type {
+  CapitalInput,
   ChildInput,
   EmploymentInput,
   EngineInput,
@@ -34,6 +35,8 @@ export interface GenevaCantonal {
   splitting?: IccSplitting;
   /** The état des titres and other movable wealth by rubric (./2026/etat-des-titres.ts). */
   wealthItems?: readonly WealthItemInput[];
+  /** Lump sums from the 2nd pillar and pillar 3a, taxed apart (./engine/capital.ts). */
+  capital?: CapitalInput;
 }
 
 /** The household's amounts only Zurich reads: Geneva would leave them out of its tax. */
@@ -89,7 +92,7 @@ export function genevaInput(input: HouseholdInput<GenevaCantonal>): EngineInput 
     if (given.length) refuse(`household.${given.join(', household.')}`);
     household = input.household;
   }
-  const { splitting, wealthItems } = input.cantonal ?? {};
+  const { splitting, wealthItems, capital } = input.cantonal ?? {};
   return {
     taxYear: input.taxYear as EngineInput['taxYear'],
     commune: input.commune,
@@ -102,6 +105,7 @@ export function genevaInput(input: HouseholdInput<GenevaCantonal>): EngineInput 
     ...(household ? { household } : {}),
     ...(input.movable ? { movable: input.movable } : {}),
     ...(wealthItems ? { wealthItems } : {}),
+    ...(capital ? { capital } : {}),
   };
 }
 

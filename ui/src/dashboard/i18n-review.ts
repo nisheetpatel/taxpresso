@@ -5,7 +5,7 @@ import type { Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
 
-const messages = {
+export const messages = {
   en: {
     title: 'Last year, reviewed',
     official: 'déclaration {year}',
@@ -346,6 +346,130 @@ const messages = {
     'a.others_as_declared':
       'Jede Ersparnis ändert eine Zahl und lässt die anderen wie deklariert, auch Krankheitskosten und Spenden, deren Grenzen mit dem Einkommen gehen: Die tatsächliche Ersparnis kann etwas anders sein.',
     'a.pension_fund_2025_same': 'Deine Pensionskasse wie heute, auch für letztes Jahr.',
+  },
+  it: {
+    title: 'L’anno scorso, rivisto',
+    official: 'déclaration {year}',
+    noneLead:
+      'Aggiungi la dichiarazione dell’anno scorso (il PDF di GeTax, della dichiarazione online o del tuo software fiscale) e Taxpresso la rivede qui, su questo computer: cosa avresti potuto risparmiare, cosa ti è forse sfuggito e cosa puoi ancora fare.',
+    lead: 'Dalla tua dichiarazione {year}, letta da Taxpresso su questo computer, con le regole del {year}. Niente di tutto questo cambia le tue imposte {taxYear}.',
+    taxTitle: 'Le tue imposte {year}, ricalcolate',
+    taxOfficial: 'impôts {year}',
+    total: 'Totale',
+    icc: 'Imposta cantonale e comunale (ICC)',
+    ifd: 'Imposta federale diretta (IFD)',
+    computed: 'Calcolato',
+    estimate: 'Stima',
+    checkThis: 'Da controllare',
+    taxNote:
+      'La tua dichiarazione non indica l’imposta, la tua decisione di tassazione (bordereau) sì. Queste cifre vengono da quello che Taxpresso ha letto nella tua dichiarazione.',
+    allMatch:
+      'I totali stampati sulla tua dichiarazione corrispondono a quelli di Taxpresso ({n} su {n}).',
+    someMatch: 'Gli altri totali stampati sulla tua dichiarazione corrispondono ({n}).',
+    checkLine: '{what} ({column}): {printed} sulla tua {where}, {recomputed} ricalcolato.',
+    checkWhy:
+      'Forse Taxpresso ha letto male una cifra, o una regola non è ancora coperta. Confronta con la pagina della tua dichiarazione.',
+    whereDeclaration: 'dichiarazione',
+    whereAssessment: 'decisione di tassazione',
+    needsCommune:
+      'Per ricalcolare l’imposta, Taxpresso ha bisogno del tuo Comune alla fine del {year}: rispondi qui sopra alla domanda sul tuo Comune.',
+    needsCivil:
+      'Per ricalcolare l’imposta, Taxpresso ha bisogno del tuo stato civile alla fine del {year}: rispondi alla domanda qui sopra.',
+    savedTitle: 'Cosa avresti potuto risparmiare',
+    pillar3a: 'Pilastro 3a',
+    pillar3aOfficial: '3e pilier A',
+    paidOf: 'Hai versato {paid} su {limit}.',
+    paidOfPartner: 'Versato {paid} su {limit}.',
+    paidAll: 'Versato per intero: {limit}.',
+    upTo: 'fino a {amount}',
+    withFund: 'Con cassa pensione (2e pilier)',
+    withoutFund: 'Senza cassa pensione',
+    fundUnknown:
+      'Nel {year} avevi una cassa pensione (2e pilier)? Il tuo certificato di salario indica i contributi alla cifra 10.1.',
+    left: '{amount} di margine',
+    saved: 'Imposte che avresti risparmiato, circa',
+    noSaving: 'Taxpresso mostrerà il risparmio appena potrà ricalcolare l’imposta.',
+    nothingMissed: 'Taxpresso non ha trovato margini non sfruttati nel pilastro 3a.',
+    askTitle: 'Domande da farti',
+    askLead:
+      'L’anno scorso queste voci erano vuote, o con la deduzione forfettaria. Solo domande: nessun importo.',
+    stillTitle: 'Cosa puoi ancora fare',
+    catchUp:
+      'Recupera il {gapYear} con un riscatto nel pilastro 3a (rachat 3a): fino a {amount} nel {year}, oltre al versamento di quest’anno.',
+    catchUpFirst: 'Prima versa per intero il pilastro 3a di quest’anno.',
+    catchUpEnter:
+      'La tua dichiarazione indica {paid} versati nel pilastro 3a nel {gapYear}: se è giusto, inseriscilo nella scheda del riscatto.',
+    catchUpLink: 'Pianificalo, con il risparmio',
+    catchUpNone: 'Una lacuna nel pilastro 3a anteriore al 2025 non si può mai recuperare.',
+    deadline: 'Termine per il reclamo (réclamation), {tax}: {date}',
+    deadlinePassed: 'scaduto',
+    deadlineNoDate:
+      'Taxpresso non conosce la data della tua decisione di tassazione {year}: il termine per il reclamo è stampato sulla decisione.',
+    deadlineNote:
+      'Fa sempre stato la data stampata sulla tua decisione di tassazione. Se non sei d’accordo, il reclamo (réclamation) lo scrivi tu: Taxpresso non lo invia mai.',
+    noAssessment:
+      'Se hai la tua decisione di tassazione {year} (avis de taxation), aggiungila: Taxpresso mostra il termine per il reclamo.',
+    unknownYear:
+      '{n} decisione di tassazione nei tuoi documenti non ha ancora un anno fiscale: indica a Claude a quale anno si riferisce.',
+    unknownYears:
+      '{n} decisioni di tassazione nei tuoi documenti non hanno ancora un anno fiscale: indica a Claude a quale anno si riferisce ciascuna.',
+    final:
+      'Quando una decisione di tassazione è definitiva, non si può semplicemente cambiare: una revisione (révision) viene rifiutata per tutto quello che avresti potuto far valere prima, con la dovuta diligenza.',
+    how: 'Come si calcola',
+    assumptions: 'Cosa ha supposto Taxpresso',
+    sources: 'Fonti',
+    page: 'pagina {page}',
+    you: 'Tu',
+    partner: 'Partner',
+    household: 'Economia domestica',
+    'tax.icc': 'cantonale',
+    'tax.ifd': 'federale',
+    'column.icc': 'cantonale',
+    'column.ifd': 'federale',
+    'column.total': 'cantonale e federale',
+    'check.gross_income': 'Reddito lordo (revenu brut, 91.00)',
+    'check.subtotal_9220': 'Subtotale 92.20',
+    'check.subtotal_9240': 'Subtotale 92.40',
+    'check.net_income': 'Reddito netto totale (revenu net total, 95.00)',
+    'check.taxable_income': 'Reddito imponibile (revenu imposable, 99.00)',
+    'check.gross_wealth': 'Sostanza lorda (fortune brute, 91.00)',
+    'check.net_wealth': 'Sostanza netta (fortune nette, 95.00)',
+    'check.taxable_wealth': 'Sostanza imponibile (fortune imposable, 99.00)',
+    'check.assessed_tax': 'Imposta sulla tua decisione di tassazione (montant de l’impôt)',
+    'q.professional_actual':
+      'La deduzione forfettaria per le spese professionali (déduction forfaitaire). Le spese effettive (frais effectifs) erano più alte, per esempio attrezzi o quote sindacali?',
+    'q.commute':
+      'Nessuna spesa di trasporto (frais de déplacement). Paghi per andare al lavoro, per esempio un abbonamento ai mezzi pubblici o una bici?',
+    'q.meals':
+      'Nessuna spesa per i pasti (frais de repas). Nei giorni di lavoro consumi il pasto principale fuori casa?',
+    'q.childcare':
+      'Nessuna spesa di custodia (frais de garde). Paghi un asilo nido, un servizio extrascolastico (parascolaire) o una tata per un figlio sotto i 14 anni?',
+    'q.medical':
+      'Nessuna spesa di malattia (frais médicaux). Hai avuto parecchie spese che la tua assicurazione malattia non ha coperto, come il dentista, gli occhiali o la franchigia? Conta solo la parte che supera una quota del tuo reddito.',
+    'q.donations':
+      'Nessuna donazione (dons). Fai donazioni a enti di pubblica utilità esenti da imposte?',
+    'q.pension_buyin':
+      'Nessun riscatto nella cassa pensione (rachat 2e pilier). Il tuo certificato di previdenza indica se puoi fare un riscatto; un riscatto che la tua cassa riceve entro il 31 dicembre conta per quest’anno.',
+    'u.year': 'Taxpresso ricalcola solo una dichiarazione 2025: sono le regole di cui dispone.',
+    'u.not_read':
+      'Taxpresso non è riuscito a leggere le pagine riassuntive (récapitulation, pagine 2 e 3) della tua dichiarazione.',
+    'u.income_elsewhere':
+      'Una parte del tuo reddito era imponibile altrove (97.00): l’aliquota dipende da un reddito che Taxpresso non vede.',
+    'u.shield':
+      'Lo scudo fiscale (bouclier fiscal) potrebbe applicarsi a te, ma Taxpresso non lo calcola ancora. GeTax sì.',
+    'u.ifd_shared_custody':
+      'In caso di custodia alternata, non si sa ancora quale genitore ha diritto alla tariffa per genitori dell’imposta federale.',
+    'a.year_not_printed':
+      'La tua dichiarazione non indica l’anno: è considerata quella dell’anno scorso.',
+    'a.commune_from_answers': 'Il tuo Comune come l’hai indicato per quest’anno.',
+    'a.couple_from_answers': 'Il tuo stato civile come l’hai indicato per quest’anno.',
+    'a.children_from_answers': 'I tuoi figli come li hai indicati per quest’anno.',
+    'a.no_children_given': 'Nessun figlio contato: nessuno indicato nelle tue risposte.',
+    'a.home_commune_only':
+      'Tutta l’imposta comunale nel tuo comune di domicilio: Taxpresso non conserva dove lavoravi.',
+    'a.others_as_declared':
+      'Ogni risparmio cambia una sola cifra e lascia le altre come dichiarate, anche le spese di malattia e le donazioni, i cui limiti variano con il reddito: il risparmio reale può essere un po’ diverso.',
+    'a.pension_fund_2025_same': 'La tua cassa pensione com’è oggi, anche per l’anno scorso.',
   },
 } as const;
 

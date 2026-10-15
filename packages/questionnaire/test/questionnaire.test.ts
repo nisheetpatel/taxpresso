@@ -1,11 +1,20 @@
 import { readFileSync } from 'node:fs';
 import { Ledger, type VaultDocument } from '@taxpresso/ledger';
-import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
-import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS } from '@taxpresso/rules-ge';
+import { ifdParamsFor, KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
+import { COMMUNES_2026, KEYS_2026 as GENEVA_KEYS, paramsFor } from '@taxpresso/rules-ge';
 import { describe, expect, it } from 'vitest';
 import {
+  agQuestionnaire2026,
+  beQuestionnaire2026,
+  blQuestionnaire2026,
   bsQuestionnaire2026,
+  frQuestionnaire2026,
+  geQuestionnaire,
   geQuestionnaire2026,
+  luQuestionnaire2026,
+  sgQuestionnaire2026,
+  tiQuestionnaire2026,
+  vdQuestionnaire2026,
   LearnMore,
   NBSP,
   parseQuestionnaire,
@@ -54,7 +63,7 @@ const SINGLE_EMPLOYEE = {
   moved: 'no',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': 'no',
+  'residence:p1': 'swiss',
   'pillar3a:p1': 'yes',
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -145,10 +154,14 @@ describe('Geneva questionnaire 2026', () => {
       childcare: 'nanny',
       commune: 'Ville de Genève',
       moved: 'from_abroad',
+      // An arrival from abroad asks each person's day (both the same: a couple taxed together).
+      'arrival_date:p1': '1.4.2026',
+      'arrival_date:p2': '2026-04-01',
       'income_sources:p1': ['salary'],
     });
     const snap = e.snapshot(ledger);
     expect(snap.people).toEqual(['p1', 'p2']);
+    expect(snap.answers.get('profile.arrival_date|p1')).toBe('2026-04-01');
     const next = e.next(snap)!;
     expect(next.id).toBe('income_sources:p2');
     expect(e.render(next, snap, 'fr')).toMatchObject({
@@ -192,17 +205,40 @@ describe('Geneva questionnaire 2026', () => {
   it('flags situations Taxpresso does not support yet', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
-    walk(e, ledger, {
+    const asked = walk(e, ledger, {
       canton: 'GE',
       civil_status: 'single',
       children: 0,
       commune: 'onex',
       moved: 'from_other_canton',
       'income_sources:p1': ['self_employment'],
+      'business_form:p1': 'sole_proprietor',
+      'business_year:p1': 'calendar',
+      'business_place:p1': 'home_commune',
+      'business_method:p1': 'cash',
+      'business_special:p1': [],
+      'business_losses:p1': false,
     });
+    // Self-employment, the simple case, is supported (SPEC.md section 1): its questions are asked.
+    // A move from another canton is supported too: Geneva taxes the whole year (guide p. 53).
+    expect(asked.filter((id) => id.startsWith('business_'))).toEqual([
+      'business_form:p1',
+      'business_year:p1',
+      'business_place:p1',
+      'business_method:p1',
+      'business_special:p1',
+      'business_losses:p1',
+    ]);
+    expect(e.notSupported(e.snapshot(ledger))).toEqual([]);
+    // Beyond the simple case, said plainly.
+    e.answer(ledger, 'business_form:p1', 'partnership', USER);
+    e.answer(ledger, 'business_special:p1', ['real_estate', 'vat'], USER);
     const what = e.notSupported(e.snapshot(ledger)).map((n) => n.what.en);
-    // A move from another canton is supported: Geneva taxes the whole year (guide p. 53).
-    expect(what).toEqual(['Self-employment (annexe B)']);
+    expect(what).toEqual([
+      'A partnership (société de personnes)',
+      'Business real estate',
+      'VAT (TVA)',
+    ]);
     expect(e.notSupportedMessage('en')).toMatch(/GeTax/);
   });
 
@@ -215,7 +251,7 @@ describe('Geneva questionnaire 2026', () => {
       moved: 'no',
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
-      'taxed_at_source:p1': false,
+      'residence:p1': 'permit_c',
       'pillar3a:p1': false,
       'lpp_buyin:p1': false,
     };
@@ -268,7 +304,7 @@ describe('Geneva questionnaire 2026', () => {
       moved: 'no',
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
-      'taxed_at_source:p1': false,
+      'residence:p1': 'permit_c',
       'pillar3a:p1': false,
       'lpp_buyin:p1': false,
       'commute:p1': 'public_transport_long',
@@ -454,6 +490,107 @@ describe('Geneva questionnaire 2026', () => {
   });
 });
 
+describe('pension capital (prestations en capital, 98.12)', () => {
+  const COUPLE = {
+    canton: 'GE',
+    civil_status: 'married',
+    children: 0,
+    commune: 'Vernier',
+    moved: 'no',
+    'income_sources:p1': ['pension'],
+    'income_sources:p2': ['pension'],
+    // Swiss: not taxed at source; the spouse is not asked.
+    'residence:p1': 'swiss',
+    banks: 0,
+    crypto: false,
+    payments: [],
+    special: ['pension_capital'],
+    'pension_capital:p1': ['pillar2', 'pillar3a'],
+    'pension_capital:p2': [],
+  };
+
+  it('asks only who received which, in Geneva: the rest is on the attestation', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, ledger, COUPLE);
+    expect(asked.slice(-3)).toEqual(['special', 'pension_capital:p1', 'pension_capital:p2']);
+    const snap = e.snapshot(ledger);
+    expect(e.next(snap)).toBeUndefined();
+    expect(e.notSupported(snap)).toEqual([]);
+    const reqs = e.requirements(snap, [doc('lpp_capital_attestation', 'p1')]);
+    expect(
+      reqs.filter((r) => r.id.includes('capital')).map((r) => [r.id, r.status, r.source]),
+    ).toEqual([
+      [
+        'lpp_capital:p1',
+        'satisfied',
+        'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13',
+      ],
+      [
+        'pillar3a_capital:p1',
+        'missing',
+        'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 13',
+      ],
+    ]);
+    expect(e.chips(snap, 'en')).toEqual(
+      expect.arrayContaining([
+        'I received a lump sum from my pension fund or pillar 3a',
+        'Capital, 2nd pillar',
+        'Capital, pillar 3a',
+      ]),
+    );
+  });
+
+  it('asks nothing more without a lump sum', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, { ...COUPLE, special: [] });
+    expect(e.snapshot(ledger).slots.some((s) => s.question.id.startsWith('pension_capital'))).toBe(
+      false,
+    );
+  });
+
+  it('cites 2025 documents only for the 2025 return', () => {
+    const e = new QuestionnaireEngine(geQuestionnaire(2025), KEYS_2026, COMMUNES_2026);
+    const ledger = new Ledger(2025, KEYS_2026);
+    walk(e, ledger, COUPLE);
+    const reqs = e.requirements(e.snapshot(ledger), []);
+    const capital = reqs.filter((r) => r.id.includes('capital'));
+    expect(capital.map((r) => r.id)).toEqual(['lpp_capital:p1', 'pillar3a_capital:p1']);
+    for (const r of capital) {
+      expect(r.source).toBe(
+        'ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ge-2025-guide-declaration-pp p. 13',
+      );
+    }
+  });
+
+  it('stays not supported in every other canton', () => {
+    for (const [canton, file] of [
+      ['ZH', zhQuestionnaire2026()],
+      ['BE', beQuestionnaire2026()],
+      ['BL', blQuestionnaire2026()],
+      ['VD', vdQuestionnaire2026()],
+      ['BS', bsQuestionnaire2026()],
+      ['ZG', zgQuestionnaire2026()],
+      ['LU', luQuestionnaire2026()],
+      ['SG', sgQuestionnaire2026()],
+      ['FR', frQuestionnaire2026()],
+      ['TI', tiQuestionnaire2026()],
+      ['shared', sharedQuestionnaire2026()],
+    ] as const) {
+      const special = file.questions.find((q) => q.id === 'special')!;
+      const option = special.options!.find((o) => o.value === 'pension_capital')!;
+      expect(option.notSupported, canton).toBeDefined();
+      expect(
+        file.questions.some((q) => q.id.startsWith('pension_capital')),
+        canton,
+      ).toBe(false);
+    }
+    const ge = geQuestionnaire2026().questions.find((q) => q.id === 'special')!;
+    expect(ge.options!.find((o) => o.value === 'pension_capital')!.notSupported).toBeUndefined();
+  });
+});
+
 describe('the questions every canton shares', () => {
   const manifest = JSON.parse(
     readFileSync(new URL('../../../docs/sources/manifest.json', import.meta.url), 'utf8'),
@@ -474,6 +611,9 @@ describe('the questions every canton shares', () => {
       'ZG',
       'LU',
       'SG',
+      'FR',
+      'TI',
+      'AG',
       'other',
     ]);
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toBeDefined();
@@ -484,20 +624,21 @@ describe('the questions every canton shares', () => {
     expect(canton.help?.en).toMatch(/taxes the whole year/);
     // The cantons covered are named from the options themselves: a canton added there is named.
     expect(canton.explain?.en).toMatch(
-      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne and St. Gallen so far\.$/,
+      /returns for Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg, Ticino and Aargau so far\.$/,
     );
     expect(canton.explain?.fr).toMatch(
       new RegExp(
-        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne et Saint-Gall\\.$`,
+        `ces cantons${NBSP}: Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg, Tessin et Argovie\\.$`,
       ),
     );
     expect(canton.explain?.de).toMatch(
-      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern und St. Gallen vor\.$/,
+      /für Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg, Tessin und Aargau vor\.$/,
     );
     expect(canton.options?.find((o) => o.value === 'other')?.notSupported).toEqual({
-      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or St. Gallen',
-      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne ou Saint-Gall',
-      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern oder St. Gallen',
+      en: 'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg, Ticino or Aargau',
+      fr: 'Un autre canton que Genève, Zurich, Berne, Bâle-Campagne, Vaud, Bâle-Ville, Zoug, Lucerne, Saint-Gall, Fribourg, Tessin ou Argovie',
+      de: 'Ein anderer Kanton als Genf, Zürich, Bern, Basel-Landschaft, Waadt, Basel-Stadt, Zug, Luzern, St. Gallen, Freiburg, Tessin oder Aargau',
+      it: 'Un Cantone diverso da Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna, San Gallo, Friburgo, Ticino o Argovia',
     });
     for (const f of [
       file,
@@ -505,6 +646,7 @@ describe('the questions every canton shares', () => {
       zhQuestionnaire2026(),
       bsQuestionnaire2026(),
       zgQuestionnaire2026(),
+      agQuestionnaire2026(),
     ]) {
       expect(JSON.stringify(f)).not.toMatch(/\{cantons/);
     }
@@ -512,6 +654,43 @@ describe('the questions every canton shares', () => {
       expect(item.explain?.de, item.id).toBeTruthy();
       expect(item.learnMore?.label.de, item.id).toBeTruthy();
     }
+  });
+
+  it('says everything in Italian too', () => {
+    for (const [name, file] of [
+      ['ch', sharedQuestionnaire2026()],
+      ['ge', geQuestionnaire2026()],
+    ] as const) {
+      const missing: string[] = [];
+      const italian: string[] = [];
+      const visit = (v: unknown, where: string): void => {
+        if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
+        if (v && typeof v === 'object') {
+          const o = v as Record<string, unknown>;
+          if (typeof o.en === 'string' && typeof o.fr === 'string') {
+            if (typeof o.it !== 'string' || !o.it) missing.push(where);
+            else italian.push(o.it);
+            return;
+          }
+          for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
+        }
+      };
+      visit(file, name);
+      expect(missing).toEqual([]);
+      // No em-dash anywhere; the typographic apostrophe (’) only in Italian.
+      expect(JSON.stringify(file)).not.toMatch(/—/);
+      expect(italian.filter((s) => s.includes("'"))).toEqual([]);
+    }
+    // The cantons covered are named in Italian, the last two joined with "e" (a canton added
+    // after St. Gallen only lengthens the list).
+    const canton = sharedQuestionnaire2026().questions[0]!;
+    expect(canton.explain?.it).toMatch(
+      /Cantoni: Ginevra, Zurigo, Berna, Basilea Campagna, Vaud, Basilea Città, Zugo, Lucerna(,| e) San Gallo\b/,
+    );
+    expect(canton.explain?.it).toMatch(/ e [^,]+\.$/);
+    expect(canton.options?.find((o) => o.value === 'other')?.notSupported?.it).toMatch(
+      /^Un Cantone diverso da Ginevra, Zurigo, .+ o [^,]+$/,
+    );
   });
 
   it('are taken by a canton in its own order, with its own fields over them', () => {
@@ -560,11 +739,278 @@ describe('the questions every canton shares', () => {
     expect(e.next(snap)?.id).toBe('civil_status');
     expect(e.render(slot, snap, 'en')).toMatchObject({ value: 'GE', assumed: true });
     // An answer the key doesn't take is not assumed.
-    const refused = e.snapshot(fresh, { 'profile.canton': 'TI' });
+    const refused = e.snapshot(fresh, { 'profile.canton': 'VS' });
     expect(refused.slots.find((s) => s.id === 'canton')?.value).toBeUndefined();
     // The user's answer wins.
     const answered = e.snapshot(ledger, { 'profile.canton': 'ZH' });
     expect(answered.slots.find((s) => s.id === 'canton')).toMatchObject({ value: 'GE' });
     expect(answered.slots.find((s) => s.id === 'canton')?.assumed).toBeUndefined();
+  });
+});
+
+describe('tax at source, worked out from plain facts (never asked where the law settles it)', () => {
+  /** Where the Geneva household lives (synthetic). */
+  const START = { commune: 'Lancy', moved: 'no' };
+  const derived = (e: QuestionnaireEngine, ledger: Ledger, id: string) =>
+    e.snapshot(ledger).derived.find((s) => s.id === id);
+
+  it('both spouses with a B permit, one salaried, the other on unemployment: both at source', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['replacement_income'],
+      'employers:p1': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+      'residence:p2': 'permit_other',
+      'employer_in_switzerland:p2': true,
+    });
+    // The spouse on benefits is asked the permit too; "taxed at source?" is never asked.
+    expect(asked).toContain('residence:p2');
+    expect(asked.filter((id) => id.startsWith('taxed_at_source'))).toEqual([]);
+    for (const p of ['p1', 'p2']) {
+      expect(derived(e, ledger, `taxed_at_source:${p}`)).toMatchObject({
+        value: true,
+        derived: {
+          source:
+            'ge-na-law-lisp art. 1 al. 1, art. 2 al. 2 let. a and b; ge-na-law-risp art. 3 and 5',
+        },
+      });
+    }
+    expect(e.snapshot(ledger).answers.get('profile.taxed_at_source|p2')).toBe(true);
+    // Next: whether TOU is already in place, a fact (never "thinking about it").
+    const next = e.next(e.snapshot(ledger))!;
+    expect(next.id).toBe('tou:p1');
+    expect(e.render(next, e.snapshot(ledger), 'en').options?.map((o) => o.value)).toEqual([
+      'already',
+      'no',
+    ]);
+    expect(e.chips(e.snapshot(ledger), 'en')).toEqual(
+      expect.arrayContaining(['Taxed at source', 'Partner: Taxed at source']),
+    );
+  });
+
+  it('one spouse Swiss, the other with a B permit: neither at source, the spouse not asked', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 1,
+      children_custody: 'with_household',
+      childcare: 'none',
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+      'residence:p1': 'swiss',
+    });
+    expect(asked).not.toContain('residence:p2');
+    for (const p of ['p1', 'p2']) {
+      const slot = derived(e, ledger, `taxed_at_source:${p}`)!;
+      expect(slot.value).toBe(false);
+      expect(slot.derived?.because.en).toMatch(/married to one of them/);
+    }
+    expect(e.next(e.snapshot(ledger))?.id).toBe('pillar3a:p1');
+    // A question that follows from the others can't be answered over them.
+    expect(() => e.answer(ledger, 'taxed_at_source:p2', true, USER)).toThrow(
+      /follows from the other answers/,
+    );
+  });
+
+  it('a single parent with a B permit and two children: at source, then who lives with whom', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 2,
+      children_custody: 'with_household',
+      childcare: 'creche_or_daycare',
+      ...START,
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+      'tou:p1': 'no',
+    });
+    expect(derived(e, ledger, 'taxed_at_source:p1')?.value).toBe(true);
+    const next = e.next(e.snapshot(ledger))!;
+    expect(next.id).toBe('lives_with_other_parent');
+    expect(e.render(next, e.snapshot(ledger), 'fr').text).toBe(
+      `En 2026, viviez-vous en couple avec l’autre parent des enfants, sans être mariés${NBSP}?`,
+    );
+  });
+
+  it('a couple already in TOU says so once each, as a fact', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+      'residence:p2': 'permit_other',
+      'employer_in_switzerland:p2': true,
+      'tou:p1': 'already',
+      'tou:p2': 'already',
+    });
+    expect(e.chips(e.snapshot(ledger), 'en')).toEqual(
+      expect.arrayContaining(['TOU', 'Partner: TOU']),
+    );
+    expect(e.next(e.snapshot(ledger))?.id).toBe('pillar3a:p1');
+  });
+
+  it('asks where the law leaves it open: a legitimation card, or a pension as the only income', () => {
+    const e = engine();
+    const card = new Ledger(2026, KEYS_2026);
+    walk(e, card, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'residence:p1': 'other',
+    });
+    expect(e.next(e.snapshot(card))?.id).toBe('taxed_at_source:p1');
+    e.answer(card, 'taxed_at_source:p1', false, USER);
+    expect(e.snapshot(card).answers.get('profile.taxed_at_source|p1')).toBe(false);
+
+    // A salary paid directly by an employer abroad is taxed ordinarily (RISP art. 5): asked.
+    const abroad = new Ledger(2026, KEYS_2026);
+    walk(e, abroad, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': false,
+    });
+    expect(e.next(e.snapshot(abroad))?.id).toBe('taxed_at_source:p1');
+
+    const pension = new Ledger(2026, KEYS_2026);
+    walk(e, pension, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['pension'],
+      'residence:p1': 'permit_other',
+      'employer_in_switzerland:p1': true,
+    });
+    const slot = e.next(e.snapshot(pension))!;
+    expect(slot.id).toBe('taxed_at_source:p1');
+    expect(e.render(slot, e.snapshot(pension), 'en').text).toBe(
+      'In 2026, was tax taken at source from your income?',
+    );
+    // No salary, benefits or pension: no permit question at all.
+    const none = new Ledger(2026, KEYS_2026);
+    const asked = walk(e, none, {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['alimony'],
+    });
+    expect(asked).not.toContain('residence:p1');
+    expect(e.snapshot(none).answers.has('profile.taxed_at_source|p1')).toBe(false);
+  });
+
+  it('asks the spouse only when the first person is neither Swiss nor holds a C permit', () => {
+    const e = engine();
+    const answers = (p1: string) => ({
+      canton: 'GE',
+      civil_status: 'registered_partnership',
+      children: 0,
+      ...START,
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+      'residence:p1': p1,
+    });
+    for (const [p1, askedSpouse] of [
+      ['swiss', false],
+      ['permit_c', false],
+      ['permit_other', true],
+      ['other', true],
+    ] as const) {
+      const ledger = new Ledger(2026, KEYS_2026);
+      walk(e, ledger, answers(p1));
+      const ids = e.snapshot(ledger).slots.map((s) => s.id);
+      expect(ids.includes('residence:p2'), p1).toBe(askedSpouse);
+    }
+  });
+});
+
+describe('childcare per child (frais de garde, the maximum is per child)', () => {
+  /** A couple in Geneva with two children at a crèche, as far as the childcare question. */
+  const FAMILY = {
+    canton: 'GE',
+    civil_status: 'married',
+    children: 2,
+    children_custody: 'with_household',
+    childcare: 'creche_or_daycare',
+  };
+  const invoice = (ledger: Ledger, id: string, francs: number) =>
+    ledger.append({
+      key: 'childcare.costs',
+      person: 'household',
+      instance: id,
+      value: francs * 100,
+      status: 'verified',
+      source: { method: 'claude', docId: id, page: 1 },
+    });
+  const ids = (e: QuestionnaireEngine, ledger: Ledger) => e.snapshot(ledger).slots.map((s) => s.id);
+
+  it('is asked only once the invoices pass one child’s maximum, 25,800, with several children', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, FAMILY);
+    expect(ids(e, ledger)).not.toContain('child_care:child1');
+    // 20,000 of invoices: within one child's maximum, every split gives the same.
+    invoice(ledger, 'creche-1', 20_000);
+    expect(ids(e, ledger)).not.toContain('child_care:child1');
+    // 5,800 more: 25,800, still within it; 1 franc more and the split decides.
+    invoice(ledger, 'creche-2', 5_800);
+    expect(ids(e, ledger)).not.toContain('child_care:child1');
+    invoice(ledger, 'creche-3', 1);
+    expect(ids(e, ledger)).toEqual(
+      expect.arrayContaining(['child_care:child1', 'child_care:child2']),
+    );
+    const slot = e.snapshot(ledger).slots.find((s) => s.id === 'child_care:child2')!;
+    expect(e.render(slot, e.snapshot(ledger), 'en').text).toBe(
+      'How much of the childcare you paid in 2026 was for child 2?',
+    );
+    // One child: whatever the amount, it is that child's.
+    const one = new Ledger(2026, KEYS_2026);
+    walk(e, one, { ...FAMILY, children: 1 });
+    invoice(one, 'creche-1', 40_000);
+    expect(ids(e, one)).not.toContain('child_care:child1');
+  });
+
+  it('keeps the federal maximum in step with the engines’ (the smaller of the two)', () => {
+    const q = geQuestionnaire2026().questions.find((x) => x.id === 'child_care')!;
+    const gt = (q.when!.all ?? []).find((c) => c.key === 'childcare.costs')!.gt;
+    for (const year of [2025, 2026] as const) {
+      expect(gt).toBe(
+        Math.min(ifdParamsFor(year).childcareMax.value, paramsFor(year).icc.childcareMax.value),
+      );
+    }
   });
 });

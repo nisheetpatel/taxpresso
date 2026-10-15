@@ -20,7 +20,13 @@ import {
   type HouseholdInput,
   type Pillar3aResult,
 } from '@taxpresso/optimizer';
-import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpresso/questionnaire';
+import type {
+  Lang,
+  QuestionnaireEngine,
+  RenderedQuestion,
+  Slot,
+  Snapshot,
+} from '@taxpresso/questionnaire';
 import type { ContentLang } from './lang.js';
 import {
   assessmentViews,
@@ -33,10 +39,17 @@ import {
   type ConsistencyCheck,
   type TaxResult,
 } from '@taxpresso/rules-ge';
-import type { SupportedCanton, TaxResult as SharedTaxResult, Text } from '@taxpresso/rules-ch';
+import {
+  businessYear,
+  type PersonInput as SharedPerson,
+  type SupportedCanton,
+  type TaxResult as SharedTaxResult,
+  type Text,
+} from '@taxpresso/rules-ch';
 import type { SecuritiesSummary } from '@taxpresso/intake';
 import type { CantonEntry, CantonRegistry, CantonState, LedgerContext } from './cantons.js';
-import { displayPath, type Config } from './config.js';
+import { CURRENT_TAX_YEAR, displayPath, type Config } from './config.js';
+import { isoToday, isYearOver } from './year-over.js';
 import { applyBarcode, BARCODE_PENDING, readDocumentBarcodes } from './barcode.js';
 import {
   applyReports,
@@ -94,7 +107,9 @@ export interface ActivityEntry {
     | 'confirm'
     | 'check'
     | 'replace'
-    | 'decide';
+    | 'decide'
+    /** The user opened this tax year (./years.ts); detail: the year. */
+    | 'year';
   /** Language-neutral: a question slot id, a document kind, a file name or a count. */
   detail?: string;
 }
@@ -106,6 +121,10 @@ interface Prefs {
 }
 
 export class WorkspaceError extends Error {}
+
+/** Why planning figures are refused for a year that is over (./planning.ts, yearOverView). */
+export const yearOverPlans = (year: number) =>
+  `${year} is over: what is paid now into 3a or a pension fund counts for ${CURRENT_TAX_YEAR}, not ${year}, so the plans are ${CURRENT_TAX_YEAR}'s. Offer to open ${CURRENT_TAX_YEAR} (open_tax_year) and save the figure there. The ${year} return takes what was paid in ${year}, from the attestations.`;
 
 /** Ticks the user set on the document cards ("Entered"): local, in the vault, never in the ledger. */
 interface Entered {
@@ -121,6 +140,8 @@ export interface ExtractionResult {
   unchanged: number;
   /** Values the user already confirmed differently: kept, never overwritten by a proposal. */
   kept: { key: string; person: Owner; value: FactValue }[];
+  /** Household answers the questions don't ask yet (the commune before the canton): not saved. */
+  later: string[];
   document: VaultDocument;
 }
 
@@ -128,9 +149,27 @@ export interface ExtractionResult {
 export const enteredSlot = (docId: string, key: string, person: Owner, instance?: string) =>
   `${docId}|${key}|${person}${instance && instance !== docId ? `|${instance}` : ''}`;
 
+/**
+ * The household answers an assessment (avis de taxation) prints, which Claude may propose from it
+ * with their page: the questions show them as suggestions the user confirms, like last year's
+ * declaration (docs/design/simple.md). Only answers the canton's questions have.
+ */
+export const ASSESSMENT_HOUSEHOLD_KEYS = [
+  'profile.canton',
+  'profile.civil_status',
+  'profile.children_count',
+  'profile.commune',
+] as const;
+const isHouseholdAnswer = (key: string) =>
+  (ASSESSMENT_HOUSEHOLD_KEYS as readonly string[]).includes(key);
+
 /** Planning inputs the user can give in the dashboard or the chat (never filed). */
 export const PLAN_KEYS = [
   'plan.gross_salary',
+  // Rough yearly benefits and pensions, per person, until their attestation is in (the basics card,
+  // docs/design/three-pages.md): estimates for the year still running, as the rough salary.
+  'plan.replacement_income',
+  'plan.pension_income',
   'plan.net_salary',
   'plan.has_pension_fund',
   'plan.pillar3a_paid',
@@ -142,7 +181,45 @@ export const PLAN_KEYS = [
   'plan.source_tax_tariff',
   'plan.tou_other_income',
   'plan.tou_taxable_wealth',
+  // Geneva: a self-employed person's expected profit for the year, for the 3a room.
+  'plan.business_profit',
+  // Geneva: a property abroad's rough value and rent, with their currency ("250000 EUR"), until its
+  // documents are in (abroad.ts): estimates for the return itself, not plans before 31 December.
+  'plan.abroad_value',
+  'plan.abroad_rent',
+  // Geneva: a property in Geneva's rough tax value, rental value or rent, and its mortgage, in
+  // francs, until its documents are in (property.ts): estimates for the return itself.
+  'plan.property_value',
+  'plan.property_rental_value',
+  'plan.property_rent',
+  'plan.mortgage_balance',
+  'plan.mortgage_interest',
 ] as const;
+
+/** Planning values that are rough figures for the return itself: they hold for a year that is over. */
+const RETURN_ESTIMATES: readonly string[] = [
+  'plan.abroad_value',
+  'plan.abroad_rent',
+  'plan.property_value',
+  'plan.property_rental_value',
+  'plan.property_rent',
+  'plan.mortgage_balance',
+  'plan.mortgage_interest',
+];
+
+/**
+ * A self-employed person's profit after their own AVS contributions, from the year's accounts when
+ * they are read (Geneva, annexe B): what the 3a room without a pension fund is a share of.
+ */
+function profitOf(
+  people: readonly SharedPerson[] | undefined,
+  person: 'p1' | 'p2',
+): number | undefined {
+  const business = people?.find((p) => p.id === person)?.business;
+  if (!business) return undefined;
+  const year = businessYear(business);
+  return year.hasAccounts ? year.earned.amount : undefined;
+}
 export type PlanKey = (typeof PLAN_KEYS)[number];
 
 export class Workspace {
@@ -159,11 +236,30 @@ export class Workspace {
   readonly #activity: ActivityEntry[] = [];
   /** The securities list read from broker exports (SPEC.md 5.7), and exports that can't be read. */
   #securities: { summary: SecuritiesSummary; unreadable: string[] } | undefined;
+  /** Derived results kept while nothing they read changed (./workspace.ts, memo). */
+  readonly #memo = new Map<string, { key: string; value: unknown }>();
+  /** Documents the folder watch sorted that Claude hasn't heard of yet (ingest_vault). */
+  #landed: string[] = [];
 
   constructor(config: Config, cantons: CantonRegistry) {
     this.config = config;
     this.cantons = cantons;
     this.vault = new Vault(config.vaultPath, cantons.taxYear);
+  }
+
+  /** The tax year of this workspace: its folder, its ledger and its questions (./years.ts). */
+  get taxYear(): number {
+    return this.cantons.taxYear;
+  }
+
+  /** Today's date, YYYY-MM-DD: the configured clock, or the computer's. */
+  today(): string {
+    return this.config.today?.() ?? isoToday();
+  }
+
+  /** A year that is over (before the default year): its plans before 31 December are gone. */
+  yearOver(): boolean {
+    return isYearOver(this.taxYear);
   }
 
   /**
@@ -301,9 +397,52 @@ export class Workspace {
    * (./cantons.ts), with the federal tax; nothing without the canton.
    */
   estimate(): CantonEstimate {
-    const canton = this.canton().canton;
+    return this.memo('estimate', '', () => this.#estimate());
+  }
+
+  /**
+   * What every derived result reads, as one key: the ledger (append-only, so its size), the
+   * documents (their kind, owner, year, how they were read, what replaced them) and the day.
+   * The dashboard asks for its state every second; with this, an unchanged return costs nothing.
+   */
+  stateKey(): string {
+    return `${this.#ledger?.size ?? -1}|${this.today()}|${JSON.stringify(this.#documents)}`;
+  }
+
+  /**
+   * A derived result, computed again only when the state it reads changed (stateKey, plus `extra`
+   * for what lives outside the ledger, such as the TOU decisions). Values never change: the same
+   * inputs give the same result, only sooner.
+   */
+  memo<T>(name: string, extra: string, fn: () => T): T {
+    const key = `${this.stateKey()}|${extra}`;
+    const hit = this.#memo.get(name);
+    if (hit && hit.key === key) return hit.value as T;
+    const value = fn();
+    this.#memo.set(name, { key, value });
+    return value;
+  }
+
+  #estimate(): CantonEstimate {
+    const state = this.canton();
+    const canton = state.canton;
     if (canton) {
       return { canton: canton.code, entry: canton, ...canton.estimate(this.ledgerContext()) };
+    }
+    // A canton Taxpresso covers, but not for this year: nothing is computed (fail closed).
+    if (state.notOffered) {
+      const year = this.taxYear;
+      return {
+        canton: undefined,
+        result: null,
+        missing: [
+          {
+            en: `a canton it prepares ${year} returns for (${state.notOffered.name.en} isn't one yet)`,
+            fr: `un canton pour lequel il prépare les déclarations ${year} (${state.notOffered.name.fr} n’en fait pas encore partie)`,
+          },
+        ],
+        notes: [],
+      };
     }
     return {
       canton: undefined,
@@ -355,8 +494,9 @@ export class Workspace {
     );
   }
 
-  render(slot: Slot, lang: Lang): RenderedQuestion {
-    return this.engine.render(slot, this.snapshot(), lang);
+  /** A question in the user's language; `snap`: the snapshot already taken, when there is one. */
+  render(slot: Slot, lang: Lang, snap: Snapshot = this.snapshot()): RenderedQuestion {
+    return this.engine.render(slot, snap, lang);
   }
 
   /** Stores an answer. Returns the fact and the documents the answer newly asks for. */
@@ -421,8 +561,12 @@ export class Workspace {
     });
   }
 
-  /** Picks up files the user put into the tax-year folder directly. */
-  async scan(by: ActivityEntry['by']): Promise<VaultDocument[]> {
+  /**
+   * Picks up files the user put into the tax-year folder directly. `auto`: the folder watch
+   * (./folder-watch.ts) sorting them as they land; what it finds is said in the activity only when
+   * there is something, and Claude hears of it with its next look at the folder (ingest_vault).
+   */
+  async scan(by: ActivityEntry['by'], opts: { auto?: boolean } = {}): Promise<VaultDocument[]> {
     return this.#write(async () => {
       const found = await this.vault.scan(this.#documents);
       if (found.length) {
@@ -432,9 +576,31 @@ export class Workspace {
         await this.#importBarcodes(found);
         await this.#importPrior(found);
       }
-      this.record(by, 'scan', String(found.length));
-      return found;
+      if (opts.auto) {
+        this.#landed.push(...found.map((d) => d.id));
+        if (found.length) this.record(by, 'scan', String(found.length));
+        return found;
+      }
+      // Claude looking at the folder: the files the watch already sorted are new to Claude too.
+      const landed = by === 'claude' ? this.#takeLanded() : [];
+      this.record(by, 'scan', String(landed.length + found.length));
+      return [...landed, ...found];
     });
+  }
+
+  /** Makes the year's folder if it isn't there yet, for the user to open it and add files. */
+  async ensureFolder(): Promise<void> {
+    return this.#write(async () => {
+      this.#usable();
+      await this.vault.ensure();
+    });
+  }
+
+  /** The documents the watch sorted since Claude last looked at the folder, once. */
+  #takeLanded(): VaultDocument[] {
+    const ids = new Set(this.#landed);
+    this.#landed = [];
+    return this.activeDocuments().filter((d) => ids.has(d.id));
   }
 
   /** The user says what a document is (and whose, in a couple). */
@@ -488,10 +654,14 @@ export class Workspace {
       this.countedFacts(),
       this.activeDocuments(),
     ).input;
+    // A year of arrival or departure whose day isn't known yet: no tax at its real rate.
+    const moved = answer('profile.moved');
+    const partYear = moved === 'from_abroad' || moved === 'leaving_switzerland';
     return {
       ...(this.engine.taxYear === 2025 || this.engine.taxYear === 2026
         ? { taxYear: this.engine.taxYear }
         : {}),
+      ...(partYear && !known?.period ? { periodUnknown: true } : {}),
       ...(known
         ? {
             known: {
@@ -501,6 +671,9 @@ export class Workspace {
               ...(known.ifdParentalScale !== undefined
                 ? { ifdParentalScale: known.ifdParentalScale }
                 : {}),
+              ...(known.abroad ? { abroad: known.abroad } : {}),
+              ...(known.property ? { property: known.property } : {}),
+              ...(known.period ? { period: known.period } : {}),
             },
           }
         : {}),
@@ -512,12 +685,23 @@ export class Workspace {
         const person = p as 'p1' | 'p2';
         const gross = money('plan.gross_salary', person);
         const net = money('plan.net_salary', person);
+        // Self-employed (Geneva, annexe B): the year's expected profit counts for the 3a room.
+        const sources = snap.answers.get(`profile.income_sources|${person}`);
+        const self = Array.isArray(sources) && sources.includes('self_employment');
+        const salaried = Array.isArray(sources) && sources.includes('salary');
+        // The year's accounts once they are read, or else the profit the user gave in the chat.
+        const business = self
+          ? (profitOf(known?.people, person) ?? money('plan.business_profit', person))
+          : undefined;
+        const fund = this.ledger.get('plan.has_pension_fund', person)?.value;
         return {
           person,
           ...(gross !== undefined ? { grossCentimes: gross } : {}),
           ...(net !== undefined ? { netCentimes: net } : {}),
-          // Most employees have one; the user can say otherwise.
-          hasPensionFund: this.ledger.get('plan.has_pension_fund', person)?.value !== false,
+          ...(business !== undefined ? { businessCentimes: business } : {}),
+          // Most employees have one, the self-employed without a salary usually not; the user can
+          // say otherwise.
+          hasPensionFund: self && !salaried ? fund === true : fund !== false,
           paidCentimes: money('plan.pillar3a_paid', person) ?? 0,
         };
       }),
@@ -579,7 +763,7 @@ export class Workspace {
   }
 
   plan(): Pillar3aResult {
-    return pillar3aPlan(this.planInput());
+    return this.memo('plan', '', () => pillar3aPlan(this.planInput()));
   }
 
   /**
@@ -595,7 +779,14 @@ export class Workspace {
     return this.#write(async () => {
       this.#usable();
       if (!PLAN_KEYS.includes(key)) throw new WorkspaceError(`Not a planning value: ${key}`);
-      const def = this.keys[key]!;
+      // The plans before 31 December and TOU can't be acted on for a year that is over.
+      if (this.yearOver() && !RETURN_ESTIMATES.includes(key)) {
+        throw new WorkspaceError(yearOverPlans(this.taxYear));
+      }
+      const def = this.keys[key];
+      // TOU, taxation at source and a business's profit are Geneva's: another canton's keys don't
+      // have them.
+      if (!def) throw new WorkspaceError(`Not a planning value in this canton: ${key}`);
       const owner: Owner = def.perPerson ? (person as 'p1' | 'p2') : 'household';
       if (def.perPerson && !this.snapshot().people.includes(person as 'p1' | 'p2')) {
         throw new WorkspaceError(`No ${person} in this household.`);
@@ -661,7 +852,7 @@ export class Workspace {
         details.taxYear !== undefined &&
         (!Number.isInteger(details.taxYear) || details.taxYear < 2000 || details.taxYear > 2100)
       ) {
-        throw new ExtractionError('document.taxYear: expected a year such as 2026.');
+        throw new ExtractionError(`document.taxYear: expected a year such as ${this.taxYear}.`);
       }
       const period = (raw: string | undefined, what: string) => {
         if (raw === undefined) return undefined;
@@ -680,7 +871,13 @@ export class Workspace {
       if (values.length > 0 && !kind) {
         throw new ExtractionError('Say what kind of document this is (document.kind) first.');
       }
-      const allowed: readonly string[] = documentFields(kind);
+      // An assessment also gives the household answers it prints, as suggestions (C7).
+      const allowed: readonly string[] = [
+        ...documentFields(kind),
+        ...(kind === 'tax_assessment' ? ASSESSMENT_HOUSEHOLD_KEYS : []),
+      ];
+      // A household answer the questions don't ask yet (the commune before the canton): later.
+      const later: string[] = [];
       const owner = userSaid && doc.person ? doc.person : (details.person ?? doc.person);
 
       // Check everything before writing anything.
@@ -693,7 +890,19 @@ export class Workspace {
             `${v.key} is not a value of this kind of document (${kind}). Its values: ${allowed.join(', ') || 'none yet'}.`,
           );
         }
-        const def = this.keys[v.key]!;
+        if (
+          isHouseholdAnswer(v.key) &&
+          (!this.keys[v.key] || !this.engine.file.questions.some((q) => q.key === v.key))
+        ) {
+          later.push(v.key);
+          continue;
+        }
+        const def = this.keys[v.key];
+        if (!def) {
+          throw new ExtractionError(
+            `${v.key} is not a value Taxpresso reads in this canton yet: tell the user this part of their return isn't supported here.`,
+          );
+        }
         let person: Owner = 'household';
         if (def.perPerson) {
           const who =
@@ -725,7 +934,9 @@ export class Workspace {
         ready.push({
           key: v.key,
           person,
-          value: coerceValue(v.key, def, v.value),
+          value: isHouseholdAnswer(v.key)
+            ? this.#householdAnswer(v.key, v.value)
+            : coerceValue(v.key, def, v.value),
           page: v.page,
           ...(box ? { box } : {}),
         });
@@ -747,8 +958,38 @@ export class Workspace {
         doc.parse = { method: 'claude', ok: true, warnings: [] };
       }
 
-      const result: ExtractionResult = { saved: 0, unchanged: 0, kept: [], document: doc };
+      const result: ExtractionResult = {
+        saved: 0,
+        unchanged: 0,
+        kept: [],
+        later,
+        document: doc,
+      };
       for (const r of ready) {
+        if (isHouseholdAnswer(r.key)) {
+          // A suggested answer, as from last year's declaration: no instance, so the question
+          // shows it; never over the user's own answer.
+          const answer = this.ledger.get(r.key, r.person);
+          const same = JSON.stringify(answer?.value) === JSON.stringify(r.value);
+          if (answer && answer.status !== 'extracted') {
+            if (same) result.unchanged++;
+            else result.kept.push({ key: r.key, person: r.person, value: answer.value });
+            continue;
+          }
+          if (same && answer?.source.docId === doc.id) {
+            result.unchanged++;
+            continue;
+          }
+          this.ledger.append({
+            key: r.key,
+            person: r.person,
+            value: r.value,
+            status: 'extracted',
+            source: { method: 'claude', docId: doc.id, page: r.page },
+          });
+          result.saved++;
+          continue;
+        }
         const current = this.ledger.get(r.key, r.person, doc.id);
         const same =
           current !== undefined && JSON.stringify(current.value) === JSON.stringify(r.value);
@@ -1098,6 +1339,15 @@ export class Workspace {
     }
     const answered = snap.answers.has('profile.civil_status|household');
     return answered && snap.people.length === 1 ? 'p1' : undefined;
+  }
+
+  /** A household answer read from a document, as its question takes it. */
+  #householdAnswer(key: string, raw: unknown): FactValue {
+    try {
+      return this.engine.coerceAnswer(key, raw);
+    } catch (err) {
+      throw new ExtractionError(`${key}: ${(err as Error).message}`);
+    }
   }
 
   #document(id: string): VaultDocument {

@@ -51,6 +51,22 @@
       "notes": "No separate file. Summary page about p. 11 of the guide PDF above. Deduction caps were not extracted."
     },
     {
+      "id": "ge-na-information-1-2021-frais-entretien",
+      "canton": "GE",
+      "doc_type": "deductions",
+      "title": "Information N° 1/2021: Déductibilité des frais d'entretien des immeubles privés",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/23670/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2021-02-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The AFC's rules on the upkeep costs of private property for the ICC and the IFD (LIFD art. 32, LIPP art. 34 let. d and e): the actual costs that count (upkeep, the PPE renovation fund, running costs, insurance, management, energy-saving investments, demolition), the flat deduction and its table (ICC 15 % or 25 % of the rental value after the abattement and limited to the taux d'effort; IFD 10 % or 20 % of the gross rental value or rents), the choice made for each property, each year and each tax, the costs that never count, the invoice date, and the carry-forward of energy-saving and demolition costs.",
+      "notes": "6 pages. Landing page https://www.ge.ch/document/information-fiscale-1/2021-deductibilite-frais-entretien-immeubles-prives. The table of p. 4 carries a note 'Nouvelle disposition à partir de la période fiscale 2024' (LIPP art. 34 let. d from 2024). Applies from tax period 2020. Added 14 October 2026 by the property agent."
+    },
+    {
       "id": "ge-na-efiling-espace-fiscal",
       "canton": "GE",
       "doc_type": "efiling_rules",
@@ -195,6 +211,38 @@
       "notes": "Cover label GUIDE; file guide-pp-2025_1.pdf, about 60 pages. Web page: https://www.ge.ch/document/guide-fiscal-2025-particuliers"
     },
     {
+      "id": "ge-2025-guide-independants",
+      "canton": "GE",
+      "doc_type": "guide",
+      "title": "Guide déclaration 2025 Indépendants, impôt cantonal et communal (ICC), impôt fédéral direct (IFD)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/44809/annexe/file/751631",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-09-08",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The guide for the self-employed the main guide refers to (ge-2025-guide-declaration-pp p. 23): annexe B code by code (B1 to B4), the accounts or simple records to attach, the AVS/AI/APG contributions of the self-employed (32.10, 32.11), pillar 3a without a pension fund (32.40), losses of the seven previous years (57.20), the business wealth and its deduction (12.50, 57.50, 51.60).",
+      "notes": "36 pages, file guide-independants-2025.pdf. Landing page: https://www.ge.ch/document/guide-fiscal-2025-independants (published 8 September 2026). PDF page n is printed page n. Annexe B: p. 10 to 24; documents to attach: p. 25; the simplified declaration: p. 26 to 28. Added by the self-employment agent on 14 October 2026."
+    },
+    {
+      "id": "ge-na-law-lcacant",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi sur les centimes additionnels cantonaux (LCACant), rsGE D 3 07",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_07.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2019-11-09",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The cantonal centimes on every cantonal tax on the income and wealth of individuals (art. 2: 47.5 centimes, plus 1 centime for home care), the separate tax on pension capital (LIPP art. 45) included.",
+      "notes": "Adopted 13 September 2019, in force 9 November 2019, no amendment (Modification: néant). Applies LCP art. 289. The page is windows-1252 encoded."
+    },
+    {
       "id": "ge-na-law-lcp",
       "canton": "GE",
       "doc_type": "law",
@@ -209,6 +257,38 @@
       "priority": "core",
       "why_needed": "Communal tax: centimes additionnels on the cantonal base tax and the split between the commune of residence (part privilégiée) and the communes of work (art. 293 to 299, art. 295A); the taxe personnelle (art. 374 to 377).",
       "notes": "rsGE D 3 05, adopted 9 November 1887, consolidated text with modifications up to 1 January 2026. Art. 295A al. 2: the privileged share (20% to 80%) of each cantonal tax on income and wealth goes to the commune of residence, the rest to the communes concerned in proportion to the income and wealth attributable to each. Art. 375: taxe personnelle of 25 francs; art. 377: exemptions."
+    },
+    {
+      "id": "ge-na-law-ldirpp",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi relative à la diminution de l'impôt sur le revenu des personnes physiques (LDIRPP), rsGE D 3 06",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_06.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "1999-10-16",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The 12% reduction of the cantonal income tax (art. 1: the direct tax on the income of individuals, except the communal centimes, is reduced by 12%), which also applies to the separate tax on pension capital (LIPP art. 45).",
+      "notes": "Adopted 26 September 1999 (popular initiative IN 111), in force 16 October 1999, no amendment (Modification: néant). Art. 2 phases the 12% in three steps, the last from 1 January 2005 at the latest. The 2025 tariff (ge-2025-icc-tariff-pdf p. 2 and 4) refers to it as the loi du 26 septembre 1999. The page is windows-1252 encoded."
+    },
+    {
+      "id": "ge-na-law-lefi",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Loi sur les estimations fiscales de certains immeubles (LEFI), rsGE D 3 10",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_10.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2025-02-28",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "Why the tax value of a villa or a flat in PPE comes from the AFC and not from a calculation: the estimates are extended without limit (art. 1), raised by 12 % for the first tax period after 1 January 2025 (art. 2 al. 1) with exceptions (art. 4); the yearly indexation of art. 2 al. 2 was annulled by the Federal Supreme Court (9C_606/2024) and is now set by the RIVFI.",
+      "notes": "Adopted 4 November 2022, in force 1 January 2025; art. 2 al. 2 annulled (arrêt TF 9C_606/2024, 28 February 2025). Added 14 October 2026 by the property agent."
     },
     {
       "id": "ge-na-law-lipp",
@@ -275,6 +355,38 @@
       "notes": "Adopted 30 September 2020, in force 1 January 2021, last amended 1 January 2024. The page is windows-1252 encoded."
     },
     {
+      "id": "ge-na-charges-deductibles-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: les charges et frais déductibles",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "What the owner of a property may deduct for its upkeep, ICC and IFD: the flat deduction (forfait) or the actual costs (frais effectifs), the costs that count (upkeep, PPE charges, building insurance, the impôt immobilier complémentaire, management of a property let), the year of the invoice, and that the invoices are kept, not attached.",
+      "notes": "Its 'déduction forfaitaire' paragraph gives 10 % and 20 % for the ICC and the IFD alike, while the law (ge-na-law-lipp art. 34 let. d), the guide (ge-2025-guide-declaration-pp p. 33) and the AFC's information 1/2021 (ge-na-information-1-2021-frais-entretien p. 4) give 15 % and 25 % of the rental value for the ICC of one's own home: Taxpresso follows the law (see ge/NOTES.md). Links the information 1/2021 and its notice. Added 14 October 2026 by the property agent."
+    },
+    {
+      "id": "ge-na-iic-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: l'impôt immobilier complémentaire",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The yearly tax on property in Geneva (impôt immobilier complémentaire, LCP art. 76 to 79) for individuals: 1 per mille of the tax value, 0.2 per mille for one's main home, without the 4 % abattement and without deducting debts, due by the owner on 31 December; the 20-year exemption of buildings with a high energy performance standard (HPE, THPE, LCP art. 78).",
+      "notes": "Sections 'Vous êtes un particulier', 'Vous êtes une entreprise, une association ou une fondation', 'Obtenir une exonération'. ge.ch answered with a maintenance page on some tries on 14 October 2026: check that the saved file is the page. Added 14 October 2026 by the property agent."
+    },
+    {
       "id": "ge-na-other-demander-delai",
       "canton": "GE",
       "doc_type": "other",
@@ -289,6 +401,38 @@
       "priority": "core",
       "why_needed": "Extension rules, fees and cut-off dates for requesting more time to file.",
       "notes": "Initial deadline 31 March. Requests from 1 January to 31 October online, by phone or by post; from 1 November to 31 December by post only. Fees of CHF 20, 40 or 60 by length of extension. Page does not give 2025 dates."
+    },
+    {
+      "id": "ge-na-revenu-immobilier-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: le revenu immobilier (impôt sur le revenu)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The page the guide sends to for the rental value of property abroad (ge-2025-guide-declaration-pp p. 33, 'Le revenu immobilier'): a home in France (the taxe d'habitation's 'Base d'imposition (valeur locative brute)', or the 'Base' of the 'Commune' column of the taxes foncières times 2), a country with a rental value like Switzerland's (its value, with the country's attestation), a country without one (4.5 % of the tax value, a net flat amount, no upkeep costs), and a property let abroad (the rents received, with a management account, compte de gestion).",
+      "notes": "Sections 'Votre bien est situé dans le canton de Genève', 'dans un autre canton', 'à l'étranger' (France, a country with an equivalent of the Swiss rental value, a country without one), each with 'Si vous occupez votre bien immobilier, qu'il est à votre disposition ou à celles de vos proches' and 'Si vous louez votre bien'. Last updated 27 April 2026. Added 14 October 2026 by the property abroad agent."
+    },
+    {
+      "id": "ge-na-valeur-fiscale-page",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "L'impôt des propriétaires immobiliers: la valeur fiscale (impôt sur la fortune)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
+      "format": "html",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2026-04-27",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The wealth value of property abroad: the tax value set by the country, with its attestation, or, where the country sets none, the purchase price, with a copy of the deed (acte d'acquisition); a value in a foreign currency converted into francs on 31 December of the tax year. A foreign value that is extremely low is replaced by a Geneva-style estimate.",
+      "notes": "Section 'Votre bien est situé à l'étranger'. Last updated 27 April 2026. Added 14 October 2026 by the property abroad agent."
     },
     {
       "id": "ge-2026-source-directives",
@@ -339,6 +483,22 @@
       "notes": "Sub-page of ge-2025-dris-tou-page, last updated 13 March 2026. Lists one compulsory case (spouse without activity) that ge-2026-source-directives p. 51 does not: see ge/NOTES.md."
     },
     {
+      "id": "ge-2026-source-capital-icc-tariff",
+      "canton": "GE",
+      "doc_type": "tariff",
+      "title": "Barème 2026 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/41804/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2025-11-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The official 2026 rates of the cantonal and communal tax on pension capital at a fifth of the LIPP scale (art. 45), centimes included: used to check the engine's separate capital tax for 2026.",
+      "notes": "4 pages, footer 'Barème LPP 2026, Part ICC, novembre 2025'. The rates include the cantonal centimes (48.5%) and a flat average of the communal centimes (43.44%). Page: https://www.ge.ch/document/bareme-icc-impot-source-prestations-capital-2026"
+    },
+    {
       "id": "ge-2026-source-tariff-ascii",
       "canton": "GE",
       "doc_type": "tariff",
@@ -385,6 +545,22 @@
       "priority": "core",
       "why_needed": "Cantonal and communal income and wealth tax tables for 2025.",
       "notes": "Base tables with examples; surcharges come from the communal centimes files. Federal tax not included. HTML page: https://www.ge.ch/document/baremes-icc-impots-revenu-fortune-avec-exemples-calcul-2025"
+    },
+    {
+      "id": "ge-2025-source-capital-icc-tariff",
+      "canton": "GE",
+      "doc_type": "tariff",
+      "title": "Barème 2025 ICC de l'impôt à la source sur les prestations de prévoyance en capital (art. 45 LIPP, 10 et 11 LISP)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/38083/telecharger",
+      "format": "pdf",
+      "publisher": "Administration fiscale cantonale (AFC), Genève",
+      "published": "2024-12-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "The official rates of the cantonal and communal tax on pension capital at a fifth of the LIPP scale (art. 45), for a single person without splitting, centimes included: used to check the engine's separate capital tax for 2025 (base tax, 47.5% cantonal centimes, 12% reduction, 1% home care, communal centimes).",
+      "notes": "4 pages, footer 'Barème LPP 2025, Part ICC, décembre 2024'. The rates include the cantonal centimes (48.5%: 47.5% and 1% home care) and a flat average of the communal centimes (43.69%), as LISP art. 11 and 12 ask for people living abroad; residents are taxed with their own commune's centimes. The federal part is a separate tariff. Page: https://www.ge.ch/document/bareme-icc-impot-source-prestations-capital-2025"
     },
     {
       "id": "ge-2025-source-tariff-ascii",
@@ -481,6 +657,22 @@
       "priority": "useful",
       "why_needed": "Entry hub for the filling, sending and extension sub-pages for individuals.",
       "notes": "Deadline 31 March unless an exception applies. A paper form can be obtained by phone or at the Hôtel des Finances."
+    },
+    {
+      "id": "ge-na-law-rivfi",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Règlement fixant l'indexation de la valeur fiscale de certains immeubles (RIVFI), rsGE D 3 10.03",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/program/books/rsg/htm/rsg_d3_10p03.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2025-12-17",
+      "verified_on": "2026-10-14",
+      "priority": "reference",
+      "why_needed": "From tax period 2026, the tax value of villas and PPE flats is indexed each year by a coefficient built from federal and cantonal price indices (art. 3 to 7): the value for the year is the AFC's, as its letter gives it, never computed by Taxpresso.",
+      "notes": "In force 1 January 2026. Added 14 October 2026 by the property agent."
     },
     {
       "id": "ge-2025-taux-donnees-fiscales",
@@ -5779,6 +5971,22 @@
       "notes": "Nachtragsnummer 132 is marked aktuell. The PDF on notes.zh.ch could not be fetched; this is the HTML ZH-Lex entry."
     },
     {
+      "id": "zh-na-zstb-5-3",
+      "canton": "ZH",
+      "doc_type": "other",
+      "title": "Zürcher Steuerbuch Nr. 5.3: Internationale Steuerausscheidung bei Grundstücken, Geschäftsbetrieben und Betriebsstätten",
+      "tax_year": null,
+      "language": "de",
+      "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-5-3/zstb-nr-5-3.pdf",
+      "format": "pdf",
+      "publisher": "Kantonales Steueramt Zürich (Zürcher Steuerbuch Nr. 5.3)",
+      "published": "2026-03-05",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "How income, deductions, debts and debt interest are split between Switzerland and abroad for a person living in Switzerland with real estate abroad, for the federal tax (DBG art. 6 al. 3, art. 7 al. 1, art. 35 al. 3) and the cantonal tax, with the Federal Supreme Court decisions: property income and costs by object, debts and debt interest in proportion to where all gross assets lie, general deductions by their link to an income or else by net income, social deductions by net income, losses abroad only for the rate, the rate of the whole worldwide income.",
+      "notes": "8 pages, dated 5 March 2026 (PDF created 23 March 2026). Section 1.1 (Grundstück im Ausland, natürliche Personen) p. 1 and 2; 1.2 (Geschäftsbetrieb im Ausland) p. 3 and 4; 2 (no residence in Switzerland) p. 5 to 8. Page https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-nr-5-3.html. Cited for the federal rules, which every canton applies; the Geneva documents don't spell them out (ge/NOTES.md, Property abroad). Added 14 October 2026 by the property abroad agent."
+    },
+    {
       "id": "zh-2026-source-tax-grundlagen-parameter",
       "canton": "ZH",
       "doc_type": "source_tax",
@@ -8771,6 +8979,22 @@
       "notes": "Lettre circulaire ref 2-210-D-2024-f. Cites the DFF ordinance of 10 Feb 1993 on professional expenses. Other flat-rate amounts are referred to, not listed."
     },
     {
+      "id": "ch-2026-afc-guide-futur-contribuable",
+      "canton": "CH",
+      "doc_type": "guide",
+      "title": "Guide du futur contribuable: Taxation du revenu et de la fortune en Suisse",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://www.efd.admin.ch/dam/fr/sd-web/SPiTLcf5pKap/leitfaden-steuerpflichtige-fr.pdf",
+      "format": "pdf",
+      "publisher": "AFC (ESTV)",
+      "published": "2026-06-18",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "How every Swiss tax law (federal and cantonal) taxes a year of arrival from abroad or of departure abroad: only the income of the period of tax liability, the rate on periodic income converted to a year with the formula income x 360 / days of tax liability, non-periodic income never converted (p. 29 and 30, ch. 3.1.1.2 and 3.1.1.3; p. 31, ch. 3.1.2.1; p. 40, ch. 3.2.6); the wealth taxed on the day the tax liability ends (p. 21, ch. 2.1.5.2).",
+      "notes": "Published by the AFC on the site of the Federal Department of Finance, 63 pages, the edition whose examples are for 2026 (PDF dated 22 May 2026, changed 18 June 2026). PDF page numbers: the printed page number plus 2. Added by the arrival and departure agent on 14 October 2026."
+    },
+    {
       "id": "ch-2026-ifd-instructions-personnes-physiques",
       "canton": "CH",
       "doc_type": "guide",
@@ -8785,6 +9009,22 @@
       "priority": "core",
       "why_needed": "Official 2026 guide to the federal individual return, including pillar 3a limits and professional expense methods",
       "notes": "Printed as Instructions 2026 concernant la déclaration des personnes physiques, form 605.040.11.1f. Contains the 2026 federal tariff schedules."
+    },
+    {
+      "id": "ch-2025-ifd-instructions-personnes-physiques",
+      "canton": "CH",
+      "doc_type": "guide",
+      "title": "2a - Instructions 2025 concernant la déclaration des personnes physiques (Formulaire 2)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.estv.admin.ch/dam/fr/sd-web/5fxi0vnMoACl/dbst-wgl-02a-2025-fr.pdf",
+      "format": "pdf",
+      "publisher": "AFC (ESTV)",
+      "published": null,
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "Official 2025 guide to the federal individual return: the 2025 pillar 3a limits (p. 7, chiffre 13: 7258 with a pension fund; without, 20 % of the earned income of all activities, at most 36 288; no deduction when the activity makes a loss), self-employment income (p. 2, chiffre 2), losses of the seven previous business years 2018 to 2024 (p. 3) and the two-earner deduction (p. 8, chiffre 16).",
+      "notes": "Printed as Formule 2a 605.040.11.1f (Période fiscale 2025), 10 pages. The 2025 counterpart of ch-2026-ifd-instructions-personnes-physiques. Added by the self-employment agent on 14 October 2026."
     },
     {
       "id": "ch-2025-oiis-dff-annexe",
@@ -8899,6 +9139,22 @@
       "notes": "Consolidated text, état le 1er janvier 2024, the latest consolidation on Fedlex on 13 October 2026. 12 pages. The list of treaty states and rates is in the DFF ordinance (ch-2025-oiis-dff-annexe). Added by the securities agent."
     },
     {
+      "id": "ch-na-ordonnance-frais-professionnels",
+      "canton": "CH",
+      "doc_type": "law",
+      "title": "Ordonnance du DFF sur la déduction des frais professionnels des personnes exerçant une activité lucrative dépendante en matière d’impôt fédéral direct (Ordonnance sur les frais professionnels), RS 642.118.1",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://fedlex.data.admin.ch/filestore/fedlex.data.admin.ch/eli/cc/1993/1363_1363_1363/20230101/fr/pdf-a/fedlex-data-admin-ch-eli-cc-1993-1363_1363_1363-20230101-fr-pdf-a.pdf",
+      "format": "pdf",
+      "publisher": "Chancellerie fédérale (Fedlex)",
+      "published": "2023-01-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "Federal professional costs: the flat deduction for other professional costs is reduced appropriately for a salaried activity of part of the year or part time (art. 7 al. 2, p. 3), without saying how; travel (art. 5) and meals (art. 6).",
+      "notes": "Consolidated text, état le 1er janvier 2023, 6 pages, the Fedlex filestore PDF. Added by the arrival and departure agent on 14 October 2026."
+    },
+    {
       "id": "ch-na-ifd-chiffres-reperes-3a",
       "canton": "CH",
       "doc_type": "other",
@@ -8913,6 +9169,22 @@
       "priority": "core",
       "why_needed": "Official pillar 3a maximum table (section 9), legal basis OPP 3 art. 7 para. 1",
       "notes": "Marked 2026. Extraction shows the same values in both year columns, so confirm the 2025 values in the PDF before use."
+    },
+    {
+      "id": "ch-na-reforme-valeur-locative-2029",
+      "canton": "CH",
+      "doc_type": "other",
+      "title": "Le Conseil fédéral met en vigueur l'abolition de l'imposition de la valeur locative (communiqué de presse, 1er avril 2026)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
+      "format": "html",
+      "publisher": "Administration fédérale des contributions (AFC)",
+      "published": "2026-04-01",
+      "verified_on": "2026-10-14",
+      "priority": "core",
+      "why_needed": "When the reform of the taxation of owner-occupied homes voted in September 2025 applies: the Federal Council set its entry into force on 1 January 2029, when the rental value (valeur locative) of homes occupied by their owner stops being taxed and the deduction of upkeep costs ends except for property let; so tax years 2025 and 2026 keep the rental value and the upkeep deduction, as the 2025 and 2026 federal instructions say.",
+      "notes": "Press release of the ESTV, Berne, 1 April 2026. Added 14 October 2026 by the property agent."
     },
     {
       "id": "ch-na-remboursement-impot-anticipe",

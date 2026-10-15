@@ -66,6 +66,10 @@ export interface TiAssessInput {
   adults: 1 | 2;
   /** Documents that say how the family and the tariff were found. */
   familySources?: readonly string[];
+  /** Modulo 4 line by line, the parts of 9.1 and 9.2, from ./compute.ts; absent: none. */
+  professional?: readonly Item[];
+  /** 22.1 a and b as the return lays them out, from ./compute.ts; null or absent without costs. */
+  medical?: TiIccResult['medical'];
   incomeItems: readonly (Item | ItemAmount)[];
   wealthItems: readonly (Item | ItemAmount)[];
 }
@@ -415,10 +419,12 @@ export function assess(input: TiAssessInput): TiIccResult {
     totalDeductions,
     netIncome,
     netIncome2,
+    medical: input.medical ?? null,
     netIncome3,
     netIncome4,
     taxableIncome,
     incomeTariff: input.incomeTariff,
+    professional: [...(input.professional ?? [])],
     wealth: { items: wealthItems, grossWealth, netWealth, taxableWealth },
     taxes: {
       incomeBase,

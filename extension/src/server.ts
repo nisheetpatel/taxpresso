@@ -21,8 +21,10 @@ import {
   planningReady,
   planningText,
   planningView,
+  yearOverText,
+  yearOverView,
 } from './planning.js';
-import { PRIOR_METHOD, priorStatusText } from './prior.js';
+import { lastYearLines, PRIOR_METHOD, priorStatusText } from './prior.js';
 import { registerLastYearTool } from './prior-tool.js';
 import { registerDeclarationCheckTool } from './reconcile-tool.js';
 import { registerFinalCheckTool } from './final-check.js';
@@ -32,16 +34,25 @@ import { securitiesStatusText } from './securities.js';
 import { barcodeNote, BARCODE_PENDING, fromBarcode, isBarcodeDocument } from './barcode.js';
 import { reviewDocument } from './review.js';
 import { buildStatus, StatusSchema, statusText } from './status.js';
-import { CANTONS, cantonNames, fullCantons, germanCantons, previewCantons } from './cantons.js';
-import { PILLAR3A_2026_FACTS, SUPPORTED_CANTONS } from '@taxpresso/rules-ch';
+import { CANTONS } from './cantons.js';
+import { PILLAR3A_2026, PILLAR3A_2026_FACTS } from '@taxpresso/rules-ch';
 import { formatDay } from '@taxpresso/rules-ge';
-import { PLAN_KEYS, WorkspaceError, type Workspace } from './workspace.js';
+import {
+  ASSESSMENT_HOUSEHOLD_KEYS,
+  PLAN_KEYS,
+  WorkspaceError,
+  type Workspace,
+} from './workspace.js';
+import { registerYearTool } from './year-tool.js';
+import { DEFAULT_TAX_YEAR, TaxYears } from './years.js';
 
 // MCP Apps: the dashboard in the conversation, and the tool it talks through (./dashboard-view.ts).
 export { DASHBOARD_VIEW_URI, MCP_APP_MIME_TYPE } from './dashboard-view.js';
 
 export interface ServerDeps {
-  workspace: Workspace;
+  /** The tax years and the open one (./years.ts); or one workspace, whose year opens first. */
+  years?: TaxYears;
+  workspace?: Workspace;
   dashboard: Dashboard;
 }
 
@@ -87,6 +98,9 @@ const QuestionOut = z.object({
     .optional(),
   min: z.number().optional(),
   max: z.number().optional(),
+  /** A date question: the first and last day it takes, YYYY-MM-DD. */
+  minDate: z.string().optional(),
+  maxDate: z.string().optional(),
   suggested: z
     .object({
       value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
@@ -135,6 +149,7 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
       : {}),
     ...(en.min !== undefined ? { min: en.min } : {}),
     ...(en.max !== undefined ? { max: en.max } : {}),
+    ...(en.minDate ? { minDate: en.minDate, maxDate: en.maxDate } : {}),
     ...(slot.suggested !== undefined
       ? {
           suggested: {
@@ -172,6 +187,13 @@ function toolError(err: unknown) {
   throw err;
 }
 
+/**
+ * "Tax year 2025: " before what a question or an answer says, when the open year is not the default
+ * one: the user may have switched in the dashboard (docs/design/tax-years.md).
+ */
+const yearOf = (ws: Workspace) =>
+  ws.taxYear === DEFAULT_TAX_YEAR ? '' : `Tax year ${ws.taxYear}: `;
+
 /** `place`: the canton's name; `hint`: how its communes are named, when that needs saying. */
 function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
   const how =
@@ -183,9 +205,13 @@ function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
           ? 'Answer: an amount in CHF as the user said it, e.g. 790 or "1\'250.50".'
           : q.type === 'commune'
             ? `Answer: the name of the ${place} commune${hint}.`
-            : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
-                ?.map((o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`)
-                .join('; ')}`;
+            : q.type === 'date'
+              ? `Answer: the day, YYYY-MM-DD, in ${q.minDate?.slice(0, 4) ?? 'the tax year'}; from the user's words or a document they have (an arrival attestation, a permit, a salary certificate's period), never guessed.`
+              : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options
+                  ?.map(
+                    (o) => `${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`,
+                  )
+                  .join('; ')}`;
   const who = q.person === 'p2' ? ` (about ${WHO.p2})` : '';
   return [
     `[${q.id}]${who} ${q.text.fr}`,
@@ -203,19 +229,50 @@ function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
   ].join('\n');
 }
 
-export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps): McpServer {
+/**
+ * What Claude does with an assessment (avis de taxation) it read: the household answers it prints
+ * become suggestions; this year's is compared in the dashboard, with the deadline to object.
+ */
+function assessmentGuide(
+  ws: Workspace,
+  doc: { taxYear?: number | undefined },
+  values: readonly { key: string }[],
+): string[] {
+  const out: string[] = [];
+  const household = values.some((v) =>
+    (ASSESSMENT_HOUSEHOLD_KEYS as readonly string[]).includes(v.key),
+  );
+  if (!household || !values.some((v) => v.key === 'assessment.notification_date')) {
+    out.push(
+      'An assessment also gives its date (assessment.notification_date) and the household answers it prints (profile.canton, profile.civil_status, profile.children_count, profile.commune), each with its page: propose the ones you read. They become suggestions in the questions, never answers.',
+    );
+  }
+  out.push(
+    (doc.taxYear ?? ws.taxYear) === ws.taxYear
+      ? "This year's assessment: the dashboard compares it with the declaration and shows the deadline to object (réclamation) with its legal source. Give that deadline only as Taxpresso shows it, and say the date printed on the assessment wins. Never write or send an objection for the user."
+      : 'An earlier year’s assessment feeds the review of that year (review_last_year) and the suggestions.',
+  );
+  return out;
+}
+
+export function createTaxpressoServer(deps: ServerDeps): McpServer {
+  const { dashboard } = deps;
+  // Every tool takes the open year's workspace once, when it starts (./years.ts).
+  const years = deps.years ?? TaxYears.of(deps.workspace!);
   const server = new McpServer(
-    { name: 'taxpresso', title: 'Taxpresso', version: ws.config.version },
+    { name: 'taxpresso', title: 'Taxpresso', version: years.config.version },
     { instructions: INSTRUCTIONS },
   );
-  const status = (detail = false) =>
-    buildStatus(ws, { dashboardRunning: dashboard.running, detail });
+  const status = (ws: Workspace, detail = false) =>
+    buildStatus(ws, { dashboardRunning: dashboard.running, detail, years });
 
   server.registerTool(
     'get_status',
     {
       title: 'Get tax return status',
-      description: `Where the user's tax return stands (${cantonNames(fullCantons(), 'and')}, or ${cantonNames(previewCantons(), 'and')} as a preview): canton, household, questions answered, documents, what is still missing, anything not supported, and the next step. Call this first.`,
+      // No canton names in the descriptions: the result lists the cantons of each year, and the
+      // descriptions stay within the 300 characters a tool's description may have (C6) as cantons come.
+      description: `Where the user's tax return stands for the open tax year: year, canton, household, answers, documents, what is missing or not supported, next step, and the cantons and years Taxpresso prepares. Call this first.`,
       inputSchema: z.object({
         detail: z
           .boolean()
@@ -226,9 +283,10 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Get tax return status', ...RO },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       ws.record('claude', 'status');
-      const s = status(detail === true);
+      const s = status(ws, detail === true);
       return { content: [{ type: 'text', text: statusText(s) }], structuredContent: s };
     },
   );
@@ -237,7 +295,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
     'next_questions',
     {
       title: 'Get the next questions',
-      description: `The next unanswered questions about the user's situation, in English and French (German too, for ${cantonNames(germanCantons(), 'and')}) with their options. Ask them one at a time in the user's language, then save each answer with answer_question.`,
+      description: `The next unanswered questions about the user's situation, in English and French, with their options. Ask them one at a time in the user's language, then save each answer with answer_question.`,
       inputSchema: z.object({
         limit: z.number().int().min(1).max(5).optional().describe('How many questions. Default 1.'),
       }),
@@ -249,6 +307,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Get the next questions', ...RO },
     },
     async ({ limit }) => {
+      const ws = years.current;
       await ws.ready();
       ws.record('claude', 'questions');
       const snap = ws.snapshot();
@@ -258,10 +317,25 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       const rest = open.filter((s) => s.id !== first?.id);
       const later = (s: Slot) => ws.skipped.includes(s.id);
       const ordered = first ? [first, ...rest.filter((s) => !later(s)), ...rest.filter(later)] : [];
-      const questions = ordered.slice(0, limit ?? 1).map((slot) => questionOut(ws, slot));
+      const picked = ordered.slice(0, limit ?? 1);
+      const questions = picked.map((slot) => questionOut(ws, slot));
       const answered = snap.slots.length - open.length;
+      // A couple's suggestions from last year's declaration: who is A and who is B, said once.
+      const fromDeclaration = picked.some(
+        (s) =>
+          s.suggested !== undefined &&
+          ws.documents.find((d) => d.id === s.suggestion?.source.docId)?.kind ===
+            'prior_declaration',
+      );
+      const lastYear = fromDeclaration ? ws.lastYear('en') : undefined;
+      const couple =
+        lastYear !== undefined &&
+        lastYearLines(ws.ledger, lastYear.docId).some((l) => l.person === 'p2');
+      const swap = couple
+        ? '\n\nTaxpresso takes taxpayer A of last year’s declaration (contribuable A) as the user and B as their spouse or partner. If the user is B, tell them the suggestions for "you" and "your partner" are swapped, and check each one with them.'
+        : '';
       const text = questions.length
-        ? `${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}`
+        ? `${yearOf(ws)}${answered} answered, ${open.length} to go.\n\n${questions.map((q) => questionText(q, ws.engine.file.place?.en, ws.canton().canton?.communeHint)).join('\n\n')}${swap}`
         : 'All questions are answered. Call get_status for the next step.';
       return {
         content: [{ type: 'text', text }],
@@ -295,19 +369,27 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Save an answer', ...RW },
     },
     async ({ id, value }) => {
+      const ws = years.current;
       try {
+        await ws.ready();
+        // What follows from the answers (taxed at source, from the permit): new consequences of
+        // this answer are said with it.
+        const derivedBefore = new Set(ws.engine.notSupported(ws.snapshot()).map((n) => n.slotId));
         const { added } = await ws.answer(id, value, 'chat');
         const snap = ws.snapshot();
         const slot = snap.slots.find((s) => s.id === id);
         const saved = slot ? ws.engine.describe(slot, 'en') : String(value);
         const newlyMissing = added.filter((r) => r.status === 'missing').map((r) => r.label.en);
+        const derivedIds = new Set(snap.derived.map((s) => s.id));
         const notSupported = ws.engine
           .notSupported(snap)
-          .filter((n) => n.slotId === id)
+          .filter(
+            (n) => n.slotId === id || (derivedIds.has(n.slotId) && !derivedBefore.has(n.slotId)),
+          )
           .map((n) => n.what.en);
         const nextSlot = ws.next();
         const next = nextSlot ? questionOut(ws, nextSlot) : undefined;
-        const lines = [`Saved: ${saved}.`];
+        const lines = [`${yearOf(ws)}Saved: ${saved}.`];
         if (newlyMissing.length) lines.push(`Documents now needed: ${newlyMissing.join('; ')}.`);
         if (notSupported.length) {
           lines.push(
@@ -355,6 +437,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'List documents', ...RO },
     },
     async () => {
+      const ws = years.current;
       await ws.ready();
       const exportNote = (id: string) => {
         const doc = ws.documents.find((d) => d.id === id);
@@ -414,6 +497,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Check the Taxpresso folder', ...RW, idempotentHint: true },
     },
     async () => {
+      const ws = years.current;
       const found = await ws.scan('claude');
       const added = found.map((d) => d.filename);
       const counted = ws.countedFacts();
@@ -432,6 +516,13 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       });
       const waiting = found.filter((d) => d.parse.method === BARCODE_PENDING).length;
       const toIdentify = found.some((d) => !d.kind);
+      // Last year's declaration and broker exports Taxpresso read itself: nothing for Claude to read.
+      const readByTaxpresso = found.some(
+        (d) =>
+          d.parse.ok &&
+          (d.kind === 'broker_export' ||
+            (d.kind === 'prior_declaration' && d.parse.method === PRIOR_METHOD)),
+      );
       const securities = found.some((d) => d.kind === 'broker_export')
         ? securitiesStatusText(ws.securities('en'))
         : undefined;
@@ -440,7 +531,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         : undefined;
       const text = added.length
         ? [
-            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}${waiting ? ' Ask the user whose each certificate read from its barcode is (theirs or their partner’s); they choose it in the dashboard (Documents).' : ''}`,
+            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}${waiting ? ' Ask the user whose each certificate read from its barcode is (theirs or their partner’s); they choose it in the dashboard (Your tax).' : ''}${readByTaxpresso ? ' Taxpresso read last year’s declaration and broker exports itself, on this computer, and keeps no name or number from the declaration: don’t read them with get_document_for_review.' : ''}`,
             ...(securities ? [securities] : []),
             ...(lastYear ? [lastYear] : []),
           ].join('\n')
@@ -450,9 +541,9 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   );
 
   // get_last_year: last year's figures, for comparison only (./prior-tool.ts).
-  registerLastYearTool(server, ws);
+  registerLastYearTool(server, years);
   // review_last_year: last year's return reviewed, read-only (./last-year-review.ts).
-  registerReviewTool(server, ws);
+  registerReviewTool(server, years);
 
   server.registerTool(
     'list_optimizations',
@@ -465,17 +556,36 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         lppBuyIn: z.record(z.string(), z.unknown()),
         pillar3aCatchUp: z.record(z.string(), z.unknown()),
         tou: z.record(z.string(), z.unknown()),
+        yearOver: z
+          .record(z.string(), z.unknown())
+          .optional()
+          .describe('A tax year that is over: the plans before 31 December no longer apply.'),
       }),
       annotations: { title: 'List tax savings', ...RO },
     },
     async () => {
+      const ws = years.current;
       await ws.ready();
       await planningReady(ws);
+      // A year that is over: nothing can be paid into it anymore (./planning.ts).
+      const over = yearOverView(ws);
+      if (over) {
+        return {
+          content: [{ type: 'text', text: yearOverText(over, ws.canton().canton).join('\n') }],
+          structuredContent: {
+            pillar3a: {},
+            lppBuyIn: {},
+            pillar3aCatchUp: {},
+            tou: over.tou ? { ...over.tou } : {},
+            yearOver: { ...over },
+          },
+        };
+      }
       const plan = ws.plan();
       const planning = planningView(ws);
       const canton = ws.canton().canton;
       const lines = [
-        `Before 31 December ${ws.config.taxYear}: pillar 3a (${canton?.terms?.pillar3a ?? '3e pilier A'})`,
+        `Before 31 December ${ws.taxYear}: pillar 3a (${canton?.terms?.pillar3a ?? '3e pilier A'})`,
       ];
       for (const p of plan.people) {
         const cap = p.capIsMaximum
@@ -485,22 +595,37 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           `- ${WHO[p.person]}: room left ${chf(p.roomCentimes)} (limit ${cap}, already paid ${chf(p.paidCentimes)})`,
         );
       }
+      const noTax = canton?.plan?.noTax;
       if (plan.saving) {
         lines.push(
           `Estimated tax saving if the room is paid in by 31 December: about ${chf(Math.round(plan.saving.totalCentimes / 1000) * 1000)} (cantonal and communal ${chf(plan.saving.cantonalCentimes)}, federal ${chf(plan.saving.federalCentimes)}). Say it is an estimate.`,
         );
+      } else if (noTax && plan.assumptions.includes(noTax.assumption)) {
+        // The canton's tax can't be computed for the year: no saving, and why (fail closed).
+        lines.push(`No saving shown: ${canton.plan?.noTaxText?.en ?? noTax.assumption}`);
       } else {
         lines.push(
           'No salary yet: ask for a rough yearly salary and save it with set_fact (plan.gross_salary) to estimate the saving.',
+        );
+      }
+      // Self-employed in Geneva (annexe B): the year's expected profit counts for the 3a room.
+      const answers = ws.snapshot().answers;
+      const self = plan.people.filter((p) => {
+        const sources = answers.get(`profile.income_sources|${p.person}`);
+        return Array.isArray(sources) && sources.includes('self_employment');
+      });
+      if (canton?.code === 'GE' && self.length) {
+        lines.push(
+          `Self-employed (${self.map((p) => WHO[p.person]).join(', ')}): without a pension fund the limit is 20 % of what every activity earns, the business's profit after the person's own AVS contributions included (${PILLAR3A_2026.source}). Once the year's accounts are read, Taxpresso takes the profit from them. Before that, ask in plain words roughly what profit (bénéfice net) the business will make this year, after their own AVS contributions, and save it with set_fact (plan.business_profit).`,
         );
       }
       lines.push(
         `Assumptions: ${plan.assumptions.map((a) => ASSUMPTION_TEXT[a] ?? cantonAssumptionText(a) ?? a).join(' ')}`,
       );
       lines.push(
-        `Facts with sources: only payments made in ${ws.config.taxYear} count (${PILLAR3A_2026_FACTS.paidInYearOnly}); payouts are taxed (${PILLAR3A_2026_FACTS.payoutsTaxable}); missed years since 2025 can be made up from 2026, under conditions (${PILLAR3A_2026_FACTS.catchUpFrom2026}).`,
+        `Facts with sources: only payments made in ${ws.taxYear} count (${PILLAR3A_2026_FACTS.paidInYearOnly}); payouts are taxed (${PILLAR3A_2026_FACTS.payoutsTaxable}); missed years since 2025 can be made up from 2026, under conditions (${PILLAR3A_2026_FACTS.catchUpFrom2026}).`,
         "Don't recommend specific 3a providers or investments.",
-        ...planningText(planning, ws.config.taxYear, canton),
+        ...planningText(planning, ws.taxYear, canton),
       );
       return {
         content: [{ type: 'text', text: lines.join('\n') }],
@@ -534,6 +659,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Compute the tax', ...RO },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       const { text, structured } = computeTaxOutput(ws, detail === true);
       return { content: [{ type: 'text', text }], structuredContent: structured };
@@ -565,6 +691,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Record the user’s TOU decision', ...RW },
     },
     async (args) => {
+      const ws = years.current;
       try {
         const d = await decide(ws, DecisionInput.parse(args), 'chat');
         const delta = Math.round(Math.abs(d.deltaCentimes) / 100).toLocaleString('en-US');
@@ -608,7 +735,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           .union([z.number().min(0), z.boolean(), z.string().max(500)])
           .optional()
           .describe(
-            'plan.*: CHF amount, true/false, or the tariff code on the payslip for plan.source_tax_tariff (e.g. "A0"). Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
+            'plan.*: CHF amount, true/false, the tariff code on the payslip for plan.source_tax_tariff (e.g. "A0"), or an amount with its currency for plan.abroad_value and plan.abroad_rent (e.g. "250000 EUR"). Document values: money as text as printed, e.g. "85\'000.00". check.note: the user\'s short note.',
           ),
         confirm: z
           .boolean()
@@ -621,6 +748,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Save what the user said', ...RW },
     },
     async ({ key, person, instance, value, confirm }) => {
+      const ws = years.current;
       try {
         if (confirm) {
           if (!instance) throw new WorkspaceError('Give the document id as instance.');
@@ -639,15 +767,25 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           throw new WorkspaceError('Give key and value, or confirm: true with a document id.');
         }
         if ((PLAN_KEYS as readonly string[]).includes(key)) {
-          if (typeof value === 'string' && key !== 'plan.source_tax_tariff') {
+          // A property abroad's rough value and rent come with their currency, as the user says.
+          const abroad = key === 'plan.abroad_value' || key === 'plan.abroad_rent';
+          if (typeof value === 'string' && key !== 'plan.source_tax_tariff' && !abroad) {
             throw new WorkspaceError('Give a number or true/false.');
           }
           await ws.setPlan(person ?? 'p1', key as (typeof PLAN_KEYS)[number], value, 'chat');
+          // A property in Geneva's rough figures, or rough benefits or pensions: estimates for the
+          // return until their documents are in.
+          const property = /^plan\.(property|mortgage)_/.test(key);
+          const income = key === 'plan.replacement_income' || key === 'plan.pension_income';
           return {
             content: [
               {
                 type: 'text',
-                text: `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
+                text: abroad
+                  ? 'Saved as an estimate: Taxpresso converts it at the official rate. Call compute_tax for the updated tax.'
+                  : property || income
+                    ? 'Saved as an estimate until its document is in. Call compute_tax for the updated tax.'
+                    : `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
               },
             ],
             structuredContent: { saved: true },
@@ -711,6 +849,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Read a document', ...RO },
     },
     async ({ id, page }) => {
+      const ws = years.current;
       await ws.ready();
       try {
         const { content, summary } = await reviewDocument(ws, id, page ?? 1);
@@ -754,7 +893,11 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         values: z
           .array(
             z.object({
-              key: z.enum(DOCUMENT_VALUE_KEYS),
+              key: z
+                .enum([...DOCUMENT_VALUE_KEYS, ...ASSESSMENT_HOUSEHOLD_KEYS])
+                .describe(
+                  'A value of the document. An assessment (tax_assessment) may also give the household answers it prints (profile.*): they become suggestions the user confirms.',
+                ),
               value: z
                 .union([z.string().max(200), z.boolean(), z.number()])
                 .describe(
@@ -787,6 +930,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Propose values read in a document', ...RW },
     },
     async ({ id, document, values }) => {
+      const ws = years.current;
       try {
         const result = await ws.proposeExtraction(id, document ?? {}, values ?? []);
         const doc = result.document;
@@ -816,10 +960,25 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         }
         lines.push(
           toConfirm
-            ? `${toConfirm} value${toConfirm === 1 ? '' : 's'} from this document need the user's OK: show them what you read, with the pages, and ask them to confirm in the dashboard (Documents), or confirm here with set_fact once they say it is right.`
+            ? `${toConfirm} value${toConfirm === 1 ? '' : 's'} from this document need the user's OK: show them what you read, with the pages, and ask them to confirm in the dashboard (Your tax), or confirm here with set_fact once they say it is right.`
             : 'Nothing from this document is waiting for the user’s OK.',
         );
         if (checks.length) lines.push(`Check this, with the user: ${checks.join(' ')}`);
+        if (result.later.length) {
+          lines.push(
+            `Not saved yet: ${result.later.join(', ')}. Its question comes once the canton is answered: propose it again then.`,
+          );
+        }
+        // Household answers an assessment prints wait in their questions, as suggestions.
+        const suggested = ws
+          .snapshot()
+          .slots.filter((s) => s.value === undefined && s.suggestion?.source.docId === doc.id);
+        if (suggested.length) {
+          lines.push(
+            `${suggested.length} answer${suggested.length === 1 ? '' : 's'} suggested from this document wait in the questions: ask whether each is still right this year (next_questions), then save what the user says with answer_question.`,
+          );
+        }
+        if (doc.kind === 'tax_assessment') lines.push(...assessmentGuide(ws, doc, values ?? []));
         return {
           content: [{ type: 'text', text: lines.join('\n') }],
           structuredContent: {
@@ -837,14 +996,14 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
   );
 
   // The securities list (état des titres) and other wealth: get_holdings, set_holding.
-  registerHoldingTools(server, ws);
+  registerHoldingTools(server, years);
 
   server.registerTool(
     'get_form_values',
     {
       title: 'Get the values to type into the declaration',
-      // The pages of each canton's form are listed in the section's own description: here, with
-      // nine cantons, they would pass the 300 characters a tool's description may have (C6).
+      // Each canton's pages come from the list of sections (no section given): named here, they
+      // would pass the 300 characters a tool's description may have (C6).
       description: `Values the user types by hand into their canton's official declaration, in the form's order, as in the dashboard's copy panel: line code, official label as printed, value as typed, status. No section: sections with progress. A section (a page of the form): its values.`,
       inputSchema: z.object({
         section: z
@@ -852,7 +1011,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           .max(4)
           .optional()
           .describe(
-            `A page of the form, e.g. ${SUPPORTED_CANTONS.map((c) => `"${CANTONS[c].filing.words.example}" (${CANTONS[c].name.en})`).join(', ')}. Default: the list of sections.`,
+            `A page of the form, by its code in the list of sections, e.g. "${CANTONS.GE.filing.words.example}" in Geneva. Default: the list of sections.`,
           ),
       }),
       outputSchema: z.object({
@@ -886,6 +1045,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       annotations: { title: 'Get the values to type into the declaration', ...RO },
     },
     async ({ section }) => {
+      const ws = years.current;
       await ws.ready();
       try {
         const { text, structured } = formValues(ws, section);
@@ -907,6 +1067,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
       _meta: { ui: { resourceUri: DASHBOARD_VIEW_URI }, 'ui/resourceUri': DASHBOARD_VIEW_URI },
     },
     async () => {
+      const ws = years.current;
       await ws.ready();
       ws.record('claude', 'dashboard');
       const url = await dashboard.start();
@@ -914,35 +1075,38 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
         content: [
           {
             type: 'text',
-            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running.`,
+            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running. Keep it beside the chat: in the chat it floats next to the conversation where the app allows it; in Cowork or the Code tab, open this link in the built-in browser pane next to the chat. Then guide the user from the chat: the dashboard follows by itself, so don't open it again in this conversation. Its buttons are only shortcuts for what is easier by hand: adding documents, a one-tap confirm, the year switch.`,
           },
         ],
-        structuredContent: { url, status: status() },
+        structuredContent: { url, status: status(ws) },
       };
     },
   );
 
+  // open_tax_year: the year the user prepares, the same choice as the dashboard's year switch.
+  registerYearTool(server, years);
+
   // What the dashboard's buttons do, from the chat: mark_entered, skip_question,
   // waive_requirement, replace_document (./parity-tools.ts).
-  registerParityTools(server, ws);
+  registerParityTools(server, years);
 
   // reconcile_official_pdf: this year's declaration PDF against the values to type (./reconcile.ts).
-  registerDeclarationCheckTool(server, ws);
+  registerDeclarationCheckTool(server, years);
 
   // export_bundle: one ZIP of the tax-year folder, on this computer (./export.ts).
-  registerExportTool(server, ws);
+  registerExportTool(server, years);
 
   // The dashboard view (ui://) and dashboard_api, which only that view calls.
-  registerDashboardView(server, ws, dashboard);
+  registerDashboardView(server, years, dashboard);
 
   // final_check: what to fix before filling in the official form, and what is good to know.
-  registerFinalCheckTool(server, ws);
+  registerFinalCheckTool(server, years);
 
   server.registerPrompt(
     'start_geneva_tax_return',
     {
       title: 'Start my tax return',
-      description: `Begin or pick up your ${cantonNames(SUPPORTED_CANTONS, 'or')} tax return with Taxpresso.`,
+      description: 'Begin or pick up your Swiss tax return with Taxpresso.',
     },
     () => ({
       messages: [
@@ -950,7 +1114,7 @@ export function createTaxpressoServer({ workspace: ws, dashboard }: ServerDeps):
           role: 'user',
           content: {
             type: 'text',
-            text: `I want to work on my tax return for ${ws.config.taxYear} with Taxpresso. Check where I am and tell me the next step.`,
+            text: `I want to work on my tax return for ${years.year} with Taxpresso. Check where I am and tell me the next step.`,
           },
         },
       ],

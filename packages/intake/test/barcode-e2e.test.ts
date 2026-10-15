@@ -21,7 +21,7 @@ import {
   zlibCompress,
 } from './barcode-fixtures.mjs';
 
-const TIMEOUT = 60_000;
+const TIMEOUT = 300_000;
 
 describe('salary certificate barcode, end to end', () => {
   it(

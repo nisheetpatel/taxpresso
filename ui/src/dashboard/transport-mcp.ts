@@ -14,6 +14,11 @@ export interface ToolCaller {
     content?: unknown[];
     structuredContent?: unknown;
   }>;
+  /** A message in the chat, as the user's (MCP Apps ui/message); not every host has it. */
+  sendMessage?(params: {
+    role: 'user';
+    content: { type: 'text'; text: string }[];
+  }): Promise<{ isError?: boolean }>;
 }
 
 interface Reply {
@@ -34,6 +39,8 @@ const ADD_ELSEWHERE = {
     `Pour que vos documents ne passent pas par l’application de chat, ajoutez «${NBSP}${name}${NBSP}» dans le tableau de bord de votre navigateur, ou déposez-le dans votre dossier Taxpresso.`,
   de: (name: string) =>
     `Damit deine Dokumente nicht über die Chat-App laufen, füge «${name}» im Dashboard in deinem Browser hinzu, oder leg es in deinen Taxpresso-Ordner.`,
+  it: (name: string) =>
+    `Perché i tuoi documenti non passino dall’app di chat, aggiungi “${name}” nella dashboard nel tuo browser, oppure mettilo nella tua cartella Taxpresso.`,
 };
 
 /** The key from this view's HTML, or an empty string (the extension then refuses every call). */
@@ -66,11 +73,21 @@ export function mcpTransport(host: ToolCaller, key: string): Transport {
 
   function upload(req: ApiRequest, file: File): never {
     const lang = req.query.lang;
-    throw new ApiError(ADD_ELSEWHERE[lang === 'fr' || lang === 'de' ? lang : 'en'](file.name));
+    const known = lang === 'fr' || lang === 'de' || lang === 'it' ? lang : 'en';
+    throw new ApiError(ADD_ELSEWHERE[known](file.name));
   }
 
   return {
     embedded: true,
+    async ask(text) {
+      if (!host.sendMessage) return false;
+      try {
+        const sent = await host.sendMessage({ role: 'user', content: [{ type: 'text', text }] });
+        return sent.isError !== true;
+      } catch {
+        return false;
+      }
+    },
     async send(req) {
       if (req.file) return upload(req, req.file);
       const key =

@@ -16,6 +16,13 @@ import {
   KEYS_SALARY_CERTIFICATE_2026,
   SALARY_CERTIFICATE_FIELDS_2026,
 } from '@taxpresso/rules-ch';
+import {
+  ABROAD_FIELDS_2026,
+  DEBT_CURRENCY_FIELDS_2026,
+  KEYS_ABROAD_DOCUMENTS_2026,
+} from './abroad-keys.js';
+import { BUSINESS_FIELDS_2026, KEYS_BUSINESS_DOCUMENTS_2026 } from './business-keys.js';
+import { KEYS_PROPERTY_DOCUMENTS_2026, PROPERTY_FIELDS_2026 } from './property-keys.js';
 
 const GE_GUIDE = 'ge-2025-guide-declaration-pp';
 /** Up to CHF 100 million, in centimes. A sanity bound, not a tax constant. */
@@ -154,11 +161,54 @@ export const DOCUMENT_KEYS_2026 = {
     `${GE_GUIDE} p. 37`,
   ),
 
+  // A lump sum from a pension fund or vested benefits institution (2nd pillar) or from pillar 3a,
+  // one per attestation (lpp_capital_attestation, pillar3a_capital_attestation): the institution
+  // sends you a copy of what it reports (ch-na-law-lifd art. 129 al. 1 let. b and al. 2, p. 69),
+  // declared at 98.12 and taxed apart (ge-2025-guide-declaration-pp p. 13; ../engine/capital.ts).
+  'capital.amount': money(
+    true,
+    { en: 'Pension capital paid', fr: 'Prestation en capital versée' },
+    'Prestations en capital du 2e et 3e pilier A',
+    `ch-na-law-lifd art. 129 al. 1 let. b and al. 2 (p. 69); ${GE_GUIDE} p. 13`,
+  ),
+  'capital.date': {
+    type: 'date',
+    perPerson: true,
+    multiple: true,
+    label: { en: 'Date it was paid', fr: 'Date du versement' },
+    official: 'date du versement',
+    // The tax is for the year the capital was received (acquis).
+    source: 'ch-na-law-lifd art. 38 al. 1bis (p. 32); ge-na-law-lipp art. 45 al. 1',
+  },
+  // Why it was paid, as the attestation says: the reasons the law allows a lump sum
+  // (ch-na-law-opp3 art. 3; ch-na-law-lpp art. 30c). Leaving Switzerland is taxed at source
+  // (ge-2026-source-directives p. 39) and another reason may go elsewhere (98.75): not computed.
+  'capital.reason': {
+    type: 'enum',
+    values: ['retirement', 'home', 'self_employment', 'leaving', 'other'],
+    perPerson: true,
+    multiple: true,
+    label: { en: 'Why it was paid', fr: 'Motif du versement' },
+    official: 'motif du versement',
+    source: 'ch-na-law-opp3 art. 3 (p. 2 and 3); ch-na-law-lpp art. 30c (p. 16)',
+  },
+
   // Bank statements, tax statements, crypto and life insurance: ./document-keys-wealth.ts.
   ...DOCUMENT_KEYS_WEALTH_2026,
 
   // A short note from the user that settles a "Check this" item (SPEC.md section 5.8): rules-ch.
   ...KEY_CHECK_NOTE_2026,
+
+  // Self-employment: the business's accounts and the AVS statements (./business-keys.ts).
+  ...KEYS_BUSINESS_DOCUMENTS_2026,
+
+  // A property abroad: the country's tax notice, the deed, the management account, and a loan
+  // statement in another currency (./abroad-keys.ts).
+  ...KEYS_ABROAD_DOCUMENTS_2026,
+
+  // A property in Geneva: the AFC's letter or avis de taxation immobilier, the management account of
+  // a property let, the upkeep invoices and the PPE charges statement (./property-keys.ts).
+  ...KEYS_PROPERTY_DOCUMENTS_2026,
 } as const satisfies KeyRegistry;
 
 export type DocumentKey2026 = keyof typeof DOCUMENT_KEYS_2026;
@@ -190,6 +240,16 @@ export const DOCUMENT_FIELDS_2026: Partial<Record<DocumentKind, readonly Documen
     'assessment.debt_interest',
   ],
   ...DOCUMENT_FIELDS_WEALTH_2026,
+  lpp_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
+  pillar3a_capital_attestation: ['capital.amount', 'capital.date', 'capital.reason'],
+  ...BUSINESS_FIELDS_2026,
+  ...ABROAD_FIELDS_2026,
+  // A loan statement: in francs, or in the loan's own currency (a mortgage abroad).
+  debt_interest: [...ATTESTATION_FIELDS_2026.debt_interest, ...DEBT_CURRENCY_FIELDS_2026],
+  ...PROPERTY_FIELDS_2026,
+  // The mortgage on a property in Geneva: the lender's statement, like any loan statement in
+  // francs, on E1 55.20 (intérêts et dettes hypothécaires).
+  mortgage_statement: ATTESTATION_FIELDS_2026.debt_interest,
 };
 
 /** The keys a document of this kind can give, or none. */

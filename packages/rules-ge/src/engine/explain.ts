@@ -2,6 +2,7 @@
 // words, official French terms next to their gloss), so Claude can explain without stating rules
 // from memory.
 import { IFD_NOTE } from '@taxpresso/rules-ch';
+import type { TaxYear } from './params.js';
 import type { EstimateReason, Text } from './types.js';
 
 const NB = '\u00a0';
@@ -21,6 +22,14 @@ export const NOTE = {
   under14: {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,
+  },
+  childcareSplit: {
+    en: 'Childcare (frais de garde, 59.10 and 59.12) not computed: the maximum is per child (guide p. 30), and the childcare you gave for the household is above one child’s maximum, so how it splits between your children decides the deduction. Give what you paid for each child; until then the tax is not computed.',
+    fr: `Frais de garde (59.10 et 59.12) non calculés${NB}: le maximum est par enfant (guide p. 30), et les frais indiqués pour le ménage dépassent le maximum d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Indiquez ce que vous avez payé pour chaque enfant${NB}; d’ici là, l’impôt n’est pas calculé.`,
+  },
+  childcareAge: {
+    en: 'Childcare (frais de garde, 59.10 and 59.12) counts only up to the month of the child’s 14th birthday (guide p. 30). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Les frais de garde (59.10 et 59.12) ne comptent que jusqu’au mois du 14e anniversaire de l’enfant (guide p. 30). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
   },
   partialSplitting: {
     en: 'Shared custody: partial splitting (55.56 %) assumes a judgment or a signed agreement that you share the children’s care and costs half and half (LIPP art. 41 al. 4). Otherwise the parent who mainly supports them gets full splitting.',
@@ -76,8 +85,29 @@ export const NOTE = {
     en: 'Taxe personnelle: not due when you have no taxable wealth and a taxable income under the law’s limit (LCP art. 377); the law says "revenu", read here as the taxable income.',
     fr: `Taxe personnelle${NB}: pas due sans fortune imposable et avec un revenu imposable sous la limite de la loi (LCP art. 377)${NB}; la loi dit «${NB}revenu${NB}», lu ici comme le revenu imposable.`,
   },
+  capitalBuyIn: {
+    en: 'Tax on your income not computed: you bought into your pension fund and took a lump sum from the 2nd pillar in the same year. The tax office may take back the buy-in’s deduction (rachat, 31.30; LPP art. 79b al. 3; guide p. 18), and the documents don’t say how much. The tax on the lump sum itself is computed. GeTax or the AFC can tell you more.',
+    fr: `Impôt sur votre revenu non calculé${NB}: vous avez fait un rachat dans votre caisse de pension et reçu un capital du 2e pilier la même année. L’administration peut supprimer la déduction du rachat (31.30${NB}; LPP art. 79b al. 3${NB}; guide p. 18), et les documents ne disent pas de combien. L’impôt sur le capital lui-même est calculé. GeTax ou l’AFC peuvent vous en dire plus.`,
+  },
+  capitalRounding: {
+    en: 'Tax on pension capital, cantonal and communal: a fifth of the scale’s tax and each line after it are rounded to the nearest 5 centimes, and the commune of residence taxes the whole base. The AFC’s capital tariffs give the same rates to the hundredth of a percent (ge-2025-source-capital-icc-tariff); they don’t spell out the rounding of each line.',
+    fr: `Impôt cantonal et communal sur les prestations en capital${NB}: le cinquième de l’impôt du barème et chaque ligne qui suit sont arrondis aux 5 centimes les plus proches, et la commune de domicile impose toute la base. Les barèmes de l’AFC pour les prestations en capital donnent les mêmes taux au centième de pour cent (ge-2025-source-capital-icc-tariff)${NB}; ils ne précisent pas l’arrondi de chaque ligne.`,
+  },
   halfFranc: {
     en: 'Life insurance limit (52.15): half as much again gives a half franc, rounded down.',
     fr: `Limite assurance-vie (52.15)${NB}: l’augmentation de moitié donne un demi-franc, arrondi vers le bas.`,
   },
 } as const satisfies Record<string, Text>;
+
+/**
+ * The note on pricing travel costs for the cantonal tax, by tax year: it cites that year's document
+ * for the federal pricing (docs/design/tax-years.md). For 2025, whose federal instructions are not
+ * in the library, the 2025 guide gives the federal pricing itself (p. 20).
+ */
+export const ICC_COMMUTE_PRICING: Readonly<Record<TaxYear, Text>> = {
+  2025: {
+    en: 'Travel costs, cantonal tax: the Geneva guide caps them whatever the means of transport (p. 19 and 21) without saying how a bike or the kilometres are priced; Taxpresso prices them as the federal tax does (guide p. 20), then applies the Geneva cap.',
+    fr: `Frais de déplacement, impôt cantonal${NB}: le guide genevois les plafonne quel que soit le moyen de transport (p. 19 et 21) sans dire comment compter un vélo ou les kilomètres${NB}; Taxpresso les compte comme l’impôt fédéral (guide p. 20), puis applique le plafond genevois.`,
+  },
+  2026: NOTE.iccCommutePricing,
+};

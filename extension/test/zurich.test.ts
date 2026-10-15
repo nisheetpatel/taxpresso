@@ -100,8 +100,7 @@ async function muster() {
     ['income_sources:p2', ['salary']],
     ['employers:p1', 1],
     ['employers:p2', 1],
-    ['taxed_at_source:p1', false],
-    ['taxed_at_source:p2', false],
+    ['residence:p1', 'swiss'],
     ['pillar3a:p1', true],
     ['pillar3a:p2', false],
     ['lpp_buyin:p1', false],
@@ -143,7 +142,7 @@ const BEISPIEL: [string, unknown][] = [
   ['church:p1', 'none'],
   ['income_sources:p1', ['salary']],
   ['employers:p1', 1],
-  ['taxed_at_source:p1', false],
+  ['residence:p1', 'swiss'],
   ['pillar3a:p1', true],
   ['lpp_buyin:p1', false],
   ['commute:p1', 'public_transport'],
@@ -282,7 +281,7 @@ describe('a Zurich return', () => {
     const res = await createApi(ws)({
       method: 'GET',
       path: '/state',
-      query: new URLSearchParams('lang=it'),
+      query: new URLSearchParams('lang=es'),
       headers: {},
       body: Buffer.from('{}'),
       csrf: 'csrf-token',
@@ -326,6 +325,10 @@ describe('a Zurich return', () => {
     await ws.setPlan('p1', 'plan.pillar3a_paid', 7_258, 'chat');
     await ws.setPlan('p2', 'plan.lpp_buyin_amount', 10_000, 'chat');
     await ws.setPlan('p2', 'plan.lpp_buyin_capacity', 40_000, 'chat');
+    // Tax withheld at source is a Geneva planning value: refused plainly, not a crash.
+    await expect(ws.setPlan('p1', 'plan.source_tax_withheld', 1_000, 'dashboard')).rejects.toThrow(
+      'Not a planning value in this canton',
+    );
     const res = await call('list_optimizations');
     const out = res.structuredContent as {
       pillar3a: { saving?: { totalCentimes: number }; assumptions: string[]; sources: string[] };

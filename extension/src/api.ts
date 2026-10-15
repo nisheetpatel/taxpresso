@@ -2,6 +2,7 @@
 // the chat with Claude is the same thing (SPEC.md section 6).
 import { DOCUMENT_KINDS, LedgerError, VaultError } from '@taxpresso/ledger';
 import { NBSP, QuestionnaireError } from '@taxpresso/questionnaire';
+import { displayPath, isUiLanguage } from './config.js';
 import { contentLang, say, type UiLang as Lang } from './lang.js';
 import * as z from 'zod/v4';
 import { copyPanelView, setRowEntered } from './copy-panel.js';
@@ -11,7 +12,9 @@ import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import { estimateView } from './estimate.js';
 import { ExtractionError } from './extraction.js';
 import { documentPerson, holdingsView, saveHolding } from './holdings.js';
-import { KIND_LABELS } from './kinds.js';
+import { ownsPropertyAbroad } from './abroad.js';
+import { ABROAD_KINDS, KIND_LABELS, PROPERTY_KINDS } from './kinds.js';
+import { ownsPropertyInGeneva } from './property.js';
 import { reviewOf } from './last-year-review.js';
 import {
   decide,
@@ -20,12 +23,18 @@ import {
   PlanningInput,
   planningReady,
   planningView,
+  yearOverView,
 } from './planning.js';
 import type { Slot } from '@taxpresso/questionnaire';
 import { exportFolder, exportView } from './export.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import { finalCheckView } from './final-check.js';
-import { WorkspaceError, type Workspace } from './workspace.js';
+import { WorkspaceError, type PlanKey, type Workspace } from './workspace.js';
+import { CANTONS } from './cantons.js';
+import { TaxYears } from './years.js';
+import { journey, pageOf } from './journey.js';
+import { pagesState, ROUGH_INCOME } from './pages.js';
+import type { FolderOpener } from './open-folder.js';
 
 const Answer = z.object({
   id: z.string().max(80),
@@ -37,17 +46,64 @@ const Answer = z.object({
   ]),
 });
 const Id = z.object({ id: z.string().max(80) });
-const Plan = z.object({
-  person: z.enum(['p1', 'p2']),
-  field: z.enum(['gross', 'net', 'pensionFund', 'paid']),
-  value: z.union([z.number().min(0).max(10_000_000), z.boolean()]),
-});
-const PLAN_FIELD = {
+const Year = z.object({ year: z.number().int().min(2000).max(2100) });
+
+/** The page showed another year than the open one: in the page's language. */
+function yearChanged(shown: number, open: number, lang: Lang): string {
+  return {
+    en: `This page showed ${shown}, but ${open} is open now (it was changed in the chat). Here is ${open}: check, then try again.`,
+    fr: `Cette page montrait ${shown}, mais ${open} est ouverte maintenant (changée dans le chat). Voici ${open}${NBSP}: vérifiez, puis réessayez.`,
+    de: `Diese Seite zeigte ${shown}, aber jetzt ist ${open} offen (im Chat gewechselt). Hier ist ${open}: Prüf es und versuch es nochmals.`,
+    it: `Questa pagina mostrava il ${shown}, ma ora è aperto il ${open} (cambiato nella chat). Ecco il ${open}: controlla, poi riprova.`,
+  }[lang];
+}
+export const PLAN_FIELD = {
   gross: 'plan.gross_salary',
   net: 'plan.net_salary',
   pensionFund: 'plan.has_pension_fund',
   paid: 'plan.pillar3a_paid',
-} as const;
+  // The basics card's rough income besides a salary, one field per kind (./pages.ts, ROUGH_INCOME).
+  benefits: 'plan.replacement_income',
+  pension: 'plan.pension_income',
+  business: 'plan.business_profit',
+} as const satisfies Record<string, PlanKey> &
+  Record<(typeof ROUGH_INCOME)[number]['field'], PlanKey>;
+const Plan = z.object({
+  person: z.enum(['p1', 'p2']),
+  field: z.enum(Object.keys(PLAN_FIELD) as [keyof typeof PLAN_FIELD]),
+  value: z.union([z.number().min(0).max(10_000_000), z.boolean()]),
+});
+
+/** Where to open a folder by hand, on the systems whose file manager has a name everyone knows. */
+const FILE_MANAGER_IN: Partial<Record<NodeJS.Platform, Record<Lang, string>>> = {
+  darwin: { en: ' in Finder', fr: ' dans le Finder', de: ' im Finder', it: ' nel Finder' },
+  win32: {
+    en: ' in File Explorer',
+    fr: ' dans l’Explorateur de fichiers',
+    de: ' im Datei-Explorer',
+    it: ' in Esplora file',
+  },
+};
+
+/** The folder couldn't be opened: where it is, to open it by hand, in the page's language. */
+export function folderNotOpened(dir: string, lang: Lang, platform = process.platform): string {
+  const where = displayPath(dir);
+  const app = FILE_MANAGER_IN[platform]?.[lang] ?? '';
+  return {
+    en: `Taxpresso couldn’t open your folder. Open it yourself${app}: ${where}`,
+    fr: `Taxpresso n’a pas pu ouvrir votre dossier. Ouvrez-le vous-même${app}${NBSP}: ${where}`,
+    de: `Taxpresso konnte deinen Ordner nicht öffnen. Öffne ihn selbst${app}: ${where}`,
+    it: `Taxpresso non è riuscito ad aprire la tua cartella. Aprila tu${app}: ${where}`,
+  }[lang];
+}
+
+export interface ApiOptions {
+  /**
+   * Opens a folder in the system's file manager (./open-folder.ts): POST /folder/open. Given only
+   * by the extension's entry point; tests give a stub, so no window ever opens.
+   */
+  openFolder?: FolderOpener;
+}
 const Waive = z.object({ id: z.string().max(80), waived: z.boolean().default(true) });
 const Kind = z.object({
   id: z.string().max(80),
@@ -75,6 +131,16 @@ const LineOwnerChange = z.object({
 });
 /** "Something else" last in the list of kinds. */
 const KIND_ORDER = [...DOCUMENT_KINDS.filter((k) => k !== 'other'), 'other' as const];
+/**
+ * Kinds only Geneva reads so far: self-employment, the simple case, a property abroad and a property
+ * in Geneva (SPEC.md section 1).
+ */
+const GENEVA_ONLY: ReadonlySet<string> = new Set([
+  'business_accounts',
+  'avs_contributions',
+  ...ABROAD_KINDS,
+  ...PROPERTY_KINDS,
+]);
 
 /** Where a question's suggestion comes from: last year's declaration, its year and page. */
 function suggestedFrom(ws: Workspace, slot: Slot) {
@@ -90,7 +156,12 @@ function suggestedFrom(ws: Workspace, slot: Slot) {
   };
 }
 
-export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
+export function dashboardState(
+  ws: Workspace,
+  lang: Lang,
+  csrf: string,
+  years: TaxYears = TaxYears.of(ws),
+) {
   // Views with English and French content only show English on a German page (./lang.ts).
   const content = contentLang(lang);
   const snap = ws.snapshot();
@@ -101,9 +172,46 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       : undefined;
   const next = ws.next();
   const canton = ws.canton();
+  // One next step and the stages, the same as get_status's (./journey.ts, docs/design/simple.md).
+  const j = journey(ws);
+  const saidAbove = new Set([
+    ...(j.about.some((f) => f.id === 'source_tax') ? ['profile.taxed_at_source'] : []),
+    ...(j.about.some((f) => f.id === 'tou_already') ? ['profile.tou'] : []),
+  ]);
+  // "Your assessment" compares this year's assessment; an earlier year's feeds the review.
+  const otherYear = new Set(
+    ws.documents
+      .filter((d) => d.taxYear !== undefined && d.taxYear !== ws.taxYear)
+      .map((d) => d.id),
+  );
   return {
+    journey: {
+      next: j.next,
+      stage: j.stage,
+      stages: j.stages,
+      about: j.about,
+      hasFigures: j.hasFigures,
+      savings: j.savings,
+      touChoice: j.touChoice,
+      documentsIn: j.documentsIn,
+      // Before 31 December of the year, its documents mostly don't exist yet.
+      yearEnded: ws.today() > `${ws.taxYear}-12-31`,
+    },
+    // The three pages (docs/design/three-pages.md, section 4): the page the next step belongs to,
+    // how sure the tax is, the questions by where they are asked, and the rough income per person.
+    page: pageOf(j.next),
+    ...pagesState(ws, j, lang),
     version: ws.config.version,
-    taxYear: ws.config.taxYear,
+    taxYear: ws.taxYear,
+    // The year switch: every year Taxpresso prepares, with its cantons (./years.ts).
+    years: years.list().map((y) => ({
+      year: y.year,
+      open: y.year === ws.taxYear,
+      over: y.over,
+      cantons: y.cantons.map((c) => ({ code: c, name: say(CANTONS[c].name, lang) })),
+    })),
+    // A year that is over: what replaces the plans before 31 December (./planning.ts).
+    yearOver: yearOverView(ws) ?? null,
     // The canton of the return (./cantons.ts): null until the user says where they lived.
     canton: canton.canton
       ? {
@@ -128,7 +236,9 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
           ...suggestedFrom(ws, next),
         }
       : null,
-    chips: ws.engine.chips(snap, lang),
+    // The answers in short, without those a fact of "About you" just above already says: who is
+    // taxed at source, and TOU already in place. They stay in "Edit answers".
+    chips: ws.engine.chips(snap, lang, (s) => saidAbove.has(s.question.key)),
     answers: snap.slots
       .filter((s) => s.value !== undefined)
       .map((s) => ({
@@ -152,7 +262,13 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
     })),
-    kinds: KIND_ORDER.map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
+    // A property's documents, abroad or in Geneva, only for a household that has one (simple first).
+    kinds: KIND_ORDER.filter(
+      (k) =>
+        (canton.canton?.code === 'GE' || !GENEVA_ONLY.has(k)) &&
+        (!ABROAD_KINDS.has(k) || ownsPropertyAbroad(ws)) &&
+        (!PROPERTY_KINDS.has(k) || ownsPropertyInGeneva(ws)),
+    ).map((k) => ({ value: k, label: say(KIND_LABELS[k], lang) })),
     // Values read from documents, the "Check this" items and the assessment (SPEC.md 5.5, 5.8,
     // 10.5 second view, 10.8): ./document-views.ts.
     cards: documentCards(ws, content),
@@ -160,7 +276,7 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       .filter((d) => d.replacedBy)
       .map((d) => ({ id: d.id, filename: d.filename, by: d.replacedBy! })),
     checks: documentChecks(ws, content),
-    assessments: assessmentCards(ws, content),
+    assessments: assessmentCards(ws, content).filter((a) => !otherYear.has(a.docId)),
     // The values to type into the official declaration, in the form's order (SPEC.md 10.5).
     copyPanel: copyPanelView(ws, content),
     // "Check before you transmit": this year's declaration PDF against them (SPEC.md 10.4).
@@ -187,18 +303,21 @@ export function dashboardState(ws: Workspace, lang: Lang, csrf: string) {
       optional: r.optional === true,
       ...(who(r.person) ? { who: who(r.person) } : {}),
     })),
-    plan: {
-      inputs: ws.planInput().people.map((p) => ({
-        person: p.person,
-        gross: p.grossCentimes ?? null,
-        net: p.netCentimes ?? null,
-        hasPensionFund: p.hasPensionFund,
-        paid: p.paidCentimes,
-      })),
-      result: ws.plan(),
-    },
+    // The plans before 31 December: none for a year that is over (yearOver says whose they are).
+    plan: ws.yearOver()
+      ? null
+      : {
+          inputs: ws.planInput().people.map((p) => ({
+            person: p.person,
+            gross: p.grossCentimes ?? null,
+            net: p.netCentimes ?? null,
+            hasPensionFund: p.hasPensionFund,
+            paid: p.paidCentimes,
+          })),
+          result: ws.plan(),
+        },
     // Pension fund buy-in, 3a catch-up and TOU (SPEC.md section 8, groups B and C): ./planning.ts.
-    planning: planningView(ws),
+    planning: ws.yearOver() ? null : planningView(ws),
     notSupported: ws.engine.notSupported(snap).map((n) => say(n.what, lang)),
     securities: ws.securities(content) ?? null,
     // The tax from the rules engine (./estimate.ts).
@@ -239,13 +358,33 @@ const parse = <T>(schema: z.ZodType<T>, body: Buffer): T => {
   }
 };
 
-export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiResponse> {
+export function createApi(
+  given: Workspace | TaxYears,
+  options: ApiOptions = {},
+): (req: ApiRequest) => Promise<ApiResponse> {
+  const years = TaxYears.of(given);
   return async (req) => {
+    // The open year's workspace, taken once for the whole request (./years.ts).
+    let ws = years.current;
     const asked = req.query.get('lang');
-    const lang: Lang =
-      asked === 'fr' || asked === 'en' || asked === 'de' ? asked : ws.config.uiLanguage;
-    const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf) });
+    const lang: Lang = isUiLanguage(asked) ? asked : ws.config.uiLanguage;
+    const state = () => ({ status: 200, body: dashboardState(ws, lang, req.csrf, years) });
     try {
+      // A change made on a page that still shows another year (the user switched in the chat
+      // meanwhile) would land in the wrong year: refused, and the page shows the open year.
+      const shown = req.query.get('year');
+      if (
+        req.method === 'POST' &&
+        req.path !== '/year' &&
+        shown !== null &&
+        shown !== String(ws.taxYear)
+      ) {
+        return { status: 409, body: { error: yearChanged(Number(shown), ws.taxYear, lang) } };
+      }
+      if (req.method === 'POST' && req.path === '/year') {
+        const { year } = parse(Year, req.body);
+        ws = await years.open(year, 'dashboard');
+      }
       await ws.ready();
       await planningReady(ws);
       await declarationCheckReady(ws); // reads this year's declaration PDF once, never throws
@@ -288,6 +427,18 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
         case '/scan':
           await ws.scan('you');
           return state();
+        case '/folder/open': {
+          // "Open my Taxpresso folder": the open year's folder, made if it isn't there yet, in
+          // Finder, Explorer or the desktop's file manager. Nothing else is run.
+          await ws.ensureFolder();
+          try {
+            if (!options.openFolder) throw new Error('No file manager here.');
+            await options.openFolder(ws.vault.dir);
+          } catch {
+            return { status: 400, body: { error: folderNotOpened(ws.vault.dir, lang) } };
+          }
+          return state();
+        }
         case '/documents': {
           const raw = req.headers['x-filename'];
           const name =
@@ -369,6 +520,9 @@ export function createApi(ws: Workspace): (req: ApiRequest) => Promise<ApiRespon
           await ws.resolveCheck(id, note, 'dashboard');
           return state();
         }
+        case '/year':
+          // Opened above, before reading the year's folder: its state.
+          return state();
         default:
           return { status: 404, body: { error: 'Not found.' } };
       }

@@ -110,10 +110,14 @@ function otherYear(doc: VaultDocument, year: number): number | undefined {
 const quoted = (name: string, lang: 'en' | 'fr') =>
   lang === 'fr' ? `«\u00a0${name}\u00a0»` : `“${name}”`;
 
-/** Whether the periods, merged, cover the whole calendar year. */
-function coversYear(periods: { from: string; to: string }[], year: number): boolean {
+/** Whether the periods together cover every day from `start` to `end`. */
+function coversPeriod(
+  periods: { from: string; to: string }[],
+  start: string,
+  end: string,
+): boolean {
   const sorted = [...periods].sort((a, b) => a.from.localeCompare(b.from));
-  let reached = `${year}-01-01`;
+  let reached = start;
   for (const p of sorted) {
     if (p.from > reached) return false;
     // The next day after p.to is still covered when the next period starts then.
@@ -121,10 +125,20 @@ function coversYear(periods: { from: string; to: string }[], year: number): bool
     next.setUTCDate(next.getUTCDate() + 1);
     const after = next.toISOString().slice(0, 10);
     if (after > reached) reached = after;
-    if (reached > `${year}-12-31`) return true;
+    if (reached > end) return true;
   }
   return false;
 }
+
+/**
+ * Where "only payments made in the year count" is written, by tax year (docs/design/tax-years.md):
+ * the year's federal instructions, or for 2025 (whose are not in the library) the 2025 guide,
+ * "les cotisations ou versements effectués en 2025".
+ */
+const PAID_IN_YEAR: Readonly<Record<number, string>> = {
+  2025: 'ge-2025-guide-declaration-pp p. 18',
+  2026: PILLAR3A_2026_FACTS.paidInYearOnly,
+};
 
 export function consistencyChecks({ taxYear, documents, facts }: CheckInput): ConsistencyCheck[] {
   const Y = taxYear;
@@ -140,6 +154,9 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
   // 1 and 5. A document for another tax year; a pillar 3a attestation for another year.
   for (const doc of documents) {
     if (doc.kind === 'prior_declaration') continue; // last year's declaration, by design
+    // Last year's assessment (avis de taxation) too: "Last year, reviewed" reads it, and it is
+    // what a new user often has first (docs/design/simple.md).
+    if (doc.kind === 'tax_assessment' && doc.taxYear === Y - 1) continue;
     const year = otherYear(doc, Y);
     if (year === undefined) continue;
     if (doc.kind === 'pillar3a_attestation') {
@@ -160,7 +177,7 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
           en: `Ask your bank or insurer for the ${Y} attestation and add it instead. If you keep this one on purpose, say why in a short note.`,
           fr: `Demandez l’attestation ${Y} à votre banque ou assurance et ajoutez-la à la place. Si vous gardez celle-ci exprès, dites pourquoi en une courte remarque.`,
         },
-        source: PILLAR3A_2026_FACTS.paidInYearOnly,
+        ...(PAID_IN_YEAR[Y] ? { source: PAID_IN_YEAR[Y] } : {}),
       });
       continue;
     }
@@ -181,15 +198,43 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
     });
   }
 
-  // 2. A salary certificate that doesn't cover the year, with no reason given.
+  // 2. A salary certificate that doesn't cover the year, with no reason given. In a year of
+  // arrival from abroad or of departure abroad whose day is known, the period that counts is the
+  // time in Switzerland (ge-2025-guide-declaration-pp p. 53 and 54): a certificate from the day of
+  // arrival, or to the day of departure, is what is expected.
   const moved = facts.find((f) => f.key === 'profile.moved' && f.person === 'household')?.value;
   const salaryDocs = documents.filter(
     (d) => d.kind === 'salary_certificate' && otherYear(d, Y) === undefined,
   );
-  if (!MOVED_DURING_YEAR.has(String(moved))) {
+  const dayOf = (key: string, person: VaultDocument['person']) =>
+    facts.find(
+      (f) =>
+        f.key === key &&
+        (f.person === person || (person === undefined && f.person === 'p1')) &&
+        f.status !== 'extracted' &&
+        typeof f.value === 'string',
+    )?.value as string | undefined;
+  const stay = (person: VaultDocument['person']): { start: string; end: string } | undefined => {
+    if (moved === 'from_abroad') {
+      const day = dayOf('profile.arrival_date', person);
+      return day ? { start: day, end: `${Y}-12-31` } : undefined;
+    }
+    if (moved === 'leaving_switzerland') {
+      const day = dayOf('profile.departure_date', person);
+      return day ? { start: `${Y}-01-01`, end: day } : undefined;
+    }
+    return { start: `${Y}-01-01`, end: `${Y}-12-31` };
+  };
+  const partYear = moved === 'from_abroad' || moved === 'leaving_switzerland';
+  if (!MOVED_DURING_YEAR.has(String(moved)) || partYear) {
     for (const doc of salaryDocs) {
       if (!doc.periodFrom || !doc.periodTo) continue;
-      if (coversYear([{ from: doc.periodFrom, to: doc.periodTo }], Y)) continue;
+      const here = stay(doc.person);
+      // An arrival or a departure whose day isn't known yet: nothing to compare with.
+      if (!here) continue;
+      if (coversPeriod([{ from: doc.periodFrom, to: doc.periodTo }], here.start, here.end)) {
+        continue;
+      }
       // Changed jobs, or had benefits in between: together the documents cover the year.
       const together = documents
         .filter(
@@ -200,7 +245,7 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
             d.periodTo,
         )
         .map((d) => ({ from: d.periodFrom!, to: d.periodTo! }));
-      if (coversYear(together, Y)) continue;
+      if (coversPeriod(together, here.start, here.end)) continue;
       checks.push({
         id: `salary_period:${doc.id}`,
         rule: 'salary_period',
@@ -210,10 +255,15 @@ export function consistencyChecks({ taxYear, documents, facts }: CheckInput): Co
           en: 'A salary certificate for part of the year',
           fr: 'Un certificat de salaire pour une partie de l’année',
         },
-        detail: {
-          en: `${name(doc, 'en')} covers ${formatDay(doc.periodFrom, 'en')} to ${formatDay(doc.periodTo, 'en')}, not the whole of ${Y}.`,
-          fr: `${name(doc, 'fr')} couvre du ${formatDay(doc.periodFrom, 'fr')} au ${formatDay(doc.periodTo, 'fr')}, pas toute l’année ${Y}.`,
-        },
+        detail: partYear
+          ? {
+              en: `${name(doc, 'en')} covers ${formatDay(doc.periodFrom, 'en')} to ${formatDay(doc.periodTo, 'en')}, not your whole time in Switzerland in ${Y} (${formatDay(here.start, 'en')} to ${formatDay(here.end, 'en')}).`,
+              fr: `${name(doc, 'fr')} couvre du ${formatDay(doc.periodFrom, 'fr')} au ${formatDay(doc.periodTo, 'fr')}, pas toute votre période en Suisse en ${Y} (du ${formatDay(here.start, 'fr')} au ${formatDay(here.end, 'fr')}).`,
+            }
+          : {
+              en: `${name(doc, 'en')} covers ${formatDay(doc.periodFrom, 'en')} to ${formatDay(doc.periodTo, 'en')}, not the whole of ${Y}.`,
+              fr: `${name(doc, 'fr')} couvre du ${formatDay(doc.periodFrom, 'fr')} au ${formatDay(doc.periodTo, 'fr')}, pas toute l’année ${Y}.`,
+            },
         todo: {
           en: 'If you started or left a job, or had no salary for part of the year, say so in a short note. If not, ask your employer for a certificate for the whole year.',
           fr: 'Si vous avez commencé ou quitté un emploi, ou n’avez pas eu de salaire pendant une partie de l’année, dites-le en une courte remarque. Sinon, demandez à votre employeur un certificat pour toute l’année.',

@@ -3,7 +3,15 @@
 // the same, so one ledger mapping can feed every canton (docs/design/cantons.md, section 2). Items
 // carry the code of the line on the Aargau return (./rubrics.ts), deductions negative, income and
 // assets positive.
-import type { Amount, CommuteMode, EnginePerson, Line, Text } from '@taxpresso/rules-ch';
+import type {
+  Amount,
+  CommuteMode,
+  EnginePerson,
+  IfdResult,
+  LimitApplied,
+  Line,
+  Text,
+} from '@taxpresso/rules-ch';
 import type { Confession } from './communes.js';
 import type { AgTaxYear } from './params.js';
 
@@ -12,6 +20,7 @@ export type {
   CommuteMode,
   EnginePerson,
   InputStatus,
+  LimitApplied,
   Line,
   Text,
 } from '@taxpresso/rules-ch';
@@ -118,16 +127,38 @@ export interface AgEngineInput {
   /** Shared authority without child support: you mainly bear the children's upkeep. */
   mainUpkeep?: boolean;
   /**
+   * The federal parental scale for a parent sharing custody without child support: true when this
+   * parent earns more (ch-na-circulaire-30-epoux-famille p. 24). Unknown, the federal tax is not
+   * computed.
+   */
+  ifdParentalScale?: boolean;
+  /**
    * Opt-in church tax, by person; where the commune has a further parish of your church
    * (Zusatzkirche), the parish: its name as the canton's list prints it, or the commune's name for
    * the commune's own parish.
    */
   church?: { p1?: Confession; p2?: Confession; parish?: string };
   /**
-   * The household's amounts. Insurance premiums, savings interest and premium subsidies are not
-   * here: the deduction for them is a flat amount whatever was paid (14; StG § 40 Abs. 1 lit. g).
+   * The household's amounts. Insurance premiums, savings interest and premium subsidies count for
+   * the federal tax only: the cantonal deduction for them is a flat amount whatever was paid (14;
+   * StG § 40 Abs. 1 lit. g).
    */
   household?: {
+    /**
+     * 15.0: childcare paid for the household as a whole (the invoices of a crèche, say), when not
+     * given per child: it counts where one child's limit settles it (./compute.ts).
+     */
+    childcare?: Amount;
+    /**
+     * Federal tax only: health and accident insurance premiums paid, the premium subsidy received,
+     * life insurance premiums and savings interest (LIFD art. 33 al. 1 let. g). The cantonal tax
+     * deducts its flat amount whatever was paid (14).
+     */
+    healthPremiums?: Amount;
+    accidentPremiums?: Amount;
+    healthSubsidy?: Amount;
+    lifeInsurancePremiums?: Amount;
+    savingsInterest?: Amount;
     /** 17.1: medical, accident and dental costs left to pay. */
     medicalCosts?: Amount;
     /** 15.3: donations to tax-exempt organisations. */
@@ -226,17 +257,31 @@ export interface AgIccResult {
   };
 }
 
+/**
+ * The federal direct tax (direkte Bundessteuer) of an Aargau household (./ifd.ts): the return has
+ * no federal column, the tax office replaces the cantonal deductions by the federal ones
+ * (ag-2025-guide-wegleitung p. 42), so each federal deduction stands on the Aargau line of the same
+ * concept, the federal-only ones on lines of their own.
+ */
+export interface AgIfdResult extends IfdResult {
+  items: Item[];
+  /** The federal deductions before the medical costs and donations, added up. */
+  totalDeductions: Line;
+  /**
+   * The net income before the medical costs and donations (Form. 2a, chiffre 20): the base of the
+   * medical threshold and the donations cap.
+   */
+  baseIncome: Line;
+}
+
 export interface AgTaxResult {
   canton: 'AG';
   taxYear: AgTaxYear;
   commune: CommuneRef;
   icc: AgIccResult | null;
-  /**
-   * The federal tax is packages/rules-ch's; Aargau's result shows it once the federal part of the
-   * Aargau return is mapped (docs/design/cantons.md).
-   */
-  ifd: null;
-  /** The cantonal, communal (and church, when asked for) tax, when computed. */
+  /** The federal tax (./ifd.ts, packages/rules-ch's rules), or null with why in `unsupported`. */
+  ifd: AgIfdResult | null;
+  /** The cantonal, communal (and church, when asked for) tax and the federal tax, when both are computed. */
   total: number | null;
   estimates: { id: string; what: Text }[];
   needsOk: number;
@@ -246,4 +291,6 @@ export interface AgTaxResult {
   notCounted: Text[];
   unsupported: Text[];
   unverifiedRules: Text[];
+  /** Every cap, threshold, minimum or flat-or-actual choice a rule applied, in both taxes. */
+  limits: LimitApplied[];
 }

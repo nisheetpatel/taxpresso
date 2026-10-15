@@ -1,5 +1,5 @@
 /* The dashboard inside the conversation (MCP Apps view): the browser page's styles
-   (../dashboard/styles.css), sized by the host, plus the dark theme when Claude is dark. */
+   (../dashboard/styles.css, the dark theme included), sized by the host. */
 
 body {
   /* The page fills the browser window; here the host sizes the view to its content. */
@@ -12,34 +12,30 @@ body {
   flex-direction: column;
 }
 
+/* The host's choices (beside the chat, full screen, the browser), in the dashboard's menu. */
 .embed-bar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  padding: 0 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  gap: 4px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 6px;
 }
 
 .embed-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0 16px;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .embed-bar button {
   min-height: var(--touch);
-  padding: 8px 2px;
+  padding: 0 2px;
   border: none;
   background: none;
   color: var(--link);
   font: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -64,8 +60,9 @@ body {
   overflow-y: auto;
 }
 
-/* Full screen: the whole view is the page. */
-[data-display='fullscreen'] .embed-scroll {
+/* Full screen and beside the chat (pip): the host sizes the window, the view scrolls in it. */
+[data-display='fullscreen'] .embed-scroll,
+[data-display='pip'] .embed-scroll {
   max-height: none;
   overflow: visible;
 }
@@ -75,77 +72,4 @@ body {
   padding: 20px 16px;
   font-family: var(--font-ui);
   color: var(--ink);
-}
-
-/* Dark: the coffee theme at night (SPEC.md 11b). Status chips and banners keep their own
-   background, so their text and color read the same in both themes. */
-[data-theme='dark'] {
-  color-scheme: dark;
-  --ground: #17110d;
-  --surface: #221913;
-  --ink: #f3ebe1;
-  --muted: #b8a999;
-  --line: #3a2d24;
-  --line-soft: #2e231b;
-  --accent: #e2b98a;
-  --accent-soft: #3a2a1e;
-  --link: #e2b98a;
-  --savings: #7cc3a0;
-  --crema: #d7a86e;
-}
-
-/* Text on the caramel and milk buttons: espresso. */
-[data-theme='dark'] .primary,
-[data-theme='dark'] .plan .ask,
-[data-theme='dark'] .step-current,
-[data-theme='dark'] .plan-toggle button[aria-pressed='true'] {
-  color: #1e1612;
-}
-
-[data-theme='dark'] .step-current .step-num {
-  background: #1e1612;
-}
-
-[data-theme='dark'] .ghost,
-[data-theme='dark'] .option,
-[data-theme='dark'] .stepper input,
-[data-theme='dark'] .select,
-[data-theme='dark'] .explain-btn {
-  border-color: #4a3a2e;
-}
-
-[data-theme='dark'] .drop {
-  background: #1d1611;
-  border-color: #5a4a3e;
-}
-
-[data-theme='dark'] .drop-icon svg {
-  stroke: var(--ink);
-}
-
-/* The espresso cards (pillar 3a, explanations) stay dark, lifted from the ground by a rim. */
-[data-theme='dark'] .plan,
-[data-theme='dark'] .explain-pop,
-[data-theme='dark'] .plan .explain-pop {
-  background: #2b1f17;
-  color: #f3ebe1;
-  border: 1px solid #4a3a2e;
-}
-
-[data-theme='dark'] .explain-pop {
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme='dark'] .figure,
-[data-theme='dark'] .plan-person input {
-  background: #1e1612;
-}
-
-[data-theme='dark'] .ask {
-  background: var(--ink);
-  color: #1e1612;
-}
-
-[data-theme='dark'] .plan .ask {
-  background: var(--accent);
 }

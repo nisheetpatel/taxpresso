@@ -42,6 +42,10 @@ export interface IccAmounts {
   }>;
   avsDeduction: Cited<{ couple: readonly DecreasingRow[]; other: readonly DecreasingRow[] }>;
   wealthSocial: Cited<{ single: number; couple: number; perCharge: number }>;
+  businessWealth: Cited<{ shareBp: number; max: number }>;
+  ownHomeUpkeepFlat: Cited<{ youngBp: number; oldBp: number }>;
+  abroadRentalValueBp: Cited<number>;
+  franceLandTaxFactor: Cited<number>;
 }
 
 export const ICC_2025: IccAmounts = {
@@ -154,5 +158,37 @@ export const ICC_2025: IccAmounts = {
   wealthSocial: {
     value: { single: 8_763_200, couple: 17_526_400, perCharge: 4_381_600 },
     source: `${GUIDE} p. 16 (51.50)`,
+  },
+  /**
+   * 51.60: deduction on the business wealth invested by a self-employed person: half of it, at most
+   * 533,042 (LIPP art. 58 al. 2 gives 500,000 before indexing). Each spouse with a business has it.
+   */
+  businessWealth: {
+    value: { shareBp: 5000, max: 53_304_200 },
+    source: `${GUIDE} p. 16 (51.60); ge-2025-guide-independants p. 17 and 18 (51.60); ge-na-law-lipp art. 58 al. 2`,
+  },
+
+  // Property (annexe D), for a home or land abroad (../engine/abroad.ts).
+  /**
+   * The flat upkeep deduction for one's own home, instead of the actual costs: 15 % of the rental
+   * value when the building is 10 years old or less on 1 January, 25 % when older (the law sets it).
+   */
+  ownHomeUpkeepFlat: {
+    value: { youngBp: 1500, oldBp: 2500 },
+    source: `${GUIDE} p. 33 (15.10); ge-na-law-lipp art. 34 let. d`,
+  },
+  /**
+   * A home abroad in a country with no rental value like Switzerland's: 4.5 % of its tax value, a
+   * net flat amount, no upkeep costs deducted.
+   */
+  abroadRentalValueBp: {
+    value: 450,
+    source:
+      'ge-na-revenu-immobilier-page (Bien situé dans un autre pays qui n’a pas d’équivalent à la valeur locative suisse)',
+  },
+  /** A home in France without a taxe d'habitation: the taxes foncières' base, times 2. */
+  franceLandTaxFactor: {
+    value: 2,
+    source: 'ge-na-revenu-immobilier-page (Bien situé en France)',
   },
 };

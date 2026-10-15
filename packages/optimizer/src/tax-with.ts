@@ -34,8 +34,20 @@ export interface PersonInput {
   grossCentimes?: number;
   /** Net salary (salary certificate box 11). Wins over the gross when both are given. */
   netCentimes?: number;
+  /**
+   * Geneva: the year's expected profit of a self-employed person's business, after their own AVS
+   * contributions (plan.business_profit; ge-2025-guide-independants p. 23). Part of the earned
+   * income the 3a limit without a pension fund is a share of.
+   */
+  businessCentimes?: number;
   hasPensionFund: boolean;
   paidCentimes: number;
+  /**
+   * Benefits replacing pay for the year that are not in the salary (unemployment, sickness,
+   * accident, maternity, paid by the insurance itself): rubric 11.50. Only the TOU comparison sets
+   * it (./tou.ts), from the benefits attestations.
+   */
+  replacementCentimes?: number;
 }
 
 /** The cantons other than Geneva, by the prefix of their assumptions ("zh_preview"). */
@@ -64,6 +76,18 @@ export interface CantonPlan {
    * gives its cantonal rule, the assumption that says so (no saving is shown: fail closed).
    */
   catchUp: { field: 'pillar3a' | 'pillar3aCatchUp'; unknownRule?: Assumption };
+  /**
+   * The years whose tax the canton's engine can't compute for anyone, and the assumption that says
+   * why (Fribourg 2026: its communal coefficients are not published): no saving is shown (fail
+   * closed), the room and the facts still are.
+   */
+  noTax?: { years: readonly number[]; assumption: Assumption };
+}
+
+/** The canton's assumption when its tax can't be computed for the plans' year, if so. */
+export function noTaxOf(h: HouseholdInput): Assumption | undefined {
+  const n = h.other?.plan.noTax;
+  return n && n.years.includes(h.taxYear ?? 2026) ? n.assumption : undefined;
 }
 
 /** What a household of another canton's plans read besides the salaries (Workspace.planInput). */
@@ -93,7 +117,21 @@ export interface HouseholdInput {
    * What the ledger already knows besides the salaries and the plans' own deductions (health
    * premiums, childcare, donations, the état des titres...), so the plans run on the real tax.
    */
-  known?: Pick<EngineInput, 'household' | 'wealthItems' | 'childSupport' | 'ifdParentalScale'>;
+  /**
+   * Geneva: the household arrived from abroad or leaves Switzerland this year, but the day isn't
+   * known yet: no tax can be worked out at its real rate, so the plans show no saving.
+   */
+  periodUnknown?: boolean;
+  known?: Pick<
+    EngineInput,
+    | 'household'
+    | 'wealthItems'
+    | 'childSupport'
+    | 'ifdParentalScale'
+    | 'abroad'
+    | 'property'
+    | 'period'
+  >;
 }
 
 export type Assumption =
@@ -108,7 +146,9 @@ export type Assumption =
   /** A preview canton: the rules its documents don't spell out, as in the estimate. */
   | `${CantonPrefix}_preview`
   /** No document of the canton gives the cantonal rule of a 3a catch-up yet: no saving. */
-  | `${CantonPrefix}_catchup_rule`;
+  | `${CantonPrefix}_catchup_rule`
+  /** The canton's tax can't be computed for the year (its rates are not published): no saving. */
+  | `${CantonPrefix}_no_tax`;
 
 /** What a deduction is, for the engine's rubric codes (31.40/41.40, 31.30/41.30 in the guide). */
 export type DeductionKind = 'pillar3a' | 'pillar3a_catchup' | 'lpp_buyin';
@@ -157,6 +197,13 @@ export function netOf(p: PersonInput): number | undefined {
   return undefined;
 }
 
+/** What a person earns from every activity: the salary after contributions and the business's profit. */
+export function earnedOf(p: PersonInput): number | undefined {
+  const net = netOf(p);
+  if (net === undefined && p.businessCentimes === undefined) return undefined;
+  return (net ?? 0) + (p.businessCentimes ?? 0);
+}
+
 /** The engine's input for the household, before the plans' deductions. */
 function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInput {
   const kids = h.custody === 'elsewhere' ? 0 : h.children;
@@ -174,6 +221,13 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
         ...(net !== undefined
           ? { employments: [{ gross: { value: net, status: 'estimate' } }] }
           : {}),
+        // The business's expected profit, as one figure (12.01).
+        ...(p.businessCentimes !== undefined
+          ? { selfEmploymentProfit: { value: p.businessCentimes, status: 'estimate' } }
+          : {}),
+        ...(p.replacementCentimes
+          ? { replacementIncome: { value: p.replacementCentimes, status: 'estimate' } }
+          : {}),
       };
     }),
     children: Array.from({ length: kids }, () => ({
@@ -189,6 +243,13 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
       : {}),
     ...(h.known?.household ? { household: h.known.household } : {}),
     ...(h.known?.wealthItems ? { wealthItems: h.known.wealthItems } : {}),
+    // A home or land abroad: counted for the rate, so the plans' savings are at the real rate.
+    ...(h.known?.abroad ? { abroad: h.known.abroad } : {}),
+    // A property in Geneva: its income and value count, so the plans' savings are at the real rate.
+    ...(h.known?.property ? { property: h.known.property } : {}),
+    // A year of arrival or departure: the income of the period at a full year's rate, so the plans'
+    // savings are at the real rate (rules-ge, ./engine/part-year.ts).
+    ...(h.known?.period ? { period: h.known.period } : {}),
   };
 }
 
@@ -236,8 +297,11 @@ function incomeTax(r: TaxResult): TaxEstimate | undefined {
  */
 export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (h.other) return cantonEstimator(h, h.other);
+  if (h.periodUnknown) return undefined;
   const nets = h.people.map(netOf);
-  if (nets.every((n) => n === undefined)) return undefined;
+  const earned = h.people.map(earnedOf);
+  const noIncome = (i: number) => earned[i] === undefined && !h.people[i]!.replacementCentimes;
+  if (h.people.every((_, i) => noIncome(i))) return undefined;
   const base = engineInput(h, nets);
   const first = incomeTax(computeReturn(base));
   if (!first) return undefined;
@@ -246,7 +310,7 @@ export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (!Object.keys(h.known?.household ?? {}).length) assumptions.push('flat_deductions_only');
   if (h.people.some((p) => p.netCentimes === undefined && p.grossCentimes !== undefined))
     assumptions.push('net_from_gross');
-  if (nets.some((n) => n === undefined)) assumptions.push('no_income_for_some');
+  if (h.people.some((_, i) => noIncome(i))) assumptions.push('no_income_for_some');
   if (!h.commune) assumptions.push('commune_default');
   return {
     assumptions,

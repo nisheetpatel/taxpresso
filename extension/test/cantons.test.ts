@@ -83,12 +83,12 @@ describe('the canton question', () => {
     expect(saved.isError).toBe(true);
     const other = await call('answer_question', { id: 'canton', value: 'other' });
     expect(text(other)).toMatch(
-      /Not supported yet: A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or St. Gallen/,
+      /Not supported yet: A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg, Ticino or Aargau/,
     );
     const status = structured<Status>(await call('get_status'));
     expect(status.canton).toBeNull();
     expect(status.notSupported).toEqual([
-      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or St. Gallen',
+      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg, Ticino or Aargau',
     ]);
     expect(status.nextStep).toMatch(/their canton's free tax software or a fiduciary/);
     expect(structured<{ computed: boolean }>(await call('compute_tax')).computed).toBe(false);
@@ -181,7 +181,7 @@ describe('the canton question', () => {
     // The answers stay in the ledger; the canton question says it is not covered.
     expect(ws.ledger.get('profile.commune')?.value).toBe('carouge');
     expect(structured<Status>(await call('get_status')).notSupported).toEqual([
-      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne or St. Gallen',
+      'A canton other than Geneva, Zurich, Bern, Basel-Landschaft, Vaud, Basel-Stadt, Zug, Lucerne, St. Gallen, Fribourg, Ticino or Aargau',
     ]);
     await call('answer_question', { id: 'canton', value: 'GE' });
     expect(structured<Status>(await call('get_status')).progress.questionsAnswered).toBe(4);
@@ -227,11 +227,15 @@ describe('the canton question', () => {
     const s = await state(ws, 'fr');
     expect(s.canton).toMatchObject({ code: 'ZH', name: 'Zurich' });
     expect(s.question?.id).toBe('income_sources:p1');
-    // Taxed at source: not covered in Zurich yet, said plainly with Zurich's own software.
+    // Taxed at source: not covered in Zurich yet, said plainly with Zurich's own software. The user
+    // says the plain fact (a B permit); that a salary is then taxed at source follows from it.
     await call('answer_question', { id: 'income_sources:p1', value: ['salary'] });
     await call('answer_question', { id: 'employers:p1', value: 1 });
-    const source = await call('answer_question', { id: 'taxed_at_source:p1', value: true });
+    const source = await call('answer_question', { id: 'residence:p1', value: 'permit_other' });
     expect(text(source)).toMatch(/Not supported yet: Tax at source in Zurich .*ZHprivateTax/);
+    expect((await call('next_questions')).structuredContent).not.toMatchObject({
+      questions: [{ id: 'taxed_at_source:p1' }],
+    });
   });
 });
 
@@ -248,6 +252,9 @@ describe('the canton registry', () => {
       'ZG',
       'LU',
       'SG',
+      'FR',
+      'TI',
+      'AG',
       'other',
     ]);
     expect(r.ledgerKeys['salary.gross']?.type).toBe('money');

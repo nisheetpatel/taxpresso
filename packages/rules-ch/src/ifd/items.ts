@@ -46,6 +46,14 @@ export const IFD_NOTE = {
     en: 'Bike or moped: the federal flat amount is for a year of trips; the federal instructions reduce it for part of a year or part-time work without saying how (Form. 2a 2026 p. 6), so it is counted in full.',
     fr: `Vélo ou cyclomoteur${NB}: le forfait fédéral vaut pour une année de trajets${NB}; les instructions fédérales le réduisent pour une partie de l’année ou un temps partiel sans dire comment (formule 2a 2026 p. 6), il est donc compté en entier.`,
   },
+  childcareAge: {
+    en: 'Childcare, federal tax: only the care of a child up to their 14th birthday counts (LIFD art. 33 al. 3; ESTV circular 30). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Frais de garde, impôt fédéral${NB}: seule compte la garde d’un enfant jusqu’à ses 14 ans (LIFD art. 33 al. 3${NB}; circulaire AFC n° 30). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
+  childcareSplit: {
+    en: 'Federal tax not computed: the childcare maximum is per child (LIFD art. 33 al. 3), and the childcare you gave for the household is above one child’s maximum, so how it splits between your children decides the deduction. Give what you paid for each child.',
+    fr: `Impôt fédéral non calculé${NB}: le maximum des frais de garde est par enfant (LIFD art. 33 al. 3), et les frais de garde indiqués pour le ménage dépassent le maximum d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Indiquez ce que vous avez payé pour chaque enfant.`,
+  },
   ifdShared: {
     en: 'Federal tax not computed: with shared custody, the parental scale (barème parental) goes to the parent who receives child support or, without child support, to the parent who earns more (ESTV circular 30). Answer the question on child support so Taxpresso knows which parent you are.',
     fr: `Impôt fédéral non calculé${NB}: en garde alternée, le barème parental revient au parent qui reçoit la contribution d’entretien ou, sans contribution, au parent qui gagne le plus (circulaire AFC n° 30). Répondez à la question sur la contribution d’entretien pour que Taxpresso sache quel parent vous êtes.`,
@@ -132,6 +140,11 @@ export function commuteBase(
  * from 2026, Form. 2a p. 8) on top, its own limits checked by the planner. The same limits serve the
  * cantonal tax: `cantonalLaw` is the canton's article that says so (Geneva: LIPP art. 31 let. c).
  * `earnedFrom` are the traces of the salary and contributions the limit without a fund rests on.
+ *
+ * A self-employed person (`business`): the earned income adds the business result less the owner's
+ * AVS/AI/APG contributions, and when the activities make a loss in all, nothing is deducted (Form. 2a
+ * p. 7, chiffre 13: "Aucune déduction ne peut être faite lorsqu'il résulte une perte de l'activité
+ * lucrative"; `instructions` is that year's Form. 2a).
  */
 export function pillar3a(
   F: Pick<IfdParams, 'pillar3a'>,
@@ -144,6 +157,7 @@ export function pillar3a(
     self: number;
     earnedFrom: readonly Trace[];
     cantonalLaw?: readonly string[];
+    business?: { earned: number; known: boolean; trace: Trace; instructions?: string };
   },
 ): RuleResult<'pillar3a'> & { paid: number } {
   const tTrace = new Trace();
@@ -153,6 +167,45 @@ export function pillar3a(
   const out: RuleResult<'pillar3a'> & { paid: number } = { ...none(), paid };
   const lim = tTrace.p(F.pillar3a);
   tTrace.src(...(a.cantonalLaw ?? []));
+  if (a.business) {
+    // Every activity counts, the business's result after the owner's AVS contributions included.
+    tTrace.with(...a.earnedFrom, a.business.trace);
+    if (a.business.instructions) tTrace.src(`${a.business.instructions} p. 7`);
+    const earned = a.gross - a.social + a.self + a.business.earned;
+    if (a.business.known && earned <= 0) {
+      out.notCounted.push(
+        t(
+          `Pillar 3a: your activities make a loss in all this year (${chf(earned)}), so no 3a payment can be deducted.`,
+          `3e pilier A${NB}: vos activités se soldent par une perte cette année (${chf(earned)}), aucun versement au 3e pilier A ne peut donc être déduit.`,
+        ),
+      );
+      out.limits.push({
+        concept: 'pillar3a',
+        param: F.pillar3a,
+        kind: 'cap',
+        given: paid,
+        limit: 0,
+        counted: 0,
+      });
+      return out;
+    }
+    if (!a.hasFund) {
+      const cap = pillar3aCapWithoutFund(earned, lim);
+      const capHow = t(
+        `without a pension fund, 20 % of the income of all your activities (${chf(earned)}: salary after social contributions, business result after your AVS contributions) up to ${chf(lim.withoutFundMax)}: ${chf(cap)}`,
+        `sans caisse de pension, 20${NB}% du revenu de toutes vos activités (${chf(earned)}${NB}: salaire après cotisations sociales, résultat de l’activité indépendante après vos cotisations AVS) jusqu’à ${chf(lim.withoutFundMax)}${NB}: ${chf(cap)}`,
+      );
+      if (earned <= 0) {
+        out.notCounted.push(
+          t(
+            'Pillar 3a needs earned income: none was given, so nothing is deducted.',
+            `Le 3e pilier A suppose un revenu d’activité${NB}: aucun n’est indiqué, rien n’est déduit.`,
+          ),
+        );
+      }
+      return capped(out, F, tTrace, paid, catchUp, cap, capHow);
+    }
+  }
   let cap = lim.withFund;
   let capHow = t(
     `the limit with a pension fund, ${chf(cap)}`,
@@ -175,6 +228,19 @@ export function pillar3a(
       );
     }
   }
+  return capped(out, F, tTrace, paid, catchUp, cap, capHow);
+}
+
+/** The 3a deduction: what was paid up to the limit (`capHow` says which), plus a catch-up. */
+function capped(
+  out: RuleResult<'pillar3a'> & { paid: number },
+  F: Pick<IfdParams, 'pillar3a'>,
+  tTrace: Trace,
+  paid: number,
+  catchUp: number,
+  cap: number,
+  capHow: Text,
+): RuleResult<'pillar3a'> & { paid: number } {
   const v = Math.min(paid, cap);
   if (paid)
     out.limits.push({
@@ -249,6 +315,19 @@ export function professionalCosts(
 }
 
 /**
+ * The bike note of each tax year, citing that year's document (docs/design/tax-years.md): the 2026
+ * federal instructions; for 2025, whose instructions are not in the library, the 2025 Geneva guide
+ * that gives the flat amount, and no rule on reducing it.
+ */
+const BIKE_FLAT_NOTE: Readonly<Record<number, Text>> = {
+  2025: {
+    en: 'Bike or moped: the federal flat amount (ge-2025-guide-declaration-pp p. 20) is counted in full: no 2025 document Taxpresso has says how to reduce it for part of a year or part-time work.',
+    fr: `Vélo ou cyclomoteur${NB}: le forfait fédéral (guide 2025 p. 20) est compté en entier${NB}: aucun document 2025 dont Taxpresso dispose ne dit comment le réduire pour une partie de l’année ou un temps partiel.`,
+  },
+  2026: IFD_NOTE.bikeFlat,
+};
+
+/**
  * Travel to work (LIFD art. 26 al. 1 let. a): the cost before the caps (commuteBase), at most the
  * federal maximum. `costs` is the trace commuteBase read into.
  */
@@ -257,9 +336,15 @@ export function commuteCosts(
   p: Pick<PersonInput, 'commuteCost' | 'commuteMode'>,
   way: CommuteBase,
   costs: Trace,
+  /** The tax year, for the note's source (BIKE_FLAT_NOTE); without it, the 2026 instructions'. */
+  taxYear?: number,
 ): RuleResult<'commute'> {
   const out = none<'commute'>();
-  if (p.commuteMode?.by === 'bike' && !p.commuteCost) out.unverified.push(IFD_NOTE.bikeFlat);
+  if (p.commuteMode?.by === 'bike' && !p.commuteCost) {
+    out.unverified.push(
+      (taxYear !== undefined ? BIKE_FLAT_NOTE[taxYear] : undefined) ?? IFD_NOTE.bikeFlat,
+    );
+  }
   const tr = new Trace().with(costs).src(...costs.sources);
   const v = Math.min(way.cost, tr.p(F.commuteMax));
   out.limits.push({
@@ -457,17 +542,135 @@ export function debtInterest(
   };
 }
 
-/** Childcare (LIFD art. 33 al. 3): at most the federal maximum per child under 14 (`children`). */
+/** A child as the federal childcare deduction sees it. */
+export interface CaredChild {
+  /** Under 14 at the end of the year; not given, taken as under 14. */
+  under14?: boolean;
+  /** The childcare paid for this child. */
+  childcare?: Amount;
+}
+
+/** One child's childcare before the maximum, in centimes. */
+export interface ChildCare {
+  amount: number;
+}
+
+/** The childcare the federal deduction counts, before its maximum (`federalChildcare`). */
+export interface FederalChildcare {
+  /** All the costs counted, to the franc. */
+  care: number;
+  /**
+   * Each child's costs, the children under 14 with costs in their order; a household amount as
+   * one child's where that is exact (one child under 14, or within one child's maximum).
+   */
+  perChild: ChildCare[];
+  /** Costs were given for a child of 14 or more (IFD_NOTE.childcareAge). */
+  older: boolean;
+  /**
+   * A household amount for several children under 14, above one child's maximum: how it splits
+   * between them decides the deduction, so it is not computed (IFD_NOTE.childcareSplit).
+   */
+  split: boolean;
+}
+
+/**
+ * The childcare the federal deduction counts, before its maximum: the costs of each child under 14
+ * (LIFD art. 33 al. 3, ch-na-law-lifd p. 27: "si l’enfant a moins de 14 ans"; Form. 2a,
+ * ch-2025-ifd-instructions-personnes-physiques and ch-2026-ifd-instructions-personnes-physiques
+ * p. 8: "chaque enfant (jusqu’à 14 ans)"), with a household amount that can't be split by child.
+ * The costs given for a child of 14 or more at the end of the year are left out, and `older` says
+ * there were some (IFD_NOTE.childcareAge): the care before a 14th birthday in the year would count
+ * (ch-na-circulaire-30-epoux-famille p. 13, 8.2), but only the age at the end of the year is known.
+ * The maximum is per child (the same page: "25 800 fr. par enfant"): a household amount is one
+ * child's when there is one child under 14, or when the whole of it is within `within`, the
+ * smallest maximum per child that applies (the federal one, or a canton's lower one); otherwise
+ * how it splits decides, and `split` says so.
+ */
+export function federalChildcare(
+  children: readonly CaredChild[],
+  household: Amount | undefined,
+  tr: Trace,
+  within?: number,
+): FederalChildcare {
+  const isOlder = (c: CaredChild) => c.under14 === false && (c.childcare?.value ?? 0) > 0;
+  const care = francTotal(tr, [
+    ...children.map((c) => (isOlder(c) ? undefined : c.childcare)),
+    household,
+  ]);
+  const young = children.filter((c) => c.under14 !== false);
+  const whole = (household?.value ?? 0) > 0;
+  const exact = young.length <= 1 || within === undefined || care <= within;
+  return {
+    care,
+    perChild: whole
+      ? exact
+        ? [{ amount: care }]
+        : []
+      : young
+          .map((c) => c.childcare?.value ?? 0)
+          .filter((v) => v > 0)
+          .map((amount) => ({ amount })),
+    older: children.some(isOlder),
+    split: whole && !exact,
+  };
+}
+
+/**
+ * Each child's childcare at most the maximum, then added up (LIFD art. 33 al. 3: "par enfant";
+ * ch-2026-ifd-instructions-personnes-physiques p. 8: "la déduction maximale est de 25 800 fr. par
+ * enfant"). In words: each child's costs, and for those above the maximum what counts of them.
+ */
+export function capPerChild(
+  max: number,
+  perChild: readonly ChildCare[],
+): { counted: number; capped: ChildCare[]; how: Text } {
+  const counted = roundFranc(perChild.reduce((s, c) => s + Math.min(c.amount, max), 0));
+  const part = (c: ChildCare, counts: string) =>
+    c.amount > max ? `${chf(c.amount)}, ${counts} ${chf(max)}` : chf(c.amount);
+  const parts = (counts: string) => perChild.map((c) => part(c, counts)).join(' + ');
+  return {
+    counted,
+    capped: perChild.filter((c) => c.amount > max),
+    how: t(
+      `Per child under 14, what was paid, at most ${chf(max)}: ${parts('counted')} = ${chf(counted)}.`,
+      `Par enfant de moins de 14 ans, ce qui a été payé, au plus ${chf(max)}${NB}: ${parts('compté')} = ${chf(counted)}.`,
+    ),
+  };
+}
+
+/**
+ * Childcare (LIFD art. 33 al. 3): each child's costs at most the federal maximum, then added up
+ * (`capPerChild`). Where that gives what the maximum times the number of children under 14
+ * (`children`) gives, as when no child's costs pass the maximum next to another child's under
+ * it, it is said that way; otherwise child by child, with the costs that passed the maximum.
+ */
 export function childcareCosts(
   F: Pick<IfdParams, 'childcareMax'>,
   care: number,
   children: number,
   input: Trace,
+  perChild: readonly ChildCare[] = [{ amount: care }],
 ): RuleResult<'childcare'> {
   const cf = new Trace().with(input);
   const maxF = cf.p(F.childcareMax);
   const vf = Math.min(care, maxF * children);
   const capF = maxF * children;
+  const each = capPerChild(maxF, perChild);
+  if (each.counted < vf) {
+    return {
+      deduction: { concept: 'childcare', amount: -each.counted, trace: cf, how: each.how },
+      limits: each.capped.map((c) => ({
+        concept: 'childcare' as const,
+        param: F.childcareMax,
+        kind: 'cap' as const,
+        given: c.amount,
+        limit: maxF,
+        counted: maxF,
+      })),
+      notCounted: [],
+      unverified: [],
+    };
+  }
   return {
     deduction: {
       concept: 'childcare',

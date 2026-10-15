@@ -6,8 +6,16 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  AG_OFFICIAL_DOCUMENTS,
+  AG_TERMS,
+  agKeys,
   agParamsFor,
   churchRule,
+  ESTIMATE_TEXT,
+  FEDERAL_NOTE,
+  FEDERAL_RUBRICS,
+  NOTE,
+  RUBRIC_ORDER,
   lowIncomeSteps,
   maxBurden,
   multipliers,
@@ -81,8 +89,31 @@ describe('citations', () => {
     }
   });
 
-  it('every line of the return', () => {
+  it('every line of the return, each once in the return’s order, and the federal tax’s own line', () => {
     for (const [code, r] of Object.entries(RUBRICS)) expectCited(r.source, code);
+    for (const [code, r] of Object.entries(FEDERAL_RUBRICS)) expectCited(r.source, code);
+    expect([...RUBRIC_ORDER].sort()).toEqual(Object.keys(RUBRICS).sort());
+    expect(new Set(RUBRIC_ORDER).size).toBe(RUBRIC_ORDER.length);
+  });
+
+  it('every key Aargau defines, and the page to ask for more time', () => {
+    for (const year of [2025, 2026] as const) {
+      for (const [key, def] of Object.entries(agKeys(year))) {
+        if (key.startsWith('ag.') || key === 'profile.commune' || key === 'profile.moved') {
+          expectCited(def.source ?? '', `${year} key ${key}`);
+        }
+      }
+    }
+    expectCited(AG_TERMS.moreTimeSource, 'more time');
+  });
+
+  it('the texts shown to the user have no en or em dash (CLAUDE.md, user-facing copy)', () => {
+    for (const [name, text] of Object.entries({ ...NOTE, ...ESTIMATE_TEXT, ...FEDERAL_NOTE })) {
+      expect(`${text.en} ${text.fr}`, name).not.toMatch(/[–—]/);
+    }
+    for (const [code, r] of Object.entries({ ...RUBRICS, ...FEDERAL_RUBRICS })) {
+      expect(JSON.stringify(r.label), code).not.toMatch(/[–—]/);
+    }
   });
 
   it('every id written anywhere in the package is an ok entry of lock.json', () => {
@@ -94,6 +125,33 @@ describe('citations', () => {
     for (const f of files) {
       const text = readFileSync(new URL(f, dir), 'utf8');
       for (const id of text.match(ID) ?? []) expect(lock[id]?.status, `${f}: ${id}`).toBe('ok');
+    }
+  });
+});
+
+describe('the official Aargau documents linked', () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL('../../../docs/sources/ag/manifest.json', import.meta.url), 'utf8'),
+  ) as { id: string; title: string; url: string; format: string }[];
+
+  it('are the manifest’s, title and link', () => {
+    expect(Object.keys(AG_OFFICIAL_DOCUMENTS).sort()).toEqual(manifest.map((m) => m.id).sort());
+    for (const [id, doc] of Object.entries(AG_OFFICIAL_DOCUMENTS)) {
+      const m = manifest.find((x) => x.id === id)!;
+      expect(doc, id).toEqual({ title: m.title, url: m.url, pdf: m.format === 'pdf' });
+    }
+  });
+
+  it('cover every Aargau document the rules cite', () => {
+    const dir = new URL('../src/', import.meta.url);
+    const files = readdirSync(dir, { recursive: true, encoding: 'utf8' }).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    for (const f of files) {
+      const text = readFileSync(new URL(f, dir), 'utf8');
+      for (const id of text.match(/\bag-(?:\d{4}|na)-[a-z0-9-]+[a-z0-9]\b/g) ?? []) {
+        expect(Object.keys(AG_OFFICIAL_DOCUMENTS), `${f}: ${id}`).toContain(id);
+      }
     }
   });
 });

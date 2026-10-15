@@ -15,6 +15,7 @@ import {
   debtInterest,
   donationDeduction,
   donations,
+  federalChildcare,
   federalScale,
   flatProfessional,
   francTotal as total,
@@ -26,21 +27,47 @@ import {
   politicalParty,
   professionalCosts,
   roundFranc,
+  SELF_EMPLOYMENT_FEDERAL,
   Trace,
   trainingCosts,
   twoEarner,
   type Deduction,
   type FederalConcept,
   type RuleLimit,
+  type PartYear,
   type RuleResult,
 } from '@taxpresso/rules-ch';
+import {
+  ABROAD_NOTE,
+  ABROAD_UNSUPPORTED,
+  abroadItems,
+  abroadSplit,
+  type AbroadFigures,
+  type AbroadNotes,
+} from './abroad.js';
 import { assess, incomeTotals, type Assessment } from './assess.js';
-import { ESTIMATE_TEXT, NOTE } from './explain.js';
+import {
+  BUSINESS_NOTE,
+  businessItems,
+  type BusinessItems,
+  type BusinessNotes,
+} from './business.js';
+import { capitalTax } from './capital.js';
+import {
+  effortCheck,
+  PROPERTY_NOTE,
+  PROPERTY_UNSUPPORTED,
+  propertyItems,
+  type PropertyFigures,
+  type PropertyNotes,
+} from './property.js';
+import { ESTIMATE_TEXT, ICC_COMMUTE_PRICING, NOTE } from './explain.js';
 import { avsDeduction, lifeInsuranceCap } from './rules.js';
 import { paramsFor, type YearParams } from './params.js';
 import { codeFor, rubric, RUBRICS, type RubricCode } from './rubrics.js';
 import type {
   Amount,
+  BusinessSheet,
   ChildInput,
   EngineInput,
   EnginePerson,
@@ -50,12 +77,22 @@ import type {
   LimitApplied,
   Line,
   PersonInput,
+  PartYearResult,
   TaxResult,
   Text,
   WealthItemInput,
 } from './types.js';
+import { EngineInputError } from './errors.js';
+import {
+  partYearNotes,
+  partYearOf,
+  partYearUnsupported,
+  periodParams,
+  rateLines,
+  yearInput,
+} from './part-year.js';
 
-export class EngineInputError extends Error {}
+export { EngineInputError };
 
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = '\u00a0';
@@ -116,6 +153,15 @@ class Notes {
       const rubricCode = codeFor(code ?? RUBRIC_OF[l.concept], person);
       this.limit(l.param, l.kind, [rubricCode, person, tax], l.given, l.limit, l.counted);
     }
+  }
+  /** The notes of a business (./business.ts). */
+  business(): BusinessNotes {
+    return {
+      assumption: (x) => this.add(this.assumptions, x),
+      notCounted: (x) => this.add(this.notCounted, x),
+      unverified: (x) => this.add(this.unverified, x),
+      limit: (p, kind, at, given, limit, counted) => this.limit(p, kind, at, given, limit, counted),
+    };
   }
 }
 
@@ -186,6 +232,10 @@ interface PersonFigures {
   earnedIfd: number;
   earns: boolean;
   contributes: boolean;
+  /** A salary or benefits replacing it (annexe A): the person's deductions go on A1 or A2. */
+  annexA: boolean;
+  /** Self-employment from the accounts (annexe B), when the person has a business. */
+  business?: BusinessItems;
 }
 
 /** Items of one person, the same rubrics as the annexe A of the form (guide p. 17 to 21). */
@@ -246,6 +296,17 @@ function personItems(
     'Net self-employment income, as given',
     'Revenu net de l’activité indépendante, tel que donné',
   );
+  // Self-employment from the accounts, annexe B (./business.ts): the result (12.01 or 57.10),
+  // earlier losses (57.20) and the owner's AVS/AI/APG contributions (32.10, 32.11).
+  let business: BusinessItems | undefined;
+  if (p.business) {
+    if (p.selfEmploymentProfit) {
+      throw new EngineInputError(`${p.id}: a business or a self-employment profit, not both`);
+    }
+    business = businessItems(P, p.id, p.business, notes.business());
+    icc.push(...business.icc);
+    ifd.push(...business.ifd);
+  }
   simple(
     '17.10',
     p.pensionAvs,
@@ -328,10 +389,22 @@ function personItems(
     self,
     earnedFrom: [gTrace, sTrace],
     cantonalLaw: ['ge-na-law-lipp art. 31 let. c'],
+    // The business result less the owner's AVS contributions (ge-2025-guide-independants p. 23).
+    ...(business
+      ? {
+          business: {
+            earned: business.earned,
+            known: business.year.hasAccounts,
+            trace: business.year.earned.trace,
+            instructions: SELF_EMPLOYMENT_FEDERAL[P.taxYear].instructions,
+          },
+        }
+      : {}),
   });
   const paid = p3a.paid;
   // A self-employed person without salary declares it on the annexe B (32.40, specimen p. 10).
-  const code3a: RubricCode = gross + replacement === 0 && self > 0 ? '32.40' : '31.40';
+  const code3a: RubricCode =
+    gross + replacement === 0 && (self > 0 || business !== undefined) ? '32.40' : '31.40';
   notes.apply(p3a, p.id, 'both', code3a);
   if (p3a.deduction) both(deductionItem(p3a.deduction, p.id, code3a));
 
@@ -399,7 +472,7 @@ function personItems(
         ),
       );
       if (commuteIcc && way) {
-        if (way.federalPricing) notes.add(notes.unverified, NOTE.iccCommutePricing);
+        if (way.federalPricing) notes.add(notes.unverified, ICC_COMMUTE_PRICING[P.taxYear]);
         const at: [string, ItemPerson, 'icc'] = [codeFor('31.70', p.id), p.id, 'icc'];
         notes.limit(I.commuteMax, 'cap', at, commute, I.commuteMax.value, commuteIcc);
         icc.push(
@@ -449,7 +522,7 @@ function personItems(
     notes.apply(prof, p.id, 'ifd');
     if (prof.deduction) ifd.push(deductionItem(prof.deduction, p.id));
     if (!freeTransport && commute > 0 && way) {
-      const travel = commuteCosts(F, p, way, costTrace);
+      const travel = commuteCosts(F, p, way, costTrace, P.taxYear);
       notes.apply(travel, p.id, 'ifd');
       if (travel.deduction) ifd.push(deductionItem(travel.deduction, p.id));
     }
@@ -495,11 +568,14 @@ function personItems(
 
   const own = (list: Item[], from: number) =>
     list.slice(from).filter((i) => i.person === p.id && !i.code.startsWith('59'));
+  // The earned income of each activity after its deductions: salary less 31.10 to 31.63, the
+  // business result (12.01, or the loss 57.10) less 32.10 to 32.40 (ge-2025-guide-independants
+  // p. 23; ge-2025-guide-declaration-pp p. 21).
   const earned = (list: Item[], from: number) =>
     own(list, from).reduce(
       (s, i) =>
         s +
-        (['11.10', '21.10', '11.50', '21.50', '12.01', '22.01'].includes(i.code) ||
+        (['11.10', '21.10', '11.50', '21.50', '12.01', '22.01', '57.10'].includes(i.code) ||
         i.code[0] === '3' ||
         i.code[0] === '4'
           ? i.amount
@@ -513,13 +589,35 @@ function personItems(
     pensionFund,
     earnedIcc: earned(icc, start.icc),
     earnedIfd: earned(ifd, start.ifd),
-    earns: gross + replacement + self > 0,
+    // A business is an activity, also in a year with a loss (childcare, two earners).
+    earns: gross + replacement + self > 0 || business !== undefined,
     contributes: hasFund || pensionFund > 0 || buyIn > 0 || paid > 0,
+    annexA: annexA > 0,
+    ...(business ? { business } : {}),
   };
 }
 
+/**
+ * The return of a household: a whole year, or a year of arrival from abroad or of departure abroad
+ * (`input.period`, ./part-year.ts), whose taxes are on the income of the period of tax liability
+ * at the rate of a full year's income: the same rules run once on the year, periodic income
+ * converted (the income for the rate), and once on the period, with the deductions the documents
+ * reduce in proportion (the income taxed).
+ */
 export function computeReturn(input: EngineInput): TaxResult {
-  const P = paramsFor(input.taxYear);
+  const py = partYearOf(input);
+  if (!py) return computeWith(input, paramsFor(input.taxYear));
+  const year = computeWith(yearInput(input, py), paramsFor(input.taxYear));
+  return computeWith(input, periodParams(paramsFor(input.taxYear), py), { py, year });
+}
+
+/** A year of arrival or departure: its period, and the year's return the rate is read from. */
+interface PartYearRun {
+  py: PartYear;
+  year: TaxResult;
+}
+
+function computeWith(input: EngineInput, P: YearParams, part?: PartYearRun): TaxResult {
   const I = P.icc;
   const F = P.ifd;
   const notes = new Notes();
@@ -531,6 +629,13 @@ export function computeReturn(input: EngineInput): TaxResult {
   }
   if (!(input.commune in P.communes.centimes.value)) {
     throw new EngineInputError(`Unknown commune ${input.commune}`);
+  }
+  for (const b of input.capital?.benefits ?? []) {
+    if (!people.some((p) => p.id === b.person)) {
+      throw new EngineInputError(
+        `A lump sum (capital.benefits) for ${b.person}, not in the household`,
+      );
+    }
   }
   // A parent without a partner sharing custody: child support decides whose the children are for
   // the deductions, the splitting and the federal scale (circular 30, ch. 14.4 and 14.5; guide p. 45
@@ -581,7 +686,8 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (m.income) o.incomes.push(m.income);
     owners.set(m.owner, o);
   }
-  const wealthItems: Item[] = [];
+  // The business wealth first, as on PG4 (12.00 actifs commerciaux, 57.00 passifs, 51.60).
+  const wealthItems: Item[] = figures.flatMap((f) => f.business?.wealth ?? []);
   let wealthIncome = 0;
   for (const [owner, o] of owners) {
     const inc = total(o.income, o.incomes);
@@ -651,6 +757,8 @@ export function computeReturn(input: EngineInput): TaxResult {
   // The état des titres and the other movable wealth, as the securities rules compute them.
   const lifeExtra: Amount[] = [];
   const interestExtra: Amount[] = [];
+  /** A mortgage statement is among the debts (E1, 55.20). */
+  let mortgage = false;
   const credit = { ia: [] as WealthItemInput[], ies: [] as WealthItemInput[] };
   for (const w of input.wealthItems ?? []) {
     const tr = new Trace().src(w.source);
@@ -674,8 +782,10 @@ export function computeReturn(input: EngineInput): TaxResult {
       // 56.30 and 52.11 count within the insurance limits (52.15, 52.00); 55.10 within the
       // interest limit; the costs (56.20) in full.
       if (w.code === '56.30' || w.code === '52.11') lifeExtra.push(wealthAmount(w));
-      else if (w.code === '55.10') interestExtra.push(wealthAmount(w));
-      else if (v) {
+      else if (w.code === '55.10' || w.code === '55.20') {
+        interestExtra.push(wealthAmount(w));
+        if (w.code === '55.20') mortgage = true;
+      } else if (v) {
         const it = line(-v, t(`${as.en}: ${chf(v)}.`, `${as.fr}${NB}: ${chf(v)}.`));
         if (w.taxes.includes('icc')) icc.push(it);
         if (w.taxes.includes('ifd')) ifd.push(it);
@@ -685,6 +795,57 @@ export function computeReturn(input: EngineInput): TaxResult {
       else credit.ies.push(w);
     }
   }
+
+  // A home or land abroad (./abroad.ts): its lines on annexe D, in both taxes and in wealth, so the
+  // subtotals and the totals are worldwide, as on the form; the split comes after every deduction.
+  const incompleteAbroad: Text[] = [];
+  const abroadNotes: AbroadNotes = {
+    assumption: (x) => notes.add(notes.assumptions, x),
+    notCounted: (x) => notes.add(notes.notCounted, x),
+    unverified: (x) => notes.add(notes.unverified, x),
+    incomplete: (x) => {
+      if (!incompleteAbroad.some((y) => y.en === x.en)) incompleteAbroad.push(x);
+    },
+    limit: (p, kind, at, given, limit, counted) => notes.limit(p, kind, at, given, limit, counted),
+  };
+  let abroad: AbroadFigures | undefined;
+  if (input.abroad) {
+    if (input.abroad.owner !== 'household' && !people.some((p) => p.id === input.abroad!.owner)) {
+      throw new EngineInputError(
+        `A property abroad for ${input.abroad.owner}, not in the household`,
+      );
+    }
+    abroad = abroadItems(P, input.abroad, abroadNotes);
+    icc.push(...abroad.icc);
+    ifd.push(...abroad.ifd);
+    wealthItems.push(...abroad.wealth);
+    notes.add(notes.assumptions, ABROAD_NOTE.exempt);
+  }
+
+  // A property in Geneva (./property.ts): its lines on annexe D, in both taxes and in wealth.
+  const incompleteProperty: Text[] = [];
+  const propertyNotes: PropertyNotes = {
+    assumption: (x) => notes.add(notes.assumptions, x),
+    notCounted: (x) => notes.add(notes.notCounted, x),
+    unverified: (x) => notes.add(notes.unverified, x),
+    incomplete: (x) => {
+      if (!incompleteProperty.some((y) => y.en === x.en)) incompleteProperty.push(x);
+    },
+    limit: (p, kind, at, given, limit, counted) => notes.limit(p, kind, at, given, limit, counted),
+  };
+  let property: PropertyFigures | undefined;
+  if (input.property) {
+    const owner = input.property.owner;
+    if (owner !== 'household' && !people.some((p) => p.id === owner)) {
+      throw new EngineInputError(`A property in Geneva for ${owner}, not in the household`);
+    }
+    property = propertyItems(P, input.property, propertyNotes);
+    icc.push(...property.icc);
+    ifd.push(...property.ifd);
+    wealthItems.push(...property.wealth);
+  }
+  /** The property's gross income, in each tax: part of the income from wealth (guide p. 37). */
+  const propertyIncome = property?.income ?? { icc: 0, ifd: 0 };
 
   // Health insurance subsidy: income for the ICC (guide p. 27); exempt for the IFD (LIFD art. 24
   // let. d), where only the premiums left to pay are deducted.
@@ -706,8 +867,10 @@ export function computeReturn(input: EngineInput): TaxResult {
     notes.add(notes.unverified, NOTE.subsidyIfd);
   }
 
-  // Two earners (31.90 IFD, 31.95 ICC): the spouse who earns less.
+  // Two earners (31.90 IFD, 31.95 ICC): the spouse who earns less. Self-employed without a salary,
+  // on annexe B instead (32.90, 32.95: ge-2025-guide-independants p. 23 and 24).
   const [a, b] = figures;
+  const onB = (f: PersonFigures) => f.business !== undefined && !f.annexA;
   if (couple && a && b && a.earns && b.earns) {
     const lowIcc = a.earnedIcc <= b.earnedIcc ? a : b;
     if (lowIcc.earnedIcc > 0) {
@@ -716,7 +879,7 @@ export function computeReturn(input: EngineInput): TaxResult {
       const v = Math.min(tr.p(I.twoEarner), lowIcc.earnedIcc);
       icc.push(
         item(
-          '31.95',
+          onB(lowIcc) ? '32.95' : '31.95',
           lowIcc.id,
           tr,
           -v,
@@ -731,7 +894,9 @@ export function computeReturn(input: EngineInput): TaxResult {
     if (lowIfd.earnedIfd > 0) {
       const lower = ifd.filter((i) => i.person === lowIfd.id);
       const federal = twoEarner(F, lowIfd.earnedIfd, lower);
-      if (federal.deduction) ifd.push(deductionItem(federal.deduction, lowIfd.id));
+      if (federal.deduction) {
+        ifd.push(deductionItem(federal.deduction, lowIfd.id, onB(lowIfd) ? '32.90' : undefined));
+      }
     }
   }
 
@@ -825,9 +990,22 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (interest > 0) {
     const ci = new Trace().with(diTrace);
     const extra = ci.p(I.debtInterestExtra);
-    const capI = wealthIncome + extra;
+    // The income from wealth counts a property's gross income: its rental value or rents (the
+    // "rendement brut de la fortune", guide p. 37; LIFD art. 33 al. 1 let. a: art. 21 included).
+    // When that decides the limit, the line rests on the property's figures too.
+    const bound = property !== undefined && interest > wealthIncome + extra;
+    if (bound) ci.from(...property!.icc.filter((i) => i.amount > 0)).src(`${GUIDE} p. 37`);
+    const incomeIcc = wealthIncome + propertyIncome.icc;
+    const capI = incomeIcc + extra;
     const vi = Math.min(interest, capI);
     notes.limit(I.debtInterestExtra, 'cap', ['55.10', 'household', 'icc'], interest, capI, vi);
+    // With a mortgage, the line holds both kinds of interest (PG3 55.00, from E1).
+    const label = mortgage
+      ? t(
+          'Interest on your debts and mortgages (intérêts chirographaires et hypothécaires)',
+          'Intérêts chirographaires et hypothécaires',
+        )
+      : undefined;
     icc.push(
       item(
         '55.10',
@@ -835,14 +1013,21 @@ export function computeReturn(input: EngineInput): TaxResult {
         ci,
         -vi,
         t(
-          `Interest ${chf(interest)}; at most the income from wealth (${chf(wealthIncome)}) + ${chf(extra)}: ${chf(vi)}.`,
-          `Intérêts ${chf(interest)}${NB}; au plus le rendement de la fortune (${chf(wealthIncome)}) + ${chf(extra)}${NB}: ${chf(vi)}.`,
+          `Interest ${chf(interest)}; at most the income from wealth (${chf(incomeIcc)}) + ${chf(extra)}: ${chf(vi)}.`,
+          `Intérêts ${chf(interest)}${NB}; au plus le rendement de la fortune (${chf(incomeIcc)}) + ${chf(extra)}${NB}: ${chf(vi)}.`,
         ),
+        label,
       ),
     );
-    const federal = debtInterest(F, interest, wealthIncome, diTrace);
+    const fTrace = bound
+      ? new Trace().with(diTrace).from(...property!.ifd.filter((i) => i.amount > 0))
+      : diTrace;
+    const federal = debtInterest(F, interest, wealthIncome + propertyIncome.ifd, fTrace);
     notes.apply(federal, 'household', 'ifd');
-    if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
+    if (federal.deduction) {
+      const it = deductionItem(federal.deduction, 'household');
+      ifd.push(label ? { ...it, label } : it);
+    }
   }
   const fTrace = new Trace();
   const fees = total(fTrace, [hh.bankFees]);
@@ -857,16 +1042,32 @@ export function computeReturn(input: EngineInput): TaxResult {
       ),
     );
 
-  // Childcare (59.10 ICC, 59.12 IFD): children under 14; spouses must both work.
+  // Childcare (59.10 ICC, 59.12 IFD): children under 14; spouses must both work. Both taxes count
+  // the care of each child up to the month of the 14th birthday (ge-2025-guide-declaration-pp p. 30;
+  // ICC: LIPP art. 35, ge-na-law-lipp, "si l'enfant a moins de 14 ans"; IFD: LIFD art. 33 al. 3),
+  // so the costs given for a child of 14 or more at the end of the year are left out of both. Each
+  // child's costs count at most the maximum, then they are added up (p. 30: "pour chaque enfant
+  // ... jusqu'à concurrence de"; LIPP art. 35 and LIFD art. 33 al. 3: "au plus par enfant"). An
+  // amount for the household is one child's when there is one child under 14, or when it is within
+  // the smaller of the two maximums; otherwise how it splits decides, and neither tax is computed
+  // until it is given per child (NOTE.childcareSplit; the question ge.child_care).
   const eligible = couple ? figures.length === 2 && figures.every((f) => f.earns) : true;
-  const perChild = children.filter((c) => (c.childcare?.value ?? 0) > 0);
+  const withCosts = children.filter((c) => (c.childcare?.value ?? 0) > 0);
   const ccTrace = new Trace();
-  const care = total(ccTrace, [...children.map((c) => c.childcare), hh.childcare]);
+  const within = Math.min(I.childcareMax.value, F.childcareMax.value);
+  const {
+    care,
+    older,
+    perChild,
+    split: careNeedsSplit,
+  } = federalChildcare(children, hh.childcare, ccTrace, within);
+  if (older) notes.add(notes.notCounted, NOTE.childcareAge);
   const caredFor = new Set<ChildInput>();
+  let careSplit = false;
   if (care > 0) {
     const young = children.filter((c) => c.under14 !== false);
     const counted =
-      hh.childcare && hh.childcare.value > 0 ? young : perChild.filter((c) => c.under14 !== false);
+      hh.childcare && hh.childcare.value > 0 ? young : withCosts.filter((c) => c.under14 !== false);
     if (children.some((c) => c.under14 === undefined)) notes.add(notes.assumptions, NOTE.under14);
     if (!eligible) {
       notes.add(
@@ -876,26 +1077,31 @@ export function computeReturn(input: EngineInput): TaxResult {
           `Frais de garde${NB}: les deux conjoints doivent travailler (ou être en formation) pour les déduire.`,
         ),
       );
+    } else if (careNeedsSplit) {
+      careSplit = true;
+      notes.add(notes.unsupported, NOTE.childcareSplit);
     } else if (counted.length) {
       for (const c of counted) caredFor.add(c);
-      const ci = new Trace().with(ccTrace);
-      const maxI = ci.p(I.childcareMax);
-      const vi = Math.min(care, maxI * counted.length);
-      const capI = maxI * counted.length;
-      notes.limit(I.childcareMax, 'cap', ['59.10', 'household', 'icc'], care, capI, vi);
-      icc.push(
-        item(
-          '59.10',
-          'household',
-          ci,
-          -vi,
-          t(
-            `Paid ${chf(care)}; at most ${chf(maxI)} per child under 14 (${counted.length}): ${chf(vi)}.`,
-            `Payé ${chf(care)}${NB}; au plus ${chf(maxI)} par enfant de moins de 14 ans (${counted.length})${NB}: ${chf(vi)}.`,
-          ),
-        ),
+      const cantonal = childcareCosts(
+        { childcareMax: I.childcareMax },
+        care,
+        counted.length,
+        ccTrace,
+        perChild,
       );
-      const federal = childcareCosts(F, care, counted.length, ccTrace);
+      for (const l of cantonal.limits) {
+        notes.limit(
+          I.childcareMax,
+          'cap',
+          ['59.10', 'household', 'icc'],
+          l.given,
+          l.limit,
+          l.counted,
+        );
+      }
+      const d = cantonal.deduction!;
+      icc.push(item('59.10', 'household', d.trace, d.amount, d.how));
+      const federal = childcareCosts(F, care, counted.length, ccTrace, perChild);
       notes.apply(federal, 'household', 'ifd');
       if (federal.deduction) ifd.push(deductionItem(federal.deduction, 'household'));
     }
@@ -1039,6 +1245,28 @@ export function computeReturn(input: EngineInput): TaxResult {
       );
   }
 
+  // A property abroad: the split of the return, after every deduction (./abroad.ts). What the
+  // documents don't spell out fails closed, with the reason.
+  const split = abroad
+    ? abroadSplit({
+        figures: abroad,
+        icc,
+        ifd,
+        wealthItems,
+        // A property in Geneva's rental value or rents are Swiss income from wealth.
+        swissWealthIncome: wealthIncome + propertyIncome.icc,
+        interestGiven: interest,
+        interestExtra: I.debtInterestExtra.value,
+      })
+    : undefined;
+  const abroadUnsupported: Text[] = [...(input.abroad?.unsupported ?? [])];
+  if (split?.problem) abroadUnsupported.push(ABROAD_UNSUPPORTED[split.problem]);
+  if (abroad) {
+    notes.add(notes.unverified, ABROAD_NOTE.split);
+    notes.add(notes.unverified, ABROAD_NOTE.rate);
+    notes.add(notes.unverified, ABROAD_NOTE.ifdRate);
+  }
+
   // Splitting and scales.
   let splitting: IccSplitting = 'none';
   if (couple || full > 0) splitting = 'full';
@@ -1054,8 +1282,40 @@ export function computeReturn(input: EngineInput): TaxResult {
   const scale = federalScale({ couple, full, shared, parentalScale: input.ifdParentalScale });
   for (const u of scale.unsupported) notes.add(notes.unsupported, u);
   const ifdScale = scale.scale;
-  const ifdUnsupported = scale.unsupported.length > 0;
   const ifdChildReductions = scale.childReductions;
+  // With a property abroad, the federal tax is at the rate of the whole income: how the reduction
+  // per child applies then is in no document (fail closed for the federal tax only).
+  const ifdAbroadChildren = abroad !== undefined && ifdScale !== 'single' && ifdChildReductions > 0;
+  if (ifdAbroadChildren) notes.add(notes.unsupported, ABROAD_UNSUPPORTED.ifd_children);
+  const ifdUnsupported = scale.unsupported.length > 0 || ifdAbroadChildren;
+
+  // A property in Geneva: what its figures put outside the simple case (fail closed), and the
+  // taux d'effort of one's own home, once the gross income and the splitting are known. Only the
+  // cantonal tax has it (LIPP art. 24 al. 2): when it lowers the rental value, the cantonal and
+  // communal tax is not computed, the federal tax is. A year of arrival or departure with a
+  // property in Geneva is not prepared yet (fail closed).
+  const propertyUnsupported: Text[] = [...(input.property?.unsupported ?? [])];
+  if (property?.problem) propertyUnsupported.push(PROPERTY_UNSUPPORTED[property.problem]);
+  if (input.property && input.period) propertyUnsupported.push(PROPERTY_UNSUPPORTED.partYear);
+  let effort: Line | undefined;
+  let effortFails = false;
+  if (property?.rentalIcc) {
+    const mi = input.property?.mortgageInterest;
+    const check = effortCheck(P, {
+      rentalIcc: property.rentalIcc,
+      grossIncome: incomeTotals(icc, 'ICC').grossIncome,
+      splitting,
+      ...(mi ? { mortgageInterest: mi.value } : {}),
+    });
+    effort = check.line;
+    if (check.applies === 'no') notes.add(notes.assumptions, PROPERTY_NOTE.effortChecked);
+    else if (check.applies === 'interest')
+      notes.add(notes.assumptions, PROPERTY_NOTE.effortInterest);
+    else {
+      effortFails = true;
+      notes.add(notes.unsupported, PROPERTY_UNSUPPORTED.effort);
+    }
+  }
 
   // Imputations (guide p. 38 and 39): shown next to the tax, never part of it. The état des titres
   // gives them when it is there; otherwise the withholding tax of the movable inputs.
@@ -1092,7 +1352,9 @@ export function computeReturn(input: EngineInput): TaxResult {
 
   // Income other than salaries (pensions, securities, benefits...) belongs to the commune of
   // residence: the communal split is in proportion to all income (LCP art. 295A al. 2).
-  const grossIcc = incomeTotals(icc, 'ICC').grossIncome.amount;
+  // The income of a property abroad is not Geneva's (LCP art. 295A: income attributable to a
+  // commune), so it is left out of the split.
+  const grossIcc = incomeTotals(icc, 'ICC').grossIncome.amount - (abroad?.income.icc ?? 0);
   const salaries = Object.values(incomeByCommune).reduce((s, v) => s + (v ?? 0), 0);
   if (grossIcc > salaries) {
     incomeByCommune[input.commune] = (incomeByCommune[input.commune] ?? 0) + grossIcc - salaries;
@@ -1118,7 +1380,54 @@ export function computeReturn(input: EngineInput): TaxResult {
       ...(withholdingTax ? { withholdingTax } : {}),
       ...(foreignTax ? { foreignTax } : {}),
     },
+    ...(split ? { abroad: { icc: split.icc, ifd: split.ifd, wealth: split.wealth } } : {}),
+    // A year of arrival or departure: the taxes at the rate of the year's income (./part-year.ts).
+    ...(part
+      ? {
+          partYear: {
+            py: part.py,
+            rate: {
+              icc: part.year.icc?.taxableIncome ?? null,
+              ifd: part.year.ifd?.taxableIncome ?? null,
+            },
+          },
+        }
+      : {}),
   });
+
+  // A year of arrival or departure: what the documents don't settle fails closed, each with its
+  // reason, and the readings taken are said (./part-year.ts).
+  const partUnsupported: Text[] = [];
+  let partIccClosed = false;
+  let partIfdClosed = false;
+  if (part) {
+    const words = partYearNotes(part.py);
+    notes.add(notes.assumptions, words.period);
+    notes.add(notes.assumptions, words.reduced);
+    notes.add(notes.assumptions, words.pillar3a);
+    if (part.py.kind === 'departure') notes.add(notes.assumptions, words.departureWealth);
+    notes.add(notes.unverified, words.converted);
+    notes.add(notes.unverified, words.days);
+    notes.add(notes.unverified, words.limits);
+    notes.add(notes.unverified, words.personalTax);
+    partUnsupported.push(...partYearUnsupported(input, part.py));
+    // The year's own reasons, when its tax can't be computed: no rate, no tax.
+    if (!part.year.icc || !part.year.ifd) {
+      for (const u of part.year.unsupported) notes.add(notes.unsupported, u);
+      partIccClosed ||= !part.year.icc;
+      partIfdClosed ||= !part.year.ifd;
+    }
+    // Wealth above the deduction: how the reduced tax and the reduced deductions go together is
+    // not spelled out (LIPP art. 64 al. 3, art. 65 al. 2): the cantonal tax fails closed.
+    if (result.icc.wealth.taxableWealth.amount > 0) {
+      notes.add(notes.unsupported, words.wealth);
+      partIccClosed = true;
+    }
+    if (result.personalTaxUnclear) {
+      notes.add(notes.unsupported, words.personalTaxUnclear);
+      partIccClosed = true;
+    }
+  }
 
   if (Object.keys(incomeByCommune).some((c) => c !== input.commune))
     notes.add(notes.unverified, NOTE.communalSplit);
@@ -1126,8 +1435,81 @@ export function computeReturn(input: EngineInput): TaxResult {
   if (result.icc.taxes.personalTax.amount === 0) notes.add(notes.unverified, NOTE.personalTax);
   if (result.shieldMayApply) notes.add(notes.unsupported, NOTE.shield);
 
-  const icc_ = result.shieldMayApply ? null : result.icc;
-  const ifd_ = ifdUnsupported ? null : result.ifd;
+  // Annexe B: each sheet's total 32.00 (32.10 to 32.95 of the person), and a year below zero.
+  const sheets: BusinessSheet[] = figures.flatMap((f) => (f.business ? [f.business.sheet] : []));
+  for (const s of sheets) {
+    for (const [list, sheetList, tax] of [
+      [icc, s.icc, 'ICC'],
+      [ifd, s.ifd, 'IFD'],
+    ] as const) {
+      const lines = list.filter((i) => i.person === s.person && i.code.startsWith('32.'));
+      if (!lines.length) continue;
+      const v = lines.reduce((sum, i) => sum + i.amount, 0);
+      sheetList.push(
+        item(
+          '32.00',
+          s.person,
+          new Trace().from(...lines),
+          v,
+          t(
+            `${lines.map((i) => i.code).join(' + ')}, ${tax}: ${chf(-v)}, to PG3 32.00.`,
+            `${lines.map((i) => i.code).join(' + ')}, ${tax}${NB}: ${chf(-v)}, à reporter en PG3 32.00.`,
+          ),
+        ),
+      );
+    }
+  }
+  const losses = figures.some(
+    (f) => f.business && (f.business.loss || f.business.year.priorLosses.cantonal.amount > 0),
+  );
+  if (losses && result.icc.subtotal9220.amount < 0) {
+    notes.add(notes.notCounted, BUSINESS_NOTE.lossCarried);
+  }
+  // Self-employment beyond the simple case (the answers say so), or a property abroad beyond the
+  // simple case (the answers or its figures say so): no tax at all (fail closed).
+  for (const u of input.unsupported ?? []) notes.add(notes.unsupported, u);
+  for (const u of abroadUnsupported) notes.add(notes.unsupported, u);
+  // A property in Geneva beyond the simple case (the answers or its figures say so): no tax either.
+  for (const u of propertyUnsupported) notes.add(notes.unsupported, u);
+  // A year of arrival or departure with something the documents don't spell out for it.
+  for (const u of partUnsupported) notes.add(notes.unsupported, u);
+  // A household amount of childcare whose split between the children decides: no tax either.
+  const failClosed =
+    (input.unsupported ?? []).length > 0 ||
+    abroadUnsupported.length > 0 ||
+    propertyUnsupported.length > 0 ||
+    partUnsupported.length > 0 ||
+    careSplit;
+
+  // Lump sums from the 2nd pillar and pillar 3a: a tax of their own (./capital.ts), with the
+  // return's splitting and federal scale (LIPP art. 45 al. 3, LIFD art. 38 al. 2).
+  const outcome = capitalTax(P, input.capital, {
+    taxYear: input.taxYear,
+    commune: input.commune,
+    people: people.map((p) => p.id),
+    splitting,
+    // The scale alone decides it (no reduction per child: LIFD art. 38 al. 2), so a property
+    // abroad doesn't stop it.
+    ifdScale: scale.unsupported.length > 0 ? undefined : ifdScale,
+  });
+  for (const x of outcome.notes.unsupported) notes.add(notes.unsupported, x);
+  for (const x of outcome.notes.notCounted) notes.add(notes.notCounted, x);
+  for (const x of outcome.notes.assumptions) notes.add(notes.assumptions, x);
+  for (const x of outcome.notes.unverified) notes.add(notes.unverified, x);
+  // A buy-in and a lump sum from the 2nd pillar in the same year: the buy-in's benefits can't be
+  // paid as capital for three years, and its deduction may be taken back (ch-na-law-lpp art. 79b
+  // al. 3, p. 66; ge-2025-guide-declaration-pp p. 18). How much is not known: fail closed.
+  const buyInConflict = outcome.secondPillar.some((p) =>
+    icc.some((i) => i.code === codeFor('31.30', p) && i.amount < 0),
+  );
+  if (buyInConflict) notes.add(notes.unsupported, NOTE.capitalBuyIn);
+
+  const icc_ =
+    result.shieldMayApply || buyInConflict || failClosed || effortFails || partIccClosed
+      ? null
+      : result.icc;
+  const ifd_ = ifdUnsupported || buyInConflict || failClosed || partIfdClosed ? null : result.ifd;
+  const capital = outcome.capital;
   const partial = (input.wealthItems ?? []).filter((w) => !w.complete);
   const incomplete = partial.map((w) =>
     t(
@@ -1143,29 +1525,86 @@ export function computeReturn(input: EngineInput): TaxResult {
       ),
     );
   }
-  const lines = allLines({ icc: icc_, ifd: ifd_ });
+  incomplete.push(...incompleteAbroad, ...incompleteProperty);
+  const lines = allLines({ icc: icc_, ifd: ifd_, ...(capital ? { capital } : {}) });
+  // A year of arrival or departure: the form's 95.00 for the rate and 97.00, in each tax computed.
+  const partYear: PartYearResult | undefined = part
+    ? {
+        kind: part.py.kind,
+        from: part.py.from,
+        to: part.py.to,
+        days: part.py.days,
+        ...(icc_ && part.year.icc
+          ? { icc: rateLines(part.year.icc.totalIncome, icc_.taxableIncome, 'ICC', part.py) }
+          : {}),
+        ...(ifd_ && part.year.ifd
+          ? { ifd: rateLines(part.year.ifd.totalIncome, ifd_.taxableIncome, 'IFD', part.py) }
+          : {}),
+      }
+    : undefined;
   return {
     taxYear: input.taxYear,
     commune: input.commune,
     icc: icc_,
     ifd: ifd_,
     total: icc_ && ifd_ ? icc_.taxes.total.amount + ifd_.tax.amount : null,
-    estimates: estimateNotes(icc_, ifd_),
+    ...(capital ? { capital } : {}),
+    estimates: estimateNotes(icc_, ifd_, capital),
     complete: !lines.some((l) => l.incomplete) && !incomplete.length,
     incomplete,
-    needsOk: [...(icc_?.items ?? []), ...(ifd_?.items ?? []), ...(icc_?.wealth.items ?? [])].filter(
-      (i) => i.needsOk,
-    ).length,
+    needsOk: [
+      ...(icc_?.items ?? []),
+      ...(ifd_?.items ?? []),
+      ...(icc_?.wealth.items ?? []),
+      ...(capital?.items ?? []),
+    ].filter((i) => i.needsOk).length,
     assumptions: notes.assumptions,
     notCounted: notes.notCounted,
     unsupported: notes.unsupported,
     unverifiedRules: notes.unverified,
     limits: notes.limits,
+    ...(sheets.length && !failClosed ? { business: sheets } : {}),
+    ...(property && !failClosed
+      ? {
+          property: {
+            owner: property.owner,
+            use: property.use,
+            ...(property.kind ? { kind: property.kind } : {}),
+            ...(property.since !== undefined ? { since: property.since } : {}),
+            icc: property.icc,
+            ifd: property.ifd,
+            wealth: property.wealth,
+            ...(property.value ? { value: property.value } : {}),
+            ...(property.abattementBp !== undefined ? { abattementBp: property.abattementBp } : {}),
+            ...(property.rentalValue ? { rentalValue: property.rentalValue } : {}),
+            upkeep: property.upkeep,
+            ...(effort ? { effort } : {}),
+            ...(property.iic ? { iic: property.iic } : {}),
+          },
+        }
+      : {}),
+    ...(partYear ? { partYear } : {}),
+    ...(abroad && split && !failClosed
+      ? {
+          abroad: {
+            owner: input.abroad!.owner,
+            use: input.abroad!.use,
+            ...(input.abroad!.country ? { country: input.abroad!.country } : {}),
+            icc: abroad.icc,
+            ifd: abroad.ifd,
+            wealth: abroad.wealth,
+            ...(split.debts ? { debts: split.debts } : {}),
+            ...(split.interestIcc ? { interestIcc: split.interestIcc } : {}),
+            ...(split.interestIfd ? { interestIfd: split.interestIfd } : {}),
+            shareBp: split.shareBp,
+          },
+        }
+      : {}),
   };
 }
 
-/** Every line of a result, items first. */
-export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
+/** Every line of a result, items first; the tax on pension capital last. */
+export function allLines(r: Pick<TaxResult, 'icc' | 'ifd' | 'capital'>): (Line | Item)[] {
   const out: (Line | Item)[] = [];
   if (r.icc) {
     const i = r.icc;
@@ -1176,6 +1615,7 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
       i.subtotal9240,
       i.netIncome,
       i.totalIncome,
+      ...(i.exemptIncome ? [i.exemptIncome] : []),
       i.taxableIncome,
       i.rateIncome,
     );
@@ -1184,6 +1624,8 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
       i.wealth.grossWealth,
       i.wealth.netWealth,
       i.wealth.socialDeduction,
+      ...(i.wealth.rateWealth ? [i.wealth.rateWealth] : []),
+      ...(i.wealth.exemptWealth ? [i.wealth.exemptWealth] : []),
       i.wealth.taxableWealth,
     );
     const x = i.taxes;
@@ -1215,13 +1657,38 @@ export function allLines(r: Pick<TaxResult, 'icc' | 'ifd'>): (Line | Item)[] {
       f.subtotal9240,
       f.netIncome,
       f.totalIncome,
+      ...(f.exemptIncome ? [f.exemptIncome] : []),
       f.taxableIncome,
       f.scaleIncome,
       f.scaleTax,
       f.childReduction,
+      ...(f.atRate ? [f.atRate] : []),
       f.tax,
     );
   }
+  if (r.capital) out.push(...capitalLines(r.capital));
+  return out;
+}
+
+/** The lines of the tax on pension capital, items first. */
+export function capitalLines(c: NonNullable<TaxResult['capital']>): (Line | Item)[] {
+  const out: (Line | Item)[] = [...c.items, c.amount];
+  if (c.icc) {
+    const x = c.icc;
+    out.push(
+      x.rateIncome,
+      x.scaleTax,
+      x.base,
+      x.cantonalCentimes,
+      x.reduction12,
+      x.homeCare,
+      x.cantonal,
+      x.communal,
+      x.tax,
+    );
+  }
+  if (c.ifd) out.push(c.ifd.scaleIncome, c.ifd.scaleTax, c.ifd.tax);
+  if (c.total) out.push(c.total);
   return out;
 }
 
@@ -1246,11 +1713,15 @@ const WHOSE: Record<string, Text> = {
   p2: { en: 'B', fr: 'B' },
 };
 
-function estimateNotes(icc: TaxResult['icc'], ifd: TaxResult['ifd']): EstimateNote[] {
+function estimateNotes(
+  icc: TaxResult['icc'],
+  ifd: TaxResult['ifd'],
+  capital?: TaxResult['capital'],
+): EstimateNote[] {
   const notes = new Map<string, EstimateNote>();
   // One note for the figures the user gave as estimates, naming each rubric once.
   const given = new Map<string, Text>();
-  for (const line of allLines({ icc, ifd })) {
+  for (const line of allLines({ icc, ifd, ...(capital ? { capital } : {}) })) {
     for (const e of line.estimates ?? []) {
       if (e === 'input-estimate') {
         if ('code' in line && rubric(line.code) && !DERIVED.has(line.code)) {

@@ -46,6 +46,20 @@ function lines(r: TaxResult): ViewLine[] {
     );
     if (i.credits.withholdingTax) out.push(['icc.credit.withholdingTax', i.credits.withholdingTax]);
   }
+  // Annexe B: the totals the form adds up itself, per person and column.
+  for (const s of r.business ?? []) {
+    for (const [col, list] of [
+      ['icc', s.icc],
+      ['ifd', s.ifd],
+      ['wealth', s.wealth],
+    ] as const) {
+      for (const i of list) {
+        if (['12.17', '12.45', '12.46', '57.00', '12.52', '32.00'].includes(i.code)) {
+          out.push([`business.${s.person}.${col}.${i.code}`, i]);
+        }
+      }
+    }
+  }
   if (r.ifd) {
     const f = r.ifd;
     out.push(
@@ -59,6 +73,41 @@ function lines(r: TaxResult): ViewLine[] {
       ['ifd.childReduction', f.childReduction],
       ['ifd.tax', f.tax],
     );
+  }
+  // A property in Geneva: its value before the abattement, the taux d'effort check, and the impôt
+  // immobilier complémentaire, a tax of its own.
+  if (r.property) {
+    const p = r.property;
+    if (p.value) out.push(['property.value', p.value]);
+    if (p.rentalValue) out.push(['property.rentalValue', p.rentalValue]);
+    if (p.effort) out.push(['property.effort', p.effort]);
+    if (p.iic) out.push(['property.iic', p.iic]);
+  }
+  if (r.capital) {
+    const c = r.capital;
+    out.push(['capital.amount', c.amount]);
+    if (c.icc) {
+      const x = c.icc;
+      out.push(
+        ['capital.rateIncome', x.rateIncome],
+        ['capital.scaleTax', x.scaleTax],
+        ['capital.base', x.base],
+        ['capital.cantonalCentimes', x.cantonalCentimes],
+        ['capital.reduction12', x.reduction12],
+        ['capital.homeCare', x.homeCare],
+        ['capital.cantonal', x.cantonal],
+        ['capital.communal', x.communal],
+        ['capital.icc', x.tax],
+      );
+    }
+    if (c.ifd) {
+      out.push(
+        ['capital.ifd.scaleIncome', c.ifd.scaleIncome],
+        ['capital.ifd.scaleTax', c.ifd.scaleTax],
+        ['capital.ifd', c.ifd.tax],
+      );
+    }
+    if (c.total) out.push(['capital.total', c.total]);
   }
   return out.map(([id, line]) => ({ id, line }));
 }
@@ -102,7 +151,7 @@ export const view: ResultView<TaxResult> = {
   detailNote: '',
   lines,
   detailLines:
-    /incomeBase|Cantonal|Reduction|HomeCare|Supplementary|privileged|personalTax|total|scaleTax|childReduction|ifd\.tax$/,
+    /incomeBase|Cantonal|Reduction|HomeCare|Supplementary|privileged|personalTax|total|scaleTax|childReduction|ifd\.tax$|^capital\.|^property\./,
   wealthItems: (icc) => [...icc.wealth.items, icc.wealth.socialDeduction],
   rows(r) {
     const out: ViewRow[] = [];
@@ -118,6 +167,18 @@ export const view: ResultView<TaxResult> = {
         id: 'ifd',
         label: { en: 'Federal direct tax (IFD)', fr: 'Impôt fédéral direct (IFD)' },
         line: r.ifd.tax,
+      });
+    }
+    // The impôt immobilier complémentaire of a property in Geneva: a tax of its own, not in the
+    // total (LCP art. 76).
+    if (r.property?.iic) {
+      out.push({
+        id: 'iic',
+        label: {
+          en: 'Impôt immobilier complémentaire (IIC), on your property (not in the total)',
+          fr: 'Impôt immobilier complémentaire (IIC) (non compris dans le total)',
+        },
+        line: r.property.iic,
       });
     }
     return out;
@@ -152,6 +213,54 @@ export const view: ResultView<TaxResult> = {
     ];
   },
   lastYear: compareWithLastYear,
+  // The tax on pension capital (98.12): a tax of its own, apart from the return's total. Its rows
+  // stand with the return's own, so each says it is not in the total.
+  capital(r) {
+    const c = r.capital;
+    if (!c) return undefined;
+    const rows: ViewRow[] = [];
+    if (c.icc) {
+      rows.push({
+        id: 'capital.icc',
+        label: {
+          en: 'Pension capital, cantonal and communal tax (not in the total)',
+          fr: 'Prestations en capital, impôt cantonal et communal (non compris dans le total)',
+        },
+        line: c.icc.tax,
+      });
+    }
+    if (c.ifd) {
+      rows.push({
+        id: 'capital.ifd',
+        label: {
+          en: 'Pension capital, federal direct tax (not in the total)',
+          fr: 'Prestations en capital, impôt fédéral direct (non compris dans le total)',
+        },
+        line: c.ifd.tax,
+      });
+    }
+    return {
+      amount: {
+        id: 'capital.amount',
+        label: {
+          en: 'Pension capital of the year (prestations en capital du 2e et 3e pilier A, 98.12)',
+          fr: 'Prestations en capital du 2e et 3e pilier A (98.12)',
+        },
+        line: c.amount,
+      },
+      rows,
+      total: c.total
+        ? {
+            id: 'capital.total',
+            label: {
+              en: 'Tax on pension capital, taxed apart',
+              fr: 'Impôt sur les prestations en capital, imposées à part',
+            },
+            line: c.total,
+          }
+        : null,
+    };
+  },
   allLines,
   // The income tax: cantonal (base, centimes, 12 % reduction, home care) plus communal, and federal;
   // the wealth tax and the taxe personnelle don't change with a deduction.

@@ -40,6 +40,16 @@ export interface YearComparisonRow {
   thisYearProvisional: boolean;
 }
 
+/** The tax on pension capital, as the views show it. */
+export interface CapitalView {
+  /** The lump sums of the year added up, with the official term of the form's line. */
+  amount: ViewRow;
+  /** One row per tax computed (cantonal and communal, federal), shown with the return's rows. */
+  rows: ViewRow[];
+  /** Both taxes together, when both are computed. */
+  total: ViewRow | null;
+}
+
 /** The income tax a deduction changes, in centimes: what the plans compare with and without. */
 export interface IncomeTax {
   cantonalCentimes: number;
@@ -50,7 +60,7 @@ export interface IncomeTax {
 /**
  * A canton's result in words and lines. `R` is the canton's own result; `Icc` its cantonal part.
  * Texts for Claude are English with the official terms of the canton's form in parentheses; texts
- * for the dashboard are `Text` (English, French, German where the canton gives it).
+ * for the dashboard are `Text` (English, French, German or Italian where the canton gives it).
  */
 export interface ResultView<R extends TaxResult = TaxResult> {
   canton: CantonCode;
@@ -61,6 +71,11 @@ export interface ResultView<R extends TaxResult = TaxResult> {
   preview: boolean;
   /** The canton's content has German texts (its form is German); otherwise English on a German page. */
   german: boolean;
+  /**
+   * The canton's content has Italian texts (its form is Italian, Ticino); otherwise English on an
+   * Italian page. Absent: false.
+   */
+  italian?: boolean;
 
   // ---- compute_tax, for Claude --------------------------------------------------------------
   /** Where the return is: "commune geneve", "canton of Zurich, commune Winterthur (BFS 230, ...)". */
@@ -95,6 +110,12 @@ export interface ResultView<R extends TaxResult = TaxResult> {
   parts(r: R): ViewRow[];
   /** This year against last year's declaration, when the canton reads it (comparison only). */
   lastYear?(r: R, facts: readonly Fact[]): YearComparisonRow[];
+  /**
+   * The separate tax on lump sums from the 2nd pillar and pillar 3a (TaxResult.capital), when the
+   * canton computes it and the household received some: the amount taxed, one row per tax, and
+   * the two together. A tax of its own, never in the result's total.
+   */
+  capital?(r: R): CapitalView | undefined;
 
   // ---- The final check and the plans ----------------------------------------------------------
   /** Every computed line, for the facts the result rests on. */

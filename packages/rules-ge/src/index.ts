@@ -72,7 +72,12 @@ export {
   type ForeignIncomeKind,
   type ResidualRate,
 } from '@taxpresso/rules-ch';
-export { OFFICIAL_RATES, officialChf, type Conversion } from '@taxpresso/rules-ch';
+export {
+  OFFICIAL_RATES,
+  officialChf,
+  officialChfOrLatest,
+  type Conversion,
+} from '@taxpresso/rules-ch';
 export {
   KEYS_PRIOR_2026,
   parsePriorInstance,
@@ -109,11 +114,30 @@ export {
   type SourceTaxYear,
 } from './source-tax/index.js';
 export {
+  deriveTariffs,
+  TARIFF_MAX_CHILDREN,
+  tariffSources,
+  TariffYearError,
+  type DerivedTariff,
+  type TariffAssumption,
+  type TariffHousehold,
+  type TariffOpen,
+  type TariffPerson,
+  type TariffWhy,
+} from './source-tax/tariff.js';
+export {
+  SOURCE_TAX_FACTS,
+  SOURCE_TAX_SUBJECT,
+  TOU_2025_GROSS_THRESHOLD,
+  TOU_2025_OTHER_INCOME_THRESHOLD,
+  TOU_2025_WEALTH_FREE,
   TOU_2026_GROSS_THRESHOLD,
   TOU_2026_OTHER_INCOME_THRESHOLD,
   TOU_2026_WEALTH_FREE,
   TOU_FACTS,
   touDeadline,
+  touThresholds,
+  type TouThresholds,
 } from './2026/tou.js';
 export {
   LPP_BUYIN_FACTS,
@@ -150,7 +174,48 @@ export {
   type AssessmentView,
   type ObjectionDeadline,
 } from './2026/assessment.js';
-export { computeReturn, allLines, EngineInputError } from './engine/compute.js';
+export { computeReturn, allLines, capitalLines, EngineInputError } from './engine/compute.js';
+// The separate tax on lump sums from the 2nd pillar and pillar 3a (prestations en capital, 98.12).
+export { capitalIcc, capitalTax, type CapitalOutcome } from './engine/capital.js';
+export {
+  CAPITAL_ADDED_UP,
+  CAPITAL_CENTIMES,
+  CAPITAL_COMMUNE,
+  CAPITAL_FIFTH,
+} from './law/capital.js';
+// Self-employment, the simple case (annexe B): its keys and the notes its lines carry.
+export {
+  BUSINESS_FIELDS_2026,
+  KEYS_BUSINESS_DOCUMENTS_2026,
+  KEYS_BUSINESS_PROFILE_2026,
+  type BusinessDocumentKey,
+} from './2026/business-keys.js';
+export { BUSINESS_NOTE } from './engine/business.js';
+// A home or land abroad, the simple case (annexe D): its keys, the notes and the reasons it fails
+// closed, and how the ledger is read into it.
+export {
+  ABROAD_COUNTRIES,
+  ABROAD_FIELDS_2026,
+  KEYS_ABROAD_DOCUMENTS_2026,
+  KEYS_ABROAD_PROFILE_2026,
+  type AbroadCountry,
+  type AbroadDocumentKey,
+} from './2026/abroad-keys.js';
+export { ABROAD_CODES, ABROAD_NOTE, ABROAD_UNSUPPORTED } from './engine/abroad.js';
+// A property in Geneva, the simple case (annexe D): its keys, the notes, the reasons it fails closed
+// and the rules of Geneva's laws it applies.
+export {
+  KEYS_PROPERTY_DOCUMENTS_2026,
+  KEYS_PROPERTY_PROFILE_2026,
+  PROPERTY_FIELDS_2026,
+  type PropertyDocumentKey,
+} from './2026/property-keys.js';
+export { PROPERTY_NOTE, PROPERTY_UNSUPPORTED } from './engine/property.js';
+export { ABATTEMENT, EFFORT, IIC } from './law/property.js';
+// A year of arrival from abroad or of departure abroad: the income of the period at a full year's
+// rate (./engine/part-year.ts), the day read from the answers (./engine/from-ledger.ts).
+export { partYearNotes, partYearRules } from './engine/part-year.js';
+export { periodFromFacts } from './engine/from-ledger.js';
 // How a Geneva result reads in the generic views (compute_tax, the estimate card, the plans).
 export { view } from './engine/view.js';
 export {
@@ -166,7 +231,13 @@ export { pillar3aCapWithoutFund } from '@taxpresso/rules-ch';
 export { ESTIMATE_TEXT, NOTE } from './engine/explain.js';
 export { bracketTax, federalScaleTax, chf } from '@taxpresso/rules-ch';
 export type * from './engine/types.js';
-export { engineInputFromFacts, type LedgerInput } from './engine/from-ledger.js';
+export {
+  abroadFromFacts,
+  capitalFromFacts,
+  engineInputFromFacts,
+  propertyFromFacts,
+  type LedgerInput,
+} from './engine/from-ledger.js';
 export { compareWithLastYear, type LastYearRow, type YearPair } from './engine/last-year.js';
 export {
   finalCheck,

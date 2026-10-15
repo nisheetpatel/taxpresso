@@ -81,6 +81,14 @@ export const NOTE = {
     en: 'Childcare: the children are taken as under 14, unless their age was given.',
     fr: `Frais de garde${NB}: les enfants sont comptés comme ayant moins de 14 ans, sauf si leur âge est indiqué.`,
   },
+  childcareSplit: {
+    en: 'Childcare (Abzug für fremdbetreute Kinder, 376) not computed: the limit is per child (StG § 31 Abs. 1 lit. j), and the costs you gave for the household are above one child’s limit, so how they split between your children decides the deduction. Taxpresso doesn’t compute the tax until it knows what was paid for each child.',
+    fr: `Frais de garde (Abzug für fremdbetreute Kinder, 376) non calculés${NB}: la limite est par enfant (StG § 31 al. 1 let. j), et les frais indiqués pour le ménage dépassent la limite d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Taxpresso ne calcule pas l’impôt avant de savoir ce qui a été payé pour chaque enfant.`,
+  },
+  childcareAge: {
+    en: 'Childcare (Abzug für fremdbetreute Kinder, 376) counts only up to the child’s 14th birthday (StG § 31 Abs. 1 lit. j). The costs given for a child of 14 or more at the end of the year are not counted here.',
+    fr: `Les frais de garde (Abzug für fremdbetreute Kinder, 376) ne comptent que jusqu’aux 14 ans de l’enfant (StG § 31 al. 1 let. j). Les frais indiqués pour un enfant de 14 ans ou plus à la fin de l’année ne sont pas comptés ici.`,
+  },
   medicalBelow: {
     en: 'Medical costs: below 5 % of the net income (Nettoeinkommen, line 310), nothing is deductible.',
     fr: `Frais médicaux${NB}: en dessous de 5${NB}% du revenu net (Nettoeinkommen, ligne 310), rien n’est déductible.`,

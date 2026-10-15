@@ -826,10 +826,18 @@ export function computeReturn(input: VdEngineInput): VdTaxResult {
   }
   householdGiven('630', [hh.alimonyPaid, hh.childSupportPaid], -1);
 
-  // Childcare (670): per child under 14 in your household; married, both must work.
+  // Childcare (670): per child under 14 in your household; married, both must work ("si l'enfant a
+  // moins de 14 ans": vd-2025-law-li p. 23, vd-2026-law-li p. 24; vd-2025-guide p. 44). The costs
+  // given for an older child are left out.
   const withCare = children.filter((ch): ch is ChildInput & { childcare: Amount } =>
     Boolean(ch.childcare),
   );
+  if (
+    withCare.some(
+      (ch) => ch.under14 === false && ch.livesWithYou !== false && ch.childcare.value > 0,
+    )
+  )
+    notes.add(notes.notCounted, NOTE.childcareAge);
   if (withCare.length) {
     const working = couple
       ? figures.length === 2 && figures.every((f) => f.earned > 0)

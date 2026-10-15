@@ -95,6 +95,8 @@ export interface CopyRow {
   /** Vault documents the value was read from. */
   documents: string[];
   source: string;
+  /** Shown, never compared with the official PDF (FormItem.noCheck). */
+  noCheck?: true;
 }
 
 export interface CopyGroup {
@@ -308,7 +310,7 @@ export function buildCopyPanel({
       ref: rubricRef(rubric, line),
       ...(rubric.code ? { code: rubric.code } : {}),
       label: rubric.label,
-      gloss: rubric.gloss[lang],
+      gloss: item.gloss ? (item.gloss[lang] ?? item.gloss.en) : rubric.gloss[lang],
       person: rubric.person,
       ...(cell.part
         ? {
@@ -342,6 +344,7 @@ export function buildCopyPanel({
       entered: enterable && typedValue !== undefined && entered?.(id) === typedValue,
       documents: [...(item.source?.documents ?? [])],
       source: rubric.source,
+      ...(item.noCheck ? { noCheck: true as const } : {}),
     };
     rows.set(rubric, [...(rows.get(rubric) ?? []), row]);
   }

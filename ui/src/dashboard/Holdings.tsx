@@ -132,7 +132,7 @@ function OfficialForm({
         />
       </label>
       <div class="hold-official-actions">
-        <button type="submit" class="primary dc-small">
+        <button type="submit" class="primary">
           {td(lang, 'save')}
         </button>
         <button type="button" class="link" onClick={onDone}>
@@ -140,7 +140,7 @@ function OfficialForm({
         </button>
       </div>
       {problem ? (
-        <p class="small-text dc-problem" role="alert">
+        <p class="small-text problem" role="alert">
           {problem}
         </p>
       ) : null}

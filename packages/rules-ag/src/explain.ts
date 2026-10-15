@@ -165,6 +165,14 @@ export const NOTE = {
     en: 'Not in this calculation: the fire service replacement levy (Feuerwehrpflicht-Ersatzabgabe), 2 per mille of the taxable income, at least CHF 30 and at most CHF 300, for people of service age who don’t serve; years of service count, in a way the guide does not detail (Wegleitung 2025, Anhang III).',
     fr: `Pas dans ce calcul${NB}: la taxe d’exemption du service du feu (Feuerwehrpflicht-Ersatzabgabe), 2 pour mille du revenu imposable, au moins CHF 30 et au plus CHF 300, pour les personnes en âge de servir qui ne servent pas${NB}; les années de service comptent, d’une façon que le guide ne détaille pas (Wegleitung 2025, Anhang III).`,
   },
+  childcareSplit: {
+    en: 'Childcare (Kinderbetreuungskosten, 15.0) not computed: the limit is per child, and the costs you gave for the household are above one child’s limit, so how they split between your children decides the deduction. Say what was paid for each child.',
+    fr: `Frais de garde (Kinderbetreuungskosten, 15.0) non calculés${NB}: la limite est par enfant, et les frais indiqués pour le ménage dépassent la limite d’un enfant${NB}: leur répartition entre vos enfants décide la déduction. Dites ce qui a été payé pour chaque enfant.`,
+  },
+  childcareNoChild: {
+    en: 'Childcare (Kinderbetreuungskosten, 15.0): not counted, no child under 14 living with you was given.',
+    fr: `Frais de garde (Kinderbetreuungskosten, 15.0)${NB}: non comptés, aucun enfant de moins de 14 ans vivant avec vous n’est indiqué.`,
+  },
   unionDues: {
     en: 'Not in this calculation: membership fees to professional associations, deductible up to CHF 300 a year besides the flat amount (Wegleitung 2025, 10.5).',
     fr: `Pas dans ce calcul${NB}: les cotisations à des associations professionnelles, déductibles jusqu’à CHF 300 par an en plus du forfait (Wegleitung 2025, 10.5).`,

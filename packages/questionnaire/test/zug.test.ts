@@ -1,8 +1,8 @@
 // The Zug questionnaire (data/zg/2026/questionnaire.yaml): in step with Zug's keys and communes
-// (packages/rules-zg), every text in English, French and German, every page an official one, and
-// the questions only Zug asks (who has the larger share of a shared child's care, each child's age
-// and childcare, the rent, the parish and the Bürgergemeinde) only where they apply. Synthetic
-// answers only.
+// (packages/rules-zg), every text in English, French, German and Italian, every page an official
+// one, and the questions only Zug asks (who has the larger share of a shared child's care, each
+// child's age and childcare, the rent, the parish and the Bürgergemeinde) only where they apply.
+// Synthetic answers only.
 import { readFileSync } from 'node:fs';
 import { Ledger } from '@taxpresso/ledger';
 import { KEYS_CANTON_2026 } from '@taxpresso/rules-ch';
@@ -55,7 +55,7 @@ const SINGLE_IN_ZUG = {
   'citizen_of:p1': 'none',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
-  'taxed_at_source:p1': false,
+  'residence:p1': 'swiss',
   'pillar3a:p1': true,
   'lpp_buyin:p1': false,
   'commute:p1': 'public_transport',
@@ -104,6 +104,7 @@ describe('Zug questionnaire 2026', () => {
       'citizen_of',
       'income_sources',
       'employers',
+      'residence',
       'taxed_at_source',
       'pillar3a',
       'lpp_buyin',
@@ -135,19 +136,26 @@ describe('Zug questionnaire 2026', () => {
     const options = (id: string) => file.questions.find((q) => q.id === id)!.options!;
     expect(options('commute').map((o) => o.value)).not.toContain('public_transport_long');
     expect(options('commute_transit_usable').map((o) => o.value)).toEqual(['yes', 'no']);
-    expect(file.people.child).toEqual({ en: 'Child {n}', fr: 'Enfant {n}', de: 'Kind {n}' });
-    expect(file.place).toEqual({ en: 'Zug', fr: 'Zoug', de: 'Zug' });
+    expect(file.people.child).toEqual({
+      en: 'Child {n}',
+      fr: 'Enfant {n}',
+      de: 'Kind {n}',
+      it: 'Figlio {n}',
+    });
+    expect(file.place).toEqual({ en: 'Zug', fr: 'Zoug', de: 'Zug', it: 'Zugo' });
   });
 
-  it('says everything in English, French and German, with an official page', () => {
+  it('says everything in English, French, German and Italian, with an official page', () => {
     const file = zgQuestionnaire2026();
     const missing: string[] = [];
+    const missingIt: string[] = [];
     const visit = (v: unknown, where: string): void => {
       if (Array.isArray(v)) return v.forEach((x, i) => visit(x, `${where}[${i}]`));
       if (v && typeof v === 'object') {
         const o = v as Record<string, unknown>;
         if (typeof o.en === 'string' && typeof o.fr === 'string') {
           if (typeof o.de !== 'string' || !o.de) missing.push(where);
+          if (typeof o.it !== 'string' || !o.it) missingIt.push(where);
           return;
         }
         for (const [k, x] of Object.entries(o)) visit(x, `${where}.${k}`);
@@ -155,6 +163,7 @@ describe('Zug questionnaire 2026', () => {
     };
     visit(file, 'zg');
     expect(missing).toEqual([]);
+    expect(missingIt).toEqual([]);
     // No em-dash anywhere, no amount or limit in a question's own words.
     const all = JSON.stringify(file);
     expect(all).not.toMatch(/—/);
@@ -164,10 +173,12 @@ describe('Zug questionnaire 2026', () => {
     for (const item of [...file.questions, ...file.requirements]) {
       expect(item.explain?.de, item.id).toBeTruthy();
       const { url, label } = item.learnMore!;
+      expect(label.it, item.id).toBeTruthy();
       // Zug's own documents; the canton question keeps its federal page (shared).
-      expect(item.id === 'canton' ? ALL_URLS : ZG_URLS, item.id).toContain(
-        url.replace(/#page=\d+$/, ''),
-      );
+      expect(
+        item.id === 'canton' || item.id === 'residence' ? ALL_URLS : ZG_URLS,
+        item.id,
+      ).toContain(url.replace(/#page=\d+$/, ''));
       // A page of the guide is named by the page the link opens.
       if (url.startsWith(`${GUIDE}#page=`)) {
         const page = url.slice(`${GUIDE}#page=`.length);
@@ -330,7 +341,7 @@ describe('Zug questionnaire 2026', () => {
       'citizen_of:p1': 'none',
       'income_sources:p1': ['salary', 'self_employment'],
       'employers:p1': 1,
-      'taxed_at_source:p1': true,
+      'residence:p1': 'permit_other',
     });
     expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.de)).toEqual([
       'Ein Zuzug aus dem Ausland während des Jahres',

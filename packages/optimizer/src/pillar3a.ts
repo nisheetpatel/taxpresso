@@ -5,9 +5,10 @@
 import { PILLAR3A_2026 } from '@taxpresso/rules-ch';
 import {
   type Assumption,
+  earnedOf,
   estimateSources,
   type HouseholdInput,
-  netOf,
+  noTaxOf,
   ordinaryTaxEstimator,
   type PersonInput,
   pct,
@@ -35,10 +36,12 @@ export interface Pillar3aResult {
 function capOf(p: PersonInput): { cap: number; isMaximum: boolean } {
   const c = PILLAR3A_2026.value;
   if (p.hasPensionFund) return { cap: c.capWithPensionFund, isMaximum: false };
-  const net = netOf(p);
-  if (net === undefined) return { cap: c.capWithoutPensionFund, isMaximum: true };
+  // Without a pension fund: a share of what every activity earns, a business's expected profit after
+  // its owner's AVS contributions included (ch-2026-ifd-instructions-personnes-physiques p. 7).
+  const earned = earnedOf(p);
+  if (earned === undefined) return { cap: c.capWithoutPensionFund, isMaximum: true };
   return {
-    cap: Math.min(c.capWithoutPensionFund, pct(net, c.shareWithoutPensionFundBp)),
+    cap: Math.min(c.capWithoutPensionFund, pct(Math.max(0, earned), c.shareWithoutPensionFundBp)),
     isMaximum: false,
   };
 }
@@ -61,7 +64,10 @@ export function pillar3aPlan(h: HouseholdInput): Pillar3aResult {
   });
   const roomCentimes = people.reduce((sum, p) => sum + p.roomCentimes, 0);
   const sources = [PILLAR3A_2026.source, ...estimateSources(h)];
-  const estimator = ordinaryTaxEstimator(h);
+  // The canton's tax can't be computed for the year: the room, no saving, and why.
+  const noTax = noTaxOf(h);
+  if (noTax) assumptions.add(noTax);
+  const estimator = noTax ? undefined : ordinaryTaxEstimator(h);
   if (!estimator) return { people, roomCentimes, assumptions: [...assumptions], sources };
   // The engine says what it assumed for this household.
   assumptions.clear();

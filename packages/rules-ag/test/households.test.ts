@@ -5,7 +5,14 @@
 // 12,000: 116; 16,200: 242; 20,500: 414; 25,700: 674; 33,100: 1,118; 41,700: 1,720; 51,300: 2,488;
 // 63,100: 3,491; 74,800: 4,544.
 import { describe, expect, it } from 'vitest';
-import { allLines, AgInputError, computeReturn, NOTE, type AgEngineInput } from '../src/index.js';
+import {
+  allLines,
+  AgInputError,
+  computeReturn,
+  FEDERAL_NOTE,
+  NOTE,
+  type AgEngineInput,
+} from '../src/index.js';
 
 const chf = (francs: number) => Math.round(francs * 100);
 const amt = (francs: number) => ({ value: chf(francs) });
@@ -74,11 +81,14 @@ describe('H1: single, Aarau, 2026, employed, public transport, Roman Catholic', 
     expect(r.icc?.taxes.communal.amount).toBe(chf(2_853.1));
     expect(r.icc?.taxes.church?.amount).toBe(chf(564.7));
     expect(r.icc?.taxes.maxBurden).toBeNull();
-    expect(r.total).toBe(chf(6_479));
+    expect(r.icc?.taxes.total.amount).toBe(chf(6_479));
     expect(r.commune).toEqual({ bfs: null, name: 'Aarau', rate: 96 });
-    expect(r.ifd).toBeNull();
+    // The federal tax too (./federal.test.ts): the total is both.
+    expect(r.ifd?.tax.amount).toBeGreaterThan(0);
+    expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.unsupported).toEqual([]);
-    expect(r.unverifiedRules).toEqual([NOTE.rounding]);
+    // The federal insurance deduction rests on the premiums given (./federal.test.ts).
+    expect(r.unverifiedRules).toEqual([NOTE.rounding, FEDERAL_NOTE.insurance]);
     expect(r.notCounted).toContainEqual(NOTE.fireLevy);
     expect(r.assumptions).toContainEqual(NOTE.insuranceFlat);
   });
@@ -192,8 +202,13 @@ describe('H2: married, two earners, two children, Baden, 2025, Reformed church t
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(2_722.8));
     expect(r.icc?.taxes.communal.amount).toBe(chf(2_256.8));
     expect(r.icc?.taxes.church?.amount).toBe(chf(441.5));
-    expect(r.total).toBe(chf(5_421.1));
-    expect(r.unverifiedRules).toEqual([NOTE.rounding, NOTE.medicalRounding, NOTE.medicalOrder]);
+    expect(r.icc?.taxes.total.amount).toBe(chf(5_421.1));
+    expect(r.unverifiedRules).toEqual([
+      NOTE.rounding,
+      NOTE.medicalRounding,
+      NOTE.medicalOrder,
+      FEDERAL_NOTE.insurance,
+    ]);
     expect(r.assumptions).toContainEqual(NOTE.childrenChurch);
   });
 
@@ -269,7 +284,7 @@ describe('H3: single parent, Wettingen, 2026, one child under 14, child support 
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(945.5));
     expect(r.icc?.taxes.communal.amount).toBe(chf(872.1));
     expect(r.icc?.taxes.church).toBeNull();
-    expect(r.total).toBe(chf(1_817.6));
+    expect(r.icc?.taxes.total.amount).toBe(chf(1_817.6));
     expect(r.icc?.taxes.simpleIncome.sources.join(' ')).toContain(
       'ag-na-law-steuergesetz § 43 Abs. 2 and 4',
     );
@@ -310,7 +325,7 @@ describe('H4: widowed retiree with wealth, Rheinfelden, 2026, Reformed church ta
     expect(r.icc?.taxes.communal.amount).toBe(chf(6_497.4));
     expect(r.icc?.taxes.church?.amount).toBe(chf(1_155.1));
     expect(r.icc?.taxes.maxBurden).toBeNull();
-    expect(r.total).toBe(chf(15_088.4));
+    expect(r.icc?.taxes.total.amount).toBe(chf(15_088.4));
     expect(r.assumptions).toContainEqual(NOTE.pensions);
   });
 });
@@ -363,7 +378,15 @@ describe('H5: shared custody, no child support, Lenzburg, 2025', () => {
     expect(r.icc?.taxes.simpleIncome.amount).toBe(chf(978));
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(1_085.6));
     expect(r.icc?.taxes.communal.amount).toBe(chf(1_026.9));
-    expect(r.total).toBe(chf(2_112.5));
+    expect(r.icc?.taxes.total.amount).toBe(chf(2_112.5));
+    // Without child support, the federal parental scale goes to the parent who earns more: not
+    // said here, so the federal tax is not computed (fail closed).
+    expect(r.ifd).toBeNull();
+    expect(r.total).toBeNull();
+    expect(r.unsupported).toHaveLength(1);
+    const scale = computeReturn({ ...input, ifdParentalScale: true });
+    expect(scale.icc?.taxes.total.amount).toBe(chf(2_112.5));
+    expect(scale.ifd?.scale).toBe('parental');
     expect(r.assumptions).toContainEqual(NOTE.sharedChildcare);
   });
 
@@ -421,7 +444,7 @@ describe('The maximum burden (Höchstbelastung, StG § 56)', () => {
     expect(r.icc?.taxes.cantonal.amount).toBe(chf(14_113.4));
     expect(r.icc?.taxes.communal.amount).toBe(chf(12_332.1));
     expect(r.icc?.taxes.maxBurden?.amount).toBe(chf(-1_105.5));
-    expect(r.total).toBe(chf(25_340));
+    expect(r.icc?.taxes.total.amount).toBe(chf(25_340));
     expect(r.unverifiedRules).toContainEqual(NOTE.maxBurdenRounding);
   });
 

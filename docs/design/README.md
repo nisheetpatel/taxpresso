@@ -11,4 +11,8 @@ Static HTML mockups of the core flow. Open them in a browser; the step pills lin
 
 What is normative: the flow, the states and their wording (SPEC.md 11b), the hierarchy of each screen, the tone (plain, second person, no jargon without its French label). What is not: exact pixels, spacing, demo numbers.
 
+`three-pages.md` is the current design (decided 15 October 2026): a Start screen, then three pages (Your tax, Pay less, File) with the tax always on top. Where it differs from `simple.md` or the mockups on what shows where, `three-pages.md` wins.
+
+`simple.md` said how the dashboard put these screens together after the owner's first October review (its section 9, guidance for Claude, still holds): the chat leads, and the dashboard is a companion panel beside it, with one next step and five stages (About you, Your documents, Your tax, Ways to save, File), one open at a time. Where it and the mockups differ on what shows when, `simple.md` wins; the states, wording and tone above still hold.
+
 The mockups load Geist from Google Fonts for convenience. The product must not (SPEC.md C2): bundle the font files in the extension.

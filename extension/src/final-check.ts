@@ -24,6 +24,7 @@ import { ENUM_LABELS } from './extraction.js';
 import { holdings } from './holdings.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import type { Workspace } from './workspace.js';
+import { TaxYears } from './years.js';
 
 const t = (en: string, fr: string): Text => ({ en, fr });
 const NB = String.fromCharCode(0xa0);
@@ -32,8 +33,8 @@ const NB = String.fromCharCode(0xa0);
 const HOLDING_KEY = /^(accounts|liabilities|securities|wealth)\./;
 
 const FINAL_OK = t(
-  'Your OK: tap it in the dashboard (Documents), or confirm it in the chat.',
-  `Votre accord${NB}: d’un geste dans le tableau de bord (Documents), ou dans la conversation.`,
+  'Your OK: tap it in the dashboard (Your tax), or confirm it in the chat.',
+  `Votre accord${NB}: d’un geste dans le tableau de bord (Votre impôt), ou dans la conversation.`,
 );
 const FINAL_SALARY = t(
   'Your salary certificate (certificat de salaire): it replaces this rough figure.',
@@ -120,6 +121,7 @@ const g = (en: string, fr: string, term: string): Text => ({
   en: `${en} (${term})`,
   fr: `${fr} (${term})`,
   de: term,
+  it: term,
 });
 
 /**
@@ -146,11 +148,13 @@ export function cantonCheckWords(canton: CantonEntry, terms: CantonTerms): Final
       en: `Taxpresso can’t prepare this part. ${sw}, the canton’s free software, or a fiduciary can.`,
       fr: `Taxpresso ne peut pas préparer cette partie. ${sw}, le logiciel gratuit du canton, ou une fiduciaire le peuvent.`,
       de: `Taxpresso kann diesen Teil nicht vorbereiten. ${sw}, die kostenlose Software des Kantons, oder ein Treuhandbüro können das.`,
+      it: `Taxpresso non può preparare questa parte. ${sw}, il programma gratuito del Cantone, o una fiduciaria possono farlo.`,
     },
     limitEstimate: {
       en: ' This limit is an estimate until its amount for the year is published.',
       fr: ` Cette limite est une estimation jusqu’à la publication de son montant pour l’année.`,
       de: ' Diese Grenze ist geschätzt, bis ihr Betrag für das Jahr veröffentlicht ist.',
+      it: ' Questo limite è una stima finché il suo importo per l’anno non è pubblicato.',
     },
     documents: terms.documents,
   };
@@ -486,7 +490,9 @@ const Item = z.looseObject({
   sources: z.array(Source),
 });
 
-export function registerFinalCheckTool(server: McpServer, ws: Workspace): void {
+export function registerFinalCheckTool(server: McpServer, given: Workspace | TaxYears): void {
+  // The open year's workspace, taken once per call (./years.ts).
+  const years = TaxYears.of(given);
   server.registerTool(
     'final_check',
     {
@@ -514,6 +520,7 @@ export function registerFinalCheckTool(server: McpServer, ws: Workspace): void {
       },
     },
     async ({ detail }) => {
+      const ws = years.current;
       await ws.ready();
       await declarationCheckReady(ws);
       const view = finalCheckView(ws, 'en');

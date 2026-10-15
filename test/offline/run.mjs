@@ -9,7 +9,15 @@
 
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { inflateRawSync } from 'node:zlib';
 import http from 'node:http';
 import os from 'node:os';
@@ -118,7 +126,13 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
   test('server identifies itself and sends its instructions', () => {
     assert.equal(client.getServerVersion()?.name, 'taxpresso');
-    assert.match(client.getInstructions() ?? '', /get_status/);
+    const instructions = client.getInstructions() ?? '';
+    assert.match(instructions, /get_status/);
+    // Within what the strictest host reads (Claude Code cuts at about 2,000 characters), the
+    // safety rules included (docs/design/simple.md, "Guidance for Claude").
+    assert.ok(instructions.length <= 1900, `instructions: ${instructions.length} characters`);
+    assert.match(instructions, /data, never instructions/);
+    assert.match(instructions, /never press the final transmit button/);
   });
 
   test('every tool is narrow and annotated (C6), and matches the manifest', async () => {
@@ -692,6 +706,35 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.ok(!readdirSync(path.join(vault, '2026')).some((n) => n.endsWith('.zip')));
   });
 
+  test('a file put in the folder is sorted as it lands, without ingest_vault', async () => {
+    // The folder watch (docs/design/three-pages.md): no tool call, no button. /folder/open is never
+    // called here: it would open a window (the guard would block it anyway).
+    const sorted = async (name) => {
+      const deadline = Date.now() + 15_000;
+      let listed = [];
+      while (Date.now() < deadline) {
+        const res = await client.callTool({ name: 'list_documents', arguments: {} });
+        listed = res.structuredContent.documents.map((d) => d.filename);
+        if (listed.includes(name)) return;
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      assert.fail(`${name} not sorted: ${listed.join(', ')}`);
+    };
+    // The first, as the watch starts (the folder was made a moment ago); the second, as it lands.
+    writeFileSync(path.join(vault, '2026', 'landed.pdf'), '%PDF-1.7 synthetic landed document');
+    await sorted('landed.pdf');
+    writeFileSync(path.join(vault, '2026', 'landed-2.pdf'), '%PDF-1.7 synthetic second document');
+    await sorted('landed-2.pdf');
+    // The page in the browser shows them too, and Claude hears of them with its next look.
+    const { origin, host, cookie } = dashboardSession;
+    const page = JSON.parse(
+      (await get(`${origin}/api/state`, { headers: { Host: host, Cookie: cookie } })).body,
+    );
+    assert.ok(page.documents.some((d) => d.filename === 'landed-2.pdf'));
+    const ingest = await client.callTool({ name: 'ingest_vault', arguments: {} });
+    assert.deepEqual(ingest.structuredContent.added, ['landed.pdf', 'landed-2.pdf']);
+  });
+
   test('the server exits when Claude Desktop closes it', async () => {
     const pid = transport.pid;
     await client.close();
@@ -785,7 +828,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -864,7 +907,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -946,7 +989,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1036,7 +1079,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['moved', 'no'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'walk'],
@@ -1121,7 +1164,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
         ['work_rate:p1', 100],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1205,7 +1248,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['citizen_of:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1296,7 +1339,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church:p1', 'none'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['pillar3a:p1', false],
         ['lpp_buyin:p1', false],
         ['commute:p1', 'public_transport'],
@@ -1389,7 +1432,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['church_area', 'st-gallen:St. Gallen Tablat (O)'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
-        ['taxed_at_source:p1', false],
+        ['residence:p1', 'swiss'],
         ['commute:p1', 'public_transport'],
         ['commute_transit_cost:p1', 800],
         ['meal_days:p1', 0],
@@ -1446,6 +1489,1459 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       assert.match(pdf.content[0].text, /reads Geneva declarations only/);
     } finally {
       await sg.close();
+    }
+  });
+
+  test('a Fribourg return: its questions, the values to type, and why 2026 waits, offline', async () => {
+    // Another household in its own folder, in its own server process with the same guard: Léa
+    // Rossier, single, in Fribourg, Roman Catholic, with the synthetic salary certificate read from
+    // its barcode. Tax year 2026 has no communal coefficients: the estimate says so and never
+    // guesses them; the values to type work all the same.
+    const frVault = path.join(work, 'Fribourg');
+    const frTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: frVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    frTransport.stderr?.on('data', (d) => (stderr += d));
+    const fr = new Client({ name: 'taxpresso-offline-test-fr', version: '0.0.0' });
+    await fr.connect(frTransport);
+    try {
+      const answers = [
+        ['canton', 'FR'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Fribourg'],
+        ['moved', 'no'],
+        ['church:p1', 'catholic'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['residence:p1', 'swiss'],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 800],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['health_subsidy', 0],
+        ['life_insurance', 0],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await fr.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await fr.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'FR');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(frVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await fr.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await fr.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'FR');
+      assert.equal(tax.structuredContent.commune.bfs, 2196);
+      assert.equal(tax.structuredContent.commune.rate, null);
+      assert.equal(tax.structuredContent.icc, null);
+      assert.equal(tax.structuredContent.total, null);
+      assert.match(tax.content[0].text, /communal tax rates for 2026 \(coefficients communaux\)/);
+
+      const sections = await fr.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['V', 'VI', 'VIII', 'IX'],
+      );
+      const income = await fr.callTool({ name: 'get_form_values', arguments: { section: 'V' } });
+      assert.match(income.content[0].text, /- 1\.110 Activité salariée principale/);
+
+      const check = await fr.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      assert.equal(check.structuredContent.verdict, 'not_ready');
+      const pdf = await fr.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await fr.close();
+    }
+  });
+
+  test('a Ticino return: its questions, its tax and the values to type, offline, in Italian', async () => {
+    // Another household in its own folder, in its own server process with the same guard, its
+    // dashboard in Italian: Giulia Ferrari, single, in Lugano, with the synthetic salary
+    // certificate read from its barcode.
+    const tiVault = path.join(work, 'Ticino');
+    const tiTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: tiVault,
+        TAXPRESSO_UI_LANGUAGE: 'it',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    tiTransport.stderr?.on('data', (d) => (stderr += d));
+    const ti = new Client({ name: 'taxpresso-offline-test-ti', version: '0.0.0' });
+    await ti.connect(tiTransport);
+    try {
+      const answers = [
+        ['canton', 'TI'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Lugano'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['work_rate:p1', 100],
+        ['full_year:p1', true],
+        ['residence:p1', 'swiss'],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 800],
+        ['meal_days:p1', 0],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['payments', []],
+        ['banks', 0],
+        ['crypto', false],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await ti.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await ti.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'TI');
+      assert.equal(status.structuredContent.uiLanguage, 'it');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(tiVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await ti.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await ti.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'TI');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'LUGANO');
+      assert.ok(tax.structuredContent.icc.total > 0);
+      assert.equal(tax.structuredContent.icc.personal, 4000);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /imposta cantonale e comunale/);
+
+      const sections = await ti.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['M4-1', 'P2', 'P3'],
+      );
+      const modulo4 = await ti.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'M4-1' },
+      });
+      assert.match(modulo4.content[0].text, /- 438 7\. Totale delle spese professionali/);
+
+      const check = await ti.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await ti.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await ti.close();
+    }
+  });
+
+  test('tax at source in Geneva: worked out from plain facts, never asked, offline', async () => {
+    // A couple with B permits in its own folder, in its own server process with the same guard:
+    // one salaried, the other on unemployment benefits (synthetic). Who is taxed at source, the
+    // barème and where the tax withheld comes from follow from plain answers.
+    const sVault = path.join(work, 'Source');
+    const sTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: sVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    sTransport.stderr?.on('data', (d) => (stderr += d));
+    const st = new Client({ name: 'taxpresso-offline-test-source', version: '0.0.0' });
+    await st.connect(sTransport);
+    try {
+      const answers = {
+        canton: 'GE',
+        civil_status: 'married',
+        children: 0,
+        commune: 'Carouge',
+        moved: 'no',
+        'income_sources:p1': ['salary'],
+        'income_sources:p2': ['replacement_income'],
+        'employers:p1': 1,
+        'residence:p1': 'permit_other',
+        'employer_in_switzerland:p1': true,
+        'residence:p2': 'permit_other',
+        'employer_in_switzerland:p2': true,
+        'tou:p1': 'no',
+        'tou:p2': 'no',
+        'pillar3a:p1': false,
+        'pillar3a:p2': false,
+        'lpp_buyin:p1': false,
+        'commute:p1': 'walk',
+        'meal_days:p1': 0,
+        banks: 0,
+        crypto: false,
+        payments: [],
+        special: [],
+      };
+      const asked = [];
+      for (let i = 0; i < 40; i++) {
+        const next = await st.callTool({ name: 'next_questions', arguments: {} });
+        const q = next.structuredContent.questions[0];
+        if (!q) break;
+        assert.ok(q.id in answers, `asked ${q.id}`);
+        asked.push(q.id);
+        const res = await st.callTool({
+          name: 'answer_question',
+          arguments: { id: q.id, value: answers[q.id] },
+        });
+        assert.ok(!res.isError, `${q.id}: ${res.content?.[0]?.text}`);
+      }
+      assert.ok(asked.includes('residence:p2'), asked.join(' '));
+      assert.ok(!asked.some((id) => id.startsWith('taxed_at_source')), asked.join(' '));
+      for (const [key, value] of [
+        ['plan.gross_salary', 72_000],
+        ['plan.tou_other_income', false],
+        ['plan.tou_taxable_wealth', false],
+      ]) {
+        const res = await st.callTool({ name: 'set_fact', arguments: { key, value } });
+        assert.ok(!res.isError, res.content?.[0]?.text);
+      }
+      const status = await st.callTool({ name: 'get_status', arguments: {} });
+      const told = status.structuredContent.journey.join('\n');
+      // The same for both, said once; each person's tax withheld apart.
+      assert.match(told, /You’re both taxed at source \(no C permit\)\. Without a C permit/);
+      assert.doesNotMatch(told, /Your spouse or partner is taxed at source\./);
+      assert.match(told, /Your barème is C0N\. Married, both of you with income/);
+      assert.match(told, /Estimated with barème C0N[^[]*\(an estimate\)/);
+      const list = await st.callTool({ name: 'list_optimizations', arguments: {} });
+      assert.match(list.content[0].text, /attestation of the fund that paid your benefits/);
+      assert.doesNotMatch(list.content[0].text, /Only one of the couple/);
+      assert.match(list.content[0].text, /benefits attestation \(amount and tax taken at source\)/);
+      // The same facts in the dashboard, in French, through the view's own API.
+      const { contents } = await st.readResource({ uri: VIEW_URI });
+      const key = /<meta name="taxpresso-view-key" content="([^"]+)">/.exec(contents[0].text)?.[1];
+      assert.ok(key, 'the view carries its key');
+      const view = await st.callTool({
+        name: 'dashboard_api',
+        arguments: { key, method: 'GET', path: '/state', query: { lang: 'fr' } },
+      });
+      const body = view.structuredContent.body;
+      const fact = body.journey.about.find((f) => f.id === 'source_tax');
+      assert.equal(fact.text.fr, 'Vous êtes tous les deux imposés à la source (sans permis C).');
+      assert.match(fact.why.fr, /^Sans permis C/);
+      assert.ok(fact.sources.every((x) => x.title && x.url));
+      assert.ok(!body.chips.some((c) => /Imposé à la source/.test(c)), body.chips.join(', '));
+      assert.equal(body.planning.tou.problem, 'benefits_unknown');
+      assert.equal(body.planning.sourceTax.people[0].derivedTariff.code, 'C0N');
+    } finally {
+      await st.close();
+    }
+  });
+
+  test('a Geneva return for 2025: the year switch, its own folder and its texts, offline', async () => {
+    // The Dupont couple prepares 2025 in its own folder, in its own server process with the same
+    // guard: the year is chosen in the chat and in the dashboard, which write the same record.
+    const yVault = path.join(work, 'Years');
+    const yTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: yVault,
+        TAXPRESSO_UI_LANGUAGE: 'en',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    yTransport.stderr?.on('data', (d) => (stderr += d));
+    const y = new Client({ name: 'taxpresso-offline-test-years', version: '0.0.0' });
+    await y.connect(yTransport);
+    try {
+      // 2026 opens by default, and 2026's first answer stays in 2026's folder.
+      const start = await y.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(start.structuredContent.taxYear, 2026);
+      assert.deepEqual(
+        start.structuredContent.years.map((x) => [x.year, x.open, x.cantons.length > 1]),
+        [
+          [2026, true, true],
+          [2025, false, false],
+        ],
+      );
+      await y.callTool({ name: 'answer_question', arguments: { id: 'canton', value: 'GE' } });
+
+      // In the chat: open 2025.
+      const opened = await y.callTool({ name: 'open_tax_year', arguments: { year: 2025 } });
+      assert.ok(!opened.isError, opened.content?.[0]?.text);
+      assert.deepEqual(opened.structuredContent.cantons, ['GE']);
+      assert.equal(opened.structuredContent.over, true);
+      const kept = JSON.parse(readFileSync(path.join(yVault, 'open-year.json'), 'utf8'));
+      assert.deepEqual([kept.taxYear, kept.via], [2025, 'chat']);
+      const refused = await y.callTool({ name: 'open_tax_year', arguments: { year: 2019 } });
+      assert.ok(refused.isError);
+
+      const status = await y.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.taxYear, 2025);
+      assert.equal(status.structuredContent.canton, null, 'the canton is asked again for 2025');
+      assert.match(status.content[0].text, /Tax year 2025 is open/);
+      const q = await y.callTool({ name: 'next_questions', arguments: {} });
+      assert.match(q.content[0].text, /31 décembre 2025/);
+      assert.match(q.content[0].text, /ZH = Canton of Zurich \[not supported yet\]/);
+      // Ana-like single household in Meyrin, answered question by question as Claude asks them.
+      const given = {
+        canton: 'GE',
+        civil_status: 'single',
+        children: 0,
+        commune: 'Meyrin',
+        moved: 'no',
+        income_sources: ['salary'],
+        employers: 1,
+        residence: 'swiss',
+        pillar3a: false,
+        lpp_buyin: false,
+        commute: 'public_transport',
+        commute_transit_cost: 800,
+        commute_transit_usable: false,
+        meal_days: 0,
+        banks: 0,
+        crypto: false,
+        payments: [],
+        special: [],
+      };
+      for (let i = 0; i < 40; i++) {
+        const next = await y.callTool({ name: 'next_questions', arguments: {} });
+        const question = next.structuredContent.questions[0];
+        if (!question) break;
+        const id = question.id.split(':')[0];
+        assert.ok(id in given, `an unexpected question: ${question.id}`);
+        const res = await y.callTool({
+          name: 'answer_question',
+          arguments: { id: question.id, value: given[id] },
+        });
+        assert.ok(!res.isError, `${question.id}: ${res.content?.[0]?.text}`);
+      }
+      // The years never mix: 2026 keeps its one answer, 2025 has its own.
+      const ledger = (year) =>
+        JSON.parse(readFileSync(path.join(yVault, String(year), 'ledger.json'), 'utf8')).facts;
+      assert.deepEqual(
+        ledger(2026).map((f) => [f.key, f.value]),
+        [['profile.canton', 'GE']],
+      );
+      assert.ok(ledger(2025).every((f) => f.taxYear === 2025));
+      assert.equal(ledger(2025).filter((f) => f.key === 'profile.commune').length, 1);
+
+      // 2025's figures are from published values only: no estimate flags.
+      const tax = await y.callTool({ name: 'compute_tax', arguments: {} });
+      assert.equal(tax.structuredContent.taxYear, 2025);
+      assert.match(tax.content[0].text, /^Tax year 2025, /);
+
+      // The plans before 31 December are 2026's, one step away.
+      const plans = await y.callTool({ name: 'list_optimizations', arguments: {} });
+      assert.equal(plans.structuredContent.yearOver.plansIn, 2026);
+      assert.match(plans.content[0].text, /open_tax_year with year 2026/);
+      const planFigure = await y.callTool({
+        name: 'set_fact',
+        arguments: { key: 'plan.gross_salary', value: 90000 },
+      });
+      assert.ok(planFigure.isError);
+      assert.match(planFigure.content[0].text, /2025 is over/);
+
+      // The dashboard shows 2025, and switches back to 2026 the same way the chat does.
+      const dash = await y.callTool({ name: 'open_dashboard', arguments: {} });
+      const url = dash.structuredContent.url;
+      const origin = new URL(url).origin;
+      const host = new URL(url).host;
+      const page = await get(url, { headers: { Host: host } });
+      const cookie = page.headers['set-cookie'][0].split(';')[0];
+      const state = JSON.parse(
+        (await get(`${origin}/api/state`, { headers: { Host: host, Cookie: cookie } })).body,
+      );
+      assert.equal(state.taxYear, 2025);
+      assert.equal(state.yearOver.plansIn, 2026);
+      assert.equal(state.plan, null);
+      const post = (p, body, csrf) =>
+        get(origin, {
+          method: 'POST',
+          path: p,
+          body: JSON.stringify(body),
+          headers: {
+            Host: host,
+            Cookie: cookie,
+            'X-Taxpresso-CSRF': csrf,
+            'Content-Type': 'application/json',
+          },
+        });
+      // A change from a page that still shows 2026 doesn't land in 2025.
+      const stale = await post('/api/answer?year=2026', { id: 'children', value: 1 }, state.csrf);
+      assert.equal(stale.status, 409, stale.body);
+
+      const zip = await y.callTool({ name: 'export_bundle', arguments: {} });
+      assert.match(zip.structuredContent.file, /^Taxpresso-2025-export-\d{4}-\d{2}-\d{2}\.zip$/);
+
+      const back = await post('/api/year', { year: 2026 }, state.csrf);
+      assert.equal(back.status, 200, back.body);
+      assert.equal(JSON.parse(back.body).taxYear, 2026);
+      assert.equal(
+        JSON.parse(readFileSync(path.join(yVault, 'open-year.json'), 'utf8')).via,
+        'dashboard',
+      );
+      const after2026 = await y.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(after2026.structuredContent.taxYear, 2026);
+      assert.equal(after2026.structuredContent.canton, 'GE');
+    } finally {
+      await y.close();
+    }
+  });
+
+  test('a Geneva couple with two lump sums of pension capital: the tax apart, offline', async () => {
+    // Pierre and Anne Rochat, Vernier (made-up): his pension fund capital and her pillar 3a in the
+    // same year, added up for one tax (packages/rules-ge/test/capital.test.ts works it out by hand).
+    const gVault = path.join(work, 'Rochat');
+    const gTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: gVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    gTransport.stderr?.on('data', (d) => (stderr += d));
+    const ge = new Client({ name: 'taxpresso-offline-test-capital', version: '0.0.0' });
+    await ge.connect(gTransport);
+    try {
+      const answers = [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Vernier'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['pension']],
+        ['income_sources:p2', ['pension']],
+        ['special', ['pension_capital']],
+        ['pension_capital:p1', ['pillar2']],
+        ['pension_capital:p2', ['pillar3a']],
+      ];
+      for (const [id, value] of answers) {
+        const res = await ge.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      // Two attestations the couple put in their folder (synthetic bytes).
+      const files = [
+        [
+          'Caisse de pension, capital 2026.pdf',
+          'lpp_capital_attestation',
+          'p1',
+          "300'000.00",
+          '30.09.2026',
+        ],
+        [
+          'Fondation 3a, capital 2026.pdf',
+          'pillar3a_capital_attestation',
+          'p2',
+          "60'000.00",
+          '15.11.2026',
+        ],
+      ];
+      for (const [name] of files) {
+        writeFileSync(path.join(gVault, '2026', name), `%PDF-1.7 synthetic Rochat ${name}`);
+      }
+      const ingest = await ge.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+      const listed = await ge.callTool({ name: 'list_documents', arguments: {} });
+      const missing = listed.structuredContent.missing.join('; ');
+      assert.match(missing, /Pension capital attestation, 2nd pillar/);
+      assert.match(missing, /Pension capital attestation, pillar 3a/);
+      for (const [name, kind, person, amount, date] of files) {
+        const doc = listed.structuredContent.documents.find((d) => d.filename === name);
+        const res = await ge.callTool({
+          name: 'propose_extraction',
+          arguments: {
+            id: doc.id,
+            document: { kind, person, taxYear: 2026 },
+            values: [
+              { key: 'capital.amount', value: amount, page: 1 },
+              { key: 'capital.date', value: date, page: 1 },
+              { key: 'capital.reason', value: 'retirement', page: 1 },
+            ],
+          },
+        });
+        assert.ok(!res.isError, res.content?.[0]?.text);
+      }
+
+      const tax = await ge.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.deepEqual(tax.structuredContent.capital, {
+        amount: 36_000_000,
+        items: [
+          { code: '98.12', person: 'p1', amount: 30_000_000 },
+          { code: '98.12', person: 'p2', amount: 6_000_000 },
+        ],
+        icc: 1_593_080,
+        ifd: 653_600,
+        total: 2_246_680,
+      });
+      assert.match(tax.content[0].text, /never in the total/);
+      assert.match(tax.content[0].text, /rest on values that still need the user's OK/);
+
+      const form = await ge.callTool({ name: 'get_form_values', arguments: { section: 'PG2' } });
+      const row = form.structuredContent.rows.find((r) => r.ref === '98.12');
+      assert.equal(row.copy, '360000');
+
+      const check = await ge.callTool({ name: 'final_check', arguments: {} });
+      const ids = check.structuredContent.know.map((i) => i.id);
+      assert.ok(ids.includes('capital:taxed_apart') && ids.includes('capital:buy_ins'), ids.join());
+    } finally {
+      await ge.close();
+    }
+  });
+
+  /**
+   * A self-employed Geneva household (packages/rules-ge/test/self-employment.test.ts, derived by
+   * hand from the official documents) in its own folder and server process with the same guard:
+   * its answers, synthetic documents dropped in the folder whose values Claude read and the user
+   * confirmed in the chat, then its tax, annexe B and the final check.
+   */
+  async function selfEmployed(folder, answers, docs, expected) {
+    const seVault = path.join(work, folder);
+    const seTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: seVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    seTransport.stderr?.on('data', (d) => (stderr += d));
+    const se = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
+    await se.connect(seTransport);
+    const call = async (name, args = {}) => {
+      const res = await se.callTool({ name, arguments: args });
+      assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+      return res;
+    };
+    try {
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(seVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind, taxYear: 2026, person },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      const tax = await call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, expected.icc);
+      assert.equal(tax.structuredContent.ifd.tax, expected.ifd);
+      assert.deepEqual(tax.structuredContent.notSupported, []);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      const sections = await call('get_form_values');
+      const pages = sections.structuredContent.sections.map((s) => s.page);
+      for (const page of ['B1', 'B2', 'B4']) assert.ok(pages.includes(page), `${page} in ${pages}`);
+      const b2 = await call('get_form_values', { section: 'B2' });
+      for (const line of expected.b2) assert.match(b2.content[0].text, line);
+      const check = await call('final_check');
+      assert.equal(check.structuredContent.verdict, expected.verdict);
+    } finally {
+      await se.close();
+    }
+  }
+
+  const BUSINESS = (who) => [
+    [`business_form:${who}`, 'sole_proprietor'],
+    [`business_year:${who}`, 'calendar'],
+    [`business_place:${who}`, 'home_commune'],
+    [`business_method:${who}`, 'invoice'],
+    [`business_special:${who}`, []],
+  ];
+  const END = [
+    ['banks', 0],
+    ['crypto', false],
+    ['payments', []],
+    ['special', []],
+  ];
+
+  test('self-employed in Geneva, S1: a studio in her own name, its tax and annexe B, offline', async () => {
+    // Léa Martin, single, Carouge, no pension fund.
+    await selfEmployed(
+      'Independante-S1',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Carouge'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['self_employment']],
+        ...BUSINESS('p1'),
+        ['business_losses:p1', false],
+        ['pillar3a:p1', true],
+        ...END,
+      ],
+      {
+        'comptes-2026.pdf': [
+          'business_accounts',
+          'p1',
+          [
+            ['business.turnover', "120'000.00"],
+            ['business.other_income', '500.00'],
+            ['business.costs_goods', "8'000.00"],
+            ['business.depreciation', "3'000.00"],
+            ['business.costs_other', "14'500.00"],
+            ['business.current_assets', "230'000.00"],
+            ['business.fixed_assets', "20'000.00"],
+            ['business.liabilities', "10'000.00"],
+          ],
+        ],
+        'avs-2026.pdf': ['avs_contributions', 'p1', [['avs.contributions_year', "9'000.00"]]],
+        '3a-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "18'000.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "6'000.00"]]],
+      },
+      {
+        icc: 874_685,
+        ifd: 87_930,
+        b2: [/12\.01 Bénéfice net/, /12\.52 Capital propre/],
+        verdict: 'not_ready',
+      },
+    );
+  });
+
+  test('self-employed in Geneva, S2: a salaried spouse and a self-employed one, offline', async () => {
+    // Marc and Sofia Dupuis, married, Vernier.
+    await selfEmployed(
+      'Independante-S2',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Vernier'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['residence:p1', 'swiss'],
+        ['income_sources:p2', ['self_employment']],
+        ...BUSINESS('p2'),
+        ['business_losses:p2', false],
+        ['pillar3a:p1', true],
+        ['pillar3a:p2', true],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'walk'],
+        ['meal_days:p1', 0],
+        ...END,
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "90'000.00"],
+            ['salary.gross', "90'000.00"],
+            ['salary.social_contributions', "5'800.00"],
+            ['salary.lpp_ordinary', "6'500.00"],
+          ],
+        ],
+        '3a-marc-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "7'258.00"]]],
+        'comptes-2026.pdf': [
+          'business_accounts',
+          'p2',
+          [
+            ['business.turnover', "48'000.00"],
+            ['business.costs_goods', "2'000.00"],
+            ['business.costs_other', "6'000.00"],
+            ['business.current_assets', "15'000.00"],
+            ['business.liabilities', "3'000.00"],
+          ],
+        ],
+        'avs-2026.pdf': ['avs_contributions', 'p2', [['avs.contributions_year', "4'000.00"]]],
+        '3a-sofia-2026.pdf': ['pillar3a_attestation', 'p2', [['pillar3a.paid', "6'000.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "9'000.00"]]],
+      },
+      { icc: 952_035, ifd: 88_100, b2: [/12\.01 Bénéfice net/], verdict: 'not_ready' },
+    );
+  });
+
+  test('self-employed in Geneva, S3: a loss and earlier losses, offline', async () => {
+    // Noé Favre, single, Onex, a part-time salary too.
+    await selfEmployed(
+      'Independant-S3',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Onex'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['salary', 'self_employment']],
+        ['employers:p1', 1],
+        ['residence:p1', 'swiss'],
+        ...BUSINESS('p1'),
+        ['business_losses:p1', true],
+        ['business_losses_icc:p1', 2_000],
+        ['business_losses_ifd:p1', 2_000],
+        ['pillar3a:p1', true],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'walk'],
+        ['meal_days:p1', 0],
+        ...END,
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "50'000.00"],
+            ['salary.gross', "50'000.00"],
+            ['salary.social_contributions', "3'200.00"],
+            ['salary.lpp_ordinary', "2'500.00"],
+          ],
+        ],
+        'comptes-2026.pdf': [
+          'business_accounts',
+          'p1',
+          [
+            ['business.turnover', "20'000.00"],
+            ['business.costs_other', "26'000.00"],
+            ['business.current_assets', "4'000.00"],
+            ['business.liabilities', "1'000.00"],
+          ],
+        ],
+        'avs-2026.pdf': ['avs_contributions', 'p1', [['avs.contributions_year', '800.00']]],
+        '3a-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "3'000.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "4'000.00"]]],
+      },
+      {
+        icc: 127_310,
+        ifd: 10_395,
+        b2: [/57\.10 Perte commerciale/, /57\.20 Pertes non compensées/, /57\.00 Perte nette/],
+        verdict: 'not_ready',
+      },
+    );
+  });
+
+  test('a Geneva home abroad: a flat let in Portugal counted for the rate, a loss abroad, offline', async () => {
+    // Inès Varela, single, Carouge, a flat let in Portugal; Paolo Ferri, single, Meyrin, a holiday
+    // home in Italy whose mortgage makes a loss abroad (packages/rules-ge/test/abroad.test.ts, A1
+    // and A3, derived by hand from the official documents). Each in its own folder and server
+    // process with the same guard; documents in euros, converted at the official rates.
+    const run = async (folder, answers, docs) => {
+      const abVault = path.join(work, folder);
+      const abTransport = new StdioClientTransport({
+        command: process.execPath,
+        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        env: {
+          ...process.env,
+          TAXPRESSO_VAULT_PATH: abVault,
+          TAXPRESSO_UI_LANGUAGE: 'fr',
+          TAXPRESSO_NET_GUARD_LOG: guardLog,
+        },
+        stderr: 'pipe',
+      });
+      abTransport.stderr?.on('data', (d) => (stderr += d));
+      const ab = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
+      await ab.connect(abTransport);
+      const call = async (name, args = {}) => {
+        const res = await ab.callTool({ name, arguments: args });
+        assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+        return res;
+      };
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(abVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind, taxYear: 2026, person },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      return { ab, call };
+    };
+    const common = [
+      ['canton', 'GE'],
+      ['civil_status', 'single'],
+      ['children', 0],
+      ['moved', 'no'],
+      ['income_sources:p1', ['salary']],
+      ['employers:p1', 1],
+      ['pillar3a:p1', false],
+      ['lpp_buyin:p1', false],
+      ['commute:p1', 'walk'],
+      ['meal_days:p1', 0],
+      ['banks', 1],
+      ['crypto', false],
+      ['payments', []],
+      ['special', ['property_abroad']],
+    ];
+    const varela = await run(
+      'Etranger-Varela',
+      [
+        ...common,
+        ['commune', 'Carouge'],
+        ['residence:p1', 'swiss'],
+        ['abroad_property', 'let'],
+        ['abroad_property_owner', 'p1'],
+        ['abroad_property_country', 'portugal'],
+        ['abroad_property_old', true],
+        ['abroad_property_loan', false],
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "98'000.00"],
+            ['salary.gross', "98'000.00"],
+            ['salary.social_contributions', "6'174.00"],
+            ['salary.lpp_ordinary', "5'400.00"],
+          ],
+        ],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "5'880.00"]]],
+        'banque-2026.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "24'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+        'avis-portugal-2026.pdf': [
+          'foreign_property_tax_notice',
+          'household',
+          [
+            ['abroad.currency', 'EUR'],
+            ['abroad.tax_value', "150'000.00"],
+          ],
+        ],
+        'gestion-portugal-2026.pdf': [
+          'foreign_property_rent_statement',
+          'household',
+          [
+            ['abroad.currency', 'EUR'],
+            ['abroad.rents', "9'000.00"],
+            ['abroad.costs', "1'350.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await varela.call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, 1_294_690);
+      assert.equal(tax.structuredContent.ifd.tax, 179_430);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      assert.deepEqual(tax.structuredContent.notSupported, []);
+      const pages = (await varela.call('get_form_values')).structuredContent.sections.map(
+        (s) => s.page,
+      );
+      assert.ok(pages.includes('D2'), `D2 in ${pages}`);
+      const pg3 = await varela.call('get_form_values', { section: 'PG3' });
+      assert.match(pg3.content[0].text, /97\.00 Part proportionnelle du revenu non imposable/);
+      const status = await varela.call('get_status');
+      assert.match(status.content[0].text, /exemption avec réserve de progression/);
+      const check = await varela.call('final_check');
+      assert.ok(check.structuredContent.know.some((i) => i.id === 'abroad:rate'));
+    } finally {
+      await varela.ab.close();
+    }
+
+    const ferri = await run(
+      'Etranger-Ferri',
+      [
+        ...common,
+        ['commune', 'Meyrin'],
+        ['residence:p1', 'permit_c'],
+        ['abroad_property', 'own_use'],
+        ['abroad_property_owner', 'p1'],
+        ['abroad_property_country', 'italy'],
+        ['abroad_property_old', true],
+        ['abroad_property_loan', true],
+      ],
+      {
+        'certificat-2026.pdf': [
+          'salary_certificate',
+          'p1',
+          [
+            ['salary.base', "72'000.00"],
+            ['salary.gross', "72'000.00"],
+            ['salary.social_contributions', "4'536.00"],
+            ['salary.lpp_ordinary', "3'600.00"],
+          ],
+        ],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "5'400.00"]]],
+        'banque-2026.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "10'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+        'avis-italie-2026.pdf': [
+          'foreign_property_tax_notice',
+          'household',
+          [
+            ['abroad.currency', 'EUR'],
+            ['abroad.tax_value', "120'000.00"],
+          ],
+        ],
+        'hypotheque-italie-2026.pdf': [
+          'debt_interest',
+          'household',
+          [
+            ['debt.currency', 'EUR'],
+            ['debt.balance_in_currency', "110'000.00"],
+            ['debt.interest_in_currency', "6'600.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await ferri.call('compute_tax');
+      assert.equal(tax.structuredContent.icc, null);
+      assert.equal(tax.structuredContent.ifd, null);
+      assert.match(tax.structuredContent.unsupported.join(' '), /a loss abroad/);
+    } finally {
+      await ferri.ab.close();
+    }
+  });
+
+  test('a Geneva arrival from abroad (2026) and a departure abroad (2025), offline', async () => {
+    // Lena Brandt, single, Genève, back from abroad on 1 April 2026; Jonas Lindqvist, single,
+    // Carouge, left on 30 September 2025 (packages/rules-ge/test/part-year.test.ts, derived by hand
+    // from the official documents). Each in its own folder and server process with the same guard.
+    const run = async (folder, year, answers, docs) => {
+      const pyVault = path.join(work, folder);
+      const pyTransport = new StdioClientTransport({
+        command: process.execPath,
+        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        env: {
+          ...process.env,
+          TAXPRESSO_VAULT_PATH: pyVault,
+          TAXPRESSO_UI_LANGUAGE: 'fr',
+          TAXPRESSO_NET_GUARD_LOG: guardLog,
+        },
+        stderr: 'pipe',
+      });
+      pyTransport.stderr?.on('data', (d) => (stderr += d));
+      const py = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
+      await py.connect(pyTransport);
+      const call = async (name, args = {}) => {
+        const res = await py.callTool({ name, arguments: args });
+        assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+        return res;
+      };
+      if (year !== 2026) await call('open_tax_year', { year });
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      mkdirSync(path.join(pyVault, String(year)), { recursive: true });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(pyVault, String(year), name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values, period]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: {
+            kind,
+            taxYear: year,
+            person,
+            ...(period ? { periodFrom: period[0], periodTo: period[1] } : {}),
+          },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      return { py, call };
+    };
+    const common = (moved, day, commune) => [
+      ['canton', 'GE'],
+      ['civil_status', 'single'],
+      ['children', 0],
+      ['commune', commune],
+      ['moved', moved],
+      [moved === 'from_abroad' ? 'arrival_date:p1' : 'departure_date:p1', day],
+      ['income_sources:p1', ['salary']],
+      ['employers:p1', 1],
+      ['residence:p1', 'swiss'],
+      ['pillar3a:p1', true],
+      ['lpp_buyin:p1', false],
+      ['commute:p1', 'walk'],
+      ['meal_days:p1', 0],
+      ['banks', 1],
+      ['crypto', false],
+      ['payments', []],
+      ['special', []],
+    ];
+    const certificate = (gross, social, lpp, period) => [
+      'salary_certificate',
+      'p1',
+      [
+        ['salary.base', gross],
+        ['salary.gross', gross],
+        ['salary.social_contributions', social],
+        ['salary.lpp_ordinary', lpp],
+      ],
+      period,
+    ];
+    const brandt = await run(
+      'Arrivee-Brandt',
+      2026,
+      common('from_abroad', '2026-04-01', 'Genève'),
+      {
+        'certificat-2026.pdf': certificate("72'000.00", "4'608.00", "3'600.00", [
+          '2026-04-01',
+          '2026-12-31',
+        ]),
+        '3a-2026.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "7'258.00"]]],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "4'500.00"]]],
+        'banque-2026.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "12'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await brandt.call('compute_tax');
+      // Without the transport to work (walk): ICC 50,222 at the rate of 69,986; IFD 53,270.
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      assert.equal(tax.structuredContent.icc.taxableIncome, 5_022_200);
+      assert.match(tax.content[0].text, /A year of arrival from abroad/);
+      const pg1 = await brandt.call('get_form_values', { section: 'PG1' });
+      assert.match(pg1.content[0].text, /Date d’arrivée[\s\S]*01\.04\.2026/);
+      const status = await brandt.call('get_status');
+      assert.match(status.content[0].text, /You arrived on 1 April 2026/);
+      const check = await brandt.call('final_check');
+      assert.ok(check.structuredContent.know.some((i) => i.id === 'part_year:period'));
+    } finally {
+      await brandt.py.close();
+    }
+
+    const lindqvist = await run(
+      'Depart-Lindqvist',
+      2025,
+      common('leaving_switzerland', '2025-09-30', 'Carouge'),
+      {
+        'certificat-2025.pdf': certificate("90'000.00", "5'760.00", "4'500.00", [
+          '2025-01-01',
+          '2025-09-30',
+        ]),
+        '3a-2025.pdf': ['pillar3a_attestation', 'p1', [['pillar3a.paid', "7'258.00"]]],
+        'lamal-2025.pdf': ['health_premiums', 'household', [['health.premiums', "3'600.00"]]],
+        'banque-2025.pdf': [
+          'bank_attestation',
+          'p1',
+          [
+            ['bank.balance', "20'000.00"],
+            ['bank.interest_gross', '0.00'],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await lindqvist.call('compute_tax');
+      assert.equal(tax.structuredContent.taxYear, 2025);
+      assert.equal(tax.structuredContent.icc.total, 1_132_120);
+      assert.equal(tax.structuredContent.ifd.tax, 167_510);
+      const status = await lindqvist.call('get_status');
+      assert.match(status.content[0].text, /You leave Switzerland on 30 September 2025/);
+    } finally {
+      await lindqvist.py.close();
+    }
+  });
+
+  test('a home in Geneva: a PPE flat with a mortgage, a flat let, the taux d’effort, offline', async () => {
+    // Julien and Anaïs Chevalley, married, Lancy, their PPE flat and its mortgage; Olivier Sandoz,
+    // single, Carouge, a flat let all year; Georges and Monique Perrenoud, married, Onex, retired,
+    // whose rental value the taux d'effort lowers by an amount the documents don't give: the
+    // cantonal tax fails closed (packages/rules-ge/test/property.test.ts, P1, P3 and P4, derived by
+    // hand from the official documents). Each in its own folder and server process, same guard.
+    const run = async (folder, answers, docs) => {
+      const prVault = path.join(work, folder);
+      const prTransport = new StdioClientTransport({
+        command: process.execPath,
+        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        env: {
+          ...process.env,
+          TAXPRESSO_VAULT_PATH: prVault,
+          TAXPRESSO_UI_LANGUAGE: 'fr',
+          TAXPRESSO_NET_GUARD_LOG: guardLog,
+        },
+        stderr: 'pipe',
+      });
+      prTransport.stderr?.on('data', (d) => (stderr += d));
+      const pr = new Client({ name: `taxpresso-offline-test-${folder}`, version: '0.0.0' });
+      await pr.connect(prTransport);
+      const call = async (name, args = {}) => {
+        const res = await pr.callTool({ name, arguments: args });
+        assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+        return res;
+      };
+      for (const [id, value] of answers) await call('answer_question', { id, value });
+      for (const name of Object.keys(docs)) {
+        writeFileSync(path.join(prVault, '2026', name), `%PDF-1.7 synthetic ${name}`);
+      }
+      await call('ingest_vault');
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const [name, [kind, person, values]] of Object.entries(docs)) {
+        const doc = listed.find((d) => d.filename === name);
+        assert.ok(doc, name);
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind, taxYear: 2026, person },
+          values: values.map(([key, value]) => ({ key, value, page: 1 })),
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      return { pr, call };
+    };
+    const salary = (person, gross, social, lpp) => [
+      'salary_certificate',
+      person,
+      [
+        ['salary.base', gross],
+        ['salary.gross', gross],
+        ['salary.social_contributions', social],
+        ['salary.lpp_ordinary', lpp],
+      ],
+    ];
+    const bank = (person, balance) => [
+      'bank_attestation',
+      person,
+      [
+        ['bank.balance', balance],
+        ['bank.interest_gross', '0.00'],
+      ],
+    ];
+    const worker = (p) => [
+      [`income_sources:${p}`, ['salary']],
+      [`employers:${p}`, 1],
+      ...(p === 'p1' ? [[`residence:${p}`, 'swiss']] : []),
+      [`pillar3a:${p}`, false],
+      [`lpp_buyin:${p}`, false],
+      [`commute:${p}`, 'walk'],
+      [`meal_days:${p}`, 0],
+    ];
+    const common = [
+      ['banks', 1],
+      ['crypto', false],
+      ['payments', []],
+      ['special', ['real_estate']],
+    ];
+
+    const chevalley = await run(
+      'Immeuble-Chevalley',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Lancy'],
+        ['moved', 'no'],
+        ...worker('p1'),
+        ...worker('p2'),
+        ...common,
+        ['swiss_property', 'own_flat'],
+        ['swiss_property_owner', 'both'],
+        ['swiss_property_since', 2019],
+        ['swiss_property_old', true],
+        ['swiss_property_loan', true],
+        ['swiss_property_special', []],
+      ],
+      {
+        'certificat-julien-2026.pdf': salary('p1', "118'000.00", "7'434.00", "8'260.00"),
+        'certificat-anais-2026.pdf': salary('p2', "82'000.00", "5'166.00", "4'920.00"),
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "11'600.00"]]],
+        'banque-2026.pdf': bank('household', "35'000.00"),
+        'afc-valeurs-2026.pdf': [
+          'property_values',
+          'household',
+          [
+            ['property.tax_value', "930'000.00"],
+            ['property.rental_value', "27'600.00"],
+            ['property.parcel', 'Lancy 4521'],
+          ],
+        ],
+        'hypotheque-2026.pdf': [
+          'mortgage_statement',
+          'household',
+          [
+            ['debt.balance', "450'000.00"],
+            ['debt.interest', "6'750.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await chevalley.call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, 2_760_970, tax.content[0].text);
+      assert.equal(tax.structuredContent.ifd.tax, 716_100);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      assert.deepEqual(tax.structuredContent.notSupported, []);
+      assert.match(tax.content[0].text, /impôt immobilier complémentaire \(IIC\), CHF 186\.00/);
+      const d1 = await chevalley.call('get_form_values', { section: 'D1' });
+      assert.match(d1.content[0].text, /15\.10-1 Immeubles occupés par le propriétaire/);
+      const e1 = await chevalley.call('get_form_values', { section: 'E1' });
+      assert.match(e1.content[0].text, /55\.20-1/);
+      const status = await chevalley.call('get_status');
+      assert.match(status.content[0].text, /annexe D \(immeubles occupés par le propriétaire\)/);
+      const check = await chevalley.call('final_check');
+      const know = check.structuredContent.know.map((i) => i.id);
+      for (const id of ['property:home', 'property:upkeep', 'property:iic']) {
+        assert.ok(know.includes(id), `${id} in ${know}`);
+      }
+    } finally {
+      await chevalley.pr.close();
+    }
+
+    const sandoz = await run(
+      'Immeuble-Sandoz',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Carouge'],
+        ['moved', 'no'],
+        ...worker('p1'),
+        ...common,
+        ['swiss_property', 'let'],
+        ['swiss_property_owner', 'p1'],
+        ['swiss_property_old', false],
+        ['swiss_property_other_commune', false],
+        ['swiss_property_loan', true],
+        ['swiss_property_special', []],
+      ],
+      {
+        'certificat-2026.pdf': salary('p1', "92'000.00", "5'796.00", "5'520.00"),
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "5'400.00"]]],
+        'banque-2026.pdf': bank('p1', "40'000.00"),
+        'afc-valeur-2026.pdf': [
+          'property_values',
+          'household',
+          [['property.tax_value', "640'000.00"]],
+        ],
+        'gerance-2026.pdf': [
+          'property_rent_statement',
+          'household',
+          [
+            ['property.rents', "26'400.00"],
+            ['property.costs', "2'150.00"],
+          ],
+        ],
+        'hypotheque-2026.pdf': [
+          'mortgage_statement',
+          'p1',
+          [
+            ['debt.balance', "380'000.00"],
+            ['debt.interest', "4'940.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await sandoz.call('compute_tax');
+      assert.equal(tax.structuredContent.icc.total, 1_635_610, tax.content[0].text);
+      assert.equal(tax.structuredContent.ifd.tax, 236_755);
+      assert.deepEqual(tax.structuredContent.unsupported, []);
+      const d2 = await sandoz.call('get_form_values', { section: 'D2' });
+      assert.match(d2.content[0].text, /15\.20-1/);
+    } finally {
+      await sandoz.pr.close();
+    }
+
+    const perrenoud = await run(
+      'Immeuble-Perrenoud',
+      [
+        ['canton', 'GE'],
+        ['civil_status', 'married'],
+        ['children', 0],
+        ['commune', 'Onex'],
+        ['moved', 'no'],
+        ['income_sources:p1', ['pension']],
+        ['residence:p1', 'swiss'],
+        ['income_sources:p2', ['pension']],
+        ...common,
+        ['swiss_property', 'own_house'],
+        ['swiss_property_owner', 'both'],
+        ['swiss_property_since', 1990],
+        ['swiss_property_old', true],
+        ['swiss_property_loan', false],
+        ['swiss_property_special', []],
+      ],
+      {
+        'avs-georges-2026.pdf': [
+          'pension_certificate',
+          'p1',
+          [
+            ['pension.amount', "24'000.00"],
+            ['pension.type', 'avs_ai'],
+          ],
+        ],
+        'avs-monique-2026.pdf': [
+          'pension_certificate',
+          'p2',
+          [
+            ['pension.amount', "18'000.00"],
+            ['pension.type', 'avs_ai'],
+          ],
+        ],
+        'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "9'000.00"]]],
+        'banque-2026.pdf': bank('household', "20'000.00"),
+        'afc-valeurs-2026.pdf': [
+          'property_values',
+          'household',
+          [
+            ['property.tax_value', "780'000.00"],
+            ['property.rental_value', "26'000.00"],
+          ],
+        ],
+      },
+    );
+    try {
+      const tax = await perrenoud.call('compute_tax');
+      assert.equal(tax.structuredContent.icc, null);
+      assert.equal(tax.structuredContent.ifd.tax, 25_700);
+      assert.match(tax.structuredContent.unsupported.join(' '), /taux d’effort/);
+    } finally {
+      await perrenoud.pr.close();
+    }
+  });
+
+  test('an Aargau return: its questions, its tax and the values to type, offline', async () => {
+    // Another household in its own folder, in its own server process with the same guard: Lea
+    // Huber, single, in Aarau, with the synthetic salary certificate read from its barcode.
+    const agVault = path.join(work, 'Aargau');
+    const agTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: agVault,
+        TAXPRESSO_UI_LANGUAGE: 'de',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    agTransport.stderr?.on('data', (d) => (stderr += d));
+    const ag = new Client({ name: 'taxpresso-offline-test-ag', version: '0.0.0' });
+    await ag.connect(agTransport);
+    try {
+      const answers = [
+        ['canton', 'AG'],
+        ['civil_status', 'single'],
+        ['children', 0],
+        ['commune', 'Aarau'],
+        ['moved', 'no'],
+        ['church:p1', 'none'],
+        ['income_sources:p1', ['salary']],
+        ['employers:p1', 1],
+        ['residence:p1', 'swiss'],
+        ['pillar3a:p1', false],
+        ['lpp_buyin:p1', false],
+        ['commute:p1', 'public_transport'],
+        ['commute_transit_cost:p1', 1200],
+        ['meal_days:p1', 0],
+        ['banks', 0],
+        ['crypto', false],
+        ['payments', []],
+        ['special', []],
+      ];
+      for (const [id, value] of answers) {
+        const res = await ag.callTool({ name: 'answer_question', arguments: { id, value } });
+        assert.ok(!res.isError, `${id}: ${res.content?.[0]?.text}`);
+      }
+      const status = await ag.callTool({ name: 'get_status', arguments: {} });
+      assert.equal(status.structuredContent.canton, 'AG');
+      const name = 'dupont-certificat-salaire-2026-code-barres.pdf';
+      writeFileSync(
+        path.join(agVault, '2026', name),
+        readFileSync(path.join(root, 'test', 'fixtures', 'barcodes', name)),
+      );
+      const ingest = await ag.callTool({ name: 'ingest_vault', arguments: {} });
+      assert.ok(!ingest.isError, ingest.content?.[0]?.text);
+
+      const tax = await ag.callTool({ name: 'compute_tax', arguments: {} });
+      assert.ok(!tax.isError, tax.content?.[0]?.text);
+      assert.equal(tax.structuredContent.canton, 'AG');
+      assert.equal(tax.structuredContent.computed, true, tax.content[0].text);
+      assert.equal(tax.structuredContent.commune.bfs, null);
+      assert.equal(tax.structuredContent.commune.name, 'Aarau');
+      assert.ok(tax.structuredContent.icc.total > 0, tax.content[0].text);
+      assert.ok(tax.structuredContent.ifd.tax > 0);
+      assert.equal(
+        tax.structuredContent.total,
+        tax.structuredContent.icc.total + tax.structuredContent.ifd.tax,
+      );
+      assert.match(tax.content[0].text, /Kantons-, Gemeinde- und Kirchensteuern/);
+
+      const sections = await ag.callTool({ name: 'get_form_values', arguments: {} });
+      assert.deepEqual(
+        sections.structuredContent.sections.map((s) => s.page),
+        ['EK', 'AB', 'SO'],
+      );
+      assert.equal(sections.structuredContent.provisional, true);
+      const deductions = await ag.callTool({
+        name: 'get_form_values',
+        arguments: { section: 'AB' },
+      });
+      assert.match(
+        deductions.content[0].text,
+        /- 10\.1 Fahrtkosten zwischen Wohn- und Arbeitsstätte, Person 1 /,
+      );
+
+      const check = await ag.callTool({ name: 'final_check', arguments: {} });
+      assert.ok(!check.isError, check.content?.[0]?.text);
+      const pdf = await ag.callTool({ name: 'reconcile_official_pdf', arguments: {} });
+      assert.match(pdf.content[0].text, /reads Geneva declarations only/);
+    } finally {
+      await ag.close();
     }
   });
 

@@ -4,12 +4,13 @@ import type { EstimateView } from './Estimate';
 import type { LastYearView } from './LastYear';
 import type { ReviewView } from './Review';
 import type { CopyPanelState } from './types-copy';
-import type { FinalCheckState } from './types-final-check';
+import type { FinalCheckSource as OfficialSource, FinalCheckState } from './types-final-check';
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
 import type { PlanningState } from './types-planning';
+import type { PagesFields } from './state-adapter';
 
-export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune';
+export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune' | 'date';
 export type Value = string | number | boolean | string[];
 
 export interface OfficialLink {
@@ -34,6 +35,9 @@ export interface Question {
   none?: string;
   min?: number;
   max?: number;
+  /** A date question: the first and last day it takes (YYYY-MM-DD), the tax year. */
+  minDate?: string;
+  maxDate?: string;
   value?: Value;
   skipped?: boolean;
   /** Read from a document (last year's declaration), not an answer yet: the user confirms it. */
@@ -82,13 +86,95 @@ export interface Activity {
   detail?: string;
 }
 
+/** A tax year that is over (extension/src/planning.ts, yearOverView). */
+export interface YearOverView {
+  year: number;
+  /** The year whose plans apply now (3a, buy-in, 3a catch-up): one step away. */
+  plansIn: number;
+  paidInYear: string;
+  catchUp?: { sources: string[] };
+  tou?: {
+    deadline: string;
+    passed: boolean;
+    source: string;
+    decision?: { choice: 'request' | 'decline'; decidedAt: string };
+  };
+}
+
+/** Simple first (docs/design/simple.md; extension/src/journey.ts): the next step and the stages. */
+export type StageId = 'about' | 'documents' | 'tax' | 'save' | 'file';
+
+export interface JourneyVars {
+  n?: number;
+  /** Centimes. */
+  amount?: number;
+  /** YYYY-MM-DD. */
+  date?: string;
+  year?: number;
+  /** Centimes: the separate tax on pension capital, never in the total (`amount`). */
+  capital?: number;
+}
+
+export interface Journey {
+  next: { id: string; stage: StageId | null; vars: JourneyVars };
+  /** The stage open by default. */
+  stage: StageId;
+  stages: { id: StageId; status: string; vars: JourneyVars }[];
+  /**
+   * Facts that need no decision, each one short sentence in "About you", said once for both of a
+   * couple where it is the same. A fact worded by the extension (source_tax, abroad, part_year)
+   * carries its sentence in every language; any fact may carry why it holds (behind "Why?"),
+   * its sources (behind "Sources": title, where in it, link), and whether it is an estimate.
+   */
+  about: {
+    id: string;
+    who?: 'p1' | 'p2' | 'both';
+    vars: JourneyVars;
+    text?: { en: string; fr: string; de?: string; it?: string };
+    why?: { en: string; fr: string; de?: string; it?: string };
+    source?: string;
+    sources?: OfficialSource[];
+    estimate?: true;
+  }[];
+  /** At least one income or wealth figure: only then is there a tax to show. */
+  hasFigures: boolean;
+  /** All the plans before 31 December together, or null. */
+  savings: {
+    totalCentimes: number;
+    cantonalCentimes: number;
+    federalCentimes: number;
+    parts: ('pillar3a' | 'pillar3a_catchup' | 'lpp_buyin')[];
+    onlyWithTou: boolean;
+    assumptions: string[];
+    sources: string[];
+  } | null;
+  /** A real TOU choice: the "Decide" card shows. */
+  touChoice: boolean;
+  /** The documents are in: the File stage opens. */
+  documentsIn: boolean;
+  /** 31 December of the tax year has passed. */
+  yearEnded: boolean;
+}
+
 /** Values read from documents, checks and the assessment: ./types-docs.ts. */
-export interface State extends DocumentsState {
+export interface State extends DocumentsState, PagesFields {
+  /** The next step and the stages (docs/design/simple.md). */
+  journey: Journey;
   version: string;
+  /** The open tax year: everything on the page is about it. */
   taxYear: number;
+  /** The year switch: every tax year Taxpresso prepares (extension/src/years.ts). */
+  years: {
+    year: number;
+    open: boolean;
+    over: boolean;
+    cantons: { code: string; name: string }[];
+  }[];
+  /** A year that is over: what replaces the plans before 31 December, or null. */
+  yearOver: YearOverView | null;
   /** The canton of the return, once the user said where they lived on 31 December. */
   canton: {
-    code: 'GE' | 'ZH' | 'BE' | 'BL' | 'VD' | 'BS' | 'ZG' | 'LU' | 'SG';
+    code: 'GE' | 'ZH' | 'BE' | 'BL' | 'VD' | 'BS' | 'ZG' | 'LU' | 'SG' | 'FR' | 'TI' | 'AG';
     name: string;
     from: 'answer' | 'earlier_answers' | 'none';
     because: string[];
@@ -104,6 +190,7 @@ export interface State extends DocumentsState {
   documents: DocumentView[];
   kinds: { value: string; label: string }[];
   requirements: RequirementView[];
+  /** The plans before 31 December; null for a year that is over (see yearOver). */
   plan: {
     inputs: {
       person: 'p1' | 'p2';
@@ -125,9 +212,9 @@ export interface State extends DocumentsState {
       assumptions: string[];
       sources: string[];
     };
-  };
-  /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. */
-  planning: PlanningState;
+  } | null;
+  /** Pension fund buy-in, 3a catch-up and TOU: ./types-planning.ts. Null for a year that is over. */
+  planning: PlanningState | null;
   notSupported: string[];
   /** The values to type into the official declaration, in the form's order (SPEC.md 10.5). */
   copyPanel: CopyPanelState;
@@ -146,3 +233,12 @@ export interface State extends DocumentsState {
   notSupportedMessage: string;
   activity: Activity[];
 }
+
+/** The state of a year whose plans before 31 December apply: not over (see yearOver). */
+export type PlannedState = State & {
+  plan: NonNullable<State['plan']>;
+  planning: PlanningState;
+};
+
+export const isPlanned = (state: State): state is PlannedState =>
+  state.plan !== null && state.planning !== null;

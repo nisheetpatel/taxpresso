@@ -73,6 +73,36 @@ export const DOCUMENT_KINDS = [
   // The PDF of this year's own declaration, downloaded from GeTax or the online declaration before
   // the user transmits it, to check it against the values to type (SPEC.md 10.4). Never a source of values.
   'official_declaration',
+  // The attestation of a lump sum paid by a pension fund or vested benefits institution (2nd pillar)
+  // or by a pillar 3a foundation or insurer: the copy the institution sends the taxpayer
+  // (ch-na-law-lifd art. 129 al. 1 let. b and al. 2, p. 69); Geneva rubric 98.12
+  // (ge-2025-guide-declaration-pp p. 13).
+  'lpp_capital_attestation',
+  'pillar3a_capital_attestation',
+  // Self-employment (ge-2025-guide-independants p. 6 and 25): the business's signed accounts (bilan
+  // et compte de résultat) or simple records (relevé des recettes et dépenses, état des actifs et
+  // passifs), and the AVS compensation fund's statement of the owner's contributions.
+  'business_accounts',
+  'avs_contributions',
+  // A home or land abroad (immeuble à l'étranger, annexe D; ge-2025-guide-declaration-pp p. 32 and
+  // 33): the country's tax notice or attestation (its tax value, its rental value; in France the
+  // taxe d'habitation or taxes foncières), the deed of purchase (acte d'acquisition) where the
+  // country sets no tax value, and the management account (compte de gestion) of a property let
+  // (ge-na-revenu-immobilier-page, ge-na-valeur-fiscale-page).
+  'foreign_property_tax_notice',
+  'foreign_property_deed',
+  'foreign_property_rent_statement',
+  // A property in Geneva (annexe D; ge-2025-guide-declaration-pp p. 8, 10, 32 to 37): the AFC's
+  // letter with its tax value and rental value for the year, or the avis de taxation immobilier
+  // (ge-na-valeur-fiscale-page, ge-na-revenu-immobilier-page); the management account (compte de
+  // gestion) of a property let; the upkeep invoices (factures d'entretien) and the PPE charges
+  // statement (décompte de charges de copropriété); and the lender's mortgage statement (annexe E,
+  // intérêts et dettes hypothécaires).
+  'property_values',
+  'property_rent_statement',
+  'property_upkeep_invoices',
+  'ppe_charges_statement',
+  'mortgage_statement',
 ] as const;
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 

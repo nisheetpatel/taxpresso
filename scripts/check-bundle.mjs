@@ -2,7 +2,8 @@
 // C2 static checks on the staged extension (extension/dist), run after `pnpm build`:
 //  1. every npm package bundled into server/index.mjs is in extension/allowed-dependencies.json;
 //  2. every Node built-in it imports, or loads at run time (process.getBuiltinModule, require), is
-//     allowlisted, and none of the network ones ever is;
+//     allowlisted, and none of the network ones ever is; node:child_process is imported by the one
+//     file that opens the folder in the file manager, and never loaded at run time;
 //  3. the shipped UI loads nothing from outside (no remote src, href, url() or @import, no Google Fonts);
 //  4. nothing unexpected ships (no node_modules, no source maps).
 // The runtime proof is test/offline/run.mjs; this catches problems before anything runs.
@@ -24,11 +25,16 @@ const NEVER = [
   'dgram',
   'dns',
   'dns/promises',
-  'child_process',
   'cluster',
   'worker_threads',
   'inspector',
 ].map((m) => `node:${m}`);
+
+/**
+ * Process built-ins allowed in one file only, imported statically, never loaded at run time:
+ * node:child_process opens the folder in the file manager ("Open my Taxpresso folder").
+ */
+const ONLY_FROM = { 'node:child_process': ['src/open-folder.ts'] };
 
 const errors = [];
 let meta;
@@ -68,6 +74,8 @@ for (const [b, files] of builtins) {
     errors.push(
       `built-in ${b} is not in extension/allowed-dependencies.json (imported by ${files.join(', ')})`,
     );
+  else if (b in ONLY_FROM && files.some((f) => !ONLY_FROM[b].includes(f)))
+    errors.push(`${b} may be imported by ${ONLY_FROM[b].join(', ')} only, not ${files.join(', ')}`);
 }
 
 // Built-ins loaded at run time without an import (process.getBuiltinModule, require): same rules.
@@ -79,7 +87,7 @@ for (const m of bundle.matchAll(
   const bare = m[1].replace(/^node:/, '');
   if (!builtinModules.includes(bare)) continue;
   const name = `node:${bare}`;
-  if (NEVER.includes(name)) {
+  if (NEVER.includes(name) || name in ONLY_FROM) {
     errors.push(
       `${name} is a network or process built-in (C2), loaded at run time in server/index.mjs`,
     );

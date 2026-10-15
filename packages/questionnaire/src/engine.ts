@@ -24,11 +24,14 @@ import {
   type Text,
 } from './schema.js';
 
-export type Lang = 'en' | 'fr' | 'de';
+export type Lang = 'en' | 'fr' | 'de' | 'it';
 
-/** A text in the language asked for; English where a text has no German yet. */
-export function say(text: { en: string; fr: string; de?: string | undefined }, lang: Lang): string {
-  return lang === 'de' ? (text.de ?? text.en) : text[lang];
+/** A text in the language asked for; English where a text has no German or Italian yet. */
+export function say(
+  text: { en: string; fr: string; de?: string | undefined; it?: string | undefined },
+  lang: Lang,
+): string {
+  return lang === 'de' || lang === 'it' ? (text[lang] ?? text.en) : text[lang];
 }
 
 export interface CommuneOption {
@@ -55,13 +58,22 @@ export interface Slot {
    * its commune): it counts as the answer until the user answers the question themselves.
    */
   assumed?: boolean;
+  /**
+   * Never asked: the law settles it from the other answers (the question's `derive`), with why in
+   * plain words and the source. The user changes the answers it follows from, not this one.
+   */
+  derived?: { because: Text; source: string };
 }
 
 export interface Snapshot {
   people: Person[];
-  /** Questions that apply, in order, with their current answers. */
+  /** Questions that apply and are asked, in order, with their current answers. */
   slots: Slot[];
-  /** Effective answers: only those of questions that still apply. */
+  /** Questions answered from the other answers (Slot.derived), never asked. */
+  derived: Slot[];
+  /** Both, in the questionnaire's order. */
+  all: Slot[];
+  /** Effective answers: only those of questions that still apply, the derived ones included. */
   answers: ReadonlyMap<string, FactValue>;
 }
 
@@ -83,6 +95,9 @@ export interface RenderedQuestion {
   none?: string;
   min?: number;
   max?: number;
+  /** A date question: the first and last day it takes, YYYY-MM-DD (the tax year). */
+  minDate?: string;
+  maxDate?: string;
   value?: FactValue;
   /** Not an answer yet: a value read from a document, for the user to confirm or change. */
   suggested?: FactValue;
@@ -96,6 +111,7 @@ const YES_NO: Record<Lang, [string, string]> = {
   en: ['Yes', 'No'],
   fr: ['Oui', 'Non'],
   de: ['Ja', 'Nein'],
+  it: ['Sì', 'No'],
 };
 const COUPLE = new Set(['married', 'registered_partnership']);
 const slotKey = (key: string, owner: Owner) => `${key}|${owner}`;
@@ -114,12 +130,34 @@ export class QuestionnaireEngine {
   readonly keys: KeyRegistry;
   readonly communes: readonly CommuneOption[];
 
+  /**
+   * The household money keys a condition reads that no question asks (a document's amount, such as
+   * the childcare invoices' `childcare.costs`): they stand for what the ledger holds, added up, so a
+   * question can wait until the documents show it is needed.
+   */
+  readonly #held: readonly string[];
+
   constructor(file: QuestionnaireFile, keys: KeyRegistry, communes: readonly CommuneOption[]) {
     this.file = file;
     this.keys = keys;
     this.communes = communes;
     const problems = this.check();
     if (problems.length) throw new QuestionnaireError(problems.join('\n'));
+    const asked = new Set(file.questions.map((q) => q.key));
+    const read = new Set<string>();
+    const walk = (c: Condition | undefined): void => {
+      if (!c) return;
+      if (c.key) read.add(c.key);
+      c.any?.forEach(walk);
+      c.all?.forEach(walk);
+    };
+    for (const q of file.questions) {
+      walk(q.when);
+      q.derive?.forEach((r) => walk(r.when));
+    }
+    this.#held = [...read].filter(
+      (k) => !asked.has(k) && keys[k]?.type === 'money' && !keys[k]?.perPerson,
+    );
   }
 
   get taxYear(): number {
@@ -138,6 +176,7 @@ export class QuestionnaireEngine {
       number: 'integer',
       money: 'money',
       multi: 'enum_list',
+      date: 'date',
     };
     const checkCondition = (c: Condition | undefined, where: string): void => {
       if (!c) return;
@@ -173,6 +212,11 @@ export class QuestionnaireEngine {
         }
       }
       checkCondition(q.when, q.id);
+      for (const [i, rule] of (q.derive ?? []).entries()) {
+        checkCondition(rule.when, `${q.id} derive ${i}`);
+        const why = invalidValue(def, rule.value);
+        if (why) problems.push(`${q.id} derive ${i}: ${why}`);
+      }
     }
     for (const r of this.file.requirements) {
       checkCondition(r.when, `requirement ${r.id}`);
@@ -190,6 +234,17 @@ export class QuestionnaireEngine {
    */
   snapshot(ledger: Ledger, assumed: Readonly<Record<string, FactValue>> = {}): Snapshot {
     const answers = new Map<string, FactValue>();
+    const held = new Map<string, FactValue>();
+    for (const key of this.#held) {
+      const facts = ledger
+        .view()
+        .filter((f) => f.key === key && f.person === 'household' && typeof f.value === 'number');
+      if (facts.length)
+        held.set(
+          key,
+          facts.reduce((s, f) => s + (f.value as number), 0),
+        );
+    }
     const people = (): Person[] =>
       COUPLE.has(String(answers.get(slotKey('profile.civil_status', 'household'))))
         ? ['p1', 'p2']
@@ -202,7 +257,7 @@ export class QuestionnaireEngine {
         (_, i) => `child${i + 1}` as const,
       );
     };
-    const slots: Slot[] = [];
+    const all: Slot[] = [];
     for (const question of this.file.questions) {
       const owners: Owner[] = question.perPerson
         ? people()
@@ -210,7 +265,24 @@ export class QuestionnaireEngine {
           ? children()
           : ['household'];
       for (const person of owners) {
-        if (question.when && !this.#holds(question.when, person, answers, people())) continue;
+        if (question.when && !this.#holds(question.when, person, answers, people(), held)) continue;
+        const id =
+          question.perPerson || question.perChild ? `${question.id}:${person}` : question.id;
+        // Settled by the law from the answers so far: never asked, whatever was stored before.
+        const rule = question.derive?.find((r) =>
+          this.#holds(r.when, person, answers, people(), held),
+        );
+        if (rule) {
+          answers.set(slotKey(question.key, person), rule.value);
+          all.push({
+            id,
+            question,
+            person,
+            value: rule.value,
+            derived: { because: rule.because, source: rule.source },
+          });
+          continue;
+        }
         const stored = ledger.get(question.key, person);
         // An answer the key no longer accepts (an option that was replaced) is asked again.
         const def = this.keys[question.key];
@@ -238,7 +310,7 @@ export class QuestionnaireEngine {
               : assumed[question.key]
             : undefined;
         const slot: Slot = {
-          id: question.perPerson || question.perChild ? `${question.id}:${person}` : question.id,
+          id,
           question,
           person,
           ...(answer ? { value: answer.value, fact: answer } : {}),
@@ -247,10 +319,16 @@ export class QuestionnaireEngine {
         };
         if (answer) answers.set(slotKey(question.key, person), answer.value);
         else if (taken !== undefined) answers.set(slotKey(question.key, person), taken);
-        slots.push(slot);
+        all.push(slot);
       }
     }
-    return { people: people(), slots, answers };
+    return {
+      people: people(),
+      slots: all.filter((s) => !s.derived),
+      derived: all.filter((s) => s.derived),
+      all,
+      answers,
+    };
   }
 
   /** The next question: the first unanswered one, skipped ones last. */
@@ -261,7 +339,14 @@ export class QuestionnaireEngine {
 
   /** Stores an answer as a "stated" fact. The question must apply right now. */
   answer(ledger: Ledger, slotId: string, raw: unknown, source: FactSource): Fact {
-    const slot = this.snapshot(ledger).slots.find((s) => s.id === slotId);
+    const snapshot = this.snapshot(ledger);
+    const derived = snapshot.derived.find((s) => s.id === slotId);
+    if (derived?.derived) {
+      throw new QuestionnaireError(
+        `${slotId} follows from the other answers: ${derived.derived.because.en} Change those answers instead.`,
+      );
+    }
+    const slot = snapshot.slots.find((s) => s.id === slotId);
     if (!slot) throw new QuestionnaireError(`Question ${slotId} doesn't apply now.`);
     const value = this.#coerce(slot.question, raw);
     try {
@@ -275,6 +360,16 @@ export class QuestionnaireEngine {
     } catch (err) {
       throw new QuestionnaireError((err as Error).message);
     }
+  }
+
+  /**
+   * An answer to the question of `key` as the questionnaire takes it (an option by its value or
+   * label, a commune by its name), without storing it: for a suggestion read from a document.
+   */
+  coerceAnswer(key: string, raw: unknown): FactValue {
+    const question = this.file.questions.find((q) => q.key === key);
+    if (!question) throw new QuestionnaireError(`No question asks for ${key}.`);
+    return this.#coerce(question, raw);
   }
 
   /** What the "still missing" list shows, derived from the answers and the documents. */
@@ -328,7 +423,7 @@ export class QuestionnaireEngine {
   /** Answers that put the return outside what Taxpresso supports (SPEC.md section 1). */
   notSupported(snapshot: Snapshot): { slotId: string; what: Text }[] {
     const out: { slotId: string; what: Text }[] = [];
-    for (const slot of snapshot.slots) {
+    for (const slot of snapshot.all) {
       const q = slot.question;
       if (q.type === 'yesno' && slot.value === true && q.yesNotSupported) {
         out.push({ slotId: slot.id, what: q.yesNotSupported });
@@ -340,11 +435,14 @@ export class QuestionnaireEngine {
     return out;
   }
 
-  /** Short summaries of the answers, like the chips on screen 1. */
-  chips(snapshot: Snapshot, lang: Lang): string[] {
+  /**
+   * Short summaries of the answers, like the chips on screen 1. `omit`: answers the page already
+   * says another way (a fact of "About you"), left out.
+   */
+  chips(snapshot: Snapshot, lang: Lang, omit?: (slot: Slot) => boolean): string[] {
     const chips: string[] = [];
-    for (const slot of snapshot.slots) {
-      if (slot.value === undefined) continue;
+    for (const slot of snapshot.all) {
+      if (slot.value === undefined || omit?.(slot)) continue;
       const q = slot.question;
       let texts: string[] = [];
       if (q.type === 'commune') {
@@ -419,6 +517,9 @@ export class QuestionnaireEngine {
       ...(q.none ? { none: say(q.none, lang) } : {}),
       ...(q.min !== undefined ? { min: q.min } : {}),
       ...(q.max !== undefined ? { max: q.max } : {}),
+      ...(q.type === 'date'
+        ? { minDate: `${this.taxYear}-01-01`, maxDate: `${this.taxYear}-12-31` }
+        : {}),
       ...(slot.value !== undefined ? { value: slot.value } : {}),
       ...(slot.suggested !== undefined ? { suggested: slot.suggested } : {}),
       ...(slot.assumed ? { assumed: true } : {}),
@@ -433,6 +534,7 @@ export class QuestionnaireEngine {
     if (q.type === 'yesno') return YES_NO[lang][value ? 0 : 1];
     if (q.type === 'number') return String(value);
     if (q.type === 'money') return typeof value === 'number' ? chfText(value) : String(value);
+    if (q.type === 'date') return typeof value === 'string' ? dayText(value, lang) : String(value);
     const labels = this.#selected(slot, value).map((o) => say(o.label, lang));
     return labels.length ? labels.join(', ') : q.none ? say(q.none, lang) : '';
   }
@@ -457,9 +559,11 @@ export class QuestionnaireEngine {
     person: Owner,
     answers: ReadonlyMap<string, FactValue>,
     people: Person[],
+    held: ReadonlyMap<string, FactValue> = new Map(),
   ): boolean {
-    if (c.any) return c.any.some((x) => this.#holds(x, person, answers, people));
-    if (c.all) return c.all.every((x) => this.#holds(x, person, answers, people));
+    if (c.any) return c.any.some((x) => this.#holds(x, person, answers, people, held));
+    if (c.all) return c.all.every((x) => this.#holds(x, person, answers, people, held));
+    if (c.person) return person === c.person;
     const key = c.key!;
     const def = this.keys[key];
     if (!def) return false;
@@ -474,7 +578,7 @@ export class QuestionnaireEngine {
       if (c.is !== undefined && v !== c.is) return false;
       return true;
     };
-    if (!def.perPerson) return test(answers.get(slotKey(key, 'household')));
+    if (!def.perPerson) return test(answers.get(slotKey(key, 'household')) ?? held.get(key));
     if (c.anyPerson || person === 'household') {
       return people.some((p) => test(answers.get(slotKey(key, p))));
     }
@@ -534,7 +638,7 @@ export class QuestionnaireEngine {
       case 'yesno': {
         if (typeof raw === 'boolean') return raw;
         const f = fold(String(raw));
-        if (['yes', 'oui', 'true', 'y'].includes(f)) return true;
+        if (['yes', 'oui', 'si', 'true', 'y'].includes(f)) return true;
         if (['no', 'non', 'false', 'n'].includes(f)) return false;
         return bad('expected yes or no');
       }
@@ -568,8 +672,94 @@ export class QuestionnaireEngine {
         if (max !== undefined && parsed.value > max) return bad(`expected at most ${chfText(max)}`);
         return parsed.value;
       }
+      case 'date': {
+        // A day of the tax year: 2026-04-01, or as people write it in Switzerland, 1.4.2026.
+        const text = typeof raw === 'string' ? raw.trim() : '';
+        const swiss = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text);
+        const iso = swiss
+          ? `${swiss[3]}-${swiss[2]!.padStart(2, '0')}-${swiss[1]!.padStart(2, '0')}`
+          : text;
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+        const real =
+          m &&
+          new Date(`${iso}T00:00:00Z`).toISOString().slice(0, 10) === iso &&
+          Number(m[1]) === this.taxYear;
+        if (!real) return bad(`expected a day of ${this.taxYear}, e.g. ${this.taxYear}-04-01`);
+        return iso;
+      }
     }
   }
+}
+
+const MONTHS: Record<Lang, readonly string[]> = {
+  en: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ],
+  fr: [
+    'janvier',
+    'février',
+    'mars',
+    'avril',
+    'mai',
+    'juin',
+    'juillet',
+    'août',
+    'septembre',
+    'octobre',
+    'novembre',
+    'décembre',
+  ],
+  de: [
+    'Januar',
+    'Februar',
+    'März',
+    'April',
+    'Mai',
+    'Juni',
+    'Juli',
+    'August',
+    'September',
+    'Oktober',
+    'November',
+    'Dezember',
+  ],
+  it: [
+    'gennaio',
+    'febbraio',
+    'marzo',
+    'aprile',
+    'maggio',
+    'giugno',
+    'luglio',
+    'agosto',
+    'settembre',
+    'ottobre',
+    'novembre',
+    'dicembre',
+  ],
+};
+
+/** A day in words: "1 April 2026", "1er avril 2026", "1. April 2026", "1° aprile 2026". */
+export function dayText(iso: string, lang: Lang): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  const [y, mo, d] = [m[1], Number(m[2]), Number(m[3])];
+  const month = MONTHS[lang][mo - 1] ?? '';
+  if (lang === 'fr') return `${d === 1 ? '1er' : d} ${month} ${y}`;
+  if (lang === 'de') return `${d}. ${month} ${y}`;
+  if (lang === 'it') return `${d === 1 ? '1°' : d} ${month} ${y}`;
+  return `${d} ${month} ${y}`;
 }
 
 /** "CHF 1250.50": centimes as the form writes them, with the currency. */

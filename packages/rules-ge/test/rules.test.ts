@@ -12,7 +12,7 @@ import {
   twoEarnerFederal,
 } from '@taxpresso/rules-ch';
 import { avsDeduction, lifeInsuranceCap } from '../src/engine/rules.js';
-import { computeReturn, type EngineInput } from '../src/index.js';
+import { computeReturn, NOTE, type EngineInput } from '../src/index.js';
 
 const chf = (francs: number) => Math.round(francs * 100);
 const find = (items: readonly { code: string; amount: number }[], code: string) =>
@@ -215,6 +215,89 @@ describe('household rules', () => {
     });
     expect(find(r.icc!.items, '59.10')).toBeUndefined();
     expect(find(r.icc!.items, '61.25')).toBe(-chf(13_660)); // full family charge, no childcare
+  });
+
+  it('childcare: a child of 14 or more counts for neither tax, and the result says so', () => {
+    // Two children: the younger under 14 with childcare of 8,000, the elder 14 or more at the end
+    // of the year with 5,000. Each child's care counts up to the month of the 14th birthday (p. 30;
+    // LIPP art. 35), so only the younger's: 8,000 for each tax (59.10, at most 26,320; 59.12, at
+    // most 25,800), where both used to take 13,000 within the cap of the one child under 14.
+    const household: EngineInput = {
+      taxYear: 2025,
+      commune: 'geneve',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', under14: true, childcare: { value: chf(8_000) } },
+        { custody: 'full', under14: false, childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = computeReturn(household);
+    expect(find(r.icc!.items, '59.10')).toBe(-chf(8_000));
+    expect(find(r.ifd!.items, '59.12')).toBe(-chf(8_000));
+    expect(r.notCounted).toContainEqual(NOTE.childcareAge);
+    // Paid for the household as a whole, it can't be told apart per child: it is taken for the
+    // children under 14, as before, and nothing more is said.
+    const whole = computeReturn({
+      ...household,
+      children: [
+        { custody: 'full', under14: true },
+        { custody: 'full', under14: false },
+      ],
+      household: { childcare: { value: chf(13_000) } },
+    });
+    expect(find(whole.icc!.items, '59.10')).toBe(-chf(13_000));
+    expect(find(whole.ifd!.items, '59.12')).toBe(-chf(13_000));
+    expect(whole.notCounted).not.toContainEqual(NOTE.childcareAge);
+  });
+
+  it('childcare: each child’s costs at most the maximum, then added up; a household amount is asked per child when the split decides', () => {
+    // Two children under 14, childcare of 30,000 and 5,000: each child's costs count at most the
+    // maximum (p. 30: "pour chaque enfant ... jusqu'à concurrence de"), then they are added up:
+    // 26,320 + 5,000 = 31,320 for the ICC (59.10), 25,800 + 5,000 = 30,800 for the IFD (59.12),
+    // where both used to take 35,000 within twice the maximum.
+    const household: EngineInput = {
+      taxYear: 2025,
+      commune: 'geneve',
+      civilStatus: 'married',
+      people: [
+        { id: 'p1', employments: [{ gross: { value: chf(90_000) } }] },
+        { id: 'p2', employments: [{ gross: { value: chf(60_000) } }] },
+      ],
+      children: [
+        { custody: 'full', childcare: { value: chf(30_000) } },
+        { custody: 'full', childcare: { value: chf(5_000) } },
+      ],
+    };
+    const r = computeReturn(household);
+    expect(find(r.icc!.items, '59.10')).toBe(-chf(31_320));
+    expect(find(r.ifd!.items, '59.12')).toBe(-chf(30_800));
+    expect(r.ifd!.items.find((i) => i.code === '59.12')!.how.en).toMatch(
+      /CHF 30’000\.00, counted CHF 25’800\.00 \+ CHF 5’000\.00 = CHF 30’800\.00/,
+    );
+    // The same 35,000 given for the household: how it splits between the two children decides
+    // both taxes, so neither is computed, and the result says why (the questionnaire then asks
+    // it per child, ge.child_care).
+    const twoChildren = [{ custody: 'full' as const }, { custody: 'full' as const }];
+    const whole = computeReturn({
+      ...household,
+      children: twoChildren,
+      household: { childcare: { value: chf(35_000) } },
+    });
+    expect(whole.icc).toBeNull();
+    expect(whole.ifd).toBeNull();
+    expect(whole.unsupported).toContainEqual(NOTE.childcareSplit);
+    // Within one child's maximum (the smaller, the federal 25,800), every split gives the same.
+    const within = computeReturn({
+      ...household,
+      children: twoChildren,
+      household: { childcare: { value: chf(25_800) } },
+    });
+    expect(find(within.icc!.items, '59.10')).toBe(-chf(25_800));
+    expect(find(within.ifd!.items, '59.12')).toBe(-chf(25_800));
   });
 
   it('debt interest: at most the income from wealth + 50,000 (p. 37)', () => {

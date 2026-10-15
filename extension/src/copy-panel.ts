@@ -6,20 +6,26 @@
 // ticks are stored, in entered.json in the vault, never in the ledger.
 import type { FactStatus, Owner } from '@taxpresso/ledger';
 import {
+  annexBItems,
+  annexDItems,
   buildCopyPanel,
+  COMMUNE_CODES_2025,
   ENGINE_RUBRICS_2026,
   enteredValue,
-  FORM_2025,
-  FORM_2026,
+  filing as genevaFiling,
   itemsFromLedger,
   mergeItems,
+  selfEmployed3a,
   type CopyPanel,
   type CopyRow,
   type FormColumn,
   type FormItem,
 } from '@taxpresso/filing-ge';
 import type { Line } from '@taxpresso/rules-ch';
+import type { CommuneSlug } from '@taxpresso/rules-ge';
 import { CANTONS } from './cantons.js';
+import { hasFigures } from './estimate.js';
+import { holdings } from './holdings.js';
 import type { ContentLang as Lang } from './lang.js';
 import { WorkspaceError, type Workspace } from './workspace.js';
 
@@ -27,26 +33,57 @@ import { WorkspaceError, type Workspace } from './workspace.js';
 const ENGINE_RUBRICS = {
   icc: new Set<string>(ENGINE_RUBRICS_2026.icc),
   ifd: new Set<string>(ENGINE_RUBRICS_2026.ifd),
+  info: new Set<string>(ENGINE_RUBRICS_2026.info),
 };
 
 /** The engine's values for the rubrics it computes (SPEC.md section 7), as form items. */
 export function engineItems(ws: Workspace): FormItem[] {
   const r = ws.taxEstimate().result;
-  if (!r) return [];
+  // No income and no wealth: the engine's lines would be computed from nothing.
+  if (!r || !hasFigures(ws)) return [];
   const status = (l: Line): FactStatus =>
     l.needsOk ? 'extracted' : l.estimates?.length || l.incomplete ? 'estimate' : 'computed';
   const out: FormItem[] = [];
-  const add = (code: string, person: Owner, l: Line, column?: FormColumn, amount = l.amount) =>
+  // Deductions are negative in the engine and typed as positive amounts; a total keeps its sign.
+  const add = (
+    code: string,
+    person: Owner,
+    l: Line,
+    column?: FormColumn,
+    amount = l.amount,
+    signed = false,
+    extra: Pick<FormItem, 'gloss' | 'noCheck'> = {},
+  ) =>
     out.push({
       code,
       person,
       ...(column ? { column } : {}),
-      amount: Math.abs(amount),
+      amount: signed ? amount : Math.abs(amount),
       status: status(l),
       source: { ...(l.facts ? { facts: l.facts } : {}), rule: l.sources.join('; ') },
+      ...extra,
     });
   const icc = r.icc;
   const ifd = r.ifd;
+  // A year of arrival or departure: 95.00 is the net income for the rate, a full year's (the form's
+  // "le cas échéant, revenu net pour le taux"), 97.00 the part not taxed here, 99.00 the period's.
+  // How the form computes those two for part of a year isn't documented: never compared with the
+  // official PDF (noCheck).
+  const part = r.partYear;
+  const rateGloss = {
+    gloss: {
+      en: 'Net income for the rate: your income converted to a full year (revenu net pour le taux)',
+      fr: 'Revenu net pour le taux\u00a0: votre revenu converti sur une année entière',
+    },
+    noCheck: true,
+  };
+  const notTaxedGloss = {
+    gloss: {
+      en: 'The part of a full year’s income not taxed here: the time you didn’t live in Switzerland',
+      fr: 'La part du revenu annuel non imposable ici\u00a0: la période où vous ne viviez pas en Suisse',
+    },
+    noCheck: true,
+  };
   for (const i of icc?.items ?? [])
     if (ENGINE_RUBRICS.icc.has(i.code)) add(i.code, i.person, i, 'icc');
   for (const i of ifd?.items ?? [])
@@ -64,22 +101,90 @@ export function engineItems(ws: Workspace): FormItem[] {
         insurance.reduce((s, i) => s + i.amount, 0),
       );
     }
-    add('95.00', 'household', icc.totalIncome, 'icc');
-    add('99.00', 'household', icc.taxableIncome, 'icc');
+    if (part?.icc) {
+      add('95.00', 'household', part.icc.rateTotal, 'icc', undefined, true, rateGloss);
+      add('97.00', 'household', part.icc.notTaxed, 'icc', undefined, false, notTaxedGloss);
+    } else {
+      add('95.00', 'household', icc.totalIncome, 'icc', icc.totalIncome.amount, true);
+    }
+    // With a property abroad, the share of the income not taxed in Geneva (97.00).
+    if (icc.exemptIncome) add('97.00', 'household', icc.exemptIncome, 'icc');
+    add('99.00', 'household', icc.taxableIncome, 'icc', icc.taxableIncome.amount, true);
     // The wealth page only when there is wealth to declare.
     if (icc.wealth.grossWealth.amount > 0) {
       add('51.50', 'household', icc.wealth.socialDeduction, 'wealth');
-      add('95.00', 'household', icc.wealth.taxableWealth, 'wealth');
-      add('99.00', 'household', icc.wealth.taxableWealth, 'wealth');
+      add(
+        '95.00',
+        'household',
+        icc.wealth.rateWealth ?? icc.wealth.taxableWealth,
+        'wealth',
+        undefined,
+        true,
+      );
+      if (icc.wealth.exemptWealth) add('97.00', 'household', icc.wealth.exemptWealth, 'wealth');
+      add('99.00', 'household', icc.wealth.taxableWealth, 'wealth', undefined, true);
     }
   }
   if (ifd) {
     const insurance = ifd.items.find((i) => i.code === '52.00');
     if (insurance) add('52.00', 'household', insurance, 'ifd');
-    add('95.00', 'household', ifd.totalIncome, 'ifd');
-    add('99.00', 'household', ifd.taxableIncome, 'ifd');
+    if (part?.ifd) {
+      add('95.00', 'household', part.ifd.rateTotal, 'ifd', undefined, true, rateGloss);
+      add('97.00', 'household', part.ifd.notTaxed, 'ifd', undefined, false, notTaxedGloss);
+    } else {
+      add('95.00', 'household', ifd.totalIncome, 'ifd', ifd.totalIncome.amount, true);
+    }
+    if (ifd.exemptIncome) add('97.00', 'household', ifd.exemptIncome, 'ifd');
+    add('99.00', 'household', ifd.taxableIncome, 'ifd', ifd.taxableIncome.amount, true);
+  }
+  // The lump sums from the 2nd pillar and pillar 3a counted for the year (98.12, one amount for
+  // the household: the spouses' add up in its box).
+  for (const i of r.capital?.items ?? [])
+    if (ENGINE_RUBRICS.info.has(i.code)) add(i.code, i.person, i, 'amount');
+  // Annexe B, one sheet per self-employed person (@taxpresso/filing-ge, annex-b.ts).
+  if (r.business?.length) {
+    const commune = ws.snapshot().answers.get('profile.commune|household');
+    out.push(
+      ...annexBItems({
+        sheets: r.business,
+        facts: ws.countedFacts(),
+        ...(typeof commune === 'string' ? { commune: commune as CommuneSlug } : {}),
+        status,
+      }),
+    );
+  }
+  // A property abroad or in Geneva: annexe D, their totals, and a loan abroad in another currency
+  // on E1 55.20 (@taxpresso/filing-ge, annex-d.ts). A Geneva property's line gives the commune's
+  // code (Code lieu: the commune where the household lives) and the parcel read on the avis de
+  // taxation immobilier.
+  if (r.abroad || r.property) {
+    const commune = ws.snapshot().answers.get('profile.commune|household');
+    const code =
+      typeof commune === 'string' ? COMMUNE_CODES_2025[commune as CommuneSlug] : undefined;
+    const parcel = r.property
+      ? ws.countedFacts().find((f) => f.key === 'property.parcel' && typeof f.value === 'string')
+      : undefined;
+    out.push(
+      ...annexDItems({
+        ...(r.abroad ? { abroad: r.abroad } : {}),
+        ...(r.property ? { property: r.property } : {}),
+        ...(r.property && code ? { communeCode: code } : {}),
+        ...(parcel ? { parcel: parcel.value as string } : {}),
+        debts: holdings(ws).other,
+        status,
+      }),
+    );
   }
   return out;
+}
+
+/** The people whose pillar 3a the engine puts on annexe B (32.40): self-employed without a salary. */
+function on32_40(ws: Workspace): Set<'p1' | 'p2'> {
+  const r = ws.taxEstimate().result;
+  const people = [...(r?.icc?.items ?? []), ...(r?.ifd?.items ?? [])]
+    .filter((i) => i.code === '32.40')
+    .map((i) => i.person);
+  return new Set(people.filter((p): p is 'p1' | 'p2' => p === 'p1' || p === 'p2'));
 }
 
 export type CopyPanelRowView = Omit<CopyRow, 'documents'> & {
@@ -109,6 +214,20 @@ function withDocuments(ws: Workspace, items: FormItem[]): FormItem[] {
 }
 
 function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPanelView['waiting'] } {
+  // A canton Taxpresso covers, but not for this year: no form, nothing to type (fail closed).
+  if (ws.canton().notOffered) {
+    const empty: CopyPanel = {
+      taxYear: ws.taxYear,
+      formYear: ws.taxYear,
+      provisional: false,
+      sections: [],
+      entered: 0,
+      total: 0,
+      pending: 0,
+      unplaced: [],
+    };
+    return { panel: empty, waiting: [] };
+  }
   // A canton whose filing package gives the values to type from its engine (Zurich's,
   // @taxpresso/filing-zh): every value from its result, on its form.
   const filing = ws.canton().canton?.filing;
@@ -132,10 +251,11 @@ function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPane
     people,
     taxYear: ws.engine.taxYear,
   });
-  const form = ws.engine.taxYear === 2025 ? FORM_2025 : FORM_2026;
+  // The form of the year (@taxpresso/filing-ge, FORMS): none for another year (fail closed).
+  const form = genevaFiling.formMap(ws.taxYear);
   const built = buildCopyPanel({
     form,
-    items: mergeItems(engineItems(ws), items),
+    items: mergeItems(engineItems(ws), selfEmployed3a(items, on32_40(ws))),
     lang,
     entered: (id) => ws.formEntered(id),
   });
@@ -151,8 +271,12 @@ function panel(ws: Workspace, lang: Lang): { panel: CopyPanel; waiting: CopyPane
 export function copyPanelView(ws: Workspace, lang: Lang): CopyPanelView {
   const { panel: p, waiting } = panel(ws, lang);
   const names = new Map(ws.documents.map((d) => [d.id, d.filename]));
+  // The note on the previous year's form matters when the form is filled in, after the year ends.
+  const { note, ...rest } = p;
+  const filling = ws.today() > `${ws.taxYear}-12-31`;
   return {
-    ...p,
+    ...rest,
+    ...(note !== undefined && filling ? { note } : {}),
     sections: p.sections.map((s) => ({
       ...s,
       groups: s.groups.map((g) => ({
@@ -246,6 +370,12 @@ export interface FormValuesResult {
 
 /** The panel for get_form_values: sections with progress, or one section's values. */
 export function formValues(ws: Workspace, section?: string): FormValuesResult {
+  const notOffered = ws.canton().notOffered;
+  if (notOffered) {
+    throw new WorkspaceError(
+      `Taxpresso can't prepare a ${ws.taxYear} return in ${notOffered.name.en} yet, so there is nothing to type. Suggest ${notOffered.software}, the canton's free software.`,
+    );
+  }
   const { panel: p, waiting } = panel(ws, 'en');
   const couple = ws.snapshot().people.length > 1;
   // Before the canton is known, Geneva's form (the defaults).
@@ -266,7 +396,8 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
       `Waiting for what they are: ${waiting.map((w) => `${w.label}${w.filename ? ` (${w.filename})` : ''}`).join('; ')}.`,
     );
   }
-  if (words.guide) head.push(words.guide);
+  // The canton's form and software: said once the canton is known (Geneva's form is the default).
+  if (words.guide && ws.canton().canton) head.push(words.guide);
   if (couple) head.push(words.persons);
   const structured: FormValuesResult['structured'] = {
     provisional: p.provisional,
@@ -284,12 +415,19 @@ export function formValues(ws: Workspace, section?: string): FormValuesResult {
       : [
           'Nothing to type yet: values come from the documents the user confirmed and their answers.',
         ];
+    // How Claude walks the user through it, once, with the list of sections.
+    const walk = p.sections.length
+      ? [
+          `Go through final_check with the user first. Then walk them through one section at a time, in the form's order: each value with its code and official label exactly as given here. When they say they typed values, tick them with mark_entered.${(ws.canton().canton ?? CANTONS.GE).filing.checksPdf ? ' Before they transmit, they add the PDF of their declaration and you check it with reconcile_official_pdf.' : ''}`,
+        ]
+      : [];
     return {
       text: [
         ...head,
         'Sections:',
         ...lines,
         `Call again with section (e.g. "${words.example}") for its values.`,
+        ...walk,
       ].join('\n'),
       structured,
     };

@@ -16,9 +16,11 @@ import {
   commuteCosts,
   debtInterest,
   donations,
+  federalChildcare,
   federalScale,
   flatProfessional,
   francTotal,
+  IFD_NOTE,
   ifdParamsFor,
   ifdSideJobFlat,
   ifdTax,
@@ -543,17 +545,36 @@ export function federalReturn(
   }
 
   // Childcare (LIFD art. 33 al. 3): children under 14; spouses must both work (form F, Bund).
+  // The costs given for a child of 14 or more are left out (federalChildcare).
   const ccTrace = new Trace();
-  const care = francTotal(ccTrace, [...f.children.map((c) => c.childcare), f.householdChildcare]);
+  // Childcare given for the household: one child's when that is exact, otherwise how it splits
+  // decides (the cantonal tax asks it per child before this, ./compute.ts, childcareOf).
+  const { care, older, perChild, split } = federalChildcare(
+    f.children,
+    f.householdChildcare,
+    ccTrace,
+    F.childcareMax.value,
+  );
+  if (older) add(notes.notCounted, IFD_NOTE.childcareAge);
+  const eligible = couple ? figures.length === 2 && figures.every((x) => x.earns) : true;
+  if (split && eligible) {
+    add(notes.unsupported, IFD_NOTE.childcareSplit);
+    return { ifd: null, notes };
+  }
   if (care > 0) {
-    const eligible = couple ? figures.length === 2 && figures.every((x) => x.earns) : true;
     const young = f.children.filter((c) => c.under14 !== false);
     const counted =
       f.householdChildcare && f.householdChildcare.value > 0
         ? young
         : young.filter((c) => (c.childcare?.value ?? 0) > 0);
     if (eligible && counted.length) {
-      const federal = childcareCosts(F, care, counted.length, ccTrace.src(`${FORM_K} p. 2 (F)`));
+      const federal = childcareCosts(
+        F,
+        care,
+        counted.length,
+        ccTrace.src(`${FORM_K} p. 2 (F)`),
+        perChild,
+      );
       apply(notes, federal, 'household', couple);
       if (federal.deduction) items.push(deductionItem(federal.deduction, 'household', couple));
     } else if (!eligible) {

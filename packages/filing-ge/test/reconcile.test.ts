@@ -319,3 +319,174 @@ describe('checking the official PDF against the values to type', () => {
     expect(c.counts.toFix).toBe(0);
   });
 });
+
+describe('annexe D in the PDF: a property abroad, and the share not taxed here', () => {
+  // A flat let abroad (packages/rules-ge/test/abroad.test.ts): D2 15.20 with its three columns
+  // (ICC fortune, IFD revenu, ICC revenu), the loan on E1 55.20, the totals on PG2, PG3 and PG4, and
+  // 97.00, the share not taxed in Geneva, which the form computes like 99.00.
+  const items = [
+    item('15.20', 'household', chf(139_575), {
+      column: 'wealth',
+      instance: 'abroad',
+      fields: { situation: 'Portugal', partA: '100', capital: '139575' },
+    }),
+    item('15.20', 'household', chf(8_374), { column: 'ifd', instance: 'abroad' }),
+    item('15.20', 'household', chf(8_374), { column: 'icc', instance: 'abroad' }),
+    item('15.00', 'household', chf(8_374), { column: 'icc' }),
+    item('15.00', 'household', chf(8_374), { column: 'ifd' }),
+    item('15.00', 'household', chf(139_575), { column: 'wealth' }),
+    item('58.00', 'household', chf(1_256), { column: 'icc' }),
+    item('58.00', 'household', chf(1_256), { column: 'ifd' }),
+    item('55.20', 'household', chf(2_100), { column: 'icc_ifd', instance: 'loan' }),
+    item('55.20', 'household', chf(60_000), { column: 'wealth', instance: 'loan' }),
+  ];
+
+  it('matches the property’s line column by column, and shows the share not taxed here', () => {
+    const c = check(items, [
+      at('D2', '15.20', 'household', { amounts: [chf(139_575), chf(8_374), chf(8_374)] }, 16),
+      at('E1', '55.20', 'household', { amounts: [chf(2_100), chf(60_000)] }, 19),
+      at('PG3', '97.00', 'household', { icc: chf(6_709), ifd: chf(6_612) }, 3),
+      at('PG4', '97.00', 'household', { icc: chf(118_000) }, 4),
+      at('PG3', '99.00', 'household', { icc: chf(70_000), ifd: chf(75_000) }, 3),
+    ]);
+    // The first of the page's lines for a property: 15.20-1.
+    expect(lineOf(c, 'D2', '15.20-1')).toMatchObject({
+      outcome: 'match',
+      cells: [
+        { column: 'icc', taxpresso: 8_374, pdf: 8_374 },
+        { column: 'ifd', taxpresso: 8_374, pdf: 8_374 },
+        { column: 'wealth', taxpresso: 139_575, pdf: 139_575 },
+      ],
+    });
+    expect(lineOf(c, 'E1', '55.20-1')).toMatchObject({ outcome: 'match' });
+    const computed = (page: string, ref: string) =>
+      c.sections.find((s) => s.page === page)!.computed.find((l) => l.ref === ref);
+    expect(computed('PG3', '97.00')).toMatchObject({ check: 'shown' });
+    expect(computed('PG4', '97.00')).toMatchObject({ check: 'shown' });
+    expect(c.counts).toMatchObject({ toFix: 0, computedOff: 0 });
+  });
+
+  it('says when the property’s value differs on the PDF', () => {
+    const c = check(items, [
+      at('D2', '15.20', 'household', { amounts: [chf(140_000), chf(8_374), chf(8_374)] }, 16),
+    ]);
+    expect(lineOf(c, 'D2', '15.20-1')).toMatchObject({
+      outcome: 'differs',
+      cells: [{}, {}, { column: 'wealth', taxpresso: 139_575, pdf: 140_000 }],
+    });
+    // The value differs; the loan on E1, not printed here, is Taxpresso's only.
+    expect(c.counts).toMatchObject({ differs: 1, taxpressoOnly: 1, toFix: 2 });
+  });
+});
+
+describe('annexe B in the PDF: one sheet per self-employed taxpayer, the same codes for both', () => {
+  // The reader can't tell whose a sheet is (its codes are the same for A and B, and the ticked box
+  // is not kept): it gives the lines to the household. Taxpresso gives them to the person whose
+  // sheet the copy panel has, or, with two, by the order and the amounts that match.
+  const sheet = (person: 'p1' | 'p2', turnover: number, avs: number) => [
+    item('12.08', person, chf(turnover)),
+    item('32.10', person, chf(avs)),
+    item('12.17', person, chf(turnover), { status: 'computed' }),
+  ];
+  const printedSheet = (turnover: number, avs: number, occurrence: number, page = 8) => [
+    at('B2', '12.08', 'household', { amounts: [chf(turnover), chf(turnover)] }, page, occurrence),
+    at('B2', '12.17', 'household', { amounts: [chf(turnover), chf(turnover)] }, page, occurrence),
+    at('B4', '32.10', 'household', { amounts: [chf(avs), chf(avs)] }, page + 2, occurrence),
+  ];
+
+  it('gives the sheet to the only self-employed taxpayer, here B', () => {
+    const c = check(sheet('p2', 48_000, 4_000), printedSheet(48_000, 4_000, 1));
+    expect(c.counts).toMatchObject({ match: 2, toFix: 0, computedOff: 0 });
+    expect(lineOf(c, 'B2', '12.08')).toMatchObject({ person: 'B', outcome: 'match' });
+    expect(lineOf(c, 'B4', '32.10')).toMatchObject({ person: 'B', outcome: 'match' });
+    expect(c.sections.find((s) => s.page === 'B2')!.computed).toMatchObject([
+      { ref: '12.17', check: 'adds_up' },
+    ]);
+  });
+
+  it('with two sheets, finds whose is whose by the amounts, whatever their order', () => {
+    const items = [...sheet('p1', 95_000, 9_000), ...sheet('p2', 48_000, 4_000)];
+    // B's sheet printed first.
+    const c = check(items, [
+      ...printedSheet(48_000, 4_000, 1),
+      ...printedSheet(95_000, 9_000, 2, 12),
+    ]);
+    expect(c.counts).toMatchObject({ match: 4, toFix: 0 });
+    const b2 = c.sections.find((s) => s.page === 'B2')!.lines;
+    expect(b2.map((l) => [l.person, l.cells[0]!.pdf])).toEqual([
+      ['A', 95_000],
+      ['B', 48_000],
+    ]);
+  });
+
+  it('still shows a real difference on a sheet', () => {
+    const c = check(sheet('p1', 95_000, 9_000), printedSheet(95_000, 9_500, 1));
+    expect(lineOf(c, 'B4', '32.10')).toMatchObject({
+      person: 'A',
+      outcome: 'differs',
+      cells: [
+        { column: 'icc', taxpresso: 9_000, pdf: 9_500 },
+        { column: 'ifd', taxpresso: 9_000, pdf: 9_500 },
+      ],
+    });
+    expect(c.counts.toFix).toBe(1);
+  });
+});
+
+describe('the lump sums from the 2nd pillar and pillar 3a (98.12)', () => {
+  it('compares the one amount of the household with the PDF, both spouses’ together', () => {
+    // Printed under the ICC column of PG2's information (ge-2025-declaration-specimen p. 2).
+    const c = check(
+      [item('98.12', 'p1', chf(300_000)), item('98.12', 'p2', chf(60_000))],
+      [at('PG2', '98.12', 'household', { icc: chf(360_000) }, 2)],
+    );
+    expect(lineOf(c, 'PG2', '98.12')).toMatchObject({
+      outcome: 'match',
+      label: 'Prestations en capital du 2ème et 3ème pilier A imposées au 1/5ème du barème',
+      cells: [{ column: 'amount', taxpresso: 360_000, pdf: 360_000 }],
+    });
+    const off = check(
+      [item('98.12', 'p1', chf(85_000))],
+      [at('PG2', '98.12', 'household', { icc: chf(58_000) }, 2)],
+    );
+    expect(lineOf(off, 'PG2', '98.12')).toMatchObject({
+      outcome: 'differs',
+      cells: [{ column: 'amount', taxpresso: 85_000, pdf: 58_000 }],
+    });
+  });
+});
+
+describe('a year of arrival or departure: the lines for the rate', () => {
+  // packages/rules-ge/test/part-year.test.ts, Lena Brandt: 95.00 is the net income for the rate (a
+  // full year's), 97.00 the rest, 99.00 the income of her months here. How the form computes 95.00
+  // and 97.00 for part of a year isn't documented, so they are shown, never compared (noCheck);
+  // 99.00 is.
+  const items = [
+    item('95.00', 'household', chf(69_986), { column: 'icc', noCheck: true }),
+    item('97.00', 'household', chf(19_764), { column: 'icc', noCheck: true }),
+    item('99.00', 'household', chf(50_222), { column: 'icc' }),
+    item('95.00', 'household', chf(72_913), { column: 'ifd', noCheck: true }),
+    item('97.00', 'household', chf(20_043), { column: 'ifd', noCheck: true }),
+    item('99.00', 'household', chf(52_870), { column: 'ifd' }),
+  ];
+  const computed = (c: ReturnType<typeof check>, ref: string) =>
+    c.sections.find((s) => s.page === 'PG3')!.computed.find((l) => l.ref === ref);
+
+  it('shows 95.00 and 97.00 whatever the PDF prints, and checks 99.00', () => {
+    const c = check(items, [
+      // A PDF that prints the period's net income in 95.00 and nothing in 97.00.
+      at('PG3', '95.00', 'household', { icc: chf(50_222), ifd: chf(52_870) }, 3),
+      at('PG3', '99.00', 'household', { icc: chf(50_222), ifd: chf(52_870) }, 3),
+    ]);
+    expect(computed(c, '95.00')).toMatchObject({ check: 'shown' });
+    expect(computed(c, '99.00')).toMatchObject({ check: 'adds_up' });
+    expect(c.counts).toMatchObject({ toFix: 0, computedOff: 0 });
+  });
+
+  it('still says when 99.00, the income taxed, differs', () => {
+    const c = check(items, [
+      at('PG3', '99.00', 'household', { icc: chf(60_000), ifd: chf(52_870) }, 3),
+    ]);
+    expect(computed(c, '99.00')).toMatchObject({ check: 'off' });
+  });
+});
