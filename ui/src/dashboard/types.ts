@@ -8,6 +8,7 @@ import type { FinalCheckSource as OfficialSource, FinalCheckState } from './type
 import type { HoldingsView, SecuritiesView } from './types-holdings';
 import type { DocumentsState } from './types-docs';
 import type { PlanningState } from './types-planning';
+import type { PagesFields } from './state-adapter';
 
 export type QuestionType = 'choice' | 'yesno' | 'number' | 'money' | 'multi' | 'commune' | 'date';
 export type Value = string | number | boolean | string[];
@@ -156,7 +157,7 @@ export interface Journey {
 }
 
 /** Values read from documents, checks and the assessment: ./types-docs.ts. */
-export interface State extends DocumentsState {
+export interface State extends DocumentsState, Partial<PagesFields> {
   /** The next step and the stages (docs/design/simple.md). */
   journey: Journey;
   version: string;

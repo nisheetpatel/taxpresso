@@ -158,25 +158,17 @@ export function touReasonText(tou: PlanningState['tou'], id: string, lang: Langu
   });
 }
 
-/** The TOU card: shown to people taxed at source, before everything else ("Decide first"). */
+/**
+ * The TOU choice, inside its card of "Pay less" (three-pages.md, A5) when it is a real choice: the
+ * comparison, the deadline, that it can't be undone, and an explicit decision.
+ */
 export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   const planning: PlanningState = state.planning;
   const tou = planning.tou;
   const [understood, setUnderstood] = useState(false);
   const [changing, setChanging] = useState(false);
   const save = useSave(lang, act);
-  if (!tou.applies) {
-    // Zurich: TOU is Geneva's; say so to someone who said they are taxed at source.
-    if (planning.touGenevaOnly && planning.inputs.some((i) => i.taxedAtSource)) {
-      return (
-        <section class="card pl-card" aria-labelledby="tou-title">
-          <h2 id="tou-title">{tp(lang, 'touTitle')}</h2>
-          <p class="muted small-text">{tp(lang, pck('touGenevaOnly', state.canton?.code))}</p>
-        </section>
-      );
-    }
-    return null;
-  }
+  if (!tou.applies) return null;
   const couple = state.people.length > 1;
   const deadline = day(tou.deadline, lang);
   const diff = tou.differenceCentimes;
@@ -250,11 +242,9 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
   }
 
   return (
-    <section class="card pl-tou" aria-labelledby="tou-title">
+    <div class="pl-body pl-tou">
       <div class="pl-tou-head">
         <div class="pl-tou-intro">
-          <span class="pl-eyebrow">{tp(lang, 'touWhen')}</span>
-          <h2 id="tou-title">{tp(lang, 'touTitle')}</h2>
           <p class="muted">
             <i>{tp(lang, 'touOfficial')}</i>. {tp(lang, 'touLead')}
           </p>
@@ -432,7 +422,7 @@ export function TouCard({ state, lang, act }: Props): JSX.Element | null {
       {decision}
 
       <How assumptions={tou.assumptions} sources={tou.sources} lang={lang} />
-    </section>
+    </div>
   );
 }
 
@@ -444,12 +434,7 @@ export function LppCard({ state, lang, act }: Props) {
   const year = state.taxYear;
   const over = lpp.people.find((p) => p.overCapacity);
   return (
-    <section class="card pl-card" aria-labelledby="lpp-title">
-      <span class="pl-eyebrow">{tp(lang, 'when')}</span>
-      <h2 id="lpp-title">
-        {tp(lang, 'lppTitle')}{' '}
-        <span class="pl-official">({tp(lang, pck('lppOfficial', canton))})</span>
-      </h2>
+    <div class="pl-body">
       <p class="muted small-text">{tp(lang, 'lppLead')}</p>
       <details class="change">
         <summary>{tj(lang, 'change')}</summary>
@@ -500,7 +485,7 @@ export function LppCard({ state, lang, act }: Props) {
         <li>{tp(lang, pck('lppAttestation', canton))}</li>
       </ul>
       <How assumptions={lpp.assumptions} sources={lpp.sources} lang={lang} />
-    </section>
+    </div>
   );
 }
 
@@ -511,12 +496,7 @@ export function CatchUpCard({ state, lang, act }: Props) {
   const couple = inputs.length > 1;
   const cap = chf(catchUp.capInYearCentimes, lang);
   return (
-    <section class="card pl-card" aria-labelledby="cu-title">
-      <span class="pl-eyebrow">{tp(lang, 'when')}</span>
-      <h2 id="cu-title">
-        {tp(lang, 'cuTitle')}{' '}
-        <span class="pl-official">({tp(lang, pck('cuOfficial', canton))})</span>
-      </h2>
+    <div class="pl-body">
       <p class="muted small-text">{tp(lang, 'cuLead')}</p>
       <ul class="pl-statuses small-text">
         {inputs.map((i) => {
@@ -564,6 +544,6 @@ export function CatchUpCard({ state, lang, act }: Props) {
         <li>{tp(lang, 'cuRuleAsk')}</li>
       </ul>
       <How assumptions={catchUp.assumptions} sources={catchUp.sources} lang={lang} />
-    </section>
+    </div>
   );
 }

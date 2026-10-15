@@ -1,54 +1,31 @@
-// "Final check" (SPEC.md 10.0): before the user fills in the official form, what to fix first and
-// what is good to know, the same list Claude gets from final_check. Read-only: settling an item
-// happens where it lives (Documents, the questions, "Check this"), or in the chat. Each rule links
-// to the official document it comes from; the user's browser opens it, Taxpresso never does.
+// "Final check" (SPEC.md 10.0) as step 1 of "File" (three-pages.md, A6): before the user fills in
+// the official form, what to fix first, one item at a time, and what is good to know, folded. The
+// same list Claude gets from final_check. Settling an item happens where it lives ("Your tax"), or
+// in the chat; each rule's official documents are behind "Why?".
 import type { JSX } from 'preact';
+import { useState } from 'preact/hooks';
 import './final-check.css';
 import type { Language } from './i18n';
-import { fck, type FinalCheckMessageKey, tf } from './i18n-final-check';
-import type { State } from './types';
+import { fck, tf } from './i18n-final-check';
+import { pg } from './i18n-pages';
 import { SourcesLine } from './Sources';
-import type { FinalCheckItemState } from './types-final-check';
+import type { FinalCheckItemState, FinalCheckState } from './types-final-check';
+import { Icon, Why } from './ui';
 
-const CHIP: Record<NonNullable<FinalCheckItemState['status']>, string> = {
-  needs_ok: 'chip-needs-ok',
-  estimate: 'chip-estimate',
-  missing: 'chip-missing',
-  fix: 'chip-fix',
-};
-
-const POSITION: Record<string, FinalCheckMessageKey> = {
-  over: 'atLimit',
-  at: 'atLimit',
-  under: 'nearLimit',
-  below: 'justBelow',
-  above: 'justAbove',
-};
-
-/** Kinds shown first under "Good to know"; the others fold away. */
-const SHOWN = new Set([
-  'capital',
-  'abroad',
-  'property',
-  'part_year',
-  'limit',
-  'best_figure',
-  'official_pdf',
-  'optional_document',
+/** Items settled on "Your tax": a value to OK, a document, a question, something to check. */
+const ON_YOUR_TAX = new Set([
+  'needs_ok',
+  'missing_document',
+  'documents_unread',
+  'questions_open',
+  'check',
+  'estimate',
 ]);
 
 function Item({ item, lang }: { item: FinalCheckItemState; lang: Language }) {
-  const position = item.limit ? POSITION[item.limit.position] : undefined;
   return (
-    <li class="fc-item" data-kind={item.kind}>
-      <div class="fc-head">
-        <strong class="fc-title">{item.title}</strong>
-        {item.status ? (
-          <span class={`chip ${CHIP[item.status]}`}>{tf(lang, item.status)}</span>
-        ) : position ? (
-          <span class="chip chip-plain">{tf(lang, position)}</span>
-        ) : null}
-      </div>
+    <div class="fc-item" data-kind={item.kind}>
+      <strong class="fc-title">{item.title}</strong>
       <p class="fc-detail">{item.detail}</p>
       {item.list?.length ? (
         <ul class="fc-list small-text">
@@ -57,103 +34,126 @@ function Item({ item, lang }: { item: FinalCheckItemState; lang: Language }) {
           ))}
         </ul>
       ) : null}
-      {item.todo ? (
-        <p class="fc-todo small-text">
-          {item.status ? (
-            <strong>
-              {tf(lang, 'toSettle')}
-              {tf(lang, 'colon')}
-            </strong>
-          ) : null}
-          {item.todo}
-        </p>
+      {item.todo ? <p class="fc-todo small-text">{item.todo}</p> : null}
+      {item.sources.length ? (
+        <Why lang={lang}>
+          <SourcesLine sources={item.sources} lang={lang} />
+        </Why>
       ) : null}
-      <SourcesLine sources={item.sources} lang={lang} />
-    </li>
+    </div>
   );
 }
 
-export function FinalCheck({ state, lang }: { state: State; lang: Language }): JSX.Element | null {
-  const view = state.finalCheck;
-  if (!view) return null;
-  const ready = view.verdict === 'ready';
-  const shown = view.know.filter((i) => SHOWN.has(i.kind));
-  const folded = view.know.filter((i) => !SHOWN.has(i.kind));
-  const share = new Intl.NumberFormat(`${lang}-CH`, { style: 'percent' }).format(
-    view.margin.shareBp / 10_000,
-  );
+/** The step's body for one position in the list: plain, so it renders the same anywhere. */
+export function FinalCheckItems({
+  view,
+  index,
+  lang,
+  canton,
+  onIndex,
+  onGo,
+}: {
+  view: FinalCheckState;
+  index: number;
+  lang: Language;
+  canton: string | undefined;
+  onIndex: (index: number) => void;
+  onGo: () => void;
+}): JSX.Element {
+  const fix = view.fix;
+  const at = Math.min(Math.max(0, index), Math.max(0, fix.length - 1));
+  const item = fix[at];
   return (
-    <section class="card fc-card" aria-labelledby="fc-title">
-      <div class="section-head">
-        <h2 id="fc-title">{tf(lang, 'title')}</h2>
-        <span class="muted small-text tnum">
-          {tf(lang, 'summary', { fix: view.fix.length, know: view.know.length })}
-        </span>
-      </div>
-      <p class="muted fc-lead">{tf(lang, 'lead')}</p>
-
-      {ready ? (
-        <div class="fc-verdict" role="status">
-          <span class="chip chip-verified">{tf(lang, 'ready')}</span>
-          <span>{tf(lang, 'readyLead')}</span>
-        </div>
+    <div class="fc-step">
+      {view.verdict === 'ready' || !item ? (
+        <p class="done-line" role="status">
+          <span class="mark mark-done" aria-hidden="true">
+            <Icon.check />
+          </span>
+          {pg(lang, 'step.ready')}
+        </p>
       ) : (
-        <div class="fc-group">
-          <h3 class="fc-group-title">
-            {tf(lang, 'notReady')} <span class="muted tnum">{view.fix.length}</span>
-          </h3>
-          <p class="muted small-text fc-group-lead">{tf(lang, 'notReadyLead')}</p>
-          <ol class="fc-items">
-            {view.fix.map((i) => (
-              <Item key={i.id} item={i} lang={lang} />
-            ))}
-          </ol>
+        <div class="fc-one">
+          {fix.length > 1 ? (
+            <span class="small-text muted">
+              {pg(lang, 'step.of', { n: at + 1, total: fix.length })}
+            </span>
+          ) : null}
+          <Item item={item} lang={lang} />
+          <div class="row-actions">
+            {ON_YOUR_TAX.has(item.kind) ? (
+              <button type="button" class="primary" onClick={onGo}>
+                {pg(lang, 'step.go')}
+              </button>
+            ) : null}
+            {fix.length > 1 ? (
+              <>
+                <button
+                  type="button"
+                  class="ghost"
+                  disabled={at === 0}
+                  onClick={() => onIndex(at - 1)}
+                >
+                  {pg(lang, 'previous')}
+                </button>
+                <button
+                  type="button"
+                  class="ghost"
+                  disabled={at === fix.length - 1}
+                  onClick={() => onIndex(at + 1)}
+                >
+                  {pg(lang, 'next')}
+                </button>
+              </>
+            ) : null}
+          </div>
           {view.moreTime ? (
-            <p class="small-text fc-more-time">
+            <p class="small-text">
               <a href={view.moreTime} target="_blank" rel="noopener noreferrer">
-                {tf(lang, fck('moreTime', state.canton?.code))}
+                {tf(lang, fck('moreTime', canton))}
               </a>{' '}
               {tf(lang, 'moreTimeAfter')}
             </p>
           ) : null}
         </div>
       )}
-
       {view.know.length ? (
-        <div class="fc-group">
-          <h3 class="fc-group-title">
-            {tf(lang, 'know')} <span class="muted tnum">{view.know.length}</span>
-          </h3>
-          <p class="muted small-text fc-group-lead">{tf(lang, 'knowLead')}</p>
-          {shown.length ? (
-            <ul class="fc-items">
-              {shown.map((i) => (
-                <Item key={i.id} item={i} lang={lang} />
-              ))}
-            </ul>
-          ) : null}
-          {folded.length ? (
-            <details class="fc-more">
-              <summary>{tf(lang, 'more', { n: folded.length })}</summary>
-              <ul class="plain-list small-text fc-folded">
-                {folded.map((i) => (
-                  <li key={i.id}>
-                    <strong>{i.title}</strong>
-                    {tf(lang, 'colon')}
-                    {i.detail}
-                    {i.todo ? ` ${i.todo}` : ''}
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ) : null}
-          {view.know.some((i) => i.kind === 'limit') ? (
-            <p class="muted small-text fc-near">
-              {tf(lang, 'near', { share, min: view.margin.min / 100 })}
-            </p>
-          ) : null}
-        </div>
+        <details class="more">
+          <summary>{pg(lang, 'step.know', { n: view.know.length })}</summary>
+          <ul class="fc-know">
+            {view.know.map((i) => (
+              <li key={i.id}>
+                <Item item={i} lang={lang} />
+              </li>
+            ))}
+          </ul>
+        </details>
       ) : null}
-    </section>
+    </div>
+  );
+}
+
+/** Step 1 of "File": the final check's items to fix, one at a time. */
+export function FinalCheckStep({
+  view,
+  lang,
+  canton,
+  onGo,
+}: {
+  view: FinalCheckState;
+  lang: Language;
+  canton: string | undefined;
+  onGo: () => void;
+}): JSX.Element {
+  const [index, setIndex] = useState(0);
+  return (
+    <FinalCheckItems
+      view={view}
+      index={index}
+      lang={lang}
+      canton={canton}
+      onIndex={setIndex}
+      onGo={onGo}
+    />
   );
 }

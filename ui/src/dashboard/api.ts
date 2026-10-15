@@ -7,6 +7,19 @@ import type { PlanningField } from './types-planning';
 
 export { ApiError };
 
+/**
+ * A plan value POST /plan takes: the gross salary, net salary, pension fund and 3a paid; and the
+ * rough incomes of the basics card (benefits, pension, a business's profit), estimates.
+ */
+export type PlanField =
+  | 'gross'
+  | 'net'
+  | 'pensionFund'
+  | 'paid'
+  | 'replacementIncome'
+  | 'pensionIncome'
+  | 'businessProfit';
+
 let transport: Transport | undefined;
 let csrf = '';
 /** The tax year the page shows: every change says it, so none lands in another year. */
@@ -57,12 +70,10 @@ export const api = {
   skip: (id: string, lang: Language) => post('/skip', lang, { id }),
   waive: (id: string, waived: boolean, lang: Language) => post('/waive', lang, { id, waived }),
   scan: (lang: Language) => post('/scan', lang, {}),
-  plan: (
-    person: string,
-    field: 'gross' | 'net' | 'pensionFund' | 'paid',
-    value: number | boolean,
-    lang: Language,
-  ) => post('/plan', lang, { person, field, value }),
+  plan: (person: string, field: PlanField, value: number | boolean, lang: Language) =>
+    post('/plan', lang, { person, field, value }),
+  /** Opens the open year's folder in Finder or Explorer, on this computer (three-pages.md 4). */
+  openFolder: (lang: Language) => post('/folder/open', lang, {}),
   // Pension fund buy-in, 3a catch-up and TOU (extension/src/planning.ts).
   planning: (
     person: string,
