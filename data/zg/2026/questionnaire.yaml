@@ -123,6 +123,7 @@ questions:
   # larger share of the actual care. packages/rules-zg asks rather than guess (NOTE.mainCare).
   - id: main_care
     key: zg.main_care
+    group: detail
     type: yesno
     when:
       all:
@@ -158,6 +159,7 @@ questions:
   # Ziff. 2 and Abs. 2 (zg-2026-law-steuergesetz p. 25).
   - id: child_under15
     key: zg.child_under15
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -191,6 +193,7 @@ questions:
   # (zg-2026-law-steuergesetz p. 30). A child under 15 is a minor: asked only from 15.
   - id: child_minor
     key: zg.child_minor
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -243,6 +246,7 @@ questions:
   # child (form KDBK lists each child, zg-2025-guide-wegleitung p. 38).
   - id: child_care
     key: zg.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -278,6 +282,7 @@ questions:
   # its Steuerfuss of the einfache Steuer (StG § 2 Abs. 1, p. 1).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year, and so do its parish and its Bürgergemeinde. Each commune sets its own Steuerfuss, a percentage of the simple tax (einfache Steuer).'
@@ -308,6 +313,7 @@ questions:
   # leaving Switzerland means a return for part of the year: not covered by rules-zg.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Zug taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -394,6 +400,7 @@ questions:
   # zg-2026-law-steuergesetz p. 25; zg-2025-guide-wegleitung p. 42, Code 407, form MZ).
   - id: rent
     key: zg.rent
+    group: deduction
     type: money
     explain:
       en: 'Renters in Zug deduct part of the rent of the home they live in (Mietzinsabzug), up to a yearly limit. Only the net rent counts, without service charges (Nebenkosten) such as heating.'
@@ -425,6 +432,7 @@ questions:
   # (spouses in different parishes with children).
   - id: church
     key: zg.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -490,6 +498,7 @@ questions:
   # (spouses citizens of two different Zug communes).
   - id: citizen_of
     key: zg.citizen_of
+    group: detail
     type: choice
     perPerson: true
     explain:

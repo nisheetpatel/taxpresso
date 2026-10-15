@@ -531,7 +531,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         : undefined;
       const text = added.length
         ? [
-            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}${waiting ? ' Ask the user whose each certificate read from its barcode is (theirs or their partner’s); they choose it in the dashboard (Documents).' : ''}${readByTaxpresso ? ' Taxpresso read last year’s declaration and broker exports itself, on this computer, and keeps no name or number from the declaration: don’t read them with get_document_for_review.' : ''}`,
+            `Added ${added.length}: ${named.join(', ')}.${toIdentify ? ' Offer to read the new documents (get_document_for_review), or the user says what each one is in the dashboard.' : ''}${waiting ? ' Ask the user whose each certificate read from its barcode is (theirs or their partner’s); they choose it in the dashboard (Your tax).' : ''}${readByTaxpresso ? ' Taxpresso read last year’s declaration and broker exports itself, on this computer, and keeps no name or number from the declaration: don’t read them with get_document_for_review.' : ''}`,
             ...(securities ? [securities] : []),
             ...(lastYear ? [lastYear] : []),
           ].join('\n')
@@ -773,15 +773,17 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
             throw new WorkspaceError('Give a number or true/false.');
           }
           await ws.setPlan(person ?? 'p1', key as (typeof PLAN_KEYS)[number], value, 'chat');
-          // A property in Geneva's rough figures: estimates for the return until its documents.
+          // A property in Geneva's rough figures, or rough benefits or pensions: estimates for the
+          // return until their documents are in.
           const property = /^plan\.(property|mortgage)_/.test(key);
+          const income = key === 'plan.replacement_income' || key === 'plan.pension_income';
           return {
             content: [
               {
                 type: 'text',
                 text: abroad
                   ? 'Saved as an estimate: Taxpresso converts it at the official rate. Call compute_tax for the updated tax.'
-                  : property
+                  : property || income
                     ? 'Saved as an estimate until its document is in. Call compute_tax for the updated tax.'
                     : `Saved${typeof value === 'number' ? ' as an estimate' : ''}. Call list_optimizations for the updated figures.`,
               },
@@ -958,7 +960,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         }
         lines.push(
           toConfirm
-            ? `${toConfirm} value${toConfirm === 1 ? '' : 's'} from this document need the user's OK: show them what you read, with the pages, and ask them to confirm in the dashboard (Documents), or confirm here with set_fact once they say it is right.`
+            ? `${toConfirm} value${toConfirm === 1 ? '' : 's'} from this document need the user's OK: show them what you read, with the pages, and ask them to confirm in the dashboard (Your tax), or confirm here with set_fact once they say it is right.`
             : 'Nothing from this document is waiting for the user’s OK.',
         );
         if (checks.length) lines.push(`Check this, with the user: ${checks.join(' ')}`);

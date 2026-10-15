@@ -135,6 +135,11 @@ export function householdFromFacts(
     counted.find((f) => f.key === key && f.person === 'household')?.value;
   const of = (key: string, person?: Owner) =>
     counted.filter((f) => f.key === key && (person === undefined || f.person === person));
+  // A rough yearly figure the user gave for a person's income (plan.*), as an estimate; 0 is none.
+  const rough = (key: string, person: Owner): Amount | undefined => {
+    const a = amountOf(of(key, person).filter((f) => typeof f.value === 'number' && f.value > 0));
+    return a ? { ...a, status: 'estimate' } : undefined;
+  };
 
   const status = answer('profile.civil_status');
   const commune = canton.commune(answer('profile.commune'), taxYear);
@@ -241,12 +246,9 @@ export function householdFromFacts(
     });
     // Before the salary certificate is in: the user's rough figure, as an estimate.
     if (!employments.length) {
-      const plan = of('plan.gross_salary', id).filter(
-        (f) => typeof f.value === 'number' && f.value > 0,
-      );
-      const gross = amountOf(plan);
+      const gross = rough('plan.gross_salary', id);
       if (gross) {
-        employments.push({ gross: { ...gross, status: 'estimate' } });
+        employments.push({ gross });
         note(
           t(
             'No salary certificate yet: your rough salary is used as an estimate, without social or pension fund contributions, so the tax shown is higher than it will be.',
@@ -264,7 +266,20 @@ export function householdFromFacts(
         .map((f) => f.instance),
     );
     const benefits = of('replacement.amount', id).filter((f) => !viaEmployer.has(f.instance));
-    if (canton.unemploymentApart) {
+    // Before any benefits attestation is in: the user's rough figure, as an estimate, the rough
+    // salary's way (above), with the other benefits: the attestation says which kind they are.
+    const roughBenefits = of('replacement.amount', id).length
+      ? undefined
+      : rough('plan.replacement_income', id);
+    if (roughBenefits) {
+      p.replacementIncome = roughBenefits;
+      note(
+        t(
+          'No benefits attestation yet: your rough benefits are used as an estimate, until the attestation shows their amount and kind.',
+          `Pas encore d’attestation d’indemnités${NB}: vos indemnités approximatives sont utilisées comme estimation, jusqu’à ce que l’attestation en montre le montant et le type.`,
+        ),
+      );
+    } else if (canton.unemploymentApart) {
       // Unemployment benefits paid directly have their own line; the other benefits theirs.
       const kinds = canton.unemploymentKinds ?? ['unemployment'];
       const unemployment = new Set(
@@ -302,6 +317,18 @@ export function householdFromFacts(
     if (avs) p.pensionAvs = avs;
     if (occupational) p.pensionOccupational = occupational;
     if (other) p.pensionOther = other;
+    // Before any pension attestation is in: the user's rough figure, as an estimate, counted in
+    // full as an other pension (autres rentes), so no deduction for one kind of pension is assumed.
+    const roughPension = pensions.length ? undefined : rough('plan.pension_income', id);
+    if (roughPension) {
+      p.pensionOther = roughPension;
+      note(
+        t(
+          'No pension attestation yet: your rough pension is used as an estimate, counted in full as an other pension, until the attestation shows its amount and kind.',
+          `Pas encore d’attestation de rente${NB}: votre rente approximative est utilisée comme estimation, comptée en entier parmi les autres rentes, jusqu’à ce que l’attestation en montre le montant et le type.`,
+        ),
+      );
+    }
 
     // The way to work and lunches away from home: the answers, read only along the questions that
     // apply to them (an amount left from an earlier answer doesn't count).

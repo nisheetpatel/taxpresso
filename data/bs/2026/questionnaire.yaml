@@ -71,6 +71,7 @@ questions:
   # (packages/rules-bs, retiree), and computes nothing without it.
   - id: reference_age
     key: bs.reference_age
+    group: detail
     type: yesno
     perPerson: true
     when: { key: profile.civil_status, in: [single, separated, divorced, widowed] }
@@ -160,6 +161,7 @@ questions:
   # (757): bs-2025-guide-wegleitung p. 39 and 43; packages/rules-bs does not compute them yet.
   - id: cohabiting
     key: bs.cohabiting
+    group: detail
     type: yesno
     when:
       all:
@@ -201,6 +203,7 @@ questions:
   # bs-2025-guide-wegleitung p. 39). packages/rules-bs computes nothing without the answer.
   - id: main_upkeep
     key: bs.main_upkeep
+    group: detail
     type: yesno
     when:
       all:
@@ -245,6 +248,7 @@ questions:
   # the 2025 return lists minors by year of birth (2008 to 2025). Asked per child.
   - id: child_minor
     key: bs.child_minor
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -295,6 +299,7 @@ questions:
   # several children, how the invoices' total splits can decide the deduction: asked per child.
   - id: child_care
     key: bs.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -330,6 +335,7 @@ questions:
   # the rates of 2026 in bs-2026-communal-ansaetze-abzuege p. 1).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. In the city of Basel the canton levies the whole tax and there is no communal tax; in Riehen and Bettingen the canton levies part of it and the commune its own tax (Gemeindesteuer), at its own rate (Steuerfuss).'
@@ -359,6 +365,7 @@ questions:
   # rules-bs: docs/sources/bs/NOTES.md, Open points for the rules).
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move between Basel, Riehen and Bettingen changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Basel-Stadt taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -445,6 +452,7 @@ questions:
   # it is not in the calculation for a member (packages/rules-bs, NOTE.church), nothing for others.
   - id: church
     key: bs.church
+    group: detail
     type: yesno
     perPerson: true
     explain:
@@ -566,6 +574,7 @@ questions:
   # when the actual costs are lower than the flat amount.
   - id: work_rate
     key: bs.work_rate
+    group: detail
     type: number
     perPerson: true
     min: 1
@@ -956,6 +965,7 @@ questions:
   # cantonal tax and for the federal tax.
   - id: party
     key: bs.party
+    group: deduction
     type: money
     when: { key: profile.payments, includes: political_party }
     explain:

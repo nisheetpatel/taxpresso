@@ -1,7 +1,9 @@
 // The words of "simple first" (docs/design/simple.md): the next step, the five stages and their
-// one-line status, the facts in "About you", "Ways to save". The ids come from the extension
-// (extension/src/journey.ts); get_status says the same in English for Claude. Second person, plain
-// words, official French terms next to their gloss, no em dashes.
+// one-line status, the facts that need no decision, the plans before 31 December. The ids come from
+// the extension (extension/src/journey.ts); get_status says the same in English for Claude. The
+// stages are shown on three pages (docs/design/three-pages.md): each stage is named by its page
+// (`page.*`, the tabs), as Claude names them. Second person, plain words, official French terms
+// next to their gloss, no em dashes.
 import type { Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -9,10 +11,13 @@ const NB = String.fromCharCode(0xa0);
 export const messages = {
   en: {
     nextLabel: 'Next',
-    'stage.about': 'About you',
-    'stage.documents': 'Your documents',
+    'page.tax': 'Your tax',
+    'page.save': 'Pay less',
+    'page.file': 'File',
+    'stage.about': 'Your tax',
+    'stage.documents': 'Your tax',
     'stage.tax': 'Your tax',
-    'stage.save': 'Ways to save',
+    'stage.save': 'Pay less',
     'stage.file': 'File',
     open: 'Open',
     close: 'Close',
@@ -137,10 +142,13 @@ export const messages = {
   },
   fr: {
     nextLabel: 'Prochaine étape',
-    'stage.about': 'Vous',
-    'stage.documents': 'Vos documents',
+    'page.tax': 'Votre impôt',
+    'page.save': 'Payer moins',
+    'page.file': 'Déclarer',
+    'stage.about': 'Votre impôt',
+    'stage.documents': 'Votre impôt',
     'stage.tax': 'Votre impôt',
-    'stage.save': 'Économiser',
+    'stage.save': 'Payer moins',
     'stage.file': 'Déclarer',
     open: 'Ouvrir',
     close: 'Fermer',
@@ -255,10 +263,13 @@ export const messages = {
   },
   de: {
     nextLabel: 'Als Nächstes',
-    'stage.about': 'Über dich',
-    'stage.documents': 'Deine Dokumente',
+    'page.tax': 'Deine Steuern',
+    'page.save': 'Weniger zahlen',
+    'page.file': 'Einreichen',
+    'stage.about': 'Deine Steuern',
+    'stage.documents': 'Deine Steuern',
     'stage.tax': 'Deine Steuern',
-    'stage.save': 'Sparen',
+    'stage.save': 'Weniger zahlen',
     'stage.file': 'Einreichen',
     open: 'Öffnen',
     close: 'Schliessen',
@@ -387,10 +398,13 @@ export const messages = {
   },
   it: {
     nextLabel: 'Prossimo passo',
-    'stage.about': 'Su di te',
-    'stage.documents': 'I tuoi documenti',
+    'page.tax': 'Le tue imposte',
+    'page.save': 'Pagare meno',
+    'page.file': 'Dichiarare',
+    'stage.about': 'Le tue imposte',
+    'stage.documents': 'Le tue imposte',
     'stage.tax': 'Le tue imposte',
-    'stage.save': 'Risparmiare',
+    'stage.save': 'Pagare meno',
     'stage.file': 'Dichiarare',
     open: 'Apri',
     close: 'Chiudi',

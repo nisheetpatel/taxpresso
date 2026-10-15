@@ -92,6 +92,28 @@ export default defineConfig(
     },
   },
   {
+    // "Open my Taxpresso folder": the one file that runs the system's file manager, with execFile
+    // only (extension/test/open-folder.test.ts pins its one call site).
+    files: ['extension/src/open-folder.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            ...RESTRICTED_IMPORTS.filter(
+              (r) => r.name !== 'child_process' && r.name !== 'node:child_process',
+            ),
+            ...['child_process', 'node:child_process'].map((name) => ({
+              name,
+              allowImportNames: ['execFile'],
+              message: 'Only execFile, to open the folder in the file manager.',
+            })),
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['ui/src/**/*.ts'],
     languageOptions: { globals: globals.browser },
   },

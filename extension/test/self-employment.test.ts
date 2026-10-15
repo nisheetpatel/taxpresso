@@ -501,7 +501,7 @@ describe('self-employment in Geneva, end to end', () => {
     };
     expect(plan.pillar3a.people[0]).toMatchObject({ capCentimes: 3_628_800, capIsMaximum: true });
     expect(texts(await call('list_optimizations'))).toMatch(/plan\.business_profit/);
-    // The dashboard has no field of its own for it: the existing 3a plan, without a pension fund.
+    // The existing 3a plan, without a pension fund.
     let s = await state();
     expect(s.plan!.inputs[0]).toEqual({
       person: 'p1',
@@ -510,15 +510,22 @@ describe('self-employment in Geneva, end to end', () => {
       hasPensionFund: false,
       paid: 0,
     });
-    const refused = await createApi(ws)(
-      req('POST', '/plan', { person: 'p1', field: 'business', value: 70_000 }),
-    );
-    expect(refused.status).toBe(400);
     // Asked in the chat in plain words: the profit after AVS, 70'000, gives 20 % = 14'000.
     const said = await call('set_fact', { key: 'plan.business_profit', value: 70_000 });
     expect(said.isError, texts(said)).toBeFalsy();
     s = await state();
     expect(s.plan!.result.people[0]).toMatchObject({ capCentimes: 1_400_000, capIsMaximum: false });
+    expect(s.rough.people[0]).toMatchObject({ kind: 'self_employment', amount: 7_000_000 });
+    // The basics card's "Own business" saves the same key (docs/design/three-pages.md).
+    const card = await createApi(ws)(
+      req('POST', '/plan', { person: 'p1', field: 'business', value: 70_000 }),
+    );
+    expect(card.status).toBe(200);
+    expect(ws.ledger.get('plan.business_profit', 'p1')).toMatchObject({
+      value: 7_000_000,
+      status: 'estimate',
+      source: { via: 'dashboard' },
+    });
     await call('set_fact', { key: 'plan.pillar3a_paid', value: 4_000 });
     plan = (await call('list_optimizations')).structuredContent as typeof plan;
     expect(plan.pillar3a.people[0]).toMatchObject({ capCentimes: 1_400_000 });

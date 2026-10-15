@@ -138,10 +138,14 @@ describe('the next step and the stages', () => {
     const lines = text(await call('get_status')).split('\n');
     expect(lines[0]).toMatch(/^Taxpresso [^,]+, tax year 2026/);
     expect(lines[2]).toMatch(/^Next step: Nothing yet/);
-    expect(lines.find((l) => l.startsWith('Stages'))).toMatch(/\[About you: nothing yet\]/);
+    // In the dashboard's words: the Start screen, then the pages (docs/design/three-pages.md).
+    expect(lines.find((l) => l.startsWith('Pages'))).toBe(
+      'Pages: the Start screen is open (nothing known yet), then Your tax: tax: no income figure yet; questions: nothing yet; documents: none yet · Pay less: nothing worked out yet · File: later',
+    );
     const s = await state();
     expect(s.journey.next).toMatchObject({ id: 'start', stage: 'about' });
     expect(s.journey.stage).toBe('about');
+    expect(s.page).toEqual({ current: 'start', tabs: false });
   });
 
   it('read a document nobody has read first, with one consent for all of them', async () => {
@@ -291,8 +295,8 @@ describe('the next step and the stages', () => {
     const estimate = s.estimate;
     expect(tax.vars.amount).toBe(estimate.computed ? estimate.total : undefined);
     const lines = text(await call('get_status')).split('\n');
-    expect(lines.find((l) => l.startsWith('Stages'))).toMatch(
-      /Your tax: [^·]*the tax on pension capital, apart from it: CHF [\d,]+/,
+    expect(lines.find((l) => l.startsWith('Pages'))).toMatch(
+      /Your tax: tax: [^·]*the tax on pension capital, apart from it: CHF [\d,]+/,
     );
   });
 

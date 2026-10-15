@@ -152,10 +152,21 @@ const Option = z
   })
   .strict();
 
+/**
+ * Where a question is asked on the dashboard's pages (docs/design/three-pages.md, section 3): the
+ * basics card, "Anything special" after its chip, "Costs you can deduct" and the cards of "Pay
+ * less", or "A few more questions" once the tax shows. The engine still decides which questions
+ * apply and in which order; the group only decides where.
+ */
+export const QUESTION_GROUPS = ['basics', 'special', 'deduction', 'plan', 'detail'] as const;
+export type QuestionGroup = (typeof QUESTION_GROUPS)[number];
+
 export const Question = z
   .object({
     id: z.string().regex(/^[a-z0-9_]+$/),
     key: z.string(),
+    /** Where the dashboard asks it (QUESTION_GROUPS); a canton's `use:` takes the shared one's. */
+    group: z.enum(QUESTION_GROUPS),
     /**
      * money: an amount in CHF, stored as centimes (SPEC.md section 4). date: a day of the tax year,
      * stored as YYYY-MM-DD.
