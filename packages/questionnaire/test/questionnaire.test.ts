@@ -750,7 +750,7 @@ describe('the questions every canton shares', () => {
 
 describe('tax at source, worked out from plain facts (never asked where the law settles it)', () => {
   /** Where the Geneva household lives (synthetic). */
-  const START = { commune: 'Vernier', moved: 'no' };
+  const START = { commune: 'Lancy', moved: 'no' };
   const derived = (e: QuestionnaireEngine, ledger: Ledger, id: string) =>
     e.snapshot(ledger).derived.find((s) => s.id === id);
 
