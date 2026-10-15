@@ -33,8 +33,8 @@ const NB = String.fromCharCode(0xa0);
 const HOLDING_KEY = /^(accounts|liabilities|securities|wealth)\./;
 
 const FINAL_OK = t(
-  'Your OK: tap it in the dashboard (Documents), or confirm it in the chat.',
-  `Votre accord${NB}: d’un geste dans le tableau de bord (Documents), ou dans la conversation.`,
+  'Your OK: tap it in the dashboard (Your tax), or confirm it in the chat.',
+  `Votre accord${NB}: d’un geste dans le tableau de bord (Votre impôt), ou dans la conversation.`,
 );
 const FINAL_SALARY = t(
   'Your salary certificate (certificat de salaire): it replaces this rough figure.',

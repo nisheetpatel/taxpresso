@@ -2,7 +2,7 @@
 // the chat with Claude is the same thing (SPEC.md section 6).
 import { DOCUMENT_KINDS, LedgerError, VaultError } from '@taxpresso/ledger';
 import { NBSP, QuestionnaireError } from '@taxpresso/questionnaire';
-import { isUiLanguage } from './config.js';
+import { displayPath, isUiLanguage } from './config.js';
 import { contentLang, say, type UiLang as Lang } from './lang.js';
 import * as z from 'zod/v4';
 import { copyPanelView, setRowEntered } from './copy-panel.js';
@@ -29,10 +29,12 @@ import type { Slot } from '@taxpresso/questionnaire';
 import { exportFolder, exportView } from './export.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
 import { finalCheckView } from './final-check.js';
-import { WorkspaceError, type Workspace } from './workspace.js';
+import { WorkspaceError, type PlanKey, type Workspace } from './workspace.js';
 import { CANTONS } from './cantons.js';
 import { TaxYears } from './years.js';
-import { journey } from './journey.js';
+import { journey, pageOf } from './journey.js';
+import { pagesState, ROUGH_INCOME } from './pages.js';
+import type { FolderOpener } from './open-folder.js';
 
 const Answer = z.object({
   id: z.string().max(80),
@@ -55,17 +57,53 @@ function yearChanged(shown: number, open: number, lang: Lang): string {
     it: `Questa pagina mostrava il ${shown}, ma ora è aperto il ${open} (cambiato nella chat). Ecco il ${open}: controlla, poi riprova.`,
   }[lang];
 }
-const Plan = z.object({
-  person: z.enum(['p1', 'p2']),
-  field: z.enum(['gross', 'net', 'pensionFund', 'paid']),
-  value: z.union([z.number().min(0).max(10_000_000), z.boolean()]),
-});
-const PLAN_FIELD = {
+export const PLAN_FIELD = {
   gross: 'plan.gross_salary',
   net: 'plan.net_salary',
   pensionFund: 'plan.has_pension_fund',
   paid: 'plan.pillar3a_paid',
-} as const;
+  // The basics card's rough income besides a salary, one field per kind (./pages.ts, ROUGH_INCOME).
+  benefits: 'plan.replacement_income',
+  pension: 'plan.pension_income',
+  business: 'plan.business_profit',
+} as const satisfies Record<string, PlanKey> &
+  Record<(typeof ROUGH_INCOME)[number]['field'], PlanKey>;
+const Plan = z.object({
+  person: z.enum(['p1', 'p2']),
+  field: z.enum(Object.keys(PLAN_FIELD) as [keyof typeof PLAN_FIELD]),
+  value: z.union([z.number().min(0).max(10_000_000), z.boolean()]),
+});
+
+/** Where to open a folder by hand, on the systems whose file manager has a name everyone knows. */
+const FILE_MANAGER_IN: Partial<Record<NodeJS.Platform, Record<Lang, string>>> = {
+  darwin: { en: ' in Finder', fr: ' dans le Finder', de: ' im Finder', it: ' nel Finder' },
+  win32: {
+    en: ' in File Explorer',
+    fr: ' dans l’Explorateur de fichiers',
+    de: ' im Datei-Explorer',
+    it: ' in Esplora file',
+  },
+};
+
+/** The folder couldn't be opened: where it is, to open it by hand, in the page's language. */
+export function folderNotOpened(dir: string, lang: Lang, platform = process.platform): string {
+  const where = displayPath(dir);
+  const app = FILE_MANAGER_IN[platform]?.[lang] ?? '';
+  return {
+    en: `Taxpresso couldn’t open your folder. Open it yourself${app}: ${where}`,
+    fr: `Taxpresso n’a pas pu ouvrir votre dossier. Ouvrez-le vous-même${app}${NBSP}: ${where}`,
+    de: `Taxpresso konnte deinen Ordner nicht öffnen. Öffne ihn selbst${app}: ${where}`,
+    it: `Taxpresso non è riuscito ad aprire la tua cartella. Aprila tu${app}: ${where}`,
+  }[lang];
+}
+
+export interface ApiOptions {
+  /**
+   * Opens a folder in the system's file manager (./open-folder.ts): POST /folder/open. Given only
+   * by the extension's entry point; tests give a stub, so no window ever opens.
+   */
+  openFolder?: FolderOpener;
+}
 const Waive = z.object({ id: z.string().max(80), waived: z.boolean().default(true) });
 const Kind = z.object({
   id: z.string().max(80),
@@ -159,6 +197,10 @@ export function dashboardState(
       // Before 31 December of the year, its documents mostly don't exist yet.
       yearEnded: ws.today() > `${ws.taxYear}-12-31`,
     },
+    // The three pages (docs/design/three-pages.md, section 4): the page the next step belongs to,
+    // how sure the tax is, the questions by where they are asked, and the rough income per person.
+    page: pageOf(j.next),
+    ...pagesState(ws, j, lang),
     version: ws.config.version,
     taxYear: ws.taxYear,
     // The year switch: every year Taxpresso prepares, with its cantons (./years.ts).
@@ -316,7 +358,10 @@ const parse = <T>(schema: z.ZodType<T>, body: Buffer): T => {
   }
 };
 
-export function createApi(given: Workspace | TaxYears): (req: ApiRequest) => Promise<ApiResponse> {
+export function createApi(
+  given: Workspace | TaxYears,
+  options: ApiOptions = {},
+): (req: ApiRequest) => Promise<ApiResponse> {
   const years = TaxYears.of(given);
   return async (req) => {
     // The open year's workspace, taken once for the whole request (./years.ts).
@@ -382,6 +427,18 @@ export function createApi(given: Workspace | TaxYears): (req: ApiRequest) => Pro
         case '/scan':
           await ws.scan('you');
           return state();
+        case '/folder/open': {
+          // "Open my Taxpresso folder": the open year's folder, made if it isn't there yet, in
+          // Finder, Explorer or the desktop's file manager. Nothing else is run.
+          await ws.ensureFolder();
+          try {
+            if (!options.openFolder) throw new Error('No file manager here.');
+            await options.openFolder(ws.vault.dir);
+          } catch {
+            return { status: 400, body: { error: folderNotOpened(ws.vault.dir, lang) } };
+          }
+          return state();
+        }
         case '/documents': {
           const raw = req.headers['x-filename'];
           const name =

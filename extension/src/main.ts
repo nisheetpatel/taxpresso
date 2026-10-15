@@ -8,6 +8,8 @@ import { setBarcodeWasmPath } from '@taxpresso/intake';
 import { createApi } from './api.js';
 import { readConfig } from './config.js';
 import { Dashboard } from './dashboard.js';
+import { FolderWatch } from './folder-watch.js';
+import { systemFolderOpener } from './open-folder.js';
 import { createTaxpressoServer } from './server.js';
 import { TaxYears } from './years.js';
 
@@ -23,17 +25,23 @@ setBarcodeWasmPath(path.join(path.dirname(fileURLToPath(import.meta.url)), 'zxin
 const years = new TaxYears(config);
 const dashboard = new Dashboard({
   dir: path.join(config.uiDir, 'dashboard'),
-  api: createApi(years),
+  // "Open my Taxpresso folder" opens it in the system's file manager (./open-folder.ts).
+  api: createApi(years, { openFolder: systemFolderOpener() }),
 });
 
 const handle = serveStdio(() => createTaxpressoServer({ years, dashboard }), {
   onerror: (err) => console.error('[taxpresso]', err.message),
 });
 
+// Files the user puts in the open year's folder are sorted as they land (./folder-watch.ts).
+const watch = new FolderWatch(years);
+watch.start();
+
 let stopping = false;
 async function shutdown(): Promise<void> {
   if (stopping) return;
   stopping = true;
+  watch.close();
   await Promise.allSettled([dashboard.stop(), handle.close()]);
   process.exit(0);
 }

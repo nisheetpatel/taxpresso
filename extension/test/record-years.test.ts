@@ -172,7 +172,10 @@ function splitPages(kind: string, data: unknown): { data: unknown; pages: unknow
 
 /** The dashboard named in a value's "what makes it final": Documents, then the page Your tax. */
 const pageWords = (line: string) =>
-  line.replace(/(dashboard|tableau de bord) \((?:Documents|Your tax|Votre impôt)\)/g, '$1 (<PAGE>)');
+  line.replace(
+    /(dashboard|tableau de bord) \((?:Documents|Your tax|Votre impôt)\)/g,
+    '$1 (<PAGE>)',
+  );
 
 interface Household {
   id: string;

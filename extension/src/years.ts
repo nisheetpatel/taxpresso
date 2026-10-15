@@ -83,6 +83,8 @@ export class TaxYears {
   #lock: Promise<unknown> = Promise.resolve();
   /** The year that opens without a choice kept: the default, or the year of the workspace given. */
   readonly #fallback: number;
+  /** Told when the user opens another year (./folder-watch.ts follows the open year's folder). */
+  readonly #listeners = new Set<(taxYear: number) => void>();
 
   /** `first`: a workspace already made (tests, or an extension that made one before). */
   constructor(config: Config, first?: Workspace) {
@@ -142,6 +144,12 @@ export class TaxYears {
     }));
   }
 
+  /** Calls `fn` each time the user opens another year. Returns what stops it. */
+  onChange(fn: (taxYear: number) => void): () => void {
+    this.#listeners.add(fn);
+    return () => void this.#listeners.delete(fn);
+  }
+
   /** A year the folder had open that this version doesn't offer, if so (the default opened). */
   get dropped(): number | undefined {
     void this.year;
@@ -173,7 +181,16 @@ export class TaxYears {
       await rename(tmp, target);
       this.#open = taxYear;
       this.#dropped = undefined;
-      if (before !== taxYear) ws.record(via === 'chat' ? 'claude' : 'you', 'year', String(taxYear));
+      if (before !== taxYear) {
+        ws.record(via === 'chat' ? 'claude' : 'you', 'year', String(taxYear));
+        for (const fn of this.#listeners) {
+          try {
+            fn(taxYear);
+          } catch {
+            // A listener's trouble (the folder watch) never stops the year from opening.
+          }
+        }
+      }
       return ws;
     });
     this.#lock = run.catch(() => undefined);

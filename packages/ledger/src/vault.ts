@@ -9,7 +9,8 @@ import { Ledger, type LedgerFile } from './ledger.js';
 import type { VaultDocument } from './types.js';
 
 export const MAX_DOCUMENT_BYTES = 40 * 1024 * 1024;
-const OWN_FILES = new Set([
+/** The files Taxpresso keeps at the top of a tax-year folder: never documents, never scanned. */
+export const OWN_FILES: ReadonlySet<string> = new Set([
   'ledger.json',
   'documents.json',
   'decisions.json',

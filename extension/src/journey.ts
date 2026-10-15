@@ -17,6 +17,28 @@ import type { Workspace } from './workspace.js';
 export const STAGES = ['about', 'documents', 'tax', 'save', 'file'] as const;
 export type StageId = (typeof STAGES)[number];
 
+/**
+ * The dashboard's pages (docs/design/three-pages.md): a Start screen while nothing is known, then
+ * Your tax, Pay less and File. Each stage is shown on one page; the user's words name the pages.
+ */
+export const PAGES = ['start', 'tax', 'save', 'file'] as const;
+export type PageId = (typeof PAGES)[number];
+
+export const PAGE_OF: Record<StageId, Exclude<PageId, 'start'>> = {
+  about: 'tax',
+  documents: 'tax',
+  tax: 'tax',
+  save: 'save',
+  file: 'file',
+};
+
+/** The pages' names in English, for Claude: what the user sees on the tabs. */
+export const PAGE_NAME: Record<Exclude<PageId, 'start'>, string> = {
+  tax: 'Your tax',
+  save: 'Pay less',
+  file: 'File',
+};
+
 export type NextId =
   | 'folder'
   | 'not_supported'
@@ -123,7 +145,8 @@ export interface Journey {
   claude: string;
 }
 
-const STAGE_OF: Record<NextId, StageId | null> = {
+/** The stage of each next step; none for a folder that can't be used. */
+export const STAGE_OF: Record<NextId, StageId | null> = {
   folder: null,
   not_supported: 'about',
   start: 'about',
@@ -142,6 +165,25 @@ const STAGE_OF: Record<NextId, StageId | null> = {
   later: 'documents',
   file: 'file',
 };
+
+/** The page the dashboard opens on, and whether its tabs show (docs/design/three-pages.md, 4). */
+export interface PageView {
+  current: PageId;
+  /** False only on the Start screen. */
+  tabs: boolean;
+}
+
+/**
+ * Start while the next step is to start (nothing known) or the folder can't be used; otherwise the
+ * page of the next step's stage.
+ */
+export function pageOf(next: Journey['next']): PageView {
+  const stage = STAGE_OF[next.id];
+  if (next.id === 'start' || next.id === 'folder' || !stage) {
+    return { current: 'start', tabs: false };
+  }
+  return { current: PAGE_OF[stage], tabs: true };
+}
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const chf = (centimes: number) => `CHF ${Math.round(centimes / 100).toLocaleString('en-US')}`;
@@ -467,6 +509,29 @@ function capitalHint(ws: Workspace): string {
   return " For the lump sum from a pension fund or pillar 3a, ask for the institution's attestation: its amount, date and reason (motif du versement) are read from it, never asked.";
 }
 
+/**
+ * Someone in the household has benefits or a pension: their rough yearly figure has its own key,
+ * used until the attestation is in (the rough salary's way).
+ */
+function roughOtherIncome(ws: Workspace): string {
+  // A year that is over takes its documents' figures: rough income is refused there.
+  if (ws.yearOver()) return '';
+  const answers = ws.snapshot().answers;
+  const has = (source: string) =>
+    (['p1', 'p2'] as const).some((p) => {
+      const sources = answers.get(`profile.income_sources|${p}`);
+      return Array.isArray(sources) && sources.includes(source);
+    });
+  const benefits = has('replacement_income');
+  const pension = has('pension');
+  if (!benefits && !pension) return '';
+  const keys = [
+    ...(benefits ? ['benefits (unemployment, sickness, accident) as plan.replacement_income'] : []),
+    ...(pension ? ['a pension as plan.pension_income'] : []),
+  ];
+  return ` Save ${keys.join(' and ')}, estimates too, never as a salary.`;
+}
+
 /** What a document of the household's situation needs when Claude reads it. */
 function readingHint(ws: Workspace): string {
   return [
@@ -498,15 +563,15 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
     case 'read':
       return `${plural(n, 'document')} not read yet. Reading sends a document’s content to you, so ask the user first, once for all of them. Then read each (get_document_for_review) and propose what it shows with propose_extraction: an assessment (avis de taxation) also proposes the household answers it prints, each with its page.${readingHint(ws)} Then sum up what you found in a few plain lines. The user can also say what each one is in the dashboard.`;
     case 'whose':
-      return `${n} certificate${n === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${n === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Documents), or tell you and you save it with set_document_owner; then the values fill in.`;
+      return `${n} certificate${n === 1 ? ' was' : 's were'} read from the barcode; ask the user whose ${n === 1 ? 'it is' : 'each one is'} (theirs or their partner’s). They choose it in the dashboard (Your tax), or tell you and you save it with set_document_owner; then the values fill in.`;
     case 'canton':
       return `Ask the first question: where the user lived on 31 December (next_questions). That canton taxes the whole year, and it decides the questions and the tax. Taxpresso prepares ${cantonNames(SUPPORTED_CANTONS, 'and')} returns so far.${c.suggestions ? suggestion : ''}`;
     case 'prior':
       return "Before the next question, ask the user for last year's Geneva tax declaration (the PDF from GeTax, the online declaration or their tax software) or last year's tax bill (avis de taxation): Taxpresso suggests most answers from it for them to confirm. They drop it in the dashboard (open_dashboard) or in their Taxpresso folder, then call ingest_vault. If they don't have it, ask the next questions: call next_questions.";
     case 'questions':
-      return `Sum up what Taxpresso knows in a few plain lines (About you), then ask only what is still unknown, a few at a time (next_questions with limit 3), in plain words, and save each answer with answer_question. Never ask for a technical figure (tariff, tax withheld) or whether someone is taxed at source: Taxpresso reads, works out or estimates those.${c.suggestions ? suggestion : ''} If the user doesn't know an answer, call skip_question.`;
+      return `Sum up what Taxpresso knows in a few plain lines (as Your tax shows it), then ask only what is still unknown, a few at a time (next_questions with limit 3), in plain words, and save each answer with answer_question. Never ask for a technical figure (tariff, tax withheld) or whether someone is taxed at source: Taxpresso reads, works out or estimates those.${c.suggestions ? suggestion : ''} If the user doesn't know an answer, call skip_question.`;
     case 'confirm':
-      return `${n} value${n === 1 ? '' : 's'} read from documents need the user's OK. Ask them to check each one in the dashboard (Documents), or to confirm in the chat; then save with set_fact.`;
+      return `${n} value${n === 1 ? '' : 's'} read from documents need the user's OK. Ask them to check each one in the dashboard (Your tax), or to confirm in the chat; then save with set_fact.`;
     case 'checks':
       return 'Go through the "Check this" items with the user. Each is settled by replacing the document in the dashboard, or with a short note from the user (set_fact, key check.note, instance = the item id). Never settle one on your own.';
     case 'identify':
@@ -516,7 +581,7 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
     case 'documents':
       return `Ask for the missing documents. The user drops them in the dashboard or puts them in their Taxpresso folder; then call ingest_vault.${capitalHint(ws)}${abroadHint(ws)}${partYearHint(ws)}${propertyHint(ws)}`;
     case 'income':
-      return `There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate.${selfEmployedInGeneva(ws) ? " For a business of their own, ask roughly what profit (bénéfice net) it makes this year, after their own AVS contributions, and save it with set_fact (plan.business_profit); or they add the business's accounts." : ''}${capitalHint(ws)}${abroadHint(ws)}${partYearHint(ws)}${propertyHint(ws)} Then call compute_tax.`;
+      return `There is no income figure yet, so there is no tax to show. Ask, in plain words, roughly what the user (and their partner) earn this year and save it with set_fact (plan.gross_salary, an estimate); or they add a salary certificate.${roughOtherIncome(ws)}${selfEmployedInGeneva(ws) ? " For a business of their own, ask roughly what profit (bénéfice net) it makes this year, after their own AVS contributions, and save it with set_fact (plan.business_profit); or they add the business's accounts." : ''}${capitalHint(ws)}${abroadHint(ws)}${partYearHint(ws)}${propertyHint(ws)} Then call compute_tax.`;
     case 'save': {
       const then = c.then() === 'later' ? 'their documents come after 31 December' : 'file';
       const what = c.savings
@@ -531,7 +596,7 @@ function claudeStep(ws: Workspace, id: NextId, vars: Vars, c: StepContext): stri
   }
 }
 
-// --- For Claude: the stages in one line each (get_status) ----------------------------------------
+// --- For Claude: the pages, their stages in one line each (get_status) ---------------------------
 
 /** The tax on pension capital, said apart from the total. */
 const apart = (s: StageView) =>
@@ -539,12 +604,11 @@ const apart = (s: StageView) =>
     ? `; the tax on pension capital, apart from it: ${chf(s.vars.capital)}`
     : '';
 
-const STAGE_NAME: Record<StageId, string> = {
-  about: 'About you',
-  documents: 'Your documents',
-  tax: 'Your tax',
-  save: 'Ways to save',
-  file: 'File',
+/** On "Your tax", what each of its stages' lines is about: the tax first, as the page shows it. */
+const PART: Partial<Record<StageId, string>> = {
+  tax: 'tax',
+  about: 'questions',
+  documents: 'documents',
 };
 
 function stageLine(s: StageView): string {
@@ -626,14 +690,25 @@ const FACT_TEXT: Record<Fact['id'], (f: Fact) => string> = {
 
 /** get_status's lines for the journey: the stages and the facts, concise. */
 export function journeyText(j: Journey): string[] {
-  const stages = j.stages
-    .map(
-      (s) =>
-        `${s.id === j.stage ? '[' : ''}${STAGE_NAME[s.id]}: ${stageLine(s)}${s.id === j.stage ? ']' : ''}`,
-    )
+  const open = pageOf(j.next).current;
+  const pages = (['tax', 'save', 'file'] as const)
+    .map((page) => {
+      const lines = j.stages.filter((s) => PAGE_OF[s.id] === page);
+      const said =
+        page === 'tax'
+          ? (['tax', 'about', 'documents'] as const)
+              .flatMap((id) => lines.filter((s) => s.id === id))
+              .map((s) => `${PART[s.id]}: ${stageLine(s)}`)
+              .join('; ')
+          : lines.map(stageLine).join('; ');
+      const text = `${PAGE_NAME[page]}: ${said}`;
+      return page === open ? `[${text}]` : text;
+    })
     .join(' · ');
   return [
-    `Stages (the open one in brackets): ${stages}`,
+    open === 'start'
+      ? `Pages: the Start screen is open (nothing known yet), then ${pages}`
+      : `Pages (the open one in brackets): ${pages}`,
     ...(j.about.length ? [`Facts: ${j.about.map((f) => FACT_TEXT[f.id](f)).join(' ')}`] : []),
   ];
 }
