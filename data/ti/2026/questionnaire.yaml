@@ -70,6 +70,7 @@ questions:
   # (NOTE.widowedThisYear).
   - id: status_change
     key: ti.status_change
+    group: detail
     type: yesno
     when: { key: profile.civil_status, in: [separated, divorced, widowed] }
     explain:
@@ -162,6 +163,7 @@ questions:
   # p. 36): under 18 on 31 December. packages/rules-ti asks rather than guess (NOTE.wealthChild).
   - id: child_minor
     key: ti.child_minor
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -218,6 +220,7 @@ questions:
   # invoices' total splits can decide the deduction, so it is asked per child.
   - id: child_care
     key: ti.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -253,6 +256,7 @@ questions:
   # ti-2026-communal-rates; the table has no BFS numbers).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own multiplier (moltiplicatore d’imposta comunale), a percentage of the cantonal base tax (imposta cantonale base).'
@@ -283,6 +287,7 @@ questions:
   # canton: the commune of 31 December (LT art. 277 cpv. 1).
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Ticino taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -386,6 +391,7 @@ questions:
   # (ti-2025-tariff-decreto-esecutivo-pf art. 7 cpv. 3, p. 3; from 2026 LT art. 25 cpv. 2).
   - id: work_rate
     key: ti.work_rate
+    group: detail
     type: number
     perPerson: true
     min: 1
@@ -430,6 +436,7 @@ questions:
   # out: packages/rules-ti does not compute part of a year (NOTE.partYear).
   - id: full_year
     key: ti.full_year
+    group: detail
     type: yesno
     perPerson: true
     when: { key: profile.income_sources, includes: salary }
@@ -472,6 +479,7 @@ questions:
   # Modulo 4, 1., inferiore all'anno: durata dal ... al ... (ti-2025-form-modulo-4 p. 1).
   - id: months_worked
     key: ti.months_worked
+    group: detail
     type: number
     perPerson: true
     min: 1

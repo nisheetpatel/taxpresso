@@ -109,6 +109,7 @@ questions:
   # NOTE.childcareSplit; a test keeps this amount equal to the engine's).
   - id: child_care
     key: ge.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -144,6 +145,7 @@ questions:
 
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The municipality where you lived on 31 December. Each commune adds its own share of tax (centimes additionnels).'
@@ -171,6 +173,7 @@ questions:
 
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within Geneva changes little. Arriving from another canton changes nothing either: Geneva taxes your whole year, as if you had lived here since January. Arriving from abroad means you were taxed here for part of the year only.'
@@ -266,6 +269,7 @@ questions:
   # ge-2025-declaration-specimen p. 1).
   - id: arrival_date
     key: profile.arrival_date
+    group: special
     type: date
     perPerson: true
     when: { key: profile.moved, eq: from_abroad }
@@ -301,6 +305,7 @@ questions:
 
   - id: departure_date
     key: profile.departure_date
+    group: special
     type: date
     perPerson: true
     when: { key: profile.moved, eq: leaving_switzerland }
@@ -429,6 +434,7 @@ questions:
   # permit only.
   - id: employer_in_switzerland
     key: profile.employer_in_switzerland
+    group: basics
     type: yesno
     perPerson: true
     when:
@@ -521,6 +527,7 @@ questions:
   # with the comparison, only when it is a choice.
   - id: tou
     key: profile.tou
+    group: basics
     type: choice
     perPerson: true
     when: { key: profile.taxed_at_source, is: true }
@@ -579,6 +586,7 @@ questions:
   # estimate the tax taken at source when no salary certificate shows it.
   - id: lives_with_other_parent
     key: profile.lives_with_other_parent
+    group: detail
     type: yesno
     when:
       all:
@@ -630,6 +638,7 @@ questions:
   # (ge-2025-declaration-specimen p. 7 to 10, annexe B).
   - id: business_form
     key: profile.business_form
+    group: special
     type: choice
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
@@ -685,6 +694,7 @@ questions:
 
   - id: business_year
     key: profile.business_year
+    group: special
     type: choice
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
@@ -780,6 +790,7 @@ questions:
 
   - id: business_place
     key: profile.business_place
+    group: special
     type: choice
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
@@ -845,6 +856,7 @@ questions:
 
   - id: business_method
     key: profile.business_method
+    group: special
     type: choice
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
@@ -894,6 +906,7 @@ questions:
 
   - id: business_special
     key: profile.business_special
+    group: special
     type: multi
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
@@ -1051,6 +1064,7 @@ questions:
 
   - id: business_losses
     key: profile.business_losses
+    group: special
     type: yesno
     perPerson: true
     when: { key: profile.income_sources, includes: self_employment }
@@ -1094,6 +1108,7 @@ questions:
 
   - id: business_losses_icc
     key: business.losses_icc
+    group: special
     type: money
     perPerson: true
     when: { key: profile.business_losses, is: true }
@@ -1130,6 +1145,7 @@ questions:
 
   - id: business_losses_ifd
     key: business.losses_ifd
+    group: special
     type: money
     perPerson: true
     when: { key: profile.business_losses, is: true }
@@ -1423,6 +1439,7 @@ questions:
   # can't tax yet (leaving Switzerland, another reason) is derived from them.
   - id: pension_capital
     key: profile.pension_capital
+    group: special
     type: multi
     perPerson: true
     when: { key: profile.special, includes: pension_capital }
@@ -1498,6 +1515,7 @@ questions:
   # ge-na-valeur-fiscale-page) or, until they are in, from what the user says, as estimates.
   - id: abroad_property
     key: profile.abroad_property
+    group: special
     type: choice
     when: { key: profile.special, includes: property_abroad }
     explain:
@@ -1591,6 +1609,7 @@ questions:
   # the household's, which its documents don't give (not supported).
   - id: abroad_property_owner
     key: profile.abroad_property_owner
+    group: special
     type: choice
     when:
       all:
@@ -1651,6 +1670,7 @@ questions:
   # and the currency of its documents.
   - id: abroad_property_country
     key: profile.abroad_property_country
+    group: special
     type: choice
     when:
       all:
@@ -1713,6 +1733,7 @@ questions:
   # let, 10 % or 20 % of the rents, federal tax only (guide p. 35).
   - id: abroad_property_old
     key: profile.abroad_property_old
+    group: special
     type: yesno
     when:
       all:
@@ -1755,6 +1776,7 @@ questions:
   # (ge-na-law-lipp art. 57).
   - id: abroad_property_loan
     key: profile.abroad_property_loan
+    group: special
     type: yesno
     when:
       all:
@@ -1803,6 +1825,7 @@ questions:
   # statement, or, until they are in, from what the user says, as estimates.
   - id: swiss_property
     key: profile.swiss_property
+    group: special
     type: choice
     when: { key: profile.special, includes: real_estate }
     explain:
@@ -1908,6 +1931,7 @@ questions:
   # the household's, and its documents are the co-owners' (not supported).
   - id: swiss_property_owner
     key: profile.swiss_property_owner
+    group: special
     type: choice
     when:
       all:
@@ -1968,6 +1992,7 @@ questions:
   # ge-2025-guide-declaration-pp p. 33, "Villa occupée de 2010 à 2025, soit 16 ans").
   - id: swiss_property_since
     key: profile.swiss_property_since
+    group: special
     type: number
     min: 1900
     max: 2026
@@ -2006,6 +2031,7 @@ questions:
   # the rents, federal tax only (guide p. 35; ch-2026-ifd-instructions-personnes-physiques p. 6).
   - id: swiss_property_old
     key: profile.swiss_property_old
+    group: special
     type: yesno
     when:
       all:
@@ -2049,6 +2075,7 @@ questions:
   # not supported, as for a business in another commune.
   - id: swiss_property_other_commune
     key: profile.swiss_property_other_commune
+    group: special
     type: yesno
     when:
       all:
@@ -2090,6 +2117,7 @@ questions:
   # a sale or a move during the year (the rental value counts from the move; a gain is taxed apart).
   - id: swiss_property_special
     key: profile.swiss_property_special
+    group: special
     type: multi
     when:
       all:
@@ -2199,6 +2227,7 @@ questions:
   # ge-2025-declaration-specimen p. 19; ge-2025-guide-declaration-pp p. 37).
   - id: swiss_property_loan
     key: profile.swiss_property_loan
+    group: special
     type: yesno
     when:
       all:

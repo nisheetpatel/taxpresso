@@ -130,6 +130,7 @@ questions:
   # other parent don't count here (packages/rules-ch, core/from-ledger.ts), so it isn't asked then.
   - id: own_household
     key: vd.own_household
+    group: detail
     type: yesno
     when:
       all:
@@ -172,6 +173,7 @@ questions:
   # (vd-2026-law-li art. 43 al. 2 lit. c, p. 26; vd-2025-guide p. 51).
   - id: main_upkeep
     key: vd.main_upkeep
+    group: detail
     type: yesno
     when:
       all:
@@ -236,6 +238,7 @@ questions:
   # NOTE.childcareSplit). Asked per child.
   - id: child_care
     key: vd.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -273,6 +276,7 @@ questions:
   # communeOptions(2026)): the table carries no federal commune number.
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year, also after a move within the canton. Each commune sets its own rate (coefficient communal), a percentage of the cantonal base tax (impôt cantonal de base).'
@@ -305,6 +309,7 @@ questions:
   # keeps them equal. The names are the table's.
   - id: commune_part
     key: vd.commune_part
+    group: detail
     type: choice
     when: { key: profile.commune, in: [l-abbaye, le-chenit] }
     explain:
@@ -388,6 +393,7 @@ questions:
   # (p. 60; vd-na-law-licom art. 15 al. 1, p. 7). Part-year liability is not covered by rules-vd.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Vaud taxes your whole year, from 1 January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -828,6 +834,7 @@ questions:
   # safe bound for 2026. Registered partners are taxed like spouses (vd-2025-guide p. 10).
   - id: contents_high
     key: vd.contents_high
+    group: detail
     type: yesno
     explain:
       en: 'Your household contents (objets mobiliers, code 440) count in your wealth at 30% of their fire insurance value (valeur d’assurance incendie), less a deduction of CHF 60,000, or CHF 120,000 for a couple filing together. Up to those values nothing is declared.'
@@ -856,6 +863,7 @@ questions:
   # on 31 December counts (p. 6).
   - id: contents_value
     key: vd.contents_value
+    group: detail
     type: money
     when: { key: vd.contents_high, is: true }
     explain:
@@ -889,6 +897,7 @@ questions:
   # minor child's accounts are the parent's (p. 37).
   - id: savings_interest
     key: vd.savings_interest
+    group: detail
     type: money
     when: { key: profile.banks, gt: 0 }
     explain:
@@ -944,6 +953,7 @@ questions:
   # `special` question below says so.
   - id: rent
     key: vd.rent
+    group: deduction
     type: money
     explain:
       en: 'Vaud has a housing deduction (déduction sociale pour le logement, code 660) for your main home: the part of the rent above 20% of your net income, up to a limit.'

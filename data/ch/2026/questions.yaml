@@ -66,6 +66,7 @@ questions:
   # ag-2025-guide-wegleitung p. 7 and 8 (Wer füllt eine Steuererklärung aus?; Wohnsitzverlegung).
   - id: canton
     key: profile.canton
+    group: basics
     type: choice
     explain:
       en: 'The canton you lived in on 31 December taxes your whole year: cantonal, communal and federal tax. Taxpresso prepares returns for {cantons} so far.'
@@ -215,6 +216,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 1 (situation on 31 December)
   - id: civil_status
     key: profile.civil_status
+    group: basics
     type: choice
     explain:
       en: 'Your situation on 31 December decides whether you file alone or as a couple, on one declaration together.'
@@ -268,6 +270,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 1 (Enfants)
   - id: children
     key: profile.children_count
+    group: basics
     type: number
     min: 0
     max: 12
@@ -297,6 +300,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 1 (Enfants)
   - id: children_custody
     key: profile.children_custody
+    group: detail
     type: choice
     when: { key: profile.children_count, gt: 0 }
     explain:
@@ -355,6 +359,7 @@ questions:
   # p. 32 and 33, ch. 14.4 and 14.5); each canton's own rules say what it decides there.
   - id: child_support
     key: profile.child_support
+    group: detail
     type: choice
     when:
       all:
@@ -442,6 +447,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 8 (frais de garde par des tiers)
   - id: childcare
     key: profile.childcare
+    group: deduction
     type: choice
     when: { key: profile.children_count, gt: 0 }
     explain:
@@ -493,6 +499,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 3 (chiffre 3)
   - id: income_sources
     key: profile.income_sources
+    group: basics
     type: multi
     perPerson: true
     explain:
@@ -581,6 +588,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 1 (chiffre 1er: one certificate per employer)
   - id: employers
     key: profile.employers
+    group: detail
     type: number
     perPerson: true
     min: 1
@@ -634,6 +642,7 @@ questions:
   # holds a C permit (otherwise neither of them is taxed at source).
   - id: residence
     key: profile.residence
+    group: basics
     type: choice
     perPerson: true
     when:
@@ -722,6 +731,7 @@ questions:
   # Not asked before the permit is known.
   - id: taxed_at_source
     key: profile.taxed_at_source
+    group: basics
     type: yesno
     perPerson: true
     when:
@@ -789,6 +799,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)
   - id: pillar3a
     key: profile.pillar3a
+    group: plan
     type: yesno
     perPerson: true
     when:
@@ -833,6 +844,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 15)
   - id: lpp_buyin
     key: profile.lpp_buyin
+    group: plan
     type: yesno
     perPerson: true
     when: { key: profile.income_sources, includes: salary }
@@ -877,6 +889,7 @@ questions:
   # (chiffre 10, federal rules by means of transport).
   - id: commute
     key: profile.commute
+    group: deduction
     type: choice
     perPerson: true
     when: { key: profile.income_sources, includes: salary }
@@ -964,6 +977,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 6
   - id: commute_transit_cost
     key: commute.transit_cost
+    group: deduction
     type: money
     perPerson: true
     when: { key: profile.commute, in: [public_transport, public_transport_long] }
@@ -1000,6 +1014,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 6
   - id: commute_transit_usable
     key: commute.transit_usable
+    group: deduction
     type: choice
     perPerson: true
     when: { key: profile.commute, in: [car, motorbike] }
@@ -1056,6 +1071,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 6
   - id: commute_transit_equivalent
     key: commute.transit_equivalent
+    group: deduction
     type: money
     perPerson: true
     when: { key: commute.transit_usable, in: ['yes', yes_long] }
@@ -1092,6 +1108,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 6
   - id: commute_distance
     key: commute.distance_km
+    group: deduction
     type: number
     perPerson: true
     min: 1
@@ -1130,6 +1147,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 6
   - id: commute_drive_days
     key: commute.drive_days
+    group: deduction
     type: number
     perPerson: true
     min: 1
@@ -1170,6 +1188,7 @@ questions:
   # (ch-2026-ifd-instructions-personnes-physiques p. 6).
   - id: meal_days
     key: meals.days
+    group: deduction
     type: number
     perPerson: true
     min: 0
@@ -1214,6 +1233,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 3 (chiffre 4: securities and accounts)
   - id: banks
     key: profile.banks
+    group: detail
     type: number
     min: 0
     max: 20
@@ -1247,6 +1267,7 @@ questions:
   # ch-na-cryptoactifs-document-de-travail (crypto assets are wealth)
   - id: crypto
     key: profile.crypto
+    group: detail
     type: yesno
     explain:
       en: 'Coins or tokens you owned on 31 December count as part of your wealth (fortune), like money in a bank.'
@@ -1270,6 +1291,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 7 and 9 (interest, alimony, medical costs, gifts)
   - id: payments
     key: profile.payments
+    group: deduction
     type: multi
     explain:
       en: 'Each of these can lower your tax if you keep the proof.'
@@ -1354,6 +1376,7 @@ questions:
   # ch-2026-ifd-instructions-personnes-physiques p. 4 (capital payments, property)
   - id: special
     key: profile.special
+    group: special
     type: multi
     explain:
       en: 'These situations need checks that Taxpresso can’t do yet. Better to know now than in March.'
