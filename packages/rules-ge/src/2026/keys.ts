@@ -164,6 +164,8 @@ export const KEYS_2026 = {
   // Planning inputs for "before 31 December" (SPEC.md section 8, group B). Rough figures the user
   // gives for an estimate; never filed.
   'plan.gross_salary': H['plan.gross_salary'],
+  'plan.replacement_income': H['plan.replacement_income'],
+  'plan.pension_income': H['plan.pension_income'],
   'plan.net_salary': H['plan.net_salary'],
   'plan.has_pension_fund': H['plan.has_pension_fund'],
   'plan.pillar3a_paid': H['plan.pillar3a_paid'],

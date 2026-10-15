@@ -225,6 +225,33 @@ export const KEYS_HOUSEHOLD_2026 = {
     perPerson: true,
     label: { en: 'Gross salary this year, roughly', fr: 'Salaire brut de l’année, environ' },
   },
+  // Rough yearly income from benefits (unemployment, sickness, accident, maternity) and from a
+  // pension, for someone without its attestation yet (docs/design/three-pages.md, section 4): the
+  // user's own figures, used as estimates until the document is in (core/from-ledger.ts).
+  'plan.replacement_income': {
+    type: 'money',
+    min: 0,
+    max: 10_000_000_00,
+    perPerson: true,
+    label: {
+      en: 'Benefits this year, roughly',
+      fr: 'Indemnités de l’année, environ',
+      de: 'Taggelder dieses Jahr, ungefähr',
+      it: 'Indennità di quest’anno, più o meno',
+    },
+  },
+  'plan.pension_income': {
+    type: 'money',
+    min: 0,
+    max: 10_000_000_00,
+    perPerson: true,
+    label: {
+      en: 'Pensions this year, roughly',
+      fr: 'Rentes de l’année, environ',
+      de: 'Renten dieses Jahr, ungefähr',
+      it: 'Rendite di quest’anno, più o meno',
+    },
+  },
   'plan.net_salary': {
     type: 'money',
     min: 0,
