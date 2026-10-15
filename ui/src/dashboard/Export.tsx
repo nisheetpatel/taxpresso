@@ -5,10 +5,9 @@ import type { JSX } from 'preact';
 import './export.css';
 import { api } from './api';
 import type { Language } from './i18n';
+import type { Act } from './page-props';
 import type { State } from './types';
 import type { FolderExportState } from './types-export';
-
-type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
 
 const NB = String.fromCharCode(0xa0);
 
@@ -56,35 +55,25 @@ type Key = keyof (typeof text)['en'];
 const tx = (lang: Language, key: Key, vars: Record<string, string | number> = {}) =>
   text[lang][key].replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
 
+/** In the menu (three-pages.md): one line that opens. */
 export function ExportCard({
   state,
   lang,
   busy,
   act,
-  compact = false,
 }: {
   state: State & { folderExport?: FolderExportState };
   lang: Language;
   busy: string;
   act: Act;
-  /** In the footer: one line that opens (docs/design/simple.md). */
-  compact?: boolean;
 }): JSX.Element | null {
   // Nothing to copy before the year's folder exists.
   if (!state.vault.exists || state.vault.problem) return null;
-  if (compact) {
-    return (
-      <details class="foot-activity" open={state.folderExport?.last !== undefined}>
-        <summary>{tx(lang, 'title')}</summary>
-        <ExportBody state={state} lang={lang} busy={busy} act={act} />
-      </details>
-    );
-  }
   return (
-    <section class="card side-card" aria-labelledby="ex-title">
-      <h2 id="ex-title">{tx(lang, 'title')}</h2>
+    <details class="menu-more" open={state.folderExport?.last !== undefined}>
+      <summary>{tx(lang, 'title')}</summary>
       <ExportBody state={state} lang={lang} busy={busy} act={act} />
-    </section>
+    </details>
   );
 }
 

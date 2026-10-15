@@ -30,7 +30,7 @@ function One({ a, lang }: { a: AssessmentCard; lang: Language }) {
               </span>
             </div>
           ))}
-          <p class="small-text dc-note-text">{a.text.counting}</p>
+          <p class="small-text">{a.text.counting}</p>
         </div>
       ) : (
         <p class="banner banner-estimate">{a.text.noDate}</p>

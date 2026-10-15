@@ -99,8 +99,7 @@ function update(next: McpUiHostContext): void {
   root.dataset.display = view.ctx.displayMode ?? 'inline';
   const room = view.ctx.containerDimensions;
   const limit = room && 'height' in room ? room.height : room?.maxHeight;
-  const bar = document.querySelector('.embed-bar')?.getBoundingClientRect().height ?? 0;
-  if (limit) root.style.setProperty('--embed-max', `${Math.max(240, Math.floor(limit - bar))}px`);
+  if (limit) root.style.setProperty('--embed-max', `${Math.max(240, Math.floor(limit))}px`);
   else root.style.removeProperty('--embed-max');
   const inset = view.ctx.safeAreaInsets;
   for (const side of ['top', 'right', 'bottom', 'left'] as const) {
@@ -109,7 +108,12 @@ function update(next: McpUiHostContext): void {
   changed();
 }
 
-function Bar({ host }: { host: Host }) {
+/**
+ * The host's own choices: beside the chat (pip), full screen, back into the chat, the browser. In
+ * the dashboard's menu (three-pages.md: nothing else on the top bar), or alone when the view can't
+ * run the dashboard.
+ */
+function HostActions({ host }: { host: Host }) {
   const { ctx, url, lang } = useView();
   const [showLink, setShowLink] = useState(false);
   const s = strings[lang];
@@ -134,7 +138,7 @@ function Bar({ host }: { host: Host }) {
   };
 
   return (
-    <nav class="embed-bar" aria-label="Taxpresso">
+    <div class="embed-bar">
       <div class="embed-actions">
         {/* Beside the chat (pip) is the companion panel; full screen, or back into the chat. */}
         {can('pip') && mode !== 'pip' ? (
@@ -167,7 +171,7 @@ function Bar({ host }: { host: Host }) {
           {s.copyLink} <code>{url}</code>
         </p>
       ) : null}
-    </nav>
+    </div>
   );
 }
 
@@ -175,10 +179,9 @@ function Embedded({ host }: { host: Host }) {
   useEffect(() => update({}), []);
   return (
     <div class="embed">
-      <Bar host={host} />
       <div class="embed-scroll">
         <div id="app">
-          <App />
+          <App menuExtra={<HostActions host={host} />} />
         </div>
       </div>
     </div>
@@ -190,8 +193,8 @@ function BrowserOnly({ host }: { host: Host }) {
   const { lang } = useView();
   return (
     <div class="embed">
-      <Bar host={host} />
       <p class="embed-alone">{strings[lang].noTools}</p>
+      <HostActions host={host} />
     </div>
   );
 }

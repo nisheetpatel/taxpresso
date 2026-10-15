@@ -1,5 +1,5 @@
-/* Document cards, "Check this" and the assessment card (SPEC.md 5.5, 5.8, 10.5, 10.8).
-   Only the shared tokens (../shared/tokens.css) and status chips: no colors of its own. */
+/* "Check this" and the assessment card (SPEC.md 5.8, 10.8). Only the shared tokens
+   (../shared/tokens.css) and status chips: no colors of its own. */
 
 .dc-lead {
   margin: 0;
@@ -8,184 +8,7 @@
   line-height: 1.5;
 }
 
-.dc-card {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.dc-head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px 16px;
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid var(--line-soft);
-}
-
-.dc-title {
-  flex: 1 1 260px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dc-title h3 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 650;
-  overflow-wrap: anywhere;
-}
-
-.dc-title .muted {
-  overflow-wrap: anywhere;
-}
-
-.dc-claude {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.dc-head-side {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-}
-
-.dc-values {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.dc-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--line-soft);
-}
-
-.dc-row:last-child {
-  border-bottom: none;
-}
-
-.dc-row-pending {
-  background: var(--accent-soft);
-}
-
-.dc-label {
-  flex: 1 1 220px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dc-gloss {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.dc-official {
-  font-size: 13px;
-  font-style: italic;
-  color: var(--muted);
-}
-
-.dc-value {
-  flex: 0 1 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.dc-value strong {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.dc-actions {
-  flex: 0 1 auto;
-  margin-left: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px 8px;
-}
-
-.primary.dc-small {
-  min-height: 36px;
-  padding: 6px 14px;
-  font-size: 13px;
-}
-
-.dc-edit {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.dc-edit input {
-  min-height: 36px;
-  width: 12em;
-  max-width: 100%;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-button);
-  background: var(--surface);
-}
-
-.dc-entered {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: var(--touch);
-  padding: 0 4px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.dc-entered input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-}
-
-.dc-problem {
-  flex: 1 1 100%;
-  max-width: 40ch;
-}
-
-.dc-copy-fallback {
-  overflow-wrap: anywhere;
-}
-
-.dc-empty {
-  margin: 0;
-  padding: 14px 20px;
-}
-
-.dc-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  padding: 10px 20px;
-  border-top: 1px solid var(--line-soft);
-}
-
-/* Check this */
-
-.dc-check {
-  gap: 4px;
-}
+/* Check this: the note that settles an item */
 
 .dc-note {
   display: flex;
@@ -207,6 +30,17 @@
 
 .dc-note .primary {
   align-self: flex-start;
+}
+
+.dc-gloss {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.dc-official {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
 }
 
 /* Your assessment */
@@ -284,17 +118,4 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-@media (max-width: 560px) {
-  .dc-row,
-  .dc-head,
-  .dc-foot {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .dc-actions {
-    justify-content: flex-start;
-  }
 }
