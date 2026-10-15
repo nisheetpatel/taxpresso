@@ -1,43 +1,26 @@
-// The dashboard, simple first (docs/design/simple.md): one next step, then five stages (About you,
-// Your documents, Your tax, Ways to save, File), one open, the others one line each. The same state
-// and the same next step as Claude's tools (get_status); every detail stays one click away.
+// The dashboard, three pages (docs/design/three-pages.md): a Start screen while nothing is known,
+// then Your tax, Pay less and File, with the tax always on top. One column, the same in the panel
+// beside the chat and at full width. The same state and next step as Claude's tools (get_status);
+// the panel opens on the page the next step belongs to and never jumps while you are elsewhere.
 import { wordmark } from '../shared/logo';
+import type { ComponentChildren, JSX } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import type { JSX } from 'preact';
 import { api, ApiError, embedded } from './api';
-import { Assessment } from './Assessment';
-import { Checks } from './Checks';
-import { CopyPanel } from './CopyPanel';
-import { DocumentCards } from './DocumentCards';
-import { Estimate } from './Estimate';
-import { ExportCard } from './Export';
-import { FinalCheck } from './FinalCheck';
-import { ck, isMessageKey, type Language, type MessageKey, t } from './i18n';
-import { Holdings } from './Holdings';
-import { assumptionList, tp } from './i18n-planning';
+import { BasicsCard, type Write } from './Basics';
+import { FilePage } from './File';
+import { t, type Language } from './i18n';
 import { tj } from './i18n-journey';
-import { LastYear } from './LastYear';
-import { CatchUpCard, LppCard, TouCard } from './Planning';
-import { Reconcile } from './Reconcile';
-import { Review } from './Review';
-import { Detail, Facts, francs, NextStep, SaveHeadline, StageCard, TaxWaiting } from './Simple';
-import { YearOverCard, YearSwitch } from './Years';
-import {
-  isPlanned,
-  type OfficialLink,
-  type PlannedState,
-  type Question,
-  type RequirementView,
-  type StageId,
-  type State,
-  type Value,
-} from './types';
+import { pg } from './i18n-pages';
+import { Menu } from './Menu';
+import type { Act, PageProps } from './page-props';
+import { PayLess } from './PayLess';
+import { Start } from './Start';
+import { followPage, shownPage, useCommunes, type PageId } from './state-adapter';
+import type { State } from './types';
+import { YourTax } from './YourTax';
 
 /** The panel follows the chat: a change made there shows within about a second. */
 const POLL_MS = 1000;
-
-/** The language button cycles English, French, German, Italian. */
-const NEXT_LANG: Record<Language, Language> = { en: 'fr', fr: 'de', de: 'it', it: 'en' };
 
 function readLang(): Language | undefined {
   try {
@@ -56,21 +39,54 @@ function saveLang(lang: Language): void {
   }
 }
 
-const STAGE_ORDER: StageId[] = ['about', 'documents', 'tax', 'save', 'file'];
+/** Where storage isn't allowed (the view inside Claude Desktop): remembered while it is open. */
+const memory = new Map<string, number>();
 
-export function App(): JSX.Element {
+/** The rough tax of this year, remembered on this computer for "CHF 660 less than…". */
+function remembered(key: string, value?: number): number | null {
+  if (value !== undefined) memory.set(key, value);
+  try {
+    if (value !== undefined) localStorage.setItem(key, String(value));
+    const stored = localStorage.getItem(key);
+    if (stored !== null && Number.isFinite(Number(stored))) return Number(stored);
+  } catch {
+    /* no storage here: the memory of this session */
+  }
+  return memory.get(key) ?? null;
+}
+
+/** The basics card's changes, one after the other: each answer can open the next question. */
+async function runWrites(writes: Write[], lang: Language): Promise<State> {
+  let last: State | undefined;
+  for (const w of writes) {
+    last =
+      'answer' in w
+        ? await api.answer(w.answer.id, w.answer.value, lang)
+        : await api.plan(w.plan.person, w.plan.field, w.plan.value, lang);
+  }
+  return last ?? api.state(lang);
+}
+
+const TABS = ['tax', 'save', 'file'] as const;
+
+export function App({ menuExtra }: { menuExtra?: ComponentChildren } = {}): JSX.Element {
   const [lang, setLang] = useState<Language | undefined>(readLang());
   const [state, setState] = useState<State | null>(null);
   const [lost, setLost] = useState(false);
   const [error, setError] = useState('');
-  const [editing, setEditing] = useState<Question | null>(null);
-  const [showAnswers, setShowAnswers] = useState(false);
   const [busy, setBusy] = useState('');
-  // Only the active stage is open; the user can open any other one. When the next step moves to
-  // another stage, that one opens instead.
-  const [opened, setOpened] = useState<StageId[]>([]);
-  const shownStage = useRef<StageId | null>(null);
+  const [basics, setBasics] = useState(false);
+  const [tab, setTab] = useState<PageId | null>(null);
+  const [flags, setFlags] = useState<ReadonlySet<string>>(new Set());
+  const [dragging, setDragging] = useState(false);
+  const followed = useRef<PageId | null>(null);
+  const suggestedOnce = useRef(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const preset = useRef<{ kind: string; person?: string } | undefined>(undefined);
   const L: Language = lang ?? state?.lang ?? 'en';
+  const inside = embedded();
+  const pages = useCommunes(state, L);
+  const current = pages?.page.current;
 
   const refresh = useCallback(async () => {
     try {
@@ -102,16 +118,25 @@ export function App(): JSX.Element {
     document.title = t(L, 'docTitle');
   }, [L]);
 
-  const active = state?.journey.stage;
+  // The page of the next step: followed while you are on the page it was, never otherwise.
   useEffect(() => {
-    if (active && active !== shownStage.current) {
-      shownStage.current = active;
-      setOpened([active]);
+    if (!current || current === followed.current) return;
+    const before = followed.current;
+    setTab((shown) => followPage(shown, before, current));
+    followed.current = current;
+  }, [current]);
+
+  // Last year's return is in and its answers wait in the basics card: it opens, once.
+  const waiting = pages?.groups.basics.some((q) => !q.answered && q.suggested !== undefined);
+  useEffect(() => {
+    if (waiting && !suggestedOnce.current) {
+      suggestedOnce.current = true;
+      setBasics(true);
     }
-  }, [active]);
+  }, [waiting]);
 
   /** Runs a change, shows its error if any, and takes the fresh state it returns. */
-  const act = async (fn: () => Promise<State>, label = ''): Promise<boolean> => {
+  const act: Act = async (fn, label = '') => {
     setError('');
     setBusy(label || 'busy');
     try {
@@ -127,1252 +152,172 @@ export function App(): JSX.Element {
     }
   };
 
-  if (!state) {
-    return (
-      <main class="page">{lost ? <p class="banner banner-fix">{t(L, 'lost')}</p> : null}</main>
-    );
-  }
-
-  const question = editing ?? state.question;
-  const lastAnswer = state.answers.at(-1);
-  const isOpen = (id: StageId) => opened.includes(id);
-  const toggle = (id: StageId) =>
-    setOpened((now) => (now.includes(id) ? now.filter((x) => x !== id) : [...now, id]));
-  /** Opens a stage (from the next step or a fact) and brings it into view. */
-  const openStage = (id: StageId) => {
-    setOpened((now) => (now.includes(id) ? now : [...now, id]));
-    requestAnimationFrame(() =>
-      document
-        .getElementById(`stage-${id}`)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-    );
-  };
-  const stage = (id: StageId, body: JSX.Element) => (
-    <StageCard
-      key={id}
-      state={state}
-      id={id}
-      n={STAGE_ORDER.indexOf(id) + 1}
-      lang={L}
-      open={isOpen(id)}
-      onToggle={() => toggle(id)}
-    >
-      {body}
-    </StageCard>
-  );
-  const planned = isPlanned(state) ? state : null;
-  const plan = planned?.plan;
-  const planning = planned?.planning;
-
-  return (
-    <>
-      <Header
-        state={state}
-        lang={L}
-        onLang={(l) => (saveLang(l), setLang(l))}
-        act={act}
-        busy={busy !== ''}
-      />
-      <main class="page page-simple">
-        <div class="intro">
-          <h1>{t(L, 'title', { year: state.taxYear })}</h1>
-          <p>{t(L, 'lead')}</p>
-        </div>
-        {state.vault.problem ? (
-          <div class="banner banner-fix" role="alert">
-            <strong>{t(L, 'folderProblem')}</strong> {state.vault.problem}
-          </div>
-        ) : null}
-        <NextStep state={state} lang={L} act={act} onOpen={openStage} />
-        {error && !(isOpen('about') && question) ? (
-          <p class="banner banner-fix" role="alert">
-            {error}
-          </p>
-        ) : null}
-        {busy && busy !== 'busy' ? (
-          <p class="small-text muted" role="status">
-            {busy}
-          </p>
-        ) : null}
-
-        <div class="stages">
-          {stage(
-            'about',
-            <div class="stack">
-              <Facts state={state} lang={L} onOpen={openStage} />
-              {state.notSupported.length ? (
-                <section class="banner banner-fix" aria-labelledby="ns-title">
-                  <strong id="ns-title">{t(L, 'notSupportedTitle')}</strong>
-                  <ul class="plain-list">
-                    {state.notSupported.map((n) => (
-                      <li key={n}>{n}</li>
-                    ))}
-                  </ul>
-                  <p class="small-text">{state.notSupportedMessage}</p>
-                </section>
-              ) : null}
-              {state.chips.length ? (
-                <div class="chips">
-                  {state.chips.map((c) => (
-                    <span class="chip chip-plain" key={c}>
-                      {c}
-                    </span>
-                  ))}
-                  <button type="button" class="link" onClick={() => setShowAnswers(!showAnswers)}>
-                    {t(L, showAnswers ? 'hideAnswers' : 'editAnswers')}
-                  </button>
-                </div>
-              ) : null}
-              {showAnswers ? (
-                <ul class="answers card">
-                  {state.answers.map((a) => (
-                    <li key={a.id}>
-                      <span class="answer-q">
-                        {a.who ? <span class="muted">{a.who} · </span> : null}
-                        {a.question}
-                      </span>
-                      <span class="answer-a">
-                        {a.answer}
-                        {a.assumed && state.canton ? (
-                          <span class="muted small-text">
-                            {' '}
-                            {t(L, 'assumedAnswer', { because: state.canton.because.join(', ') })}
-                          </span>
-                        ) : null}
-                      </span>
-                      <button
-                        type="button"
-                        class="ghost small"
-                        onClick={() => void api.question(a.id, L).then(setEditing, () => undefined)}
-                      >
-                        {t(L, 'change')}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              {question ? (
-                <QuestionCard
-                  key={`${question.id}:${L}:${editing ? 'edit' : 'ask'}:${JSON.stringify(question.suggested ?? null)}`}
-                  q={question}
-                  lang={L}
-                  taxYear={state.taxYear}
-                  editing={editing !== null}
-                  position={
-                    editing ? null : { n: state.progress.answered + 1, total: state.progress.total }
-                  }
-                  busy={busy !== ''}
-                  error={error}
-                  onAnswer={async (value) => {
-                    if (await act(() => api.answer(question.id, value, L))) setEditing(null);
-                  }}
-                  onSkip={() => void act(() => api.skip(question.id, L))}
-                  onBack={
-                    !editing && lastAnswer
-                      ? () => void api.question(lastAnswer.id, L).then(setEditing, () => undefined)
-                      : undefined
-                  }
-                  onCancel={() => (setEditing(null), setError(''))}
-                />
-              ) : state.answers.length ? (
-                <p class="muted">{t(L, 'allDone')}</p>
-              ) : null}
-            </div>,
-          )}
-          {stage(
-            'documents',
-            // What the step is about first: the documents to read or name, else the values to
-            // check, then what is missing; the drop zone and the list are always there.
-            ['read', 'identify', 'whose'].includes(state.journey.next.id) ? (
-              <div class="stack">
-                <Documents state={state} lang={L} busy={busy} act={act} />
-                <DocumentCards state={state} lang={L} act={act} />
-                <Checks state={state} lang={L} act={act} />
-                <Missing state={state} lang={L} act={act} />
-                <Holdings state={state} lang={L} act={act} />
-              </div>
-            ) : (
-              <div class="stack">
-                <DocumentCards state={state} lang={L} act={act} />
-                <Checks state={state} lang={L} act={act} />
-                <Missing state={state} lang={L} act={act} />
-                <Documents state={state} lang={L} busy={busy} act={act} />
-                <Holdings state={state} lang={L} act={act} />
-              </div>
-            ),
-          )}
-          {stage(
-            'tax',
-            <div class="stack">
-              {state.journey.hasFigures ? (
-                <Estimate view={state.estimate} lang={L} cantonName={state.canton?.name} />
-              ) : (
-                <TaxWaiting state={state} lang={L} act={act} />
-              )}
-              <LastYear view={state.lastYear} year={state.taxYear} lang={L} />
-            </div>,
-          )}
-          {stage(
-            'save',
-            <div class="stack">
-              {state.yearOver || !planned || !plan || !planning ? (
-                // A year that is over: the plans are the default year's, one click away.
-                <YearOverCard state={state} lang={L} act={act} busy={busy !== ''} />
-              ) : (
-                <>
-                  <SaveHeadline state={state} lang={L} />
-                  {state.journey.touChoice || planning.tou.decision ? (
-                    <TouCard state={planned} lang={L} act={act} />
-                  ) : null}
-                  <div class="details">
-                    <Detail
-                      title={tj(L, 'detail.pillar3a')}
-                      figure={
-                        plan.result.saving
-                          ? tj(L, 'detail.saves', {
-                              amount: francs(
-                                Math.round(plan.result.saving.totalCentimes / 1000) * 1000,
-                                L,
-                              ),
-                            })
-                          : plan.result.roomCentimes
-                            ? tj(L, 'detail.room', { amount: francs(plan.result.roomCentimes, L) })
-                            : undefined
-                      }
-                    >
-                      <Plan3a state={planned} lang={L} act={act} />
-                    </Detail>
-                    <Detail
-                      title={tj(L, 'detail.lpp')}
-                      figure={
-                        planning.lpp.saving
-                          ? tj(L, 'detail.saves', {
-                              amount: francs(
-                                Math.round(planning.lpp.saving.totalCentimes / 1000) * 1000,
-                                L,
-                              ),
-                            })
-                          : undefined
-                      }
-                    >
-                      <LppCard state={planned} lang={L} act={act} />
-                    </Detail>
-                    <Detail
-                      title={tj(L, 'detail.catchup')}
-                      figure={
-                        planning.catchUp.saving
-                          ? tj(L, 'detail.saves', {
-                              amount: francs(
-                                Math.round(planning.catchUp.saving.totalCentimes / 1000) * 1000,
-                                L,
-                              ),
-                            })
-                          : undefined
-                      }
-                    >
-                      <CatchUpCard state={planned} lang={L} act={act} />
-                    </Detail>
-                  </div>
-                </>
-              )}
-              {state.review && state.review.status !== 'none' ? (
-                <Detail title={tj(L, 'detail.review')}>
-                  <Review view={state.review} taxYear={state.taxYear} lang={L} />
-                </Detail>
-              ) : null}
-            </div>,
-          )}
-          {stage(
-            'file',
-            <div class="stack">
-              {state.journey.documentsIn ? null : <p class="muted">{tj(L, 'file.later')}</p>}
-              <FinalCheck state={state} lang={L} />
-              <CopyPanel state={state} lang={L} act={act} />
-              <Reconcile state={state} lang={L} act={act} />
-              <Assessment state={state} lang={L} />
-            </div>,
-          )}
-        </div>
-        {lost ? (
-          <p class="banner banner-fix" role="status">
-            {t(L, 'lost')}
-          </p>
-        ) : null}
-      </main>
-      <footer class="foot foot-simple">
-        <div class="foot-tools">
-          <ExportCard state={state} lang={L} busy={busy} act={act} compact />
-          <ActivityCard state={state} lang={L} />
-        </div>
-        <div class="foot-line">
-          <span>{t(L, embedded() ? 'footerChat' : 'footer')}</span>
-          <span class="tnum">Taxpresso {state.version}</span>
-        </div>
-      </footer>
-    </>
-  );
-}
-
-/** "1 200", "1'200", "95k" -> CHF number; empty -> 0. */
-function parseChf(text: string): number | undefined {
-  const s = text
-    .trim()
-    .toLowerCase()
-    .replace(/[’'\s,]/g, '')
-    .replace(/^chf/, '');
-  if (s === '') return 0;
-  const k = s.endsWith('k');
-  const n = Number(k ? s.slice(0, -1) : s);
-  return Number.isFinite(n) && n >= 0 ? Math.round(k ? n * 1000 : n) : undefined;
-}
-
-function money(centimes: number, lang: Language): string {
-  return new Intl.NumberFormat(`${lang}-CH`, {
-    style: 'currency',
-    currency: 'CHF',
-    maximumFractionDigits: 0,
-  }).format(Math.round(centimes / 100));
-}
-
-/** "Before 31 December": pillar 3a room and the estimated saving (SPEC.md section 8, group B). */
-function Plan3a({ state, lang, act }: { state: PlannedState; lang: Language; act: Act }) {
-  const { inputs, result } = state.plan;
-  const year = state.taxYear;
-  const anyMax = result.people.some((p) => p.capIsMaximum);
-  const noTax = result.assumptions
-    .map((a) => `assume.${a}`)
-    .find((k): k is MessageKey => k.endsWith('_no_tax') && isMessageKey(k));
-  // Only assumptions that have words: never an empty bullet.
-  const how = assumptionList(lang, result.assumptions);
-  return (
-    <section class="plan" aria-labelledby="plan-title">
-      <span class="plan-when">{t(lang, 'planWhen')}</span>
-      <h2 id="plan-title">
-        {t(lang, 'planTitle')}
-        <Explain
-          text={t(lang, ck('planExplain', state.canton?.code))}
-          topic={t(lang, 'planTopic')}
-          lang={lang}
-        />
-      </h2>
-      <div class="plan-figures">
-        <div class="figure">
-          <span>{t(lang, 'planRoom', { year })}</span>
-          <strong class="tnum">
-            {anyMax
-              ? t(lang, 'planUpTo', { amount: money(result.roomCentimes, lang) })
-              : money(result.roomCentimes, lang)}
-          </strong>
-        </div>
-        <div class="figure">
-          <span>{t(lang, 'planSaving')}</span>
-          {result.saving ? (
-            <>
-              <strong class="tnum saving">
-                {money(Math.round(result.saving.totalCentimes / 1000) * 1000, lang)}
-              </strong>
-              <span class="figure-note tnum">
-                {t(lang, ck('planSavingSplit', state.canton?.code), {
-                  icc: money(result.saving.cantonalCentimes, lang),
-                  ifd: money(result.saving.federalCentimes, lang),
-                })}
-              </span>
-            </>
-          ) : noTax ? (
-            // The canton's tax can't be computed for the year (its rates are not published).
-            <span class="figure-note">{t(lang, noTax)}</span>
-          ) : state.journey.savings?.parts.includes('pillar3a') ? (
-            // The total reads the salary certificate too; this card only a rough salary.
-            <span class="figure-note">{tj(lang, 'save.inTotal')}</span>
-          ) : (
-            <span class="figure-note">{t(lang, 'planNeedSalary')}</span>
-          )}
-        </div>
-      </div>
-      {/* The figures come from documents, answers or the chat; corrections stay one click away. */}
-      <details class="change change-dark">
-        <summary>{tj(lang, 'change')}</summary>
-        <div class={`plan-people${inputs.length > 1 ? ' plan-people-two' : ''}`}>
-          {inputs.map((input) => (
-            <PlanPerson
-              key={input.person}
-              input={input}
-              two={inputs.length > 1}
-              lang={lang}
-              act={act}
-            />
-          ))}
-        </div>
-      </details>
-      {state.planning.needsTou ? (
-        <p class="banner banner-estimate">{tp(lang, 'onlyWithTou')}</p>
-      ) : null}
-      <div class="plan-points">
-        <div>
-          <strong>{t(lang, 'planGood')}</strong>
-          <ul>
-            <li>{t(lang, 'planPro1', { year })}</li>
-            <li>{t(lang, 'planPro2')}</li>
-          </ul>
-        </div>
-        <div>
-          <strong>{t(lang, 'planMind')}</strong>
-          <ul>
-            <li>{t(lang, 'planCon1')}</li>
-            <li>{t(lang, 'planCon2')}</li>
-            <li>{t(lang, 'planCon3', { year })}</li>
-            <li>{t(lang, 'planNew')}</li>
-          </ul>
-        </div>
-      </div>
-      <details class="plan-how">
-        <summary>{t(lang, 'planHow')}</summary>
-        {how.length ? (
-          <ul>
-            {how.map((a) => (
-              <li key={a}>{a}</li>
-            ))}
-          </ul>
-        ) : null}
-        <p>
-          {t(lang, 'planSources')}: <span class="tnum">{result.sources.join(' · ')}</span>
-        </p>
-      </details>
-    </section>
-  );
-}
-
-function PlanPerson({
-  input,
-  two,
-  lang,
-  act,
-}: {
-  input: PlannedState['plan']['inputs'][number];
-  two: boolean;
-  lang: Language;
-  act: Act;
-}) {
-  const shown = (c: number | null) => (c ? String(Math.round(c / 100)) : '');
-  const [gross, setGross] = useState(shown(input.gross));
-  const [paid, setPaid] = useState(shown(input.paid));
-  const save = (field: 'gross' | 'paid', text: string, current: number | null) => {
-    const value = parseChf(text);
-    if (value === undefined || value * 100 === (current ?? 0)) return;
-    void act(() => api.plan(input.person, field, value, lang));
-  };
-  const id = `plan-${input.person}`;
-  return (
-    <fieldset class="plan-person">
-      {two ? <legend>{t(lang, input.person === 'p2' ? 'p2Short' : 'p1Short')}</legend> : null}
-      <label for={`${id}-gross`}>{t(lang, 'planGross')}</label>
-      <input
-        id={`${id}-gross`}
-        class="tnum"
-        inputMode="numeric"
-        placeholder="CHF"
-        value={gross}
-        onInput={(e) => setGross((e.target as HTMLInputElement).value)}
-        onBlur={() => save('gross', gross, input.gross)}
-        onKeyDown={(e) => e.key === 'Enter' && save('gross', gross, input.gross)}
-      />
-      <label for={`${id}-paid`}>{t(lang, 'planPaid')}</label>
-      <input
-        id={`${id}-paid`}
-        class="tnum"
-        inputMode="numeric"
-        placeholder="CHF 0"
-        value={paid}
-        onInput={(e) => setPaid((e.target as HTMLInputElement).value)}
-        onBlur={() => save('paid', paid, input.paid)}
-        onKeyDown={(e) => e.key === 'Enter' && save('paid', paid, input.paid)}
-      />
-      <span class="plan-label" id={`${id}-fund`}>
-        {t(lang, 'planFund')}
-      </span>
-      <div class="plan-toggle" role="group" aria-labelledby={`${id}-fund`}>
-        {[true, false].map((v) => (
-          <button
-            type="button"
-            key={String(v)}
-            aria-pressed={input.hasPensionFund === v}
-            onClick={() =>
-              input.hasPensionFund !== v &&
-              void act(() => api.plan(input.person, 'pensionFund', v, lang))
-            }
-          >
-            {t(lang, v ? 'planFundYes' : 'planFundNo')}
-          </button>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
-function Header({
-  state,
-  lang,
-  onLang,
-  act,
-  busy,
-}: {
-  state: State;
-  lang: Language;
-  onLang: (l: Language) => void;
-  act: Act;
-  busy: boolean;
-}) {
-  // The stages replace the old step pills (docs/design/simple.md).
-  return (
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark" dangerouslySetInnerHTML={{ __html: wordmark(true) }} />
-        {state.years.length > 1 ? (
-          // The year switch: the same choice as asking Claude (open_tax_year).
-          <YearSwitch state={state} lang={lang} act={act} busy={busy} />
-        ) : (
-          <span class="pill">
-            {state.canton
-              ? t(lang, 'yearPill', { year: state.taxYear, canton: state.canton.name })
-              : t(lang, 'yearPillNoCanton', { year: state.taxYear })}
-          </span>
-        )}
-      </div>
-      <div class="top-right">
-        <button
-          type="button"
-          class="ghost"
-          aria-label={t(lang, 'langButton')}
-          onClick={() => onLang(NEXT_LANG[lang])}
-        >
-          {lang.toUpperCase()}
-        </button>
-        <span class="chip chip-verified">{t(lang, 'localOnly')}</span>
-      </div>
-    </header>
-  );
-}
-
-interface CardProps {
-  q: Question;
-  lang: Language;
-  taxYear: number;
-  editing: boolean;
-  position: { n: number; total: number } | null;
-  busy: boolean;
-  error: string;
-  onAnswer: (value: Value) => void | Promise<void>;
-  onSkip: () => void;
-  onBack: (() => void) | undefined;
-  onCancel: () => void;
-}
-
-function initialDraft(q: Question): Value | undefined {
-  // A suggestion (from last year's declaration) is preselected: the user confirms or changes it.
-  const value = q.value ?? q.suggested;
-  if (value === undefined)
-    return q.type === 'multi' ? [] : q.type === 'number' ? (q.min ?? 0) : undefined;
-  if (q.type === 'yesno') return value ? 'yes' : 'no';
-  // Money arrives in centimes and is typed in francs: "1250.50", or "1250" for whole francs.
-  if (q.type === 'money' && typeof value === 'number') {
-    const francs = String(Math.trunc(value / 100));
-    const cents = value % 100;
-    return cents ? `${francs}.${String(cents).padStart(2, '0')}` : francs;
-  }
-  return value;
-}
-
-/** Where a suggestion comes from, in words. */
-function suggestionNote(q: Question, lang: Language, taxYear: number): string {
-  const from = q.suggestedFrom ?? {};
-  const vars = { year: from.year ?? '', page: from.page ?? '', taxYear };
-  if (from.kind === 'tax_assessment' && from.year) {
-    return t(lang, 'suggestedFromAssessment', vars);
-  }
-  if (from.kind !== 'prior_declaration') return t(lang, 'suggestedFromDoc', vars);
-  return t(lang, from.year ? 'suggestedFromPrior' : 'suggestedFromPriorNoYear', vars);
-}
-
-function QuestionCard(p: CardProps) {
-  const { q, lang } = p;
-  const [draft, setDraft] = useState<Value | undefined>(initialDraft(q));
-  const [touchedMulti, setTouchedMulti] = useState(
-    q.value !== undefined || q.suggested !== undefined,
-  );
-  const selected = (v: string) => (Array.isArray(draft) ? draft.includes(v) : draft === v);
-  const ready = q.type === 'multi' ? touchedMulti : draft !== undefined && draft !== '';
-  const pickedUnsupported = (q.options ?? []).some((o) => o.notSupported && selected(o.value));
-
-  const submit = () => {
-    if (!ready || draft === undefined) return;
-    void p.onAnswer(q.type === 'yesno' ? draft === 'yes' : draft);
-  };
-
-  let control: JSX.Element;
-  if (q.type === 'number') {
-    const n = typeof draft === 'number' ? draft : (q.min ?? 0);
-    const set = (v: number) => setDraft(Math.max(q.min ?? 0, Math.min(q.max ?? 99, v)));
-    control = (
-      <div class="stepper">
-        <button type="button" class="ghost square" aria-label="−1" onClick={() => set(n - 1)}>
-          −
-        </button>
-        <input
-          class="tnum"
-          type="number"
-          inputMode="numeric"
-          min={q.min}
-          max={q.max}
-          value={n}
-          aria-labelledby="q-title"
-          onInput={(e) => set(Number((e.target as HTMLInputElement).value) || 0)}
-        />
-        <button type="button" class="ghost square" aria-label="+1" onClick={() => set(n + 1)}>
-          +
-        </button>
-      </div>
-    );
-  } else if (q.type === 'money') {
-    control = (
-      <div class="money">
-        <span class="money-unit" aria-hidden="true">
-          CHF
-        </span>
-        <input
-          class="tnum"
-          type="text"
-          inputMode="decimal"
-          autoComplete="off"
-          placeholder={t(lang, 'amountPlaceholder')}
-          value={typeof draft === 'string' ? draft : ''}
-          aria-labelledby="q-title"
-          onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-        />
-      </div>
-    );
-  } else if (q.type === 'date') {
-    // A day of the tax year, as the browser's own date picker gives it (YYYY-MM-DD).
-    control = (
-      <input
-        class="tnum date"
-        type="date"
-        min={q.minDate}
-        max={q.maxDate}
-        value={typeof draft === 'string' ? draft : ''}
-        aria-labelledby="q-title"
-        onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
-        onKeyDown={(e) => e.key === 'Enter' && submit()}
-      />
-    );
-  } else if (q.type === 'commune') {
-    control = (
-      <select
-        class="select"
-        value={typeof draft === 'string' ? draft : ''}
-        aria-labelledby="q-title"
-        onChange={(e) => setDraft((e.target as HTMLSelectElement).value)}
-      >
-        <option value="" disabled>
-          {t(lang, 'chooseCommune')}
-        </option>
-        {q.options?.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    );
-  } else {
-    const multi = q.type === 'multi';
-    const toggle = (v: string) => {
-      if (!multi) return setDraft(v);
-      setTouchedMulti(true);
-      const list = Array.isArray(draft) ? draft : [];
-      setDraft(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
-    };
-    control = (
-      <div
-        role="group"
-        aria-labelledby="q-title"
-        class={`options${(q.options?.length ?? 0) > 3 ? ' options-wide' : ''}`}
-      >
-        {q.options?.map((o) => (
-          <button
-            type="button"
-            key={o.value}
-            class="option"
-            aria-pressed={selected(o.value)}
-            onClick={() => toggle(o.value)}
-          >
-            {o.label}
-          </button>
-        ))}
-        {multi ? (
-          <button
-            type="button"
-            class="option option-none"
-            aria-pressed={touchedMulti && Array.isArray(draft) && draft.length === 0}
-            onClick={() => (setTouchedMulti(true), setDraft([]))}
-          >
-            {q.none ?? t(lang, 'none')}
-          </button>
-        ) : null}
-      </div>
-    );
-  }
-
-  return (
-    <div class="card question">
-      {p.position ? (
-        <div class="q-progress">
-          <span>
-            {t(lang, 'questionOf', {
-              n: p.position.n,
-              total: Math.max(p.position.total, p.position.n),
-            })}
-          </span>
-          <div class="bar" aria-hidden="true">
-            <div
-              class="bar-fill"
-              style={{
-                width: `${Math.round(((p.position.n - 1) / Math.max(p.position.total, 1)) * 100)}%`,
-              }}
-            />
-          </div>
-        </div>
-      ) : null}
-      <div class="q-head">
-        {q.who ? <span class="who">{t(lang, 'forWho', { who: q.who })}</span> : null}
-        <h2 id="q-title">
-          {q.text}
-          {q.explain ? (
-            <Explain text={q.explain} topic={q.text} lang={lang} link={q.learnMore} question />
-          ) : null}
-        </h2>
-        {q.help ? <p class="muted">{q.help}</p> : null}
-        {q.link ? (
-          <p class="muted small-text">
-            <a href={q.link.url} target="_blank" rel="noopener noreferrer">
-              {q.link.label}
-            </a>
-          </p>
-        ) : null}
-        {q.skipped ? <p class="muted small-text">{t(lang, 'skippedNote')}</p> : null}
-      </div>
-      {q.suggested !== undefined && q.value === undefined ? (
-        <p class="suggestion" role="note">
-          <span class="chip chip-needs-ok">{t(lang, 'statusNeedsOk')}</span>
-          <span>{suggestionNote(q, lang, p.taxYear)}</span>
-        </p>
-      ) : null}
-      {control}
-      {pickedUnsupported ? (
-        <p class="banner banner-estimate">{t(lang, 'notSupportedPick')}</p>
-      ) : null}
-      {p.error ? (
-        <p class="banner banner-fix" role="alert">
-          {p.error}
-        </p>
-      ) : null}
-      <div class="q-actions">
-        {p.editing ? (
-          <button type="button" class="link" onClick={p.onCancel}>
-            {t(lang, 'cancel')}
-          </button>
-        ) : p.onBack ? (
-          <button type="button" class="link" onClick={p.onBack}>
-            {t(lang, 'back')}
-          </button>
-        ) : (
-          <span />
-        )}
-        <div class="q-buttons">
-          {p.editing ? null : (
-            <button type="button" class="ghost" onClick={p.onSkip} disabled={p.busy}>
-              {t(lang, 'skip')}
-            </button>
-          )}
-          <button type="button" class="primary" onClick={submit} disabled={!ready || p.busy}>
-            {t(lang, p.editing ? 'save' : q.suggested !== undefined ? 'confirmNext' : 'next')}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type Act = (fn: () => Promise<State>, label?: string) => Promise<boolean>;
-
-function Documents({
-  state,
-  lang,
-  busy,
-  act,
-}: {
-  state: State;
-  lang: Language;
-  busy: string;
-  act: Act;
-}) {
-  const input = useRef<HTMLInputElement>(null);
-  const [over, setOver] = useState(false);
-  const todo = state.documents.filter((d) => !d.kind).length;
-  const couple = state.people.length > 1;
-
-  const add = async (files: FileList | File[] | null) => {
-    for (const file of Array.from(files ?? [])) {
-      await act(() => api.upload(file, lang), t(lang, 'uploading', { name: file.name }));
+  const upload = async (files: File[]) => {
+    const p = preset.current;
+    preset.current = undefined;
+    for (const file of files) {
+      await act(() => api.upload(file, L, p), t(L, 'uploading', { name: file.name }));
     }
   };
+  // Finder or Explorer opens on this computer; if it can't, the message says where the folder is.
+  const openFolder = () => void act(() => api.openFolder(L));
+
+  if (!state || !pages) {
+    return <main class="app">{lost ? <p class="banner banner-fix">{t(L, 'lost')}</p> : null}</main>;
+  }
+
+  const total = state.estimate?.computed ? state.estimate.total : null;
+  const roughKey = `taxpresso.rough.${state.vault.path}.${state.taxYear}`;
+  const roughBefore =
+    pages.confidence === 'rough' && total !== null
+      ? remembered(roughKey, total)
+      : remembered(roughKey);
+  const shown = shownPage(pages.page, tab);
+  const props: PageProps = {
+    state,
+    pages,
+    lang: L,
+    busy: busy !== '',
+    embedded: inside,
+    act,
+    flags,
+    setFlag: (flag, on) =>
+      setFlags((now) => {
+        if (now.has(flag) === on) return now;
+        const next = new Set(now);
+        if (on) next.add(flag);
+        else next.delete(flag);
+        return next;
+      }),
+    go: (page) => {
+      setTab(page);
+      window.scrollTo?.({ top: 0 });
+    },
+    openBasics: () => setBasics(true),
+    add: (p) => {
+      if (inside) return openFolder();
+      preset.current = p;
+      fileInput.current?.click();
+    },
+    roughBefore: pages.confidence === 'rough' ? null : roughBefore,
+  };
+
+  let body: JSX.Element;
+  if (basics) {
+    body = (
+      <BasicsCard
+        state={state}
+        pages={pages}
+        lang={L}
+        busy={busy !== ''}
+        actions={{
+          write: (writes) => void act(() => runWrites(writes, L)),
+          close: () => {
+            setBasics(false);
+            window.scrollTo?.({ top: 0 });
+          },
+        }}
+      />
+    );
+  } else if (shown === 'start') {
+    body = (
+      <Start {...props} onFiles={(files) => void upload(files)} onChoose={() => props.add()} />
+    );
+  } else {
+    body = (
+      <>
+        {pages.page.tabs ? (
+          <nav class="tabs" aria-label={pg(L, 'pages')}>
+            {TABS.map((id) => (
+              <button
+                type="button"
+                key={id}
+                class="tab"
+                aria-current={shown === id ? 'page' : undefined}
+                onClick={() => props.go(id)}
+              >
+                {tj(L, `page.${id}`)}
+              </button>
+            ))}
+          </nav>
+        ) : null}
+        {shown === 'save' ? (
+          <PayLess {...props} />
+        ) : shown === 'file' ? (
+          <FilePage {...props} />
+        ) : (
+          <YourTax {...props} />
+        )}
+      </>
+    );
+  }
+
+  // The browser page takes files dropped anywhere on it; inside Claude Desktop, the folder does.
+  const drop = inside
+    ? {}
+    : {
+        onDragOver: (e: DragEvent) => {
+          if (!e.dataTransfer?.types.includes('Files')) return;
+          e.preventDefault();
+          setDragging(true);
+        },
+        onDragLeave: (e: DragEvent) => {
+          if (e.relatedTarget === null) setDragging(false);
+        },
+        onDrop: (e: DragEvent) => {
+          e.preventDefault();
+          setDragging(false);
+          void upload(Array.from(e.dataTransfer?.files ?? []));
+        },
+      };
 
   return (
-    <section aria-labelledby="docs-title" class="stack">
-      <div class="section-head">
-        <h3 id="docs-title" class="sub-title">
-          {tj(lang, 'docs.here')}
-        </h3>
-        {state.documents.length ? (
-          <span class="muted">
-            {state.documents.length === 1
-              ? t(lang, 'documentOne')
-              : t(lang, 'documentsMany', { n: state.documents.length })}
-            {todo ? ` · ${t(lang, 'toIdentify', { todo })}` : ''}
-          </span>
-        ) : null}
-      </div>
-      <div
-        class={`drop${over ? ' drop-over' : ''}`}
-        onDragOver={(e) => (e.preventDefault(), setOver(true))}
-        onDragLeave={() => setOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setOver(false);
-          void add(e.dataTransfer?.files ?? null);
-        }}
-      >
-        <div class="drop-icon" aria-hidden="true">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#16181B"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 16V4M7 9l5-5 5 5M4 20h16" />
-          </svg>
+    <div class={`app${dragging ? ' app-drop' : ''}`} {...drop}>
+      <header class="top">
+        <span class="brand-mark" dangerouslySetInnerHTML={{ __html: wordmark(true) }} />
+        <Menu
+          state={state}
+          lang={L}
+          onLang={(l) => (saveLang(l), setLang(l))}
+          act={act}
+          busy={busy}
+          onOpenFolder={openFolder}
+          extra={menuExtra}
+        />
+      </header>
+      {state.vault.problem ? (
+        <div class="banner banner-fix" role="alert">
+          <strong>{t(L, 'folderProblem')}</strong> {state.vault.problem}
         </div>
-        <div class="drop-text">
-          <strong>{t(lang, 'dropTitle')}</strong>
-          <span class="muted">{t(lang, 'dropText')}</span>
-          <span class="drop-path tnum small-text muted">{state.vault.path}</span>
-          {busy && busy !== 'busy' ? (
-            <span class="small-text" role="status">
-              {busy}
-            </span>
-          ) : null}
-        </div>
-        <div class="drop-buttons">
-          <button type="button" class="ghost" onClick={() => input.current?.click()}>
-            {t(lang, 'chooseFiles')}
-          </button>
-          <button type="button" class="link" onClick={() => void act(() => api.scan(lang))}>
-            {t(lang, 'checkFolder')}
-          </button>
-        </div>
+      ) : null}
+      {error ? (
+        <p class="banner banner-fix" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {busy && busy !== 'busy' ? (
+        <p class="small-text muted" role="status">
+          {busy}
+        </p>
+      ) : null}
+      {lost ? (
+        <p class="banner banner-fix" role="status">
+          {t(L, 'lost')}
+        </p>
+      ) : null}
+      <main class="main">{body}</main>
+      {inside ? null : (
         <input
-          ref={input}
+          ref={fileInput}
           type="file"
           multiple
           hidden
           onChange={(e) => {
             const el = e.target as HTMLInputElement;
-            void add(el.files).then(() => (el.value = ''));
+            void upload(Array.from(el.files ?? [])).then(() => (el.value = ''));
           }}
         />
-      </div>
-      {state.documents.length ? (
-        <ul class="card doc-list">
-          {state.documents.map((d) => (
-            <li key={d.id} class="doc">
-              <div class="doc-name">
-                <span class="doc-file">{d.filename}</span>
-                <span class="muted small-text tnum">{formatBytes(d.bytes, lang)}</span>
-              </div>
-              <div class="doc-controls">
-                <label class="sr-only" for={`kind-${d.id}`}>
-                  {t(lang, 'whatIsThis')}
-                </label>
-                <select
-                  id={`kind-${d.id}`}
-                  class="select small"
-                  value={d.kind ?? ''}
-                  onChange={(e) =>
-                    void act(() =>
-                      api.setKind(d.id, (e.target as HTMLSelectElement).value, d.person, lang),
-                    )
-                  }
-                >
-                  <option value="" disabled>
-                    {t(lang, 'whatIsThis')}
-                  </option>
-                  {state.kinds.map((k) => (
-                    <option key={k.value} value={k.value}>
-                      {k.label}
-                    </option>
-                  ))}
-                </select>
-                {couple && d.kind ? (
-                  <select
-                    class="select small"
-                    aria-label={t(lang, 'whose')}
-                    value={d.person ?? ''}
-                    onChange={(e) =>
-                      void act(() =>
-                        api.setKind(
-                          d.id,
-                          d.kind!,
-                          (e.target as HTMLSelectElement).value || undefined,
-                          lang,
-                        ),
-                      )
-                    }
-                  >
-                    <option value="">{t(lang, 'whose')}</option>
-                    {state.people.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.label}
-                      </option>
-                    ))}
-                    <option value="household">{t(lang, 'both')}</option>
-                  </select>
-                ) : null}
-                {d.barcode === 'pending' ? (
-                  <span class="chip chip-needs-ok">{t(lang, 'barcodeWhose')}</span>
-                ) : d.barcode === 'read' ? (
-                  <span class="chip chip-verified">{t(lang, 'statusFromBarcode')}</span>
-                ) : d.kindSource === 'export' || d.kindSource === 'pdf_text' ? (
-                  <span class="chip chip-verified">{t(lang, 'statusRecognised')}</span>
-                ) : (
-                  <span
-                    class={`chip ${d.kind && d.kindSource !== 'claude' ? 'chip-stated' : 'chip-needs-ok'}`}
-                  >
-                    {t(
-                      lang,
-                      d.kind && d.kindSource !== 'claude' ? 'statusConfirmed' : 'statusNeedsOk',
-                    )}
-                  </span>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </section>
+      )}
+    </div>
   );
-}
-
-function Missing({ state, lang, act }: { state: State; lang: Language; act: Act }) {
-  // In a couple, the same document for each person is one row: "Health insurance · You / Partner".
-  const groups = new Map<string, RequirementView[]>();
-  for (const r of state.requirements) groups.set(r.group, [...(groups.get(r.group) ?? []), r]);
-  const all = [...groups.values()];
-  const open = all.filter((rows) => rows.some((r) => r.status !== 'satisfied'));
-  const done = all.filter((rows) => rows.every((r) => r.status === 'satisfied'));
-  const count = open.filter((rows) =>
-    rows.some((r) => r.status === 'missing' && !r.optional),
-  ).length;
-  return (
-    <section class="card side-card" aria-labelledby="missing-title">
-      <div class="section-head">
-        <h3 id="missing-title" class="sub-title">
-          {t(lang, 'missingTitle')}
-        </h3>
-        <span class="muted tnum">{count}</span>
-      </div>
-      {open.length === 0 ? <p class="muted">{t(lang, 'missingNone')}</p> : null}
-      {count && !state.journey.yearEnded ? (
-        <p class="muted small-text">{tj(lang, 'docs.later', { year: state.taxYear })}</p>
-      ) : null}
-      <ul class="req-list">
-        {open.map((rows) =>
-          rows.length > 1 ? (
-            <RequirementGroup key={rows[0]!.group} rows={rows} lang={lang} act={act} />
-          ) : (
-            <RequirementRow key={rows[0]!.id} r={rows[0]!} lang={lang} act={act} />
-          ),
-        )}
-      </ul>
-      {done.length ? (
-        <details class="got">
-          <summary>
-            {t(lang, 'gotTitle')} <span class="muted tnum">{done.length}</span>
-          </summary>
-          <ul class="plain-list">
-            {done.map((rows) => (
-              <li key={rows[0]!.group}>{rows[0]!.label}</li>
-            ))}
-          </ul>
-        </details>
-      ) : null}
-    </section>
-  );
-}
-
-/** Uploads files from a "still missing" row; the row already says what they are and whose. */
-function useUpload(lang: Language, act: Act) {
-  const input = useRef<HTMLInputElement>(null);
-  const preset = useRef<{ kind: string; person?: string } | null>(null);
-  const pick = (p: { kind: string; person?: string }) => {
-    preset.current = p;
-    input.current?.click();
-  };
-  const field = (
-    <input
-      ref={input}
-      type="file"
-      multiple
-      hidden
-      onChange={(e) => {
-        const el = e.target as HTMLInputElement;
-        const files = Array.from(el.files ?? []);
-        const p = preset.current;
-        void (async () => {
-          for (const file of files) await act(() => api.upload(file, lang, p ?? undefined));
-          el.value = '';
-        })();
-      }}
-    />
-  );
-  return { pick, field };
-}
-
-function RequirementGroup({
-  rows,
-  lang,
-  act,
-}: {
-  rows: RequirementView[];
-  lang: Language;
-  act: Act;
-}) {
-  const first = rows[0]!;
-  const missing = rows.filter((r) => r.status === 'missing');
-  const [whom, setWhom] = useState(
-    missing.length > 1 || missing.length === 0 ? 'household' : missing[0]!.person,
-  );
-  const upload = useUpload(lang, act);
-  const short = (person: string) => t(lang, person === 'p2' ? 'p2Short' : 'p1Short');
-  return (
-    <li class="req">
-      <strong>
-        {first.label}
-        {first.explain ? (
-          <Explain text={first.explain} topic={first.label} lang={lang} link={first.learnMore} />
-        ) : null}
-      </strong>
-      <span class="muted small-text">{first.reason}</span>
-      <div class="req-actions">
-        {rows.map((r) => (
-          <span
-            key={r.id}
-            class={`chip ${r.status === 'satisfied' ? 'chip-stated' : 'chip-missing'}`}
-          >
-            {t(lang, r.status === 'satisfied' ? 'personHere' : 'personMissing', {
-              who: short(r.person),
-            })}
-          </span>
-        ))}
-      </div>
-      {first.kind ? (
-        <div class="req-actions">
-          <label class="sr-only" for={`whom-${first.group}`}>
-            {t(lang, 'forWhom')}
-          </label>
-          <select
-            id={`whom-${first.group}`}
-            class="select small"
-            value={whom}
-            onChange={(e) => setWhom((e.target as HTMLSelectElement).value)}
-          >
-            {rows.map((r) => (
-              <option key={r.person} value={r.person}>
-                {short(r.person)}
-              </option>
-            ))}
-            <option value="household">{t(lang, 'both')}</option>
-          </select>
-          <button
-            type="button"
-            class="ghost small"
-            onClick={() => upload.pick({ kind: first.kind!, person: whom })}
-          >
-            {t(lang, 'upload')}
-          </button>
-          {upload.field}
-        </div>
-      ) : null}
-    </li>
-  );
-}
-
-function RequirementRow({ r, lang, act }: { r: RequirementView; lang: Language; act: Act }) {
-  const upload = useUpload(lang, act);
-  const status =
-    r.status === 'waived'
-      ? { cls: 'chip-computed', label: t(lang, 'statusSkipped') }
-      : r.optional
-        ? { cls: 'chip-missing', label: t(lang, 'statusOptional') }
-        : { cls: 'chip-missing', label: t(lang, 'statusMissing') };
-  return (
-    <li class="req">
-      <strong>
-        {r.label}
-        {r.who ? <span class="muted"> · {r.who}</span> : null}
-        {r.explain ? (
-          <Explain text={r.explain} topic={r.label} lang={lang} link={r.learnMore} />
-        ) : null}
-      </strong>
-      <span class="muted small-text">{r.reason}</span>
-      <div class="req-actions">
-        <span class={`chip ${status.cls}`}>{status.label}</span>
-        {r.need > 1 ? (
-          <span class="muted small-text tnum">
-            {t(lang, 'haveOf', { have: r.have, need: r.need })}
-          </span>
-        ) : null}
-        {r.status !== 'waived' && r.kind ? (
-          <button
-            type="button"
-            class="ghost small"
-            onClick={() =>
-              upload.pick({
-                kind: r.kind!,
-                ...(r.person !== 'household' ? { person: r.person } : {}),
-              })
-            }
-          >
-            {t(lang, 'upload')}
-          </button>
-        ) : null}
-        {r.optional ? (
-          <button
-            type="button"
-            class="link"
-            onClick={() => void act(() => api.waive(r.id, r.status !== 'waived', lang))}
-          >
-            {t(lang, r.status === 'waived' ? 'undoSkip' : 'skipDoc')}
-          </button>
-        ) : null}
-        {upload.field}
-      </div>
-    </li>
-  );
-}
-
-/**
- * A "?" that opens a plain-language explanation on hover, focus or tap, with a way to ask Claude.
- * The page can't talk to Claude itself (our code never calls a model, SPEC.md C1): it copies a
- * ready question for the user's Claude chat, where they can also speak it. An official page on the
- * topic, when there is one, opens in a new tab: a plain link, the extension fetches nothing (C2).
- */
-function Explain({
-  text,
-  topic,
-  lang,
-  link,
-  question = false,
-}: {
-  text: string;
-  topic: string;
-  lang: Language;
-  link?: OfficialLink | undefined;
-  question?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState<'no' | 'yes' | 'failed'>('no');
-  const prompt = t(lang, question ? 'askQuestionPrompt' : 'askPrompt', { topic });
-  const ask = async () => {
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setCopied('yes');
-    } catch {
-      setCopied('failed');
-    }
-  };
-  return (
-    <span
-      class="explain"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => (setOpen(false), setCopied('no'))}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') setOpen(false);
-      }}
-    >
-      <button
-        type="button"
-        class="explain-btn"
-        aria-expanded={open}
-        aria-label={question ? t(lang, 'whatMeans') : t(lang, 'whatIs', { topic })}
-        onClick={() => setOpen(!open)}
-      >
-        ?
-      </button>
-      {open ? (
-        <span class="explain-pop" role="tooltip">
-          <span class="explain-text">{text}</span>
-          {link ? (
-            <a class="explain-link" href={link.url} target="_blank" rel="noopener noreferrer">
-              <span class="explain-link-text">{t(lang, 'officialPage')}</span>
-              <span aria-hidden="true"> ↗</span>
-              <span class="explain-note">{link.label}</span>
-            </a>
-          ) : null}
-          <button type="button" class="ask" onClick={() => void ask()}>
-            {t(lang, 'askClaude')}
-          </button>
-          {copied === 'yes' ? <span class="explain-note">{t(lang, 'copied')}</span> : null}
-          {copied === 'failed' ? (
-            <span class="explain-note">
-              {t(lang, 'copyFallback')} <q>{prompt}</q>
-            </span>
-          ) : null}
-        </span>
-      ) : null}
-    </span>
-  );
-}
-
-function ActivityCard({ state, lang }: { state: State; lang: Language }) {
-  const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' });
-  const items = state.activity.filter((a) => isMessageKey(`act.${a.by}.${a.what}`)).slice(0, 8);
-  if (!items.length) return null;
-  return (
-    <details class="foot-activity">
-      <summary>{tj(lang, 'activity')}</summary>
-      <ol class="activity">
-        {items.map((a, i) => {
-          const key = `act.${a.by}.${a.what}`;
-          return (
-            <li key={`${a.at}-${i}`}>
-              <time class="tnum" dateTime={a.at}>
-                {time.format(new Date(a.at))}
-              </time>{' '}
-              {isMessageKey(key) ? t(lang, key, { detail: a.detail ?? '' }) : ''}
-            </li>
-          );
-        })}
-      </ol>
-    </details>
-  );
-}
-
-function formatBytes(bytes: number, lang: Language): string {
-  const f = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
-  return bytes < 1024 * 1024
-    ? `${f.format(Math.max(1, bytes / 1024))} KB`
-    : `${f.format(bytes / 1024 / 1024)} MB`;
 }

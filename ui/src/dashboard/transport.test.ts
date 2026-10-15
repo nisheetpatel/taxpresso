@@ -191,6 +191,15 @@ describe('MCP Apps transport (the dashboard in the conversation)', () => {
     expect(calls).toHaveLength(0);
   });
 
+  it('opens the Taxpresso folder with a plain request: the files stay where they are', async () => {
+    const { host, calls } = fakeHost(() => ({ structuredContent: { status: 200, body: STATE } }));
+    setTransport(mcpTransport(host, KEY));
+    await api.openFolder('en');
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ method: 'POST', path: '/folder/open', body: {} });
+    expect(calls[0]).not.toHaveProperty('file');
+  });
+
   it('is marked as the dashboard inside the conversation', () => {
     expect(mcpTransport(fakeHost(() => ({})).host, KEY).embedded).toBe(true);
   });
