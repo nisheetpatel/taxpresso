@@ -144,7 +144,7 @@ function DocRow({ p, d }: { p: PageProps; d: DocumentView }): JSX.Element {
                     )
                   }
                 >
-                  {person.label}
+                  {short(lang, person.id)}
                 </button>
               ))}
             </div>

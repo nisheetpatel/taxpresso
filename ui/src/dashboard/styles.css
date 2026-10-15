@@ -33,11 +33,11 @@
   --link: #e2b98a;
   --savings: #7cc3a0;
   --crema: #d7a86e;
-  --hero: #2b1f17;
+  --hero: #3a2618;
   --hero-ink: #f3ebe1;
-  --hero-soft: #d9c8b4;
+  --hero-soft: #dccbb7;
   --hero-word: #e2b98a;
-  --meter-off: #4a3a2e;
+  --meter-off: #5e4433;
   --edge: #4a3a2e;
   --tabs: #221913;
   --tab-on: #3a2d24;
@@ -130,11 +130,41 @@ h3 {
   gap: 16px;
 }
 
+/* Full screen or the browser page: the same column, a little more room and a larger number. */
 @media (min-width: 900px) {
   .app {
     padding: 28px 32px 64px;
     gap: 20px;
   }
+
+  .page-head h1 {
+    font-size: 34px;
+  }
+
+  .start .page-head h1 {
+    font-size: 40px;
+  }
+
+  .hero {
+    padding: 28px 32px;
+  }
+
+  .hero-amount .tnum {
+    font-size: 52px;
+  }
+
+  .hero-about {
+    font-size: 20px;
+  }
+
+  .doors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.doors {
+  display: grid;
+  gap: 16px;
 }
 
 .app-drop {
@@ -479,7 +509,7 @@ h2 {
 }
 
 [data-theme='dark'] .hero {
-  border: 1px solid #4a3a2e;
+  border: 1px solid #5a3e2b;
 }
 
 .hero :focus-visible {
@@ -682,10 +712,9 @@ h2 {
   border-radius: 14px;
   background: var(--surface);
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 12px;
+  gap: 8px;
 }
 
 .strip-part {
@@ -700,8 +729,9 @@ h2 {
 }
 
 .strip-amount {
-  font-size: 20px;
+  font-size: clamp(16px, 4.4vw, 20px);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .strip-about {
@@ -1145,6 +1175,11 @@ input.date {
   text-underline-offset: 3px;
 }
 
+/* Two disclosures one after the other ("Change the figures", "How it works"): one block. */
+.save-card > .more + .more {
+  margin-top: -12px;
+}
+
 .more[open] > summary,
 .change[open] > summary {
   margin-bottom: 6px;
@@ -1267,6 +1302,11 @@ input.date {
   gap: 14px;
 }
 
+/* Side by side at full width: each door's action at its bottom. */
+.door > :last-child {
+  margin-top: auto;
+}
+
 .door-head {
   display: flex;
   align-items: flex-start;
@@ -1364,6 +1404,10 @@ input.date {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.save-card > p {
+  margin: 0;
 }
 
 .save-card-on {
@@ -1596,6 +1640,17 @@ input.date {
   margin: 0;
   padding-left: 20px;
   line-height: 1.6;
+}
+
+/* The check of the official PDF inside step 3: one surface with the step. */
+.step .rc-card {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.step .rc-card h2 {
+  font-size: 15px;
 }
 
 .copy-values[open] {

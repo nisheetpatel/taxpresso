@@ -103,6 +103,9 @@ function Pillar3aCard({ p }: { p: Planned }): JSX.Element {
         </p>
       ) : noTax ? (
         <p class="muted small-text">{t(lang, noTax)}</p>
+      ) : counted ? (
+        // The total reads the salary certificate too; this card only a rough salary.
+        <p class="muted small-text">{pg(lang, 'p3a.inTotal')}</p>
       ) : result.roomCentimes > 0 ? (
         <p class="muted small-text">{pg(lang, 'save.needIncome')}</p>
       ) : null}

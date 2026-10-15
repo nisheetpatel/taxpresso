@@ -157,7 +157,12 @@ export function FilePage(p: PageProps): JSX.Element {
           <p class="muted">
             {pg(lang, state.canton?.code === 'GE' ? 'step.sendGe' : 'step.sendOther')}
           </p>
-          <Reconcile state={state} lang={lang} act={act} />
+          <Reconcile
+            state={state}
+            lang={lang}
+            act={act}
+            onAdd={p.embedded ? () => p.add({ kind: 'official_declaration' }) : undefined}
+          />
         </Step>
       </ol>
       <Assessment state={state} lang={lang} />

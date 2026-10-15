@@ -231,10 +231,13 @@ export function Reconcile({
   state,
   lang,
   act,
+  onAdd,
 }: {
   state: State & { declarationCheck?: DeclarationCheckState };
   lang: Language;
   act: Act;
+  /** Inside Claude Desktop the PDF goes into the Taxpresso folder, never through the chat. */
+  onAdd?: (() => void) | undefined;
 }): JSX.Element | null {
   const view = state.declarationCheck;
   const input = useRef<HTMLInputElement>(null);
@@ -403,8 +406,8 @@ export function Reconcile({
       <div class="rc-actions">
         <button
           type="button"
-          class={doc ? 'ghost' : 'primary'}
-          onClick={() => input.current?.click()}
+          class="ghost"
+          onClick={() => (onAdd ? onAdd() : input.current?.click())}
         >
           {tr(lang, doc ? 'addAgain' : 'add')}
         </button>

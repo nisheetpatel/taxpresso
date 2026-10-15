@@ -798,7 +798,7 @@ describe('only what applies', () => {
       tree,
       (e) => e.props.role === 'group' && e.props['aria-labelledby'] === 'whose-w',
     )[0]!;
-    expect(ofType([people], 'button').map(textOf)).toEqual(['You', 'Your spouse or partner']);
+    expect(ofType([people], 'button').map(textOf)).toEqual(['You', 'Partner']);
     click(ofType([people], 'button')[1]);
     expect(seen[0]).toMatchObject({
       path: '/documents/kind',
@@ -914,7 +914,7 @@ describe('only what applies', () => {
       planning: null,
     });
     const tree = expand(PayLess(props(over)));
-    expect(textOf(tree)).toContain('Plans before 31 December are for 2026.');
+    expect(plain(textOf(tree))).toContain('Plans before 31 December are for 2026.');
     expect(all(tree, (e) => e.props.class?.toString().includes('save-card') ?? false)).toHaveLength(
       0,
     );

@@ -80,33 +80,35 @@ export function FinalCheckItems({
             </span>
           ) : null}
           <Item item={item} lang={lang} />
-          <div class="row-actions">
-            {ON_YOUR_TAX.has(item.kind) ? (
-              <button type="button" class="primary" onClick={onGo}>
-                {pg(lang, 'step.go')}
-              </button>
-            ) : null}
-            {fix.length > 1 ? (
-              <>
-                <button
-                  type="button"
-                  class="ghost"
-                  disabled={at === 0}
-                  onClick={() => onIndex(at - 1)}
-                >
-                  {pg(lang, 'previous')}
+          {ON_YOUR_TAX.has(item.kind) || fix.length > 1 ? (
+            <div class="row-actions">
+              {ON_YOUR_TAX.has(item.kind) ? (
+                <button type="button" class="primary" onClick={onGo}>
+                  {pg(lang, 'step.go')}
                 </button>
-                <button
-                  type="button"
-                  class="ghost"
-                  disabled={at === fix.length - 1}
-                  onClick={() => onIndex(at + 1)}
-                >
-                  {pg(lang, 'next')}
-                </button>
-              </>
-            ) : null}
-          </div>
+              ) : null}
+              {fix.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    class="ghost"
+                    disabled={at === 0}
+                    onClick={() => onIndex(at - 1)}
+                  >
+                    {pg(lang, 'previous')}
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost"
+                    disabled={at === fix.length - 1}
+                    onClick={() => onIndex(at + 1)}
+                  >
+                    {pg(lang, 'next')}
+                  </button>
+                </>
+              ) : null}
+            </div>
+          ) : null}
           {view.moreTime ? (
             <p class="small-text">
               <a href={view.moreTime} target="_blank" rel="noopener noreferrer">

@@ -55,13 +55,13 @@ export function DropZone({
 /** "Open my Taxpresso folder", and where it is. */
 export function FolderDoor({ p }: { p: PageProps }): JSX.Element {
   const { state, lang, act } = p;
+  // The folder's path is in the menu; here the button opens it.
   return (
     <div class="folder-door">
       <button type="button" class="ghost wide" onClick={() => p.add()}>
         <Icon.folder />
         <span>{pg(lang, 'openFolder')}</span>
       </button>
-      <p class="small-text muted folder-path">{pg(lang, 'folderIs', { path: state.vault.path })}</p>
       {state.page ? null : (
         // Until the extension sorts new files as they land (three-pages.md, section 4).
         <button type="button" class="link" onClick={() => void act(() => api.scan(lang))}>
@@ -84,38 +84,40 @@ export function Start(
         <p class="lead">{pg(lang, 'start.lead')}</p>
       </div>
 
-      <section class="card door" aria-labelledby="door-docs">
-        <div class="door-head">
-          <span class="door-icon">
-            <Icon.doc />
-          </span>
-          <div>
-            <h2 id="door-docs">{pg(lang, 'start.docs')}</h2>
-            <p class="muted">{pg(lang, embedded ? 'start.docsLeadFolder' : 'start.docsLead')}</p>
+      <div class="doors">
+        <section class="card door" aria-labelledby="door-docs">
+          <div class="door-head">
+            <span class="door-icon">
+              <Icon.doc />
+            </span>
+            <div>
+              <h2 id="door-docs">{pg(lang, 'start.docs')}</h2>
+              <p class="muted">{pg(lang, embedded ? 'start.docsLeadFolder' : 'start.docsLead')}</p>
+            </div>
           </div>
-        </div>
-        {embedded ? (
-          <FolderDoor p={p} />
-        ) : (
-          <DropZone lang={lang} onFiles={p.onFiles} onChoose={p.onChoose} />
-        )}
-      </section>
+          {embedded ? (
+            <FolderDoor p={p} />
+          ) : (
+            <DropZone lang={lang} onFiles={p.onFiles} onChoose={p.onChoose} />
+          )}
+        </section>
 
-      <section class="card door" aria-labelledby="door-rough">
-        <div class="door-head">
-          <span class="door-icon">
-            <Icon.pen />
-          </span>
-          <div>
-            <h2 id="door-rough">{pg(lang, 'start.rough')}</h2>
-            <p class="muted">{pg(lang, 'start.roughLead')}</p>
+        <section class="card door" aria-labelledby="door-rough">
+          <div class="door-head">
+            <span class="door-icon">
+              <Icon.pen />
+            </span>
+            <div>
+              <h2 id="door-rough">{pg(lang, 'start.rough')}</h2>
+              <p class="muted">{pg(lang, 'start.roughLead')}</p>
+            </div>
           </div>
-        </div>
-        <button type="button" class="primary wide" onClick={p.openBasics}>
-          <span>{pg(lang, 'start.roughButton')}</span>
-          <Icon.arrow />
-        </button>
-      </section>
+          <button type="button" class="primary wide" onClick={p.openBasics}>
+            <span>{pg(lang, 'start.roughButton')}</span>
+            <Icon.arrow />
+          </button>
+        </section>
+      </div>
 
       {helps.length ? (
         <section class="helps" aria-labelledby="helps-title">
