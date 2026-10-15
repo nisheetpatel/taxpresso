@@ -106,10 +106,10 @@ export const StatusSchema = z.object({
       text: z.string().describe('The next step in the user’s words, as the dashboard shows it.'),
     })
     .describe('The one next step, the same as the dashboard’s (docs/design/simple.md).'),
-  stage: z.enum(STAGES).describe('The stage open in the dashboard.'),
+  stage: z.enum(STAGES).describe('The stage whose page the dashboard opens on.'),
   stages: z.array(z.object({ id: z.enum(STAGES), status: z.string() })),
-  about: z.array(z.string()).describe('Facts shown in "About you" that need no decision.'),
-  journey: z.array(z.string()).describe('The stages and facts in a few lines.'),
+  about: z.array(z.string()).describe('Facts shown on "Your tax" that need no decision.'),
+  journey: z.array(z.string()).describe('The pages and facts in a few lines.'),
   nextStep: z.string().describe('What Claude does next.'),
   vault: z.object({ path: z.string(), exists: z.boolean(), problem: z.string().optional() }),
   dashboard: z.object({ running: z.boolean() }),
@@ -333,7 +333,7 @@ export function statusText(s: Status): string {
     `Dashboard: ${s.dashboard.running ? 'running' : 'not running'}`,
     over
       ? `The tax so far: compute_tax. ${s.taxYear} is over: for 3a or a buy-in, list_optimizations says which year's plans apply and how to switch.`
-      : 'The tax so far: compute_tax. Ways to save (list_optimizations): offer them once there is a tax, as one question.',
+      : 'The tax so far: compute_tax. Pay less (list_optimizations): offer it once there is a tax, as one question.',
   );
   if (s.runtime) {
     lines.push(

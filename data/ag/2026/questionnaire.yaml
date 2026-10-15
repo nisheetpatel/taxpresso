@@ -125,6 +125,7 @@ questions:
   # packages/rules-ag asks rather than guess (NOTE.mainUpkeep).
   - id: main_upkeep
     key: ag.main_upkeep
+    group: detail
     type: yesno
     when:
       all:
@@ -167,6 +168,7 @@ questions:
   # 19.). Under 14 also counts for childcare (p. 27, 15.0).
   - id: child_band
     key: ag.child_band
+    group: detail
     type: choice
     perChild: true
     when:
@@ -251,6 +253,7 @@ questions:
   # how the invoices' total splits can decide the deduction: asked per child.
   - id: child_care
     key: ag.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -287,6 +290,7 @@ questions:
   # in percent of the simple tax (p. 45, Anhang II).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own Steuerfuss, a percentage of the simple tax (einfache Steuer), as the canton does.'
@@ -317,6 +321,7 @@ questions:
   # year (p. 5, unterjährige Steuerpflicht): not covered by rules-ag.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Aargau taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -405,6 +410,7 @@ questions:
   # packages/rules-ag says plainly when it can't compute it (spouses of different churches).
   - id: church
     key: ag.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -486,6 +492,7 @@ questions:
   # (parishOptions(2026)); a test keeps this list and the condition equal to it.
   - id: parish
     key: ag.parish
+    group: detail
     type: choice
     when:
       any:

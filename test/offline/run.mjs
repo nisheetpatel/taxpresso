@@ -706,6 +706,35 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     assert.ok(!readdirSync(path.join(vault, '2026')).some((n) => n.endsWith('.zip')));
   });
 
+  test('a file put in the folder is sorted as it lands, without ingest_vault', async () => {
+    // The folder watch (docs/design/three-pages.md): no tool call, no button. /folder/open is never
+    // called here: it would open a window (the guard would block it anyway).
+    const sorted = async (name) => {
+      const deadline = Date.now() + 15_000;
+      let listed = [];
+      while (Date.now() < deadline) {
+        const res = await client.callTool({ name: 'list_documents', arguments: {} });
+        listed = res.structuredContent.documents.map((d) => d.filename);
+        if (listed.includes(name)) return;
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      assert.fail(`${name} not sorted: ${listed.join(', ')}`);
+    };
+    // The first, as the watch starts (the folder was made a moment ago); the second, as it lands.
+    writeFileSync(path.join(vault, '2026', 'landed.pdf'), '%PDF-1.7 synthetic landed document');
+    await sorted('landed.pdf');
+    writeFileSync(path.join(vault, '2026', 'landed-2.pdf'), '%PDF-1.7 synthetic second document');
+    await sorted('landed-2.pdf');
+    // The page in the browser shows them too, and Claude hears of them with its next look.
+    const { origin, host, cookie } = dashboardSession;
+    const page = JSON.parse(
+      (await get(`${origin}/api/state`, { headers: { Host: host, Cookie: cookie } })).body,
+    );
+    assert.ok(page.documents.some((d) => d.filename === 'landed-2.pdf'));
+    const ingest = await client.callTool({ name: 'ingest_vault', arguments: {} });
+    assert.deepEqual(ingest.structuredContent.added, ['landed.pdf', 'landed-2.pdf']);
+  });
+
   test('the server exits when Claude Desktop closes it', async () => {
     const pid = transport.pid;
     await client.close();

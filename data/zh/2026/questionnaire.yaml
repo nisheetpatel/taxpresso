@@ -115,6 +115,7 @@ questions:
   # engine's NOTE.childcareSplit; a test keeps these amounts equal to the engine's).
   - id: child_care
     key: zh.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -158,6 +159,7 @@ questions:
   # multipliers (two school districts) is listed once per part, numbered as in the official table.
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own multiplier (Steuerfuss), a percentage of the simple cantonal tax. A few communes have two parts with different multipliers, often two school districts.'
@@ -186,6 +188,7 @@ questions:
   # whole year; from abroad, only from the arrival (part-year liability, not covered by rules-zh).
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Zurich taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -274,6 +277,7 @@ questions:
   # it only for a member.
   - id: church
     key: zh.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -352,6 +356,7 @@ questions:
   # seit-2012 sheet STFUSS2026, columns I to L). A test keeps this list equal to rules-zh's table.
   - id: parish
     key: zh.parish
+    group: detail
     type: choice
     when:
       any:

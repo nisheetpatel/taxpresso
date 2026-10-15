@@ -127,6 +127,7 @@ questions:
   # (lu-2025-guide-wegleitung p. 20). packages/rules-lu asks rather than guess (NOTE.familyTariff).
   - id: family_tariff
     key: lu.family_tariff
+    group: detail
     type: yesno
     when:
       all:
@@ -169,6 +170,7 @@ questions:
   # p. 24 and 30).
   - id: child_lives_with_you
     key: lu.child_lives_with_you
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -203,6 +205,7 @@ questions:
   # lit. b (lu-2026-law-steuergesetz p. 24).
   - id: child_under14
     key: lu.child_under14
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -238,6 +241,7 @@ questions:
   # (lu-2026-law-steuergesetz p. 24). Not asked for a child under 14 living with you.
   - id: child_away
     key: lu.child_away
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -291,6 +295,7 @@ questions:
   # (form U/F lists each child, lu-2025-guide-wegleitung p. 34).
   - id: child_care
     key: lu.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -326,6 +331,7 @@ questions:
   # levies its units of the tax per unit (StG § 2 and § 236, p. 1 and 95).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year, and so does its parish. Each commune sets how many units (Einheiten) of the tax per unit (Steuer je Einheit) it levies, as the state does.'
@@ -356,6 +362,7 @@ questions:
   # covered by rules-lu.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Lucerne taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -443,6 +450,7 @@ questions:
   # members.
   - id: church
     key: lu.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -522,6 +530,7 @@ questions:
   # not when the other parent counts them (child support paid).
   - id: child_church
     key: lu.child_church
+    group: detail
     type: choice
     perChild: true
     when:

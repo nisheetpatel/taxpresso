@@ -134,6 +134,7 @@ questions:
   # asks rather than guess (NOTE.mainUpkeep).
   - id: main_upkeep
     key: sg.main_upkeep
+    group: detail
     type: yesno
     when:
       all:
@@ -177,6 +178,7 @@ questions:
   # (sg-na-deductions-kinderabzug p. 2, Ziff. 2.1.2; sg-2025-guide-wegleitung p. 13 and 31).
   - id: child_stage
     key: sg.child_stage
+    group: detail
     type: choice
     perChild: true
     when:
@@ -242,6 +244,7 @@ questions:
   # minor: asked only for a child in school or training.
   - id: child_minor
     key: sg.child_minor
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -279,6 +282,7 @@ questions:
   # counts; the invoice date decides the year, sg-na-deductions-kinderabzug p. 10, Ziff. 3.5).
   - id: child_education
     key: sg.child_education
+    group: deduction
     type: money
     perChild: true
     when:
@@ -316,6 +320,7 @@ questions:
   # when the child's education costs are above 0.
   - id: child_scholarships
     key: sg.child_scholarships
+    group: deduction
     type: money
     perChild: true
     when:
@@ -376,6 +381,7 @@ questions:
   # total splits can decide the deduction, so it is asked per child.
   - id: child_care
     key: sg.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -413,6 +419,7 @@ questions:
   # einfache Steuer (Art. 5 and 6 Abs. 2 lit. b, p. 2).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. Each political commune (politische Gemeinde) sets its own Steuerfuss, a percentage of the simple tax (einfache Steuer), on top of the canton’s.'
@@ -444,6 +451,7 @@ questions:
   # canton: the commune of 31 December (sg-2026-law-steuergesetz Art. 233 Abs. 1, p. 90).
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: St. Gallen taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -534,6 +542,7 @@ questions:
   # adult's Konfession. Opt-in: Taxpresso adds the church tax only for a member.
   - id: church
     key: sg.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -636,6 +645,7 @@ questions:
   # test keeps this list and the condition equal to it. The names are the table's.
   - id: church_area
     key: sg.church_area
+    group: detail
     type: choice
     when:
       any:

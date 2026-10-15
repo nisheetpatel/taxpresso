@@ -197,6 +197,7 @@ questions:
   # p. 32).
   - id: child_age
     key: fr.child_age
+    group: detail
     type: choice
     perChild: true
     when:
@@ -277,6 +278,7 @@ questions:
   # (packages/rules-fr, NOTE.childcareSplit). Asked per child.
   - id: child_care
     key: fr.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -313,6 +315,7 @@ questions:
   # tables, which give each commune's number). Their 2026 coefficients are not published yet.
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'Each commune sets its own coefficient (coefficient communal), the same on income and wealth, a percentage of the cantonal base tax (impôt cantonal de base).'
@@ -344,6 +347,7 @@ questions:
   # means part of the year only (p. 4): not covered either.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'Arriving from another canton changes nothing: Fribourg taxes your whole year, and your commune of arrival collects the communal tax for it. A move between Fribourg communes splits the communal tax between them by the time in each. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -432,6 +436,7 @@ questions:
   # (packages/rules-fr, NOTE.churchMixed).
   - id: church
     key: fr.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -497,6 +502,7 @@ questions:
   # test keeps them equal. The names are the tables'.
   - id: parish
     key: fr.parish
+    group: detail
     type: choice
     when:
       any:
@@ -1349,6 +1355,7 @@ questions:
   # ECAS paid; unknown, the tax office counts it itself).
   - id: health_subsidy
     key: fr.health_subsidy
+    group: detail
     type: money
     explain:
       en: 'Fribourg deducts a flat amount for each insured person’s health and accident insurance (caisse-maladie et accidents, code 4.110), whatever premiums you paid, less any premium subsidy (réduction des primes) you received.'
@@ -1378,6 +1385,7 @@ questions:
   # limit; rubric A of the last page).
   - id: life_insurance
     key: fr.life_insurance
+    group: deduction
     type: money
     explain:
       en: 'Fribourg deducts premiums for life insurance, pure-risk insurance and daily-allowance insurance up to a limit (autres primes et cotisations, 3e pilier b, code 4.120).'
@@ -1439,6 +1447,7 @@ questions:
   # (packages/rules-fr, canton.ts, FribourgCantonal.savingsInterest).
   - id: savings_interest
     key: fr.savings_interest
+    group: detail
     type: money
     when: { key: profile.banks, gt: 0 }
     explain:

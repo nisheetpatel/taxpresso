@@ -127,6 +127,7 @@ questions:
   # rather than guess (NOTE.mainUpkeep).
   - id: main_upkeep
     key: bl.main_upkeep
+    group: detail
     type: yesno
     when:
       all:
@@ -168,6 +169,7 @@ questions:
   # (bl-na-steuergesetz-331 § 34 Abs. 4, p. 28; bl-2026-wegleitung p. 37).
   - id: child_income
     key: bl.child_income
+    group: detail
     type: yesno
     perChild: true
     when:
@@ -219,6 +221,7 @@ questions:
   # decide the deduction: asked per child.
   - id: child_care
     key: bl.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -255,6 +258,7 @@ questions:
   # bl-na-steuergesetz-331 p. 11).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own Steuerfuss, a percentage of the state tax (Staatssteuer).'
@@ -285,6 +289,7 @@ questions:
   # Steuerpflicht): not covered by rules-bl.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Basel-Landschaft taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -373,6 +378,7 @@ questions:
   # Catholic church tax and says plainly when it can't compute the others.
   - id: church
     key: bl.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -512,6 +518,7 @@ questions:
   # bl-2026-wegleitung p. 39 and 40; bl-2026-guide-informationen-neuerungen p. 1).
   - id: pension_kind
     key: bl.pension_kind
+    group: detail
     type: choice
     perPerson: true
     when: { key: profile.income_sources, includes: pension }

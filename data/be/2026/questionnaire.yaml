@@ -72,6 +72,7 @@ questions:
   # (be-2026-stg-de Art. 67 Abs. 3, p. 42).
   - id: own_household
     key: be.own_household
+    group: detail
     type: yesno
     when: { key: profile.civil_status, in: [single, separated, divorced, widowed] }
     explain:
@@ -167,6 +168,7 @@ questions:
   # applied (packages/rules-be, explain.ts, NOTE.marriedTariff).
   - id: married_tariff
     key: be.married_tariff
+    group: detail
     type: yesno
     when:
       all:
@@ -209,6 +211,7 @@ questions:
   # NOTES.md, Open points for the rules; packages/rules-be, explain.ts, NOTE.sharedChildWealth).
   - id: child_wealth
     key: be.child_wealth
+    group: detail
     type: choice
     when:
       all:
@@ -277,6 +280,7 @@ questions:
   # deduction: asked per child.
   - id: child_care
     key: be.child_care
+    group: deduction
     type: money
     perChild: true
     when:
@@ -312,6 +316,7 @@ questions:
   # with children who live with you, also in turn (p. 29, Seite 20).
   - id: education
     key: be.education
+    group: deduction
     type: yesno
     when:
       all:
@@ -351,6 +356,7 @@ questions:
   # be-2025-wegleitung-np-de p. 25 (Seite 16: the limit applies per child).
   - id: child_education
     key: be.child_education
+    group: deduction
     type: money
     perChild: true
     when: { key: be.education, is: true }
@@ -384,6 +390,7 @@ questions:
   # the einfache Steuer (be-2026-steueranlagen-gemeinden-de p. 3 and 13).
   - id: commune
     key: profile.commune
+    group: basics
     type: commune
     explain:
       en: 'The commune you lived in on 31 December taxes your whole year. Each commune sets its own Steueranlage, a multiple of the simple tax (einfache Steuer), as the canton does.'
@@ -416,6 +423,7 @@ questions:
   # be-2026-stg-de Art. 9 Abs. 1 and 2, p. 6): not covered by rules-be.
   - id: moved
     key: profile.moved
+    group: special
     type: choice
     explain:
       en: 'A move within the canton changes nothing: the commune you lived in on 31 December taxes the whole year. Arriving from another canton changes nothing either: Bern taxes your whole year, as if you had lived here since January. Arriving from abroad, or leaving Switzerland, means you were taxed here for part of the year only.'
@@ -505,6 +513,7 @@ questions:
   # be-2025-steuererklaerung-formulare-de p. 9). Opt-in: Taxpresso adds it only for a member.
   - id: church
     key: be.church
+    group: detail
     type: choice
     perPerson: true
     explain:
@@ -586,6 +595,7 @@ questions:
   # and the condition equal to it. The names are the table's, sometimes shortened.
   - id: parish
     key: be.parish
+    group: detail
     type: choice
     when:
       any:
@@ -1462,6 +1472,7 @@ questions:
   # cantonal limit is per person, spouses each up to it; the federal one is for the return).
   - id: party
     key: be.party
+    group: deduction
     type: money
     perPerson: true
     when: { key: profile.payments, includes: political_party }

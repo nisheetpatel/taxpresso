@@ -20,7 +20,13 @@ import {
   type HouseholdInput,
   type Pillar3aResult,
 } from '@taxpresso/optimizer';
-import type { Lang, QuestionnaireEngine, RenderedQuestion, Slot } from '@taxpresso/questionnaire';
+import type {
+  Lang,
+  QuestionnaireEngine,
+  RenderedQuestion,
+  Slot,
+  Snapshot,
+} from '@taxpresso/questionnaire';
 import type { ContentLang } from './lang.js';
 import {
   assessmentViews,
@@ -160,6 +166,10 @@ const isHouseholdAnswer = (key: string) =>
 /** Planning inputs the user can give in the dashboard or the chat (never filed). */
 export const PLAN_KEYS = [
   'plan.gross_salary',
+  // Rough yearly benefits and pensions, per person, until their attestation is in (the basics card,
+  // docs/design/three-pages.md): estimates for the year still running, as the rough salary.
+  'plan.replacement_income',
+  'plan.pension_income',
   'plan.net_salary',
   'plan.has_pension_fund',
   'plan.pillar3a_paid',
@@ -228,6 +238,8 @@ export class Workspace {
   #securities: { summary: SecuritiesSummary; unreadable: string[] } | undefined;
   /** Derived results kept while nothing they read changed (./workspace.ts, memo). */
   readonly #memo = new Map<string, { key: string; value: unknown }>();
+  /** Documents the folder watch sorted that Claude hasn't heard of yet (ingest_vault). */
+  #landed: string[] = [];
 
   constructor(config: Config, cantons: CantonRegistry) {
     this.config = config;
@@ -482,8 +494,9 @@ export class Workspace {
     );
   }
 
-  render(slot: Slot, lang: Lang): RenderedQuestion {
-    return this.engine.render(slot, this.snapshot(), lang);
+  /** A question in the user's language; `snap`: the snapshot already taken, when there is one. */
+  render(slot: Slot, lang: Lang, snap: Snapshot = this.snapshot()): RenderedQuestion {
+    return this.engine.render(slot, snap, lang);
   }
 
   /** Stores an answer. Returns the fact and the documents the answer newly asks for. */
@@ -548,8 +561,12 @@ export class Workspace {
     });
   }
 
-  /** Picks up files the user put into the tax-year folder directly. */
-  async scan(by: ActivityEntry['by']): Promise<VaultDocument[]> {
+  /**
+   * Picks up files the user put into the tax-year folder directly. `auto`: the folder watch
+   * (./folder-watch.ts) sorting them as they land; what it finds is said in the activity only when
+   * there is something, and Claude hears of it with its next look at the folder (ingest_vault).
+   */
+  async scan(by: ActivityEntry['by'], opts: { auto?: boolean } = {}): Promise<VaultDocument[]> {
     return this.#write(async () => {
       const found = await this.vault.scan(this.#documents);
       if (found.length) {
@@ -559,9 +576,31 @@ export class Workspace {
         await this.#importBarcodes(found);
         await this.#importPrior(found);
       }
-      this.record(by, 'scan', String(found.length));
-      return found;
+      if (opts.auto) {
+        this.#landed.push(...found.map((d) => d.id));
+        if (found.length) this.record(by, 'scan', String(found.length));
+        return found;
+      }
+      // Claude looking at the folder: the files the watch already sorted are new to Claude too.
+      const landed = by === 'claude' ? this.#takeLanded() : [];
+      this.record(by, 'scan', String(landed.length + found.length));
+      return [...landed, ...found];
     });
+  }
+
+  /** Makes the year's folder if it isn't there yet, for the user to open it and add files. */
+  async ensureFolder(): Promise<void> {
+    return this.#write(async () => {
+      this.#usable();
+      await this.vault.ensure();
+    });
+  }
+
+  /** The documents the watch sorted since Claude last looked at the folder, once. */
+  #takeLanded(): VaultDocument[] {
+    const ids = new Set(this.#landed);
+    this.#landed = [];
+    return this.activeDocuments().filter((d) => ids.has(d.id));
   }
 
   /** The user says what a document is (and whose, in a couple). */
