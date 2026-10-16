@@ -20,7 +20,7 @@
 //     married 395.00 at 61'300, then 3.00 per 100; the same in 2025 and 2026 at these incomes), p. 2
 //     (insurance 1'800 single, 3'700 couple; couple deduction 2'800).
 //   Communes (ge-2025-communal-centimes-pdf; ge-2026-communal-centimes-arca and
-//     ge-2026-part-privilegiee-communique p. 11): Carouge PP 27 %, CA 40 (2025 and 2026); Vernier
+//     ge-2026-part-privilegiee-communique p. 12): Carouge PP 27 %, CA 40 (2025 and 2026); Vernier
 //     2025 PP 80 %, 2026 PP 75 %, CA 50; Onex PP 80 %, CA 50.5.
 // Rounding as in the official tariff: each line to 5 centimes, halves up; shares to the franc.
 import { Ledger, type FactStatus, type VaultDocument } from '@taxpresso/ledger';

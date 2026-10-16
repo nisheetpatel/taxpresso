@@ -118,10 +118,11 @@ const salary = (person: 'p1' | 'p2', gross: string, social: string, lpp: string)
     ['salary.lpp_ordinary', lpp],
   ]);
 
-/** The answers of one salaried person who walks to work and has no 3a or buy-in. */
-const worker = (p: 'p1' | 'p2'): [string, unknown][] => [
+/** The answers of one salaried person who works in `commune`, walks there and has no 3a or buy-in. */
+const worker = (p: 'p1' | 'p2', commune: string): [string, unknown][] => [
   [`income_sources:${p}`, ['salary']],
   [`employers:${p}`, 1],
+  [`work_commune:${p}`, commune],
   ...(p === 'p1' ? ([[`residence:${p}`, 'swiss']] as [string, unknown][]) : []),
 ];
 const plain = (people: ('p1' | 'p2')[]): [string, unknown][] => [
@@ -155,8 +156,8 @@ async function chevalley() {
     ['children', 0],
     ['commune', 'Lancy'],
     ['moved', 'no'],
-    ...worker('p1'),
-    ...worker('p2'),
+    ...worker('p1', 'Lancy'),
+    ...worker('p2', 'Lancy'),
     ...plain(['p1', 'p2']),
     ['special', ['real_estate']],
     ...PROPERTY('own_flat', 'both', [
@@ -192,7 +193,7 @@ async function bertholet() {
     ['children', 0],
     ['commune', 'Thônex'],
     ['moved', 'no'],
-    ...worker('p1'),
+    ...worker('p1', 'Thônex'),
     ...plain(['p1']),
     ['special', ['real_estate']],
     ...PROPERTY('own_house', 'p1', [
@@ -224,7 +225,7 @@ async function sandoz() {
     ['children', 0],
     ['commune', 'Carouge'],
     ['moved', 'no'],
-    ...worker('p1'),
+    ...worker('p1', 'Carouge'),
     ...plain(['p1']),
     ['special', ['real_estate']],
     ...PROPERTY('let', 'p1', [
@@ -506,7 +507,7 @@ describe('a property in Geneva, end to end (2026)', () => {
       ['children', 0],
       ['commune', 'Thônex'],
       ['moved', 'no'],
-      ...worker('p1'),
+      ...worker('p1', 'Thônex'),
       ...plain(['p1']),
       ['special', ['real_estate']],
       ...PROPERTY('own_house', 'p1', [

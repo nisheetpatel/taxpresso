@@ -199,6 +199,47 @@ describe('items from the ledger', () => {
     expect(items.some((i) => i.amount === 81_000_00)).toBe(false);
   });
 
+  // The form asks the code of the commune of work on each salary line (ge-2025-declaration-specimen
+  // p. 5 and 6, "Code commune"); in another canton, the commune of residence's
+  // (ge-2025-guide-declaration-pp p. 17, codes p. 59).
+  it('write the code of the commune where each person works on their salary lines', () => {
+    const { ledger, add, people } = household(['p1', 'p2']);
+    add('salary.base', 'p1', 'certA', 90_000_00);
+    add('salary.base', 'p2', 'certB', 60_000_00);
+    add('salary.base', 'p2', 'certB2', 5_000_00);
+    const answer = (key: string, person: 'p1' | 'p2' | 'household', value: string) =>
+      ledger.append({
+        key,
+        person,
+        value,
+        status: 'stated',
+        source: { method: 'user', via: 'chat' },
+      });
+    answer('profile.commune', 'household', 'onex');
+    const docs = [
+      doc('certA', { person: 'p1', issuer: 'Banque Exemple SA' }),
+      doc('certB', { person: 'p2', issuer: 'Atelier Exemple SA' }),
+      doc('certB2', { person: 'p2', issuer: 'Café du Coin Sàrl' }),
+    ];
+    const lines = () =>
+      itemsFromLedger({ facts: ledger.view(), documents: docs, people, taxYear: 2026 })
+        .items.filter((i) => i.code === '11.10' || i.code === '21.10')
+        .map((i) => [i.code, i.instance, i.fields]);
+    // Not answered yet: no code.
+    expect(lines()).toEqual([
+      ['11.10', 'certA', { employer: 'Banque Exemple SA' }],
+      ['21.10', 'certB', { employer: 'Atelier Exemple SA' }],
+      ['21.10', 'certB2', { employer: 'Café du Coin Sàrl' }],
+    ]);
+    answer('profile.work_commune', 'p1', 'geneve');
+    answer('profile.work_commune', 'p2', 'outside_geneva');
+    expect(lines()).toEqual([
+      ['11.10', 'certA', { employer: 'Banque Exemple SA', commune: '6621' }],
+      ['21.10', 'certB', { employer: 'Atelier Exemple SA', commune: '6631' }],
+      ['21.10', 'certB2', { employer: 'Café du Coin Sàrl', commune: '6631' }],
+    ]);
+  });
+
   it('send taxpayer B to the 21.xx and 41.xx rubrics, and household documents by whose they are', () => {
     const { ledger, add, people } = household(['p1', 'p2']);
     add('salary.base', 'p2', 'certB', 60_000_00);

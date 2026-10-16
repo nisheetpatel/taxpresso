@@ -276,6 +276,7 @@ describe('status, checks and the assessment', () => {
       ['moved', 'no'],
       ['income_sources:p1', ['salary']],
       ['employers:p1', 1],
+      ['work_commune:p1', 'vernier'],
       ['residence:p1', 'swiss'],
       ['pillar3a:p1', false],
       ['lpp_buyin:p1', false],

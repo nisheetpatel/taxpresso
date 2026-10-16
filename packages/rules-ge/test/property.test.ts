@@ -32,7 +32,7 @@
 // (ch-2026-ifd-progression-deductions p. 2, the same for 2025 and 2026) and scales (Form. 58c 2025
 // and 2026: ch-2025- and ch-2026-ifd-tarif-personnes-physiques); the communes
 // (ge-2025-communal-centimes-pdf: Lancy PP 49 % CA 47, Thônex 77 % 44, Carouge 27 % 40, Meyrin
-// 30 % 42; ge-2026-part-privilegiee-communique p. 11: Lancy 51 %, Thônex 77 %, Carouge 27 %, Meyrin
+// 30 % 42; ge-2026-part-privilegiee-communique p. 12: Lancy 51 %, Thônex 77 %, Carouge 27 %, Meyrin
 // 29 %; ge-2026-communal-centimes-arca: the same centimes). Rounding: each ICC line to 5 centimes,
 // the flat amounts and the abattement to the franc, the federal tax rounded down to 5 centimes.
 // The same figures were worked out with a separate calculator written from these documents only.

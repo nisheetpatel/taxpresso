@@ -14,6 +14,8 @@
     "income_sources:p2": ["salary"],
     "employers:p1": 1,
     "employers:p2": 1,
+    "work_commune:p1": "Lancy",
+    "work_commune:p2": "Lancy",
     "residence:p1": "swiss",
     "pillar3a:p1": true,
     "pillar3a:p2": true,

@@ -43,6 +43,12 @@ export interface PersonInput {
   hasPensionFund: boolean;
   paidCentimes: number;
   /**
+   * Geneva: the commune where the salary is earned (profile.work_commune), or 'outside' the canton.
+   * Another commune shares the communal tax (ge-na-law-lcp art. 295A); unknown, the commune of
+   * residence is assumed (home_commune_rate).
+   */
+  workCommune?: CommuneSlug | 'outside';
+  /**
    * Benefits replacing pay for the year that are not in the salary (unemployment, sickness,
    * accident, maternity, paid by the insurance itself): rubric 11.50. Only the TOU comparison sets
    * it (./tou.ts), from the benefits attestations.
@@ -138,6 +144,8 @@ export type Assumption =
   | 'icc_2025_scale'
   | 'flat_deductions_only'
   | 'home_commune_rate'
+  /** A salary earned in another commune: the communal part shared, by gross income (not spelled out). */
+  | 'work_commune_split'
   | 'net_from_gross'
   | 'commune_default'
   | 'no_income_for_some'
@@ -179,7 +187,7 @@ export const ESTIMATE_SOURCES = [
   'ge-2025-icc-tariff-pdf p. 2, p. 4',
   'ge-2025-guide-declaration-pp p. 11',
   'ge-2026-communal-centimes-arca',
-  'ge-2026-part-privilegiee-communique p. 11',
+  'ge-2026-part-privilegiee-communique p. 12',
   'ch-2026-ifd-progression-deductions p. 2, p. 4',
 ];
 
@@ -219,7 +227,14 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
         id: p.person,
         hasPensionFund: p.hasPensionFund,
         ...(net !== undefined
-          ? { employments: [{ gross: { value: net, status: 'estimate' } }] }
+          ? {
+              employments: [
+                {
+                  gross: { value: net, status: 'estimate' },
+                  ...(p.workCommune ? { workCommune: p.workCommune } : {}),
+                },
+              ],
+            }
           : {}),
         // The business's expected profit, as one figure (12.01).
         ...(p.businessCentimes !== undefined
@@ -305,7 +320,15 @@ export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   const base = engineInput(h, nets);
   const first = incomeTax(computeReturn(base));
   if (!first) return undefined;
-  const assumptions: Assumption[] = ['home_commune_rate'];
+  // A salary earned in another commune is counted there: all income is then not at home.
+  const elsewhere = h.people.some(
+    (p, i) =>
+      nets[i] !== undefined &&
+      p.workCommune !== undefined &&
+      p.workCommune !== 'outside' &&
+      p.workCommune !== (h.commune ?? 'geneve'),
+  );
+  const assumptions: Assumption[] = [elsewhere ? 'work_commune_split' : 'home_commune_rate'];
   if ((h.taxYear ?? 2026) === 2026) assumptions.unshift('icc_2025_scale');
   if (!Object.keys(h.known?.household ?? {}).length) assumptions.push('flat_deductions_only');
   if (h.people.some((p) => p.netCentimes === undefined && p.grossCentimes !== undefined))

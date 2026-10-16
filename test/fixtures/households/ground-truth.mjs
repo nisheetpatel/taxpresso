@@ -11,7 +11,9 @@
 // they do (it throws otherwise): whole francs on every document, even taxable incomes for the
 // couples (so the rate income, half the income, is a whole franc), cantonal base taxes that are
 // multiples of CHF 50 (so 47.5 %, the 12 % reduction, the 1 % for home care and the communal
-// centimes are exact to the centime), and no amount at an exact half of 5 centimes.
+// centimes are exact to the centime), and no amount at an exact half of 5 centimes. A salary
+// earned in another commune only when it is the whole income, in that one commune: the rest of
+// the communal tax then goes to it whatever measures the shares (gross or net, not spelled out).
 //
 // Tax year 2026: the federal values are published (ch-2026-ifd-progression-deductions), and so are
 // the communal centimes (ge-2026-communal-centimes-arca); Geneva's own 2026 scales and amounts are
@@ -148,11 +150,44 @@ const GE = {
 const COMMUNES = {
   2025: {
     source: 'ge-2025-communal-centimes-pdf (colonne 2025, CA)',
-    value: { Carouge: 4000, Lancy: 4700, Meyrin: 4200, Onex: 5050, Thônex: 4400 },
+    value: {
+      Carouge: 4000,
+      Lancy: 4700,
+      Meyrin: 4200,
+      Onex: 5050,
+      Thônex: 4400,
+      Vernier: 5000,
+      Genève: 4549,
+    },
   },
   2026: {
     source: 'ge-2026-communal-centimes-arca',
-    value: { Carouge: 4000, Lancy: 4700, Meyrin: 4200, Onex: 5050, Thônex: 4400 },
+    value: {
+      Carouge: 4000,
+      Lancy: 4700,
+      Meyrin: 4200,
+      Onex: 5050,
+      Thônex: 4400,
+      Vernier: 5000,
+      Genève: 4549,
+    },
+  },
+};
+
+/**
+ * The privileged share of the commune of residence (part privilégiée), in percent: the part of each
+ * base tax it taxes at its own centimes when an income is earned in another commune; "le solde
+ * étant attribué à la commune d'activité" (ge-na-law-lcp art. 295A al. 2).
+ */
+const PRIVILEGED = {
+  2025: {
+    source:
+      'ge-2025-communal-centimes-pdf (colonne 2025, PP); ge-2025-part-privilegiee-communique p. 8',
+    value: { Carouge: 27, Lancy: 49, Meyrin: 30, Onex: 80, Thônex: 77, Vernier: 80 },
+  },
+  2026: {
+    source: 'ge-2026-part-privilegiee-communique p. 12',
+    value: { Carouge: 27, Lancy: 51, Meyrin: 29, Onex: 80, Thônex: 77, Vernier: 75 },
   },
 };
 
@@ -909,7 +944,21 @@ export function computeKit(kit, year) {
   const rateTax = genevaScale(GE.incomeScale.value, rateIncome, 10_000);
   const incomeBase = splitting === 'full' ? rateTax * 2 : rateTax;
   const communeRate = COMMUNES[year].value[kit.commune];
-  const cantonal = (base, what, withReduction) => {
+  // A salary earned in another commune: the communal income tax is shared (LCP art. 293 let. A
+  // ch. 1 let. c, art. 295A al. 2). The kits keep it to a household whose whole income is salary
+  // earned in that one commune: the rest of the base then goes to it whatever measures the shares
+  // (gross or net income), which no document says.
+  const workCommunes = [...new Set((Y.salaries ?? []).map((s) => s.workCommune ?? kit.commune))];
+  const workElsewhere = workCommunes.find((c) => c !== kit.commune);
+  if (workElsewhere) {
+    const salaries = (Y.salaries ?? []).reduce((s, x) => s + x.gross, 0);
+    if (workCommunes.length !== 1 || gross(icc) !== salaries) {
+      throw new Error(
+        `${kit.slug} ${year}: a salary in another commune with other income or several communes: the measure of the shares is not spelled out; choose other facts`,
+      );
+    }
+  }
+  const cantonal = (base, what, withReduction, split) => {
     if (base % 5000 !== 0)
       throw new Error(
         `${kit.slug} ${year}: ${what} base tax ${fr(base)} is not a multiple of CHF 50; choose other amounts`,
@@ -919,10 +968,25 @@ export function computeKit(kit, year) {
       ? exact5((base + cc) * GE.reduction.value, 1000, `${what} reduction`)
       : 0;
     const hc = exact5(base * GE.homeCare.value, 1000, `${what} home care`);
-    const comm = exact5(base * communeRate, 10_000, `${what} communal`);
-    return { cc, red, hc, comm };
+    if (!split) {
+      const comm = exact5(base * communeRate, 10_000, `${what} communal`);
+      return { cc, red, hc, comm };
+    }
+    const pp = PRIVILEGED[year].value[kit.commune];
+    const privileged = exact5(base * pp, 100, `${what} privileged share`);
+    const privilegedTax = exact5(privileged * communeRate, 10_000, `${what} privileged communal`);
+    const rest = base - privileged;
+    const workRate = COMMUNES[year].value[split];
+    const restTax = exact5(rest * workRate, 10_000, `${what} communal of ${split}`);
+    return {
+      cc,
+      red,
+      hc,
+      comm: privilegedTax + restTax,
+      split: { pp, privileged, privilegedTax, rest, workRate, restTax },
+    };
   };
-  const inc = cantonal(incomeBase, 'income', true);
+  const inc = cantonal(incomeBase, 'income', true, workElsewhere);
   const cantonalIncome = incomeBase + inc.cc - inc.red + inc.hc;
 
   // ICC wealth tax.
@@ -999,11 +1063,17 @@ export function computeKit(kit, year) {
         `Base ${fr(incomeBase)} + 47.5 % ${fr(inc.cc)} - 12 % of ${fr(incomeBase + inc.cc)} ${fr(inc.red)} + 1 % home care ${fr(inc.hc)} = ${fr(cantonalIncome)} (each exact).`,
         GE.cantonalCentimes.source,
       ),
-      communalIncome: r(
-        inc.comm,
-        `${communeRate / 100} centimes of ${kit.commune} on the base ${fr(incomeBase)}: ${fr(inc.comm)} (all income earned in ${kit.commune}, so no share for another commune).`,
-        `${COMMUNES[year].source}; ${GUIDE} p. 48; ge-na-law-lcp art. 293 let. A and 295A`,
-      ),
+      communalIncome: inc.split
+        ? r(
+            inc.comm,
+            `The privileged share of ${kit.commune}, ${inc.split.pp} % of the base ${fr(incomeBase)}: ${fr(inc.split.privileged)}, at its ${communeRate / 100} centimes: ${fr(inc.split.privilegedTax)}; the rest ${fr(inc.split.rest)} goes to ${workElsewhere}, where the whole income is earned (a salary, box 8 of the certificate), at its ${inc.split.workRate / 100} centimes: ${fr(inc.split.restTax)}. Total ${fr(inc.comm)} (each exact).`,
+            `${PRIVILEGED[year].source}; ${COMMUNES[year].source}; ge-na-law-lcp art. 293 let. A ch. 1 let. c and ch. 2 let. c, art. 295A al. 1 and 2; ${GUIDE} p. 17`,
+          )
+        : r(
+            inc.comm,
+            `${communeRate / 100} centimes of ${kit.commune} on the base ${fr(incomeBase)}: ${fr(inc.comm)} (all income earned in ${kit.commune}, so no share for another commune).`,
+            `${COMMUNES[year].source}; ${GUIDE} p. 48; ge-na-law-lcp art. 293 let. A and 295A`,
+          ),
       wealthLines: wealth.map((l) => ({ ...l, person: who(l.person) })),
       grossWealth: r(grossWealth, 'Total gross wealth.', `${GUIDE} p. 16`),
       netWealth: r(netWealth, 'Gross wealth less debts.', `${GUIDE} p. 37`),

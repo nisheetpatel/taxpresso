@@ -24,8 +24,13 @@ export interface LedgerRoute {
   to: string | { A: string; B: string };
   /** The column, when the rubric has several and the value fills one of them. */
   column?: FormColumn;
-  /** One line per document on a repeating rubric (11.10-1, 11.10-2), with the issuer in this field. */
-  line?: { issuerField?: string };
+  /**
+   * One line per document on a repeating rubric (11.10-1, 11.10-2), with the issuer in this field,
+   * and the code of the commune where the person works in `communeField` (the form's "Code
+   * commune" of each salary line: ge-2025-declaration-specimen p. 5 and 6; outside the canton, the
+   * commune of residence's, ge-2025-guide-declaration-pp p. 17).
+   */
+  line?: { issuerField?: string; communeField?: string };
   /** Only when another value read from the same document says so. */
   when?: { key: Key2026; is: string | boolean; not?: boolean };
   /** Only for values read on documents of these kinds, or (unless) not on these kinds. */
@@ -68,7 +73,7 @@ export const LEDGER_ROUTES_2026: readonly LedgerRoute[] = [
   {
     key: 'salary.base',
     to: perPerson('11.10', '21.10'),
-    line: { issuerField: 'employer' },
+    line: { issuerField: 'employer', communeField: 'commune' },
     source: `${cs('1')}; ${GUIDE} p. 17`,
   },
   { key: 'salary.board_lodging', to: perPerson('11.12', '21.12'), source: cs('2') },
@@ -416,6 +421,15 @@ export function itemsFromLedger(input: LedgerInput): {
   const arrived = facts.some(
     (f) => f.key === 'profile.moved' && f.person === 'household' && f.value === 'from_abroad',
   );
+  // The code of the commune where each person works, as the form asks it on each salary line:
+  // outside the canton, the commune of residence's (guide p. 17). Not answered: none.
+  const answered = (key: string, person: Owner) =>
+    facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
+  const workCode = (person: Owner): string | undefined => {
+    const where = answered('profile.work_commune', person);
+    const slug = where === 'outside_geneva' ? answered('profile.commune', 'household') : where;
+    return typeof slug === 'string' ? COMMUNE_CODES_2025[slug as CommuneSlug] : undefined;
+  };
   for (const fact of facts) {
     const routes = LEDGER_ROUTES_2026.filter((r) => r.key === fact.key);
     if (routes.length === 0) continue;
@@ -479,6 +493,10 @@ export function itemsFromLedger(input: LedgerInput): {
       if (value.text !== undefined) item.text = value.text;
       if (route.line?.issuerField && doc?.issuer) {
         item.fields = { ...item.fields, [route.line.issuerField]: doc.issuer };
+      }
+      const workplace = route.line?.communeField ? workCode(person) : undefined;
+      if (route.line?.communeField && workplace) {
+        item.fields = { ...item.fields, [route.line.communeField]: workplace };
       }
       item.statuses.push(fact.status);
       item.factIds.push(fact.id);

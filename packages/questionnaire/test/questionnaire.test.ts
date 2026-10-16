@@ -63,6 +63,7 @@ const SINGLE_EMPLOYEE = {
   moved: 'no',
   'income_sources:p1': ['salary'],
   'employers:p1': 1,
+  'work_commune:p1': 'Meyrin',
   'residence:p1': 'swiss',
   'pillar3a:p1': 'yes',
   'lpp_buyin:p1': false,
@@ -85,15 +86,15 @@ describe('Geneva questionnaire 2026', () => {
     expect('fr' in q.text && q.text.fr).toMatch(new RegExp(`2026${NBSP}\\?$`));
   });
 
-  it('asks a single employee 17 questions, the canton first, then lists what is missing', () => {
+  it('asks a single employee 18 questions, the canton first, then lists what is missing', () => {
     const e = engine();
     const ledger = new Ledger(2026, KEYS_2026);
     const asked = walk(e, ledger, SINGLE_EMPLOYEE);
     expect(asked).toEqual(Object.keys(SINGLE_EMPLOYEE));
     // About 15 for a typical household (SPEC.md section 6): the commute adds its cost and the
-    // lunches away from home, which the federal travel and meal deductions need, and the canton
-    // comes first.
-    expect(asked.length).toBeLessThanOrEqual(17);
+    // lunches away from home, which the federal travel and meal deductions need, the commune of
+    // work shares the communal tax (ge-na-law-lcp art. 295A), and the canton comes first.
+    expect(asked.length).toBeLessThanOrEqual(18);
     expect(ledger.get('commute.transit_cost', 'p1')?.value).toBe(125_050);
     const snap = e.snapshot(ledger);
     expect(e.next(snap)).toBeUndefined();
@@ -117,10 +118,68 @@ describe('Geneva questionnaire 2026', () => {
       'No children',
       'Meyrin',
       '1 employer',
+      'Works in Meyrin',
       'Pays into 3a',
       '2 banks',
     ]);
     expect(e.notSupported(snap)).toEqual([]);
+  });
+
+  // The commune of work: the communes, then outside the canton and several communes (the latter
+  // not supported yet); a commune by its name, an option by its value or its label.
+  it('asks each salaried person the commune where they work, with the choices besides', () => {
+    const e = engine();
+    const ledger = new Ledger(2026, KEYS_2026);
+    walk(e, ledger, {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 0,
+      commune: 'Onex',
+      moved: 'no',
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary', 'pension'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+    });
+    const snap = e.snapshot(ledger);
+    const slot = e.next(snap)!;
+    expect(slot.id).toBe('work_commune:p1');
+    expect(slot.question.group).toBe('basics');
+    const shown = e.render(slot, snap, 'fr');
+    expect(shown).toMatchObject({
+      type: 'commune',
+      text: `Dans quelle commune travaillez-vous${NBSP}?`,
+    });
+    expect(shown.options).toHaveLength(COMMUNES_2026.length + 2);
+    expect(shown.options!.slice(-2)).toEqual([
+      { value: 'outside_geneva', label: 'Hors du canton de Genève', notSupported: false },
+      {
+        value: 'several_communes',
+        label: 'Dans plusieurs communes genevoises',
+        notSupported: true,
+      },
+    ]);
+    e.answer(ledger, 'work_commune:p1', 'Ville de Genève', USER);
+    e.answer(ledger, 'work_commune:p2', 'Outside the canton of Geneva', USER);
+    expect(ledger.get('profile.work_commune', 'p1')?.value).toBe('geneve');
+    expect(ledger.get('profile.work_commune', 'p2')?.value).toBe('outside_geneva');
+    const after = e.snapshot(ledger);
+    const p2 = after.slots.find((s) => s.id === 'work_commune:p2')!;
+    expect(e.describe(p2, 'fr')).toBe('Hors du canton de Genève');
+    expect(e.chips(after, 'en')).toEqual(
+      expect.arrayContaining(['Works in Genève', 'Partner: Works outside Geneva']),
+    );
+    expect(e.notSupported(after)).toEqual([]);
+    expect(() => e.answer(ledger, 'work_commune:p1', 'Lausanne', USER)).toThrow(
+      /not a Geneva commune, nor outside_geneva/,
+    );
+    e.answer(ledger, 'work_commune:p1', 'several_communes', USER);
+    expect(e.notSupported(e.snapshot(ledger)).map((n) => n.what.en)).toEqual([
+      'Work in more than one Geneva commune (the communal tax is shared between them)',
+    ]);
+    // Only salaried people are asked.
+    e.answer(ledger, 'income_sources:p2', ['pension'], USER);
+    expect(e.snapshot(ledger).slots.map((s) => s.id)).not.toContain('work_commune:p2');
   });
 
   it('documents satisfy requirements; optional ones can be waived', () => {
@@ -251,6 +310,7 @@ describe('Geneva questionnaire 2026', () => {
       moved: 'no',
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'residence:p1': 'permit_c',
       'pillar3a:p1': false,
       'lpp_buyin:p1': false,
@@ -304,6 +364,7 @@ describe('Geneva questionnaire 2026', () => {
       moved: 'no',
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'residence:p1': 'permit_c',
       'pillar3a:p1': false,
       'lpp_buyin:p1': false,
@@ -765,6 +826,7 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       'income_sources:p1': ['salary'],
       'income_sources:p2': ['replacement_income'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'residence:p1': 'permit_other',
       'employer_in_switzerland:p1': true,
       'residence:p2': 'permit_other',
@@ -808,7 +870,9 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       'income_sources:p1': ['salary'],
       'income_sources:p2': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'employers:p2': 1,
+      'work_commune:p2': 'outside_geneva',
       'residence:p1': 'swiss',
     });
     expect(asked).not.toContain('residence:p2');
@@ -836,6 +900,7 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       ...START,
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'residence:p1': 'permit_other',
       'employer_in_switzerland:p1': true,
       'tou:p1': 'no',
@@ -859,7 +924,9 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       'income_sources:p1': ['salary'],
       'income_sources:p2': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'employers:p2': 1,
+      'work_commune:p2': 'outside_geneva',
       'residence:p1': 'permit_other',
       'employer_in_switzerland:p1': true,
       'residence:p2': 'permit_other',
@@ -883,6 +950,7 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       ...START,
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'residence:p1': 'other',
     });
     expect(e.next(e.snapshot(card))?.id).toBe('taxed_at_source:p1');
@@ -898,6 +966,7 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       ...START,
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'residence:p1': 'permit_other',
       'employer_in_switzerland:p1': false,
     });
@@ -941,7 +1010,9 @@ describe('tax at source, worked out from plain facts (never asked where the law 
       'income_sources:p1': ['salary'],
       'income_sources:p2': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Genève',
       'employers:p2': 1,
+      'work_commune:p2': 'outside_geneva',
       'residence:p1': p1,
     });
     for (const [p1, askedSpouse] of [

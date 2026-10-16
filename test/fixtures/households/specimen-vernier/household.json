@@ -1,0 +1,25 @@
+{
+  "kit": "specimen-vernier",
+  "household": "Léa Spécimen, single, lives in Vernier, works in the City of Geneva",
+  "note": "The answers this invented household gives, as answer_question takes them (id: value), money in francs: the same for every year, plus each year’s own (answersByYear).",
+  "answers": {
+    "canton": "GE",
+    "civil_status": "single",
+    "children": 0,
+    "commune": "Vernier",
+    "moved": "no",
+    "income_sources:p1": ["salary"],
+    "employers:p1": 1,
+    "work_commune:p1": "Ville de Genève",
+    "residence:p1": "swiss",
+    "pillar3a:p1": true,
+    "lpp_buyin:p1": false,
+    "commute:p1": "public_transport",
+    "commute_transit_cost:p1": 500,
+    "meal_days:p1": 0,
+    "banks": 1,
+    "crypto": false,
+    "payments": [],
+    "special": []
+  }
+}

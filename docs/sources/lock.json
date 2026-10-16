@@ -5962,5 +5962,45 @@
     "content_type": "text/html;charset=UTF-8",
     "retrieved_at": "2026-10-14T19:34:00.000Z",
     "status": "ok"
+  },
+  "ge-na-part-privilegiee-page": {
+    "url": "https://www.ge.ch/document/fiscalite-communes-part-privilegiee",
+    "final_url": "https://www.ge.ch/document/fiscalite-communes-part-privilegiee",
+    "file": "ge/files/ge-na-part-privilegiee-page.html",
+    "bytes": 95682,
+    "sha256": "01c9c1f615afc5aded1069ef27ba54476f54934851b6f207ec016230d2b4dc0b",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-10-16T14:08:14.581Z",
+    "status": "ok"
+  },
+  "ge-na-law-rdlcp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_05p04.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_05p04.htm",
+    "file": "ge/files/ge-na-law-rdlcp.html",
+    "bytes": 354792,
+    "sha256": "9f306cc8eb8f567e57c7ac14711821778f2ec862e1ce93c928f4e444f2a70c38",
+    "content_type": "text/html",
+    "retrieved_at": "2026-10-16T14:08:14.615Z",
+    "status": "ok"
+  },
+  "ge-2025-part-privilegiee-communique": {
+    "url": "https://www.ge.ch/document/37160/telecharger",
+    "final_url": "https://www.ge.ch/document/37160/telecharger",
+    "file": "ge/files/ge-2025-part-privilegiee-communique.pdf",
+    "bytes": 178737,
+    "sha256": "df63fb69e317086c2f9fa99b645b070c3f9e0cf6184400d653ce9d0d8a161844",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-10-16T14:08:14.841Z",
+    "status": "ok"
+  },
+  "ge-na-ata-920-2014-repartition-intercommunale": {
+    "url": "https://justice.ge.ch/apps/decis/fr/ata/file/2014/0009/ATA_000920_2014_A_3652_2012.pdf",
+    "final_url": "https://justice.ge.ch/apps/decis/fr/ata/file/2014/0009/ATA_000920_2014_A_3652_2012.pdf",
+    "file": "ge/files/ge-na-ata-920-2014-repartition-intercommunale.pdf",
+    "bytes": 168234,
+    "sha256": "c18a992c6b2a5dd816c511e554f8858271a4ff66a3448e0be882900078fbb1fc",
+    "content_type": "application/x-download;name=\"ATA_000920_2014_A_3652_2012.pdf\"",
+    "retrieved_at": "2026-10-16T14:08:14.916Z",
+    "status": "ok"
   }
 }

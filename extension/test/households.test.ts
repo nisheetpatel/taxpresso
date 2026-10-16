@@ -1,4 +1,4 @@
-// The filing kits end to end (test/fixtures/households/README.md): five invented Geneva households
+// The filing kits end to end (test/fixtures/households/README.md): six invented Geneva households
 // whose tax was worked out by hand from the official documents (expected.json, written by
 // ground-truth.mjs, which imports nothing from Taxpresso). For each kit and each year it covers:
 // a fresh Taxpresso folder (a temporary one, never ~/Documents/Taxpresso) with the documents dropped
@@ -266,6 +266,17 @@ async function runKit(slug: string, year: number) {
     })) as { status: number; body: DashboardState & { confidence?: string } };
     expect(state.status).toBe(200);
     expect(state.body.confidence).toBe('exact');
+
+    // 6. Each salary line of the copy panel carries the code of the commune where it is earned
+    // ("Code commune", ge-2025-declaration-specimen p. 5 and 6; ge-2025-guide-declaration-pp p. 17).
+    const salaries = (kit.years[year]!.salaries ?? []) as { workCommuneCode?: string }[];
+    const lines = state.body.copyPanel.sections
+      .flatMap((s) => s.groups.flatMap((g) => g.rows))
+      .filter((r) => r.key === '11.10' || r.key === '21.10');
+    expect(lines).toHaveLength(salaries.length);
+    expect(lines.map((r) => r.fields.find((f) => f.id === 'commune')?.value).sort()).toEqual(
+      salaries.map((s) => s.workCommuneCode ?? kit.communeCode).sort(),
+    );
     return { out, expected };
   } finally {
     await client.close();

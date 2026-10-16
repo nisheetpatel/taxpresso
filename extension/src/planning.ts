@@ -624,6 +624,8 @@ const TOU_ASSUMPTION_TEXT: Record<string, string> = {
   values_to_confirm: 'Some figures come from documents the user has not confirmed yet.',
   icc_2025_scale: 'Geneva tax on the 2025 scale (2026 is published in January 2027).',
   home_commune_rate: 'The communal part at the home commune rate only.',
+  work_commune_split:
+    'The communal part shared with the commune where the salary is earned, by gross income (not spelled out in the documents).',
   net_from_gross: 'Net salary taken as 88 % of the gross.',
   commune_default: 'Commune unknown: City of Geneva assumed.',
   no_income_for_some: 'No salary for one person: counted as zero.',

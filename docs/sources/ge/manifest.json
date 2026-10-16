@@ -541,7 +541,7 @@
     "verified_on": "2026-10-13",
     "priority": "core",
     "why_needed": "The privileged share (part privilégiée) of each of the 45 communes for tax year 2026, needed to split the communal tax between the commune of residence and the commune of work.",
-    "notes": "21-page weekly communiqué; the table is on p. 11 (Fixation de la part privilégiée de chaque commune pour 2026). The AFC table ge-2025-communal-centimes-pdf stops at 2025. The Conseil d'Etat fixes the share for the next year each October (the 2027 shares are in the communiqué of 7 October 2026)."
+    "notes": "21-page weekly communiqué; the section and its table are on p. 12 as printed and in its table of contents (PDF page 13): Fixation de la part privilégiée de chaque commune pour 2026, with how the share works (\"le solde étant attribué à la commune d'activité\"). The AFC table ge-2025-communal-centimes-pdf stops at 2025. The Conseil d'Etat fixes the share for the next year each October (the 2027 shares are in the communiqué of 7 October 2026)."
   },
   {
     "id": "ge-2025-guide-independants",
@@ -734,5 +734,69 @@
     "priority": "reference",
     "why_needed": "From tax period 2026, the tax value of villas and PPE flats is indexed each year by a coefficient built from federal and cantonal price indices (art. 3 to 7): the value for the year is the AFC's, as its letter gives it, never computed by Taxpresso.",
     "notes": "In force 1 January 2026. Added 14 October 2026 by the property agent."
+  },
+  {
+    "id": "ge-2025-part-privilegiee-communique",
+    "canton": "GE",
+    "doc_type": "communal_rates",
+    "title": "Communiqué hebdomadaire du Conseil d'Etat du 16 octobre 2024: Fixation de la part privilégiée de chaque commune (pour 2025)",
+    "tax_year": 2025,
+    "language": "fr",
+    "url": "https://www.ge.ch/document/37160/telecharger",
+    "format": "pdf",
+    "publisher": "Chancellerie d'Etat, République et canton de Genève",
+    "published": "2024-10-16",
+    "verified_on": "2026-10-16",
+    "priority": "core",
+    "why_needed": "The 2025 privileged share of each commune and how it splits the communal tax: the share of the base tax the commune of residence taxes at its own centimes, \"le solde étant attribué à la commune d'activité (au taux de centime de la commune d'activité)\". The 2025 counterpart of ge-2026-part-privilegiee-communique, for the work commune question.",
+    "notes": "16-page weekly communiqué; the section \"Fixation de la part privilégiée de chaque commune\" and its table for 2025 are on p. 8 (the table of contents says 8). Landing page https://www.ge.ch/document/communique-hebdomadaire-du-conseil-etat-du-16-octobre-2024. Its 45 shares agree with the AFC's 2025 column (ge-2025-communal-centimes-pdf). Added 16 October 2026 by the work commune agent."
+  },
+  {
+    "id": "ge-na-law-rdlcp",
+    "canton": "GE",
+    "doc_type": "law",
+    "title": "Règlement d'application de diverses dispositions de la loi générale sur les contributions publiques (RDLCP), rsGE D 3 05.04",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_05p04.htm",
+    "format": "html",
+    "publisher": "SILGENEVE",
+    "published": "2026-01-01",
+    "verified_on": "2026-10-16",
+    "priority": "useful",
+    "why_needed": "The LCP's regulation: the scale of the privileged share (art. 11A, 11B) and the 2026 share of each commune (art. 11C). Its chapter on the intercommunal split (art. 12A to 13A, from the 1956 regulation it took in, art. 59 ch. 8) is repealed: no regulation in force says how the rest of the base tax is measured between the communes.",
+    "notes": "rsGE D 3 05.04, of 30 December 1958, consolidated to 1 January 2026. Partie II, chapitre I: centimes additionnels communaux (art. 293 let. A and B LCP). Added 16 October 2026 by the work commune agent."
+  },
+  {
+    "id": "ge-na-part-privilegiee-page",
+    "canton": "GE",
+    "doc_type": "communal_rates",
+    "title": "Fiscalité des communes - part privilégiée (ge.ch)",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://www.ge.ch/document/fiscalite-communes-part-privilegiee",
+    "format": "html",
+    "publisher": "Service des affaires communales, République et canton de Genève",
+    "published": "2020-01-30",
+    "verified_on": "2026-10-16",
+    "priority": "useful",
+    "why_needed": "The canton's own words for the split: the privileged share \"permet de répartir les impôts des personnes physiques entre la commune de domicile (appelée part privilégiée) et la commune de travail (appelée part restante)\", 20 % to 80 % by the commune's financial capacity.",
+    "notes": "Page with the table Part privilégiée 2018 à 2026 (https://www.ge.ch/document/19513/telecharger). Added 16 October 2026 by the work commune agent."
+  },
+  {
+    "id": "ge-na-ata-920-2014-repartition-intercommunale",
+    "canton": "GE",
+    "doc_type": "other",
+    "title": "Cour de justice, Chambre administrative, ATA/920/2014 du 25 novembre 2014 (A/3652/2012): ICC 2007 et 2008, répartition intercommunale",
+    "tax_year": null,
+    "language": "fr",
+    "url": "https://justice.ge.ch/apps/decis/fr/ata/file/2014/0009/ATA_000920_2014_A_3652_2012.pdf",
+    "format": "pdf",
+    "publisher": "Pouvoir judiciaire, République et canton de Genève",
+    "published": "2014-11-25",
+    "verified_on": "2026-10-16",
+    "priority": "useful",
+    "why_needed": "The only official document in the library that shows the communal parts of an assessment: the ICC bordereau comes with a \"tableau de répartition intercommunale du revenu imposable\" (the taxable income attributed to each commune) and the communal tax as the privileged share and each commune's part. The salary is taxed with the code of the commune of work (art. 293 LCP): the court rejected the appeal against it.",
+    "notes": "Decision on tax years 2007 and 2008 (the LCP articles it applies are unchanged). The facts, p. 2 and 3, give the table's amounts and each commune's tax; nothing says how the deductions are attributed between the communes. Added 16 October 2026 by the work commune agent."
   }
 ]

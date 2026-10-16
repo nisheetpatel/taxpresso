@@ -694,11 +694,14 @@ export class Workspace {
           ? (profitOf(known?.people, person) ?? money('plan.business_profit', person))
           : undefined;
         const fund = this.ledger.get('plan.has_pension_fund', person)?.value;
+        // Where the salary is earned, as the tax reads it (rules-ge, engineInputFromFacts).
+        const work = known?.people.find((x) => x.id === person)?.employments?.[0]?.workCommune;
         return {
           person,
           ...(gross !== undefined ? { grossCentimes: gross } : {}),
           ...(net !== undefined ? { netCentimes: net } : {}),
           ...(business !== undefined ? { businessCentimes: business } : {}),
+          ...(work ? { workCommune: work } : {}),
           // Most employees have one, the self-employed without a salary usually not; the user can
           // say otherwise.
           hasPensionFund: self && !salaried ? fund === true : fund !== false,

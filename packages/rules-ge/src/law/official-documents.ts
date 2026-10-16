@@ -12,6 +12,12 @@ export interface OfficialDocument {
 }
 
 export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
+  'ge-2025-part-privilegiee-communique': {
+    title:
+      "Communiqué hebdomadaire du Conseil d'Etat du 16 octobre 2024: Fixation de la part privilégiée de chaque commune (pour 2025)",
+    url: 'https://www.ge.ch/document/37160/telecharger',
+    pdf: true,
+  },
   'ge-2026-part-privilegiee-communique': {
     title:
       "Communiqué hebdomadaire du Conseil d'Etat du 15 octobre 2025: Fixation de la part privilégiée de chaque commune pour 2026",

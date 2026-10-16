@@ -549,6 +549,34 @@ describe('the basics card', () => {
     expect(writes.at(-1)).toEqual([{ plan: { person: 'p1', field: 'gross', value: 80_000 } }]);
   });
 
+  it('asks where each person works with a list of communes, outside the canton last', () => {
+    const work = q('work_commune:p1', {
+      type: 'commune',
+      text: 'In which commune do you work?',
+      options: [
+        { value: 'carouge', label: 'Carouge', notSupported: false },
+        { value: 'geneve', label: 'Genève', notSupported: false },
+        { value: 'outside_geneva', label: 'Outside the canton of Geneva', notSupported: false },
+      ],
+    });
+    const state = household({ groups: groups({ basics: [...groups().basics, work] }) });
+    const { tree, writes } = card(state);
+    const select = all(
+      tree,
+      (e) => e.type === 'select' && e.props['aria-labelledby'] === 'b-work_commune-p1',
+    )[0]!;
+    expect(ofType([select], 'option').map(textOf)).toEqual([
+      'Choose your commune',
+      'Carouge',
+      'Genève',
+      'Outside the canton of Geneva',
+    ]);
+    (select.props.onChange as (e: { target: { value: string } }) => void)({
+      target: { value: 'geneve' },
+    });
+    expect(writes).toEqual([[{ answer: { id: 'work_commune:p1', value: 'geneve' } }]]);
+  });
+
   it('shows a field only when its question applies; the partner’s rows only for a couple', () => {
     const before = household({
       groups: groups({ basics: [q('canton', { options: opts('GE', 'ZH') }), q('civil_status')] }),
@@ -1047,5 +1075,21 @@ describe('the commune', () => {
     // The rest of the state as GET /state gives it.
     expect(pages.page).toBe(state.page);
     expect(pages.rough).toBe(state.rough);
+  });
+
+  it('gives the commune where each person works the same communes, then its own choices', () => {
+    const outside = { value: 'outside_geneva', label: 'Outside the canton', notSupported: false };
+    const basics = [
+      q('canton', { answered: true, value: 'GE' }),
+      q('commune', { type: 'commune', answered: true, value: 'carouge' }),
+      q('work_commune:p1', { type: 'commune', options: [outside] }),
+    ];
+    const state = household({ groups: groups({ basics }) });
+    // Before the list is in: only its own choices, as the state keeps them.
+    expect(withCommunes(state, undefined).groups.basics[2]!.options).toEqual([outside]);
+    const options = [{ value: 'carouge', label: 'Carouge', notSupported: false }];
+    const pages = withCommunes(state, options);
+    expect(pages.groups.basics[1]!.options).toEqual(options);
+    expect(pages.groups.basics[2]!.options).toEqual([...options, outside]);
   });
 });

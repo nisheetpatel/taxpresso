@@ -17,7 +17,7 @@
 //   ch-2025-ifd-frais-professionnels-progression p. 2 and 3: IFD insurance 1'800 single,
 //     3'700 couple, + 700 per child, 5'550 for a couple paying into neither 2nd pillar nor 3a; the
 //     scales; 263 per child.
-//   ge-2025-communal-centimes-pdf: PP and CA 2025. ge-2026-part-privilegiee-communique p. 11 and
+//   ge-2025-communal-centimes-pdf: PP and CA 2025. ge-2026-part-privilegiee-communique p. 12 and
 //     ge-2026-communal-centimes-arca: PP and CA 2026. ge-na-law-lcp art. 375: taxe personnelle 25.
 //   2026: the federal values from ch-2026-ifd-progression-deductions; the Geneva values are the
 //     2025 ones, flagged as estimates until the 2026 guide (January 2027).

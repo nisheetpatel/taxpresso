@@ -27,4 +27,4 @@ Last year's declaration (SPEC.md section 5.4), written by `node test/fixtures/ma
 
 They are written by `node test/fixtures/make-barcode-fixtures.mjs`, with the generators in `packages/intake/test/barcode-fixtures.mjs` (which the intake and extension tests also use to build such documents on the fly).
 
-`households/`: the filing kits, five invented Geneva households (Carouge, Lancy, Meyrin, Thônex, Onex) with their documents, answers, what Claude reads in them and their tax worked out by hand from the official documents for 2025 and 2026. See `households/README.md`; `make-prior-fixtures.mjs` exports its layout helpers for their last year's declaration. To try one in Claude Desktop: `docs/demo.md`.
+`households/`: the filing kits, six invented Geneva households (Carouge, Lancy, Meyrin, Thônex, Onex, Vernier) with their documents, answers, what Claude reads in them and their tax worked out by hand from the official documents for 2025 and 2026. See `households/README.md`; `make-prior-fixtures.mjs` exports its layout helpers for their last year's declaration. To try one in Claude Desktop: `docs/demo.md`.

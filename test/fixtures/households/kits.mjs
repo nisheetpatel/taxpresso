@@ -1,4 +1,4 @@
-// The five invented Geneva households of the filing kits (test/fixtures/households/README.md).
+// The six invented Geneva households of the filing kits (test/fixtures/households/README.md).
 // Plain data, one place: the document generator (make.mjs) writes their papers from it, and the
 // hand calculation (ground-truth.mjs) works their tax out from it, never from Taxpresso's code.
 //
@@ -21,6 +21,7 @@ const ADDR = {
   meyrin: { street: 'Rue du Test 4', zip: '1217', city: 'Meyrin' },
   thonex: { street: 'Chemin des Fictifs 10', zip: '1226', city: 'Thônex' },
   onex: { street: 'Avenue du Modèle 7', zip: '1213', city: 'Onex' },
+  vernier: { street: "Chemin de l'Échantillon 14", zip: '1214', city: 'Vernier' },
 };
 
 /** The insurers, banks and other issuers: invented, none is a real company. */
@@ -158,6 +159,7 @@ export const KITS = [
       moved: 'no',
       'income_sources:p1': ['salary'],
       'employers:p1': 1,
+      'work_commune:p1': 'Carouge',
       'residence:p1': 'swiss',
       'pillar3a:p1': true,
       'lpp_buyin:p1': false,
@@ -306,6 +308,8 @@ export const KITS = [
       'income_sources:p2': ['salary'],
       'employers:p1': 1,
       'employers:p2': 1,
+      'work_commune:p1': 'Lancy',
+      'work_commune:p2': 'Lancy',
       'residence:p1': 'swiss',
       'pillar3a:p1': true,
       'pillar3a:p2': true,
@@ -507,6 +511,8 @@ export const KITS = [
       'income_sources:p2': ['salary'],
       'employers:p1': 1,
       'employers:p2': 1,
+      'work_commune:p1': 'Meyrin',
+      'work_commune:p2': 'Meyrin',
       'residence:p1': 'permit_other',
       'residence:p2': 'permit_other',
       'employer_in_switzerland:p1': true,
@@ -964,6 +970,124 @@ export const KITS = [
             name: 'Compte privé',
             iban: 'CH0000000000000105001',
             balance: chf(9_100),
+            interest: 0,
+          },
+        ],
+      },
+    },
+  },
+  // 6. Single, salaried, lives in Vernier and works in the City of Geneva: the communal tax shared
+  // between the commune of residence (its privileged share) and the commune of work (the rest).
+  // Her salary is all her income, so the rest goes to Genève whatever measures the shares.
+  {
+    slug: 'specimen-vernier',
+    title: 'Léa Spécimen, single, lives in Vernier, works in the City of Geneva',
+    story:
+      'Léa is a lawyer employed full time by a firm in the City of Geneva; she lives in Vernier and takes the tram to work. She pays into a pension fund through her employer and the maximum into her pillar 3a, and keeps her savings in a current account that earns no interest. Her salary is all her income, so the part of her communal tax that doesn’t stay in Vernier goes to Genève.',
+    commune: 'Vernier',
+    communeCode: '6643',
+    address: ADDR.vernier,
+    civil: 'single',
+    people: [
+      {
+        id: 'p1',
+        first: 'Léa',
+        last: 'Spécimen',
+        born: '1990-07-02',
+        ahv: '756.0000.1009.99',
+        job: 'Juriste (fictive)',
+      },
+    ],
+    children: [],
+    answers: {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      commune: 'Vernier',
+      moved: 'no',
+      'income_sources:p1': ['salary'],
+      'employers:p1': 1,
+      'work_commune:p1': 'Ville de Genève',
+      'residence:p1': 'swiss',
+      'pillar3a:p1': true,
+      'lpp_buyin:p1': false,
+      'commute:p1': 'public_transport',
+      'commute_transit_cost:p1': 500,
+      'meal_days:p1': 0,
+      banks: 1,
+      crypto: false,
+      payments: [],
+      special: [],
+    },
+    years: {
+      2025: {
+        salaries: [
+          {
+            person: 'p1',
+            employer: {
+              name: 'Etude Exemple Avocats SA',
+              street: 'Rue du Spécimen 21',
+              zip: '1204',
+              city: 'Genève',
+            },
+            workCommune: 'Genève',
+            workCommuneCode: '6621',
+            base: chf(130_000),
+            gross: chf(130_000),
+            social: chf(8_970),
+            lppOrdinary: chf(9_030),
+          },
+        ],
+        commute: { p1: { transit: chf(500) } },
+        pillar3a: [{ person: 'p1', paid: chf(7_258) }],
+        health: {
+          members: [
+            { person: 'p1', name: 'Léa Spécimen', basic: chf(3_657), supplementary: chf(600) },
+          ],
+        },
+        bankAccounts: [
+          {
+            person: 'p1',
+            bank: ISSUERS.bank,
+            name: 'Compte privé',
+            iban: 'CH0000000000000106001',
+            balance: chf(25_400),
+            interest: 0,
+          },
+        ],
+      },
+      2026: {
+        salaries: [
+          {
+            person: 'p1',
+            employer: {
+              name: 'Etude Exemple Avocats SA',
+              street: 'Rue du Spécimen 21',
+              zip: '1204',
+              city: 'Genève',
+            },
+            workCommune: 'Genève',
+            workCommuneCode: '6621',
+            base: chf(132_000),
+            gross: chf(132_000),
+            social: chf(9_108),
+            lppOrdinary: chf(9_092),
+          },
+        ],
+        commute: { p1: { transit: chf(500) } },
+        pillar3a: [{ person: 'p1', paid: chf(7_258) }],
+        health: {
+          members: [
+            { person: 'p1', name: 'Léa Spécimen', basic: chf(5_457), supplementary: chf(600) },
+          ],
+        },
+        bankAccounts: [
+          {
+            person: 'p1',
+            bank: ISSUERS.bank,
+            name: 'Compte privé',
+            iban: 'CH0000000000000106001',
+            balance: chf(31_800),
             interest: 0,
           },
         ],
