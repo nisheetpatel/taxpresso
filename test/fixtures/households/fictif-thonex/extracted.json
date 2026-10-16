@@ -1,0 +1,164 @@
+{
+  "kit": "fictif-thonex",
+  "note": "What Claude would propose with propose_extraction for each document without a barcode, per tax year (the 2026 documents are written by the end-to-end test with make.mjs). Money as printed on the document.",
+  "years": {
+    "2025": [
+      {
+        "file": "01-rente-avs-bernard-2025.pdf",
+        "kind": "pension_certificate",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2025,
+        "values": [
+          { "key": "pension.amount", "value": "26'460.00", "page": 1 },
+          { "key": "pension.type", "value": "avs_ai", "page": 1 }
+        ]
+      },
+      {
+        "file": "02-attestation-rente-caisse-pension-bernard-2025.pdf",
+        "kind": "pension_certificate",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing.",
+        "owner": "p1"
+      },
+      {
+        "file": "03-rente-avs-monique-2025.pdf",
+        "kind": "pension_certificate",
+        "read": "claude",
+        "person": "p2",
+        "taxYear": 2025,
+        "values": [
+          { "key": "pension.amount", "value": "18'900.00", "page": 1 },
+          { "key": "pension.type", "value": "avs_ai", "page": 1 }
+        ]
+      },
+      {
+        "file": "04-attestation-rente-caisse-pension-monique-2025.pdf",
+        "kind": "pension_certificate",
+        "read": "claude",
+        "person": "p2",
+        "taxYear": 2025,
+        "values": [
+          { "key": "pension.amount", "value": "18'600.00", "page": 1 },
+          { "key": "pension.type", "value": "occupational", "page": 1 }
+        ]
+      },
+      {
+        "file": "05-primes-assurance-maladie-2025.pdf",
+        "kind": "health_premiums",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2025,
+        "values": [{ "key": "health.premiums", "value": "14'758.00", "page": 1 }]
+      },
+      {
+        "file": "06-releve-fiscal-banque-privee-exemple-sa-2025.pdf",
+        "kind": "ech0196_statement",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing."
+      },
+      {
+        "file": "07-valeurs-logement-afc-2025.pdf",
+        "kind": "property_values",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2025,
+        "values": [
+          { "key": "property.tax_value", "value": "716'800.00", "page": 1 },
+          { "key": "property.rental_value", "value": "24'600.00", "page": 1 },
+          { "key": "property.parcel", "value": "4321", "page": 1 }
+        ]
+      },
+      {
+        "file": "08-pret-hypothecaire-banque-hypothecaire-exemple-2025.pdf",
+        "kind": "mortgage_statement",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2025,
+        "values": [
+          { "key": "debt.interest", "value": "4'760.00", "page": 1 },
+          { "key": "debt.balance", "value": "280'000.00", "page": 1 }
+        ]
+      }
+    ],
+    "2026": [
+      {
+        "file": "01-rente-avs-bernard-2026.pdf",
+        "kind": "pension_certificate",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2026,
+        "values": [
+          { "key": "pension.amount", "value": "28'665.00", "page": 1 },
+          { "key": "pension.type", "value": "avs_ai", "page": 1 }
+        ]
+      },
+      {
+        "file": "02-attestation-rente-caisse-pension-bernard-2026.pdf",
+        "kind": "pension_certificate",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing.",
+        "owner": "p1"
+      },
+      {
+        "file": "03-rente-avs-monique-2026.pdf",
+        "kind": "pension_certificate",
+        "read": "claude",
+        "person": "p2",
+        "taxYear": 2026,
+        "values": [
+          { "key": "pension.amount", "value": "20'475.00", "page": 1 },
+          { "key": "pension.type", "value": "avs_ai", "page": 1 }
+        ]
+      },
+      {
+        "file": "04-attestation-rente-caisse-pension-monique-2026.pdf",
+        "kind": "pension_certificate",
+        "read": "claude",
+        "person": "p2",
+        "taxYear": 2026,
+        "values": [
+          { "key": "pension.amount", "value": "18'600.00", "page": 1 },
+          { "key": "pension.type", "value": "occupational", "page": 1 }
+        ]
+      },
+      {
+        "file": "05-primes-assurance-maladie-2026.pdf",
+        "kind": "health_premiums",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2026,
+        "values": [{ "key": "health.premiums", "value": "15'279.00", "page": 1 }]
+      },
+      {
+        "file": "06-releve-fiscal-banque-privee-exemple-sa-2026.pdf",
+        "kind": "ech0196_statement",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing."
+      },
+      {
+        "file": "07-valeurs-logement-afc-2026.pdf",
+        "kind": "property_values",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2026,
+        "values": [
+          { "key": "property.tax_value", "value": "716'800.00", "page": 1 },
+          { "key": "property.rental_value", "value": "24'860.00", "page": 1 },
+          { "key": "property.parcel", "value": "4321", "page": 1 }
+        ]
+      },
+      {
+        "file": "08-pret-hypothecaire-banque-hypothecaire-exemple-2026.pdf",
+        "kind": "mortgage_statement",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2026,
+        "values": [
+          { "key": "debt.interest", "value": "4'480.00", "page": 1 },
+          { "key": "debt.balance", "value": "275'000.00", "page": 1 }
+        ]
+      }
+    ]
+  }
+}

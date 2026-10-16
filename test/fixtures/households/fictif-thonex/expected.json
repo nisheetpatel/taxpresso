@@ -1,0 +1,617 @@
+{
+  "kit": "fictif-thonex",
+  "household": "Bernard and Monique Fictif, retired, their own flat with a mortgage, Thônex",
+  "note": "Worked out by hand from the official documents (test/fixtures/households/ground-truth.mjs, which imports nothing from Taxpresso). Money in centimes. Each figure gives how it was obtained and its source: the manifest id of the document in docs/sources and the page or article.",
+  "years": {
+    "2025": {
+      "taxYear": 2025,
+      "provisional": false,
+      "commune": "Thônex",
+      "icc": {
+        "lines": [
+          {
+            "code": "17.10",
+            "person": "A",
+            "amount": 2646000,
+            "how": "AVS pension of the year, taxable in full: 26'460.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "A",
+            "amount": 4680000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 46'800.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "17.10",
+            "person": "B",
+            "amount": 1890000,
+            "how": "AVS pension of the year, taxable in full: 18'900.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "B",
+            "amount": 1860000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 18'600.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 430000,
+            "how": "Banque Privée Exemple SA, e-tax statement: gross income subject to the withholding tax 4'300.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "15.10",
+            "person": "household",
+            "amount": 1476000,
+            "how": "Rental value from the AFC's letter 24'600.00 less the same abattement of 40 %: 14'760.00 (valeur locative après abattement).",
+            "source": "ge-2025-guide-declaration-pp p. 33 and 34"
+          },
+          {
+            "code": "58.00",
+            "person": "household",
+            "amount": -369000,
+            "how": "Flat upkeep, building over 10 years old: 25 % of 14'760.00 = 3'690.00 (no actual costs claimed).",
+            "source": "ge-2025-guide-declaration-pp p. 33 and 34 (frais d'entretien); ge-na-law-lipp art. 34 let. d"
+          },
+          {
+            "code": "55.00",
+            "person": "household",
+            "amount": -476000,
+            "how": "Mortgage interest paid in the year 4'760.00, under its limit (gross income from wealth 19'060.00 + 50'000).",
+            "source": "ge-2025-guide-declaration-pp p. 37; ge-na-law-lipp art. 34 let. a"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -1475800,
+            "how": "Health insurance premiums paid (basic and supplementary) 14'758.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          }
+        ],
+        "grossIncome": {
+          "amount": 12982000,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 10661200,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 10661200,
+          "how": "Net income 106'612.00 less the family charges 0.00: 106'612.00 (99.00).",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "full",
+        "rateIncome": {
+          "amount": 5330600,
+          "how": "Full splitting: half of 106'612.00 = 53'306.00.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 760000,
+          "how": "The scale at 53'306.00 gives 3'800.00; x 106'612.00 / 53'306.00 = 7'600.00 (example 3).",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-2025-icc-tariff-pdf p. 2; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 994080,
+          "how": "Base 7'600.00 + 47.5 % 3'610.00 - 12 % of 11'210.00 1'345.20 + 1 % home care 76.00 = 9'940.80 (each exact).",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalIncome": {
+          "amount": 334400,
+          "how": "44 centimes of Thônex on the base 7'600.00: 3'344.00 (all income earned in Thônex, so no share for another commune).",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA); ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 23448500,
+            "how": "Banque Privée Exemple SA, e-tax statement (relevé fiscal, F4): taxable value on 31 December 234'485.00.",
+            "source": "ge-2025-guide-declaration-pp p. 43"
+          },
+          {
+            "code": "15.10",
+            "person": "household",
+            "amount": 43008000,
+            "how": "Tax value from the AFC's letter 716'800.00 less the abattement of 40 % (22 years of continuous use from 2004 to 2025, 4 % a year, at most 40 %): 430'080.00.",
+            "source": "ge-2025-guide-declaration-pp p. 33 (abattement; \"Villa occupée de 2010 à 2025, soit 16 ans\"); ge-na-law-lipp art. 50 let. e"
+          },
+          {
+            "code": "55.00",
+            "person": "household",
+            "amount": -28000000,
+            "how": "Banque Hypothécaire Exemple: mortgage on 31 December 280'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 37"
+          }
+        ],
+        "grossWealth": {
+          "amount": 66456500,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 38456500,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -17526400,
+          "how": "Married couple, at most the net wealth: 175'264.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 20930100,
+          "how": "Net wealth 384'565.00 less 175'264.00: 209'301.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "wealthBase": {
+          "amount": 35000,
+          "how": "The base wealth scale at 209'301.00: 350.00.",
+          "source": "ge-2025-guide-declaration-pp p. 49; ge-2025-icc-tariff-pdf p. 5"
+        },
+        "wealthSupplementary": {
+          "amount": 870,
+          "how": "The supplementary scale at 209'301.00: 8.70, no centimes on it.",
+          "source": "ge-2025-guide-declaration-pp p. 50; ge-2025-icc-tariff-pdf p. 5; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 52845,
+          "how": "Base 350.00 + 47.5 % 166.25 + 1 % 3.50 + supplementary 8.70 = 528.45.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalWealth": {
+          "amount": 15400,
+          "how": "44 centimes on 350.00: 154.00.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "communal": {
+          "amount": 349800,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 1399225,
+          "how": "Cantonal income 9'940.80 + cantonal wealth 528.45 + communal 3'498.00 + taxe personnelle 25.00 = 13'992.25.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        },
+        "withholdingTaxCredit": {
+          "amount": 150500,
+          "how": "35 % of the income subject to the withholding tax, to 5 centimes: 1'505.00 (an imputation on the bordereau, not part of the tax).",
+          "source": "ge-2025-guide-declaration-pp p. 39"
+        },
+        "iic": {
+          "amount": 14336,
+          "how": "Impôt immobilier complémentaire, 0.2 per mille of the tax value 716'800.00 (main residence, no abattement, no debts): 143.3600. A tax of its own, not in the total.",
+          "source": "ge-2025-guide-declaration-pp p. 36 (0.2 per mille for the main residence)"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "17.10",
+            "person": "A",
+            "amount": 2646000,
+            "how": "AVS pension of the year, taxable in full: 26'460.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "A",
+            "amount": 4680000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 46'800.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "17.10",
+            "person": "B",
+            "amount": 1890000,
+            "how": "AVS pension of the year, taxable in full: 18'900.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "B",
+            "amount": 1860000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 18'600.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 430000,
+            "how": "Banque Privée Exemple SA, e-tax statement: gross income subject to the withholding tax 4'300.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "15.10",
+            "person": "household",
+            "amount": 2460000,
+            "how": "Gross rental value from the AFC's letter (valeur locative brute): 24'600.00.",
+            "source": "ge-2025-guide-declaration-pp p. 33"
+          },
+          {
+            "code": "58.00",
+            "person": "household",
+            "amount": -492000,
+            "how": "Flat upkeep, building over 10 years old: 20 % of 24'600.00 = 4'920.00.",
+            "source": "ge-2025-guide-declaration-pp p. 33; ch-2025-ifd-instructions-personnes-physiques p. 6 (b, déduction à forfait)"
+          },
+          {
+            "code": "55.00",
+            "person": "household",
+            "amount": -476000,
+            "how": "Mortgage interest 4'760.00, under the limit (income from wealth 28'900.00 + 50'000).",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 11)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -555000,
+            "how": "Insurance premiums and savings interest 14'758.00, at most 5'550.00 (married couple, without pension fund or pillar 3a contributions): 5'550.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2025-ifd-frais-professionnels-progression p. 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          }
+        ],
+        "netIncome": {
+          "amount": 12443000,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [
+          {
+            "code": "59.20",
+            "person": "household",
+            "amount": -280000,
+            "how": "Married couple: 2'800.00.",
+            "source": "ch-2025-ifd-frais-professionnels-progression p. 2; ch-2025-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 31 (59.20)"
+          }
+        ],
+        "taxableIncome": {
+          "amount": 12163000,
+          "how": "Net income 124'430.00 less the social deductions 2'800.00: 121'630.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 12160000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 121'600.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD); ch-2025-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "married",
+        "scaleTax": {
+          "amount": 303700,
+          "how": "The married scale at 121'600.00: 3'037.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 0,
+          "how": "No child.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 303700,
+          "how": "3'037.00 less 0.00, rounded down to 5 centimes: 3'037.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 1702925, "how": "ICC 13'992.25 + IFD 3'037.00.", "source": "" }
+    },
+    "2026": {
+      "taxYear": 2026,
+      "provisional": true,
+      "commune": "Thônex",
+      "icc": {
+        "lines": [
+          {
+            "code": "17.10",
+            "person": "A",
+            "amount": 2866500,
+            "how": "AVS pension of the year, taxable in full: 28'665.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "A",
+            "amount": 4680000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 46'800.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "17.10",
+            "person": "B",
+            "amount": 2047500,
+            "how": "AVS pension of the year, taxable in full: 20'475.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "B",
+            "amount": 1860000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 18'600.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 443200,
+            "how": "Banque Privée Exemple SA, e-tax statement: gross income subject to the withholding tax 4'432.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "15.10",
+            "person": "household",
+            "amount": 1491600,
+            "how": "Rental value from the AFC's letter 24'860.00 less the same abattement of 40 %: 14'916.00 (valeur locative après abattement).",
+            "source": "ge-2025-guide-declaration-pp p. 33 and 34"
+          },
+          {
+            "code": "58.00",
+            "person": "household",
+            "amount": -372900,
+            "how": "Flat upkeep, building over 10 years old: 25 % of 14'916.00 = 3'729.00 (no actual costs claimed).",
+            "source": "ge-2025-guide-declaration-pp p. 33 and 34 (frais d'entretien); ge-na-law-lipp art. 34 let. d"
+          },
+          {
+            "code": "55.00",
+            "person": "household",
+            "amount": -448000,
+            "how": "Mortgage interest paid in the year 4'480.00, under its limit (gross income from wealth 19'348.00 + 50'000).",
+            "source": "ge-2025-guide-declaration-pp p. 37; ge-na-law-lipp art. 34 let. a"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -1527900,
+            "how": "Health insurance premiums paid (basic and supplementary) 15'279.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          }
+        ],
+        "grossIncome": {
+          "amount": 13388800,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 11040000,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 11040000,
+          "how": "Net income 110'400.00 less the family charges 0.00: 110'400.00 (99.00). (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "full",
+        "rateIncome": {
+          "amount": 5520000,
+          "how": "Full splitting: half of 110'400.00 = 55'200.00.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 810000,
+          "how": "The scale at 55'200.00 gives 4'050.00; x 110'400.00 / 55'200.00 = 8'100.00 (example 3). (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-2025-icc-tariff-pdf p. 2; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 1059480,
+          "how": "Base 8'100.00 + 47.5 % 3'847.50 - 12 % of 11'947.50 1'433.70 + 1 % home care 81.00 = 10'594.80 (each exact).",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalIncome": {
+          "amount": 356400,
+          "how": "44 centimes of Thônex on the base 8'100.00: 3'564.00 (all income earned in Thônex, so no share for another commune).",
+          "source": "ge-2026-communal-centimes-arca; ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 22948500,
+            "how": "Banque Privée Exemple SA, e-tax statement (relevé fiscal, F4): taxable value on 31 December 229'485.00.",
+            "source": "ge-2025-guide-declaration-pp p. 43"
+          },
+          {
+            "code": "15.10",
+            "person": "household",
+            "amount": 43008000,
+            "how": "Tax value from the AFC's letter 716'800.00 less the abattement of 40 % (23 years of continuous use from 2004 to 2026, 4 % a year, at most 40 %): 430'080.00.",
+            "source": "ge-2025-guide-declaration-pp p. 33 (abattement; \"Villa occupée de 2010 à 2025, soit 16 ans\"); ge-na-law-lipp art. 50 let. e"
+          },
+          {
+            "code": "55.00",
+            "person": "household",
+            "amount": -27500000,
+            "how": "Banque Hypothécaire Exemple: mortgage on 31 December 275'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 37"
+          }
+        ],
+        "grossWealth": {
+          "amount": 65956500,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 38456500,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -17526400,
+          "how": "Married couple, at most the net wealth: 175'264.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 20930100,
+          "how": "Net wealth 384'565.00 less 175'264.00: 209'301.00. (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "wealthBase": {
+          "amount": 35000,
+          "how": "The base wealth scale at 209'301.00: 350.00.",
+          "source": "ge-2025-guide-declaration-pp p. 49; ge-2025-icc-tariff-pdf p. 5"
+        },
+        "wealthSupplementary": {
+          "amount": 870,
+          "how": "The supplementary scale at 209'301.00: 8.70, no centimes on it.",
+          "source": "ge-2025-guide-declaration-pp p. 50; ge-2025-icc-tariff-pdf p. 5; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 52845,
+          "how": "Base 350.00 + 47.5 % 166.25 + 1 % 3.50 + supplementary 8.70 = 528.45.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalWealth": {
+          "amount": 15400,
+          "how": "44 centimes on 350.00: 154.00.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "communal": {
+          "amount": 371800,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 1486625,
+          "how": "Cantonal income 10'594.80 + cantonal wealth 528.45 + communal 3'718.00 + taxe personnelle 25.00 = 14'866.25. Provisional: Geneva 2026 scales and amounts not published yet.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        },
+        "withholdingTaxCredit": {
+          "amount": 155120,
+          "how": "35 % of the income subject to the withholding tax, to 5 centimes: 1'551.20 (an imputation on the bordereau, not part of the tax).",
+          "source": "ge-2025-guide-declaration-pp p. 39"
+        },
+        "iic": {
+          "amount": 14336,
+          "how": "Impôt immobilier complémentaire, 0.2 per mille of the tax value 716'800.00 (main residence, no abattement, no debts): 143.3600. A tax of its own, not in the total.",
+          "source": "ge-2025-guide-declaration-pp p. 36 (0.2 per mille for the main residence)"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "17.10",
+            "person": "A",
+            "amount": 2866500,
+            "how": "AVS pension of the year, taxable in full: 28'665.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "A",
+            "amount": 4680000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 46'800.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "17.10",
+            "person": "B",
+            "amount": 2047500,
+            "how": "AVS pension of the year, taxable in full: 20'475.00.",
+            "source": "ge-2025-guide-declaration-pp p. 25 (17.10)"
+          },
+          {
+            "code": "13.20",
+            "person": "B",
+            "amount": 1860000,
+            "how": "Pension fund pension (started after 2002), taxable in full: 18'600.00.",
+            "source": "ge-2025-guide-declaration-pp p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 443200,
+            "how": "Banque Privée Exemple SA, e-tax statement: gross income subject to the withholding tax 4'432.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "15.10",
+            "person": "household",
+            "amount": 2486000,
+            "how": "Gross rental value from the AFC's letter (valeur locative brute): 24'860.00.",
+            "source": "ge-2025-guide-declaration-pp p. 33"
+          },
+          {
+            "code": "58.00",
+            "person": "household",
+            "amount": -497200,
+            "how": "Flat upkeep, building over 10 years old: 20 % of 24'860.00 = 4'972.00.",
+            "source": "ge-2025-guide-declaration-pp p. 33; ch-2026-ifd-instructions-personnes-physiques p. 6 (b, déduction à forfait)"
+          },
+          {
+            "code": "55.00",
+            "person": "household",
+            "amount": -448000,
+            "how": "Mortgage interest 4'480.00, under the limit (income from wealth 29'292.00 + 50'000).",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 11)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -555000,
+            "how": "Insurance premiums and savings interest 15'279.00, at most 5'550.00 (married couple, without pension fund or pillar 3a contributions): 5'550.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2026-ifd-progression-deductions p. 1 and 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          }
+        ],
+        "netIncome": {
+          "amount": 12883000,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [
+          {
+            "code": "59.20",
+            "person": "household",
+            "amount": -280000,
+            "how": "Married couple: 2'800.00.",
+            "source": "ch-2026-ifd-progression-deductions p. 1 and 2; ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 31 (59.20)"
+          }
+        ],
+        "taxableIncome": {
+          "amount": 12603000,
+          "how": "Net income 128'830.00 less the social deductions 2'800.00: 126'030.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 12600000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 126'000.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD); ch-2026-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "married",
+        "scaleTax": {
+          "amount": 334300,
+          "how": "The married scale at 126'000.00: 3'343.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 0,
+          "how": "No child.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 334300,
+          "how": "3'343.00 less 0.00, rounded down to 5 centimes: 3'343.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 1820925, "how": "ICC 14'866.25 + IFD 3'343.00.", "source": "" }
+    }
+  }
+}
