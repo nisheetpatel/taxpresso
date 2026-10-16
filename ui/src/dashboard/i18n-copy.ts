@@ -7,7 +7,6 @@ const NB = String.fromCharCode(0xa0);
 
 export const messages = {
   en: {
-    title: 'Fill in your declaration',
     lead: 'Type each value into the official declaration (e-démarches or GeTax), page by page in the form’s order. Amounts are whole francs, without centimes or separators, as the form asks. Tick each value once it is in.',
     progress: '{n} of {total} entered',
     pending: '{n} not final yet',
@@ -80,7 +79,6 @@ export const messages = {
       'On the Aargau forms, Person 1 is {a} and Person 2 is {b}. If your form has them the other way round, swap the values.',
   },
   fr: {
-    title: 'Remplir votre déclaration',
     lead: 'Recopiez chaque valeur dans la déclaration officielle (e-démarches ou GeTax), page par page dans l’ordre du formulaire. Les montants sont en francs entiers, sans centimes ni séparateurs, comme le demande le formulaire. Cochez chaque valeur une fois saisie.',
     progress: '{n} sur {total} saisies',
     pending: '{n} pas encore définitive(s)',
@@ -132,7 +130,6 @@ export const messages = {
     coupleAg: `Sur les formulaires argoviens, la Person 1 est {a} et la Person 2 est {b}. Si votre formulaire les inverse, inversez les valeurs.`,
   },
   de: {
-    title: 'Fülle deine Steuererklärung aus',
     lead: 'Tippe jeden Wert in die offizielle Steuererklärung (e-démarches oder GeTax), Seite für Seite in der Reihenfolge des Formulars. Beträge in ganzen Franken, ohne Rappen und ohne Trennzeichen, wie das Formular es verlangt. Hake jeden Wert ab, sobald er drin ist.',
     progress: '{n} von {total} eingetragen',
     pending: '{n} noch nicht definitiv',
@@ -206,7 +203,6 @@ export const messages = {
       'Auf den Aargauer Formularen ist Person 1 {a} und Person 2 {b}. Wenn dein Formular sie umgekehrt hat, tausche die Werte.',
   },
   it: {
-    title: 'Compila la tua dichiarazione',
     lead: 'Inserisci ogni valore nella dichiarazione ufficiale (e-démarches o GeTax), pagina per pagina nell’ordine del modulo. Gli importi sono in franchi interi, senza centesimi né separatori, come chiede il modulo. Spunta ogni valore una volta inserito.',
     progress: '{n} di {total} inseriti',
     pending: '{n} non ancora definitivi',

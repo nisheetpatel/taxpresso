@@ -1016,6 +1016,20 @@ describe('File', () => {
       (e) => e.type === 'details' && textOf(ofType([e], 'summary')) === 'Copy values',
     )[0]!;
     expect(ofType([copy], 'CopyPanel')).toHaveLength(1);
+    // Under "Copy values", the panel doesn't say step 2's title again; its progress stays.
+    const panel = expand(
+      CopyPanel({
+        state: {
+          ...done,
+          copyPanel: { ...done.copyPanel, total: 3, entered: 1, waiting: [{ label: 'Premiums' }] },
+        },
+        lang: 'en',
+        act: noAct,
+      }),
+    );
+    expect(all(panel, (e) => /^h\d$/.test(e.type))).toHaveLength(0);
+    expect(textOf(panel)).not.toContain('Fill in your declaration');
+    expect(textOf(panel)).toContain('1 of 3 entered');
     expect(ofType(tree, 'Reconcile')).toHaveLength(1);
     expect(textOf(tree)).toContain('You press Transmettre. Taxpresso never sends anything.');
     const zurich = household({
