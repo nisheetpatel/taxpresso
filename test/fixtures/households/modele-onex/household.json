@@ -1,0 +1,24 @@
+{
+  "kit": "modele-onex",
+  "household": "Nadia Modèle, single, self-employed IT consultant, Onex",
+  "note": "The answers this invented household gives, as answer_question takes them (id: value), money in francs: the same for every year, plus each year’s own (answersByYear).",
+  "answers": {
+    "canton": "GE",
+    "civil_status": "single",
+    "children": 0,
+    "commune": "Onex",
+    "moved": "no",
+    "income_sources:p1": ["self_employment"],
+    "business_form:p1": "sole_proprietor",
+    "business_year:p1": "calendar",
+    "business_place:p1": "home_commune",
+    "business_method:p1": "invoice",
+    "business_special:p1": [],
+    "business_losses:p1": false,
+    "pillar3a:p1": true,
+    "banks": 2,
+    "crypto": false,
+    "payments": [],
+    "special": []
+  }
+}

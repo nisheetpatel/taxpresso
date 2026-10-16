@@ -1,0 +1,25 @@
+{
+  "kit": "fictif-thonex",
+  "household": "Bernard and Monique Fictif, retired, their own flat with a mortgage, Thônex",
+  "note": "The answers this invented household gives, as answer_question takes them (id: value), money in francs: the same for every year, plus each year’s own (answersByYear).",
+  "answers": {
+    "canton": "GE",
+    "civil_status": "married",
+    "children": 0,
+    "commune": "Thônex",
+    "moved": "no",
+    "income_sources:p1": ["pension"],
+    "income_sources:p2": ["pension"],
+    "residence:p1": "swiss",
+    "banks": 1,
+    "crypto": false,
+    "payments": [],
+    "special": ["real_estate"],
+    "swiss_property": "own_flat",
+    "swiss_property_owner": "both",
+    "swiss_property_since": 2004,
+    "swiss_property_old": true,
+    "swiss_property_special": [],
+    "swiss_property_loan": true
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "kit": "exemplo-meyrin",
+  "note": "What Claude would propose with propose_extraction for each document without a barcode, per tax year (the 2026 documents are written by the end-to-end test with make.mjs). Money as printed on the document.",
+  "years": {
+    "2025": [
+      {
+        "file": "01-certificat-salaire-tiago-2025.pdf",
+        "kind": "salary_certificate",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing.",
+        "owner": "p1"
+      },
+      {
+        "file": "02-certificat-salaire-marta-2025.pdf",
+        "kind": "salary_certificate",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing.",
+        "owner": "p2"
+      },
+      {
+        "file": "03-attestation-3a-tiago-2025.pdf",
+        "kind": "pillar3a_attestation",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2025,
+        "values": [{ "key": "pillar3a.paid", "value": "3'000.00", "page": 1 }]
+      },
+      {
+        "file": "04-primes-assurance-maladie-2025.pdf",
+        "kind": "health_premiums",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2025,
+        "values": [{ "key": "health.premiums", "value": "15'856.00", "page": 1 }]
+      },
+      {
+        "file": "05-attestation-bancaire-banque-exemple-sa-2025.pdf",
+        "kind": "bank_attestation",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2025,
+        "values": [
+          { "key": "bank.account_number", "value": "CH0000000000000103001", "page": 1 },
+          { "key": "bank.currency", "value": "CHF", "page": 1 },
+          { "key": "bank.balance", "value": "11'200.00", "page": 1 },
+          { "key": "bank.interest_gross", "value": "0.00", "page": 1 },
+          { "key": "bank.withholding_swiss", "value": "0.00", "page": 1 }
+        ]
+      }
+    ],
+    "2026": [
+      {
+        "file": "01-certificat-salaire-tiago-2026.pdf",
+        "kind": "salary_certificate",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing.",
+        "owner": "p1"
+      },
+      {
+        "file": "02-certificat-salaire-marta-2026.pdf",
+        "kind": "salary_certificate",
+        "read": "barcode",
+        "note": "Read from its barcode by Taxpresso: Claude reads nothing.",
+        "owner": "p2"
+      },
+      {
+        "file": "03-attestation-3a-tiago-2026.pdf",
+        "kind": "pillar3a_attestation",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2026,
+        "values": [{ "key": "pillar3a.paid", "value": "3'500.00", "page": 1 }]
+      },
+      {
+        "file": "04-primes-assurance-maladie-2026.pdf",
+        "kind": "health_premiums",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2026,
+        "values": [{ "key": "health.premiums", "value": "16'201.00", "page": 1 }]
+      },
+      {
+        "file": "05-attestation-bancaire-banque-exemple-sa-2026.pdf",
+        "kind": "bank_attestation",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2026,
+        "values": [
+          { "key": "bank.account_number", "value": "CH0000000000000103001", "page": 1 },
+          { "key": "bank.currency", "value": "CHF", "page": 1 },
+          { "key": "bank.balance", "value": "12'900.00", "page": 1 },
+          { "key": "bank.interest_gross", "value": "0.00", "page": 1 },
+          { "key": "bank.withholding_swiss", "value": "0.00", "page": 1 }
+        ]
+      }
+    ]
+  }
+}

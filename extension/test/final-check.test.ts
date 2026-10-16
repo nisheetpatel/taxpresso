@@ -208,6 +208,66 @@ describe('final check', () => {
     expect((await card()).fix.filter((i) => i.kind === 'estimate')).toHaveLength(1);
   });
 
+  it('lists a rough pension as an estimate until the pension certificate comes', async () => {
+    await ws.answer('canton', 'GE', 'chat');
+    await ws.answer('civil_status', 'single', 'chat');
+    await ws.answer('children', 0, 'chat');
+    await ws.answer('commune', 'Meyrin', 'chat');
+    await ws.answer('income_sources:p1', ['pension'], 'chat');
+    await ws.setPlan('p1', 'plan.pension_income', 30_000, 'chat');
+    const out = await card();
+    const pension = out.fix.find((i) => i.kind === 'estimate')!;
+    // Counted as an other pension (autres rentes, 13.40) until the certificate says its kind.
+    expect(pension).toMatchObject({ status: 'estimate', code: '13.40' });
+    expect(pension.detail).toBe('CHF 30’000.00: an estimate, not final yet.');
+    expect(pension.todo).toMatch(/^Your pension certificate \(certificat de rente\)/);
+    // The same for Claude.
+    const check = (await call('final_check')).structuredContent as {
+      fix: { kind: string; code?: string }[];
+    };
+    expect(check.fix.filter((i) => i.kind === 'estimate').map((i) => i.code)).toEqual(['13.40']);
+    // In French.
+    expect((await card('fr')).fix.find((i) => i.kind === 'estimate')!.todo).toMatch(
+      /^Votre certificat de rente/,
+    );
+    // Once the certificate is in, the rough figure no longer counts and is not listed.
+    await confirmed('pension_certificate', 'p1', [
+      ['pension.amount', "29'400.00"],
+      ['pension.type', 'avs_ai'],
+    ]);
+    expect((await card()).fix.filter((i) => i.kind === 'estimate')).toEqual([]);
+  });
+
+  it('lists rough benefits as an estimate until the benefits attestation comes', async () => {
+    await ws.answer('canton', 'GE', 'chat');
+    await ws.answer('civil_status', 'married', 'chat');
+    await ws.answer('children', 0, 'chat');
+    await ws.answer('commune', 'Meyrin', 'chat');
+    await ws.answer('income_sources:p1', ['salary'], 'chat');
+    await ws.answer('income_sources:p2', ['replacement_income'], 'chat');
+    await ws.setPlan('p1', 'plan.gross_salary', 85_000, 'chat');
+    await ws.setPlan('p2', 'plan.replacement_income', 24_000, 'chat');
+    const out = await card();
+    const estimates = out.fix.filter((i) => i.kind === 'estimate');
+    expect(estimates.map((i) => [i.code, i.detail])).toEqual(
+      expect.arrayContaining([
+        ['11.10', 'CHF 85’000.00: an estimate, not final yet.'],
+        ['21.50', 'CHF 24’000.00: an estimate, not final yet.'],
+      ]),
+    );
+    expect(estimates.find((i) => i.code === '21.50')!.todo).toMatch(
+      /^Your benefits attestation \(attestation d’indemnités\)/,
+    );
+    // Once the attestation is in, only the rough salary is left.
+    await confirmed('replacement_income_certificate', 'p2', [
+      ['replacement.amount', "23'800.00"],
+      ['replacement.type', 'unemployment'],
+    ]);
+    expect((await card()).fix.filter((i) => i.kind === 'estimate').map((i) => i.code)).toEqual([
+      '11.10',
+    ]);
+  });
+
   it('blocks on the declaration PDF that differs from the values to type', async () => {
     await dupont();
     await ws.addDocument(

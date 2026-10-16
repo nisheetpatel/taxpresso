@@ -40,6 +40,14 @@ const FINAL_SALARY = t(
   'Your salary certificate (certificat de salaire): it replaces this rough figure.',
   `Votre certificat de salaire${NB}: il remplace ce montant approximatif.`,
 );
+const FINAL_PENSION = t(
+  'Your pension certificate (certificat de rente): it replaces this rough figure.',
+  `Votre certificat de rente${NB}: il remplace ce montant approximatif.`,
+);
+const FINAL_BENEFITS = t(
+  'Your benefits attestation (attestation d’indemnités): it replaces this rough figure.',
+  `Votre attestation d’indemnités${NB}: elle remplace ce montant approximatif.`,
+);
 const FINAL_DOCUMENT = t(
   'The document that shows it. If none will come in time, you can ask the tax office (AFC) for more time to file instead of filing a guess.',
   'Le document qui le montre. S’il n’arrivera pas à temps, vous pouvez demander un délai à l’administration fiscale (AFC) plutôt que déclarer une estimation.',
@@ -58,6 +66,8 @@ const MORE_TIME = 'ge-na-other-demander-delai';
 /** What makes a value final, worded from the official terms of a canton's form. */
 interface FinalTexts {
   salary: Text;
+  pension: Text;
+  benefits: Text;
   document: Text;
   officialValue: Text;
   /** A line of the securities list, by its name. */
@@ -67,6 +77,8 @@ interface FinalTexts {
 /** Geneva's: the defaults, also before the canton is known. */
 const GENEVA_TEXTS: FinalTexts = {
   salary: FINAL_SALARY,
+  pension: FINAL_PENSION,
+  benefits: FINAL_BENEFITS,
   document: FINAL_DOCUMENT,
   officialValue: FINAL_OFFICIAL_VALUE,
   securities: (name) => t(`${name} (état des titres)`, `${name} (état des titres)`),
@@ -79,6 +91,8 @@ function cantonTexts(terms: CantonTerms): FinalTexts {
       `Your salary certificate (${terms.salaryCertificate}): it replaces this rough figure.`,
       `Votre certificat de salaire (${terms.salaryCertificate})${NB}: il remplace ce montant approximatif.`,
     ),
+    pension: FINAL_PENSION,
+    benefits: FINAL_BENEFITS,
     document: t(
       `The document that shows it. If none will come in time, you can ask the tax office (${terms.taxOffice}) for more time to file (${terms.moreTime}) instead of filing a guess.`,
       `Le document qui le montre. S’il n’arrivera pas à temps, vous pouvez demander un délai (${terms.moreTime}) à l’administration fiscale (${terms.taxOffice}) plutôt que déclarer une estimation.`,
@@ -214,18 +228,28 @@ export function finalCheckInput(ws: Workspace): FinalCheckInput {
   const read = ws.toRead();
 
   // Values that are not final: those waiting for the user's OK, then the estimates the return
-  // rests on (a planning figure only when the engine used it as the salary).
+  // rests on (a planning figure only when the engine used it as an income: a rough salary,
+  // pension or benefits before their document is in).
   const values: PendingValue[] = ws.toConfirm().map((f) => pending(ws, f, 'extracted', FINAL_OK));
   const lines = result && canton.view.allLines(result);
   const used = new Set((lines ?? []).flatMap((l) => l.facts ?? []));
+  /** The line of the form a rough income was put on: the engine's item that rests on it. */
+  const itemCode = (f: Fact) =>
+    result?.icc?.items.find((i) => i.facts?.includes(f.id))?.code ??
+    result?.ifd?.items.find((i) => i.facts?.includes(f.id))?.code;
+  const rough: Readonly<Record<string, (f: Fact) => { final: Text; code?: string }>> = {
+    'plan.gross_salary': (f) => ({ final: texts.salary, code: canton.filing.salaryLine(f.person) }),
+    'plan.pension_income': (f) => ({ final: texts.pension, code: itemCode(f) }),
+    'plan.replacement_income': (f) => ({ final: texts.benefits, code: itemCode(f) }),
+  };
   for (const f of ws.countedFacts()) {
     if (f.status !== 'estimate' || HOLDING_KEY.test(f.key)) continue;
     if (f.key.startsWith('plan.')) {
-      if (f.key === 'plan.gross_salary' && used.has(f.id))
-        values.push({
-          ...pending(ws, f, 'estimate', texts.salary),
-          code: canton.filing.salaryLine(f.person),
-        });
+      const income = rough[f.key];
+      if (income && used.has(f.id)) {
+        const { final, code } = income(f);
+        values.push({ ...pending(ws, f, 'estimate', final), ...(code ? { code } : {}) });
+      }
       continue;
     }
     values.push(pending(ws, f, 'estimate', texts.document));

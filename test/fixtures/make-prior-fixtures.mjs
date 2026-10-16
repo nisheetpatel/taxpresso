@@ -22,12 +22,12 @@
 
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 /** Builds a PDF from object bodies (Buffers or latin1 strings); object 1 is the catalog. */
-function pdf(objects) {
+export function pdf(objects) {
   const parts = [Buffer.from('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n', 'latin1')];
   const offsets = [];
   let length = parts[0].length;
@@ -57,7 +57,7 @@ function pdf(objects) {
   return Buffer.concat(parts);
 }
 
-function stream(dict, data) {
+export function stream(dict, data) {
   const bytes = Buffer.isBuffer(data) ? data : Buffer.from(data, 'latin1');
   return Buffer.concat([
     Buffer.from(`<< ${dict} /Length ${bytes.length} >>\nstream\n`, 'latin1'),
@@ -73,7 +73,7 @@ const WIDTH = { "'": 191, '.': 278, '-': 333, ' ': 278 };
 const width = (text, size) => ([...text].reduce((w, c) => w + (WIDTH[c] ?? 556), 0) * size) / 1000;
 
 /** A page from pieces [x, y, text, size?, align?]; align 'right' puts the text's end at x. */
-function content(pieces) {
+export function content(pieces) {
   return pieces
     .map(([x, y, text, size = 9, align]) => {
       const at = align === 'right' ? x - width(text, size) : x;
@@ -82,7 +82,7 @@ function content(pieces) {
     .join('\n');
 }
 
-function document(pages) {
+export function document(pages) {
   const n = pages.length;
   const kids = pages.map((_, i) => `${3 + i} 0 R`).join(' ');
   const font = 3 + n;
@@ -99,11 +99,27 @@ function document(pages) {
 }
 
 /** Column positions of one program's print-out. */
-const GETAX = { code: 40, label: 78, annex: 300, commune: 332, icc: 455, ifd: 525, box: 545 };
-const DRTAX = { code: 52, label: 92, annex: 318, commune: 352, icc: 440, ifd: 505, box: 530 };
+export const GETAX = {
+  code: 40,
+  label: 78,
+  annex: 300,
+  commune: 332,
+  icc: 455,
+  ifd: 525,
+  box: 545,
+};
+export const DRTAX = {
+  code: 52,
+  label: 92,
+  annex: 318,
+  commune: 352,
+  icc: 440,
+  ifd: 505,
+  box: 530,
+};
 
 /** One rubric line: code, label, then what is filled in. Amounts are right-aligned. */
-function rubric(cols, y, code, label, { annex, commune, icc, ifd, box, marks } = {}) {
+export function rubric(cols, y, code, label, { annex, commune, icc, ifd, box, marks } = {}) {
   const out = [
     [cols.code, y, code],
     [cols.label, y, label],
@@ -119,7 +135,7 @@ function rubric(cols, y, code, label, { annex, commune, icc, ifd, box, marks } =
 }
 
 /** Lines from the top of the page down, 16 points apart. */
-function lines(cols, start, specs) {
+export function lines(cols, start, specs) {
   let y = start;
   return specs.flatMap((spec) => {
     y -= 16;
@@ -129,12 +145,12 @@ function lines(cols, start, specs) {
   });
 }
 
-const header = (cols, y) => [
+export const header = (cols, y) => [
   [cols.icc - 18, y, 'ICC'],
   [cols.ifd - 18, y, 'IFD'],
 ];
 
-const footer = (program, n, total, year = 2025) => [
+export const footer = (program, n, total, year = 2025) => [
   [40, 40, `${program} ${year} - imprimé le 12.03.${year + 1}`, 7],
   [500, 40, `Page ${n}/${total}`, 7],
 ];
@@ -389,7 +405,7 @@ function dupont() {
  * GAPP24-1) and the years in titles and footers move; the amounts stay. For a return of 2025, last
  * year's declaration is this one (docs/design/tax-years.md).
  */
-function retarget(pages, from, to) {
+export function retarget(pages, from, to) {
   const yy = (y) => String(y).slice(2);
   const move = (text) =>
     text
@@ -697,16 +713,20 @@ function dupont2026() {
   return document([pg1, pg2, pg3, pg4, a1, a2, c4, f1]);
 }
 
-const files = {
-  'dupont-declaration-2025.pdf': dupont(),
-  'ribeiro-declaration-2025.pdf': ribeiro(),
-  'dupont-declaration-2025-two-employers.pdf': twoEmployers(),
-  'dupont-declaration-2026.pdf': dupont2026(),
-  'dupont-declaration-2024.pdf': dupont2024(),
-};
-for (const [name, bytes] of Object.entries(files)) writeFileSync(path.join(here, name), bytes);
-console.log(
-  `wrote ${Object.keys(files)
-    .map((f) => `test/fixtures/${f}`)
-    .join(', ')}`,
-);
+// Written only when run as a script: tests and other generators import the helpers above
+// (test/fixtures/households/make.mjs builds its households' declarations with them).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const files = {
+    'dupont-declaration-2025.pdf': dupont(),
+    'ribeiro-declaration-2025.pdf': ribeiro(),
+    'dupont-declaration-2025-two-employers.pdf': twoEmployers(),
+    'dupont-declaration-2026.pdf': dupont2026(),
+    'dupont-declaration-2024.pdf': dupont2024(),
+  };
+  for (const [name, bytes] of Object.entries(files)) writeFileSync(path.join(here, name), bytes);
+  console.log(
+    `wrote ${Object.keys(files)
+      .map((f) => `test/fixtures/${f}`)
+      .join(', ')}`,
+  );
+}

@@ -2945,6 +2945,98 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
   });
 
+  test('a filing kit, the Thônex retirees (2025), to the centime, offline', async () => {
+    // test/fixtures/households/fictif-thonex: invented documents (two Swissdec barcodes, an
+    // eCH-0196 statement, letters Claude reads), the household's answers, and the tax worked out
+    // by hand from the official documents (expected.json). Its own folder and server process,
+    // with the same guard; the user confirms Claude's readings in the chat.
+    const kit = path.join(root, 'test', 'fixtures', 'households', 'fictif-thonex');
+    const answers = JSON.parse(readFileSync(path.join(kit, 'household.json'), 'utf8')).answers;
+    const readings = JSON.parse(readFileSync(path.join(kit, 'extracted.json'), 'utf8')).years[
+      '2025'
+    ];
+    const expected = JSON.parse(readFileSync(path.join(kit, 'expected.json'), 'utf8')).years[
+      '2025'
+    ];
+    const kVault = path.join(work, 'Kit-Thonex');
+    const kTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: kVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    kTransport.stderr?.on('data', (d) => (stderr += d));
+    const k = new Client({ name: 'taxpresso-offline-test-kit', version: '0.0.0' });
+    await k.connect(kTransport);
+    const call = async (name, args = {}) => {
+      const res = await k.callTool({ name, arguments: args });
+      assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+      return res;
+    };
+    try {
+      await call('open_tax_year', { year: 2025 });
+      mkdirSync(path.join(kVault, '2025'), { recursive: true });
+      for (const name of readdirSync(path.join(kit, 'documents'))) {
+        writeFileSync(
+          path.join(kVault, '2025', name),
+          readFileSync(path.join(kit, 'documents', name)),
+        );
+      }
+      await call('ingest_vault');
+      for (let i = 0; i < 60; i++) {
+        const q = (await call('next_questions')).structuredContent.questions[0];
+        if (!q) break;
+        assert.ok(q.id in answers, `an unexpected question: ${q.id}`);
+        await call('answer_question', { id: q.id, value: answers[q.id] });
+      }
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const r of readings) {
+        const doc = listed.find((d) => d.filename === r.file);
+        assert.ok(doc, r.file);
+        if (r.read === 'barcode') {
+          if (r.owner) await call('set_document_owner', { id: doc.id, person: r.owner });
+          continue;
+        }
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind: r.kind, taxYear: r.taxYear, person: r.person },
+          values: r.values,
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      const tax = (await call('compute_tax')).structuredContent;
+      assert.deepEqual(tax.unsupported, []);
+      assert.equal(tax.needsOk, 0);
+      assert.deepEqual(
+        [
+          tax.icc.taxableIncome,
+          tax.icc.rateIncome,
+          tax.icc.taxableWealth,
+          tax.icc.total,
+          tax.ifd.taxableIncome,
+          tax.ifd.tax,
+          tax.total,
+        ],
+        [
+          expected.icc.taxableIncome.amount,
+          expected.icc.rateIncome.amount,
+          expected.icc.taxableWealth.amount,
+          expected.icc.total.amount,
+          expected.ifd.taxableIncome.amount,
+          expected.ifd.tax.amount,
+          expected.total.amount,
+        ],
+      );
+    } finally {
+      await k.close();
+    }
+  });
+
   test('no outbound network attempt was made (C2)', () => {
     const attempts = existsSync(guardLog) ? readFileSync(guardLog, 'utf8').trim() : '';
     assert.equal(attempts, '', `outbound attempts:\n${attempts}`);
