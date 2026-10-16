@@ -93,9 +93,8 @@ export function TaxCard(p: PageProps): JSX.Element {
   const est = state.estimate;
   const over = state.yearOver !== null;
   const capital = state.journey.stages.find((s) => s.id === 'tax')?.vars.capital;
-  const total = est?.computed ? est.total : null;
-  const moved =
-    c !== 'rough' && p.roughBefore !== null && total !== null ? total - p.roughBefore : 0;
+  // How far the documents moved it from what the rough numbers said (the extension notes that).
+  const moved = pages.rough.moved ?? 0;
   const rests = restsOn(state, pages, lang);
   const facts = state.journey.about;
   const lastYear = state.lastYear || (state.review && state.review.status !== 'none');

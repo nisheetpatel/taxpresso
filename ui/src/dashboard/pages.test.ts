@@ -184,6 +184,7 @@ function rough(
       ...x,
       figures: x.amount !== null && x.kind ? [{ kind: x.kind, amount: x.amount, used: true }] : [],
     })),
+    moved: null,
   };
 }
 const pagesOf = (state: State) => withCommunes(state, undefined);
@@ -355,7 +356,6 @@ function props(state: State, change: Partial<PageProps> = {}): PageProps {
     go: () => undefined,
     openBasics: () => undefined,
     add: () => undefined,
-    roughBefore: null,
     ...change,
   };
 }
@@ -648,8 +648,8 @@ describe('the number', () => {
   });
 
   it('says what it rests on, and how much the documents moved it', () => {
-    const rough = plain(textOf(card('rough')));
-    expect(rough).toMatch(/From what you told us: about CHF 95.000 in salary, just you, Carouge\./);
+    const told = plain(textOf(card('rough')));
+    expect(told).toMatch(/From what you told us: about CHF 95.000 in salary, just you, Carouge\./);
     const tree = expand(
       TaxCard(
         props(
@@ -659,8 +659,12 @@ describe('the number', () => {
             documents: [
               { id: 'd1', filename: 'c.pdf', bytes: 1, addedAt: '', kind: 'salary_certificate' },
             ],
+            // The extension noted CHF 8,900 when the certificate replaced the rough salary.
+            rough: {
+              ...rough([{ person: 'p1', amount: 9_500_000, kind: 'salary' }]),
+              moved: -66_000,
+            },
           }),
-          { roughBefore: 890_000 },
         ),
       ),
     );

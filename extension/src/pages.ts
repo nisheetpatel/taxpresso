@@ -2,6 +2,7 @@
 // page itself (./journey.ts, pageOf): how sure the tax is, the questions by where they are asked,
 // and each person's rough income for the basics card. Derived on every read, never stored; the
 // same rules engine result, requirements and questions as everything else.
+import type { Fact } from '@taxpresso/ledger';
 import {
   QUESTION_GROUPS,
   type Lang,
@@ -38,6 +39,51 @@ function taxInputs(ws: Workspace): { used: ReadonlySet<string>; estimate: boolea
     used: new Set(lines.flatMap((l) => l.facts ?? [])),
     estimate: lines.some((l) => l.estimates?.includes('input-estimate')),
   };
+}
+
+/** The tax while it rests on a rough income figure: its total, those figures, and what it counts. */
+export interface RoughBasis {
+  /** Centimes. */
+  total: number;
+  rough: Fact[];
+  used: ReadonlySet<string>;
+}
+
+/**
+ * The tax as the rough income figures make it, while it rests on one of them; nothing to compute
+ * when no rough income figure is given (Workspace notes it before each change).
+ */
+export function roughBasis(ws: Workspace): RoughBasis | undefined {
+  const given = ROUGH_INCOME.flatMap((r) =>
+    (['p1', 'p2'] as const).flatMap((p) => {
+      const fact = ws.ledger.get(r.key, p);
+      return fact && typeof fact.value === 'number' && fact.value > 0 ? [fact] : [];
+    }),
+  );
+  if (!given.length) return undefined;
+  const total = ws.estimate().result?.total;
+  if (total === null || total === undefined) return undefined;
+  const { used } = taxInputs(ws);
+  const rough = given.filter((f) => used.has(f.id));
+  return rough.length ? { total, rough, used } : undefined;
+}
+
+/**
+ * After a change: a document replaced a rough income figure the tax rested on before. That figure
+ * is still given but no longer counted, and a value read from a document now counts instead (not
+ * a person gone from the household, nor a figure taken back).
+ */
+export function replacedByDocument(ws: Workspace, before: RoughBasis): boolean {
+  const { used } = taxInputs(ws);
+  const dropped = before.rough.some(
+    (f) => ws.ledger.get(f.key, f.person)?.id === f.id && !used.has(f.id),
+  );
+  return (
+    dropped &&
+    ws
+      .countedFacts()
+      .some((f) => f.source.docId !== undefined && used.has(f.id) && !before.used.has(f.id))
+  );
 }
 
 /**
@@ -111,10 +157,20 @@ export interface RoughView {
     /** Every rough income figure of this person, in the card's order (Claude may give several). */
     figures: RoughFigure[];
   }[];
+  /**
+   * How far the documents moved the tax from what the rough numbers said, in centimes (below zero:
+   * less), once a document replaced a rough figure (Workspace.roughTaxNoted) and the tax no longer
+   * rests on one; null otherwise. "CHF 660 less than your rough numbers said."
+   */
+  moved: number | null;
 }
 
 /** Each person's rough income and its kind, for the basics card ("Yearly income, roughly"). */
-export function roughOf(ws: Workspace, inputs = taxInputs(ws)): RoughView {
+export function roughOf(
+  ws: Workspace,
+  inputs = taxInputs(ws),
+  confidence: Confidence | null = null,
+): RoughView {
   const kinds = ROUGH_INCOME.filter((r) => ws.keys[r.key]);
   const people = ws
     .snapshot()
@@ -145,19 +201,30 @@ export function roughOf(ws: Workspace, inputs = taxInputs(ws)): RoughView {
         figures: given.map(({ kind, amount, used }) => ({ kind, amount, used })),
       };
     });
+  const noted = ws.roughTaxNoted();
+  const total = ws.estimate().result?.total;
+  const moved =
+    noted !== undefined &&
+    (confidence === 'close' || confidence === 'exact') &&
+    total !== null &&
+    total !== undefined
+      ? total - noted
+      : null;
   return {
     open: !ws.yearOver(),
     kinds: kinds.map(({ kind, key, field }) => ({ kind, key, field })),
     people,
+    moved,
   };
 }
 
 /** The three pages' state, computed once from the journey (./api.ts, GET /state). */
 export function pagesState(ws: Workspace, j: Journey, lang: Lang) {
   const inputs = taxInputs(ws);
+  const confidence = confidenceOf(ws, j, inputs);
   return {
-    confidence: confidenceOf(ws, j, inputs),
+    confidence,
     groups: groupsOf(ws, lang),
-    rough: roughOf(ws, inputs),
+    rough: roughOf(ws, inputs, confidence),
   };
 }

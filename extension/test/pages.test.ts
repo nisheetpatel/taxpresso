@@ -3,7 +3,7 @@
 // rough benefits and pensions themselves, used as estimates until their attestation is in, in
 // Geneva and in Zurich alike. Synthetic households only (the Martin and Keller households are made
 // up). Temporary folders, never the real one.
-import { mkdir, mkdtemp } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
@@ -417,6 +417,54 @@ describe('rough income', () => {
       benefits: 'plan.replacement_income',
       pension: 'plan.pension_income',
     });
+  });
+
+  it('notes what the rough numbers said when a document first replaces one, and how far the tax moved', async () => {
+    const ws = await workspace();
+    await answerAll(ws, MARTIN);
+    await ws.setPlan('p1', 'plan.gross_salary', 90_000, 'chat');
+    let s = await state(ws);
+    expect([s.confidence, s.rough.moved]).toEqual(['rough', null]);
+    const said = ws.estimate().result!.total!;
+    // The certificate replaces the rough salary on its own: what the rough numbers said is noted,
+    // in the year's folder, never in the ledger, so no engine reads it.
+    await document(ws, 'salary_certificate', 'p1', [['salary.gross', "80'000.00"]], false);
+    expect(ws.roughTaxNoted()).toBe(said);
+    expect(ws.ledger.view().some((f) => f.value === said)).toBe(false);
+    expect(JSON.parse(await readFile(path.join(ws.vault.dir, 'rough.json'), 'utf8'))).toEqual({
+      version: 1,
+      tax: said,
+    });
+    s = await state(ws);
+    const now = ws.estimate().result!.total!;
+    expect(s.confidence).toBe('close');
+    expect(s.rough.moved).toBe(now - said);
+    expect(s.rough.moved).toBeLessThan(0);
+    // A rough figure the tax rests on again: rough, nothing to compare. Taken back: the same
+    // difference, from what was noted first (never noted again).
+    await ws.setPlan('p1', 'plan.pension_income', 12_000, 'chat');
+    s = await state(ws);
+    expect([s.confidence, s.rough.moved]).toEqual(['rough', null]);
+    await ws.setPlan('p1', 'plan.pension_income', 0, 'chat');
+    expect((await state(ws)).rough.moved).toBe(now - said);
+    expect(ws.roughTaxNoted()).toBe(said);
+    // Kept on this computer: the same folder opened again says the same.
+    const again = new Workspace(ws.config, new CantonRegistry(ws.taxYear));
+    await again.ready();
+    expect((await state(again)).rough.moved).toBe(now - said);
+  });
+
+  it('notes nothing when a rough figure is taken back, or no rough figure was counted', async () => {
+    const ws = await workspace();
+    await answerAll(ws, MARTIN);
+    await ws.setPlan('p1', 'plan.gross_salary', 90_000, 'chat');
+    await ws.setPlan('p1', 'plan.gross_salary', 0, 'chat');
+    // A certificate first, then a rough salary it already replaces.
+    await document(ws, 'salary_certificate', 'p1', [['salary.gross', "80'000.00"]]);
+    await ws.setPlan('p1', 'plan.gross_salary', 90_000, 'chat');
+    await document(ws, 'health_premiums', 'p1', [['health.premiums', "4'800.00"]]);
+    expect(ws.roughTaxNoted()).toBeUndefined();
+    expect((await state(ws)).rough.moved).toBeNull();
   });
 });
 
