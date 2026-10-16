@@ -18,8 +18,9 @@ import { Dashboard, type ApiRequest } from '../src/dashboard.js';
 import { createTaxpressoServer } from '../src/server.js';
 import { makeUiDir } from './helpers.js';
 import { saveHolding } from '../src/holdings.js';
-import { pageOf, STAGE_OF, type NextId } from '../src/journey.js';
+import { pageOf, STAGE_OF, waitedFor, type NextId } from '../src/journey.js';
 import { ROUGH_INCOME } from '../src/pages.js';
+import { buildStatus } from '../src/status.js';
 import { Workspace, yearOverPlans } from '../src/workspace.js';
 
 /** A workspace on a temporary folder, on a fixed day; `repo`: the folder is inside a git repo. */
@@ -173,6 +174,64 @@ describe('the page the panel opens on', () => {
     const repo = await workspace({ repo: true });
     const r = await state(repo);
     expect([r.journey.next.id, r.page]).toEqual(['folder', { current: 'start', tabs: false }]);
+  });
+});
+
+describe('the questions the next step waits for', () => {
+  /** Answers only what the next step waits for (the basics and the details), plainly. */
+  async function answerWaited(ws: Workspace, given: Record<string, unknown>) {
+    for (let i = 0; i < 80; i++) {
+      const slot = ws.snapshot().slots.find((s) => s.value === undefined && waitedFor(s));
+      if (!slot) return;
+      const q = slot.question;
+      const value =
+        slot.id in given
+          ? given[slot.id]
+          : q.type === 'yesno'
+            ? false
+            : q.type === 'number' || q.type === 'money'
+              ? (q.min ?? 0)
+              : q.type === 'multi'
+                ? []
+                : q.type === 'commune'
+                  ? ws.engine.communes[0]!.slug
+                  : q.options?.find((o) => !o.notSupported)?.value;
+      await post(ws, '/answer', { id: slot.id, value });
+    }
+  }
+
+  it('are the basics and the details: special cases, deductions and plans never hold it', async () => {
+    const ws = await workspace();
+    await answerWaited(ws, MARTIN);
+    let s = await state(ws);
+    // Still open, offered on their pages: anything special, the costs to deduct, the plans.
+    for (const group of ['special', 'deduction', 'plan'] as const) {
+      expect(s.groups[group].filter((q) => !q.answered).length, group).toBeGreaterThan(0);
+    }
+    expect(s.journey.next.id).toBe('income');
+    expect(s.journey.stages.find((x) => x.id === 'about')?.status).toBe('done');
+    expect(buildStatus(ws, { dashboardRunning: false }).next.id).toBe('income');
+    // A special case said to apply: its details hold the next step (the tax can't do without them).
+    s = await post(ws, '/answer', { id: 'moved', value: 'from_abroad' });
+    expect(s.journey.next).toMatchObject({ id: 'questions', vars: { n: 1 } });
+    expect(buildStatus(ws, { dashboardRunning: false }).next.id).toBe('questions');
+    expect(s.groups.special.find((q) => q.id === 'arrival_date:p1')?.answered).toBe(false);
+    s = await post(ws, '/answer', { id: 'arrival_date:p1', value: '2026-04-01' });
+    expect(s.journey.next.id).toBe('income');
+  });
+
+  it('let the File page open with only optional questions left', async () => {
+    const ws = await workspace({ today: '2027-02-10' });
+    await answerWaited(ws, MARTIN);
+    await document(ws, 'salary_certificate', 'p1', [['salary.gross', "90'000.00"]]);
+    await document(ws, 'health_premiums', 'p1', [['health.premiums', "4'800.00"]]);
+    const s = await state(ws);
+    expect(s.progress.answered).toBeLessThan(s.progress.total);
+    expect([s.journey.next.id, s.journey.documentsIn, s.page.current]).toEqual([
+      'file',
+      true,
+      'file',
+    ]);
   });
 });
 

@@ -969,15 +969,25 @@ describe('File', () => {
     const tree = expand(FilePage(props(state)));
     expect(textOf(tree)).toContain('Filing opens when your documents are in.');
     expect(ofType(tree, 'li').map(textOf)).toEqual(stillToDo(state, pagesOf(state), 'en'));
+    // Anything special, the costs and the plans are still open, but never in the way of filing.
     expect(stillToDo(state, pagesOf(state), 'en')).toEqual([
       'Answer one more question',
-      'Say whether anything is special this year, on Your tax',
-      'Tap the costs you can deduct, on Pay less',
-      'Say whether you paid into pillar 3a or a pension fund, on Pay less',
       'Check 2 values read from your documents',
       'Add: Health insurance premiums',
     ]);
     expect(ofType(tree, 'FinalCheckStep')).toHaveLength(0);
+    // The details of a special case said to apply are: the day of an arrival, with the details.
+    const arrived = household({
+      groups: groups({
+        special: [
+          ...groups().special.map((x) =>
+            x.questionId === 'moved' ? { ...x, answered: true, value: 'from_abroad' } : x,
+          ),
+          q('arrival_date:p1', { type: 'date' }),
+        ],
+      }),
+    });
+    expect(stillToDo(arrived, pagesOf(arrived), 'en')).toEqual(['Answer 2 more questions']);
   });
 
   const check: FinalCheckState = {

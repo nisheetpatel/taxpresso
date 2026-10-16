@@ -292,6 +292,12 @@ export function MoreQuestions(p: PageProps): JSX.Element | null {
   );
 }
 
+/**
+ * The special questions the chips answer. Every other special question is a follow-up, asked
+ * because of an answer: the next step and filing wait for those (extension/src/journey.ts).
+ */
+export const SPECIAL_ROOTS: ReadonlySet<string> = new Set(['special', 'moved']);
+
 export type ChipId = 'home' | 'abroad' | 'self' | 'moved' | 'capital';
 export interface Chip {
   id: ChipId;
@@ -389,7 +395,7 @@ export function Special(p: PageProps): JSX.Element | null {
     add(c, c.questions[0]!);
   };
   // The follow-ups: what the chips opened, one at a time.
-  const roots = new Set(['special', ...(flags.has('open:moved') ? [] : ['moved'])]);
+  const roots = flags.has('open:moved') ? new Set(['special']) : SPECIAL_ROOTS;
   const next = openIn(
     pages.groups.special.filter((q) => !roots.has(q.questionId)),
     flags,
