@@ -70,8 +70,8 @@ export const NOTE = {
     fr: `Chaque ligne cantonale et communale (centimes, diminution, aide à domicile, parts communales) est arrondie aux 5 centimes les plus proches, comme tous les montants du barème officiel${NB}; le barème ne précise pas l’arrondi de ces lignes.`,
   },
   communalSplit: {
-    en: 'Salary earned in another commune: the rest of the base tax after the privileged share is split in proportion to the gross salary earned in each commune (LCP art. 295A).',
-    fr: `Salaire gagné dans une autre commune${NB}: le solde de l’impôt de base après la part privilégiée est réparti au prorata du salaire brut gagné dans chaque commune (LCP art. 295A).`,
+    en: 'Salary earned in another commune: your home commune taxes its privileged share of the base tax, and the rest goes to the communes in proportion to the income earned in each (LCP art. 295A). No document says which income measures it: Taxpresso takes the gross income (91.00), each salary in the commune where it is earned and all your other income in your home commune. The tax office may share it otherwise.',
+    fr: `Salaire gagné dans une autre commune${NB}: votre commune de domicile impose sa part privilégiée de l’impôt de base, et le solde revient aux communes au prorata du revenu gagné dans chacune (LCP art. 295A). Aucun document ne dit quel revenu le mesure${NB}: Taxpresso prend le revenu brut (91.00), chaque salaire dans la commune où il est gagné et tous vos autres revenus dans votre commune de domicile. L’administration fiscale peut le répartir autrement.`,
   },
   subsidyIfd: {
     en: 'Health insurance subsidy: income for the cantonal tax (guide p. 27); for the federal tax it is left out of income (LIFD art. 24 let. d) and only the premiums left to pay are deducted. The Geneva guide does not say how the federal tax treats it.',

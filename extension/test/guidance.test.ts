@@ -77,7 +77,10 @@ async function household() {
               : q.type === 'multi'
                 ? []
                 : q.type === 'commune'
-                  ? ws.engine.communes[0]!.name
+                  ? q.id.startsWith('work_commune')
+                    ? // Where each person works: where they live.
+                      ws.snapshot().answers.get('profile.commune|household')
+                    : ws.engine.communes[0]!.name
                   : q.options!.find((o) => !o.notSupported)!.value;
       await answer([[q.id, value]]);
     }
@@ -915,6 +918,76 @@ const ROWS: Row[] = [
       await worker(h, 'no');
       await h.finish();
       return (await h.call('list_optimizations')).text;
+    },
+  },
+  // --- The commune of work (Geneva): a salary earned in another commune shares the communal tax
+  {
+    guidance: 'next_questions: the commune of work, or outside the canton, or several communes',
+    pattern:
+      /Answer: the name of the Geneva commune, or outside_geneva = Outside the canton of Geneva, or several_communes = In more than one Geneva commune \[not supported yet\]\./,
+    when: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.answer([['employers:p1', 1]]);
+      return (await h.call('next_questions')).text;
+    },
+    whenNot: async () => {
+      const h = await household();
+      await retired(h, []);
+      return (await h.call('next_questions')).text;
+    },
+  },
+  {
+    guidance: 'compute_tax: a salary in another commune shares the communal tax, its measure open',
+    pattern:
+      /Rules the documents don't spell out:[^\n]*Salary earned in another commune: your home commune taxes its privileged share[^\n]*No document says which income measures it/,
+    when: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.answer([
+        ['employers:p1', 1],
+        ['work_commune:p1', 'Ville de Genève'],
+      ]);
+      await h.finish();
+      await h.document('salary_certificate', 'p1', [
+        ['salary.gross', "80'000.00"],
+        ['salary.social_contributions', "5'120.00"],
+      ]);
+      return (await h.call('compute_tax')).text;
+    },
+    whenNot: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.finish();
+      await h.document('salary_certificate', 'p1', [
+        ['salary.gross', "80'000.00"],
+        ['salary.social_contributions', "5'120.00"],
+      ]);
+      return (await h.call('compute_tax')).text;
+    },
+  },
+  {
+    guidance: 'compute_tax: the commune of work not answered yet, the home commune counted',
+    pattern:
+      /Assumptions:[^\n]*Where you work is not answered yet: the salary counts for your commune of residence/,
+    when: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.document('salary_certificate', 'p1', [
+        ['salary.gross', "80'000.00"],
+        ['salary.social_contributions', "5'120.00"],
+      ]);
+      return (await h.call('compute_tax')).text;
+    },
+    whenNot: async () => {
+      const h = await household();
+      await worker(h, 'no');
+      await h.finish();
+      await h.document('salary_certificate', 'p1', [
+        ['salary.gross', "80'000.00"],
+        ['salary.social_contributions', "5'120.00"],
+      ]);
+      return (await h.call('compute_tax')).text;
     },
   },
   ...(

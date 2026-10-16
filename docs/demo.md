@@ -14,6 +14,7 @@ The kits are in `test/fixtures/households/`, one folder each:
 | `exemplo-meyrin` | Tiago and Marta Exemplo, B permits, taxed at source, already in TOU, Meyrin | 5: two salary certificates with the tax taken at source (barcode), pillar 3a, premiums, a bank account |
 | `fictif-thonex` | Bernard and Monique Fictif, retired, their own flat with a mortgage, Thônex | 8: two AVS attestations, two pension fund certificates (one with a barcode), premiums, a bank e-tax statement (barcode), the AFC's letter with the flat's values, the mortgage statement |
 | `modele-onex` | Nadia Modèle, single, self-employed, Onex | 6: business accounts, AVS contributions, pillar 3a, premiums, a bank account, an Interactive Brokers export |
+| `specimen-vernier` | Léa Spécimen, single, lives in Vernier, works in the City of Geneva | 4: salary certificate (barcode), pillar 3a, premiums, a bank account |
 
 Each kit has a `README.md` (who they are), `household.json` (their answers), `extracted.json`
 (what Claude should read in the documents without a barcode) and `expected.json` (the tax for

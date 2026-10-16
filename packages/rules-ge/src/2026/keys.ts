@@ -54,6 +54,19 @@ export const KEYS_2026 = {
   },
   'profile.income_sources': H['profile.income_sources'],
   'profile.employers': H['profile.employers'],
+  // Where a salaried person works: a salary earned in another Geneva commune shares the communal
+  // tax with it (ge-na-law-lcp art. 293 let. A ch. 1 let. c and ch. 2 let. c, art. 295A al. 1 and
+  // 2). Outside the canton: the commune of residence (ge-2025-guide-declaration-pp p. 17). The
+  // form asks the code of the commune of work on each salary line (ge-2025-declaration-specimen
+  // p. 5 and 6, A1 and A2). Work in several communes at once is not supported yet.
+  'profile.work_commune': {
+    type: 'enum',
+    values: [...COMMUNES_2026.map((c) => c.slug), 'outside_geneva', 'several_communes'],
+    perPerson: true,
+    label: { en: 'Commune of work', fr: 'Commune de travail' },
+    official: 'code commune (lieu de travail)',
+    source: 'ge-2025-guide-declaration-pp p. 17; ge-na-law-lcp art. 293 and 295A',
+  },
   'profile.residence': H['profile.residence'],
   // Paid by an employer in Switzerland (or its Swiss branch, or the Swiss company in the end): a
   // salary paid directly from abroad is taxed ordinarily (ge-na-law-risp art. 5).

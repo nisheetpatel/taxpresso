@@ -143,6 +143,19 @@ export const DOCUMENT_KEYS_WEALTH_2026 = {
     'frais bancaires (titres et relevés fiscaux)',
     `${GUIDE} p. 43`,
   ),
+  /**
+   * The interest of the bank accounts the statement lists: every bank interest is interest on
+   * savings capital (guide p. 41, p. 28), and the form gives each statement a column for it (F4,
+   * specimen p. 24). A statement read from its barcode gives it account by account instead.
+   */
+  'tax_statement.savings_interest': money(
+    {
+      en: 'Interest of the bank accounts it lists (interest on savings capital)',
+      fr: 'Intérêts des comptes bancaires qu’il liste (intérêts échus de capitaux d’épargne)',
+    },
+    'intérêts échus de capitaux d’épargne',
+    `${GUIDE} p. 28, 41 and 43; ${SPECIMEN} p. 24 (F4)`,
+  ),
 
   // Crypto on 31 December (with the accounts, guide p. 40).
   'crypto.value_chf': money(
@@ -190,6 +203,7 @@ export const DOCUMENT_FIELDS_WEALTH_2026 = {
     'tax_statement.withholding_swiss',
     'tax_statement.foreign_tax_credit',
     'tax_statement.fees',
+    'tax_statement.savings_interest',
   ],
   crypto_statement: ['crypto.value_chf', 'crypto.income_chf'],
   life_insurance_attestation: ['life_insurance.surrender_value', 'life_insurance.premiums'],

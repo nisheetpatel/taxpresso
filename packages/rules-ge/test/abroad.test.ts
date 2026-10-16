@@ -23,7 +23,7 @@
 // to 50, the same as ge-2025-icc-tariff-pdf); the federal scales (Form. 58c 2025 and 2026:
 // single 1'698.00 at 85'000 and 6.60 a CHF 100 above it, 2026 1'694.35; married 4'825.00 at
 // 144'300 and 10.00 a CHF 100 above it, 2026 4'821.00); the communes (ge-2025-communal-centimes-pdf:
-// Carouge PP 27 % CA 40, Lancy PP 49 % CA 47; ge-2026-part-privilegiee-communique p. 11: Carouge 27
+// Carouge PP 27 % CA 40, Lancy PP 49 % CA 47; ge-2026-part-privilegiee-communique p. 12: Carouge 27
 // %, Lancy 51 %; ge-2026-communal-centimes-arca: Carouge 40, Lancy 47). Rounding: each ICC line to
 // 5 centimes, flat deductions and 97.00 to the franc, the federal tax rounded down to 5 centimes.
 import { Ledger, type FactValue, type Owner, type VaultDocument } from '@taxpresso/ledger';

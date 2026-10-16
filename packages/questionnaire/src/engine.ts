@@ -201,9 +201,10 @@ export class QuestionnaireEngine {
       if (q.perPerson && q.perChild) problems.push(`${q.id}: per person or per child, not both`);
       if (!q.perPerson && 'p1' in q.text)
         problems.push(`${q.id}: per-person text on a household question`);
+      // A commune question offers the canton's communes, then its own options, if any.
       const values =
         q.type === 'commune'
-          ? this.communes.map((c) => c.slug)
+          ? [...this.communes.map((c) => c.slug), ...(q.options ?? []).map((o) => o.value)]
           : (q.options ?? []).map((o) => o.value);
       if (q.type === 'choice' || q.type === 'multi' || q.type === 'commune') {
         const expected = [...(def.values ?? [])].sort().join(',');
@@ -448,7 +449,12 @@ export class QuestionnaireEngine {
       const q = slot.question;
       let texts: string[] = [];
       if (q.type === 'commune') {
-        texts = [this.#communeName(String(slot.value))];
+        // One of its own options, by its chip; a commune by its name, in the question's chip if any.
+        const [own] = this.#selected(slot);
+        const name = this.#communeName(String(slot.value));
+        texts = own
+          ? [say(own.chip ?? own.label, lang)]
+          : [q.chip && 'en' in q.chip ? say(q.chip, lang).replace('{commune}', name) : name];
       } else if (q.type === 'choice' || q.type === 'multi') {
         const selected = this.#selected(slot);
         const anyChips = (q.options ?? []).some((o) => o.chip);
@@ -479,24 +485,27 @@ export class QuestionnaireEngine {
     const text = each(
       'p1' in q.text ? say(q.text[slot.person === 'p2' ? 'p2' : 'p1'], lang) : say(q.text, lang),
     );
+    const own = (q.options ?? [])
+      .filter((o) => !o.when || this.#holds(o.when, slot.person, snapshot.answers, snapshot.people))
+      .map((o) => ({
+        value: o.value,
+        label: say(o.label, lang),
+        notSupported: !!o.notSupported,
+      }));
     const options =
       q.type === 'commune'
-        ? this.communes.map((c) => ({ value: c.slug, label: c.name, notSupported: false }))
+        ? [
+            ...this.communes.map((c) => ({ value: c.slug, label: c.name, notSupported: false })),
+            ...own,
+          ]
         : q.type === 'yesno'
           ? [
               { value: 'yes', label: YES_NO[lang][0], notSupported: !!q.yesNotSupported },
               { value: 'no', label: YES_NO[lang][1], notSupported: false },
             ]
           : q.options
-              ?.filter(
-                (o) =>
-                  !o.when || this.#holds(o.when, slot.person, snapshot.answers, snapshot.people),
-              )
-              .map((o) => ({
-                value: o.value,
-                label: say(o.label, lang),
-                notSupported: !!o.notSupported,
-              }));
+            ? own
+            : undefined;
     return {
       id: slot.id,
       questionId: q.id,
@@ -532,7 +541,10 @@ export class QuestionnaireEngine {
   describe(slot: Slot, lang: Lang, value: FactValue | undefined = slot.value): string {
     const q = slot.question;
     if (value === undefined) return '';
-    if (q.type === 'commune') return this.#communeName(String(value));
+    if (q.type === 'commune') {
+      const [own] = this.#selected(slot, value);
+      return own ? say(own.label, lang) : this.#communeName(String(value));
+    }
     if (q.type === 'yesno') return YES_NO[lang][value ? 0 : 1];
     if (q.type === 'number') return String(value);
     if (q.type === 'money') return typeof value === 'number' ? chfText(value) : String(value);
@@ -614,6 +626,11 @@ export class QuestionnaireEngine {
       }
       case 'commune': {
         if (typeof raw !== 'string') return bad('expected a commune');
+        // A choice besides the communes ("Outside the canton"), by its value or its label.
+        const extra = (q.options ?? []).find(
+          (o) => o.value === raw || [o.label.en, o.label.fr].some((l) => fold(l) === fold(raw)),
+        );
+        if (extra) return extra.value;
         const f = fold(raw.replace(/^(ville de|commune de|le|la)\s+/i, ''));
         // The name as given first ("Le Chenit", "La Tour-de-Peilz" are names), then without the
         // words before it ("Ville de Lausanne").
@@ -633,8 +650,9 @@ export class QuestionnaireEngine {
             `"${raw}" has ${parts.length} parts: ${parts.map((c) => c.name).join('; ')}. Say which.`,
           );
         }
+        const or = (q.options ?? []).map((o) => `, nor ${o.value} (${o.label.en})`).join('');
         return bad(
-          `"${raw}" is not ${this.file.place ? `a ${this.file.place.en}` : 'one of the'} commune${this.file.place ? '' : 's'}`,
+          `"${raw}" is not ${this.file.place ? `a ${this.file.place.en}` : 'one of the'} commune${this.file.place ? '' : 's'}${or}`,
         );
       }
       case 'yesno': {

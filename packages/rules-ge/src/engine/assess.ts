@@ -19,7 +19,7 @@
 import type { IccSplitting } from '../2025/icc.js';
 import type { CommuneSlug } from '../2026/communes.js';
 import { COMMUNES_2026 } from '../2026/communes.js';
-import { COMMUNAL_SPLIT } from '../law/lcp.js';
+import { COMMUNAL_SPLIT, WORK_COMMUNE_SHARE } from '../law/lcp.js';
 import {
   bracketTax,
   chf,
@@ -293,6 +293,8 @@ function communalSplit(
     const rate = rates[c];
     const baseTrace = new Trace().src(COMMUNAL_SPLIT.source).from(base);
     if (privileged) baseTrace.p(P.communes.privilegedShare);
+    // The share of the commune where a salary is earned.
+    else if (c !== commune) baseTrace.src(WORK_COMMUNE_SHARE[P.taxYear]);
     const baseLine = baseTrace.line(
       baseAmount,
       privileged

@@ -4,6 +4,8 @@ export interface Kit {
   title: string;
   story: string;
   commune: string;
+  /** The commune's code (Code lieu, ge-2025-guide-declaration-pp p. 59). */
+  communeCode: string;
   civil: 'single' | 'married';
   people: { id: 'p1' | 'p2'; first: string; last: string; born: string; ahv: string }[];
   children: { first: string; born: string }[];

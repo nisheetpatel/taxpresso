@@ -24,6 +24,10 @@
 // its data (a dashboard state's keys, a tool's structured keys, and one level down in those that
 // are objects) and the next step's id in full: a difference can then be named part by part, and
 // the parts that hold the tax, the form's values and the plans proved unchanged on their own.
+// TAXPRESSO_RECORD_WORK_HOME=1 answers each salaried person's commune of work (Geneva,
+// profile.work_commune) with the commune of residence as soon as it applies, straight into the
+// ledger: not recorded, no random draw, no activity line. A walk recorded before that question
+// existed then lines up with one after, call for call (data/ge/2026/questionnaire.yaml, work_commune).
 //
 //   TAXPRESSO_RECORD=/tmp/before.jsonl TAXPRESSO_RECORD_N=20 pnpm vitest run extension/test/record-years.test.ts
 import { createHash } from 'node:crypto';
@@ -45,6 +49,7 @@ const SPLIT = process.env.TAXPRESSO_RECORD_SPLIT === '1';
 const FACTS = SPLIT && process.env.TAXPRESSO_RECORD_FACTS === '1';
 const PAGES = SPLIT && process.env.TAXPRESSO_RECORD_PAGES === '1';
 const PARTS = SPLIT && process.env.TAXPRESSO_RECORD_PARTS === '1';
+const WORK_HOME = process.env.TAXPRESSO_RECORD_WORK_HOME === '1';
 const ONLY = process.env.TAXPRESSO_RECORD_ONLY?.split(',');
 const CANTONS = (process.env.TAXPRESSO_RECORD_CANTONS ?? 'GE,ZH,BE,BL,VD,BS,ZG,LU,SG').split(',');
 /** Another tax year than the default, opened first with open_tax_year (only once it exists). */
@@ -381,9 +386,23 @@ async function run(h: Household): Promise<void> {
       await call('open_tax_year', { year: YEAR });
       cur = (await import('../src/years.js')).TaxYears.of(ws).current;
     }
+    /** The commune of work, where it applies, as the commune of residence (WORK_HOME). */
+    const workHome = async () => {
+      if (!WORK_HOME) return;
+      const snap = cur.snapshot();
+      const home = snap.answers.get('profile.commune|household');
+      const open = snap.slots.filter(
+        (s) => s.question.key === 'profile.work_commune' && s.value === undefined,
+      );
+      if (typeof home !== 'string' || !open.length) return;
+      for (const s of open)
+        cur.engine.answer(cur.ledger, s.id, home, { method: 'user', via: 'chat' });
+      await cur.vault.saveLedger(cur.ledger);
+    };
     await call('get_status');
     // Questions, answered in the chat or in the dashboard, with random valid answers.
     for (let i = 0; i < 40; i++) {
+      await workHome();
       const q = (await call('next_questions', { limit: 1 })).structured as
         | {
             questions: {
@@ -414,6 +433,7 @@ async function run(h: Household): Promise<void> {
       } else value = pick((question.options ?? []).map((o) => o.value));
       if (random() < 0.3) await api('POST', '/answer', { id: question.id, value });
       else await call('answer_question', { id: question.id, value });
+      await workHome();
       if (random() < 0.15) await call('get_status');
     }
     await call('get_status');

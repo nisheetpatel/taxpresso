@@ -170,6 +170,7 @@ async function dupuis() {
     ['moved', 'no'],
     ['income_sources:p1', ['salary']],
     ['employers:p1', 1],
+    ['work_commune:p1', 'Vernier'],
     ['residence:p1', 'swiss'],
     ['income_sources:p2', ['self_employment']],
     ...BUSINESS('p2'),
@@ -214,6 +215,7 @@ async function favre() {
     ['moved', 'no'],
     ['income_sources:p1', ['salary', 'self_employment']],
     ['employers:p1', 1],
+    ['work_commune:p1', 'Onex'],
     ['residence:p1', 'swiss'],
     ...BUSINESS('p1'),
     ['business_losses:p1', true],
@@ -585,6 +587,9 @@ describe('self-employment in Geneva, end to end', () => {
           ];
         } else if (q.id === 'civil_status') value = pick(['single', 'married']);
         else if (q.id === 'commune') value = pick(['Carouge', 'Onex', 'Vernier', 'Meyrin']);
+        // A salary earned at home (the seeds' other draws stay as they were).
+        else if (q.id.startsWith('work_commune'))
+          value = ws.snapshot().answers.get('profile.commune|household');
         else if (q.id === 'special') value = [];
         else if (q.type === 'multi') {
           value =

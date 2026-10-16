@@ -125,8 +125,14 @@ export function groupsOf(ws: Workspace, lang: Lang): Record<QuestionGroup, Group
   ) as Record<QuestionGroup, GroupQuestion[]>;
   for (const slot of snap.slots) {
     const rendered = ws.render(slot, lang, snap);
-    // The state is read every second: the long list of communes stays with GET /question.
-    if (rendered.type === 'commune') delete rendered.options;
+    // The state is read every second: the long list of communes stays with GET /question. A
+    // commune question's own choices besides the communes (outside the canton) stay.
+    if (rendered.type === 'commune') {
+      const own = new Set((slot.question.options ?? []).map((o) => o.value));
+      const kept = rendered.options?.filter((o) => own.has(o.value)) ?? [];
+      if (kept.length) rendered.options = kept;
+      else delete rendered.options;
+    }
     groups[slot.question.group].push({
       ...rendered,
       answered: slot.value !== undefined,

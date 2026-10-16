@@ -22,7 +22,7 @@
 // surcharges (p. 4: 47.5 %, the 12 % reduction, 1 %); the federal scales (2026: LIFD art. 36 as
 // consolidated on 1 January 2026; 2025: Form. 58c 2025 rows 58'000/58'100, 82'100, 94'900 and
 // 120'600); the communes (ge-2025-communal-centimes-pdf: Genève PP 28 % CA 45.49, Meyrin PP 30 % CA
-// 42, Carouge PP 27 % CA 40; ge-2026-part-privilegiee-communique p. 11: Genève 29 %, Meyrin 29 %,
+// 42, Carouge PP 27 % CA 40; ge-2026-part-privilegiee-communique p. 12: Genève 29 %, Meyrin 29 %,
 // Carouge 27 %; ge-2026-communal-centimes-arca: 45.49, 42, 40). Rounding: each ICC line to 5
 // centimes, flat deductions and prorated amounts to the franc, the federal tax rounded down to 5
 // centimes. The same figures were checked by a separate script written from these documents.

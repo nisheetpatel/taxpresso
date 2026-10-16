@@ -92,6 +92,42 @@ describe('the tax seam (taxWith)', () => {
     const plan = pillar3aPlan(single());
     expect(plan.saving?.totalCentimes).toBe(tax(0) - tax(7_258));
   });
+
+  // A salary earned in another commune shares the communal tax with it (ge-na-law-lcp art. 295A):
+  // the plans run on the same tax, and no longer say all income is earned at home.
+  it('counts a salary earned in another commune there, and says how', () => {
+    const at = (workCommune?: 'geneve' | 'meyrin' | 'outside') => {
+      const h = single();
+      return ordinaryTaxEstimator({
+        ...h,
+        people: h.people.map((p) => ({ ...p, ...(workCommune ? { workCommune } : {}) })),
+      })!;
+    };
+    const engine = computeReturn({
+      taxYear: 2026,
+      commune: 'meyrin',
+      civilStatus: 'single',
+      people: [
+        {
+          id: 'p1',
+          hasPensionFund: true,
+          employments: [{ gross: { value: CHF(85_000) }, workCommune: 'geneve' }],
+        },
+      ],
+    });
+    const geneva = at('geneve');
+    expect(geneva.taxWith([]).cantonalCentimes).toBe(
+      engine.icc!.taxes.incomeCantonal.amount + engine.icc!.taxes.communalIncomeTotal.amount,
+    );
+    expect(geneva.taxWith([]).cantonalCentimes).not.toBe(at().taxWith([]).cantonalCentimes);
+    expect(geneva.assumptions).toContain('work_commune_split');
+    expect(geneva.assumptions).not.toContain('home_commune_rate');
+    // At home or outside the canton: the commune of residence, as before.
+    for (const w of [undefined, 'meyrin', 'outside'] as const) {
+      expect(at(w).taxWith([]).totalCentimes).toBe(tax(0));
+      expect(at(w).assumptions).toContain('home_commune_rate');
+    }
+  });
 });
 
 describe('pension fund buy-in (rachat LPP)', () => {

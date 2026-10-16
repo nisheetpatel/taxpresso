@@ -1,13 +1,13 @@
 // Privileged share (part privilégiée) of each Geneva commune for tax year 2026, in percent of the
 // base tax: the part the commune of residence taxes at its own centimes, the rest going to the
 // commune where the income is earned (ge-na-law-lcp art. 295A al. 2 and 3).
-// Source: ge-2026-part-privilegiee-communique p. 11 (Conseil d'Etat, 15 October 2025, "Fixation de
+// Source: ge-2026-part-privilegiee-communique p. 12 (Conseil d'Etat, 15 October 2025, "Fixation de
 // la part privilégiée de chaque commune pour 2026").
 import type { Cited } from '@taxpresso/rules-ch';
 import type { CommuneSlug } from './communes.js';
 
 export const PRIVILEGED_SHARE_2026: Cited<Readonly<Record<CommuneSlug, number>>> = {
-  source: 'ge-2026-part-privilegiee-communique p. 11',
+  source: 'ge-2026-part-privilegiee-communique p. 12',
   value: {
     'aire-la-ville': 80,
     anieres: 20,

@@ -19,12 +19,15 @@
 // (p. 39, 40); accounts (p. 40, 41); securities and their taxable value from the ESTV price list
 // (p. 41); tax statements (p. 43); crypto with the accounts (p. 40); other wealth (p. 27); life
 // insurance (p. 26, 28); debts (p. 37). Withholding rules and exchange rates: packages/rules-ch
-// (withholding/).
+// (withholding/). Interest on savings capital: every bank account's interest (p. 41, p. 28), on F2
+// or, for the accounts a tax statement lists, in the statement's own column on F4 (specimen p. 24).
 //
 // Not covered, so never guessed: qualified participations (F5, F6, p. 44), business assets (FC),
 // the US additional withholding (RSI, form R-US 164, p. 39), lottery winnings (p. 42), bonds and
-// bond funds as savings interest (p. 43: they count, but a broker export doesn't say which they
-// are), the dates of opening, closing, purchase and sale (p. 40, 41).
+// bond funds as savings interest (p. 43: they count, but neither a broker export nor a tax
+// statement says which are fixed-rate bonds without a conversion right or pure bond funds), the
+// renovation funds left out of savings interest (p. 41: nothing says which account is one), the
+// dates of opening, closing, purchase and sale (p. 40, 41).
 import {
   parseMoney,
   type Fact,
@@ -777,12 +780,29 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
         'tax_statement.withholding_swiss',
         'tax_statement.foreign_tax_credit',
         'tax_statement.fees',
+        'tax_statement.savings_interest',
       ];
       if (notRead('statements', keys)) continue;
       const subject = num(g('tax_statement.income_subject_ia')) ?? 0;
       const value = num(g('tax_statement.taxable_value'));
       const swiss = num(g('tax_statement.withholding_swiss'));
       const credit = num(g('tax_statement.foreign_tax_credit'));
+      // Interest on savings capital (F4's own column, specimen p. 24): the interest of the bank
+      // accounts the statement lists, since every bank interest is interest on savings capital
+      // (guide p. 41; p. 28: "les rendements de comptes d'épargne ou de dépôt", "voir ... Relevés
+      // fiscaux"). As read on the statement, else its accounts' interest from the barcode (eCH-0196
+      // bankAccount payments, both columns). Its securities' bond interest and pure bond funds count
+      // too (p. 43), but the statement doesn't say which they are: not counted, as for a broker.
+      const accountInterest = input.facts
+        .filter(
+          (f) =>
+            (f.key === 'accounts.income_a_chf' || f.key === 'accounts.income_b_chf') &&
+            f.person === 'household' &&
+            f.instance &&
+            f.source.docId === doc.id,
+        )
+        .reduce((s, f) => s + (num(f) ?? 0), 0);
+      const savings = num(g('tax_statement.savings_interest')) ?? accountInterest;
       const raw: Raw = {
         section: 'statements',
         id: doc.id,
@@ -795,7 +815,7 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
         subject,
         notSubject: num(g('tax_statement.income_not_subject_ia')) ?? 0,
         fees: num(g('tax_statement.fees')) ?? 0,
-        savings: 0,
+        savings,
         states: stateList(keys),
         complete: true,
         valueBasis: 'document',
