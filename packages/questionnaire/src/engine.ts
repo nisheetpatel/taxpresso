@@ -384,12 +384,14 @@ export class QuestionnaireEngine {
       const owners: Owner[] = def.perPerson ? snapshot.people : ['household'];
       for (const person of owners) {
         if (def.when && !this.#holds(def.when, person, snapshot.answers, snapshot.people)) continue;
+        // One per employer, say: one as soon as the requirement applies, as many as the answer
+        // says once it is given.
         const countKey = def.expects.countKey;
         const need = countKey
           ? Number(
               snapshot.answers.get(
                 slotKey(countKey, this.keys[countKey]?.perPerson ? person : 'household'),
-              ) ?? 0,
+              ) ?? 1,
             )
           : 1;
         if (need <= 0) continue;

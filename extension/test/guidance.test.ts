@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createApi } from '../src/api.js';
 import { Dashboard } from '../src/dashboard.js';
 import { INSTRUCTIONS, INSTRUCTIONS_MAX } from '../src/instructions.js';
+import { waitedFor } from '../src/journey.js';
 import { createTaxpressoServer } from '../src/server.js';
 import type { Workspace } from '../src/workspace.js';
 import { makeUiDir, makeWorkspace } from './helpers.js';
@@ -119,6 +120,32 @@ async function household() {
 }
 
 type Household = Awaited<ReturnType<typeof household>>;
+
+/**
+ * Answers plainly only what the next step waits for (the basics, the details and a special case's
+ * own details: journey.ts, waitedFor), but the questions in `except`; anything special, the costs
+ * and the plans stay open.
+ */
+async function answerWaited(h: Household, except: string[] = []) {
+  for (let i = 0; i < 60; i++) {
+    const slot = h.ws
+      .snapshot()
+      .slots.find((s) => s.value === undefined && waitedFor(s) && !except.includes(s.id));
+    if (!slot) return;
+    const q = slot.question;
+    const value =
+      q.type === 'yesno'
+        ? false
+        : q.type === 'number' || q.type === 'money'
+          ? (q.min ?? 0)
+          : q.type === 'multi'
+            ? []
+            : q.type === 'commune'
+              ? h.ws.engine.communes[0]!.name
+              : q.options!.find((o) => !o.notSupported)!.value;
+    await h.answer([[slot.id, value]]);
+  }
+}
 
 /** A retired person in Geneva, single, in Carouge, Swiss; `special` as the special-cases question. */
 async function retired(h: Household, special: string[], more: [string, unknown][] = []) {
@@ -324,6 +351,28 @@ const ROWS: Row[] = [
       return h.status();
     },
     whenNot: async () => (await household()).status(),
+  },
+  {
+    guidance:
+      'get_status: the questions step waits for a special case’s own details, never for anything special, costs or plans',
+    pattern: /ask only what is still unknown, a few at a time/,
+    when: async () => {
+      // An arrival from abroad without its day: the tax can't do without it.
+      const h = await household();
+      await h.answer([
+        ['canton', 'GE'],
+        ['moved', 'from_abroad'],
+      ]);
+      await answerWaited(h, ['arrival_date:p1']);
+      return h.status();
+    },
+    whenNot: async () => {
+      // Nothing special said, no costs, no plans: still open, offered on their pages.
+      const h = await household();
+      await h.answer([['canton', 'GE']]);
+      await answerWaited(h);
+      return h.status();
+    },
   },
   {
     guidance: 'get_status: a fact the same for both of a couple is said once',

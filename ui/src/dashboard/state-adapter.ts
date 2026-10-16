@@ -45,6 +45,11 @@ export interface RoughView {
   /** The kinds this canton takes, in the card's order (a business's profit is Geneva's only). */
   kinds: { kind: RoughKind; key: string; field: RoughField }[];
   people: RoughPerson[];
+  /**
+   * How far the documents moved the tax from what the rough numbers said, in centimes (below zero:
+   * less), once a document replaced a rough figure and the tax no longer rests on one; else null.
+   */
+  moved: number | null;
 }
 
 /** The fields GET /state has for the three pages. */

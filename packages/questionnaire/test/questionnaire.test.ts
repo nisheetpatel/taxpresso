@@ -237,6 +237,16 @@ describe('Geneva questionnaire 2026', () => {
       have: 0,
       expects: { count: 2 },
     });
+    // A salary: one certificate listed at once, then as many as the employers once that is known.
+    expect(reqs.find((r) => r.id === 'salary_certificate:p2')).toMatchObject({
+      status: 'missing',
+      expects: { count: 1 },
+    });
+    e.answer(ledger, 'employers:p2', 3, USER);
+    const refined = e.requirements(e.snapshot(ledger), []);
+    expect(refined.find((r) => r.id === 'salary_certificate:p2')?.expects).toMatchObject({
+      count: 3,
+    });
     expect(reqs.map((r) => r.id)).toContain('pension:p2');
     expect(reqs.map((r) => r.id)).toContain('childcare');
     expect(e.chips(snap2, 'fr')).toContain(`Conjoint${NBSP}: Rente`);

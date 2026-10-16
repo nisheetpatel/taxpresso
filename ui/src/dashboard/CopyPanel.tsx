@@ -191,17 +191,15 @@ export function CopyPanel({ state, lang, act }: { state: State; lang: Language; 
   if (!panel || (panel.sections.length === 0 && panel.waiting.length === 0)) return null;
   const person = (id: string) => inSentence(state.people.find((p) => p.id === id)?.label ?? id);
   const canton = state.canton?.code;
+  // Inside step 2, "Fill in your declaration", under "Copy values": no heading of its own.
   return (
-    <section aria-labelledby="cp-title" class="stack">
-      <div class="section-head">
-        <h2 id="cp-title">{tc(lang, 'title')}</h2>
-        {panel.total ? (
-          <span class="muted small-text tnum">
-            {tc(lang, 'progress', { n: panel.entered, total: panel.total })}
-          </span>
-        ) : null}
-      </div>
+    <div class="stack">
       <p class="muted cp-lead">{tc(lang, cck('lead', canton))}</p>
+      {panel.total ? (
+        <p class="muted small-text tnum cp-lead">
+          {tc(lang, 'progress', { n: panel.entered, total: panel.total })}
+        </p>
+      ) : null}
       {panel.provisional && panel.note ? <p class="banner banner-estimate">{panel.note}</p> : null}
       {panel.couple ? (
         <p class="muted small-text cp-lead">
@@ -220,6 +218,6 @@ export function CopyPanel({ state, lang, act }: { state: State; lang: Language; 
       {panel.sections.map((s) => (
         <Page key={s.page} s={s} lang={lang} act={act} />
       ))}
-    </section>
+    </div>
   );
 }

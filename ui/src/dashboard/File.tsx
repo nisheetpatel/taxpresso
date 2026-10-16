@@ -8,31 +8,37 @@ import { CopyPanel } from './CopyPanel';
 import { FinalCheckStep } from './FinalCheck';
 import { pg, type PagesMessageKey } from './i18n-pages';
 import type { PageProps } from './page-props';
-import type { GroupId, PagesFields } from './state-adapter';
+import type { GroupQuestion, PagesFields } from './state-adapter';
 import { Reconcile } from './Reconcile';
 import { TaxStrip } from './TaxCard';
 import type { State } from './types';
 import { AskClaude, Icon } from './ui';
-import { docStatus } from './YourTax';
+import { SPECIAL_ROOTS } from './YourTax';
 
-/** What still stands between the household and filing, in words, each where it is done. */
+/**
+ * What still stands between the household and filing, in words, each where it is done. The same
+ * questions as the next step waits for: the basics, the details, and the details of a special case
+ * you said applies (both asked on Your tax). Anything special, costs and plans are offered on
+ * their pages, never in the way.
+ */
 export function stillToDo(state: State, pages: PagesFields, lang: PageProps['lang']): string[] {
   const count = (n: number, many: PagesMessageKey, one: PagesMessageKey) =>
     n ? [n === 1 ? pg(lang, one) : pg(lang, many, { n })] : [];
-  const open = (g: GroupId) => pages.groups[g].filter((q) => !q.answered).length;
-  const once = (g: GroupId, key: PagesMessageKey) => (open(g) ? [pg(lang, key)] : []);
-  const statuses = state.documents.map((d) => docStatus(state, d).status);
+  const open = (list: GroupQuestion[]) => list.filter((q) => !q.answered).length;
+  const followUps = pages.groups.special.filter((q) => !SPECIAL_ROOTS.has(q.questionId));
+  const statuses = state.documents.map((d) => d.status);
   const missing = [
     ...new Set(
       state.requirements.filter((r) => r.status === 'missing' && !r.optional).map((r) => r.label),
     ),
   ];
   return [
-    ...once('basics', 'file.todoBasics'),
-    ...count(open('detail'), 'file.todoQuestions', 'file.todoQuestionsOne'),
-    ...once('special', 'file.todoSpecial'),
-    ...once('deduction', 'file.todoCosts'),
-    ...once('plan', 'file.todoPlan'),
+    ...(open(pages.groups.basics) ? [pg(lang, 'file.todoBasics')] : []),
+    ...count(
+      open(pages.groups.detail) + open(followUps),
+      'file.todoQuestions',
+      'file.todoQuestionsOne',
+    ),
     ...count(state.toConfirm, 'file.todoConfirm', 'file.todoConfirmOne'),
     ...count(
       state.checks.filter((c) => !c.resolved).length,

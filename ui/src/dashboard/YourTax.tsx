@@ -12,29 +12,10 @@ import { pg, type PagesMessageKey } from './i18n-pages';
 import type { PageProps } from './page-props';
 import type { GroupQuestion, PagesFields } from './state-adapter';
 import { TaxCard } from './TaxCard';
-import type { DocumentView, RequirementView, State, Value } from './types';
-import type { DocumentCard } from './types-docs';
+import type { DocStatus, DocumentView, RequirementView, State, Value } from './types';
 import { AskClaude, Icon } from './ui';
 
-/** What a file in the folder turned out to be. */
-export type DocStatus = 'whose' | 'confirm' | 'unknown' | 'read' | 'barcode' | 'done';
-
-/** Kinds that hold nothing to read: they are kept, compared or checked elsewhere. */
-const NOTHING_TO_READ = new Set(['other', 'official_declaration', 'prior_declaration']);
-
-export function docStatus(
-  state: State,
-  d: DocumentView,
-): { status: DocStatus; card?: DocumentCard } {
-  const card = state.cards.find((c) => c.docId === d.id);
-  if (d.barcode === 'pending') return { status: 'whose' };
-  if (!d.kind) return { status: 'unknown' };
-  if (card && card.toConfirm > 0) return { status: 'confirm', card };
-  if (d.barcode === 'read') return { status: 'barcode' };
-  if (!card && !NOTHING_TO_READ.has(d.kind)) return { status: 'read' };
-  return { status: 'done' };
-}
-
+/** Something to do first (whose, an OK, what it is, to read), then what is done. */
 const ACTION_FIRST: Record<DocStatus, number> = {
   whose: 0,
   confirm: 1,
@@ -74,7 +55,9 @@ function Mark({ done }: { done: boolean }) {
 
 function DocRow({ p, d }: { p: PageProps; d: DocumentView }): JSX.Element {
   const { state, lang, act } = p;
-  const { status, card } = docStatus(state, d);
+  // What it turned out to be is the extension's word; the values to OK are on its card.
+  const status = d.status;
+  const card = status === 'confirm' ? state.cards.find((c) => c.docId === d.id) : undefined;
   const couple = state.people.length > 1;
   const owner =
     couple && (d.person === 'p1' || d.person === 'p2') ? short(lang, d.person) : undefined;
@@ -199,9 +182,7 @@ const INCOME_DOCS = new Set(['salary_certificate', 'replacement_income', 'pensio
 
 export function MakeItExact(p: PageProps): JSX.Element | null {
   const { state, lang, act, embedded } = p;
-  const docs = [...state.documents].sort(
-    (a, b) => ACTION_FIRST[docStatus(state, a).status] - ACTION_FIRST[docStatus(state, b).status],
-  );
+  const docs = [...state.documents].sort((a, b) => ACTION_FIRST[a.status] - ACTION_FIRST[b.status]);
   const missing = missingGroups(state);
   const checks = state.checks.filter((c) => !c.resolved);
   const securities = state.holdings || state.securities?.warnings.length;
@@ -311,6 +292,12 @@ export function MoreQuestions(p: PageProps): JSX.Element | null {
   );
 }
 
+/**
+ * The special questions the chips answer. Every other special question is a follow-up, asked
+ * because of an answer: the next step and filing wait for those (extension/src/journey.ts).
+ */
+export const SPECIAL_ROOTS: ReadonlySet<string> = new Set(['special', 'moved']);
+
 export type ChipId = 'home' | 'abroad' | 'self' | 'moved' | 'capital';
 export interface Chip {
   id: ChipId;
@@ -407,10 +394,9 @@ export function Special(p: PageProps): JSX.Element | null {
     if (c.questions.length > 1) return setFlag('who:self', !flags.has('who:self'));
     add(c, c.questions[0]!);
   };
-  // The follow-ups: what the chips opened, one at a time.
-  const roots = new Set(['special', ...(flags.has('open:moved') ? [] : ['moved'])]);
+  // The follow-ups: what the chips opened, one at a time (the move question has its own card).
   const next = openIn(
-    pages.groups.special.filter((q) => !roots.has(q.questionId)),
+    pages.groups.special.filter((q) => !SPECIAL_ROOTS.has(q.questionId)),
     flags,
   )[0];
   return (
