@@ -39,22 +39,6 @@ function saveLang(lang: Language): void {
   }
 }
 
-/** Where storage isn't allowed (the view inside Claude Desktop): remembered while it is open. */
-const memory = new Map<string, number>();
-
-/** The rough tax of this year, remembered on this computer for "CHF 660 less than…". */
-function remembered(key: string, value?: number): number | null {
-  if (value !== undefined) memory.set(key, value);
-  try {
-    if (value !== undefined) localStorage.setItem(key, String(value));
-    const stored = localStorage.getItem(key);
-    if (stored !== null && Number.isFinite(Number(stored))) return Number(stored);
-  } catch {
-    /* no storage here: the memory of this session */
-  }
-  return memory.get(key) ?? null;
-}
-
 /** The basics card's changes, one after the other: each answer can open the next question. */
 async function runWrites(writes: Write[], lang: Language): Promise<State> {
   let last: State | undefined;
@@ -166,12 +150,6 @@ export function App({ menuExtra }: { menuExtra?: ComponentChildren } = {}): JSX.
     return <main class="app">{lost ? <p class="banner banner-fix">{t(L, 'lost')}</p> : null}</main>;
   }
 
-  const total = state.estimate?.computed ? state.estimate.total : null;
-  const roughKey = `taxpresso.rough.${state.vault.path}.${state.taxYear}`;
-  const roughBefore =
-    pages.confidence === 'rough' && total !== null
-      ? remembered(roughKey, total)
-      : remembered(roughKey);
   const shown = shownPage(pages.page, tab);
   const props: PageProps = {
     state,
@@ -199,7 +177,6 @@ export function App({ menuExtra }: { menuExtra?: ComponentChildren } = {}): JSX.
       preset.current = p;
       fileInput.current?.click();
     },
-    roughBefore: pages.confidence === 'rough' ? null : roughBefore,
   };
 
   let body: JSX.Element;

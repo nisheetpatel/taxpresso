@@ -27,6 +27,4 @@ export interface PageProps {
   openBasics: () => void;
   /** Adds documents: the folder in Finder or Explorer inside Claude Desktop, else a file picker. */
   add: (preset?: { kind: string; person?: string }) => void;
-  /** The rough tax this year's figures replaced, when they did (centimes), for "CHF 660 less". */
-  roughBefore: number | null;
 }

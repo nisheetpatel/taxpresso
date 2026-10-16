@@ -184,6 +184,7 @@ function rough(
       ...x,
       figures: x.amount !== null && x.kind ? [{ kind: x.kind, amount: x.amount, used: true }] : [],
     })),
+    moved: null,
   };
 }
 const pagesOf = (state: State) => withCommunes(state, undefined);
@@ -355,7 +356,6 @@ function props(state: State, change: Partial<PageProps> = {}): PageProps {
     go: () => undefined,
     openBasics: () => undefined,
     add: () => undefined,
-    roughBefore: null,
     ...change,
   };
 }
@@ -648,8 +648,8 @@ describe('the number', () => {
   });
 
   it('says what it rests on, and how much the documents moved it', () => {
-    const rough = plain(textOf(card('rough')));
-    expect(rough).toMatch(/From what you told us: about CHF 95.000 in salary, just you, Carouge\./);
+    const told = plain(textOf(card('rough')));
+    expect(told).toMatch(/From what you told us: about CHF 95.000 in salary, just you, Carouge\./);
     const tree = expand(
       TaxCard(
         props(
@@ -657,10 +657,21 @@ describe('the number', () => {
             confidence: 'close',
             estimate: { ...household().estimate, total: 824_000 },
             documents: [
-              { id: 'd1', filename: 'c.pdf', bytes: 1, addedAt: '', kind: 'salary_certificate' },
+              {
+                id: 'd1',
+                filename: 'c.pdf',
+                bytes: 1,
+                addedAt: '',
+                kind: 'salary_certificate',
+                status: 'done',
+              },
             ],
+            // The extension noted CHF 8,900 when the certificate replaced the rough salary.
+            rough: {
+              ...rough([{ person: 'p1', amount: 9_500_000, kind: 'salary' }]),
+              moved: -66_000,
+            },
           }),
-          { roughBefore: 890_000 },
         ),
       ),
     );
@@ -710,8 +721,9 @@ describe('only what applies', () => {
         kind: 'salary_certificate',
         kindLabel: 'Salary certificate',
         barcode: 'read',
+        status: 'barcode',
       },
-      { id: 'u', filename: 'IMG_0412.jpg', bytes: 1, addedAt: '' },
+      { id: 'u', filename: 'IMG_0412.jpg', bytes: 1, addedAt: '', status: 'unknown' },
       {
         id: 'c',
         filename: 'c.pdf',
@@ -719,6 +731,17 @@ describe('only what applies', () => {
         addedAt: '',
         kind: 'health_premiums',
         kindLabel: 'Health insurance premiums',
+        status: 'confirm',
+      },
+      // Nothing to read in it, so no card: done, as the extension says, never "to read".
+      {
+        id: 'o',
+        filename: 'o.pdf',
+        bytes: 1,
+        addedAt: '',
+        kind: 'other',
+        kindLabel: 'Something else',
+        status: 'done',
       },
     ];
     const cards = [
@@ -746,7 +769,7 @@ describe('only what applies', () => {
       },
     ];
     const tree = expand(MakeItExact(props(household({ documents, cards }))));
-    expect(textOf(ofType(tree, 'h2'))).toBe('Taxpresso sorted 3 documents');
+    expect(textOf(ofType(tree, 'h2'))).toBe('Taxpresso sorted 4 documents');
     const rows = all(
       tree,
       (e) =>
@@ -757,10 +780,13 @@ describe('only what applies', () => {
       'Health insurance premiums',
       'IMG_0412.jpg',
       'Salary certificate',
+      'Something else',
     ]);
     expect(ofType([rows[0]!], 'ValueCheck')).toHaveLength(1);
     expect(textOf(rows[1]!)).toContain('Not sure what this is. Claude will take a look.');
     expect(textOf(rows[2]!)).toContain('Read on its own, nothing to check');
+    expect(textOf(rows[3]!)).toContain('Read and checked');
+    expect(textOf(rows[3]!)).not.toContain('Claude reads this one with you.');
   });
 
   it('asks whose a barcode certificate is, with one button per person', () => {
@@ -778,6 +804,7 @@ describe('only what applies', () => {
           kind: 'salary_certificate',
           kindLabel: 'Salary certificate',
           barcode: 'pending',
+          status: 'whose',
         },
       ],
     });
@@ -793,6 +820,12 @@ describe('only what applies', () => {
       path: '/documents/kind',
       body: { id: 'w', kind: 'salary_certificate', person: 'p2' },
     });
+  });
+
+  it('asks where you moved once, when its chip is tapped', () => {
+    const tree = expand(Special(props(household(), { flags: new Set(['open:moved']) })));
+    const asked = ofType(tree, 'AskOne').map((e) => (e.props.q as GroupQuestion).id);
+    expect(asked).toEqual(['moved']);
   });
 
   it('shows only the chips the canton asks about, and says plainly what isn’t supported', () => {
@@ -942,15 +975,25 @@ describe('File', () => {
     const tree = expand(FilePage(props(state)));
     expect(textOf(tree)).toContain('Filing opens when your documents are in.');
     expect(ofType(tree, 'li').map(textOf)).toEqual(stillToDo(state, pagesOf(state), 'en'));
+    // Anything special, the costs and the plans are still open, but never in the way of filing.
     expect(stillToDo(state, pagesOf(state), 'en')).toEqual([
       'Answer one more question',
-      'Say whether anything is special this year, on Your tax',
-      'Tap the costs you can deduct, on Pay less',
-      'Say whether you paid into pillar 3a or a pension fund, on Pay less',
       'Check 2 values read from your documents',
       'Add: Health insurance premiums',
     ]);
     expect(ofType(tree, 'FinalCheckStep')).toHaveLength(0);
+    // The details of a special case said to apply are: the day of an arrival, with the details.
+    const arrived = household({
+      groups: groups({
+        special: [
+          ...groups().special.map((x) =>
+            x.questionId === 'moved' ? { ...x, answered: true, value: 'from_abroad' } : x,
+          ),
+          q('arrival_date:p1', { type: 'date' }),
+        ],
+      }),
+    });
+    expect(stillToDo(arrived, pagesOf(arrived), 'en')).toEqual(['Answer 2 more questions']);
   });
 
   const check: FinalCheckState = {
@@ -979,6 +1022,20 @@ describe('File', () => {
       (e) => e.type === 'details' && textOf(ofType([e], 'summary')) === 'Copy values',
     )[0]!;
     expect(ofType([copy], 'CopyPanel')).toHaveLength(1);
+    // Under "Copy values", the panel doesn't say step 2's title again; its progress stays.
+    const panel = expand(
+      CopyPanel({
+        state: {
+          ...done,
+          copyPanel: { ...done.copyPanel, total: 3, entered: 1, waiting: [{ label: 'Premiums' }] },
+        },
+        lang: 'en',
+        act: noAct,
+      }),
+    );
+    expect(all(panel, (e) => /^h\d$/.test(e.type))).toHaveLength(0);
+    expect(textOf(panel)).not.toContain('Fill in your declaration');
+    expect(textOf(panel)).toContain('1 of 3 entered');
     expect(ofType(tree, 'Reconcile')).toHaveLength(1);
     expect(textOf(tree)).toContain('You press Transmettre. Taxpresso never sends anything.');
     const zurich = household({

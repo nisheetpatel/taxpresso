@@ -3,7 +3,7 @@
 // rough benefits and pensions themselves, used as estimates until their attestation is in, in
 // Geneva and in Zurich alike. Synthetic households only (the Martin and Keller households are made
 // up). Temporary folders, never the real one.
-import { mkdir, mkdtemp } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
@@ -18,8 +18,9 @@ import { Dashboard, type ApiRequest } from '../src/dashboard.js';
 import { createTaxpressoServer } from '../src/server.js';
 import { makeUiDir } from './helpers.js';
 import { saveHolding } from '../src/holdings.js';
-import { pageOf, STAGE_OF, type NextId } from '../src/journey.js';
+import { pageOf, STAGE_OF, waitedFor, type NextId } from '../src/journey.js';
 import { ROUGH_INCOME } from '../src/pages.js';
+import { buildStatus } from '../src/status.js';
 import { Workspace, yearOverPlans } from '../src/workspace.js';
 
 /** A workspace on a temporary folder, on a fixed day; `repo`: the folder is inside a git repo. */
@@ -173,6 +174,64 @@ describe('the page the panel opens on', () => {
     const repo = await workspace({ repo: true });
     const r = await state(repo);
     expect([r.journey.next.id, r.page]).toEqual(['folder', { current: 'start', tabs: false }]);
+  });
+});
+
+describe('the questions the next step waits for', () => {
+  /** Answers only what the next step waits for (the basics and the details), plainly. */
+  async function answerWaited(ws: Workspace, given: Record<string, unknown>) {
+    for (let i = 0; i < 80; i++) {
+      const slot = ws.snapshot().slots.find((s) => s.value === undefined && waitedFor(s));
+      if (!slot) return;
+      const q = slot.question;
+      const value =
+        slot.id in given
+          ? given[slot.id]
+          : q.type === 'yesno'
+            ? false
+            : q.type === 'number' || q.type === 'money'
+              ? (q.min ?? 0)
+              : q.type === 'multi'
+                ? []
+                : q.type === 'commune'
+                  ? ws.engine.communes[0]!.slug
+                  : q.options?.find((o) => !o.notSupported)?.value;
+      await post(ws, '/answer', { id: slot.id, value });
+    }
+  }
+
+  it('are the basics and the details: special cases, deductions and plans never hold it', async () => {
+    const ws = await workspace();
+    await answerWaited(ws, MARTIN);
+    let s = await state(ws);
+    // Still open, offered on their pages: anything special, the costs to deduct, the plans.
+    for (const group of ['special', 'deduction', 'plan'] as const) {
+      expect(s.groups[group].filter((q) => !q.answered).length, group).toBeGreaterThan(0);
+    }
+    expect(s.journey.next.id).toBe('income');
+    expect(s.journey.stages.find((x) => x.id === 'about')?.status).toBe('done');
+    expect(buildStatus(ws, { dashboardRunning: false }).next.id).toBe('income');
+    // A special case said to apply: its details hold the next step (the tax can't do without them).
+    s = await post(ws, '/answer', { id: 'moved', value: 'from_abroad' });
+    expect(s.journey.next).toMatchObject({ id: 'questions', vars: { n: 1 } });
+    expect(buildStatus(ws, { dashboardRunning: false }).next.id).toBe('questions');
+    expect(s.groups.special.find((q) => q.id === 'arrival_date:p1')?.answered).toBe(false);
+    s = await post(ws, '/answer', { id: 'arrival_date:p1', value: '2026-04-01' });
+    expect(s.journey.next.id).toBe('income');
+  });
+
+  it('let the File page open with only optional questions left', async () => {
+    const ws = await workspace({ today: '2027-02-10' });
+    await answerWaited(ws, MARTIN);
+    await document(ws, 'salary_certificate', 'p1', [['salary.gross', "90'000.00"]]);
+    await document(ws, 'health_premiums', 'p1', [['health.premiums', "4'800.00"]]);
+    const s = await state(ws);
+    expect(s.progress.answered).toBeLessThan(s.progress.total);
+    expect([s.journey.next.id, s.journey.documentsIn, s.page.current]).toEqual([
+      'file',
+      true,
+      'file',
+    ]);
   });
 });
 
@@ -417,6 +476,122 @@ describe('rough income', () => {
       benefits: 'plan.replacement_income',
       pension: 'plan.pension_income',
     });
+  });
+
+  it('notes what the rough numbers said when a document first replaces one, and how far the tax moved', async () => {
+    const ws = await workspace();
+    await answerAll(ws, MARTIN);
+    await ws.setPlan('p1', 'plan.gross_salary', 90_000, 'chat');
+    let s = await state(ws);
+    expect([s.confidence, s.rough.moved]).toEqual(['rough', null]);
+    const said = ws.estimate().result!.total!;
+    // The certificate replaces the rough salary on its own: what the rough numbers said is noted,
+    // in the year's folder, never in the ledger, so no engine reads it.
+    await document(ws, 'salary_certificate', 'p1', [['salary.gross', "80'000.00"]], false);
+    expect(ws.roughTaxNoted()).toBe(said);
+    expect(ws.ledger.view().some((f) => f.value === said)).toBe(false);
+    expect(JSON.parse(await readFile(path.join(ws.vault.dir, 'rough.json'), 'utf8'))).toEqual({
+      version: 1,
+      tax: said,
+    });
+    s = await state(ws);
+    const now = ws.estimate().result!.total!;
+    expect(s.confidence).toBe('close');
+    expect(s.rough.moved).toBe(now - said);
+    expect(s.rough.moved).toBeLessThan(0);
+    // A rough figure the tax rests on again: rough, nothing to compare. Taken back: the same
+    // difference, from what was noted first (never noted again).
+    await ws.setPlan('p1', 'plan.pension_income', 12_000, 'chat');
+    s = await state(ws);
+    expect([s.confidence, s.rough.moved]).toEqual(['rough', null]);
+    await ws.setPlan('p1', 'plan.pension_income', 0, 'chat');
+    expect((await state(ws)).rough.moved).toBe(now - said);
+    expect(ws.roughTaxNoted()).toBe(said);
+    // Kept on this computer: the same folder opened again says the same.
+    const again = new Workspace(ws.config, new CantonRegistry(ws.taxYear));
+    await again.ready();
+    expect((await state(again)).rough.moved).toBe(now - said);
+  });
+
+  it('notes nothing when a rough figure is taken back, or no rough figure was counted', async () => {
+    const ws = await workspace();
+    await answerAll(ws, MARTIN);
+    await ws.setPlan('p1', 'plan.gross_salary', 90_000, 'chat');
+    await ws.setPlan('p1', 'plan.gross_salary', 0, 'chat');
+    // A certificate first, then a rough salary it already replaces.
+    await document(ws, 'salary_certificate', 'p1', [['salary.gross', "80'000.00"]]);
+    await ws.setPlan('p1', 'plan.gross_salary', 90_000, 'chat');
+    await document(ws, 'health_premiums', 'p1', [['health.premiums', "4'800.00"]]);
+    expect(ws.roughTaxNoted()).toBeUndefined();
+    expect((await state(ws)).rough.moved).toBeNull();
+  });
+});
+
+describe('what each document turned out to be', () => {
+  const fixture = async (name: string) =>
+    new Uint8Array(
+      await readFile(path.resolve(import.meta.dirname, '..', '..', 'test', 'fixtures', name)),
+    );
+  const synthetic = (text: string) => new TextEncoder().encode(`%PDF-1.7 synthetic ${text}`);
+  const statusOf = async (ws: Workspace, id: string) =>
+    (await state(ws)).documents.find((d) => d.id === id)?.status;
+
+  it('is the extension’s word, from the same counts as the next step', async () => {
+    const ws = await workspace();
+    await answerAll(ws, MARTIN);
+    // A file nobody has identified yet: Claude takes a look (the next step reads it).
+    const { document: scan } = await ws.addDocument(synthetic('scan'), 'IMG_0412.pdf', 'dashboard');
+    expect(await statusOf(ws, scan.id)).toBe('unknown');
+    expect((await state(ws)).journey.next.id).toBe('read');
+    // Said to be a health insurance statement: to read. Read: its value waits for an OK. Then done.
+    await ws.setDocumentKind(scan.id, 'health_premiums', 'p1');
+    expect(await statusOf(ws, scan.id)).toBe('read');
+    await ws.proposeExtraction(scan.id, { kind: 'health_premiums', taxYear: 2026, person: 'p1' }, [
+      { key: 'health.premiums', value: "4'800.00", page: 1 },
+    ]);
+    expect(await statusOf(ws, scan.id)).toBe('confirm');
+    expect((await state(ws)).journey.next.id).toBe('confirm');
+    await ws.confirmDocument(scan.id, 'dashboard');
+    expect(await statusOf(ws, scan.id)).toBe('done');
+    // A salary certificate read from its barcode: read on its own. A file with nothing to read in
+    // it: done, never "to read". A broker export read on its own: its values wait for an OK, as
+    // the next step says.
+    const cert = await ws.addDocument(
+      await fixture('barcodes/dupont-certificat-salaire-2026-vectoriel.pdf'),
+      'certificat.pdf',
+      'dashboard',
+    );
+    expect(await statusOf(ws, cert.document.id)).toBe('barcode');
+    const { document: note } = await ws.addDocument(synthetic('note'), 'note.pdf', 'dashboard');
+    await ws.setDocumentKind(note.id, 'other');
+    expect(await statusOf(ws, note.id)).toBe('done');
+    expect((await state(ws)).journey.next.id).not.toBe('confirm');
+    const broker = await ws.addDocument(
+      await fixture('brokers/dupont-ibkr-2026.xml'),
+      'ibkr.xml',
+      'dashboard',
+    );
+    expect(await statusOf(ws, broker.document.id)).toBe('confirm');
+    expect((await state(ws)).journey.next.id).toBe('confirm');
+  });
+
+  it('waits for whose a certificate read from its barcode is, in a couple', async () => {
+    const ws = await workspace();
+    await answerAll(ws, {
+      ...MARTIN,
+      civil_status: 'married',
+      'income_sources:p2': ['salary'],
+      'employers:p2': 1,
+      'residence:p2': 'swiss',
+    });
+    const { document } = await ws.addDocument(
+      await fixture('barcodes/dupont-certificat-salaire-2026-vectoriel.pdf'),
+      'certificat.pdf',
+      'dashboard',
+    );
+    expect(await statusOf(ws, document.id)).toBe('whose');
+    await ws.setDocumentKind(document.id, 'salary_certificate', 'p2');
+    expect(await statusOf(ws, document.id)).toBe('barcode');
   });
 });
 

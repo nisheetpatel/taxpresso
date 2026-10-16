@@ -86,6 +86,7 @@ describe('what may be a document', () => {
       'documents.json',
       'questionnaire.json',
       'entered.json',
+      'rough.json',
       'decisions.json',
       'README.txt',
       '.DS_Store',
