@@ -232,9 +232,14 @@
         },
         "socialDeductions": [],
         "taxableIncome": {
+          "amount": 6366300,
+          "how": "Net income 63'663.00 less the social deductions 0.00: 63'663.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
           "amount": 6360000,
-          "how": "63'663.00 rounded down to the CHF 100: 63'600.00.",
-          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD); ch-2025-ifd-instructions-personnes-physiques (barème, note 1)"
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 63'600.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD); ch-2025-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
         },
         "scale": "single",
         "scaleTax": {
@@ -253,11 +258,7 @@
           "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis and 3)"
         }
       },
-      "total": {
-        "amount": 883090,
-        "how": "ICC 8'052.60 + IFD 778.30.",
-        "source": ""
-      }
+      "total": { "amount": 883090, "how": "ICC 8'052.60 + IFD 778.30.", "source": "" }
     },
     "2026": {
       "taxYear": 2026,
@@ -488,9 +489,14 @@
         },
         "socialDeductions": [],
         "taxableIncome": {
+          "amount": 6515800,
+          "how": "Net income 65'158.00 less the social deductions 0.00: 65'158.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
           "amount": 6510000,
-          "how": "65'158.00 rounded down to the CHF 100: 65'100.00.",
-          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD); ch-2026-ifd-instructions-personnes-physiques (barème, note 1)"
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 65'100.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD); ch-2026-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
         },
         "scale": "single",
         "scaleTax": {
@@ -509,11 +515,7 @@
           "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis and 3)"
         }
       },
-      "total": {
-        "amount": 896085,
-        "how": "ICC 8'138.00 + IFD 822.85.",
-        "source": ""
-      }
+      "total": { "amount": 896085, "how": "ICC 8'138.00 + IFD 822.85.", "source": "" }
     }
   }
 }

@@ -25,12 +25,37 @@ const ADDR = {
 
 /** The insurers, banks and other issuers: invented, none is a real company. */
 const ISSUERS = {
-  insurer: { name: 'Caisse-maladie Exemple', street: 'Case postale 100', zip: '1211', city: 'Genève 2' },
+  insurer: {
+    name: 'Caisse-maladie Exemple',
+    street: 'Case postale 100',
+    zip: '1211',
+    city: 'Genève 2',
+  },
   bank: { name: 'Banque Exemple SA', street: 'Quai du Spécimen 3', zip: '1204', city: 'Genève' },
-  private: { name: 'Banque Privée Exemple SA', street: "Rue de l'Essai 30", zip: '1204', city: 'Genève' },
-  mortgage: { name: 'Banque Hypothécaire Exemple', street: 'Place du Modèle 1', zip: '1201', city: 'Genève' },
-  pillar3a: { name: 'Fondation 3a Exemple', street: 'Case postale 300', zip: '1211', city: 'Genève 3' },
-  avs: { name: 'Caisse de compensation Exemple', street: 'Route du Fictif 20', zip: '1203', city: 'Genève' },
+  private: {
+    name: 'Banque Privée Exemple SA',
+    street: "Rue de l'Essai 30",
+    zip: '1204',
+    city: 'Genève',
+  },
+  mortgage: {
+    name: 'Banque Hypothécaire Exemple',
+    street: 'Place du Modèle 1',
+    zip: '1201',
+    city: 'Genève',
+  },
+  pillar3a: {
+    name: 'Fondation 3a Exemple',
+    street: 'Case postale 300',
+    zip: '1211',
+    city: 'Genève 3',
+  },
+  avs: {
+    name: 'Caisse de compensation Exemple',
+    street: 'Route du Fictif 20',
+    zip: '1203',
+    city: 'Genève',
+  },
   afc: {
     name: 'Administration fiscale cantonale (exemple)',
     street: 'Rue du Stand 26',
@@ -44,6 +69,8 @@ export const KITS = [
   {
     slug: 'essai-carouge',
     title: 'Sophie Essai, single, salaried, Carouge',
+    story:
+      'Sophie is an architect employed full time by a firm in Carouge, where she lives. She pays into a pension fund through her employer and the maximum into her pillar 3a, takes the tram to work and keeps her savings at one bank, which sends her an e-tax statement (a current account and a Swiss equity fund).',
     commune: 'Carouge',
     communeCode: '6608',
     address: ADDR.carouge,
@@ -83,7 +110,12 @@ export const KITS = [
         salaries: [
           {
             person: 'p1',
-            employer: { name: 'Atelier Exemple SA', street: 'Route du Modèle 5', zip: '1227', city: 'Carouge' },
+            employer: {
+              name: 'Atelier Exemple SA',
+              street: 'Route du Modèle 5',
+              zip: '1227',
+              city: 'Carouge',
+            },
             base: chf(86_400),
             gross: chf(86_400),
             social: chf(5_962),
@@ -93,7 +125,9 @@ export const KITS = [
         commute: { p1: { transit: chf(500) } },
         pillar3a: [{ person: 'p1', paid: chf(7_258) }],
         health: {
-          members: [{ person: 'p1', name: 'Sophie Essai', basic: chf(4_762), supplementary: chf(1_524) }],
+          members: [
+            { person: 'p1', name: 'Sophie Essai', basic: chf(4_762), supplementary: chf(1_524) },
+          ],
         },
         statements: [
           {
@@ -121,7 +155,12 @@ export const KITS = [
         salaries: [
           {
             person: 'p1',
-            employer: { name: 'Atelier Exemple SA', street: 'Route du Modèle 5', zip: '1227', city: 'Carouge' },
+            employer: {
+              name: 'Atelier Exemple SA',
+              street: 'Route du Modèle 5',
+              zip: '1227',
+              city: 'Carouge',
+            },
             base: chf(88_200),
             gross: chf(88_200),
             social: chf(6_086),
@@ -131,7 +170,9 @@ export const KITS = [
         commute: { p1: { transit: chf(500) } },
         pillar3a: [{ person: 'p1', paid: chf(7_258) }],
         health: {
-          members: [{ person: 'p1', name: 'Sophie Essai', basic: chf(5_887), supplementary: chf(1_560) }],
+          members: [
+            { person: 'p1', name: 'Sophie Essai', basic: chf(5_887), supplementary: chf(1_560) },
+          ],
         },
         statements: [
           {

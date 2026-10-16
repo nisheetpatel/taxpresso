@@ -20,6 +20,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import * as prettier from 'prettier';
 import { KITS } from './kits.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -196,7 +197,13 @@ const IFD = {
     perChildReduction: 263_00,
     child: 6_800_00,
     married2800: 2_800_00,
-    insurance: { single: 1_800_00, couple: 3_700_00, singleNone: 2_700_00, coupleNone: 5_550_00, perChild: 700_00 },
+    insurance: {
+      single: 1_800_00,
+      couple: 3_700_00,
+      singleNone: 2_700_00,
+      coupleNone: 5_550_00,
+      perChild: 700_00,
+    },
     twoEarner: { min: 8_600_00, max: 14_100_00 },
     childcare: 25_800_00,
     otherCosts: { rate: 3, min: 2_000_00, max: 4_000_00 },
@@ -239,7 +246,13 @@ const IFD = {
     perChildReduction: 263_00,
     child: 6_800_00,
     married2800: 2_800_00,
-    insurance: { single: 1_800_00, couple: 3_700_00, singleNone: 2_700_00, coupleNone: 5_550_00, perChild: 700_00 },
+    insurance: {
+      single: 1_800_00,
+      couple: 3_700_00,
+      singleNone: 2_700_00,
+      coupleNone: 5_550_00,
+      perChild: 700_00,
+    },
     twoEarner: { min: 8_600_00, max: 14_100_00 },
     childcare: 25_800_00,
     otherCosts: { rate: 3, min: 2_000_00, max: 4_000_00 },
@@ -259,7 +272,8 @@ const fr = (c) => {
 /** num / den to the nearest 5 centimes, as the guide's examples round; an exact half throws. */
 function round5(num, den = 1) {
   const twice = (2 * num) % (10 * den);
-  if (twice === 5 * den) throw new Error(`exact half of 5 centimes: ${num}/${den}, choose other amounts`);
+  if (twice === 5 * den)
+    throw new Error(`exact half of 5 centimes: ${num}/${den}, choose other amounts`);
   return Math.round(num / den / 5) * 5;
 }
 
@@ -343,15 +357,43 @@ export function computeKit(kit, year) {
   for (const s of Y.salaries ?? []) {
     const net = s.gross - s.social - s.lppOrdinary;
     salaryOf[s.person] = { ...s, net };
-    both(code(s.person, '11.10', '21.10'), s.person, s.gross, `Gross salary, box 8 of the salary certificate: ${fr(s.gross)}.`, `${GUIDE} p. 17`);
-    both(code(s.person, '31.10', '41.10'), s.person, -s.social, `AVS/AI/APG/AC/AANP contributions, box 9: ${fr(s.social)}.`, `${GUIDE} p. 18`);
-    both(code(s.person, '31.12', '41.12'), s.person, -s.lppOrdinary, `Pension fund contributions, box 10.1: ${fr(s.lppOrdinary)}.`, `${GUIDE} p. 18`);
+    both(
+      code(s.person, '11.10', '21.10'),
+      s.person,
+      s.gross,
+      `Gross salary, box 8 of the salary certificate: ${fr(s.gross)}.`,
+      `${GUIDE} p. 17`,
+    );
+    both(
+      code(s.person, '31.10', '41.10'),
+      s.person,
+      -s.social,
+      `AVS/AI/APG/AC/AANP contributions, box 9: ${fr(s.social)}.`,
+      `${GUIDE} p. 18`,
+    );
+    both(
+      code(s.person, '31.12', '41.12'),
+      s.person,
+      -s.lppOrdinary,
+      `Pension fund contributions, box 10.1: ${fr(s.lppOrdinary)}.`,
+      `${GUIDE} p. 18`,
+    );
   }
 
   // Pensions (annexe C1): AVS 17.10, pension fund 13.20, both in full.
   for (const p of Y.pensions ?? []) {
     const c = p.type === 'avs_ai' ? '17.10' : '13.20';
-    both(c, p.person, p.amount, p.type === 'avs_ai' ? `AVS pension of the year, taxable in full: ${fr(p.amount)}.` : `Pension fund pension (started after 2002), taxable in full: ${fr(p.amount)}.`, p.type === 'avs_ai' ? `${GUIDE} p. 25 (17.10)` : `${GUIDE} p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)`);
+    both(
+      c,
+      p.person,
+      p.amount,
+      p.type === 'avs_ai'
+        ? `AVS pension of the year, taxable in full: ${fr(p.amount)}.`
+        : `Pension fund pension (started after 2002), taxable in full: ${fr(p.amount)}.`,
+      p.type === 'avs_ai'
+        ? `${GUIDE} p. 25 (17.10)`
+        : `${GUIDE} p. 26 (13.20) and p. 29 (33.20, pensions started before 2002 only)`,
+    );
   }
 
   // Self-employment (annexe B): profit 12.01, the owner's AVS contributions 32.10.
@@ -361,8 +403,20 @@ export function computeKit(kit, year) {
     const costs = (b.costsGoods ?? 0) + (b.depreciation ?? 0) + (b.costsOther ?? 0);
     const profit = revenue - costs;
     businessOf[b.person] = { ...b, profit };
-    both('12.01', b.person, profit, `Business result: revenue ${fr(revenue)} less charges ${fr(costs)} (12.17 - 12.45 = 12.46): ${fr(profit)}.`, `${INDEP} p. 13 to 15; ${GUIDE} p. 23 and 24`);
-    both('32.10', b.person, -b.avs, `The owner's own AVS/AI/APG instalments paid for the year (32.10), in full: ${fr(b.avs)}.`, `${INDEP} p. 22; ge-na-law-lipp art. 31 let. a`);
+    both(
+      '12.01',
+      b.person,
+      profit,
+      `Business result: revenue ${fr(revenue)} less charges ${fr(costs)} (12.17 - 12.45 = 12.46): ${fr(profit)}.`,
+      `${INDEP} p. 13 to 15; ${GUIDE} p. 23 and 24`,
+    );
+    both(
+      '32.10',
+      b.person,
+      -b.avs,
+      `The owner's own AVS/AI/APG instalments paid for the year (32.10), in full: ${fr(b.avs)}.`,
+      `${INDEP} p. 22; ge-na-law-lipp art. 31 let. a`,
+    );
   }
 
   // Movable wealth and its income (état des titres).
@@ -370,28 +424,73 @@ export function computeKit(kit, year) {
   let savingsInterest = 0;
   let withholding = 0;
   for (const st of Y.statements ?? []) {
-    const value = st.accounts.reduce((s, a) => s + a.balance, 0) + st.securities.reduce((s, x) => s + secValue(x), 0);
-    const income = st.securities.reduce((s, x) => s + x.dividend, 0) + st.accounts.reduce((s, a) => s + (a.interest ?? 0), 0);
+    const value =
+      st.accounts.reduce((s, a) => s + a.balance, 0) +
+      st.securities.reduce((s, x) => s + secValue(x), 0);
+    const income =
+      st.securities.reduce((s, x) => s + x.dividend, 0) +
+      st.accounts.reduce((s, a) => s + (a.interest ?? 0), 0);
     const ia = st.securities.reduce((s, x) => s + x.dividend, 0);
-    if (st.accounts.some((a) => a.interest)) throw new Error('kits keep e-tax statement accounts without interest');
+    if (st.accounts.some((a) => a.interest))
+      throw new Error('kits keep e-tax statement accounts without interest');
     wealthIncome += income;
     withholding += iaOf(ia);
-    add(wealth, '14.00', st.person, value, `${st.bank.name}, e-tax statement (relevé fiscal, F4): taxable value on 31 December ${fr(value)}.`, `${GUIDE} p. 43`);
-    both('14.00', st.person, income, `${st.bank.name}, e-tax statement: gross income subject to the withholding tax ${fr(ia)} (dividends of Swiss securities; not savings interest).`, `${GUIDE} p. 41 and 43`);
+    add(
+      wealth,
+      '14.00',
+      st.person,
+      value,
+      `${st.bank.name}, e-tax statement (relevé fiscal, F4): taxable value on 31 December ${fr(value)}.`,
+      `${GUIDE} p. 43`,
+    );
+    both(
+      '14.00',
+      st.person,
+      income,
+      `${st.bank.name}, e-tax statement: gross income subject to the withholding tax ${fr(ia)} (dividends of Swiss securities; not savings interest).`,
+      `${GUIDE} p. 41 and 43`,
+    );
   }
   for (const a of Y.bankAccounts ?? []) {
     wealthIncome += a.interest;
     savingsInterest += a.interest;
-    add(wealth, '14.00', a.person, a.balance, `${a.bank.name}, ${a.name}: balance on 31 December ${fr(a.balance)}.`, `${GUIDE} p. 40`);
-    if (a.interest) both('14.00', a.person, a.interest, `${a.bank.name}, ${a.name}: gross interest ${fr(a.interest)}, under CHF 200 so without withholding tax; every bank interest is interest on savings capital (56.30).`, `${GUIDE} p. 40 and 41`);
+    add(
+      wealth,
+      '14.00',
+      a.person,
+      a.balance,
+      `${a.bank.name}, ${a.name}: balance on 31 December ${fr(a.balance)}.`,
+      `${GUIDE} p. 40`,
+    );
+    if (a.interest)
+      both(
+        '14.00',
+        a.person,
+        a.interest,
+        `${a.bank.name}, ${a.name}: gross interest ${fr(a.interest)}, under CHF 200 so without withholding tax; every bank interest is interest on savings capital (56.30).`,
+        `${GUIDE} p. 40 and 41`,
+      );
   }
   for (const br of Y.brokers ?? []) {
     const value = br.positions.reduce((s, x) => s + secValue(x), 0);
     const income = br.positions.reduce((s, x) => s + x.dividend, 0);
     wealthIncome += income;
     withholding += iaOf(income);
-    add(wealth, '14.00', br.person, value, `${br.name}, securities at the official value on 31 December (ESTV price list, as the user gives it): ${br.positions.map((x) => `${x.quantity} x ${x.unitPrice.toFixed(2)}`).join(' + ')} = ${fr(value)}.`, `${GUIDE} p. 41`);
-    both('14.00', br.person, income, `${br.name}: gross dividends of Swiss shares, subject to the withholding tax, ${fr(income)}.`, `${GUIDE} p. 41`);
+    add(
+      wealth,
+      '14.00',
+      br.person,
+      value,
+      `${br.name}, securities at the official value on 31 December (ESTV price list, as the user gives it): ${br.positions.map((x) => `${x.quantity} x ${x.unitPrice.toFixed(2)}`).join(' + ')} = ${fr(value)}.`,
+      `${GUIDE} p. 41`,
+    );
+    both(
+      '14.00',
+      br.person,
+      income,
+      `${br.name}: gross dividends of Swiss shares, subject to the withholding tax, ${fr(income)}.`,
+      `${GUIDE} p. 41`,
+    );
   }
 
   // A home in Geneva (annexe D, 15.10).
@@ -402,32 +501,94 @@ export function computeKit(kit, year) {
     const abat = Math.min(years * GE.abattement.value.perYear, GE.abattement.value.max);
     const valueAfter = pr.taxValue - pct(pr.taxValue, abat);
     const rentalIcc = pr.rentalValue - pct(pr.rentalValue, abat);
-    const flatIcc = pct(rentalIcc, pr.old ? GE.upkeepFlat.value.icc.old : GE.upkeepFlat.value.icc.young);
-    const flatIfd = pct(pr.rentalValue, pr.old ? GE.upkeepFlat.value.ifd.old : GE.upkeepFlat.value.ifd.young);
-    for (const v of [valueAfter, rentalIcc, flatIcc, flatIfd]) if (v % 100 !== 0) throw new Error(`property amount not whole francs: ${v}`);
+    const flatIcc = pct(
+      rentalIcc,
+      pr.old ? GE.upkeepFlat.value.icc.old : GE.upkeepFlat.value.icc.young,
+    );
+    const flatIfd = pct(
+      pr.rentalValue,
+      pr.old ? GE.upkeepFlat.value.ifd.old : GE.upkeepFlat.value.ifd.young,
+    );
+    for (const v of [valueAfter, rentalIcc, flatIcc, flatIfd])
+      if (v % 100 !== 0) throw new Error(`property amount not whole francs: ${v}`);
     property = { ...pr, abat, years, valueAfter, rentalIcc, flatIcc, flatIfd };
-    add(wealth, '15.10', 'household', valueAfter, `Tax value from the AFC's letter ${fr(pr.taxValue)} less the abattement of ${abat} % (${years} years of continuous use from ${pr.since} to ${year}, 4 % a year, at most 40 %): ${fr(valueAfter)}.`, `${GE.abattement.source}`);
-    add(icc, '15.10', 'household', rentalIcc, `Rental value from the AFC's letter ${fr(pr.rentalValue)} less the same abattement of ${abat} %: ${fr(rentalIcc)} (valeur locative après abattement).`, `${GUIDE} p. 33 and 34`);
-    add(ifd, '15.10', 'household', pr.rentalValue, `Gross rental value from the AFC's letter (valeur locative brute): ${fr(pr.rentalValue)}.`, `${GUIDE} p. 33`);
-    add(icc, '58.00', 'household', -flatIcc, `Flat upkeep, building over 10 years old: ${pr.old ? 25 : 15} % of ${fr(rentalIcc)} = ${fr(flatIcc)} (no actual costs claimed).`, `${GE.upkeepFlat.source}`);
-    add(ifd, '58.00', 'household', -flatIfd, `Flat upkeep, building over 10 years old: ${pr.old ? 20 : 10} % of ${fr(pr.rentalValue)} = ${fr(flatIfd)}.`, `${GUIDE} p. 33; ${F.instructions} p. 6 (b, déduction à forfait)`);
+    add(
+      wealth,
+      '15.10',
+      'household',
+      valueAfter,
+      `Tax value from the AFC's letter ${fr(pr.taxValue)} less the abattement of ${abat} % (${years} years of continuous use from ${pr.since} to ${year}, 4 % a year, at most 40 %): ${fr(valueAfter)}.`,
+      `${GE.abattement.source}`,
+    );
+    add(
+      icc,
+      '15.10',
+      'household',
+      rentalIcc,
+      `Rental value from the AFC's letter ${fr(pr.rentalValue)} less the same abattement of ${abat} %: ${fr(rentalIcc)} (valeur locative après abattement).`,
+      `${GUIDE} p. 33 and 34`,
+    );
+    add(
+      ifd,
+      '15.10',
+      'household',
+      pr.rentalValue,
+      `Gross rental value from the AFC's letter (valeur locative brute): ${fr(pr.rentalValue)}.`,
+      `${GUIDE} p. 33`,
+    );
+    add(
+      icc,
+      '58.00',
+      'household',
+      -flatIcc,
+      `Flat upkeep, building over 10 years old: ${pr.old ? 25 : 15} % of ${fr(rentalIcc)} = ${fr(flatIcc)} (no actual costs claimed).`,
+      `${GE.upkeepFlat.source}`,
+    );
+    add(
+      ifd,
+      '58.00',
+      'household',
+      -flatIfd,
+      `Flat upkeep, building over 10 years old: ${pr.old ? 20 : 10} % of ${fr(pr.rentalValue)} = ${fr(flatIfd)}.`,
+      `${GUIDE} p. 33; ${F.instructions} p. 6 (b, déduction à forfait)`,
+    );
   }
 
   // Debts and their interest (annexe E).
-  let debts = 0;
   let interestPaid = 0;
   for (const d of Y.mortgages ?? []) {
-    debts += d.balance;
     interestPaid += d.interest;
-    add(wealth, '55.00', 'household', -d.balance, `${d.lender.name}: mortgage on 31 December ${fr(d.balance)}.`, `${GUIDE} p. 37`);
+    add(
+      wealth,
+      '55.00',
+      'household',
+      -d.balance,
+      `${d.lender.name}: mortgage on 31 December ${fr(d.balance)}.`,
+      `${GUIDE} p. 37`,
+    );
   }
   if (interestPaid) {
     const grossYield = wealthIncome + (property ? property.rentalIcc : 0);
     const limitIcc = grossYield + GE.debtInterest.value;
     const grossYieldIfd = wealthIncome + (property ? property.rentalValue : 0);
-    if (interestPaid > Math.min(limitIcc, grossYieldIfd + GE.debtInterest.value)) throw new Error('interest over its limit');
-    add(icc, '55.00', 'household', -interestPaid, `Mortgage interest paid in the year ${fr(interestPaid)}, under its limit (gross income from wealth ${fr(grossYield)} + 50'000).`, `${GE.debtInterest.source}`);
-    add(ifd, '55.00', 'household', -interestPaid, `Mortgage interest ${fr(interestPaid)}, under the limit (income from wealth ${fr(grossYieldIfd)} + 50'000).`, `${F.instructions} p. 7 (chiffre 11)`);
+    if (interestPaid > Math.min(limitIcc, grossYieldIfd + GE.debtInterest.value))
+      throw new Error('interest over its limit');
+    add(
+      icc,
+      '55.00',
+      'household',
+      -interestPaid,
+      `Mortgage interest paid in the year ${fr(interestPaid)}, under its limit (gross income from wealth ${fr(grossYield)} + 50'000).`,
+      `${GE.debtInterest.source}`,
+    );
+    add(
+      ifd,
+      '55.00',
+      'household',
+      -interestPaid,
+      `Mortgage interest ${fr(interestPaid)}, under the limit (income from wealth ${fr(grossYieldIfd)} + 50'000).`,
+      `${F.instructions} p. 7 (chiffre 11)`,
+    );
   }
 
   // Professional costs of employees.
@@ -441,19 +602,61 @@ export function computeKit(kit, year) {
     // ICC: the flat 3 % (640 to 1'812) or the actual costs (travel at most 534, meals only over 2 h
     // a day by public transport), whichever is higher.
     const base = s.gross - s.social - s.lppOrdinary;
-    const flatRaw = threePercentOrClamp(base, GE.flatCosts.value.min, GE.flatCosts.value.max, `${kit.slug} ${year} ICC flat ${p}`);
+    const flatRaw = threePercentOrClamp(
+      base,
+      GE.flatCosts.value.min,
+      GE.flatCosts.value.max,
+      `${kit.slug} ${year} ICC flat ${p}`,
+    );
     const actualIcc = Math.min(travel, GE.travel.value);
     if (actualIcc >= flatRaw) throw new Error('kits keep the flat costs above the actual ones');
-    add(icc, code(p, '31.50', '41.50'), p, -flatRaw, `Flat professional costs: 3 % of ${fr(base)} (11.00 - 31.10 - 31.12), between 640 and 1'812: ${fr(flatRaw)}; higher than the actual costs (travel ${fr(actualIcc)}, no meals: the trip is under 2 hours a day).`, `${GE.flatCosts.source}; ${GUIDE} p. 22 (example 1)`);
+    add(
+      icc,
+      code(p, '31.50', '41.50'),
+      p,
+      -flatRaw,
+      `Flat professional costs: 3 % of ${fr(base)} (11.00 - 31.10 - 31.12), between 640 and 1'812: ${fr(flatRaw)}; higher than the actual costs (travel ${fr(actualIcc)}, no meals: the trip is under 2 hours a day).`,
+      `${GE.flatCosts.source}; ${GUIDE} p. 22 (example 1)`,
+    );
     // IFD: travel (actual, at most 3'300), meals (15 a day, at most 3'200) and the flat 3 % of the
     // net salary for the other costs (2'000 to 4'000).
     if (travel) {
-      if (travel > 3_200_00) throw new Error('kits keep travel under 3200 (the 2025 instructions say 3200, the circular 3300)');
-      add(ifd, code(p, '31.71', '41.71'), p, -travel, `Travel by public transport, the yearly pass: ${fr(travel)} (under the maximum).`, `${F.instructions} p. 6 (frais de déplacement); ${GUIDE} p. 20 and 21 (31.71)`);
+      if (travel > 3_200_00)
+        throw new Error(
+          'kits keep travel under 3200 (the 2025 instructions say 3200, the circular 3300)',
+        );
+      add(
+        ifd,
+        code(p, '31.71', '41.71'),
+        p,
+        -travel,
+        `Travel by public transport, the yearly pass: ${fr(travel)} (under the maximum).`,
+        `${F.instructions} p. 6 (frais de déplacement); ${GUIDE} p. 20 and 21 (31.71)`,
+      );
     }
-    if (meals) add(ifd, code(p, '31.60', '41.60'), p, -meals, `Meals away from home: ${c.mealDays} days x 15 = ${fr(c.mealDays * F.meals.perDay)}, at most ${fr(F.meals.max)}, employer not paying (box G empty): ${fr(meals)}.`, `${F.instructions} p. 6 (repas); ${F.deductions}`);
-    const other = threePercentOrClamp(s.net, F.otherCosts.min, F.otherCosts.max, `${kit.slug} ${year} IFD flat ${p}`);
-    add(ifd, code(p, '31.20', '41.20'), p, -other, `Other professional costs, flat: 3 % of the net salary ${fr(s.net)}, between 2'000 and 4'000: ${fr(other)}.`, `${F.instructions} p. 6 (autres frais professionnels); ${GUIDE} p. 19 (31.20)`);
+    if (meals)
+      add(
+        ifd,
+        code(p, '31.60', '41.60'),
+        p,
+        -meals,
+        `Meals away from home: ${c.mealDays} days x 15 = ${fr(c.mealDays * F.meals.perDay)}, at most ${fr(F.meals.max)}, employer not paying (box G empty): ${fr(meals)}.`,
+        `${F.instructions} p. 6 (repas); ${F.deductions}`,
+      );
+    const other = threePercentOrClamp(
+      s.net,
+      F.otherCosts.min,
+      F.otherCosts.max,
+      `${kit.slug} ${year} IFD flat ${p}`,
+    );
+    add(
+      ifd,
+      code(p, '31.20', '41.20'),
+      p,
+      -other,
+      `Other professional costs, flat: 3 % of the net salary ${fr(s.net)}, between 2'000 and 4'000: ${fr(other)}.`,
+      `${F.instructions} p. 6 (autres frais professionnels); ${GUIDE} p. 19 (31.20)`,
+    );
   }
 
   // Pillar 3a.
@@ -471,9 +674,17 @@ export function computeKit(kit, year) {
       capHow = `no pension fund: at most 20 % of the earned income (${fr(b.profit)} less the AVS contributions ${fr(b.avs)}), ${fr(cap)}`;
     }
     if (a.paid > cap) throw new Error('kits keep 3a within its limit');
-    if (!withFund && a.paid > pct(businessOf[a.person].profit, 20) * 0.9) throw new Error('3a too close to the limit');
-    const c = businessOf[a.person] && !salaryOf[a.person] ? '32.40' : code(a.person, '31.40', '41.40');
-    both(c, a.person, -a.paid, `Pillar 3a paid in the year ${fr(a.paid)}; ${capHow}.`, `${GE.pillar3a.source}; ${F.instructions} p. 7 (chiffre 13)`);
+    if (!withFund && a.paid > pct(businessOf[a.person].profit, 20) * 0.9)
+      throw new Error('3a too close to the limit');
+    const c =
+      businessOf[a.person] && !salaryOf[a.person] ? '32.40' : code(a.person, '31.40', '41.40');
+    both(
+      c,
+      a.person,
+      -a.paid,
+      `Pillar 3a paid in the year ${fr(a.paid)}; ${capHow}.`,
+      `${GE.pillar3a.source}; ${F.instructions} p. 7 (chiffre 13)`,
+    );
   }
 
   // Two earners.
@@ -486,14 +697,29 @@ export function computeKit(kit, year) {
     };
     const earners = people.filter((p) => salaryOf[p] || businessOf[p]);
     if (earners.length === 2) {
-      const iccEarned = (p) => sum(icc.filter((l) => l.person === p && /^[34]1\.|^[12]1\./.test(l.code)));
+      const iccEarned = (p) =>
+        sum(icc.filter((l) => l.person === p && /^[34]1\.|^[12]1\./.test(l.code)));
       const lowIcc = iccEarned('p1') <= iccEarned('p2') ? 'p1' : 'p2';
-      add(icc, code(lowIcc, '31.95', '41.95'), lowIcc, -GE.twoEarner.value, `Both spouses work: ${fr(GE.twoEarner.value)} off the lower earned income (${fr(iccEarned(lowIcc))}).`, GE.twoEarner.source);
+      add(
+        icc,
+        code(lowIcc, '31.95', '41.95'),
+        lowIcc,
+        -GE.twoEarner.value,
+        `Both spouses work: ${fr(GE.twoEarner.value)} off the lower earned income (${fr(iccEarned(lowIcc))}).`,
+        GE.twoEarner.source,
+      );
       const low = earned('p1') <= earned('p2') ? 'p1' : 'p2';
       const half = earned(low) / 2;
       const v = Math.min(Math.max(half, F.twoEarner.min), F.twoEarner.max, earned(low));
       if (v % 100 !== 0) throw new Error('two-earner not whole francs');
-      add(ifd, code(low, '31.90', '41.90'), low, -v, `Both spouses work: 50 % of the lower earned income (${fr(earned(low))}, gross less social and pension contributions, professional costs and pillar 3a), at least ${fr(F.twoEarner.min)}, at most ${fr(F.twoEarner.max)}: ${fr(v)}.`, `${F.instructions} p. 8 (chiffre 16); ${GUIDE} p. 21 (31.90)`);
+      add(
+        ifd,
+        code(low, '31.90', '41.90'),
+        low,
+        -v,
+        `Both spouses work: 50 % of the lower earned income (${fr(earned(low))}, gross less social and pension contributions, professional costs and pillar 3a), at least ${fr(F.twoEarner.min)}, at most ${fr(F.twoEarner.max)}: ${fr(v)}.`,
+        `${F.instructions} p. 8 (chiffre 16); ${GUIDE} p. 21 (31.90)`,
+      );
     }
   }
 
@@ -505,30 +731,79 @@ export function computeKit(kit, year) {
       const cap = GE.healthCap.value[age];
       if (m.basic + m.supplementary > cap) throw new Error('premium over its cap');
     }
-    add(icc, '52.21', 'household', -premiums, `Health insurance premiums paid (basic and supplementary) ${fr(premiums)}; each person's under twice the cantonal average premium for their age (adult ${fr(GE.healthCap.value.adult)}, child ${fr(GE.healthCap.value.child)}).`, GE.healthCap.source);
+    add(
+      icc,
+      '52.21',
+      'household',
+      -premiums,
+      `Health insurance premiums paid (basic and supplementary) ${fr(premiums)}; each person's under twice the cantonal average premium for their age (adult ${fr(GE.healthCap.value.adult)}, child ${fr(GE.healthCap.value.child)}).`,
+      GE.healthCap.source,
+    );
   }
-  const contributing = people.some((p) => (salaryOf[p] && salaryOf[p].lppOrdinary > 0) || (Y.pillar3a ?? []).some((a) => a.person === p));
+  const contributing = people.some(
+    (p) =>
+      (salaryOf[p] && salaryOf[p].lppOrdinary > 0) ||
+      (Y.pillar3a ?? []).some((a) => a.person === p),
+  );
   const charges = children.length;
   if (savingsInterest) {
     const L = GE.lifeAndSavings.value;
-    const limit = (couple ? L.couple : L.single) * (contributing ? 1 : 2) + charges * L.perCharge * (contributing ? 1 : 2);
+    const limit =
+      (couple ? L.couple : L.single) * (contributing ? 1 : 2) +
+      charges * L.perCharge * (contributing ? 1 : 2);
     if (savingsInterest > limit) throw new Error('savings over limit');
-    add(icc, '52.15', 'household', -savingsInterest, `Interest on savings capital (56.30) ${fr(savingsInterest)}, under the limit ${fr(limit)}.`, GE.lifeAndSavings.source);
+    add(
+      icc,
+      '52.15',
+      'household',
+      -savingsInterest,
+      `Interest on savings capital (56.30) ${fr(savingsInterest)}, under the limit ${fr(limit)}.`,
+      GE.lifeAndSavings.source,
+    );
   }
   {
     const I = F.insurance;
-    const base = couple ? (contributing ? I.couple : I.coupleNone) : contributing ? I.single : I.singleNone;
+    const base = couple
+      ? contributing
+        ? I.couple
+        : I.coupleNone
+      : contributing
+        ? I.single
+        : I.singleNone;
     const cap = base + charges * I.perChild;
     const given = premiums + savingsInterest;
     const v = Math.min(given, cap);
-    if (v) add(ifd, '52.00', 'household', -v, `Insurance premiums and savings interest ${fr(given)}, at most ${fr(cap)} (${couple ? 'married couple' : 'single'}, ${contributing ? 'paying into a pension fund or pillar 3a' : 'without pension fund or pillar 3a contributions'}${charges ? `, + 700 x ${charges} children` : ''}): ${fr(v)}.`, `${F.instructions} p. 8 (chiffre 14); ${F.deductions}; ${GUIDE} p. 28 (52.00)`);
+    if (v)
+      add(
+        ifd,
+        '52.00',
+        'household',
+        -v,
+        `Insurance premiums and savings interest ${fr(given)}, at most ${fr(cap)} (${couple ? 'married couple' : 'single'}, ${contributing ? 'paying into a pension fund or pillar 3a' : 'without pension fund or pillar 3a contributions'}${charges ? `, + 700 x ${charges} children` : ''}): ${fr(v)}.`,
+        `${F.instructions} p. 8 (chiffre 14); ${F.deductions}; ${GUIDE} p. 28 (52.00)`,
+      );
   }
 
   // Childcare, per child.
   for (const c of Y.childcare ?? []) {
-    if (c.amount > GE.childcare.value || c.amount > F.childcare) throw new Error('childcare over cap');
-    add(icc, '59.10', 'household', -c.amount, `Crèche for ${c.child} (under 14), both parents working: ${fr(c.amount)}, under ${fr(GE.childcare.value)} per child.`, GE.childcare.source);
-    add(ifd, '59.12', 'household', -c.amount, `Crèche for ${c.child}: ${fr(c.amount)}, under ${fr(F.childcare)} per child.`, `${F.instructions} p. 8; ${GUIDE} p. 30 (59.12)`);
+    if (c.amount > GE.childcare.value || c.amount > F.childcare)
+      throw new Error('childcare over cap');
+    add(
+      icc,
+      '59.10',
+      'household',
+      -c.amount,
+      `Crèche for ${c.child} (under 14), both parents working: ${fr(c.amount)}, under ${fr(GE.childcare.value)} per child.`,
+      GE.childcare.source,
+    );
+    add(
+      ifd,
+      '59.12',
+      'household',
+      -c.amount,
+      `Crèche for ${c.child}: ${fr(c.amount)}, under ${fr(F.childcare)} per child.`,
+      `${F.instructions} p. 8; ${GUIDE} p. 30 (59.12)`,
+    );
   }
 
   // Subtotals.
@@ -538,17 +813,39 @@ export function computeKit(kit, year) {
 
   // Medical costs: none in the kits. Donations.
   for (const d of Y.donations ?? []) {
-    if (d.amount > pct(s9220Icc, GE.donations.value) || d.amount > pct(s9220Ifd, 20) || d.amount < 100_00) throw new Error('donation limits');
-    add(icc, '73.10', 'household', -d.amount, `Donation to ${d.to} ${fr(d.amount)}, under 20 % of 92.40 (${fr(s9220Icc)}).`, GE.donations.source);
-    add(ifd, '73.20', 'household', -d.amount, `Donation to ${d.to} ${fr(d.amount)}: at least 100, under 20 % of the net income (${fr(s9220Ifd)}).`, `${F.instructions} p. 8 (chiffre 21.2); ${GUIDE} p. 15 (73.20)`);
+    if (
+      d.amount > pct(s9220Icc, GE.donations.value) ||
+      d.amount > pct(s9220Ifd, 20) ||
+      d.amount < 100_00
+    )
+      throw new Error('donation limits');
+    add(
+      icc,
+      '73.10',
+      'household',
+      -d.amount,
+      `Donation to ${d.to} ${fr(d.amount)}, under 20 % of 92.40 (${fr(s9220Icc)}).`,
+      GE.donations.source,
+    );
+    add(
+      ifd,
+      '73.20',
+      'household',
+      -d.amount,
+      `Donation to ${d.to} ${fr(d.amount)}: at least 100, under 20 % of the net income (${fr(s9220Ifd)}).`,
+      `${F.instructions} p. 8 (chiffre 21.2); ${GUIDE} p. 15 (73.20)`,
+    );
   }
   const netIcc = sum(icc);
   const netIfd = sum(ifd);
 
   // AVS/AI pensioners (61.30): only when 92.40 is under the limit.
   if ((Y.pensions ?? []).some((p) => p.type === 'avs_ai')) {
-    const limit = couple ? GE.pensionerDeduction.value.coupleLimit : GE.pensionerDeduction.value.singleLimit;
-    if (s9220Icc <= limit + 5_000_00) throw new Error('kits keep 92.40 clearly over the pensioner deduction limit');
+    const limit = couple
+      ? GE.pensionerDeduction.value.coupleLimit
+      : GE.pensionerDeduction.value.singleLimit;
+    if (s9220Icc <= limit + 5_000_00)
+      throw new Error('kits keep 92.40 clearly over the pensioner deduction limit');
   }
 
   // Social deductions.
@@ -556,27 +853,55 @@ export function computeKit(kit, year) {
   for (const c of children) {
     const withCare = (Y.childcare ?? []).some((x) => x.child === c.first);
     const v = withCare ? GE.familyCharge.value.withChildcare : GE.familyCharge.value.full;
-    social.push({ code: '61.25', person: 'household', amount: -v, how: `Family charge for ${c.first}${withCare ? ', whose childcare is deducted: the reduced amount' : ''}: ${fr(v)}.`, source: GE.familyCharge.source });
+    social.push({
+      code: '61.25',
+      person: 'household',
+      amount: -v,
+      how: `Family charge for ${c.first}${withCare ? ', whose childcare is deducted: the reduced amount' : ''}: ${fr(v)}.`,
+      source: GE.familyCharge.source,
+    });
   }
   const taxableIcc = netIcc + sum(social);
   if (taxableIcc % 100 !== 0) throw new Error('ICC taxable income not whole francs');
   const ifdSocial = [];
-  for (const c of children) ifdSocial.push({ code: '61.20', person: 'household', amount: -F.child, how: `Deduction for ${c.first}, a minor child: ${fr(F.child)}.`, source: `${F.deductions}; ${F.instructions} p. 9 (chiffre 23)` });
-  if (couple) ifdSocial.push({ code: '59.20', person: 'household', amount: -F.married2800, how: `Married couple: ${fr(F.married2800)}.`, source: `${F.deductions}; ${F.instructions} p. 9; ${GUIDE} p. 31 (59.20)` });
+  for (const c of children)
+    ifdSocial.push({
+      code: '61.20',
+      person: 'household',
+      amount: -F.child,
+      how: `Deduction for ${c.first}, a minor child: ${fr(F.child)}.`,
+      source: `${F.deductions}; ${F.instructions} p. 9 (chiffre 23)`,
+    });
+  if (couple)
+    ifdSocial.push({
+      code: '59.20',
+      person: 'household',
+      amount: -F.married2800,
+      how: `Married couple: ${fr(F.married2800)}.`,
+      source: `${F.deductions}; ${F.instructions} p. 9; ${GUIDE} p. 31 (59.20)`,
+    });
   const ifdNet = netIfd + sum(ifdSocial);
   const taxableIfd = floor100(ifdNet);
 
   // ICC income tax.
   const splitting = couple || children.length > 0 ? 'full' : 'none';
-  if (splitting === 'full' && (taxableIcc / 100) % 2 !== 0) throw new Error(`${kit.slug} ${year}: odd taxable income ${fr(taxableIcc)} with splitting; choose other amounts`);
+  if (splitting === 'full' && (taxableIcc / 100) % 2 !== 0)
+    throw new Error(
+      `${kit.slug} ${year}: odd taxable income ${fr(taxableIcc)} with splitting; choose other amounts`,
+    );
   const rateIncome = splitting === 'full' ? taxableIcc / 2 : taxableIcc;
   const rateTax = genevaScale(GE.incomeScale.value, rateIncome, 10_000);
   const incomeBase = splitting === 'full' ? rateTax * 2 : rateTax;
   const communeRate = COMMUNES[year].value[kit.commune];
   const cantonal = (base, what, withReduction) => {
-    if (base % 5000 !== 0) throw new Error(`${kit.slug} ${year}: ${what} base tax ${fr(base)} is not a multiple of CHF 50; choose other amounts`);
+    if (base % 5000 !== 0)
+      throw new Error(
+        `${kit.slug} ${year}: ${what} base tax ${fr(base)} is not a multiple of CHF 50; choose other amounts`,
+      );
     const cc = exact5(base * GE.cantonalCentimes.value, 1000, `${what} cantonal centimes`);
-    const red = withReduction ? exact5((base + cc) * GE.reduction.value, 1000, `${what} reduction`) : 0;
+    const red = withReduction
+      ? exact5((base + cc) * GE.reduction.value, 1000, `${what} reduction`)
+      : 0;
     const hc = exact5(base * GE.homeCare.value, 1000, `${what} home care`);
     const comm = exact5(base * communeRate, 10_000, `${what} communal`);
     return { cc, red, hc, comm };
@@ -588,7 +913,10 @@ export function computeKit(kit, year) {
   const grossWealth = sum(wealth.filter((l) => l.amount > 0));
   const netWealth = sum(wealth);
   const wsV = GE.wealthSocial.value;
-  const socialW = Math.min((couple || children.length ? wsV.couple : wsV.single) + charges * wsV.perCharge, Math.max(0, netWealth));
+  const socialW = Math.min(
+    (couple || children.length ? wsV.couple : wsV.single) + charges * wsV.perCharge,
+    Math.max(0, netWealth),
+  );
   const taxableWealth = Math.max(0, netWealth - socialW);
   if (taxableWealth % 100 !== 0) throw new Error('wealth not whole francs');
   const wealthBase = genevaScale(GE.wealthScale.value, taxableWealth, 10_000_000);
@@ -596,7 +924,10 @@ export function computeKit(kit, year) {
   const wl = cantonal(wealthBase, 'wealth', false);
   const cantonalWealth = wealthBase + wl.cc + wl.hc + supplementary;
 
-  const personalTax = taxableWealth === 0 && taxableIcc <= (splitting === 'full' ? 5_000_00 : 3_400_00) ? 0 : GE.personalTax.value;
+  const personalTax =
+    taxableWealth === 0 && taxableIcc <= (splitting === 'full' ? 5_000_00 : 3_400_00)
+      ? 0
+      : GE.personalTax.value;
   const iccTotal = cantonalIncome + cantonalWealth + inc.comm + wl.comm + personalTax;
 
   // IFD tax.
@@ -616,38 +947,139 @@ export function computeKit(kit, year) {
     icc: {
       lines: icc.map((l) => ({ ...l, person: who(l.person) })),
       grossIncome: r(gross(icc), 'Total of the gross income lines (91.00).', `${GUIDE} p. 13`),
-      netIncome: r(netIcc, 'Gross income less every deduction before the social deductions (92.40 after donations).', `${GUIDE} p. 13 to 15`),
+      netIncome: r(
+        netIcc,
+        'Gross income less every deduction before the social deductions (92.40 after donations).',
+        `${GUIDE} p. 13 to 15`,
+      ),
       socialDeductions: social.map((l) => ({ ...l, person: who(l.person) })),
-      taxableIncome: r(taxableIcc, `Net income ${fr(netIcc)} less the family charges ${fr(-sum(social))}: ${fr(taxableIcc)} (99.00).${estimateNote}`, `${GUIDE} p. 15`),
+      taxableIncome: r(
+        taxableIcc,
+        `Net income ${fr(netIcc)} less the family charges ${fr(-sum(social))}: ${fr(taxableIcc)} (99.00).${estimateNote}`,
+        `${GUIDE} p. 15`,
+      ),
       splitting,
-      rateIncome: r(rateIncome, splitting === 'full' ? `Full splitting: half of ${fr(taxableIcc)} = ${fr(rateIncome)}.` : `No splitting: the taxable income itself.`, GE.splitting.source),
-      incomeBase: r(incomeBase, splitting === 'full' ? `The scale at ${fr(rateIncome)} gives ${fr(rateTax)}; x ${fr(taxableIcc)} / ${fr(rateIncome)} = ${fr(incomeBase)} (example 3).${estimateNote}` : `The scale at ${fr(taxableIcc)}: the total of the step below plus the rest at the step's rate, to 5 centimes (example 2): ${fr(incomeBase)}.${estimateNote}`, `${GE.incomeScale.source}; ${TARIFF} p. 3`),
-      cantonalIncome: r(cantonalIncome, `Base ${fr(incomeBase)} + 47.5 % ${fr(inc.cc)} - 12 % of ${fr(incomeBase + inc.cc)} ${fr(inc.red)} + 1 % home care ${fr(inc.hc)} = ${fr(cantonalIncome)} (each exact).`, GE.cantonalCentimes.source),
-      communalIncome: r(inc.comm, `${communeRate / 100} centimes of ${kit.commune} on the base ${fr(incomeBase)}: ${fr(inc.comm)} (all income earned in ${kit.commune}, so no share for another commune).`, `${COMMUNES[year].source}; ${GUIDE} p. 48; ge-na-law-lcp art. 293 let. A and 295A`),
+      rateIncome: r(
+        rateIncome,
+        splitting === 'full'
+          ? `Full splitting: half of ${fr(taxableIcc)} = ${fr(rateIncome)}.`
+          : `No splitting: the taxable income itself.`,
+        GE.splitting.source,
+      ),
+      incomeBase: r(
+        incomeBase,
+        splitting === 'full'
+          ? `The scale at ${fr(rateIncome)} gives ${fr(rateTax)}; x ${fr(taxableIcc)} / ${fr(rateIncome)} = ${fr(incomeBase)} (example 3).${estimateNote}`
+          : `The scale at ${fr(taxableIcc)}: the total of the step below plus the rest at the step's rate, to 5 centimes (example 2): ${fr(incomeBase)}.${estimateNote}`,
+        `${GE.incomeScale.source}; ${TARIFF} p. 3`,
+      ),
+      cantonalIncome: r(
+        cantonalIncome,
+        `Base ${fr(incomeBase)} + 47.5 % ${fr(inc.cc)} - 12 % of ${fr(incomeBase + inc.cc)} ${fr(inc.red)} + 1 % home care ${fr(inc.hc)} = ${fr(cantonalIncome)} (each exact).`,
+        GE.cantonalCentimes.source,
+      ),
+      communalIncome: r(
+        inc.comm,
+        `${communeRate / 100} centimes of ${kit.commune} on the base ${fr(incomeBase)}: ${fr(inc.comm)} (all income earned in ${kit.commune}, so no share for another commune).`,
+        `${COMMUNES[year].source}; ${GUIDE} p. 48; ge-na-law-lcp art. 293 let. A and 295A`,
+      ),
       wealthLines: wealth.map((l) => ({ ...l, person: who(l.person) })),
       grossWealth: r(grossWealth, 'Total gross wealth.', `${GUIDE} p. 16`),
       netWealth: r(netWealth, 'Gross wealth less debts.', `${GUIDE} p. 37`),
-      wealthSocialDeduction: r(-socialW, `${couple || children.length ? 'Married couple' : 'Single person'}${charges ? ` + ${fr(wsV.perCharge)} x ${charges} charges` : ''}, at most the net wealth: ${fr(socialW)}.`, GE.wealthSocial.source),
-      taxableWealth: r(taxableWealth, `Net wealth ${fr(netWealth)} less ${fr(socialW)}: ${fr(taxableWealth)}.${estimateNote}`, GE.wealthSocial.source),
-      wealthBase: r(wealthBase, `The base wealth scale at ${fr(taxableWealth)}: ${fr(wealthBase)}.`, GE.wealthScale.source),
-      wealthSupplementary: r(supplementary, `The supplementary scale at ${fr(taxableWealth)}: ${fr(supplementary)}, no centimes on it.`, GE.wealthSupplementary.source),
-      cantonalWealth: r(cantonalWealth, `Base ${fr(wealthBase)} + 47.5 % ${fr(wl.cc)} + 1 % ${fr(wl.hc)} + supplementary ${fr(supplementary)} = ${fr(cantonalWealth)}.`, GE.cantonalCentimes.source),
-      communalWealth: r(wl.comm, `${communeRate / 100} centimes on ${fr(wealthBase)}: ${fr(wl.comm)}.`, COMMUNES[year].source),
+      wealthSocialDeduction: r(
+        -socialW,
+        `${couple || children.length ? 'Married couple' : 'Single person'}${charges ? ` + ${fr(wsV.perCharge)} x ${charges} charges` : ''}, at most the net wealth: ${fr(socialW)}.`,
+        GE.wealthSocial.source,
+      ),
+      taxableWealth: r(
+        taxableWealth,
+        `Net wealth ${fr(netWealth)} less ${fr(socialW)}: ${fr(taxableWealth)}.${estimateNote}`,
+        GE.wealthSocial.source,
+      ),
+      wealthBase: r(
+        wealthBase,
+        `The base wealth scale at ${fr(taxableWealth)}: ${fr(wealthBase)}.`,
+        GE.wealthScale.source,
+      ),
+      wealthSupplementary: r(
+        supplementary,
+        `The supplementary scale at ${fr(taxableWealth)}: ${fr(supplementary)}, no centimes on it.`,
+        GE.wealthSupplementary.source,
+      ),
+      cantonalWealth: r(
+        cantonalWealth,
+        `Base ${fr(wealthBase)} + 47.5 % ${fr(wl.cc)} + 1 % ${fr(wl.hc)} + supplementary ${fr(supplementary)} = ${fr(cantonalWealth)}.`,
+        GE.cantonalCentimes.source,
+      ),
+      communalWealth: r(
+        wl.comm,
+        `${communeRate / 100} centimes on ${fr(wealthBase)}: ${fr(wl.comm)}.`,
+        COMMUNES[year].source,
+      ),
       communal: r(inc.comm + wl.comm, 'Communal income and wealth tax.', COMMUNES[year].source),
-      personalTax: r(personalTax, personalTax ? 'Taxe personnelle, one per household.' : 'Exempt.', GE.personalTax.source),
-      total: r(iccTotal, `Cantonal income ${fr(cantonalIncome)} + cantonal wealth ${fr(cantonalWealth)} + communal ${fr(inc.comm + wl.comm)} + taxe personnelle ${fr(personalTax)} = ${fr(iccTotal)}.${provisional ? ' Provisional: Geneva 2026 scales and amounts not published yet.' : ''}`, `${GUIDE} p. 48 and 49`),
-      ...(withholding ? { withholdingTaxCredit: r(withholding, `35 % of the income subject to the withholding tax, to 5 centimes: ${fr(withholding)} (an imputation on the bordereau, not part of the tax).`, `${GUIDE} p. 39`) } : {}),
-      ...(iic !== undefined ? { iic: { amount: iic, how: `Impôt immobilier complémentaire, 0.2 per mille of the tax value ${fr(property.taxValue)} (main residence, no abattement, no debts): ${(iic / 100).toFixed(4)}. A tax of its own, not in the total.`, source: GE.iic.source } } : {}),
+      personalTax: r(
+        personalTax,
+        personalTax ? 'Taxe personnelle, one per household.' : 'Exempt.',
+        GE.personalTax.source,
+      ),
+      total: r(
+        iccTotal,
+        `Cantonal income ${fr(cantonalIncome)} + cantonal wealth ${fr(cantonalWealth)} + communal ${fr(inc.comm + wl.comm)} + taxe personnelle ${fr(personalTax)} = ${fr(iccTotal)}.${provisional ? ' Provisional: Geneva 2026 scales and amounts not published yet.' : ''}`,
+        `${GUIDE} p. 48 and 49`,
+      ),
+      ...(withholding
+        ? {
+            withholdingTaxCredit: r(
+              withholding,
+              `35 % of the income subject to the withholding tax, to 5 centimes: ${fr(withholding)} (an imputation on the bordereau, not part of the tax).`,
+              `${GUIDE} p. 39`,
+            ),
+          }
+        : {}),
+      ...(iic !== undefined
+        ? {
+            iic: {
+              amount: iic,
+              how: `Impôt immobilier complémentaire, 0.2 per mille of the tax value ${fr(property.taxValue)} (main residence, no abattement, no debts): ${(iic / 100).toFixed(4)}. A tax of its own, not in the total.`,
+              source: GE.iic.source,
+            },
+          }
+        : {}),
     },
     ifd: {
       lines: ifd.map((l) => ({ ...l, person: who(l.person) })),
-      netIncome: r(netIfd, 'Net income (before the social deductions).', `${F.instructions} p. 8 and 9`),
+      netIncome: r(
+        netIfd,
+        'Net income (before the social deductions).',
+        `${F.instructions} p. 8 and 9`,
+      ),
       socialDeductions: ifdSocial.map((l) => ({ ...l, person: who(l.person) })),
-      taxableIncome: r(taxableIfd, `${fr(ifdNet)} rounded down to the CHF 100: ${fr(taxableIfd)}.`, `${F.source}; ${F.instructions} (barème, note 1)`),
+      taxableIncome: r(
+        ifdNet,
+        `Net income ${fr(netIfd)} less the social deductions ${fr(-sum(ifdSocial))}: ${fr(ifdNet)} (chiffre 24, revenu imposable).`,
+        `${F.instructions} p. 9 (chiffre 24)`,
+      ),
+      scaleIncome: r(
+        taxableIfd,
+        `The scale is read at the taxable income without its fraction under CHF 100: ${fr(taxableIfd)}.`,
+        `${F.source}; ${F.instructions} p. 10 (barème, note 1: "Les fractions inférieures à CHF 100 sont abandonnées")`,
+      ),
       scale,
-      scaleTax: r(scaleTax, `The ${scale === 'single' ? 'single' : 'married'} scale at ${fr(taxableIfd)}: ${fr(scaleTax)}.`, F.source),
-      childReduction: r(childReduction, childReduction ? `263 x ${children.length} children.` : 'No child.', `${F.source} (al. 2bis)`),
-      tax: r(ifdTax, `${fr(scaleTax)} less ${fr(childReduction)}, rounded down to 5 centimes${ifdTax === 0 ? ', and under 25 not levied' : ''}: ${fr(ifdTax)}.`, `${F.source} (al. 2bis and 3)`),
+      scaleTax: r(
+        scaleTax,
+        `The ${scale === 'single' ? 'single' : 'married'} scale at ${fr(taxableIfd)}: ${fr(scaleTax)}.`,
+        F.source,
+      ),
+      childReduction: r(
+        childReduction,
+        childReduction ? `263 x ${children.length} children.` : 'No child.',
+        `${F.source} (al. 2bis)`,
+      ),
+      tax: r(
+        ifdTax,
+        `${fr(scaleTax)} less ${fr(childReduction)}, rounded down to 5 centimes${ifdTax === 0 ? ', and under 25 not levied' : ''}: ${fr(ifdTax)}.`,
+        `${F.source} (al. 2bis and 3)`,
+      ),
     },
     total: r(iccTotal + ifdTax, `ICC ${fr(iccTotal)} + IFD ${fr(ifdTax)}.`, ''),
   };
@@ -744,10 +1176,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   for (const kit of KITS) {
     const out = expectedFor(kit);
     mkdirSync(path.join(here, kit.slug), { recursive: true });
-    writeFileSync(path.join(here, kit.slug, 'expected.json'), JSON.stringify(out, null, 2) + '\n');
+    const file = path.join(here, kit.slug, 'expected.json');
+    const options = (await prettier.resolveConfig(file)) ?? {};
+    writeFileSync(file, await prettier.format(JSON.stringify(out), { ...options, parser: 'json' }));
     for (const [y, v] of Object.entries(out.years)) {
       console.log(
-        `${kit.slug} ${y}: ICC ${fr(v.icc.total.amount)} (taxable ${fr(v.icc.taxableIncome.amount)}, wealth ${fr(v.icc.taxableWealth.amount)}), IFD ${fr(v.ifd.tax.amount)} (taxable ${fr(v.ifd.taxableIncome.amount)}), total ${fr(v.total.amount)}`,
+        `${kit.slug} ${y}: ICC ${fr(v.icc.total.amount)} (taxable ${fr(v.icc.taxableIncome.amount)}, wealth ${fr(v.icc.taxableWealth.amount)}), IFD ${fr(v.ifd.tax.amount)} (taxable ${fr(v.ifd.taxableIncome.amount)}, scale at ${fr(v.ifd.scaleIncome.amount)}), total ${fr(v.total.amount)}`,
       );
     }
   }
