@@ -126,11 +126,14 @@ describe('MCP surface', () => {
     await call('answer_question', { id: 'children', value: 0 });
     await call('answer_question', { id: 'commune', value: 'Carouge' });
     await call('answer_question', { id: 'moved', value: 'no' });
-    await call('answer_question', { id: 'income_sources:p1', value: ['salary'] });
-    // How many certificates depends on how many employers: asked next.
-    const employers = await call('answer_question', { id: 'employers:p1', value: 2 });
-    expect(text(employers)).toMatch(/Documents now needed: Salary certificate/);
-    const status = structured<{ household: { summary: string[] } }>(await call('get_status'));
+    // A salary: its certificate is needed at once, one per employer once that is known (next).
+    const income = await call('answer_question', { id: 'income_sources:p1', value: ['salary'] });
+    expect(text(income)).toMatch(/Documents now needed: Salary certificate/);
+    await call('answer_question', { id: 'employers:p1', value: 2 });
+    const status = structured<{ household: { summary: string[] }; missing: string[] }>(
+      await call('get_status'),
+    );
+    expect(status.missing).toContain('Salary certificate (0 of 2)');
     expect(status.household.summary).toEqual([
       'Geneva',
       'Single',
