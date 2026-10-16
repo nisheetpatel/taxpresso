@@ -328,6 +328,7 @@ export const NOT_ON_THE_FORM_2026: Partial<Record<Key2026, string>> = {
   'tax_statement.withholding_swiss': ETAT('F4', 24),
   'tax_statement.foreign_tax_credit': ETAT('F4', 24),
   'tax_statement.fees': ETAT('F4', 24),
+  'tax_statement.savings_interest': ETAT('F4', 24),
   // Annexe B1: the business's name and year come with the sheet the engine makes for a business
   // (the extension places them on B1, ${SPEC} p. 7), never on their own.
   'business.name': `Goes to B1 with the business's sheet (${SPEC} p. 7): the name of the business.`,
