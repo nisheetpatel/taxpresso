@@ -810,6 +810,166 @@ export const KITS = [
       },
     },
   },
+  // 5. Single, self-employed, Onex: simple accounts, the AVS contributions, the higher pillar 3a
+  // limit without a pension fund, and securities at Interactive Brokers.
+  {
+    slug: 'modele-onex',
+    title: 'Nadia Modèle, single, self-employed IT consultant, Onex',
+    story:
+      'Nadia works on her own as an IT consultant from her home in Onex, in her own name (raison individuelle). She keeps simple accounts, pays her AVS contributions as quarterly instalments, has no pension fund and so may pay more into her pillar 3a. She holds two Swiss shares at Interactive Brokers, whose Flex Query export Taxpresso reads; she looks up their official values in the ESTV price list herself.',
+    commune: 'Onex',
+    communeCode: '6631',
+    address: ADDR.onex,
+    civil: 'single',
+    people: [
+      {
+        id: 'p1',
+        first: 'Nadia',
+        last: 'Modèle',
+        born: '1985-01-29',
+        ahv: '756.0000.1008.82',
+        job: 'Consultante informatique (fictive)',
+      },
+    ],
+    children: [],
+    answers: {
+      canton: 'GE',
+      civil_status: 'single',
+      children: 0,
+      commune: 'Onex',
+      moved: 'no',
+      'income_sources:p1': ['self_employment'],
+      'business_form:p1': 'sole_proprietor',
+      'business_year:p1': 'calendar',
+      'business_place:p1': 'home_commune',
+      'business_method:p1': 'invoice',
+      'business_special:p1': [],
+      'business_losses:p1': false,
+      'pillar3a:p1': true,
+      banks: 2,
+      crypto: false,
+      payments: [],
+      special: [],
+    },
+    years: {
+      2025: {
+        businesses: [
+          {
+            person: 'p1',
+            name: 'Modèle Conseil Informatique',
+            turnover: chf(132_000),
+            costsOther: chf(19_800),
+            depreciation: chf(2_200),
+            currentAssets: chf(21_500),
+            fixedAssets: chf(4_500),
+            liabilities: chf(3_000),
+            avs: chf(10_780),
+          },
+        ],
+        pillar3a: [{ person: 'p1', paid: chf(15_000) }],
+        health: {
+          members: [
+            { person: 'p1', name: 'Nadia Modèle', basic: chf(5_065), supplementary: chf(840) },
+          ],
+        },
+        brokers: [
+          {
+            person: 'p1',
+            name: 'Interactive Brokers',
+            account: 'U0000501',
+            positions: [
+              {
+                isinPrefix: 'CHTXPRS0106',
+                symbol: 'FPHA',
+                name: 'Fiction Pharma SA',
+                quantity: 120,
+                unitPrice: 89.5,
+                dividend: chf(384),
+                month: '04',
+              },
+              {
+                isinPrefix: 'CHTXPRS0107',
+                symbol: 'EXAS',
+                name: 'Exemple Assurances SA',
+                quantity: 40,
+                unitPrice: 512,
+                dividend: chf(960),
+                month: '05',
+              },
+            ],
+          },
+        ],
+        bankAccounts: [
+          {
+            person: 'p1',
+            bank: ISSUERS.bank,
+            name: 'Compte privé',
+            iban: 'CH0000000000000105001',
+            balance: chf(8_400),
+            interest: 0,
+          },
+        ],
+      },
+      2026: {
+        businesses: [
+          {
+            person: 'p1',
+            name: 'Modèle Conseil Informatique',
+            turnover: chf(138_000),
+            costsOther: chf(20_400),
+            depreciation: chf(2_100),
+            currentAssets: chf(24_800),
+            fixedAssets: chf(3_800),
+            liabilities: chf(2_600),
+            avs: chf(11_320),
+          },
+        ],
+        pillar3a: [{ person: 'p1', paid: chf(16_000) }],
+        health: {
+          members: [
+            { person: 'p1', name: 'Nadia Modèle', basic: chf(5_786), supplementary: chf(860) },
+          ],
+        },
+        brokers: [
+          {
+            person: 'p1',
+            name: 'Interactive Brokers',
+            account: 'U0000501',
+            positions: [
+              {
+                isinPrefix: 'CHTXPRS0106',
+                symbol: 'FPHA',
+                name: 'Fiction Pharma SA',
+                quantity: 120,
+                unitPrice: 92,
+                dividend: chf(396),
+                month: '04',
+              },
+              {
+                isinPrefix: 'CHTXPRS0107',
+                symbol: 'EXAS',
+                name: 'Exemple Assurances SA',
+                quantity: 50,
+                unitPrice: 520,
+                dividend: chf(1_250),
+                month: '05',
+              },
+            ],
+          },
+        ],
+        bankAccounts: [
+          {
+            person: 'p1',
+            bank: ISSUERS.bank,
+            name: 'Compte privé',
+            iban: 'CH0000000000000105001',
+            balance: chf(9_100),
+            interest: 0,
+          },
+        ],
+      },
+    },
+  },
 ];
 
 export { ISSUERS };

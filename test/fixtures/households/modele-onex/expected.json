@@ -1,0 +1,493 @@
+{
+  "kit": "modele-onex",
+  "household": "Nadia Modèle, single, self-employed IT consultant, Onex",
+  "note": "Worked out by hand from the official documents (test/fixtures/households/ground-truth.mjs, which imports nothing from Taxpresso). Money in centimes. Each figure gives how it was obtained and its source: the manifest id of the document in docs/sources and the page or article.",
+  "years": {
+    "2025": {
+      "taxYear": 2025,
+      "provisional": false,
+      "commune": "Onex",
+      "icc": {
+        "lines": [
+          {
+            "code": "12.01",
+            "person": "A",
+            "amount": 11000000,
+            "how": "Business result: revenue 132'000.00 less charges 22'000.00 (12.17 - 12.45 = 12.46): 110'000.00.",
+            "source": "ge-2025-guide-independants p. 13 to 15; ge-2025-guide-declaration-pp p. 23 and 24"
+          },
+          {
+            "code": "32.10",
+            "person": "A",
+            "amount": -1078000,
+            "how": "The owner's own AVS/AI/APG instalments paid for the year (32.10), in full: 10'780.00.",
+            "source": "ge-2025-guide-independants p. 22; ge-na-law-lipp art. 31 let. a"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 134400,
+            "how": "Interactive Brokers: gross dividends of Swiss shares, subject to the withholding tax, 1'344.00.",
+            "source": "ge-2025-guide-declaration-pp p. 41"
+          },
+          {
+            "code": "32.40",
+            "person": "A",
+            "amount": -1500000,
+            "how": "Pillar 3a paid in the year 15'000.00; no pension fund: at most 20 % of the earned income (110'000.00 less the AVS contributions 10'780.00), 19'844.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -590500,
+            "how": "Health insurance premiums paid (basic and supplementary) 5'905.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          }
+        ],
+        "grossIncome": {
+          "amount": 11134400,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 7965900,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 7965900,
+          "how": "Net income 79'659.00 less the family charges 0.00: 79'659.00 (99.00).",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "none",
+        "rateIncome": {
+          "amount": 7965900,
+          "how": "No splitting: the taxable income itself.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 730000,
+          "how": "The scale at 79'659.00: the total of the step below plus the rest at the step's rate, to 5 centimes (example 2): 7'300.00.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-2025-icc-tariff-pdf p. 2; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 954840,
+          "how": "Base 7'300.00 + 47.5 % 3'467.50 - 12 % of 10'767.50 1'292.10 + 1 % home care 73.00 = 9'548.40 (each exact).",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalIncome": {
+          "amount": 368650,
+          "how": "50.5 centimes of Onex on the base 7'300.00: 3'686.50 (all income earned in Onex, so no share for another commune).",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA); ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "12.50",
+            "person": "A",
+            "amount": 2600000,
+            "how": "Business assets on 31 December (12.48 + 12.49): 21'500.00 + 4'500.00.",
+            "source": "ge-2025-guide-independants p. 16 and 17"
+          },
+          {
+            "code": "57.50",
+            "person": "A",
+            "amount": -300000,
+            "how": "Business debts on 31 December: 3'000.00.",
+            "source": "ge-2025-guide-independants p. 17"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 840000,
+            "how": "Banque Exemple SA, Compte privé: balance on 31 December 8'400.00.",
+            "source": "ge-2025-guide-declaration-pp p. 40"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 3122000,
+            "how": "Interactive Brokers, securities at the official value on 31 December (ESTV price list, as the user gives it): 120 x 89.50 + 40 x 512.00 = 31'220.00.",
+            "source": "ge-2025-guide-declaration-pp p. 41"
+          }
+        ],
+        "grossWealth": {
+          "amount": 6562000,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 6262000,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -6262000,
+          "how": "Single person, at most the net wealth: 62'620.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 0,
+          "how": "Net wealth 62'620.00 less 62'620.00: 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "wealthBase": {
+          "amount": 0,
+          "how": "The base wealth scale at 0.00: 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 49; ge-2025-icc-tariff-pdf p. 5"
+        },
+        "wealthSupplementary": {
+          "amount": 0,
+          "how": "The supplementary scale at 0.00: 0.00, no centimes on it.",
+          "source": "ge-2025-guide-declaration-pp p. 50; ge-2025-icc-tariff-pdf p. 5; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 0,
+          "how": "Base 0.00 + 47.5 % 0.00 + 1 % 0.00 + supplementary 0.00 = 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalWealth": {
+          "amount": 0,
+          "how": "50.5 centimes on 0.00: 0.00.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "communal": {
+          "amount": 368650,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 1325990,
+          "how": "Cantonal income 9'548.40 + cantonal wealth 0.00 + communal 3'686.50 + taxe personnelle 25.00 = 13'259.90.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        },
+        "withholdingTaxCredit": {
+          "amount": 47040,
+          "how": "35 % of the income subject to the withholding tax, to 5 centimes: 470.40 (an imputation on the bordereau, not part of the tax).",
+          "source": "ge-2025-guide-declaration-pp p. 39"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "12.01",
+            "person": "A",
+            "amount": 11000000,
+            "how": "Business result: revenue 132'000.00 less charges 22'000.00 (12.17 - 12.45 = 12.46): 110'000.00.",
+            "source": "ge-2025-guide-independants p. 13 to 15; ge-2025-guide-declaration-pp p. 23 and 24"
+          },
+          {
+            "code": "32.10",
+            "person": "A",
+            "amount": -1078000,
+            "how": "The owner's own AVS/AI/APG instalments paid for the year (32.10), in full: 10'780.00.",
+            "source": "ge-2025-guide-independants p. 22; ge-na-law-lipp art. 31 let. a"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 134400,
+            "how": "Interactive Brokers: gross dividends of Swiss shares, subject to the withholding tax, 1'344.00.",
+            "source": "ge-2025-guide-declaration-pp p. 41"
+          },
+          {
+            "code": "32.40",
+            "person": "A",
+            "amount": -1500000,
+            "how": "Pillar 3a paid in the year 15'000.00; no pension fund: at most 20 % of the earned income (110'000.00 less the AVS contributions 10'780.00), 19'844.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -180000,
+            "how": "Insurance premiums and savings interest 5'905.00, at most 1'800.00 (single, paying into a pension fund or pillar 3a): 1'800.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2025-ifd-frais-professionnels-progression p. 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          }
+        ],
+        "netIncome": {
+          "amount": 8376400,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 8376400,
+          "how": "Net income 83'764.00 less the social deductions 0.00: 83'764.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 8370000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 83'700.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD); ch-2025-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "single",
+        "scaleTax": {
+          "amount": 161220,
+          "how": "The single scale at 83'700.00: 1'612.20.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 0,
+          "how": "No child.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 161220,
+          "how": "1'612.20 less 0.00, rounded down to 5 centimes: 1'612.20.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 1487210, "how": "ICC 13'259.90 + IFD 1'612.20.", "source": "" }
+    },
+    "2026": {
+      "taxYear": 2026,
+      "provisional": true,
+      "commune": "Onex",
+      "icc": {
+        "lines": [
+          {
+            "code": "12.01",
+            "person": "A",
+            "amount": 11550000,
+            "how": "Business result: revenue 138'000.00 less charges 22'500.00 (12.17 - 12.45 = 12.46): 115'500.00.",
+            "source": "ge-2025-guide-independants p. 13 to 15; ge-2025-guide-declaration-pp p. 23 and 24"
+          },
+          {
+            "code": "32.10",
+            "person": "A",
+            "amount": -1132000,
+            "how": "The owner's own AVS/AI/APG instalments paid for the year (32.10), in full: 11'320.00.",
+            "source": "ge-2025-guide-independants p. 22; ge-na-law-lipp art. 31 let. a"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 164600,
+            "how": "Interactive Brokers: gross dividends of Swiss shares, subject to the withholding tax, 1'646.00.",
+            "source": "ge-2025-guide-declaration-pp p. 41"
+          },
+          {
+            "code": "32.40",
+            "person": "A",
+            "amount": -1600000,
+            "how": "Pillar 3a paid in the year 16'000.00; no pension fund: at most 20 % of the earned income (115'500.00 less the AVS contributions 11'320.00), 20'836.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -664600,
+            "how": "Health insurance premiums paid (basic and supplementary) 6'646.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          }
+        ],
+        "grossIncome": {
+          "amount": 11714600,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 8318000,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 8318000,
+          "how": "Net income 83'180.00 less the family charges 0.00: 83'180.00 (99.00). (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "none",
+        "rateIncome": {
+          "amount": 8318000,
+          "how": "No splitting: the taxable income itself.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 780000,
+          "how": "The scale at 83'180.00: the total of the step below plus the rest at the step's rate, to 5 centimes (example 2): 7'800.00. (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-2025-icc-tariff-pdf p. 2; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 1020240,
+          "how": "Base 7'800.00 + 47.5 % 3'705.00 - 12 % of 11'505.00 1'380.60 + 1 % home care 78.00 = 10'202.40 (each exact).",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalIncome": {
+          "amount": 393900,
+          "how": "50.5 centimes of Onex on the base 7'800.00: 3'939.00 (all income earned in Onex, so no share for another commune).",
+          "source": "ge-2026-communal-centimes-arca; ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "12.50",
+            "person": "A",
+            "amount": 2860000,
+            "how": "Business assets on 31 December (12.48 + 12.49): 24'800.00 + 3'800.00.",
+            "source": "ge-2025-guide-independants p. 16 and 17"
+          },
+          {
+            "code": "57.50",
+            "person": "A",
+            "amount": -260000,
+            "how": "Business debts on 31 December: 2'600.00.",
+            "source": "ge-2025-guide-independants p. 17"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 910000,
+            "how": "Banque Exemple SA, Compte privé: balance on 31 December 9'100.00.",
+            "source": "ge-2025-guide-declaration-pp p. 40"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 3704000,
+            "how": "Interactive Brokers, securities at the official value on 31 December (ESTV price list, as the user gives it): 120 x 92.00 + 50 x 520.00 = 37'040.00.",
+            "source": "ge-2025-guide-declaration-pp p. 41"
+          }
+        ],
+        "grossWealth": {
+          "amount": 7474000,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 7214000,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -7214000,
+          "how": "Single person, at most the net wealth: 72'140.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 0,
+          "how": "Net wealth 72'140.00 less 72'140.00: 0.00. (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "wealthBase": {
+          "amount": 0,
+          "how": "The base wealth scale at 0.00: 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 49; ge-2025-icc-tariff-pdf p. 5"
+        },
+        "wealthSupplementary": {
+          "amount": 0,
+          "how": "The supplementary scale at 0.00: 0.00, no centimes on it.",
+          "source": "ge-2025-guide-declaration-pp p. 50; ge-2025-icc-tariff-pdf p. 5; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 0,
+          "how": "Base 0.00 + 47.5 % 0.00 + 1 % 0.00 + supplementary 0.00 = 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalWealth": {
+          "amount": 0,
+          "how": "50.5 centimes on 0.00: 0.00.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "communal": {
+          "amount": 393900,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 1416640,
+          "how": "Cantonal income 10'202.40 + cantonal wealth 0.00 + communal 3'939.00 + taxe personnelle 25.00 = 14'166.40. Provisional: Geneva 2026 scales and amounts not published yet.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        },
+        "withholdingTaxCredit": {
+          "amount": 57610,
+          "how": "35 % of the income subject to the withholding tax, to 5 centimes: 576.10 (an imputation on the bordereau, not part of the tax).",
+          "source": "ge-2025-guide-declaration-pp p. 39"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "12.01",
+            "person": "A",
+            "amount": 11550000,
+            "how": "Business result: revenue 138'000.00 less charges 22'500.00 (12.17 - 12.45 = 12.46): 115'500.00.",
+            "source": "ge-2025-guide-independants p. 13 to 15; ge-2025-guide-declaration-pp p. 23 and 24"
+          },
+          {
+            "code": "32.10",
+            "person": "A",
+            "amount": -1132000,
+            "how": "The owner's own AVS/AI/APG instalments paid for the year (32.10), in full: 11'320.00.",
+            "source": "ge-2025-guide-independants p. 22; ge-na-law-lipp art. 31 let. a"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 164600,
+            "how": "Interactive Brokers: gross dividends of Swiss shares, subject to the withholding tax, 1'646.00.",
+            "source": "ge-2025-guide-declaration-pp p. 41"
+          },
+          {
+            "code": "32.40",
+            "person": "A",
+            "amount": -1600000,
+            "how": "Pillar 3a paid in the year 16'000.00; no pension fund: at most 20 % of the earned income (115'500.00 less the AVS contributions 11'320.00), 20'836.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -180000,
+            "how": "Insurance premiums and savings interest 6'646.00, at most 1'800.00 (single, paying into a pension fund or pillar 3a): 1'800.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2026-ifd-progression-deductions p. 1 and 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          }
+        ],
+        "netIncome": {
+          "amount": 8802600,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 8802600,
+          "how": "Net income 88'026.00 less the social deductions 0.00: 88'026.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 8800000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 88'000.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD); ch-2026-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "single",
+        "scaleTax": {
+          "amount": 189235,
+          "how": "The single scale at 88'000.00: 1'892.35.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 0,
+          "how": "No child.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 189235,
+          "how": "1'892.35 less 0.00, rounded down to 5 centimes: 1'892.35.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 1605875, "how": "ICC 14'166.40 + IFD 1'892.35.", "source": "" }
+    }
+  }
+}

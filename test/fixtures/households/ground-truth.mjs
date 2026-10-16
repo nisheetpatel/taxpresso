@@ -417,6 +417,22 @@ export function computeKit(kit, year) {
       `The owner's own AVS/AI/APG instalments paid for the year (32.10), in full: ${fr(b.avs)}.`,
       `${INDEP} p. 22; ge-na-law-lipp art. 31 let. a`,
     );
+    add(
+      wealth,
+      '12.50',
+      b.person,
+      b.currentAssets + b.fixedAssets,
+      `Business assets on 31 December (12.48 + 12.49): ${fr(b.currentAssets)} + ${fr(b.fixedAssets)}.`,
+      `${INDEP} p. 16 and 17`,
+    );
+    add(
+      wealth,
+      '57.50',
+      b.person,
+      -b.liabilities,
+      `Business debts on 31 December: ${fr(b.liabilities)}.`,
+      `${INDEP} p. 17`,
+    );
   }
 
   // Movable wealth and its income (état des titres).
@@ -918,6 +934,11 @@ export function computeKit(kit, year) {
     Math.max(0, netWealth),
   );
   const taxableWealth = Math.max(0, netWealth - socialW);
+  // The deduction on business wealth (51.60, half the business assets invested, LIPP art. 58
+  // al. 2): which figure it halves is not spelled out, so the kits keep it from mattering.
+  if ((Y.businesses ?? []).length && taxableWealth !== 0) {
+    throw new Error('kits keep a business household under the wealth social deduction');
+  }
   if (taxableWealth % 100 !== 0) throw new Error('wealth not whole francs');
   const wealthBase = genevaScale(GE.wealthScale.value, taxableWealth, 10_000_000);
   const supplementary = genevaScale(GE.wealthSupplementary.value, taxableWealth, 10_000_000);
