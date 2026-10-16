@@ -92,6 +92,29 @@ const MEYRIN_EMPLOYERS = {
     city: 'Meyrin',
   },
 };
+const PENSION_FUNDS = {
+  p1: {
+    name: 'Caisse de pension Exemple',
+    street: 'Avenue du Fictif 15',
+    zip: '1205',
+    city: 'Genève',
+  },
+  p2: {
+    name: 'Fondation de prévoyance Modèle',
+    street: 'Case postale 410',
+    zip: '1211',
+    city: 'Genève 26',
+  },
+};
+/** The Fictif couple's flat: bought in 2004 for CHF 640'000, raised by 12 % from 2025 (LEFI). */
+const THONEX_FLAT = (year, rentalValue) => ({
+  since: 2004,
+  old: true,
+  parcel: '4321',
+  description: 'appartement de 5 pièces en PPE (lot 12), Chemin des Fictifs 10',
+  taxValue: chf(716_800),
+  rentalValue,
+});
 const CRECHE = {
   name: 'Crèche Les Petits Exemples',
   street: 'Chemin des Essais 2',
@@ -587,6 +610,201 @@ export const KITS = [
             iban: 'CH0000000000000103001',
             balance: chf(12_900),
             interest: 0,
+          },
+        ],
+      },
+    },
+  },
+  // 4. A retired couple in Thônex: AVS and pension fund pensions, their own flat (PPE) with a
+  // mortgage, securities.
+  {
+    slug: 'fictif-thonex',
+    title: 'Bernard and Monique Fictif, retired, their own flat with a mortgage, Thônex',
+    story:
+      'Bernard and Monique are retired and live in the flat they bought in a building in Thônex (propriété par étage) in 2004. Each receives an AVS pension and a pension from a pension fund (Bernard’s certificate carries the Swissdec barcode). The AFC sends them the flat’s tax value and rental value each spring; a mortgage remains, and they keep Swiss shares at a private bank, which sends an e-tax statement.',
+    commune: 'Thônex',
+    communeCode: '6640',
+    address: ADDR.thonex,
+    civil: 'married',
+    people: [
+      {
+        id: 'p1',
+        first: 'Bernard',
+        last: 'Fictif',
+        born: '1953-04-12',
+        ahv: '756.0000.1006.68',
+        job: 'Retraité (fictif)',
+      },
+      {
+        id: 'p2',
+        first: 'Monique',
+        last: 'Fictif',
+        born: '1956-09-25',
+        ahv: '756.0000.1007.75',
+        job: 'Retraitée (fictive)',
+      },
+    ],
+    children: [],
+    answers: {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 0,
+      commune: 'Thônex',
+      moved: 'no',
+      'income_sources:p1': ['pension'],
+      'income_sources:p2': ['pension'],
+      'residence:p1': 'swiss',
+      banks: 1,
+      crypto: false,
+      payments: [],
+      special: ['real_estate'],
+      swiss_property: 'own_flat',
+      swiss_property_owner: 'both',
+      swiss_property_since: 2004,
+      swiss_property_old: true,
+      swiss_property_special: [],
+      swiss_property_loan: true,
+    },
+    years: {
+      2025: {
+        pensions: [
+          { person: 'p1', type: 'avs_ai', amount: chf(26_460) },
+          {
+            person: 'p1',
+            type: 'occupational',
+            barcode: true,
+            fund: PENSION_FUNDS.p1,
+            amount: chf(46_800),
+          },
+          { person: 'p2', type: 'avs_ai', amount: chf(18_900) },
+          {
+            person: 'p2',
+            type: 'occupational',
+            fund: PENSION_FUNDS.p2,
+            member: 'FPM-55210',
+            since: '2020-10-01',
+            amount: chf(18_600),
+          },
+        ],
+        property: THONEX_FLAT(2025, chf(24_600)),
+        mortgages: [
+          {
+            lender: ISSUERS.mortgage,
+            number: 'HYP-0104-77',
+            parcel: '4321',
+            rate: '1.70 %',
+            balance: chf(280_000),
+            interest: chf(4_760),
+          },
+        ],
+        health: {
+          members: [
+            { person: 'p1', name: 'Bernard Fictif', basic: chf(6_568), supplementary: chf(840) },
+            { person: 'p2', name: 'Monique Fictif', basic: chf(6_510), supplementary: chf(840) },
+          ],
+        },
+        statements: [
+          {
+            person: 'household',
+            bank: ISSUERS.private,
+            client: 'TXP-0104',
+            depot: 'D-0001044',
+            accounts: [
+              { iban: 'CH0000000000000104001', name: 'Compte courant', balance: chf(19_965) },
+            ],
+            securities: [
+              {
+                isinPrefix: 'CHTXPRS0104',
+                valor: '9100104',
+                name: 'Exemple Industrie SA (fictive)',
+                category: 'SHARE',
+                quantity: 400,
+                unitPrice: 210.0,
+                dividend: chf(2_480),
+                paid: '04-24',
+              },
+              {
+                isinPrefix: 'CHTXPRS0105',
+                valor: '9100105',
+                name: 'Assurances Modèle SA (fictive)',
+                category: 'SHARE',
+                quantity: 260,
+                unitPrice: 502.0,
+                dividend: chf(1_820),
+                paid: '05-07',
+              },
+            ],
+          },
+        ],
+      },
+      2026: {
+        pensions: [
+          { person: 'p1', type: 'avs_ai', thirteenth: true, amount: chf(28_665) },
+          {
+            person: 'p1',
+            type: 'occupational',
+            barcode: true,
+            fund: PENSION_FUNDS.p1,
+            amount: chf(46_800),
+          },
+          { person: 'p2', type: 'avs_ai', thirteenth: true, amount: chf(20_475) },
+          {
+            person: 'p2',
+            type: 'occupational',
+            fund: PENSION_FUNDS.p2,
+            member: 'FPM-55210',
+            since: '2020-10-01',
+            amount: chf(18_600),
+          },
+        ],
+        property: THONEX_FLAT(2026, chf(24_860)),
+        mortgages: [
+          {
+            lender: ISSUERS.mortgage,
+            number: 'HYP-0104-77',
+            parcel: '4321',
+            rate: '1.60 %',
+            balance: chf(275_000),
+            interest: chf(4_480),
+          },
+        ],
+        health: {
+          members: [
+            { person: 'p1', name: 'Bernard Fictif', basic: chf(6_819), supplementary: chf(870) },
+            { person: 'p2', name: 'Monique Fictif', basic: chf(6_720), supplementary: chf(870) },
+          ],
+        },
+        statements: [
+          {
+            person: 'household',
+            bank: ISSUERS.private,
+            client: 'TXP-0104',
+            depot: 'D-0001044',
+            accounts: [
+              { iban: 'CH0000000000000104001', name: 'Compte courant', balance: chf(9_785) },
+            ],
+            securities: [
+              {
+                isinPrefix: 'CHTXPRS0104',
+                valor: '9100104',
+                name: 'Exemple Industrie SA (fictive)',
+                category: 'SHARE',
+                quantity: 400,
+                unitPrice: 214.5,
+                dividend: chf(2_560),
+                paid: '04-23',
+              },
+              {
+                isinPrefix: 'CHTXPRS0105',
+                valor: '9100105',
+                name: 'Assurances Modèle SA (fictive)',
+                category: 'SHARE',
+                quantity: 260,
+                unitPrice: 515.0,
+                dividend: chf(1_872),
+                paid: '05-06',
+              },
+            ],
           },
         ],
       },

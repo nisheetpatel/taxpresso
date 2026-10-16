@@ -655,7 +655,9 @@ function donationReceipt(kit, year, d) {
 
 function avsPension(kit, year, pen) {
   const p = person(kit, pen.person);
-  const monthly = pen.amount / 12;
+  // From December 2026 the AVS pays a 13th monthly pension once a year (the attestation shows it).
+  const months = pen.thirteenth ? 13 : 12;
+  const monthly = pen.amount / months;
   const page = letter(
     ISSUERS.avs,
     personLines(kit, p),
@@ -674,6 +676,7 @@ function avsPension(kit, year, pen) {
         [
           ['Rente mensuelle', money(monthly)],
           ['Nombre de mois', '12'],
+          ...(pen.thirteenth ? [['13e rente AVS (versée en décembre)', money(monthly)]] : []),
           [`Total des rentes versées en ${year}`, money(pen.amount)],
         ],
         { boldLast: true },
@@ -686,7 +689,7 @@ function avsPension(kit, year, pen) {
       );
     },
   );
-  if (pen.amount % 1200 !== 0) throw new Error('AVS pension: whole francs a month');
+  if (pen.amount % (months * 100) !== 0) throw new Error('AVS pension: whole francs a month');
   return {
     bytes: buildPdf([finish(page, 1, 1)]),
     values: [
