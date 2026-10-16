@@ -468,6 +468,74 @@ describe('rough income', () => {
   });
 });
 
+describe('what each document turned out to be', () => {
+  const fixture = async (name: string) =>
+    new Uint8Array(
+      await readFile(path.resolve(import.meta.dirname, '..', '..', 'test', 'fixtures', name)),
+    );
+  const synthetic = (text: string) => new TextEncoder().encode(`%PDF-1.7 synthetic ${text}`);
+  const statusOf = async (ws: Workspace, id: string) =>
+    (await state(ws)).documents.find((d) => d.id === id)?.status;
+
+  it('is the extension’s word, from the same counts as the next step', async () => {
+    const ws = await workspace();
+    await answerAll(ws, MARTIN);
+    // A file nobody has identified yet: Claude takes a look (the next step reads it).
+    const { document: scan } = await ws.addDocument(synthetic('scan'), 'IMG_0412.pdf', 'dashboard');
+    expect(await statusOf(ws, scan.id)).toBe('unknown');
+    expect((await state(ws)).journey.next.id).toBe('read');
+    // Said to be a health insurance statement: to read. Read: its value waits for an OK. Then done.
+    await ws.setDocumentKind(scan.id, 'health_premiums', 'p1');
+    expect(await statusOf(ws, scan.id)).toBe('read');
+    await ws.proposeExtraction(scan.id, { kind: 'health_premiums', taxYear: 2026, person: 'p1' }, [
+      { key: 'health.premiums', value: "4'800.00", page: 1 },
+    ]);
+    expect(await statusOf(ws, scan.id)).toBe('confirm');
+    expect((await state(ws)).journey.next.id).toBe('confirm');
+    await ws.confirmDocument(scan.id, 'dashboard');
+    expect(await statusOf(ws, scan.id)).toBe('done');
+    // A salary certificate read from its barcode: read on its own. A file with nothing to read in
+    // it: done, never "to read". A broker export read on its own: its values wait for an OK, as
+    // the next step says.
+    const cert = await ws.addDocument(
+      await fixture('barcodes/dupont-certificat-salaire-2026-vectoriel.pdf'),
+      'certificat.pdf',
+      'dashboard',
+    );
+    expect(await statusOf(ws, cert.document.id)).toBe('barcode');
+    const { document: note } = await ws.addDocument(synthetic('note'), 'note.pdf', 'dashboard');
+    await ws.setDocumentKind(note.id, 'other');
+    expect(await statusOf(ws, note.id)).toBe('done');
+    expect((await state(ws)).journey.next.id).not.toBe('confirm');
+    const broker = await ws.addDocument(
+      await fixture('brokers/dupont-ibkr-2026.xml'),
+      'ibkr.xml',
+      'dashboard',
+    );
+    expect(await statusOf(ws, broker.document.id)).toBe('confirm');
+    expect((await state(ws)).journey.next.id).toBe('confirm');
+  });
+
+  it('waits for whose a certificate read from its barcode is, in a couple', async () => {
+    const ws = await workspace();
+    await answerAll(ws, {
+      ...MARTIN,
+      civil_status: 'married',
+      'income_sources:p2': ['salary'],
+      'employers:p2': 1,
+      'residence:p2': 'swiss',
+    });
+    const { document } = await ws.addDocument(
+      await fixture('barcodes/dupont-certificat-salaire-2026-vectoriel.pdf'),
+      'certificat.pdf',
+      'dashboard',
+    );
+    expect(await statusOf(ws, document.id)).toBe('whose');
+    await ws.setDocumentKind(document.id, 'salary_certificate', 'p2');
+    expect(await statusOf(ws, document.id)).toBe('barcode');
+  });
+});
+
 describe('rough benefits and pensions in the chat', () => {
   /** Claude's tools on a workspace (no dashboard page, no folder watch). */
   async function chat(ws: Workspace) {

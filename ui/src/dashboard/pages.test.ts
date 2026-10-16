@@ -657,7 +657,14 @@ describe('the number', () => {
             confidence: 'close',
             estimate: { ...household().estimate, total: 824_000 },
             documents: [
-              { id: 'd1', filename: 'c.pdf', bytes: 1, addedAt: '', kind: 'salary_certificate' },
+              {
+                id: 'd1',
+                filename: 'c.pdf',
+                bytes: 1,
+                addedAt: '',
+                kind: 'salary_certificate',
+                status: 'done',
+              },
             ],
             // The extension noted CHF 8,900 when the certificate replaced the rough salary.
             rough: {
@@ -714,8 +721,9 @@ describe('only what applies', () => {
         kind: 'salary_certificate',
         kindLabel: 'Salary certificate',
         barcode: 'read',
+        status: 'barcode',
       },
-      { id: 'u', filename: 'IMG_0412.jpg', bytes: 1, addedAt: '' },
+      { id: 'u', filename: 'IMG_0412.jpg', bytes: 1, addedAt: '', status: 'unknown' },
       {
         id: 'c',
         filename: 'c.pdf',
@@ -723,6 +731,17 @@ describe('only what applies', () => {
         addedAt: '',
         kind: 'health_premiums',
         kindLabel: 'Health insurance premiums',
+        status: 'confirm',
+      },
+      // Nothing to read in it, so no card: done, as the extension says, never "to read".
+      {
+        id: 'o',
+        filename: 'o.pdf',
+        bytes: 1,
+        addedAt: '',
+        kind: 'other',
+        kindLabel: 'Something else',
+        status: 'done',
       },
     ];
     const cards = [
@@ -750,7 +769,7 @@ describe('only what applies', () => {
       },
     ];
     const tree = expand(MakeItExact(props(household({ documents, cards }))));
-    expect(textOf(ofType(tree, 'h2'))).toBe('Taxpresso sorted 3 documents');
+    expect(textOf(ofType(tree, 'h2'))).toBe('Taxpresso sorted 4 documents');
     const rows = all(
       tree,
       (e) =>
@@ -761,10 +780,13 @@ describe('only what applies', () => {
       'Health insurance premiums',
       'IMG_0412.jpg',
       'Salary certificate',
+      'Something else',
     ]);
     expect(ofType([rows[0]!], 'ValueCheck')).toHaveLength(1);
     expect(textOf(rows[1]!)).toContain('Not sure what this is. Claude will take a look.');
     expect(textOf(rows[2]!)).toContain('Read on its own, nothing to check');
+    expect(textOf(rows[3]!)).toContain('Read and checked');
+    expect(textOf(rows[3]!)).not.toContain('Claude reads this one with you.');
   });
 
   it('asks whose a barcode certificate is, with one button per person', () => {
@@ -782,6 +804,7 @@ describe('only what applies', () => {
           kind: 'salary_certificate',
           kindLabel: 'Salary certificate',
           barcode: 'pending',
+          status: 'whose',
         },
       ],
     });

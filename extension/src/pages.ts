@@ -2,13 +2,14 @@
 // page itself (./journey.ts, pageOf): how sure the tax is, the questions by where they are asked,
 // and each person's rough income for the basics card. Derived on every read, never stored; the
 // same rules engine result, requirements and questions as everything else.
-import type { Fact } from '@taxpresso/ledger';
+import type { Fact, VaultDocument } from '@taxpresso/ledger';
 import {
   QUESTION_GROUPS,
   type Lang,
   type QuestionGroup,
   type RenderedQuestion,
 } from '@taxpresso/questionnaire';
+import { BARCODE_PENDING, isBarcodeDocument } from './barcode.js';
 import type { Journey } from './journey.js';
 import type { PlanKey, Workspace } from './workspace.js';
 
@@ -216,6 +217,32 @@ export function roughOf(
     people,
     moved,
   };
+}
+
+/**
+ * What a file turned out to be, as "Make it exact" says it (docs/design/three-pages.md, A4): whose
+ * a certificate read from its barcode is, still to say; not identified yet; values that wait for
+ * the user's OK; to read (Claude reads it, once the user agrees); read on its own from its
+ * barcode; or done. From the same counts as the next step (./journey.ts).
+ */
+export type DocumentStatus = 'whose' | 'unknown' | 'confirm' | 'read' | 'barcode' | 'done';
+
+/** Each document's status, for GET /state's documents. */
+export function documentStatus(ws: Workspace): (doc: VaultDocument) => DocumentStatus {
+  const toRead = new Set(ws.toRead().map((d) => d.id));
+  const toConfirm = new Set(ws.toConfirm().flatMap((f) => f.source.docId ?? []));
+  return (d) =>
+    d.parse.method === BARCODE_PENDING
+      ? 'whose'
+      : !d.kind
+        ? 'unknown'
+        : toConfirm.has(d.id)
+          ? 'confirm'
+          : isBarcodeDocument(d)
+            ? 'barcode'
+            : toRead.has(d.id)
+              ? 'read'
+              : 'done';
 }
 
 /** The three pages' state, computed once from the journey (./api.ts, GET /state). */

@@ -12,29 +12,10 @@ import { pg, type PagesMessageKey } from './i18n-pages';
 import type { PageProps } from './page-props';
 import type { GroupQuestion, PagesFields } from './state-adapter';
 import { TaxCard } from './TaxCard';
-import type { DocumentView, RequirementView, State, Value } from './types';
-import type { DocumentCard } from './types-docs';
+import type { DocStatus, DocumentView, RequirementView, State, Value } from './types';
 import { AskClaude, Icon } from './ui';
 
-/** What a file in the folder turned out to be. */
-export type DocStatus = 'whose' | 'confirm' | 'unknown' | 'read' | 'barcode' | 'done';
-
-/** Kinds that hold nothing to read: they are kept, compared or checked elsewhere. */
-const NOTHING_TO_READ = new Set(['other', 'official_declaration', 'prior_declaration']);
-
-export function docStatus(
-  state: State,
-  d: DocumentView,
-): { status: DocStatus; card?: DocumentCard } {
-  const card = state.cards.find((c) => c.docId === d.id);
-  if (d.barcode === 'pending') return { status: 'whose' };
-  if (!d.kind) return { status: 'unknown' };
-  if (card && card.toConfirm > 0) return { status: 'confirm', card };
-  if (d.barcode === 'read') return { status: 'barcode' };
-  if (!card && !NOTHING_TO_READ.has(d.kind)) return { status: 'read' };
-  return { status: 'done' };
-}
-
+/** Something to do first (whose, an OK, what it is, to read), then what is done. */
 const ACTION_FIRST: Record<DocStatus, number> = {
   whose: 0,
   confirm: 1,
@@ -74,7 +55,9 @@ function Mark({ done }: { done: boolean }) {
 
 function DocRow({ p, d }: { p: PageProps; d: DocumentView }): JSX.Element {
   const { state, lang, act } = p;
-  const { status, card } = docStatus(state, d);
+  // What it turned out to be is the extension's word; the values to OK are on its card.
+  const status = d.status;
+  const card = status === 'confirm' ? state.cards.find((c) => c.docId === d.id) : undefined;
   const couple = state.people.length > 1;
   const owner =
     couple && (d.person === 'p1' || d.person === 'p2') ? short(lang, d.person) : undefined;
@@ -199,9 +182,7 @@ const INCOME_DOCS = new Set(['salary_certificate', 'replacement_income', 'pensio
 
 export function MakeItExact(p: PageProps): JSX.Element | null {
   const { state, lang, act, embedded } = p;
-  const docs = [...state.documents].sort(
-    (a, b) => ACTION_FIRST[docStatus(state, a).status] - ACTION_FIRST[docStatus(state, b).status],
-  );
+  const docs = [...state.documents].sort((a, b) => ACTION_FIRST[a.status] - ACTION_FIRST[b.status]);
   const missing = missingGroups(state);
   const checks = state.checks.filter((c) => !c.resolved);
   const securities = state.holdings || state.securities?.warnings.length;

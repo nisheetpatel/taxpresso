@@ -13,7 +13,6 @@ import { Reconcile } from './Reconcile';
 import { TaxStrip } from './TaxCard';
 import type { State } from './types';
 import { AskClaude, Icon } from './ui';
-import { docStatus } from './YourTax';
 
 /** What still stands between the household and filing, in words, each where it is done. */
 export function stillToDo(state: State, pages: PagesFields, lang: PageProps['lang']): string[] {
@@ -21,7 +20,7 @@ export function stillToDo(state: State, pages: PagesFields, lang: PageProps['lan
     n ? [n === 1 ? pg(lang, one) : pg(lang, many, { n })] : [];
   const open = (g: GroupId) => pages.groups[g].filter((q) => !q.answered).length;
   const once = (g: GroupId, key: PagesMessageKey) => (open(g) ? [pg(lang, key)] : []);
-  const statuses = state.documents.map((d) => docStatus(state, d).status);
+  const statuses = state.documents.map((d) => d.status);
   const missing = [
     ...new Set(
       state.requirements.filter((r) => r.status === 'missing' && !r.optional).map((r) => r.label),
