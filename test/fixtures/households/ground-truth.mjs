@@ -1027,6 +1027,20 @@ export function computeKit(kit, year) {
         `Cantonal income ${fr(cantonalIncome)} + cantonal wealth ${fr(cantonalWealth)} + communal ${fr(inc.comm + wl.comm)} + taxe personnelle ${fr(personalTax)} = ${fr(iccTotal)}.${provisional ? ' Provisional: Geneva 2026 scales and amounts not published yet.' : ''}`,
         `${GUIDE} p. 48 and 49`,
       ),
+      ...((Y.salaries ?? []).some((x) => x.sourceTax)
+        ? {
+            sourceTaxWithheld: r(
+              (Y.salaries ?? []).reduce((t, x) => t + (x.sourceTax ?? 0), 0),
+              `Tax taken at source by the employers (box 12): ${(Y.salaries ?? [])
+                .filter((x) => x.sourceTax)
+                .map((x) => fr(x.sourceTax))
+                .join(
+                  ' + ',
+                )}. In TOU it counts towards the tax (taken off the bordereaux); it is not part of it.`,
+              `${GUIDE} p. 52 and 53 (TOU)`,
+            ),
+          }
+        : {}),
       ...(withholding
         ? {
             withholdingTaxCredit: r(
