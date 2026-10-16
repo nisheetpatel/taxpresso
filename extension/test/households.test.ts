@@ -79,8 +79,11 @@ const json = async <T>(...parts: string[]): Promise<T> =>
 /** One household's year through the extension, as a user and Claude would go through it. */
 async function runKit(slug: string, year: number) {
   const kit = KITS.find((k) => k.slug === slug)!;
-  const answers = (await json<{ answers: Record<string, unknown> }>(slug, 'household.json'))
-    .answers;
+  const household = await json<{
+    answers: Record<string, unknown>;
+    answersByYear?: Record<string, Record<string, unknown>>;
+  }>(slug, 'household.json');
+  const answers = { ...household.answers, ...household.answersByYear?.[year] };
   const readings = (await json<{ years: Record<string, Reading[]> }>(slug, 'extracted.json')).years[
     year
   ]!;
@@ -150,13 +153,16 @@ async function runKit(slug: string, year: number) {
 
     // 2. The questions, in the order Taxpresso asks them; each answer is the household's.
     const used = new Set<string>();
+    /** What last year's declaration suggested, per question (the user confirms each). */
+    const suggested: Record<string, unknown> = {};
     const answerAll = async () => {
       for (let i = 0; i < 80; i++) {
         const next = (await call('next_questions')).structuredContent as {
-          questions: { id: string }[];
+          questions: { id: string; suggested?: { value: unknown } }[];
         };
         const q = next.questions[0];
         if (!q) return;
+        if (q.suggested) suggested[q.id] = q.suggested.value;
         expect(Object.keys(answers), `asked ${q.id}`).toContain(q.id);
         if (used.has(q.id)) throw new Error(`${q.id} asked again`);
         used.add(q.id);
@@ -189,9 +195,20 @@ async function runKit(slug: string, year: number) {
       }
     }
     await answerAll();
-    expect([...used].sort(), 'every answer of household.json was asked').toEqual(
-      Object.keys(answers).sort(),
-    );
+    expect(
+      Object.keys(answers).filter((id) => !used.has(id)),
+      'every answer of household.json was asked',
+    ).toEqual([]);
+    if (readings.some((r) => r.read === 'prior')) {
+      // Last year's declaration filled in suggestions, and each one is what the household says.
+      expect(Object.keys(suggested).length).toBeGreaterThanOrEqual(5);
+      for (const [id, value] of Object.entries(suggested)) {
+        // The commune comes back as its slug ("lancy"); the household names it ("Lancy").
+        const said = id === 'commune' ? String(answers[id]).toLowerCase() : answers[id];
+        expect(value, `suggestion for ${id}`).toEqual(said);
+      }
+      expect(suggested.commune, 'the commune, read from its code').toBeDefined();
+    }
 
     // 4. The tax, to the centime.
     const out = (await call('compute_tax', { detail: true })).structuredContent as TaxOut;
@@ -229,7 +246,11 @@ async function runKit(slug: string, year: number) {
     if (process.env.TAXPRESSO_KITS_DEBUG) {
       await writeFile(
         path.join(process.env.TAXPRESSO_KITS_DEBUG, `${slug}-${year}.json`),
-        JSON.stringify({ got, want, detail: out.detail, estimates: out.estimates }, null, 2),
+        JSON.stringify(
+          { got, want, suggested, detail: out.detail, estimates: out.estimates },
+          null,
+          2,
+        ),
       );
     }
     expect(got, `${slug} ${year}: the app and the hand calculation`).toEqual(want);

@@ -64,6 +64,33 @@ const ISSUERS = {
   },
 };
 
+const LANCY_EMPLOYERS = {
+  p1: {
+    name: "Bureau d'Etudes Exemple SA",
+    street: 'Chemin du Spécimen 3',
+    zip: '1213',
+    city: 'Petit-Lancy',
+  },
+  p2: {
+    name: 'Laboratoire Fictif Sàrl',
+    street: "Route de l'Essai 21",
+    zip: '1212',
+    city: 'Grand-Lancy',
+  },
+};
+const CRECHE = {
+  name: 'Crèche Les Petits Exemples',
+  street: 'Chemin des Essais 2',
+  zip: '1212',
+  city: 'Grand-Lancy',
+};
+const CHARITY = {
+  name: 'Fondation Exemple pour l’enfance',
+  street: 'Case postale 12',
+  zip: '1211',
+  city: 'Genève 4',
+};
+
 export const KITS = [
   // 1. Single, salaried, Carouge.
   {
@@ -195,6 +222,205 @@ export const KITS = [
             ],
           },
         ],
+      },
+    },
+  },
+  // 2. Married, two salaries, two children in a crèche, Lancy.
+  {
+    slug: 'temoin-lancy',
+    title: 'Thomas and Laura Témoin, married, two salaries, two children in a crèche, Lancy',
+    story:
+      'Thomas is an engineer and Laura a biologist; both work for employers in Lancy, where they live with Hugo and Inès, who go to a crèche. Both pay into a pension fund and a pillar 3a. Thomas takes the bus and eats out at lunch; Laura walks to work. They keep their savings in a joint account, give to a children’s charity each year, and kept last year’s declaration, which Taxpresso reads for suggestions.',
+    commune: 'Lancy',
+    communeCode: '6628',
+    address: ADDR.lancy,
+    civil: 'married',
+    people: [
+      {
+        id: 'p1',
+        first: 'Thomas',
+        last: 'Témoin',
+        born: '1987-06-21',
+        ahv: '756.0000.1002.20',
+        job: 'Ingénieur (fictif)',
+      },
+      {
+        id: 'p2',
+        first: 'Laura',
+        last: 'Témoin',
+        born: '1989-11-04',
+        ahv: '756.0000.1003.37',
+        job: 'Biologiste (fictive)',
+      },
+    ],
+    children: [
+      { first: 'Hugo', born: '2021-05-10' },
+      { first: 'Inès', born: '2023-09-02' },
+    ],
+    answers: {
+      canton: 'GE',
+      civil_status: 'married',
+      children: 2,
+      children_custody: 'with_household',
+      childcare: 'creche_or_daycare',
+      commune: 'Lancy',
+      moved: 'no',
+      'income_sources:p1': ['salary'],
+      'income_sources:p2': ['salary'],
+      'employers:p1': 1,
+      'employers:p2': 1,
+      'residence:p1': 'swiss',
+      'pillar3a:p1': true,
+      'pillar3a:p2': true,
+      'lpp_buyin:p1': false,
+      'lpp_buyin:p2': false,
+      'commute:p1': 'public_transport',
+      'commute_transit_cost:p1': 500,
+      'commute:p2': 'walk',
+      'meal_days:p1': 220,
+      'meal_days:p2': 0,
+      banks: 1,
+      crypto: false,
+      payments: ['donations'],
+      special: [],
+    },
+    // Asked only once the crèche invoices are in: they come to more than one child's maximum.
+    yearAnswers: {
+      2025: { 'child_care:child1': 14_200, 'child_care:child2': 16_800 },
+      2026: { 'child_care:child1': 11_400, 'child_care:child2': 17_400 },
+    },
+    years: {
+      2025: {
+        salaries: [
+          {
+            person: 'p1',
+            employer: LANCY_EMPLOYERS.p1,
+            base: chf(118_000),
+            gross: chf(118_000),
+            social: chf(8_142),
+            lppOrdinary: chf(9_558),
+          },
+          {
+            person: 'p2',
+            employer: LANCY_EMPLOYERS.p2,
+            base: chf(68_000),
+            gross: chf(68_000),
+            social: chf(4_692),
+            lppOrdinary: chf(3_808),
+          },
+        ],
+        commute: { p1: { transit: chf(500), mealDays: 220 } },
+        pillar3a: [
+          { person: 'p1', paid: chf(7_258) },
+          { person: 'p2', paid: chf(5_000) },
+        ],
+        health: {
+          members: [
+            { person: 'p1', name: 'Thomas Témoin', basic: chf(6_152), supplementary: chf(960) },
+            { person: 'p2', name: 'Laura Témoin', basic: chf(5_580), supplementary: chf(960) },
+            { person: 'c1', name: 'Hugo Témoin', basic: chf(1_260), supplementary: chf(204) },
+            { person: 'c2', name: 'Inès Témoin', basic: chf(1_260), supplementary: chf(204) },
+          ],
+        },
+        childcare: [
+          { child: 'Hugo', provider: CRECHE, amount: chf(14_200) },
+          { child: 'Inès', provider: CRECHE, amount: chf(16_800) },
+        ],
+        donations: [{ to: 'Fondation Exemple pour l’enfance', org: CHARITY, amount: chf(300) }],
+        bankAccounts: [
+          {
+            person: 'household',
+            bank: ISSUERS.bank,
+            name: 'Compte épargne joint',
+            iban: 'CH0000000000000102001',
+            balance: chf(46_300),
+            interest: chf(92),
+          },
+        ],
+        prior: {
+          employerA: LANCY_EMPLOYERS.p1.name,
+          employerB: LANCY_EMPLOYERS.p2.name,
+          salaryA: chf(115_000),
+          salaryB: chf(66_000),
+          lppA: chf(9_300),
+          lppB: chf(3_700),
+          p3aA: chf(7_056),
+          p3aB: chf(5_000),
+          flatA: chf(1_812),
+          flatB: chf(1_740),
+          interest: chf(80),
+          premiums: chf(15_600),
+          insuranceIfd: chf(5_100),
+          childcare: chf(29_000),
+          donation: chf(250),
+          savings: chf(41_000),
+        },
+      },
+      2026: {
+        salaries: [
+          {
+            person: 'p1',
+            employer: LANCY_EMPLOYERS.p1,
+            base: chf(120_000),
+            gross: chf(120_000),
+            social: chf(8_280),
+            lppOrdinary: chf(9_720),
+          },
+          {
+            person: 'p2',
+            employer: LANCY_EMPLOYERS.p2,
+            base: chf(69_000),
+            gross: chf(69_000),
+            social: chf(4_761),
+            lppOrdinary: chf(3_939),
+          },
+        ],
+        commute: { p1: { transit: chf(500), mealDays: 220 } },
+        pillar3a: [
+          { person: 'p1', paid: chf(7_258) },
+          { person: 'p2', paid: chf(5_000) },
+        ],
+        health: {
+          members: [
+            { person: 'p1', name: 'Thomas Témoin', basic: chf(6_364), supplementary: chf(984) },
+            { person: 'p2', name: 'Laura Témoin', basic: chf(6_336), supplementary: chf(984) },
+            { person: 'c1', name: 'Hugo Témoin', basic: chf(1_308), supplementary: chf(216) },
+            { person: 'c2', name: 'Inès Témoin', basic: chf(1_308), supplementary: chf(216) },
+          ],
+        },
+        childcare: [
+          { child: 'Hugo', provider: CRECHE, amount: chf(11_400) },
+          { child: 'Inès', provider: CRECHE, amount: chf(17_400) },
+        ],
+        donations: [{ to: 'Fondation Exemple pour l’enfance', org: CHARITY, amount: chf(300) }],
+        bankAccounts: [
+          {
+            person: 'household',
+            bank: ISSUERS.bank,
+            name: 'Compte épargne joint',
+            iban: 'CH0000000000000102001',
+            balance: chf(49_100),
+            interest: chf(88),
+          },
+        ],
+        prior: {
+          employerA: LANCY_EMPLOYERS.p1.name,
+          employerB: LANCY_EMPLOYERS.p2.name,
+          salaryA: chf(118_000),
+          salaryB: chf(68_000),
+          lppA: chf(9_558),
+          lppB: chf(3_808),
+          p3aA: chf(7_258),
+          p3aB: chf(5_000),
+          flatA: chf(1_812),
+          flatB: chf(1_785),
+          interest: chf(92),
+          premiums: chf(16_008),
+          insuranceIfd: chf(5_100),
+          childcare: chf(31_000),
+          donation: chf(300),
+          savings: chf(46_300),
+        },
       },
     },
   },

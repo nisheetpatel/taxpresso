@@ -8,6 +8,7 @@ export interface Kit {
   people: { id: 'p1' | 'p2'; first: string; last: string; born: string; ahv: string }[];
   children: { first: string; born: string }[];
   answers: Record<string, unknown>;
+  yearAnswers?: Record<number, Record<string, unknown>>;
   /** The household's facts per tax year (see kits.mjs). */
   years: Record<number, Record<string, unknown>>;
 }

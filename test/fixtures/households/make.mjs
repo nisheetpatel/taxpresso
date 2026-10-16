@@ -961,6 +961,7 @@ function priorDeclaration(kit, year, d) {
     [40, 716, `${kit.address.zip} ${kit.address.city}`],
     [40, 700, 'Commune de domicile'],
     [200, 700, kit.commune],
+    [300, 700, kit.communeCode],
     [200, 680, 'Contribuable A'],
     [360, 680, 'Contribuable B'],
     [40, 664, 'Nom'],
@@ -1296,8 +1297,9 @@ export function householdFor(kit) {
   return {
     kit: kit.slug,
     household: kit.title,
-    note: 'The answers this invented household gives, as answer_question takes them (id: value). Money in francs. The same for 2025 and 2026.',
+    note: 'The answers this invented household gives, as answer_question takes them (id: value), money in francs: the same for every year, plus each year’s own (answersByYear).',
     answers: kit.answers,
+    ...(kit.yearAnswers ? { answersByYear: kit.yearAnswers } : {}),
   };
 }
 

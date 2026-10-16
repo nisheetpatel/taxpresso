@@ -1,7 +1,7 @@
 {
   "kit": "essai-carouge",
   "household": "Sophie Essai, single, salaried, Carouge",
-  "note": "The answers this invented household gives, as answer_question takes them (id: value). Money in francs. The same for 2025 and 2026.",
+  "note": "The answers this invented household gives, as answer_question takes them (id: value), money in francs: the same for every year, plus each year’s own (answersByYear).",
   "answers": {
     "canton": "GE",
     "civil_status": "single",
