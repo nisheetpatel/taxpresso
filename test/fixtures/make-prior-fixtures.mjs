@@ -99,8 +99,24 @@ export function document(pages) {
 }
 
 /** Column positions of one program's print-out. */
-export const GETAX = { code: 40, label: 78, annex: 300, commune: 332, icc: 455, ifd: 525, box: 545 };
-export const DRTAX = { code: 52, label: 92, annex: 318, commune: 352, icc: 440, ifd: 505, box: 530 };
+export const GETAX = {
+  code: 40,
+  label: 78,
+  annex: 300,
+  commune: 332,
+  icc: 455,
+  ifd: 525,
+  box: 545,
+};
+export const DRTAX = {
+  code: 52,
+  label: 92,
+  annex: 318,
+  commune: 352,
+  icc: 440,
+  ifd: 505,
+  box: 530,
+};
 
 /** One rubric line: code, label, then what is filled in. Amounts are right-aligned. */
 export function rubric(cols, y, code, label, { annex, commune, icc, ifd, box, marks } = {}) {

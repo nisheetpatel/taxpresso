@@ -1390,9 +1390,29 @@ export async function writeKit(kit) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const only = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const flag = (name) => {
+    const i = args.indexOf(name);
+    if (i < 0) return undefined;
+    const value = args[i + 1];
+    args.splice(i, 2);
+    return value;
+  };
+  // --year 2026 --out <folder>: one year's documents of the kits named (all by default) into a
+  // folder, without touching the kits: for trying Taxpresso on 2026 by hand (docs/demo.md).
+  const year = flag('--year');
+  const out = flag('--out');
+  if (year !== undefined && out === undefined) throw new Error('--year needs --out <folder>');
   for (const kit of KITS) {
-    if (only.length && !only.includes(kit.slug)) continue;
+    if (args.length && !args.includes(kit.slug)) continue;
+    if (out !== undefined) {
+      const dir = path.join(path.resolve(out), kit.slug);
+      mkdirSync(dir, { recursive: true });
+      const docs = await buildDocuments(kit, Number(year ?? 2025));
+      for (const d of docs) writeFileSync(path.join(dir, d.file), d.bytes);
+      console.log(`${kit.slug}: ${docs.length} documents in ${dir}`);
+      continue;
+    }
     const docs = await writeKit(kit);
     console.log(
       `${kit.slug}: ${docs.length} documents (${readdirSync(path.join(here, kit.slug, 'documents')).length} files)`,
