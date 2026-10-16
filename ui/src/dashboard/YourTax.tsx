@@ -394,10 +394,9 @@ export function Special(p: PageProps): JSX.Element | null {
     if (c.questions.length > 1) return setFlag('who:self', !flags.has('who:self'));
     add(c, c.questions[0]!);
   };
-  // The follow-ups: what the chips opened, one at a time.
-  const roots = flags.has('open:moved') ? new Set(['special']) : SPECIAL_ROOTS;
+  // The follow-ups: what the chips opened, one at a time (the move question has its own card).
   const next = openIn(
-    pages.groups.special.filter((q) => !roots.has(q.questionId)),
+    pages.groups.special.filter((q) => !SPECIAL_ROOTS.has(q.questionId)),
     flags,
   )[0];
   return (

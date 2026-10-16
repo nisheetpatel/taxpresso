@@ -822,6 +822,12 @@ describe('only what applies', () => {
     });
   });
 
+  it('asks where you moved once, when its chip is tapped', () => {
+    const tree = expand(Special(props(household(), { flags: new Set(['open:moved']) })));
+    const asked = ofType(tree, 'AskOne').map((e) => (e.props.q as GroupQuestion).id);
+    expect(asked).toEqual(['moved']);
+  });
+
   it('shows only the chips the canton asks about, and says plainly what isn’t supported', () => {
     expect(chipsOf(pagesOf(household())).map((c) => c.id)).toEqual([
       'home',
