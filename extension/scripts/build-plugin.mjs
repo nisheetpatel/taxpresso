@@ -2,7 +2,7 @@
 // Builds Taxpresso as a Claude plugin (Claude Code and Cowork), beside the .mcpb (Claude Desktop's
 // chat), from the same sources: build/plugin/taxpresso/, zipped as build/taxpresso-plugin-<version>.zip
 // for claude.ai's Customize > Plugins > Upload plugin. Run `pnpm build:plugin` (it builds the
-// plugin's UI first). docs/spikes/S4.md has the findings; scripts/check-plugin.mjs checks the result.
+// plugin's UI first). docs/spikes/S5.md has the findings; scripts/check-plugin.mjs checks the result.
 //
 //   .claude-plugin/plugin.json   the manifest and the directory listing's fields, from manifest.json
 //   .mcp.json                    starts the server: node ${CLAUDE_PLUGIN_ROOT}/server/index.mjs

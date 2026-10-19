@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Pre-submission check of the Claude plugin (build/plugin/taxpresso, `pnpm build:plugin`), offline:
 // the rules of Anthropic's plugin directory that can be checked without the developer portal
-// (claude.com/docs/plugins/pre-submission-checklist, read 19 October 2026; docs/spikes/S4.md).
+// (claude.com/docs/plugins/pre-submission-checklist, read 19 October 2026; docs/spikes/S5.md).
 //
 //   errors  the portal would block the submission, or stop validating it, or the plugin would not
 //           install (a bin/ folder) or would break a Taxpresso rule (a donation link, SPEC.md 12)
@@ -521,7 +521,7 @@ function checkServer(name, server, manifest, has, errors, held) {
 
 /**
  * Why code may read as minified or packed to the security scan ("commit readable source"), or
- * undefined. Measured on Taxpresso's builds (docs/spikes/S4.md): in readable esbuild output at
+ * undefined. Measured on Taxpresso's builds (docs/spikes/S5.md): in readable esbuild output at
  * most about a quarter of the names it declares (var, let, const, function, class) have one or two
  * letters, and few lines are long; in minified code half or more do, or most of its bytes are in
  * long lines; packed data is one very long line.

@@ -34,7 +34,7 @@ jobs:
         run: pnpm check:bundle
       # The Claude plugin (Claude Code and Cowork), built from the same sources as the .mcpb:
       # the same C2 checks on its split server, then the directory's pre-submission rules
-      # (scripts/check-plugin.mjs; docs/spikes/S4.md).
+      # (scripts/check-plugin.mjs; docs/spikes/S5.md).
       - run: pnpm build:plugin
       - name: Claude plugin, C2 and pre-submission checks
         run: pnpm check:plugin

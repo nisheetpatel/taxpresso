@@ -367,7 +367,7 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 | `reconcile_official_pdf` | Diff the official PDF vs the values to type (copy panel: ledger and engine), rubric by rubric, in whole francs; stores nothing | yes |
 | `export_bundle` | Zip the tax year folder into the Taxpresso folder, on this computer; never overwrites | no |
 
-Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions. Spike S4 (`docs/spikes/S4.md`) builds the same server, UI and a skill as a Claude plugin too (`pnpm build:plugin`), for Claude Code, Cowork and Anthropic's directory, which no longer lists `.mcpb` files; chat in Claude Desktop keeps the `.mcpb`.
+Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions. Spike S5 (`docs/spikes/S5.md`) builds the same server, UI and a skill as a Claude plugin too (`pnpm build:plugin`), for Claude Code, Cowork and Anthropic's directory, which no longer lists `.mcpb` files; chat in Claude Desktop keeps the `.mcpb`.
 
 `manifest.json` user_config: `vault_path` (directory, default `~/Documents/Taxpresso`), `ui_language` (`en`, `fr`, `de` or `it`; mcpb has no enum type). There is no license key (section 12).
 
@@ -543,6 +543,7 @@ Phase 0, spikes (13 to 31 Oct 2026). Each spike ends with a short written findin
 - S2 [HUMAN provides own docs locally] Decode a real salary certificate and a real bank e-tax statement with WASM decoders; confirm Macro PDF417 merge and XSD validation. Determine the salary certificate payload format.
 - S3 Extension shell: `.mcpb` with one tool, bundled Node runtime check, localhost UI opened in the built-in browser pane, MCP Apps rendering check in current Claude Desktop, server `instructions` respected. [HUMAN] Confirm that a Free and a Pro account can install a `.mcpb` from file (Anthropic's docs mostly describe Team/Enterprise controls); this decides who the product can reach.
 - S4 [HUMAN] Email the AFC: (a) any objection to user-driven assisted filling of the online declaration, (b) process, criteria and timeline to become an approved software provider (logiciel agréé) with eCH-0278, (c) whether a test environment exists.
+- S5 Claude plugin: the same server, UI and a skill built as a plugin (`pnpm build:plugin`) for Claude Code, Cowork and Anthropic's directory, which no longer lists `.mcpb` files; the `.mcpb` stays for chat. Findings and the [HUMAN] Cowork test: `docs/spikes/S5.md`.
 Acceptance: written go/no-go per spike; if S1 is a no-go, v1 ships with the copy panel and filing automation moves to v1.1.
 
 First Claude Code session (start now, while the human runs S1, S2 and S4):

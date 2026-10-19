@@ -32,6 +32,9 @@ pnpm install                  # pnpm refuses versions published in the last 7 da
 pnpm check                    # format check, lint, typecheck, unit tests (vitest)
 pnpm build                    # ui (Vite + inline MCP Apps views), then extension (esbuild) into extension/dist
 pnpm build:mcpb               # build, then validate and pack build/taxpresso-<version>.mcpb
+pnpm build:plugin             # the Claude plugin (Claude Code, Cowork, Anthropic's directory): build/plugin/taxpresso and its zip; docs/spikes/S5.md
+pnpm check:plugin             # after build:plugin: Anthropic's pre-submission rules, checked offline
+pnpm test:offline:plugin      # after build:plugin: the offline test against the plugin's server
 pnpm check:bundle             # after build: C2 dependency allowlist and shipped-files check
 pnpm test:offline             # after build: end to end over stdio, network guard in the server process
 pnpm test:offline:sandbox     # same, inside a macOS sandbox with no network
