@@ -2,8 +2,18 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Replaced by esbuild at build time (scripts/build.mjs) and by vitest (vitest.config.ts).
+// Replaced by esbuild at build time (scripts/build-common.mjs) and by vitest (vitest.config.ts).
 declare const __TAXPRESSO_VERSION__: string | undefined;
+declare const __TAXPRESSO_DISTRIBUTION__: string | undefined;
+
+/**
+ * Which build runs: the desktop extension for Claude Desktop ('mcpb', also tests and development)
+ * or the Claude plugin for Claude Code and Cowork ('plugin', `pnpm build:plugin`).
+ */
+export const DISTRIBUTION: 'mcpb' | 'plugin' =
+  typeof __TAXPRESSO_DISTRIBUTION__ === 'string' && __TAXPRESSO_DISTRIBUTION__ === 'plugin'
+    ? 'plugin'
+    : 'mcpb';
 
 /**
  * The tax year this release prepares by default (SPEC.md section 1): the year that opens when the
