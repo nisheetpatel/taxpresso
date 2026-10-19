@@ -5,6 +5,8 @@
 //
 //   node test/offline/run.mjs                         uses extension/dist (run `pnpm build` first)
 //   TAXPRESSO_EXTENSION_DIR=<unpacked .mcpb> node ...    tests another copy, e.g. an unzipped .mcpb
+//   node test/offline/run.mjs build/plugin/taxpresso   tests the Claude plugin (`pnpm build:plugin`),
+//                                                      its server started as its .mcp.json says
 //   TAXPRESSO_EXPECT_NO_NETWORK=1                        also proves the sandbox itself is offline
 
 import assert from 'node:assert/strict';
@@ -30,9 +32,34 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..', '..');
 const extDir = path.resolve(
-  process.env.TAXPRESSO_EXTENSION_DIR ?? path.join(root, 'extension', 'dist'),
+  process.argv[2] ?? process.env.TAXPRESSO_EXTENSION_DIR ?? path.join(root, 'extension', 'dist'),
 );
+/** The Claude plugin (build/plugin/taxpresso) rather than the .mcpb's folder. */
+const isPlugin = existsSync(path.join(extDir, '.claude-plugin', 'plugin.json'));
+// What Claude Code and Cowork give a plugin's server (code.claude.com/docs/en/plugins/manifest-reference).
+if (isPlugin) process.env.CLAUDE_PLUGIN_ROOT = extDir;
+/** The tools and prompt Claude can call: the .mcpb's manifest (the plugin has none; same source). */
+const manifestFile = isPlugin
+  ? path.join(root, 'extension', 'manifest.json')
+  : path.join(extDir, 'manifest.json');
 const guard = pathToFileURL(path.join(here, 'net-guard.mjs')).href;
+
+/**
+ * The server's arguments after node, with the network guard first: the .mcpb's server/index.mjs,
+ * or exactly what the plugin's .mcp.json says, ${CLAUDE_PLUGIN_ROOT} being the plugin's folder.
+ */
+function serverArgs() {
+  if (!isPlugin) return ['--import', guard, path.join(extDir, 'server', 'index.mjs')];
+  const { mcpServers } = JSON.parse(readFileSync(path.join(extDir, '.mcp.json'), 'utf8'));
+  const servers = Object.values(mcpServers);
+  assert.equal(servers.length, 1, 'the plugin starts one server');
+  assert.equal(servers[0].command, 'node', 'the plugin starts its server with node');
+  return [
+    '--import',
+    guard,
+    ...servers[0].args.map((a) => a.replaceAll('${CLAUDE_PLUGIN_ROOT}', extDir)),
+  ];
+}
 const work = mkdtempSync(path.join(os.tmpdir(), 'taxpresso-offline-'));
 const guardLog = path.join(work, 'net-guard.log');
 const vault = path.join(work, 'Taxpresso'); // deliberately not created
@@ -76,7 +103,7 @@ before(async () => {
   );
   transport = new StdioClientTransport({
     command: process.execPath,
-    args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+    args: serverArgs(),
     env: {
       ...process.env,
       TAXPRESSO_VAULT_PATH: vault,
@@ -137,7 +164,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
   test('every tool is narrow and annotated (C6), and matches the manifest', async () => {
     const { tools } = await client.listTools();
-    const manifest = JSON.parse(readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
+    const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
     // The manifest lists what Claude can call; a tool only the dashboard view calls is not in it.
     const forClaude = tools.filter((t) => t._meta?.ui?.visibility?.join() !== 'app');
     assert.deepEqual(forClaude.map((t) => t.name).sort(), manifest.tools.map((t) => t.name).sort());
@@ -166,6 +193,8 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
     const detailed = await client.callTool({ name: 'get_status', arguments: { detail: true } });
     assert.match(detailed.structuredContent.runtime.node, /^v\d+/);
+    // The build flag (extension/scripts/build-common.mjs): the plugin says so, the .mcpb as before.
+    assert.equal(detailed.structuredContent.runtime.distribution, isPlugin ? 'plugin' : undefined);
   });
 
   test('bad tool input is refused', async () => {
@@ -753,14 +782,10 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
   test('with the dashboard running, the server exits when stdin closes', async () => {
     // Raw JSON-RPC with the 2025-06-18 handshake, as current Claude Desktop builds speak it.
-    const child = spawn(
-      process.execPath,
-      ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
-      {
-        env: { ...process.env, TAXPRESSO_VAULT_PATH: vault, TAXPRESSO_NET_GUARD_LOG: guardLog },
-        stdio: ['pipe', 'pipe', 'inherit'],
-      },
-    );
+    const child = spawn(process.execPath, serverArgs(), {
+      env: { ...process.env, TAXPRESSO_VAULT_PATH: vault, TAXPRESSO_NET_GUARD_LOG: guardLog },
+      stdio: ['pipe', 'pipe', 'inherit'],
+    });
     const send = (msg) => child.stdin.write(JSON.stringify({ jsonrpc: '2.0', ...msg }) + '\n');
     const replies = new Map();
     let buf = '';
@@ -806,7 +831,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const zhVault = path.join(work, 'Zurich');
     const zhTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: zhVault,
@@ -884,7 +909,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const beVault = path.join(work, 'Bern');
     const beTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: beVault,
@@ -967,7 +992,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const blVault = path.join(work, 'Basel-Landschaft');
     const blTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: blVault,
@@ -1058,7 +1083,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const vdVault = path.join(work, 'Vaud');
     const vdTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: vdVault,
@@ -1140,7 +1165,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const bsVault = path.join(work, 'Basel-Stadt');
     const bsTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: bsVault,
@@ -1224,7 +1249,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const zgVault = path.join(work, 'Zug');
     const zgTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: zgVault,
@@ -1317,7 +1342,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const luVault = path.join(work, 'Luzern');
     const luTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: luVault,
@@ -1409,7 +1434,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const sgVault = path.join(work, 'StGallen');
     const sgTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: sgVault,
@@ -1500,7 +1525,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const frVault = path.join(work, 'Fribourg');
     const frTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: frVault,
@@ -1583,7 +1608,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const tiVault = path.join(work, 'Ticino');
     const tiTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: tiVault,
@@ -1674,7 +1699,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const sVault = path.join(work, 'Source');
     const sTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: sVault,
@@ -1774,7 +1799,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const yVault = path.join(work, 'Years');
     const yTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: yVault,
@@ -1929,7 +1954,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const gVault = path.join(work, 'Rochat');
     const gTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: gVault,
@@ -2038,7 +2063,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const seVault = path.join(work, folder);
     const seTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: seVault,
@@ -2269,7 +2294,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const abVault = path.join(work, folder);
       const abTransport = new StdioClientTransport({
         command: process.execPath,
-        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        args: serverArgs(),
         env: {
           ...process.env,
           TAXPRESSO_VAULT_PATH: abVault,
@@ -2462,7 +2487,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const pyVault = path.join(work, folder);
       const pyTransport = new StdioClientTransport({
         command: process.execPath,
-        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        args: serverArgs(),
         env: {
           ...process.env,
           TAXPRESSO_VAULT_PATH: pyVault,
@@ -2615,7 +2640,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const prVault = path.join(work, folder);
       const prTransport = new StdioClientTransport({
         command: process.execPath,
-        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        args: serverArgs(),
         env: {
           ...process.env,
           TAXPRESSO_VAULT_PATH: prVault,
@@ -2868,7 +2893,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const agVault = path.join(work, 'Aargau');
     const agTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: agVault,
@@ -2969,7 +2994,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const kVault = path.join(work, 'Kit-Thonex');
     const kTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: kVault,

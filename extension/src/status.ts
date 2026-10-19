@@ -1,7 +1,7 @@
 import { SUPPORTED_CANTONS, type SupportedCanton } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
 import { CANTONS, cantonNames } from './cantons.js';
-import { CURRENT_TAX_YEAR, UI_LANGUAGES } from './config.js';
+import { CURRENT_TAX_YEAR, DISTRIBUTION, UI_LANGUAGES } from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
@@ -115,7 +115,18 @@ export const StatusSchema = z.object({
   dashboard: z.object({ running: z.boolean() }),
   uiLanguage: z.enum(UI_LANGUAGES),
   runtime: z
-    .object({ node: z.string(), platform: z.string(), arch: z.string(), execPath: z.string() })
+    .object({
+      node: z.string(),
+      platform: z.string(),
+      arch: z.string(),
+      execPath: z.string(),
+      distribution: z
+        .literal('plugin')
+        .optional()
+        .describe(
+          'Set when this is the Claude plugin (Claude Code, Cowork), not the desktop extension.',
+        ),
+    })
     .optional()
     .describe('Only with detail: the Node runtime this extension runs on.'),
 });
@@ -125,7 +136,14 @@ const WHO: Record<string, string> = { p1: 'you', p2: 'your spouse or partner' };
 
 export function buildStatus(
   ws: Workspace,
-  opts: { dashboardRunning: boolean; detail?: boolean; execPath?: string; years?: TaxYears },
+  opts: {
+    dashboardRunning: boolean;
+    detail?: boolean;
+    execPath?: string;
+    years?: TaxYears;
+    /** Which build runs (./config.ts); tests give one. */
+    distribution?: 'mcpb' | 'plugin';
+  },
 ): Status {
   const years = opts.years ?? TaxYears.of(ws);
   const snap = ws.snapshot();
@@ -233,6 +251,8 @@ export function buildStatus(
       platform: process.platform,
       arch: process.arch,
       execPath: opts.execPath ?? process.execPath,
+      // The plugin's Node is the user's own, the .mcpb's Claude Desktop's (docs/spikes/S4.md).
+      ...((opts.distribution ?? DISTRIBUTION) === 'plugin' && { distribution: 'plugin' as const }),
     };
   }
   return status;
@@ -337,7 +357,7 @@ export function statusText(s: Status): string {
   );
   if (s.runtime) {
     lines.push(
-      `Runtime: Node ${s.runtime.node} (${s.runtime.platform} ${s.runtime.arch}) at ${s.runtime.execPath}`,
+      `Runtime: Node ${s.runtime.node} (${s.runtime.platform} ${s.runtime.arch}) at ${s.runtime.execPath}${s.runtime.distribution === 'plugin' ? ', Claude plugin' : ''}`,
     );
   }
   return lines.join('\n');

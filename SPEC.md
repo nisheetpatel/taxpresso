@@ -367,7 +367,7 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 | `reconcile_official_pdf` | Diff the official PDF vs the values to type (copy panel: ledger and engine), rubric by rubric, in whole francs; stores nothing | yes |
 | `export_bundle` | Zip the tax year folder into the Taxpresso folder, on this computer; never overwrites | no |
 
-Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions.
+Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions. Spike S4 (`docs/spikes/S4.md`) builds the same server, UI and a skill as a Claude plugin too (`pnpm build:plugin`), for Claude Code, Cowork and Anthropic's directory, which no longer lists `.mcpb` files; chat in Claude Desktop keeps the `.mcpb`.
 
 `manifest.json` user_config: `vault_path` (directory, default `~/Documents/Taxpresso`), `ui_language` (`en`, `fr`, `de` or `it`; mcpb has no enum type). There is no license key (section 12).
 
@@ -391,7 +391,7 @@ Reference screens: `docs/design/`.
 
 - License: GNU AGPL-3.0-or-later (`LICENSE`). Anyone may use, change and share Taxpresso; anyone who distributes a changed version, or runs one as a service for others, must publish its source under the same license. Contributions come in under the same license (inbound = outbound), with no CLA.
 - No licensing, paywall or license checks, in any tax year. Nothing in the extension restricts features.
-- Donations: the filing screen shows the café donation menu (section 1) only after the user has transmitted (or saved the receipt). It opens Precious Plastic Bugoma's donation page in the user's browser; the extension makes no network call and records nothing about whether anyone gave. Taxpresso never handles the money. Never mention donations in Claude's instructions or in chat (the directory policy forbids ads and in-chat promotion). The landing page shows the same menu.
+- Donations: the filing screen shows the café donation menu (section 1) only after the user has transmitted (or saved the receipt). It opens Precious Plastic Bugoma's donation page in the user's browser; the extension makes no network call and records nothing about whether anyone gave. Taxpresso never handles the money. Never mention donations in Claude's instructions or in chat (the directory policy forbids ads and in-chat promotion). The landing page shows the same menu. The Claude plugin leaves the menu out (the build flag `__TAXPRESSO_DISTRIBUTION__`, `ui/src/shared/distribution.ts`; `scripts/check-plugin.mjs` fails if its link reaches the plugin): only the `.mcpb` shows it.
 
 ---
 

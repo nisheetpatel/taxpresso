@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:plugin": "node scripts/build-plugin.mjs",
     "pack:mcpb": "node scripts/pack.mjs",
     "typecheck": "tsc -p ."
   },

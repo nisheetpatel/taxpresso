@@ -5,10 +5,11 @@
 // ~/Documents/Taxpresso, and passes the view's tool calls to it.
 //
 //   pnpm build && pnpm --filter @taxpresso/ui preview:card
-//   node ui/scripts/preview-serve.mjs [--demo] [--lang fr] [--port 4173]
+//   node ui/scripts/preview-serve.mjs [--demo] [--lang fr] [--port 4173] [--plugin]
 //   open http://127.0.0.1:4173/preview/?lang=fr&theme=dark
 //
 // --demo answers a few questions and adds the synthetic Dupont salary certificate.
+// --plugin runs the Claude plugin's server and view instead (`pnpm build:plugin`, build/plugin).
 
 import { copyFile, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -24,6 +25,7 @@ const { values: args } = parseArgs({
     demo: { type: 'boolean', default: false },
     lang: { type: 'string', default: 'en' },
     port: { type: 'string', default: '4173' },
+    plugin: { type: 'boolean', default: false },
   },
 });
 const ui = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -36,7 +38,11 @@ const client = new Client({ name: 'taxpresso-preview-host', version: '0.0.0' });
 await client.connect(
   new StdioClientTransport({
     command: process.execPath,
-    args: [path.join(repo, 'extension', 'dist', 'server', 'index.mjs')],
+    args: [
+      args.plugin
+        ? path.join(repo, 'build', 'plugin', 'taxpresso', 'server', 'index.mjs')
+        : path.join(repo, 'extension', 'dist', 'server', 'index.mjs'),
+    ],
     env: { ...process.env, TAXPRESSO_VAULT_PATH: vault, TAXPRESSO_UI_LANGUAGE: args.lang },
     stderr: 'inherit',
   }),

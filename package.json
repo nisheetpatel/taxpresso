@@ -11,6 +11,7 @@
   "scripts": {
     "build": "pnpm --filter @taxpresso/ui build && pnpm --filter @taxpresso/extension build",
     "build:mcpb": "pnpm build && pnpm --filter @taxpresso/extension pack:mcpb",
+    "build:plugin": "pnpm --filter @taxpresso/ui build:plugin && pnpm --filter @taxpresso/extension build:plugin",
     "build:site": "pnpm --filter @taxpresso/site build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
@@ -19,7 +20,9 @@
     "test": "vitest run",
     "test:offline": "node test/offline/run.mjs",
     "test:offline:sandbox": "TAXPRESSO_EXPECT_NO_NETWORK=1 sandbox-exec -f test/offline/no-network.sb node test/offline/run.mjs",
+    "test:offline:plugin": "node test/offline/run.mjs build/plugin/taxpresso",
     "check:bundle": "node scripts/check-bundle.mjs",
+    "check:plugin": "node scripts/check-bundle.mjs --plugin && node scripts/check-plugin.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "sources:fetch": "node scripts/fetch-sources.mjs",
     "sources:merge": "node scripts/merge-manifests.mjs",
