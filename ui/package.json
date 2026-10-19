@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build && node scripts/build-views.mjs",
+    "build:plugin": "vite build --mode plugin && node scripts/build-views.mjs --plugin",
     "dev": "vite",
     "typecheck": "tsc -p .",
     "preview:card": "node scripts/build-preview.mjs",

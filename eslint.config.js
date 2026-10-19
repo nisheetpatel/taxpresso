@@ -69,6 +69,8 @@ export default defineConfig(
             // The filing kits' generators (test tooling), typed for the end-to-end test.
             'test/fixtures/households/kits.d.mts',
             'test/fixtures/households/make.d.mts',
+            // The Claude plugin's check, typed for its test (extension/test/plugin.test.ts).
+            'scripts/check-plugin.d.mts',
           ],
         },
         tsconfigRootDir: import.meta.dirname,

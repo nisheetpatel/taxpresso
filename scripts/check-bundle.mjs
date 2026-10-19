@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-// C2 static checks on the staged extension (extension/dist), run after `pnpm build`:
-//  1. every npm package bundled into server/index.mjs is in extension/allowed-dependencies.json;
+// C2 static checks on the staged extension (extension/dist), run after `pnpm build`, or with
+// `--plugin` on the Claude plugin (build/plugin/taxpresso), run after `pnpm build:plugin`:
+//  1. every npm package bundled into the server is in extension/allowed-dependencies.json;
 //  2. every Node built-in it imports, or loads at run time (process.getBuiltinModule, require), is
 //     allowlisted, and none of the network ones ever is; node:child_process is imported by the one
 //     file that opens the folder in the file manager, and never loaded at run time;
-//  3. the shipped UI loads nothing from outside (no remote src, href, url() or @import, no Google Fonts);
-//  4. nothing unexpected ships (no node_modules, no source maps).
+//  3. every server file carries the build's refusing fetch and XMLHttpRequest stubs (the banner);
+//  4. the shipped UI loads nothing from outside (no remote src, href, url() or @import, no Google Fonts);
+//  5. nothing unexpected ships (no node_modules, no source maps).
 // The runtime proof is test/offline/run.mjs; this catches problems before anything runs.
 
 import { readdir, readFile } from 'node:fs/promises';
@@ -15,7 +17,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const extDir = path.join(root, 'extension');
-const dist = path.join(extDir, 'dist');
+const plugin = process.argv.includes('--plugin');
+const dist = plugin ? path.join(root, 'build', 'plugin', 'taxpresso') : path.join(extDir, 'dist');
+const metaFile = path.join(extDir, 'build-meta', plugin ? 'plugin-server.json' : 'server.json');
 
 const NEVER = [
   'https',
@@ -39,9 +43,9 @@ const ONLY_FROM = { 'node:child_process': ['src/open-folder.ts'] };
 const errors = [];
 let meta;
 try {
-  meta = JSON.parse(await readFile(path.join(extDir, 'build-meta', 'server.json'), 'utf8'));
+  meta = JSON.parse(await readFile(metaFile, 'utf8'));
 } catch {
-  console.error('No build metadata. Run: pnpm build');
+  console.error(`No build metadata. Run: ${plugin ? 'pnpm build:plugin' : 'pnpm build'}`);
   process.exit(1);
 }
 const allow = JSON.parse(await readFile(path.join(extDir, 'allowed-dependencies.json'), 'utf8'));
@@ -79,24 +83,38 @@ for (const [b, files] of builtins) {
 }
 
 // Built-ins loaded at run time without an import (process.getBuiltinModule, require): same rules.
-// PDF.js, inside unpdf, reaches fs, url, stream and module this way.
-const bundle = await readFile(path.join(dist, 'server', 'index.mjs'), 'utf8');
-for (const m of bundle.matchAll(
-  /(?:getBuiltinModule|(?<![\w.$])require)\(\s*[`"']([\w:/]+)[`"']/g,
-)) {
-  const bare = m[1].replace(/^node:/, '');
-  if (!builtinModules.includes(bare)) continue;
-  const name = `node:${bare}`;
-  if (NEVER.includes(name) || name in ONLY_FROM) {
-    errors.push(
-      `${name} is a network or process built-in (C2), loaded at run time in server/index.mjs`,
-    );
-  } else if (!(name in allow.builtins)) {
-    errors.push(
-      `built-in ${name} is loaded at run time in server/index.mjs but not in extension/allowed-dependencies.json`,
-    );
-  } else if (!builtins.has(name)) {
-    builtins.set(name, ['(run time)']);
+// PDF.js, inside unpdf, reaches fs, url, stream and module this way. The .mcpb's server is one
+// file; the plugin's is split into many (extension/scripts/build-plugin.mjs): each is read.
+const BANNER = [
+  'const __taxpressoNoFetch = () => Promise.reject(',
+  'class __taxpressoNoXhr { constructor() { throw ',
+];
+const serverFiles = (await readdir(path.join(dist, 'server'))).filter((f) => f.endsWith('.mjs'));
+if (!serverFiles.includes('index.mjs')) errors.push('server/index.mjs is missing');
+for (const file of serverFiles) {
+  const bundle = await readFile(path.join(dist, 'server', file), 'utf8');
+  const head = bundle.split('\n', 4).join('\n');
+  for (const line of BANNER) {
+    if (!head.includes(line))
+      errors.push(`server/${file} lacks the refusing stub "${line.split(' ')[1]}" (C2 banner)`);
+  }
+  for (const m of bundle.matchAll(
+    /(?:getBuiltinModule|(?<![\w.$])require)\(\s*[`"']([\w:/]+)[`"']/g,
+  )) {
+    const bare = m[1].replace(/^node:/, '');
+    if (!builtinModules.includes(bare)) continue;
+    const name = `node:${bare}`;
+    if (NEVER.includes(name) || name in ONLY_FROM) {
+      errors.push(
+        `${name} is a network or process built-in (C2), loaded at run time in server/${file}`,
+      );
+    } else if (!(name in allow.builtins)) {
+      errors.push(
+        `built-in ${name} is loaded at run time in server/${file} but not in extension/allowed-dependencies.json`,
+      );
+    } else if (!builtins.has(name)) {
+      builtins.set(name, ['(run time)']);
+    }
   }
 }
 
@@ -134,10 +152,11 @@ for (const file of await walk(dist)) {
   }
 }
 
+const what = plugin ? 'check-bundle --plugin' : 'check-bundle';
 if (errors.length) {
-  console.error(`check-bundle: ${errors.length} problem(s)\n  ${errors.join('\n  ')}`);
+  console.error(`${what}: ${errors.length} problem(s)\n  ${errors.join('\n  ')}`);
   process.exit(1);
 }
 console.log(
-  `check-bundle: ok. Packages: ${[...packages].sort().join(', ')}. Built-ins: ${[...builtins.keys()].sort().join(', ')}.`,
+  `${what}: ok (${serverFiles.length} server file${serverFiles.length === 1 ? '' : 's'}). Packages: ${[...packages].sort().join(', ')}. Built-ins: ${[...builtins.keys()].sort().join(', ')}.`,
 );
