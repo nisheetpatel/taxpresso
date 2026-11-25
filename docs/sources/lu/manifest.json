@@ -314,10 +314,10 @@
     "format": "pdf",
     "publisher": "Dienststelle Steuern des Kantons Luzern (Finanzdepartement)",
     "published": null,
-    "verified_on": "2026-10-13",
+    "verified_on": "2026-11-25",
     "priority": "core",
     "why_needed": "Same table for 2026.",
-    "notes": "2 pages, printout dated 24.03.2026. The state units changed between 2025 and 2026; read both tables."
+    "notes": "2 pages, printout dated 30.10.2026: the canton replaced the printout of 24.03.2026 at the same address, with one figure changed (Hohenrain, römisch-katholische Kirchgemeinde: 0.40 instead of 0.45, total 3.90 instead of 3.95). Downloaded again on 2026-11-25. The state units changed between 2025 and 2026; read both tables."
   },
   {
     "id": "lu-na-communal-steuereinheiten-tarife",

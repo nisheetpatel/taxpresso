@@ -4105,10 +4105,10 @@
     "url": "https://steuern.lu.ch/-/media/Steuern/Dokumente/Publikationen/2026/Steuereinheiten_2026_NP.pdf",
     "final_url": "https://steuern.lu.ch/-/media/Steuern/Dokumente/Publikationen/2026/Steuereinheiten_2026_NP.pdf",
     "file": "lu/files/lu-2026-communal-steuereinheiten.pdf",
-    "bytes": 212368,
-    "sha256": "85779bafeb9077b243fd667ac4efb20dd22475a139db403841cfc15379b93a7e",
+    "bytes": 264085,
+    "sha256": "b51d5f7f38052c7081359b6709135e4db21f567080eaaab1c93bf08e85d0e1ab",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-13T22:01:19.600Z",
+    "retrieved_at": "2026-11-25T17:31:28.873Z",
     "status": "ok"
   },
   "lu-2026-deductions-abzuege-auf-einen-blick": {
@@ -4955,10 +4955,10 @@
     "url": "https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/tarife-und-steuerfuesse/tarife-privatpersonen-gueltig-ab/Tarif_2026_SG_DEF.pdf",
     "final_url": "https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/tarife-und-steuerfuesse/tarife-privatpersonen-gueltig-ab/Tarif_2026_SG_DEF.pdf",
     "file": "sg/files/sg-2026-tariff-einkommen-vermoegen.pdf",
-    "bytes": 2997244,
-    "sha256": "b2929a1acc0a642191280e476aa5289f9dc1ca2587b036b1cc342f919bbda0c7",
+    "bytes": 386950,
+    "sha256": "eed1ab548d447da45bda3aae6317f84d0a41ff580240ad68a65a4e5597b4778a",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-13T22:01:29.010Z",
+    "retrieved_at": "2026-11-25T17:43:31.334Z",
     "status": "ok"
   },
   "sg-na-source-tax-faq": {
@@ -5778,7 +5778,7 @@
     "bytes": 109438,
     "sha256": "1d3c1c24c05c4b0f2a3481dcce524bc46ab2f7f6b49ba28bcd2418a43dbeba87",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T03:22:45.527Z",
+    "retrieved_at": "2026-11-25T17:42:25.736Z",
     "status": "ok"
   },
   "ti-2025-form-modulo-1-de": {
@@ -5788,7 +5788,7 @@
     "bytes": 714084,
     "sha256": "b2fd44813240553d787e52a35e477998040adbbb34780f874a0d423b60c83871",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T03:22:45.663Z",
+    "retrieved_at": "2026-11-25T17:42:25.872Z",
     "status": "ok"
   },
   "bl-na-law-steuerfussdekret-331-2": {
@@ -6029,6 +6029,26 @@
     "sha256": "1bc622eb704c045ad302187ccc8e51a3c770eb4ae27fade865230278414cc0fc",
     "content_type": "application/pdf",
     "retrieved_at": "2026-11-25T17:05:40.202Z",
+    "status": "ok"
+  },
+  "ti-2025-communal-moltiplicatore-coordinato": {
+    "url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Perequazione/FU-MCC2025.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Perequazione/FU-MCC2025.pdf",
+    "file": "ti/files/ti-2025-communal-moltiplicatore-coordinato.pdf",
+    "bytes": 171152,
+    "sha256": "a6b28e4f8d39911c28614bf8793813bfef6c9ff02bc2a6cd7571bc86b651b5a6",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-11-25T17:42:25.757Z",
+    "status": "ok"
+  },
+  "ti-2025-communal-numero-comuni": {
+    "url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Elenco_comuni/numero_comuni_2025.xlsx",
+    "final_url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Elenco_comuni/numero_comuni_2025.xlsx",
+    "file": "ti/files/ti-2025-communal-numero-comuni.xlsx",
+    "bytes": 19040,
+    "sha256": "0598a12330b3d2f1ae0d4eea72049f163300bea20f1bae2e6d1190b588b05b8f",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "retrieved_at": "2026-11-25T17:42:25.761Z",
     "status": "ok"
   }
 }
