@@ -43,6 +43,12 @@ export interface PersonInput {
   hasPensionFund: boolean;
   paidCentimes: number;
   /**
+   * Geneva: the commune where the salary is earned (profile.work_commune), or 'outside' the canton.
+   * Another commune shares the communal tax (ge-na-law-lcp art. 295A); unknown, the commune of
+   * residence is assumed (home_commune_rate).
+   */
+  workCommune?: CommuneSlug | 'outside';
+  /**
    * Benefits replacing pay for the year that are not in the salary (unemployment, sickness,
    * accident, maternity, paid by the insurance itself): rubric 11.50. Only the TOU comparison sets
    * it (./tou.ts), from the benefits attestations.
@@ -135,9 +141,10 @@ export interface HouseholdInput {
 }
 
 export type Assumption =
-  | 'icc_2025_scale'
   | 'flat_deductions_only'
   | 'home_commune_rate'
+  /** A salary earned in another commune: the communal part shared, by gross income (not spelled out). */
+  | 'work_commune_split'
   | 'net_from_gross'
   | 'commune_default'
   | 'no_income_for_some'
@@ -174,18 +181,36 @@ export interface Estimator {
   sources: string[];
 }
 
-/** The documents the engine's income tax rests on (each line of it cites its own page). */
-export const ESTIMATE_SOURCES = [
-  'ge-2025-icc-tariff-pdf p. 2, p. 4',
-  'ge-2025-guide-declaration-pp p. 11',
-  'ge-2026-communal-centimes-arca',
-  'ge-2026-part-privilegiee-communique p. 11',
-  'ch-2026-ifd-progression-deductions p. 2, p. 4',
-];
+/**
+ * The documents the engine's Geneva income tax rests on for a tax year (each line of it cites its
+ * own page or article).
+ */
+const ESTIMATE_SOURCES_BY_YEAR: Readonly<Record<number, readonly string[]>> = {
+  2025: [
+    'ge-2025-icc-tariff-pdf p. 2, p. 4',
+    'ge-2025-guide-declaration-pp p. 11',
+    'ge-2025-communal-centimes-pdf p. 1',
+    'ch-2025-ifd-frais-professionnels-progression p. 2 and 3',
+  ],
+  2026: [
+    'ge-2026-rcepf art. 6 and 17',
+    'ge-na-law-lcacant art. 2',
+    'ge-na-law-ldirpp art. 1',
+    'ge-2026-communal-centimes-arca',
+    'ge-2026-part-privilegiee-communique p. 12',
+    'ch-2026-ifd-progression-deductions p. 2, p. 4',
+  ],
+};
+
+/** Geneva's, for the year; a year without its documents has none (the engine fails closed on it). */
+export function genevaEstimateSources(taxYear: number): string[] {
+  return [...(ESTIMATE_SOURCES_BY_YEAR[taxYear] ?? [])];
+}
 
 /** The documents the plans' savings rest on, for this household's canton. */
 export function estimateSources(h: HouseholdInput): string[] {
-  return h.other ? h.other.plan.sources(h.taxYear ?? 2026) : ESTIMATE_SOURCES;
+  const taxYear = h.taxYear ?? 2026;
+  return h.other ? h.other.plan.sources(taxYear) : genevaEstimateSources(taxYear);
 }
 
 export const pct = (centimes: number, bp: number) => Math.round((centimes * bp) / 10_000);
@@ -219,7 +244,14 @@ function engineInput(h: HouseholdInput, nets: (number | undefined)[]): EngineInp
         id: p.person,
         hasPensionFund: p.hasPensionFund,
         ...(net !== undefined
-          ? { employments: [{ gross: { value: net, status: 'estimate' } }] }
+          ? {
+              employments: [
+                {
+                  gross: { value: net, status: 'estimate' },
+                  ...(p.workCommune ? { workCommune: p.workCommune } : {}),
+                },
+              ],
+            }
           : {}),
         // The business's expected profit, as one figure (12.01).
         ...(p.businessCentimes !== undefined
@@ -305,8 +337,15 @@ export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   const base = engineInput(h, nets);
   const first = incomeTax(computeReturn(base));
   if (!first) return undefined;
-  const assumptions: Assumption[] = ['home_commune_rate'];
-  if ((h.taxYear ?? 2026) === 2026) assumptions.unshift('icc_2025_scale');
+  // A salary earned in another commune is counted there: all income is then not at home.
+  const elsewhere = h.people.some(
+    (p, i) =>
+      nets[i] !== undefined &&
+      p.workCommune !== undefined &&
+      p.workCommune !== 'outside' &&
+      p.workCommune !== (h.commune ?? 'geneve'),
+  );
+  const assumptions: Assumption[] = [elsewhere ? 'work_commune_split' : 'home_commune_rate'];
   if (!Object.keys(h.known?.household ?? {}).length) assumptions.push('flat_deductions_only');
   if (h.people.some((p) => p.netCentimes === undefined && p.grossCentimes !== undefined))
     assumptions.push('net_from_gross');
@@ -314,7 +353,7 @@ export function ordinaryTaxEstimator(h: HouseholdInput): Estimator | undefined {
   if (!h.commune) assumptions.push('commune_default');
   return {
     assumptions,
-    sources: ESTIMATE_SOURCES,
+    sources: genevaEstimateSources(h.taxYear ?? 2026),
     // A combination the engine can't compute (it never happens with deductions alone) keeps the
     // tax without them: no saving is shown rather than a guess.
     taxWith: (deductions) => incomeTax(computeReturn(withDeductions(base, deductions))) ?? first,

@@ -261,6 +261,58 @@ function selfEmployment(
   return { people: out, missing, unsupported, notes };
 }
 
+/**
+ * The commune where each salaried person works (profile.work_commune), on each of their salaries: a
+ * salary earned in another Geneva commune shares the communal tax with it (ge-na-law-lcp art. 293
+ * let. A ch. 1 let. c and ch. 2 let. c, art. 295A; ./assess.ts). Outside the canton, the commune of
+ * residence, as the guide asks the form to say (ge-2025-guide-declaration-pp p. 17). Not answered
+ * yet: the commune of residence, said. Several communes at once: not supported (fail closed).
+ */
+function workCommunes(
+  people: readonly PersonInput[],
+  facts: readonly Fact[],
+): { people: PersonInput[]; notes: Text[]; unsupported: Text[] } {
+  const notes: Text[] = [];
+  const unsupported: Text[] = [];
+  const couple = people.length > 1;
+  const answer = (key: string, person: Owner) =>
+    facts.find((f) => f.key === key && f.person === person && f.status !== 'extracted')?.value;
+  const out = people.map((p): PersonInput => {
+    const sources = answer('profile.income_sources', p.id);
+    const salaried = Array.isArray(sources) && sources.includes('salary');
+    const where = answer('profile.work_commune', p.id);
+    const who = couple ? WHO[p.id] : undefined;
+    if (!p.employments?.length || !salaried) return p;
+    if (where === undefined) {
+      notes.push(
+        t(
+          `Where ${who ? `${who.en} work${p.id === 'p2' ? 's' : ''}` : 'you work'} is not answered yet: the salary counts for your commune of residence, all its communal tax at that commune's centimes.`,
+          `La commune où ${p.id === 'p2' ? 'votre conjoint ou partenaire travaille' : 'vous travaillez'} n’est pas encore indiquée${NB}: le salaire compte pour votre commune de domicile, tout son impôt communal à ses centimes.`,
+        ),
+      );
+      return p;
+    }
+    if (where === 'several_communes') {
+      unsupported.push(
+        t(
+          `Work in more than one Geneva commune${who ? ` (${who.en})` : ''}: the communal tax is then shared between those communes by the income earned in each, which one answer can't say, so no tax is computed.`,
+          `Travail dans plusieurs communes genevoises${who ? ` (${who.fr})` : ''}${NB}: l’impôt communal est alors réparti entre ces communes selon le revenu gagné dans chacune, ce qu’une seule réponse ne peut pas dire, aucun impôt n’est donc calculé.`,
+        ),
+      );
+      return p;
+    }
+    const workCommune =
+      where === 'outside_geneva'
+        ? ('outside' as const)
+        : COMMUNES_2026.some((c) => c.slug === where)
+          ? (where as CommuneSlug)
+          : undefined;
+    if (!workCommune) return p;
+    return { ...p, employments: p.employments.map((e) => ({ ...e, workCommune })) };
+  });
+  return { people: out, notes, unsupported };
+}
+
 export function engineInputFromFacts(
   taxYear: number,
   facts: readonly Fact[],
@@ -282,7 +334,9 @@ export function engineInputFromFacts(
 
   // Self-employment (annexe B): only the values of this year's documents count.
   const counted = factsOfYear(taxYear, facts, documents, () => undefined);
-  const self = selfEmployment(input.people as PersonInput[], counted);
+  const work = workCommunes(input.people as PersonInput[], facts);
+  notes.push(...work.notes);
+  const self = selfEmployment(work.people, counted);
   if (self.missing.length) return { input: null, missing: [...missing, ...self.missing], notes };
   notes.push(...self.notes);
 
@@ -325,7 +379,7 @@ export function engineInputFromFacts(
     // Lump sums of a year of departure: taxed at source around a departure (./capital.ts).
     if (capital) capital.leftSwitzerland = true;
   }
-  const unsupported = [...self.unsupported, ...period.unsupported];
+  const unsupported = [...work.unsupported, ...self.unsupported, ...period.unsupported];
 
   // Childcare paid for each child, asked when the invoices for the household need splitting
   // (data/ge/2026/questionnaire.yaml, ge.child_care): it takes the place of the household's total.

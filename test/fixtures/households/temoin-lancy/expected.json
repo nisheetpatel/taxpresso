@@ -1,0 +1,865 @@
+{
+  "kit": "temoin-lancy",
+  "household": "Thomas and Laura Témoin, married, two salaries, two children in a crèche, Lancy",
+  "note": "Worked out by hand from the official documents (test/fixtures/households/ground-truth.mjs, which imports nothing from Taxpresso). Money in centimes. Each figure gives how it was obtained and its source: the manifest id of the document in docs/sources and the page or article.",
+  "years": {
+    "2025": {
+      "taxYear": 2025,
+      "provisional": false,
+      "commune": "Lancy",
+      "icc": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 11800000,
+            "how": "Gross salary, box 8 of the salary certificate: 118'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -814200,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 8'142.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -955800,
+            "how": "Pension fund contributions, box 10.1: 9'558.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "21.10",
+            "person": "B",
+            "amount": 6800000,
+            "how": "Gross salary, box 8 of the salary certificate: 68'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "41.10",
+            "person": "B",
+            "amount": -469200,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 4'692.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "41.12",
+            "person": "B",
+            "amount": -380800,
+            "how": "Pension fund contributions, box 10.1: 3'808.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 9200,
+            "how": "Banque Exemple SA, Compte épargne joint: gross interest 92.00, under CHF 200 so without withholding tax; every bank interest is interest on savings capital (56.30).",
+            "source": "ge-2025-guide-declaration-pp p. 40 and 41"
+          },
+          {
+            "code": "31.50",
+            "person": "A",
+            "amount": -181200,
+            "how": "Flat professional costs: 3 % of 100'300.00 (11.00 - 31.10 - 31.12), between 640 and 1'812: 1'812.00; higher than the actual costs (travel 500.00, no meals: the trip is under 2 hours a day).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 19 (31.50); ge-2025-guide-declaration-pp p. 22 (example 1)"
+          },
+          {
+            "code": "41.50",
+            "person": "B",
+            "amount": -178500,
+            "how": "Flat professional costs: 3 % of 59'500.00 (11.00 - 31.10 - 31.12), between 640 and 1'812: 1'785.00; higher than the actual costs (travel 0.00, no meals: the trip is under 2 hours a day).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 19 (31.50); ge-2025-guide-declaration-pp p. 22 (example 1)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.40",
+            "person": "B",
+            "amount": -500000,
+            "how": "Pillar 3a paid in the year 5'000.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.95",
+            "person": "B",
+            "amount": -105100,
+            "how": "Both spouses work: 1'051.00 off the lower earned income (52'715.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 21 (31.95 / 41.95)"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -1658000,
+            "how": "Health insurance premiums paid (basic and supplementary) 16'580.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          },
+          {
+            "code": "52.15",
+            "person": "household",
+            "amount": -9200,
+            "how": "Interest on savings capital (56.30) 92.00, under the limit 5'436.00.",
+            "source": "ge-2025-guide-declaration-pp p. 28 (52.15); ge-na-law-lipp art. 31 let. d"
+          },
+          {
+            "code": "59.10",
+            "person": "household",
+            "amount": -1420000,
+            "how": "Crèche for Hugo (under 14), both parents working: 14'200.00, under 26'320.00 per child.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 30 (59.10)"
+          },
+          {
+            "code": "59.10",
+            "person": "household",
+            "amount": -1680000,
+            "how": "Crèche for Inès (under 14), both parents working: 16'800.00, under 26'320.00 per child.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 30 (59.10)"
+          },
+          {
+            "code": "73.10",
+            "person": "household",
+            "amount": -30000,
+            "how": "Donation to Fondation Exemple pour l’enfance 300.00, under 20 % of 92.40 (95'314.00).",
+            "source": "ge-2025-guide-declaration-pp p. 15 (73.10); ge-na-law-lipp art. 37 al. 1"
+          }
+        ],
+        "grossIncome": {
+          "amount": 18609200,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 9501400,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [
+          {
+            "code": "61.25",
+            "person": "household",
+            "amount": -1050800,
+            "how": "Family charge for Hugo, whose childcare is deducted: the reduced amount: 10'508.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 15 (61.25); ge-na-law-lipp art. 39 al. 1"
+          },
+          {
+            "code": "61.25",
+            "person": "household",
+            "amount": -1050800,
+            "how": "Family charge for Inès, whose childcare is deducted: the reduced amount: 10'508.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 15 (61.25); ge-na-law-lipp art. 39 al. 1"
+          }
+        ],
+        "taxableIncome": {
+          "amount": 7399800,
+          "how": "Net income 95'014.00 less the family charges 21'016.00: 73'998.00 (99.00).",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "full",
+        "rateIncome": {
+          "amount": 3699900,
+          "how": "Full splitting: half of 73'998.00 = 36'999.00.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 350000,
+          "how": "The scale at 36'999.00 gives 1'750.00; x 73'998.00 / 36'999.00 = 3'500.00 (example 3).",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-2025-icc-tariff-pdf p. 2; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 457800,
+          "how": "Base 3'500.00 + 47.5 % 1'662.50 - 12 % of 5'162.50 619.50 + 1 % home care 35.00 = 4'578.00 (each exact).",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalIncome": {
+          "amount": 164500,
+          "how": "47 centimes of Lancy on the base 3'500.00: 1'645.00 (all income earned in Lancy, so no share for another commune).",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA); ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 4630000,
+            "how": "Banque Exemple SA, Compte épargne joint: balance on 31 December 46'300.00.",
+            "source": "ge-2025-guide-declaration-pp p. 40"
+          }
+        ],
+        "grossWealth": {
+          "amount": 4630000,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 4630000,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -4630000,
+          "how": "Married couple + 43'816.00 x 2 charges, at most the net wealth: 46'300.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 0,
+          "how": "Net wealth 46'300.00 less 46'300.00: 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "wealthBase": {
+          "amount": 0,
+          "how": "The base wealth scale at 0.00: 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 49; ge-2025-icc-tariff-pdf p. 5"
+        },
+        "wealthSupplementary": {
+          "amount": 0,
+          "how": "The supplementary scale at 0.00: 0.00, no centimes on it.",
+          "source": "ge-2025-guide-declaration-pp p. 50; ge-2025-icc-tariff-pdf p. 5; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 0,
+          "how": "Base 0.00 + 47.5 % 0.00 + 1 % 0.00 + supplementary 0.00 = 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalWealth": {
+          "amount": 0,
+          "how": "47 centimes on 0.00: 0.00.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "communal": {
+          "amount": 164500,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 624800,
+          "how": "Cantonal income 4'578.00 + cantonal wealth 0.00 + communal 1'645.00 + taxe personnelle 25.00 = 6'248.00.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 11800000,
+            "how": "Gross salary, box 8 of the salary certificate: 118'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -814200,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 8'142.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -955800,
+            "how": "Pension fund contributions, box 10.1: 9'558.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "21.10",
+            "person": "B",
+            "amount": 6800000,
+            "how": "Gross salary, box 8 of the salary certificate: 68'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "41.10",
+            "person": "B",
+            "amount": -469200,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 4'692.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "41.12",
+            "person": "B",
+            "amount": -380800,
+            "how": "Pension fund contributions, box 10.1: 3'808.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 9200,
+            "how": "Banque Exemple SA, Compte épargne joint: gross interest 92.00, under CHF 200 so without withholding tax; every bank interest is interest on savings capital (56.30).",
+            "source": "ge-2025-guide-declaration-pp p. 40 and 41"
+          },
+          {
+            "code": "31.71",
+            "person": "A",
+            "amount": -50000,
+            "how": "Travel by public transport, the yearly pass: 500.00 (under the maximum).",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 6 (frais de déplacement); ge-2025-guide-declaration-pp p. 20 and 21 (31.71)"
+          },
+          {
+            "code": "31.60",
+            "person": "A",
+            "amount": -320000,
+            "how": "Meals away from home: 220 days x 15 = 3'300.00, at most 3'200.00, employer not paying (box G empty): 3'200.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 6 (repas); ch-2025-ifd-frais-professionnels-progression p. 2"
+          },
+          {
+            "code": "31.20",
+            "person": "A",
+            "amount": -300900,
+            "how": "Other professional costs, flat: 3 % of the net salary 100'300.00, between 2'000 and 4'000: 3'009.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 6 (autres frais professionnels); ge-2025-guide-declaration-pp p. 19 (31.20)"
+          },
+          {
+            "code": "41.20",
+            "person": "B",
+            "amount": -200000,
+            "how": "Other professional costs, flat: 3 % of the net salary 59'500.00, between 2'000 and 4'000: 2'000.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 6 (autres frais professionnels); ge-2025-guide-declaration-pp p. 19 (31.20)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.40",
+            "person": "B",
+            "amount": -500000,
+            "how": "Pillar 3a paid in the year 5'000.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.90",
+            "person": "B",
+            "amount": -1410000,
+            "how": "Both spouses work: 50 % of the lower earned income (52'500.00, gross less social and pension contributions, professional costs and pillar 3a), at least 8'600.00, at most 14'100.00: 14'100.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 (chiffre 16); ge-2025-guide-declaration-pp p. 21 (31.90)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -510000,
+            "how": "Insurance premiums and savings interest 16'672.00, at most 5'100.00 (married couple, paying into a pension fund or pillar 3a, + 700 x 2 children): 5'100.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2025-ifd-frais-professionnels-progression p. 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          },
+          {
+            "code": "59.12",
+            "person": "household",
+            "amount": -1420000,
+            "how": "Crèche for Hugo: 14'200.00, under 25'800.00 per child.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8; ge-2025-guide-declaration-pp p. 30 (59.12)"
+          },
+          {
+            "code": "59.12",
+            "person": "household",
+            "amount": -1680000,
+            "how": "Crèche for Inès: 16'800.00, under 25'800.00 per child.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8; ge-2025-guide-declaration-pp p. 30 (59.12)"
+          },
+          {
+            "code": "73.20",
+            "person": "household",
+            "amount": -30000,
+            "how": "Donation to Fondation Exemple pour l’enfance 300.00: at least 100, under 20 % of the net income (88'725.00).",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 (chiffre 21.2); ge-2025-guide-declaration-pp p. 15 (73.20)"
+          }
+        ],
+        "netIncome": {
+          "amount": 8842500,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [
+          {
+            "code": "61.20",
+            "person": "household",
+            "amount": -680000,
+            "how": "Deduction for Hugo, a minor child: 6'800.00.",
+            "source": "ch-2025-ifd-frais-professionnels-progression p. 2; ch-2025-ifd-instructions-personnes-physiques p. 9 (chiffre 23)"
+          },
+          {
+            "code": "61.20",
+            "person": "household",
+            "amount": -680000,
+            "how": "Deduction for Inès, a minor child: 6'800.00.",
+            "source": "ch-2025-ifd-frais-professionnels-progression p. 2; ch-2025-ifd-instructions-personnes-physiques p. 9 (chiffre 23)"
+          },
+          {
+            "code": "59.20",
+            "person": "household",
+            "amount": -280000,
+            "how": "Married couple: 2'800.00.",
+            "source": "ch-2025-ifd-frais-professionnels-progression p. 2; ch-2025-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 31 (59.20)"
+          }
+        ],
+        "taxableIncome": {
+          "amount": 7202500,
+          "how": "Net income 88'425.00 less the social deductions 16'400.00: 72'025.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 7200000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 72'000.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD); ch-2025-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "married",
+        "scaleTax": {
+          "amount": 71600,
+          "how": "The married scale at 72'000.00: 716.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 52600,
+          "how": "263 x 2 children.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 19000,
+          "how": "716.00 less 526.00, rounded down to 5 centimes: 190.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 643800, "how": "ICC 6'248.00 + IFD 190.00.", "source": "" }
+    },
+    "2026": {
+      "taxYear": 2026,
+      "provisional": true,
+      "commune": "Lancy",
+      "icc": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 12000000,
+            "how": "Gross salary, box 8 of the salary certificate: 120'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -828000,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 8'280.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -972000,
+            "how": "Pension fund contributions, box 10.1: 9'720.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "21.10",
+            "person": "B",
+            "amount": 6900000,
+            "how": "Gross salary, box 8 of the salary certificate: 69'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "41.10",
+            "person": "B",
+            "amount": -476100,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 4'761.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "41.12",
+            "person": "B",
+            "amount": -393900,
+            "how": "Pension fund contributions, box 10.1: 3'939.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 8800,
+            "how": "Banque Exemple SA, Compte épargne joint: gross interest 88.00, under CHF 200 so without withholding tax; every bank interest is interest on savings capital (56.30).",
+            "source": "ge-2025-guide-declaration-pp p. 40 and 41"
+          },
+          {
+            "code": "31.50",
+            "person": "A",
+            "amount": -181700,
+            "how": "Flat professional costs: 3 % of 102'000.00 (11.00 - 31.10 - 31.12), between 640 and 1'812: 1'817.00; higher than the actual costs (travel 500.00, no meals: the trip is under 2 hours a day).",
+            "source": "ge-2026-rcepf art. 6 al. 2; ge-na-law-lipp art. 29 al. 2; ge-2025-guide-declaration-pp p. 22 (example 1)"
+          },
+          {
+            "code": "41.50",
+            "person": "B",
+            "amount": -180900,
+            "how": "Flat professional costs: 3 % of 60'300.00 (11.00 - 31.10 - 31.12), between 640 and 1'812: 1'809.00; higher than the actual costs (travel 0.00, no meals: the trip is under 2 hours a day).",
+            "source": "ge-2026-rcepf art. 6 al. 2; ge-na-law-lipp art. 29 al. 2; ge-2025-guide-declaration-pp p. 22 (example 1)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-na-law-lipp art. 31 let. c (within the limits of federal law); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.40",
+            "person": "B",
+            "amount": -500000,
+            "how": "Pillar 3a paid in the year 5'000.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-na-law-lipp art. 31 let. c (within the limits of federal law); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.95",
+            "person": "B",
+            "amount": -105400,
+            "how": "Both spouses work: 1'054.00 off the lower earned income (53'491.00).",
+            "source": "ge-2026-rcepf art. 10"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -1797800,
+            "how": "Health insurance premiums paid (basic and supplementary) 17'978.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          },
+          {
+            "code": "52.15",
+            "person": "household",
+            "amount": -8800,
+            "how": "Interest on savings capital (56.30) 88.00, under the limit 5'452.00.",
+            "source": "ge-2026-rcepf art. 8"
+          },
+          {
+            "code": "59.10",
+            "person": "household",
+            "amount": -1140000,
+            "how": "Crèche for Hugo (under 14), both parents working: 11'400.00, under 26'392.00 per child.",
+            "source": "ge-2026-rcepf art. 9"
+          },
+          {
+            "code": "59.10",
+            "person": "household",
+            "amount": -1740000,
+            "how": "Crèche for Inès (under 14), both parents working: 17'400.00, under 26'392.00 per child.",
+            "source": "ge-2026-rcepf art. 9"
+          },
+          {
+            "code": "73.10",
+            "person": "household",
+            "amount": -30000,
+            "how": "Donation to Fondation Exemple pour l’enfance 300.00, under 20 % of 92.40 (98'584.00).",
+            "source": "ge-na-law-lipp art. 37 al. 1"
+          }
+        ],
+        "grossIncome": {
+          "amount": 18908800,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 9828400,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [
+          {
+            "code": "61.25",
+            "person": "household",
+            "amount": -1053600,
+            "how": "Family charge for Hugo, whose childcare is deducted: the reduced amount: 10'536.00.",
+            "source": "ge-2026-rcepf art. 13 al. 1"
+          },
+          {
+            "code": "61.25",
+            "person": "household",
+            "amount": -1053600,
+            "how": "Family charge for Inès, whose childcare is deducted: the reduced amount: 10'536.00.",
+            "source": "ge-2026-rcepf art. 13 al. 1"
+          }
+        ],
+        "taxableIncome": {
+          "amount": 7721200,
+          "how": "Net income 98'284.00 less the family charges 21'072.00: 77'212.00 (99.00).",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "full",
+        "rateIncome": {
+          "amount": 3860600,
+          "how": "Full splitting: half of 77'212.00 = 38'606.00.",
+          "source": "ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 385000,
+          "how": "The scale at 38'606.00 gives 1'925.00; x 77'212.00 / 38'606.00 = 3'850.00 (example 3).",
+          "source": "ge-2026-rcepf art. 17; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 503580,
+          "how": "Base 3'850.00 + 47.5 % 1'828.75 - 12 % of 5'678.75 681.45 + 1 % home care 38.50 = 5'035.80 (each exact).",
+          "source": "ge-na-law-lcacant art. 2 al. 1"
+        },
+        "communalIncome": {
+          "amount": 180950,
+          "how": "47 centimes of Lancy on the base 3'850.00: 1'809.50 (all income earned in Lancy, so no share for another commune).",
+          "source": "ge-2026-communal-centimes-arca; ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 4910000,
+            "how": "Banque Exemple SA, Compte épargne joint: balance on 31 December 49'100.00.",
+            "source": "ge-2025-guide-declaration-pp p. 40"
+          }
+        ],
+        "grossWealth": {
+          "amount": 4910000,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 4910000,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -4910000,
+          "how": "Married couple + 43'936.00 x 2 charges, at most the net wealth: 49'100.00.",
+          "source": "ge-2026-rcepf art. 16 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 0,
+          "how": "Net wealth 49'100.00 less 49'100.00: 0.00.",
+          "source": "ge-2026-rcepf art. 16 al. 1"
+        },
+        "wealthBase": {
+          "amount": 0,
+          "how": "The base wealth scale at 0.00: 0.00.",
+          "source": "ge-2026-rcepf art. 18 al. 1"
+        },
+        "wealthSupplementary": {
+          "amount": 0,
+          "how": "The supplementary scale at 0.00: 0.00, no centimes on it.",
+          "source": "ge-2026-rcepf art. 18 al. 2; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 0,
+          "how": "Base 0.00 + 47.5 % 0.00 + 1 % 0.00 + supplementary 0.00 = 0.00.",
+          "source": "ge-na-law-lcacant art. 2 al. 1"
+        },
+        "communalWealth": {
+          "amount": 0,
+          "how": "47 centimes on 0.00: 0.00.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "communal": {
+          "amount": 180950,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 687030,
+          "how": "Cantonal income 5'035.80 + cantonal wealth 0.00 + communal 1'809.50 + taxe personnelle 25.00 = 6'870.30. Provisional: Geneva’s 2026 ceiling for health insurance premiums is not published yet; the premiums are under the 2025 one.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 12000000,
+            "how": "Gross salary, box 8 of the salary certificate: 120'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -828000,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 8'280.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -972000,
+            "how": "Pension fund contributions, box 10.1: 9'720.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "21.10",
+            "person": "B",
+            "amount": 6900000,
+            "how": "Gross salary, box 8 of the salary certificate: 69'000.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "41.10",
+            "person": "B",
+            "amount": -476100,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 4'761.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "41.12",
+            "person": "B",
+            "amount": -393900,
+            "how": "Pension fund contributions, box 10.1: 3'939.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "household",
+            "amount": 8800,
+            "how": "Banque Exemple SA, Compte épargne joint: gross interest 88.00, under CHF 200 so without withholding tax; every bank interest is interest on savings capital (56.30).",
+            "source": "ge-2025-guide-declaration-pp p. 40 and 41"
+          },
+          {
+            "code": "31.71",
+            "person": "A",
+            "amount": -50000,
+            "how": "Travel by public transport, the yearly pass: 500.00 (under the maximum).",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 6 (frais de déplacement); ge-2025-guide-declaration-pp p. 20 and 21 (31.71)"
+          },
+          {
+            "code": "31.60",
+            "person": "A",
+            "amount": -320000,
+            "how": "Meals away from home: 220 days x 15 = 3'300.00, at most 3'200.00, employer not paying (box G empty): 3'200.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 6 (repas); ch-2026-ifd-progression-deductions p. 1 and 2"
+          },
+          {
+            "code": "31.20",
+            "person": "A",
+            "amount": -306000,
+            "how": "Other professional costs, flat: 3 % of the net salary 102'000.00, between 2'000 and 4'000: 3'060.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 6 (autres frais professionnels); ge-2025-guide-declaration-pp p. 19 (31.20)"
+          },
+          {
+            "code": "41.20",
+            "person": "B",
+            "amount": -200000,
+            "how": "Other professional costs, flat: 3 % of the net salary 60'300.00, between 2'000 and 4'000: 2'000.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 6 (autres frais professionnels); ge-2025-guide-declaration-pp p. 19 (31.20)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-na-law-lipp art. 31 let. c (within the limits of federal law); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.40",
+            "person": "B",
+            "amount": -500000,
+            "how": "Pillar 3a paid in the year 5'000.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-na-law-lipp art. 31 let. c (within the limits of federal law); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "41.90",
+            "person": "B",
+            "amount": -1410000,
+            "how": "Both spouses work: 50 % of the lower earned income (53'300.00, gross less social and pension contributions, professional costs and pillar 3a), at least 8'600.00, at most 14'100.00: 14'100.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 16); ge-2025-guide-declaration-pp p. 21 (31.90)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -510000,
+            "how": "Insurance premiums and savings interest 18'066.00, at most 5'100.00 (married couple, paying into a pension fund or pillar 3a, + 700 x 2 children): 5'100.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2026-ifd-progression-deductions p. 1 and 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          },
+          {
+            "code": "59.12",
+            "person": "household",
+            "amount": -1140000,
+            "how": "Crèche for Hugo: 11'400.00, under 25'800.00 per child.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8; ge-2025-guide-declaration-pp p. 30 (59.12)"
+          },
+          {
+            "code": "59.12",
+            "person": "household",
+            "amount": -1740000,
+            "how": "Crèche for Inès: 17'400.00, under 25'800.00 per child.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8; ge-2025-guide-declaration-pp p. 30 (59.12)"
+          },
+          {
+            "code": "73.20",
+            "person": "household",
+            "amount": -30000,
+            "how": "Donation to Fondation Exemple pour l’enfance 300.00: at least 100, under 20 % of the net income (93'370.00).",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 21.2); ge-2025-guide-declaration-pp p. 15 (73.20)"
+          }
+        ],
+        "netIncome": {
+          "amount": 9307000,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [
+          {
+            "code": "61.20",
+            "person": "household",
+            "amount": -680000,
+            "how": "Deduction for Hugo, a minor child: 6'800.00.",
+            "source": "ch-2026-ifd-progression-deductions p. 1 and 2; ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 23)"
+          },
+          {
+            "code": "61.20",
+            "person": "household",
+            "amount": -680000,
+            "how": "Deduction for Inès, a minor child: 6'800.00.",
+            "source": "ch-2026-ifd-progression-deductions p. 1 and 2; ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 23)"
+          },
+          {
+            "code": "59.20",
+            "person": "household",
+            "amount": -280000,
+            "how": "Married couple: 2'800.00.",
+            "source": "ch-2026-ifd-progression-deductions p. 1 and 2; ch-2026-ifd-instructions-personnes-physiques p. 9; ge-2025-guide-declaration-pp p. 31 (59.20)"
+          }
+        ],
+        "taxableIncome": {
+          "amount": 7667000,
+          "how": "Net income 93'070.00 less the social deductions 16'400.00: 76'670.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 7660000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 76'600.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD); ch-2026-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "married",
+        "scaleTax": {
+          "amount": 85400,
+          "how": "The married scale at 76'600.00: 854.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 52600,
+          "how": "263 x 2 children.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 32800,
+          "how": "854.00 less 526.00, rounded down to 5 centimes: 328.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 719830, "how": "ICC 6'870.30 + IFD 328.00.", "source": "" }
+    }
+  }
+}

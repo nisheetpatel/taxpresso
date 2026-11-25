@@ -28,6 +28,7 @@ import type {
   Snapshot,
 } from '@taxpresso/questionnaire';
 import type { ContentLang } from './lang.js';
+import { replacedByDocument, roughBasis } from './pages.js';
 import {
   assessmentViews,
   consistencyChecks,
@@ -135,6 +136,17 @@ interface Entered {
   form?: Record<string, string>;
 }
 
+/**
+ * The tax the rough income figures gave when a document first replaced one of them (./pages.ts):
+ * local, in the vault, never in the ledger, so no engine reads it. Only for "CHF 660 less than
+ * your rough numbers said".
+ */
+interface RoughNote {
+  version: 1;
+  /** Centimes. */
+  tax?: number;
+}
+
 export interface ExtractionResult {
   saved: number;
   unchanged: number;
@@ -231,6 +243,7 @@ export class Workspace {
   #documents: VaultDocument[] = [];
   #prefs: Prefs = { version: 1, skipped: [], waived: [] };
   #entered: Entered = { version: 1, entered: {} };
+  #rough: RoughNote = { version: 1 };
   #loading: Promise<void> | undefined;
   #lock: Promise<unknown> = Promise.resolve();
   readonly #activity: ActivityEntry[] = [];
@@ -292,6 +305,7 @@ export class Workspace {
       };
       await this.#readSecurities();
       this.#entered = await this.vault.readState('entered.json', this.#entered);
+      this.#rough = await this.vault.readState('rough.json', this.#rough);
     })().catch((err: unknown) => {
       this.#loading = undefined;
       throw err;
@@ -310,6 +324,11 @@ export class Workspace {
 
   get skipped(): readonly string[] {
     return this.#prefs.skipped;
+  }
+
+  /** The tax the rough income figures gave when a document first replaced one (centimes). */
+  roughTaxNoted(): number | undefined {
+    return this.#rough.tax;
   }
 
   record(by: ActivityEntry['by'], what: ActivityEntry['what'], detail?: string): void {
@@ -694,11 +713,14 @@ export class Workspace {
           ? (profitOf(known?.people, person) ?? money('plan.business_profit', person))
           : undefined;
         const fund = this.ledger.get('plan.has_pension_fund', person)?.value;
+        // Where the salary is earned, as the tax reads it (rules-ge, engineInputFromFacts).
+        const work = known?.people.find((x) => x.id === person)?.employments?.[0]?.workCommune;
         return {
           person,
           ...(gross !== undefined ? { grossCentimes: gross } : {}),
           ...(net !== undefined ? { netCentimes: net } : {}),
           ...(business !== undefined ? { businessCentimes: business } : {}),
+          ...(work ? { workCommune: work } : {}),
           // Most employees have one, the self-employed without a salary usually not; the user can
           // say otherwise.
           hasPensionFund: self && !salaried ? fund === true : fund !== false,
@@ -1424,7 +1446,15 @@ export class Workspace {
   #write<T>(fn: () => Promise<T>): Promise<T> {
     const run = this.#lock.then(async () => {
       await this.ready();
-      return fn();
+      // While the tax rests on a rough income figure, what it is: noted once, when a document
+      // first replaces one of those figures in this change (./pages.ts).
+      const rough = this.#rough.tax === undefined ? roughBasis(this) : undefined;
+      const result = await fn();
+      if (rough && replacedByDocument(this, rough)) {
+        this.#rough = { version: 1, tax: rough.total };
+        await this.vault.writeState('rough.json', this.#rough);
+      }
+      return result;
     });
     this.#lock = run.catch(() => undefined);
     return run;

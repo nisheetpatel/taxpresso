@@ -12,10 +12,17 @@
 // on income and on wealth; the Staatssteuer is that simple tax times the cantonal multiplier, the
 // Gemeindesteuer times the commune's, the Kirchensteuer (on request) times the church's, each a
 // percentage of the same simple tax; the Personalsteuer is a fixed amount per adult.
-import { chf, pct, roundCentime, Trace } from './calc.js';
+//
+// Rounding, as the tax bill is made out (Weisung der Finanzdirektion über die Ausstellung von
+// Steuerrechnungen, zh-na-tariff-weisung-steuerrechnungen-zstb-173-1): the taxable income is
+// rounded down to CHF 100 and the taxable wealth to CHF 1,000 before the tariff (Rz 45); the
+// einfache Staatssteuer on each is rounded down to whole francs (Rz 71); each tax of the canton,
+// the commune and the church is rounded to 5 centimes (Rz 78). The lines of the return itself
+// (390, 490) stay as declared, in whole francs.
+import { chf, pct, roundTo, Trace } from './calc.js';
 import type { Cited } from '@taxpresso/rules-ch';
 import { pick } from './communes.js';
-import { churchSplit, multipliers, personalTax } from './law.js';
+import { billRounding, churchSplit, multipliers, personalTax } from './law.js';
 import { zhParamsFor, type ZhTaxYear } from './params.js';
 import { ASSETS, DEBTS, DEDUCTIONS, EXTRA, INCOME, rubric, SOCIAL } from './rubrics.js';
 import { stepsTotal, tariffFraction, type StepTariff } from './tariff.js';
@@ -153,10 +160,15 @@ export function incomeTotals(items: readonly Item[]): IncomeTotals {
   return { grossIncome, totalDeductions, subtotal310, netIncome, taxableIncome };
 }
 
-/** A tariff applied: the exact simple tax, rounded to the centime, with how. */
+/**
+ * A tariff applied to the amount rounded down to its unit (CHF 100 of income, CHF 1,000 of wealth):
+ * the einfache Staatssteuer, rounded down to whole francs, with how.
+ */
 function tariffLine(
   param: Cited<StepTariff>,
   base: Line,
+  /** The unit the base is rounded down to, in centimes. */
+  unit: number,
   label: Text,
   /** What it applies to; in French with its preposition ("au revenu imposable"). */
   what: Text,
@@ -165,14 +177,20 @@ function tariffLine(
 ): Line {
   const tr = new Trace().from(base).src(...extraSources);
   const tariff = tr.p(param);
-  const amount = roundCentime(tariffFraction(tariff, base.amount), tariff.denominator);
+  const rounding = tr.p(billRounding());
+  const taxed = Math.floor(Math.max(0, base.amount) / unit) * unit;
+  // Exact centimes x denominator; whole francs, the rest dropped.
+  const amount =
+    Math.floor(tariffFraction(tariff, taxed) / (tariff.denominator * rounding.simpleTax)) *
+    rounding.simpleTax;
   const top = stepsTotal(tariff);
+  const per = chf(unit).replace(/\.00$/, '');
   return tr.line(
     amount,
     label,
     t(
-      `The ${tariffName.en} applied to ${what.en} of ${chf(base.amount)}, step by step${base.amount > top * 100 ? `, the part above ${chf(top * 100)} at the top rate` : ''}: ${chf(amount)}.`,
-      `Le ${tariffName.fr} appliqué ${what.fr} de ${chf(base.amount)}, tranche par tranche${base.amount > top * 100 ? `, la part au-delà de ${chf(top * 100)} au taux maximal` : ''}${NB}: ${chf(amount)}.`,
+      `The ${tariffName.en} applied to ${what.en} of ${chf(base.amount)}, taken as ${chf(taxed)} (rounded down to ${per}), step by step${taxed > top * 100 ? `, the part above ${chf(top * 100)} at the top rate` : ''}, in whole francs: ${chf(amount)}.`,
+      `Le ${tariffName.fr} appliqué ${what.fr} de ${chf(base.amount)}, pris pour ${chf(taxed)} (arrondi vers le bas à ${per}), tranche par tranche${taxed > top * 100 ? `, la part au-delà de ${chf(top * 100)} au taux maximal` : ''}, en francs entiers${NB}: ${chf(amount)}.`,
     ),
   );
 }
@@ -273,9 +291,11 @@ export function assess(input: ZhAssessInput): ZhIccResult {
     );
 
   // The einfache Staatssteuer.
+  const rounding = billRounding().value;
   const simpleIncome = tariffLine(
     married ? P.incomeTariff.married : P.incomeTariff.basic,
     totals.taxableIncome,
+    rounding.income,
     t(
       'Simple tax on income (einfache Staatssteuer, Einkommen)',
       'Impôt simple sur le revenu (einfache Staatssteuer, Einkommen)',
@@ -287,6 +307,7 @@ export function assess(input: ZhAssessInput): ZhIccResult {
   const simpleWealth = tariffLine(
     married ? P.wealthTariff.married : P.wealthTariff.basic,
     taxableWealth,
+    rounding.wealth,
     t(
       'Simple tax on wealth (einfache Staatssteuer, Vermögen)',
       'Impôt simple sur la fortune (einfache Staatssteuer, Vermögen)',
@@ -308,33 +329,33 @@ export function assess(input: ZhAssessInput): ZhIccResult {
       ),
     );
 
-  const scaled = (rateBp: number) => roundCentime(simpleAmount * rateBp, 10_000);
-  const ctTrace = new Trace().from(simple);
+  const scaled = (rateBp: number) => roundTo(simpleAmount * rateBp, 10_000, rounding.tax);
+  const ctTrace = new Trace().from(simple).src(billRounding().source);
   const cantonalRate = ctTrace.p(P.cantonalRate);
   const cantonalAmount = scaled(cantonalRate * 100);
   const cantonal = ctTrace.line(
     cantonalAmount,
     t('Cantonal tax (Staatssteuer)', 'Impôt cantonal (Staatssteuer)'),
     t(
-      `${chf(simpleAmount)} x ${pct(cantonalRate)} (Staatssteuerfuss ${input.taxYear}), to the centime: ${chf(cantonalAmount)}.`,
-      `${chf(simpleAmount)} x ${pct(cantonalRate)} (Staatssteuerfuss ${input.taxYear}), au centime${NB}: ${chf(cantonalAmount)}.`,
+      `${chf(simpleAmount)} x ${pct(cantonalRate)} (Staatssteuerfuss ${input.taxYear}), to 5 centimes: ${chf(cantonalAmount)}.`,
+      `${chf(simpleAmount)} x ${pct(cantonalRate)} (Staatssteuerfuss ${input.taxYear}), à 5 centimes près${NB}: ${chf(cantonalAmount)}.`,
     ),
   );
-  const cmTrace = new Trace().from(simple).src(P.communes.source);
+  const cmTrace = new Trace().from(simple).src(P.communes.source, billRounding().source);
   const communalAmount = scaled(C.rate * 100);
   const communal = cmTrace.line(
     communalAmount,
     t(`Communal tax of ${C.name} (Gemeindesteuer)`, `Impôt communal de ${C.name} (Gemeindesteuer)`),
     t(
-      `${chf(simpleAmount)} x ${pct(C.rate)} (Gemeindesteuerfuss without church tax), to the centime: ${chf(communalAmount)}.`,
-      `${chf(simpleAmount)} x ${pct(C.rate)} (Gemeindesteuerfuss sans impôt ecclésiastique), au centime${NB}: ${chf(communalAmount)}.`,
+      `${chf(simpleAmount)} x ${pct(C.rate)} (Gemeindesteuerfuss without church tax), to 5 centimes: ${chf(communalAmount)}.`,
+      `${chf(simpleAmount)} x ${pct(C.rate)} (Gemeindesteuerfuss sans impôt ecclésiastique), à 5 centimes près${NB}: ${chf(communalAmount)}.`,
     ),
   );
 
   let church: Line | null = null;
   const members = (input.church?.members ?? []).filter((m) => m !== 'none');
   if (input.church && members.length) {
-    const chTrace = new Trace().from(simple).src(P.communes.source);
+    const chTrace = new Trace().from(simple).src(P.communes.source, billRounding().source);
     const split = input.adults === 2 ? chTrace.p(churchSplit(input.taxYear)).spouseShareBp : 10_000;
     let bp = 0;
     const parts: Text[] = [];
@@ -358,8 +379,8 @@ export function assess(input: ZhAssessInput): ZhIccResult {
       amount,
       t('Church tax (Kirchensteuer)', 'Impôt ecclésiastique (Kirchensteuer)'),
       t(
-        `${chf(simpleAmount)} x ${parts.map((p) => p.en).join(' + ')} = ${pct(bp / 100)}, to the centime: ${chf(amount)}.`,
-        `${chf(simpleAmount)} x ${parts.map((p) => p.fr).join(' + ')} = ${pct(bp / 100)}, au centime${NB}: ${chf(amount)}.`,
+        `${chf(simpleAmount)} x ${parts.map((p) => p.en).join(' + ')} = ${pct(bp / 100)}, to 5 centimes: ${chf(amount)}.`,
+        `${chf(simpleAmount)} x ${parts.map((p) => p.fr).join(' + ')} = ${pct(bp / 100)}, à 5 centimes près${NB}: ${chf(amount)}.`,
       ),
     );
   }

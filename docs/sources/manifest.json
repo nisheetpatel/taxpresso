@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-14",
+  "generated": "2026-11-25",
   "note": "Merged from the per-canton manifest.json files. Edit those, then run scripts/merge-manifests.mjs.",
   "entries": [
     {
@@ -16,7 +16,7 @@
       "verified_on": "2026-10-13",
       "priority": "core",
       "why_needed": "The privileged share (part privilégiée) of each of the 45 communes for tax year 2026, needed to split the communal tax between the commune of residence and the commune of work.",
-      "notes": "21-page weekly communiqué; the table is on p. 11 (Fixation de la part privilégiée de chaque commune pour 2026). The AFC table ge-2025-communal-centimes-pdf stops at 2025. The Conseil d'Etat fixes the share for the next year each October (the 2027 shares are in the communiqué of 7 October 2026)."
+      "notes": "21-page weekly communiqué; the section and its table are on p. 12 as printed and in its table of contents (PDF page 13): Fixation de la part privilégiée de chaque commune pour 2026, with how the share works (\"le solde étant attribué à la commune d'activité\"). The AFC table ge-2025-communal-centimes-pdf stops at 2025. The Conseil d'Etat fixes the share for the next year each October (the 2027 shares are in the communiqué of 7 October 2026)."
     },
     {
       "id": "ge-2025-communal-centimes-pdf",
@@ -33,6 +33,22 @@
       "priority": "core",
       "why_needed": "Communal centimes additionnels for 2025, needed to compute communal tax.",
       "notes": "One PDF covers 2020 to 2025, including 2025. Page: https://www.ge.ch/document/centimes-additionnels-communaux-part-privilegiee . No 2026 file on that page."
+    },
+    {
+      "id": "ge-2025-part-privilegiee-communique",
+      "canton": "GE",
+      "doc_type": "communal_rates",
+      "title": "Communiqué hebdomadaire du Conseil d'Etat du 16 octobre 2024: Fixation de la part privilégiée de chaque commune (pour 2025)",
+      "tax_year": 2025,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/37160/telecharger",
+      "format": "pdf",
+      "publisher": "Chancellerie d'Etat, République et canton de Genève",
+      "published": "2024-10-16",
+      "verified_on": "2026-10-16",
+      "priority": "core",
+      "why_needed": "The 2025 privileged share of each commune and how it splits the communal tax: the share of the base tax the commune of residence taxes at its own centimes, \"le solde étant attribué à la commune d'activité (au taux de centime de la commune d'activité)\". The 2025 counterpart of ge-2026-part-privilegiee-communique, for the work commune question.",
+      "notes": "16-page weekly communiqué; the section \"Fixation de la part privilégiée de chaque commune\" and its table for 2025 are on p. 8 (the table of contents says 8). Landing page https://www.ge.ch/document/communique-hebdomadaire-du-conseil-etat-du-16-octobre-2024. Its 45 shares agree with the AFC's 2025 column (ge-2025-communal-centimes-pdf). Added 16 October 2026 by the work commune agent."
     },
     {
       "id": "ge-2025-deductions-guide-chapter",
@@ -225,6 +241,22 @@
       "priority": "core",
       "why_needed": "The guide for the self-employed the main guide refers to (ge-2025-guide-declaration-pp p. 23): annexe B code by code (B1 to B4), the accounts or simple records to attach, the AVS/AI/APG contributions of the self-employed (32.10, 32.11), pillar 3a without a pension fund (32.40), losses of the seven previous years (57.20), the business wealth and its deduction (12.50, 57.50, 51.60).",
       "notes": "36 pages, file guide-independants-2025.pdf. Landing page: https://www.ge.ch/document/guide-fiscal-2025-independants (published 8 September 2026). PDF page n is printed page n. Annexe B: p. 10 to 24; documents to attach: p. 25; the simplified declaration: p. 26 to 28. Added by the self-employment agent on 14 October 2026."
+    },
+    {
+      "id": "ge-2026-rcepf",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Règlement relatif à la compensation des effets de la progression à froid (RCEPF), rsGE D 3 08.05, du 8 octobre 2025",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_08p05.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2025-10-08",
+      "verified_on": "2026-11-25",
+      "priority": "core",
+      "why_needed": "Geneva's own amounts and scales for tax year 2026, indexed by the Conseil d'Etat (LIPP art. 67 and 72): the income scale (art. 17), the two wealth scales (art. 18) and every indexed deduction (art. 4 to 16: commuting, flat professional costs, life insurance and savings interest, childcare, two earners, training, family charges, AVS/AI pensioners, the social deductions on wealth).",
+      "notes": "Adopted 8 October 2025, in force 1 January 2026; index 110.0 for tax period 2026 (art. 1); amounts and bracket limits rounded to the franc (art. 2 al. 3). It replaces the regulation of 11 December 2024 (art. 19), and the next one will replace it at the same address: the snapshot fetched on 25 November 2026 is the 2026 text. Not in it, because not indexed or set elsewhere: the cantonal centimes, the 12 % reduction, the health premium ceiling (twice the cantonal average premium, LIPP art. 32), meals, pillar 3a."
     },
     {
       "id": "ge-na-law-lcacant",
@@ -611,6 +643,22 @@
       "notes": "rsGE D 3 05.30, adopted 18 March 2026, in force 1 January 2026. The 2025 arrêté (ArCA-2025) is no longer at this URL and was not checked separately. The page shows a later Vernier entry dated 19.08.2026."
     },
     {
+      "id": "ge-na-part-privilegiee-page",
+      "canton": "GE",
+      "doc_type": "communal_rates",
+      "title": "Fiscalité des communes - part privilégiée (ge.ch)",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://www.ge.ch/document/fiscalite-communes-part-privilegiee",
+      "format": "html",
+      "publisher": "Service des affaires communales, République et canton de Genève",
+      "published": "2020-01-30",
+      "verified_on": "2026-10-16",
+      "priority": "useful",
+      "why_needed": "The canton's own words for the split: the privileged share \"permet de répartir les impôts des personnes physiques entre la commune de domicile (appelée part privilégiée) et la commune de travail (appelée part restante)\", 20 % to 80 % by the commune's financial capacity.",
+      "notes": "Page with the table Part privilégiée 2018 à 2026 (https://www.ge.ch/document/19513/telecharger). Added 16 October 2026 by the work commune agent."
+    },
+    {
       "id": "ge-2025-documents-envoyes-page",
       "canton": "GE",
       "doc_type": "form",
@@ -675,6 +723,22 @@
       "notes": "In force 1 January 2026. Added 14 October 2026 by the property agent."
     },
     {
+      "id": "ge-na-law-rdlcp",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Règlement d'application de diverses dispositions de la loi générale sur les contributions publiques (RDLCP), rsGE D 3 05.04",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_05p04.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2026-01-01",
+      "verified_on": "2026-10-16",
+      "priority": "useful",
+      "why_needed": "The LCP's regulation: the scale of the privileged share (art. 11A, 11B) and the 2026 share of each commune (art. 11C). Its chapter on the intercommunal split (art. 12A to 13A, from the 1956 regulation it took in, art. 59 ch. 8) is repealed: no regulation in force says how the rest of the base tax is measured between the communes.",
+      "notes": "rsGE D 3 05.04, of 30 December 1958, consolidated to 1 January 2026. Partie II, chapitre I: centimes additionnels communaux (art. 293 let. A and B LCP). Added 16 October 2026 by the work commune agent."
+    },
+    {
       "id": "ge-2025-taux-donnees-fiscales",
       "canton": "GE",
       "doc_type": "other",
@@ -689,6 +753,22 @@
       "priority": "useful",
       "why_needed": "Exchange rates at 31.12.2025 for wealth tax, plus links to communal centimes and interest-rate pages.",
       "notes": "Section 'Devises courantes pour l'année fiscale 2025' has the 31.12 rates. The federal Kursliste 2025 PDF linked there is on ictax.admin.ch, outside the ge.ch scope, so it is not listed. Page updated 2026-05-27."
+    },
+    {
+      "id": "ge-na-ata-920-2014-repartition-intercommunale",
+      "canton": "GE",
+      "doc_type": "other",
+      "title": "Cour de justice, Chambre administrative, ATA/920/2014 du 25 novembre 2014 (A/3652/2012): ICC 2007 et 2008, répartition intercommunale",
+      "tax_year": null,
+      "language": "fr",
+      "url": "https://justice.ge.ch/apps/decis/fr/ata/file/2014/0009/ATA_000920_2014_A_3652_2012.pdf",
+      "format": "pdf",
+      "publisher": "Pouvoir judiciaire, République et canton de Genève",
+      "published": "2014-11-25",
+      "verified_on": "2026-10-16",
+      "priority": "useful",
+      "why_needed": "The only official document in the library that shows the communal parts of an assessment: the ICC bordereau comes with a \"tableau de répartition intercommunale du revenu imposable\" (the taxable income attributed to each commune) and the communal tax as the privileged share and each commune's part. The salary is taxed with the code of the commune of work (art. 293 LCP): the court rejected the appeal against it.",
+      "notes": "Decision on tax years 2007 and 2008 (the LCP articles it applies are unchanged). The facts, p. 2 and 3, give the table's amounts and each commune's tax; nothing says how the deductions are attributed between the communes. Added 16 October 2026 by the work commune agent."
     },
     {
       "id": "ge-na-other-e-releve-fiscal",
@@ -4227,6 +4307,22 @@
       "notes": "8 pages, BU 36/2024 of 8 November 2024, in force 1 January 2025. Listed on https://www4.ti.ch/dfe/dc/basi-legali/modifiche-alla-legislazione-tributaria-cantonale"
     },
     {
+      "id": "ti-2025-communal-moltiplicatore-coordinato",
+      "canton": "TI",
+      "doc_type": "communal_rates",
+      "title": "Moltiplicatore comunale coordinato 2025 valido per la determinazione del contributo di livellamento 2026 (Foglio ufficiale, 3 luglio 2025)",
+      "tax_year": 2025,
+      "language": "it",
+      "url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Perequazione/FU-MCC2025.pdf",
+      "format": "pdf",
+      "publisher": "Sezione degli enti locali (SEL), Dipartimento delle istituzioni, Cantone Ticino",
+      "published": "2025-07-03",
+      "verified_on": "2026-11-25",
+      "priority": "useful",
+      "why_needed": "The only cantonal list with a 2025 figure for Lema, which the table of multipliers leaves empty for 2025. Evidence only: a coordinated multiplier is not the multiplier of natural persons.",
+      "notes": "5 pages. p. 2: the coordinated multiplier is the one of LOC art. 177 cpv. 6, computed from the 2025 multipliers set by the communes and the cantonal tax yield of natural and legal persons, rounded to the unit. p. 2 to 4: one figure per commune (p. 3: Lema 95; p. 4: Lugano 78, where the table of multipliers has 77 for natural and 82 for legal persons). Do not read a multiplier for natural persons from it. The SEL page https://www4.ti.ch/di/sel/comuni/perequazione now links the 2026 edition (FU-MCC2026.pdf); the 2025 file is still served."
+    },
+    {
       "id": "ti-2025-efiling-guida-etax",
       "canton": "TI",
       "doc_type": "efiling_rules",
@@ -4321,6 +4417,22 @@
       "priority": "useful",
       "why_needed": "Rules for returns covering part of 2025, when the taxpayer leaves Ticino or dies",
       "notes": "Only relevant for partial-year liability. Covers annualisation of periodic income and the surviving spouse return."
+    },
+    {
+      "id": "ti-2025-communal-numero-comuni",
+      "canton": "TI",
+      "doc_type": "other",
+      "title": "Numero di comuni a fine anno dal 1980 (mutazioni), Sezione degli enti locali, aprile 2025",
+      "tax_year": 2025,
+      "language": "it",
+      "url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Elenco_comuni/numero_comuni_2025.xlsx",
+      "format": "xlsx",
+      "publisher": "Sezione degli enti locali (SEL), Dipartimento delle istituzioni, Cantone Ticino",
+      "published": null,
+      "verified_on": "2026-11-25",
+      "priority": "useful",
+      "why_needed": "Names the communes each merged commune was formed of and the day the merger took effect: which commune a 2025 resident of a former commune belongs to at the end of the year.",
+      "notes": "One sheet, mutazioni. Row 2: the number of communes at the end of each year (100 for 2025). Rows 43 to 45: LEMA (Astano, Bedigliora, Curio, Miglieglia, Novaggio), GIORNICO (Bodio, Giornico) and QUINTO (Prato Leventina, Quinto), column Z, entrata in vigore: the date serial 45753, which is 6 April 2025. Linked from https://www4.ti.ch/di/sel/comuni/elenco-comuni as 'Numero di comuni a fine anno dal 1980'. It gives no multipliers."
     },
     {
       "id": "ti-na-calculators-pf",
@@ -6291,6 +6403,22 @@
       "notes": "Contains rules only, no tariff tables. Filename says valid until 31.12.2025. Replaced from tax period 2026 by the 2026 Weisung. Tariffs are in StG sections 35 and 47."
     },
     {
+      "id": "zh-na-tariff-weisung-steuerrechnungen-zstb-173-1",
+      "canton": "ZH",
+      "doc_type": "tariff",
+      "title": "Weisung der Finanzdirektion über die Ausstellung von Steuerrechnungen (vom 9. Dezember 2008), Zürcher Steuerbuch Nr. 173.1",
+      "tax_year": null,
+      "language": "de",
+      "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-173-1.pdf",
+      "format": "pdf",
+      "publisher": "Finanzdirektion des Kantons Zürich (Zürcher Steuerbuch Nr. 173.1)",
+      "published": "2008-12-09",
+      "verified_on": "2026-11-25",
+      "priority": "core",
+      "why_needed": "The only Zurich document that states how the Staats- und Gemeindesteuern are computed and rounded on the tax bill: the taxable and the rate-determining income are rounded down to CHF 100 and the wealth to CHF 1,000 before the tariff (Rz 45), the einfache Staatssteuer on income and on wealth is rounded down to whole francs (Rz 71), it is multiplied by the multipliers (Rz 50, 72 to 76), and the Staats- und Gemeindesteuer amounts are rounded to 5 Rappen (Rz 78); the Personalsteuer has no multiplier (Rz 77).",
+      "notes": "24 pages; the pages still carry the old number Nr. 33/202. Rz 41 (one einfache Staatssteuer per Steuerobjekt: income, wealth) p. 7; Rz 45 p. 8; Rz 50 p. 9; Rz 67 (rates to three decimals) and Rz 71 p. 11; Rz 72 to 76 p. 12; Rz 77 and 78 p. 13. Listed as in force in the Zürcher Steuerbuch (page https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-173-1.html, Erlass and gültig ab 9.12.2008). Older than the current law in places: Rz 55 still says a tenth for capital payments where StG section 37 now says a twentieth. Added 25 November 2026 while checking rules-zh against the federal tax calculator."
+    },
+    {
       "id": "zh-2026-communal-steuerfuesse-aktuell",
       "canton": "ZH",
       "doc_type": "communal_rates",
@@ -6393,11 +6521,11 @@
       "title": "Merkblatt des kantonalen Steueramtes Zürich zu den Abzügen der Krankheits- und Unfallkosten sowie der behinderungsbedingten Kosten",
       "tax_year": null,
       "language": "de",
-      "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-32-1.pdf",
+      "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-32-1/zstb-nr-32-1.pdf",
       "format": "pdf",
       "publisher": "Kantonales Steueramt Zürich (Zürcher Steuerbuch Nr. 32.1)",
       "published": "2013-06-05",
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "useful",
       "why_needed": "Rules for medical and accident costs (with the 5 percent threshold) and disability costs.",
       "notes": "6 pages, version of 19 July 2005 as amended 18 September 2012 and 5 June 2013. Header still shows the old number 19/002."
@@ -6749,10 +6877,10 @@
       "format": "pdf",
       "publisher": "Dienststelle Steuern des Kantons Luzern (Finanzdepartement)",
       "published": null,
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "core",
       "why_needed": "Same table for 2026.",
-      "notes": "2 pages, printout dated 24.03.2026. The state units changed between 2025 and 2026; read both tables."
+      "notes": "2 pages, printout dated 30.10.2026: the canton replaced the printout of 24.03.2026 at the same address, with one figure changed (Hohenrain, römisch-katholische Kirchgemeinde: 0.40 instead of 0.45, total 3.90 instead of 3.95). Downloaded again on 2026-11-25. The state units changed between 2025 and 2026; read both tables."
     },
     {
       "id": "lu-2025-communal-steuereinheiten",
@@ -8109,10 +8237,10 @@
       "format": "pdf",
       "publisher": "Kantonales Steueramt St.Gallen (Finanzdepartement)",
       "published": null,
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "core",
       "why_needed": "2026 income and wealth tariff (einfache Steuer), same structure as 2025 with indexed brackets.",
-      "notes": "105 pages, created 26 Mar 2026. Page 1 has the same rules as 2025 with a slightly higher top threshold. Matches StG Stand 1.1.2026 Art. 50 (changed 2025-044, in force 1.1.2026)."
+      "notes": "105 pages, created 27 Oct 2026: the canton replaced the file of 26 Mar 2026 at the same address, with the same page 1 and the same 5,191 rows (scripts/sg-tariff.mjs --check). Downloaded again on 2026-11-25. Page 1 has the same rules as 2025 with a slightly higher top threshold. Matches StG Stand 1.1.2026 Art. 50 (changed 2025-044, in force 1.1.2026)."
     },
     {
       "id": "sg-2026-tariff-kantonssteuerfuss",
@@ -9161,11 +9289,11 @@
       "title": "Chiffres repères dans la prévoyance professionnelle",
       "tax_year": null,
       "language": "fr",
-      "url": "https://www.bsv.admin.ch/dam/bsv/fr/dokumente/bv/anleitungen/masszahlen-2025-2026.pdf.download.pdf/masszahlen-2025-2026.pdf",
+      "url": "https://www.bsv.admin.ch/dam/fr/sd-web/GZplHByBJoFc/Internet_Masszahlenarticles_25_26_f.pdf",
       "format": "pdf",
       "publisher": "OFAS (BSV)",
       "published": null,
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "core",
       "why_needed": "Official pillar 3a maximum table (section 9), legal basis OPP 3 art. 7 para. 1",
       "notes": "Marked 2026. Extraction shows the same values in both year columns, so confirm the 2025 values in the PDF before use."
@@ -9241,11 +9369,11 @@
       "title": "FAQ 2022 - Circulaire n° 45 AFC, impôt à la source",
       "tax_year": null,
       "language": "fr",
-      "url": "https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf",
+      "url": "https://www.estv.admin.ch/dam/fr/sd-web/a7vG5hlZeAdW/dbst-ks-2022-1-045-d-faq-fr.pdf",
       "format": "pdf",
       "publisher": "AFC (ESTV), groupe de travail impôt à la source (CSI)",
       "published": "2022-09-26",
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "core",
       "why_needed": "Official FAQ on source-tax circular 45 (employee withholding rules)",
       "notes": "FAQ attached to circular 45; the base circular itself was not located. Question 15.1 marked as revised 09/22."

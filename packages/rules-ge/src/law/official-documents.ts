@@ -12,6 +12,12 @@ export interface OfficialDocument {
 }
 
 export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
+  'ge-2025-part-privilegiee-communique': {
+    title:
+      "Communiqué hebdomadaire du Conseil d'Etat du 16 octobre 2024: Fixation de la part privilégiée de chaque commune (pour 2025)",
+    url: 'https://www.ge.ch/document/37160/telecharger',
+    pdf: true,
+  },
   'ge-2026-part-privilegiee-communique': {
     title:
       "Communiqué hebdomadaire du Conseil d'Etat du 15 octobre 2025: Fixation de la part privilégiée de chaque commune pour 2026",
@@ -246,6 +252,12 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://silgeneve.ch/legis/data/rsg_d3_06.htm',
     pdf: false,
   },
+  'ge-2026-rcepf': {
+    title:
+      'Règlement relatif à la compensation des effets de la progression à froid (RCEPF), rsGE D 3 08.05, du 8 octobre 2025',
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_08p05.htm',
+    pdf: false,
+  },
   'ge-na-law-lcacant': {
     title: 'Loi sur les centimes additionnels cantonaux (LCACant), rsGE D 3 07',
     url: 'https://silgeneve.ch/legis/data/rsg_d3_07.htm',
@@ -334,7 +346,7 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
   },
   'ch-na-ifd-chiffres-reperes-3a': {
     title: 'Chiffres repères dans la prévoyance professionnelle',
-    url: 'https://www.bsv.admin.ch/dam/bsv/fr/dokumente/bv/anleitungen/masszahlen-2025-2026.pdf.download.pdf/masszahlen-2025-2026.pdf',
+    url: 'https://www.bsv.admin.ch/dam/fr/sd-web/GZplHByBJoFc/Internet_Masszahlenarticles_25_26_f.pdf',
     pdf: true,
   },
   'ch-na-remboursement-impot-anticipe': {
@@ -355,7 +367,7 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
   },
   'ch-na-is-faq-circulaire-45': {
     title: 'FAQ 2022 - Circulaire n° 45 AFC, impôt à la source',
-    url: 'https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf',
+    url: 'https://www.estv.admin.ch/dam/fr/sd-web/a7vG5hlZeAdW/dbst-ks-2022-1-045-d-faq-fr.pdf',
     pdf: true,
   },
   'ch-na-is-recordformat-salaires': {

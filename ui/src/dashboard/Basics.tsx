@@ -451,6 +451,30 @@ function PlainField({
       </div>
     );
   }
+  // A commune (where you work): the canton's communes, then its own choices (outside the canton).
+  if (q.type === 'commune' && q.options) {
+    const value = typeof q.value === 'string' ? q.value : '';
+    return (
+      <div class="field">
+        {title}
+        <select
+          class="select"
+          aria-labelledby={id}
+          value={value}
+          onChange={(e) => onAnswer((e.target as HTMLSelectElement).value)}
+        >
+          <option value="" disabled>
+            {t(lang, 'chooseCommune')}
+          </option>
+          {q.options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  }
   if (q.type === 'number') {
     return (
       <div class="field field-row">

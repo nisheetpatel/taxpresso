@@ -16,6 +16,7 @@ export const OWN_FILES: ReadonlySet<string> = new Set([
   'decisions.json',
   'questionnaire.json',
   'entered.json',
+  'rough.json',
   'README.txt',
 ]);
 

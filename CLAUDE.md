@@ -32,12 +32,18 @@ pnpm install                  # pnpm refuses versions published in the last 7 da
 pnpm check                    # format check, lint, typecheck, unit tests (vitest)
 pnpm build                    # ui (Vite + inline MCP Apps views), then extension (esbuild) into extension/dist
 pnpm build:mcpb               # build, then validate and pack build/taxpresso-<version>.mcpb
+pnpm build:plugin             # the Claude plugin (Claude Code, Cowork, Anthropic's directory): build/plugin/taxpresso and its zip; docs/spikes/S5.md
+pnpm check:plugin             # after build:plugin: Anthropic's pre-submission rules, checked offline
+pnpm test:offline:plugin      # after build:plugin: the offline test against the plugin's server
 pnpm check:bundle             # after build: C2 dependency allowlist and shipped-files check
 pnpm test:offline             # after build: end to end over stdio, network guard in the server process
 pnpm test:offline:sandbox     # same, inside a macOS sandbox with no network
 pnpm build:site               # website into site/dist (/en/ default, /fr/, /de/, /it/, /es/, /pt/, each with start/ and guides/); copy in site/src/content.ts
 pnpm deploy:site             # manual website deploy; normally every push to main deploys it (Vercel Git integration, vercel.json)
 node scripts/fetch-sources.mjs   # dev tool, needs network: official documents into docs/sources/*/files (kept local, never committed)
+node scripts/estv-golden.mjs     # dev tool, needs network: records the federal calculator's figures for made-up Geneva cases into test/golden/estv (--check: what changed)
+node scripts/ge-afc-golden.mjs   # dev tool, needs network: the same from the Geneva AFC's estimator into test/golden/afc (stops before its instalments step)
+node scripts/estv-cantons-golden.mjs   # dev tool, needs network: the federal calculator's commune multipliers and cases for the eleven other cantons into test/golden/estv
 ```
 
 CI (`.github/workflows/ci.yml`) runs all of the above and the offline test inside `docker --network none` against the unzipped `.mcpb`, on Node 22 and 24, plus macOS (sandbox) and Windows (guard only).

@@ -71,10 +71,11 @@ const RW = {
 const WHO: Record<string, string> = { p1: 'you', p2: 'your spouse or partner' };
 const chf = (centimes: number) => `CHF ${Math.round(centimes / 100).toLocaleString('en-US')}`;
 const ASSUMPTION_TEXT: Record<string, string> = {
-  icc_2025_scale: 'Geneva tax uses the 2025 scale; the 2026 scale is published in January 2027.',
   flat_deductions_only:
     'Health premiums, childcare and other costs not given yet are not counted, so the real saving may be a little different.',
   home_commune_rate: 'All income is taken as earned in the home commune.',
+  work_commune_split:
+    'A salary earned in another commune shares the communal part with it, by gross income: no document says which income measures the share.',
   net_from_gross: 'Net salary assumed to be 88 % of the gross; the payslip gives the real figure.',
   commune_default: 'Commune unknown: City of Geneva assumed.',
   no_income_for_some: 'No salary given for one person: counted as zero.',
@@ -128,6 +129,9 @@ function suggestionSource(ws: Workspace, slot: Slot): string {
 function questionOut(ws: Workspace, slot: Slot): QuestionOut {
   const en: RenderedQuestion = ws.render(slot, 'en');
   const fr: RenderedQuestion = ws.render(slot, 'fr');
+  // A commune question's own choices besides the communes (outside the canton), never the list.
+  const own = new Set((slot.question.options ?? []).map((o) => o.value));
+  const listed = (o: { value: string }) => en.type !== 'commune' || own.has(o.value);
   return {
     id: slot.id,
     person: slot.person,
@@ -137,14 +141,16 @@ function questionOut(ws: Workspace, slot: Slot): QuestionOut {
     ...(en.explain && fr.explain ? { explain: { en: en.explain, fr: fr.explain } } : {}),
     ...(en.learnMore ? { learnMore: en.learnMore } : {}),
     ...(en.link ? { link: en.link } : {}),
-    ...(en.options && en.type !== 'commune'
+    ...(en.options && (en.type !== 'commune' || en.options.some(listed))
       ? {
-          options: en.options.map((o, i) => ({
-            value: o.value,
-            en: o.label,
-            fr: fr.options?.[i]?.label ?? o.label,
-            notSupported: o.notSupported,
-          })),
+          options: en.options
+            .map((o, i) => ({
+              value: o.value,
+              en: o.label,
+              fr: fr.options?.[i]?.label ?? o.label,
+              notSupported: o.notSupported,
+            }))
+            .filter(listed),
         }
       : {}),
     ...(en.min !== undefined ? { min: en.min } : {}),
@@ -204,7 +210,7 @@ function questionText(q: QuestionOut, place = 'Geneva', hint = ''): string {
         : q.type === 'money'
           ? 'Answer: an amount in CHF as the user said it, e.g. 790 or "1\'250.50".'
           : q.type === 'commune'
-            ? `Answer: the name of the ${place} commune${hint}.`
+            ? `Answer: the name of the ${place} commune${hint}${(q.options ?? []).map((o) => `, or ${o.value} = ${o.en}${o.notSupported ? ' [not supported yet]' : ''}`).join('')}.`
             : q.type === 'date'
               ? `Answer: the day, YYYY-MM-DD, in ${q.minDate?.slice(0, 4) ?? 'the tax year'}; from the user's words or a document they have (an arrival attestation, a permit, a salary certificate's period), never guessed.`
               : `Answer${q.type === 'multi' ? ' (a list, [] for none)' : ''}: ${q.options

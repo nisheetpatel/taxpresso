@@ -5,6 +5,8 @@
 //
 //   node test/offline/run.mjs                         uses extension/dist (run `pnpm build` first)
 //   TAXPRESSO_EXTENSION_DIR=<unpacked .mcpb> node ...    tests another copy, e.g. an unzipped .mcpb
+//   node test/offline/run.mjs build/plugin/taxpresso   tests the Claude plugin (`pnpm build:plugin`),
+//                                                      its server started as its .mcp.json says
 //   TAXPRESSO_EXPECT_NO_NETWORK=1                        also proves the sandbox itself is offline
 
 import assert from 'node:assert/strict';
@@ -30,9 +32,34 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..', '..');
 const extDir = path.resolve(
-  process.env.TAXPRESSO_EXTENSION_DIR ?? path.join(root, 'extension', 'dist'),
+  process.argv[2] ?? process.env.TAXPRESSO_EXTENSION_DIR ?? path.join(root, 'extension', 'dist'),
 );
+/** The Claude plugin (build/plugin/taxpresso) rather than the .mcpb's folder. */
+const isPlugin = existsSync(path.join(extDir, '.claude-plugin', 'plugin.json'));
+// What Claude Code and Cowork give a plugin's server (code.claude.com/docs/en/plugins/manifest-reference).
+if (isPlugin) process.env.CLAUDE_PLUGIN_ROOT = extDir;
+/** The tools and prompt Claude can call: the .mcpb's manifest (the plugin has none; same source). */
+const manifestFile = isPlugin
+  ? path.join(root, 'extension', 'manifest.json')
+  : path.join(extDir, 'manifest.json');
 const guard = pathToFileURL(path.join(here, 'net-guard.mjs')).href;
+
+/**
+ * The server's arguments after node, with the network guard first: the .mcpb's server/index.mjs,
+ * or exactly what the plugin's .mcp.json says, ${CLAUDE_PLUGIN_ROOT} being the plugin's folder.
+ */
+function serverArgs() {
+  if (!isPlugin) return ['--import', guard, path.join(extDir, 'server', 'index.mjs')];
+  const { mcpServers } = JSON.parse(readFileSync(path.join(extDir, '.mcp.json'), 'utf8'));
+  const servers = Object.values(mcpServers);
+  assert.equal(servers.length, 1, 'the plugin starts one server');
+  assert.equal(servers[0].command, 'node', 'the plugin starts its server with node');
+  return [
+    '--import',
+    guard,
+    ...servers[0].args.map((a) => a.replaceAll('${CLAUDE_PLUGIN_ROOT}', extDir)),
+  ];
+}
 const work = mkdtempSync(path.join(os.tmpdir(), 'taxpresso-offline-'));
 const guardLog = path.join(work, 'net-guard.log');
 const vault = path.join(work, 'Taxpresso'); // deliberately not created
@@ -76,7 +103,7 @@ before(async () => {
   );
   transport = new StdioClientTransport({
     command: process.execPath,
-    args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+    args: serverArgs(),
     env: {
       ...process.env,
       TAXPRESSO_VAULT_PATH: vault,
@@ -137,7 +164,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
   test('every tool is narrow and annotated (C6), and matches the manifest', async () => {
     const { tools } = await client.listTools();
-    const manifest = JSON.parse(readFileSync(path.join(extDir, 'manifest.json'), 'utf8'));
+    const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
     // The manifest lists what Claude can call; a tool only the dashboard view calls is not in it.
     const forClaude = tools.filter((t) => t._meta?.ui?.visibility?.join() !== 'app');
     assert.deepEqual(forClaude.map((t) => t.name).sort(), manifest.tools.map((t) => t.name).sort());
@@ -166,6 +193,8 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
     const detailed = await client.callTool({ name: 'get_status', arguments: { detail: true } });
     assert.match(detailed.structuredContent.runtime.node, /^v\d+/);
+    // The build flag (extension/scripts/build-common.mjs): the plugin says so, the .mcpb as before.
+    assert.equal(detailed.structuredContent.runtime.distribution, isPlugin ? 'plugin' : undefined);
   });
 
   test('bad tool input is refused', async () => {
@@ -753,14 +782,10 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
   test('with the dashboard running, the server exits when stdin closes', async () => {
     // Raw JSON-RPC with the 2025-06-18 handshake, as current Claude Desktop builds speak it.
-    const child = spawn(
-      process.execPath,
-      ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
-      {
-        env: { ...process.env, TAXPRESSO_VAULT_PATH: vault, TAXPRESSO_NET_GUARD_LOG: guardLog },
-        stdio: ['pipe', 'pipe', 'inherit'],
-      },
-    );
+    const child = spawn(process.execPath, serverArgs(), {
+      env: { ...process.env, TAXPRESSO_VAULT_PATH: vault, TAXPRESSO_NET_GUARD_LOG: guardLog },
+      stdio: ['pipe', 'pipe', 'inherit'],
+    });
     const send = (msg) => child.stdin.write(JSON.stringify({ jsonrpc: '2.0', ...msg }) + '\n');
     const replies = new Map();
     let buf = '';
@@ -806,7 +831,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const zhVault = path.join(work, 'Zurich');
     const zhTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: zhVault,
@@ -884,7 +909,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const beVault = path.join(work, 'Bern');
     const beTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: beVault,
@@ -967,7 +992,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const blVault = path.join(work, 'Basel-Landschaft');
     const blTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: blVault,
@@ -1058,7 +1083,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const vdVault = path.join(work, 'Vaud');
     const vdTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: vdVault,
@@ -1140,7 +1165,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const bsVault = path.join(work, 'Basel-Stadt');
     const bsTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: bsVault,
@@ -1224,7 +1249,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const zgVault = path.join(work, 'Zug');
     const zgTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: zgVault,
@@ -1317,7 +1342,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const luVault = path.join(work, 'Luzern');
     const luTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: luVault,
@@ -1409,7 +1434,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const sgVault = path.join(work, 'StGallen');
     const sgTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: sgVault,
@@ -1500,7 +1525,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const frVault = path.join(work, 'Fribourg');
     const frTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: frVault,
@@ -1583,7 +1608,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const tiVault = path.join(work, 'Ticino');
     const tiTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: tiVault,
@@ -1674,7 +1699,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const sVault = path.join(work, 'Source');
     const sTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: sVault,
@@ -1696,6 +1721,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         'income_sources:p1': ['salary'],
         'income_sources:p2': ['replacement_income'],
         'employers:p1': 1,
+        'work_commune:p1': 'Carouge',
         'residence:p1': 'permit_other',
         'employer_in_switzerland:p1': true,
         'residence:p2': 'permit_other',
@@ -1773,7 +1799,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const yVault = path.join(work, 'Years');
     const yTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: yVault,
@@ -1824,6 +1850,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         moved: 'no',
         income_sources: ['salary'],
         employers: 1,
+        work_commune: 'Meyrin',
         residence: 'swiss',
         pillar3a: false,
         lpp_buyin: false,
@@ -1927,7 +1954,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const gVault = path.join(work, 'Rochat');
     const gTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: gVault,
@@ -2007,9 +2034,9 @@ describe('offline end to end', { timeout: 60_000 }, () => {
           { code: '98.12', person: 'p1', amount: 30_000_000 },
           { code: '98.12', person: 'p2', amount: 6_000_000 },
         ],
-        icc: 1_593_080,
+        icc: 1_591_890,
         ifd: 653_600,
-        total: 2_246_680,
+        total: 2_245_490,
       });
       assert.match(tax.content[0].text, /never in the total/);
       assert.match(tax.content[0].text, /rest on values that still need the user's OK/);
@@ -2036,7 +2063,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const seVault = path.join(work, folder);
     const seTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: seVault,
@@ -2137,7 +2164,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "6'000.00"]]],
       },
       {
-        icc: 874_685,
+        icc: 873_110,
         ifd: 87_930,
         b2: [/12\.01 Bénéfice net/, /12\.52 Capital propre/],
         verdict: 'not_ready',
@@ -2157,6 +2184,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['moved', 'no'],
         ['income_sources:p1', ['salary']],
         ['employers:p1', 1],
+        ['work_commune:p1', 'Vernier'],
         ['residence:p1', 'swiss'],
         ['income_sources:p2', ['self_employment']],
         ...BUSINESS('p2'),
@@ -2195,7 +2223,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         '3a-sofia-2026.pdf': ['pillar3a_attestation', 'p2', [['pillar3a.paid', "6'000.00"]]],
         'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "9'000.00"]]],
       },
-      { icc: 952_035, ifd: 88_100, b2: [/12\.01 Bénéfice net/], verdict: 'not_ready' },
+      { icc: 948_870, ifd: 88_100, b2: [/12\.01 Bénéfice net/], verdict: 'not_ready' },
     );
   });
 
@@ -2211,6 +2239,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['moved', 'no'],
         ['income_sources:p1', ['salary', 'self_employment']],
         ['employers:p1', 1],
+        ['work_commune:p1', 'Onex'],
         ['residence:p1', 'swiss'],
         ...BUSINESS('p1'),
         ['business_losses:p1', true],
@@ -2248,7 +2277,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "4'000.00"]]],
       },
       {
-        icc: 127_310,
+        icc: 126_315,
         ifd: 10_395,
         b2: [/57\.10 Perte commerciale/, /57\.20 Pertes non compensées/, /57\.00 Perte nette/],
         verdict: 'not_ready',
@@ -2265,7 +2294,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const abVault = path.join(work, folder);
       const abTransport = new StdioClientTransport({
         command: process.execPath,
-        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        args: serverArgs(),
         env: {
           ...process.env,
           TAXPRESSO_VAULT_PATH: abVault,
@@ -2321,6 +2350,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       [
         ...common,
         ['commune', 'Carouge'],
+        ['work_commune:p1', 'Carouge'],
         ['residence:p1', 'swiss'],
         ['abroad_property', 'let'],
         ['abroad_property_owner', 'p1'],
@@ -2369,7 +2399,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
     try {
       const tax = await varela.call('compute_tax');
-      assert.equal(tax.structuredContent.icc.total, 1_294_690);
+      assert.equal(tax.structuredContent.icc.total, 1_292_820);
       assert.equal(tax.structuredContent.ifd.tax, 179_430);
       assert.deepEqual(tax.structuredContent.unsupported, []);
       assert.deepEqual(tax.structuredContent.notSupported, []);
@@ -2392,6 +2422,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       [
         ...common,
         ['commune', 'Meyrin'],
+        ['work_commune:p1', 'Meyrin'],
         ['residence:p1', 'permit_c'],
         ['abroad_property', 'own_use'],
         ['abroad_property_owner', 'p1'],
@@ -2456,7 +2487,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const pyVault = path.join(work, folder);
       const pyTransport = new StdioClientTransport({
         command: process.execPath,
-        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        args: serverArgs(),
         env: {
           ...process.env,
           TAXPRESSO_VAULT_PATH: pyVault,
@@ -2507,6 +2538,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       [moved === 'from_abroad' ? 'arrival_date:p1' : 'departure_date:p1', day],
       ['income_sources:p1', ['salary']],
       ['employers:p1', 1],
+      ['work_commune:p1', commune],
       ['residence:p1', 'swiss'],
       ['pillar3a:p1', true],
       ['lpp_buyin:p1', false],
@@ -2553,7 +2585,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const tax = await brandt.call('compute_tax');
       // Without the transport to work (walk): ICC 50,222 at the rate of 69,986; IFD 53,270.
       assert.deepEqual(tax.structuredContent.unsupported, []);
-      assert.equal(tax.structuredContent.icc.taxableIncome, 5_022_200);
+      assert.equal(tax.structuredContent.icc.taxableIncome, 5_021_700);
       assert.match(tax.content[0].text, /A year of arrival from abroad/);
       const pg1 = await brandt.call('get_form_values', { section: 'PG1' });
       assert.match(pg1.content[0].text, /Date d’arrivée[\s\S]*01\.04\.2026/);
@@ -2608,7 +2640,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const prVault = path.join(work, folder);
       const prTransport = new StdioClientTransport({
         command: process.execPath,
-        args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+        args: serverArgs(),
         env: {
           ...process.env,
           TAXPRESSO_VAULT_PATH: prVault,
@@ -2661,9 +2693,10 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['bank.interest_gross', '0.00'],
       ],
     ];
-    const worker = (p) => [
+    const worker = (p, commune) => [
       [`income_sources:${p}`, ['salary']],
       [`employers:${p}`, 1],
+      [`work_commune:${p}`, commune],
       ...(p === 'p1' ? [[`residence:${p}`, 'swiss']] : []),
       [`pillar3a:${p}`, false],
       [`lpp_buyin:${p}`, false],
@@ -2685,8 +2718,8 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['children', 0],
         ['commune', 'Lancy'],
         ['moved', 'no'],
-        ...worker('p1'),
-        ...worker('p2'),
+        ...worker('p1', 'Lancy'),
+        ...worker('p2', 'Lancy'),
         ...common,
         ['swiss_property', 'own_flat'],
         ['swiss_property_owner', 'both'],
@@ -2721,7 +2754,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
     try {
       const tax = await chevalley.call('compute_tax');
-      assert.equal(tax.structuredContent.icc.total, 2_760_970, tax.content[0].text);
+      assert.equal(tax.structuredContent.icc.total, 2_756_590, tax.content[0].text);
       assert.equal(tax.structuredContent.ifd.tax, 716_100);
       assert.deepEqual(tax.structuredContent.unsupported, []);
       assert.deepEqual(tax.structuredContent.notSupported, []);
@@ -2749,7 +2782,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         ['children', 0],
         ['commune', 'Carouge'],
         ['moved', 'no'],
-        ...worker('p1'),
+        ...worker('p1', 'Carouge'),
         ...common,
         ['swiss_property', 'let'],
         ['swiss_property_owner', 'p1'],
@@ -2787,7 +2820,16 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
     try {
       const tax = await sandoz.call('compute_tax');
-      assert.equal(tax.structuredContent.icc.total, 1_635_610, tax.content[0].text);
+      // 2026, by hand with the 2026 values (ge-2026-rcepf). Income: 92'000 - 5'796 - 5'520 =
+      // 80'684; 3 % of it is over the maximum, 1'817 (art. 6 al. 2); rents 26'400 - 2'150 costs;
+      // interest 4'940; premiums 5'400: 92'777. Scale (art. 17): 7'015.15 at 77'730 + 15'047 x
+      // 14.2 % (2'136.65) = 9'151.80; + 47.5 % (4'347.10) - 12 % of 13'498.90 (1'619.85) + 1 %
+      // (91.50) = 11'970.55. Wealth: 40'000 + 640'000 - 380'000 = 300'000, less 87'872 (art. 16):
+      // 212'128; 176.90 + 93'406 x 1.91 per mille (178.40) = 355.30 (art. 18); + 47.5 % (168.75)
+      // + 1 % (3.55) + the supplementary tax 93'406 x 0.0956 per mille (8.95) = 536.55. Carouge,
+      // 40 centimes, 27 % privileged: income 988.40 + 2'672.30, wealth 38.40 + 103.75 = 3'802.85.
+      // With the taxe personnelle of 25: 16'334.95.
+      assert.equal(tax.structuredContent.icc.total, 1_633_495, tax.content[0].text);
       assert.equal(tax.structuredContent.ifd.tax, 236_755);
       assert.deepEqual(tax.structuredContent.unsupported, []);
       const d2 = await sandoz.call('get_form_values', { section: 'D2' });
@@ -2860,7 +2902,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     const agVault = path.join(work, 'Aargau');
     const agTransport = new StdioClientTransport({
       command: process.execPath,
-      args: ['--import', guard, path.join(extDir, 'server', 'index.mjs')],
+      args: serverArgs(),
       env: {
         ...process.env,
         TAXPRESSO_VAULT_PATH: agVault,
@@ -2942,6 +2984,98 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       assert.match(pdf.content[0].text, /reads Geneva declarations only/);
     } finally {
       await ag.close();
+    }
+  });
+
+  test('a filing kit, the Thônex retirees (2025), to the centime, offline', async () => {
+    // test/fixtures/households/fictif-thonex: invented documents (two Swissdec barcodes, an
+    // eCH-0196 statement, letters Claude reads), the household's answers, and the tax worked out
+    // by hand from the official documents (expected.json). Its own folder and server process,
+    // with the same guard; the user confirms Claude's readings in the chat.
+    const kit = path.join(root, 'test', 'fixtures', 'households', 'fictif-thonex');
+    const answers = JSON.parse(readFileSync(path.join(kit, 'household.json'), 'utf8')).answers;
+    const readings = JSON.parse(readFileSync(path.join(kit, 'extracted.json'), 'utf8')).years[
+      '2025'
+    ];
+    const expected = JSON.parse(readFileSync(path.join(kit, 'expected.json'), 'utf8')).years[
+      '2025'
+    ];
+    const kVault = path.join(work, 'Kit-Thonex');
+    const kTransport = new StdioClientTransport({
+      command: process.execPath,
+      args: serverArgs(),
+      env: {
+        ...process.env,
+        TAXPRESSO_VAULT_PATH: kVault,
+        TAXPRESSO_UI_LANGUAGE: 'fr',
+        TAXPRESSO_NET_GUARD_LOG: guardLog,
+      },
+      stderr: 'pipe',
+    });
+    kTransport.stderr?.on('data', (d) => (stderr += d));
+    const k = new Client({ name: 'taxpresso-offline-test-kit', version: '0.0.0' });
+    await k.connect(kTransport);
+    const call = async (name, args = {}) => {
+      const res = await k.callTool({ name, arguments: args });
+      assert.ok(!res.isError, `${name}: ${res.content?.[0]?.text}`);
+      return res;
+    };
+    try {
+      await call('open_tax_year', { year: 2025 });
+      mkdirSync(path.join(kVault, '2025'), { recursive: true });
+      for (const name of readdirSync(path.join(kit, 'documents'))) {
+        writeFileSync(
+          path.join(kVault, '2025', name),
+          readFileSync(path.join(kit, 'documents', name)),
+        );
+      }
+      await call('ingest_vault');
+      for (let i = 0; i < 60; i++) {
+        const q = (await call('next_questions')).structuredContent.questions[0];
+        if (!q) break;
+        assert.ok(q.id in answers, `an unexpected question: ${q.id}`);
+        await call('answer_question', { id: q.id, value: answers[q.id] });
+      }
+      const listed = (await call('list_documents')).structuredContent.documents;
+      for (const r of readings) {
+        const doc = listed.find((d) => d.filename === r.file);
+        assert.ok(doc, r.file);
+        if (r.read === 'barcode') {
+          if (r.owner) await call('set_document_owner', { id: doc.id, person: r.owner });
+          continue;
+        }
+        await call('propose_extraction', {
+          id: doc.id,
+          document: { kind: r.kind, taxYear: r.taxYear, person: r.person },
+          values: r.values,
+        });
+        await call('set_fact', { instance: doc.id, confirm: true });
+      }
+      const tax = (await call('compute_tax')).structuredContent;
+      assert.deepEqual(tax.unsupported, []);
+      assert.equal(tax.needsOk, 0);
+      assert.deepEqual(
+        [
+          tax.icc.taxableIncome,
+          tax.icc.rateIncome,
+          tax.icc.taxableWealth,
+          tax.icc.total,
+          tax.ifd.taxableIncome,
+          tax.ifd.tax,
+          tax.total,
+        ],
+        [
+          expected.icc.taxableIncome.amount,
+          expected.icc.rateIncome.amount,
+          expected.icc.taxableWealth.amount,
+          expected.icc.total.amount,
+          expected.ifd.taxableIncome.amount,
+          expected.ifd.tax.amount,
+          expected.total.amount,
+        ],
+      );
+    } finally {
+      await k.close();
     }
   });
 

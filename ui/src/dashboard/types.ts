@@ -77,7 +77,15 @@ export interface DocumentView {
   person?: string;
   /** Read from its barcode (verified values); "pending" until the user says whose it is. */
   barcode?: 'read' | 'pending';
+  /** What it turned out to be, from the extension (extension/src/pages.ts, documentStatus). */
+  status: DocStatus;
 }
+
+/**
+ * What a file turned out to be: whose a barcode certificate is, still to say; not identified yet;
+ * values that need your OK; to read; read on its own from its barcode; or done.
+ */
+export type DocStatus = 'whose' | 'unknown' | 'confirm' | 'read' | 'barcode' | 'done';
 
 export interface Activity {
   at: string;

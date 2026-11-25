@@ -447,6 +447,9 @@ describe('a bank e-tax statement read from its barcode', () => {
     const e = withStatementDetail();
     expect(e.lines.map((l) => [l.section, l.id])).toEqual([['statements', 'd_stmt']]);
     expect(e.totals).toMatchObject({ taxableValue: 50_000_00, subjectIa: 1000_00 });
+    // No account with interest on it: no interest on savings capital.
+    expect(e.totals.savingsInterest).toBe(0);
+    expect(e.items.some((i) => i.rubric === 'savings')).toBe(false);
     expect(e.other).toEqual([
       expect.objectContaining({
         rubric: 'debts',
@@ -458,5 +461,103 @@ describe('a bank e-tax statement read from its barcode', () => {
         complete: true,
       }),
     ]);
+  });
+
+  // Every bank interest is interest on savings capital (ge-2025-guide-declaration-pp p. 41; p. 28:
+  // "les rendements de comptes d'épargne ou de dépôt ... (voir ... Relevés fiscaux)"), and F4 gives
+  // each statement its own column for it (ge-2025-declaration-specimen p. 24): the interest of the
+  // accounts a statement lists, both columns (subject or not to the withholding tax), is that
+  // column, and it goes to 56.30 (F1, p. 21) within 52.15 and 52.00.
+  it('puts the interest of the accounts it lists in its column of interest on savings capital', () => {
+    const ledger = new Ledger(2025, KEYS_2026);
+    const put = (key: string, instance: string, value: Value) =>
+      ledger.append({
+        key,
+        person: 'household',
+        instance,
+        value,
+        status: 'verified',
+        source: { method: 'barcode', docId: 'd_stmt' },
+      });
+    put('tax_statement.taxable_value', 'd_stmt', 60_000_00);
+    put('tax_statement.income_subject_ia', 'd_stmt', 650_00);
+    put('tax_statement.income_not_subject_ia', 'd_stmt', 10_00);
+    put('tax_statement.withholding_swiss', 'd_stmt', 227_50);
+    put('accounts.name', 'CH0000000000000000001', 'Compte épargne');
+    put('accounts.income_a_chf', 'CH0000000000000000001', 250_00);
+    put('accounts.name', 'CH0000000000000000002', 'Compte en euros');
+    put('accounts.income_b_chf', 'CH0000000000000000002', 10_00);
+    // A security's income is not interest on an account (p. 43 names only bonds and bond funds).
+    put('securities.name', 'd_stmt.CHTXPRS00055', 'Ristretto Fonds');
+    put('securities.income_gross_chf', 'd_stmt.CHTXPRS00055', 400_00);
+    const e = etatDesTitres({
+      taxYear: 2025,
+      people: ['p1'],
+      facts: ledger.view(),
+      documents: [doc('d_stmt', 'ech0196_statement', 'p1', 'Banque Exemple')],
+    });
+    expect(line(e, 'd_stmt').columns).toEqual({
+      subjectIa: 650_00,
+      notSubjectIa: 10_00,
+      taxableValue: 60_000_00,
+      fees: 0,
+      savingsInterest: 260_00,
+    });
+    expect(e.subtotals.statements.savingsInterest).toBe(260_00);
+    expect(item(e, '56.30', 'deduction', 'p1')).toMatchObject({
+      rubric: 'savings',
+      centimes: 260_00,
+      taxes: ['icc', 'ifd'],
+      estimate: false,
+      complete: true,
+    });
+    // Another statement's accounts are not this one's.
+    const other = etatDesTitres({
+      taxYear: 2025,
+      people: ['p1'],
+      facts: ledger.view(),
+      documents: [
+        doc('d_stmt', 'ech0196_statement', 'p1', 'Banque Exemple'),
+        doc('d_other', 'ech0196_statement', 'p1', 'Autre Banque'),
+      ],
+    });
+    expect(line(other, 'd_stmt').columns.savingsInterest).toBe(260_00);
+  });
+
+  it('takes the interest read on a statement without a barcode, which wins over its accounts', () => {
+    const ledger = new Ledger(2026, KEYS_2026);
+    const put = (key: string, instance: string, value: Value, method: 'claude' | 'barcode') =>
+      ledger.append({
+        key,
+        person: 'household',
+        instance,
+        value,
+        status: method === 'claude' ? 'extracted' : 'verified',
+        source:
+          method === 'claude' ? { method, docId: instance, page: 2 } : { method, docId: 'd_stmt' },
+      });
+    put('tax_statement.taxable_value', 'd_stmt', 30_000_00, 'claude');
+    put('tax_statement.income_subject_ia', 'd_stmt', 300_00, 'claude');
+    put('tax_statement.savings_interest', 'd_stmt', 300_00, 'claude');
+    const e = etatDesTitres({
+      taxYear: 2026,
+      people: ['p1'],
+      facts: ledger.view(),
+      documents: [doc('d_stmt', 'ech0196_statement', 'p1', 'Banque Exemple')],
+    });
+    expect(line(e, 'd_stmt')).toMatchObject({
+      columns: { savingsInterest: 300_00 },
+      state: 'needs_ok',
+    });
+    expect(item(e, '56.30', 'deduction', 'p1')).toMatchObject({ centimes: 300_00, estimate: true });
+    // With the accounts too (a statement read both ways), the figure read on it counts, once.
+    put('accounts.income_a_chf', 'CH0000000000000000001', 280_00, 'barcode');
+    const both = etatDesTitres({
+      taxYear: 2026,
+      people: ['p1'],
+      facts: ledger.view(),
+      documents: [doc('d_stmt', 'ech0196_statement', 'p1', 'Banque Exemple')],
+    });
+    expect(line(both, 'd_stmt').columns.savingsInterest).toBe(300_00);
   });
 });

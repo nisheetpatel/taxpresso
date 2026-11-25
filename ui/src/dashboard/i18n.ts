@@ -54,11 +54,11 @@ export const messages = {
     planCon3: 'Only payments made in {year} count: leave a few days for the transfer.',
     planNew: 'New: from 2026 you can make up missed years since 2025, under conditions.',
     planSources: 'Sources',
-    'assume.icc_2025_scale':
-      'Geneva tax uses the 2025 scale: the 2026 one is published in January 2027.',
     'assume.flat_deductions_only':
       'Health premiums, childcare and other costs you haven’t given yet are not counted, so your real saving may be a little different.',
     'assume.home_commune_rate': 'All your income is taken as earned in your commune.',
+    'assume.work_commune_split':
+      'Your salary earned in another commune shares the communal part with it, by gross income: no document says which income measures the share.',
     'assume.net_from_gross':
       'We assume about 88 % of your gross salary is left after social insurance and your pension fund. Your payslip has the real figure.',
     'assume.commune_default': 'Commune not answered yet: City of Geneva assumed.',
@@ -165,10 +165,10 @@ export const messages = {
     planCon3: `Seuls les versements faits en {year} comptent${NB}: prévoyez quelques jours pour le virement.`,
     planNew: `Nouveau${NB}: dès 2026, vous pouvez rattraper les années manquées depuis 2025, sous conditions.`,
     planSources: 'Sources',
-    'assume.icc_2025_scale': `L’impôt genevois utilise le barème 2025${NB}: celui de 2026 paraît en janvier 2027.`,
     'assume.flat_deductions_only':
       'Les primes maladie, les frais de garde et les autres frais pas encore indiqués ne sont pas comptés, donc l’économie réelle peut être un peu différente.',
     'assume.home_commune_rate': 'Tous vos revenus sont comptés comme gagnés dans votre commune.',
+    'assume.work_commune_split': `Votre salaire gagné dans une autre commune partage avec elle la part communale, selon le revenu brut${NB}: aucun document ne dit quel revenu mesure la part.`,
     'assume.net_from_gross':
       'Nous supposons qu’environ 88 % de votre salaire brut reste après les assurances sociales et la caisse de pension. Votre fiche de salaire indique le vrai chiffre.',
     'assume.commune_default': `Commune pas encore indiquée${NB}: Ville de Genève par défaut.`,
@@ -265,11 +265,11 @@ export const messages = {
       'Nur Einzahlungen im Jahr {year} zählen: Rechne ein paar Tage für die Überweisung ein.',
     planNew: 'Neu: Ab 2026 kannst du verpasste Jahre seit 2025 nachholen, unter Bedingungen.',
     planSources: 'Quellen',
-    'assume.icc_2025_scale':
-      'Die Genfer Steuer verwendet den Tarif 2025: Der Tarif 2026 erscheint im Januar 2027.',
     'assume.flat_deductions_only':
       'Krankenkassenprämien, Kinderbetreuung und andere Kosten, die du noch nicht angegeben hast, sind nicht gezählt. Deine tatsächliche Ersparnis kann etwas anders sein.',
     'assume.home_commune_rate': 'Dein ganzes Einkommen gilt als in deiner Gemeinde verdient.',
+    'assume.work_commune_split':
+      'Dein in einer anderen Gemeinde verdienter Lohn teilt den Gemeindeanteil mit ihr, nach dem Bruttoeinkommen: Kein Dokument sagt, welches Einkommen den Anteil bemisst.',
     'assume.net_from_gross':
       'Wir nehmen an, dass etwa 88 % deines Bruttolohns nach Sozialversicherungen und Pensionskasse bleiben. Deine Lohnabrechnung zeigt die genaue Zahl.',
     'assume.commune_default': 'Gemeinde noch nicht angegeben: Stadt Genf angenommen.',
@@ -378,11 +378,11 @@ export const messages = {
     planNew:
       'Novità: dal 2026 puoi recuperare i versamenti mancati dal 2025 in poi, a certe condizioni.',
     planSources: 'Fonti',
-    'assume.icc_2025_scale':
-      'L’imposta di Ginevra usa la tariffa 2025: quella del 2026 viene pubblicata a gennaio 2027.',
     'assume.flat_deductions_only':
       'I premi dell’assicurazione malattia, la custodia dei figli e le altre spese che non hai ancora indicato non vengono conteggiati, quindi il tuo risparmio reale può essere un po’ diverso.',
     'assume.home_commune_rate': 'Tutto il tuo reddito è considerato guadagnato nel tuo Comune.',
+    'assume.work_commune_split':
+      'Il tuo salario guadagnato in un altro Comune divide con esso la parte comunale, secondo il reddito lordo: nessun documento dice quale reddito misura la parte.',
     'assume.net_from_gross':
       'Supponiamo che circa l’88 % del tuo salario lordo resti dopo le assicurazioni sociali e la cassa pensione. La tua busta paga mostra la cifra esatta.',
     'assume.commune_default': 'Comune non ancora indicato: consideriamo la Città di Ginevra.',

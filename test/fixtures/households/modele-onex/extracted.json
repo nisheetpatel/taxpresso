@@ -1,0 +1,158 @@
+{
+  "kit": "modele-onex",
+  "note": "What Claude would propose with propose_extraction for each document without a barcode, per tax year (the 2026 documents are written by the end-to-end test with make.mjs). Money as printed on the document.",
+  "years": {
+    "2025": [
+      {
+        "file": "01-comptes-modele-conseil-informatique-2025.pdf",
+        "kind": "business_accounts",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2025,
+        "values": [
+          { "key": "business.name", "value": "Modèle Conseil Informatique", "page": 1 },
+          { "key": "business.period_from", "value": "01.01.2025", "page": 1 },
+          { "key": "business.period_to", "value": "31.12.2025", "page": 1 },
+          { "key": "business.turnover", "value": "132'000.00", "page": 1 },
+          { "key": "business.costs_other", "value": "19'800.00", "page": 1 },
+          { "key": "business.depreciation", "value": "2'200.00", "page": 1 },
+          { "key": "business.current_assets", "value": "21'500.00", "page": 1 },
+          { "key": "business.fixed_assets", "value": "4'500.00", "page": 1 },
+          { "key": "business.liabilities", "value": "3'000.00", "page": 1 }
+        ]
+      },
+      {
+        "file": "02-cotisations-avs-nadia-2025.pdf",
+        "kind": "avs_contributions",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2025,
+        "values": [{ "key": "avs.contributions_year", "value": "10'780.00", "page": 1 }]
+      },
+      {
+        "file": "03-attestation-3a-nadia-2025.pdf",
+        "kind": "pillar3a_attestation",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2025,
+        "values": [{ "key": "pillar3a.paid", "value": "15'000.00", "page": 1 }]
+      },
+      {
+        "file": "04-primes-assurance-maladie-2025.pdf",
+        "kind": "health_premiums",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2025,
+        "values": [{ "key": "health.premiums", "value": "5'905.00", "page": 1 }]
+      },
+      {
+        "file": "05-attestation-bancaire-banque-exemple-sa-2025.pdf",
+        "kind": "bank_attestation",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2025,
+        "values": [
+          { "key": "bank.account_number", "value": "CH0000000000000105001", "page": 1 },
+          { "key": "bank.currency", "value": "CHF", "page": 1 },
+          { "key": "bank.balance", "value": "8'400.00", "page": 1 },
+          { "key": "bank.interest_gross", "value": "0.00", "page": 1 },
+          { "key": "bank.withholding_swiss", "value": "0.00", "page": 1 }
+        ]
+      },
+      {
+        "file": "06-interactive-brokers-modele-2025.xml",
+        "kind": "broker_export",
+        "read": "export",
+        "note": "Read as a broker export by Taxpresso. The user confirms its values and gives each security’s official value from the ESTV price list (set_holding).",
+        "official": [
+          {
+            "security": "CHTXPRS01065",
+            "officialValue": "10'740.00",
+            "from": "Liste des cours AFC 2025 : CHF 89.50 x 120"
+          },
+          {
+            "security": "CHTXPRS01073",
+            "officialValue": "20'480.00",
+            "from": "Liste des cours AFC 2025 : CHF 512.00 x 40"
+          }
+        ]
+      }
+    ],
+    "2026": [
+      {
+        "file": "01-comptes-modele-conseil-informatique-2026.pdf",
+        "kind": "business_accounts",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2026,
+        "values": [
+          { "key": "business.name", "value": "Modèle Conseil Informatique", "page": 1 },
+          { "key": "business.period_from", "value": "01.01.2026", "page": 1 },
+          { "key": "business.period_to", "value": "31.12.2026", "page": 1 },
+          { "key": "business.turnover", "value": "138'000.00", "page": 1 },
+          { "key": "business.costs_other", "value": "20'400.00", "page": 1 },
+          { "key": "business.depreciation", "value": "2'100.00", "page": 1 },
+          { "key": "business.current_assets", "value": "24'800.00", "page": 1 },
+          { "key": "business.fixed_assets", "value": "3'800.00", "page": 1 },
+          { "key": "business.liabilities", "value": "2'600.00", "page": 1 }
+        ]
+      },
+      {
+        "file": "02-cotisations-avs-nadia-2026.pdf",
+        "kind": "avs_contributions",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2026,
+        "values": [{ "key": "avs.contributions_year", "value": "11'320.00", "page": 1 }]
+      },
+      {
+        "file": "03-attestation-3a-nadia-2026.pdf",
+        "kind": "pillar3a_attestation",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2026,
+        "values": [{ "key": "pillar3a.paid", "value": "16'000.00", "page": 1 }]
+      },
+      {
+        "file": "04-primes-assurance-maladie-2026.pdf",
+        "kind": "health_premiums",
+        "read": "claude",
+        "person": "household",
+        "taxYear": 2026,
+        "values": [{ "key": "health.premiums", "value": "6'569.00", "page": 1 }]
+      },
+      {
+        "file": "05-attestation-bancaire-banque-exemple-sa-2026.pdf",
+        "kind": "bank_attestation",
+        "read": "claude",
+        "person": "p1",
+        "taxYear": 2026,
+        "values": [
+          { "key": "bank.account_number", "value": "CH0000000000000105001", "page": 1 },
+          { "key": "bank.currency", "value": "CHF", "page": 1 },
+          { "key": "bank.balance", "value": "9'100.00", "page": 1 },
+          { "key": "bank.interest_gross", "value": "0.00", "page": 1 },
+          { "key": "bank.withholding_swiss", "value": "0.00", "page": 1 }
+        ]
+      },
+      {
+        "file": "06-interactive-brokers-modele-2026.xml",
+        "kind": "broker_export",
+        "read": "export",
+        "note": "Read as a broker export by Taxpresso. The user confirms its values and gives each security’s official value from the ESTV price list (set_holding).",
+        "official": [
+          {
+            "security": "CHTXPRS01065",
+            "officialValue": "11'040.00",
+            "from": "Liste des cours AFC 2026 : CHF 92.00 x 120"
+          },
+          {
+            "security": "CHTXPRS01073",
+            "officialValue": "26'000.00",
+            "from": "Liste des cours AFC 2026 : CHF 520.00 x 50"
+          }
+        ]
+      }
+    ]
+  }
+}

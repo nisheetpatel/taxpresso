@@ -1,0 +1,521 @@
+{
+  "kit": "essai-carouge",
+  "household": "Sophie Essai, single, salaried, Carouge",
+  "note": "Worked out by hand from the official documents (test/fixtures/households/ground-truth.mjs, which imports nothing from Taxpresso). Money in centimes. Each figure gives how it was obtained and its source: the manifest id of the document in docs/sources and the page or article.",
+  "years": {
+    "2025": {
+      "taxYear": 2025,
+      "provisional": false,
+      "commune": "Carouge",
+      "icc": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 8640000,
+            "how": "Gross salary, box 8 of the salary certificate: 86'400.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -596200,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 5'962.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -513800,
+            "how": "Pension fund contributions, box 10.1: 5'138.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 18000,
+            "how": "Banque Exemple SA, e-tax statement: gross income subject to the withholding tax 180.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "31.50",
+            "person": "A",
+            "amount": -181200,
+            "how": "Flat professional costs: 3 % of 75'300.00 (11.00 - 31.10 - 31.12), between 640 and 1'812: 1'812.00; higher than the actual costs (travel 500.00, no meals: the trip is under 2 hours a day).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 19 (31.50); ge-2025-guide-declaration-pp p. 22 (example 1)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -628600,
+            "how": "Health insurance premiums paid (basic and supplementary) 6'286.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          }
+        ],
+        "grossIncome": {
+          "amount": 8658000,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 6012400,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 6012400,
+          "how": "Net income 60'124.00 less the family charges 0.00: 60'124.00 (99.00).",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "none",
+        "rateIncome": {
+          "amount": 6012400,
+          "how": "No splitting: the taxable income itself.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 470000,
+          "how": "The scale at 60'124.00: the total of the step below plus the rest at the step's rate, to 5 centimes (example 2): 4'700.00.",
+          "source": "ge-2025-guide-declaration-pp p. 47; ge-2025-icc-tariff-pdf p. 2; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 614760,
+          "how": "Base 4'700.00 + 47.5 % 2'232.50 - 12 % of 6'932.50 831.90 + 1 % home care 47.00 = 6'147.60 (each exact).",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalIncome": {
+          "amount": 188000,
+          "how": "40 centimes of Carouge on the base 4'700.00: 1'880.00 (all income earned in Carouge, so no share for another commune).",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA); ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 3606000,
+            "how": "Banque Exemple SA, e-tax statement (relevé fiscal, F4): taxable value on 31 December 36'060.00.",
+            "source": "ge-2025-guide-declaration-pp p. 43"
+          }
+        ],
+        "grossWealth": {
+          "amount": 3606000,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 3606000,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -3606000,
+          "how": "Single person, at most the net wealth: 36'060.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 0,
+          "how": "Net wealth 36'060.00 less 36'060.00: 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+        },
+        "wealthBase": {
+          "amount": 0,
+          "how": "The base wealth scale at 0.00: 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 49; ge-2025-icc-tariff-pdf p. 5"
+        },
+        "wealthSupplementary": {
+          "amount": 0,
+          "how": "The supplementary scale at 0.00: 0.00, no centimes on it.",
+          "source": "ge-2025-guide-declaration-pp p. 50; ge-2025-icc-tariff-pdf p. 5; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 0,
+          "how": "Base 0.00 + 47.5 % 0.00 + 1 % 0.00 + supplementary 0.00 = 0.00.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+        },
+        "communalWealth": {
+          "amount": 0,
+          "how": "40 centimes on 0.00: 0.00.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "communal": {
+          "amount": 188000,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2025-communal-centimes-pdf (colonne 2025, CA)"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 805260,
+          "how": "Cantonal income 6'147.60 + cantonal wealth 0.00 + communal 1'880.00 + taxe personnelle 25.00 = 8'052.60.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        },
+        "withholdingTaxCredit": {
+          "amount": 6300,
+          "how": "35 % of the income subject to the withholding tax, to 5 centimes: 63.00 (an imputation on the bordereau, not part of the tax).",
+          "source": "ge-2025-guide-declaration-pp p. 39"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 8640000,
+            "how": "Gross salary, box 8 of the salary certificate: 86'400.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -596200,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 5'962.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -513800,
+            "how": "Pension fund contributions, box 10.1: 5'138.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 18000,
+            "how": "Banque Exemple SA, e-tax statement: gross income subject to the withholding tax 180.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "31.71",
+            "person": "A",
+            "amount": -50000,
+            "how": "Travel by public transport, the yearly pass: 500.00 (under the maximum).",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 6 (frais de déplacement); ge-2025-guide-declaration-pp p. 20 and 21 (31.71)"
+          },
+          {
+            "code": "31.20",
+            "person": "A",
+            "amount": -225900,
+            "how": "Other professional costs, flat: 3 % of the net salary 75'300.00, between 2'000 and 4'000: 2'259.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 6 (autres frais professionnels); ge-2025-guide-declaration-pp p. 19 (31.20)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 18 (31.40); ch-2025-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -180000,
+            "how": "Insurance premiums and savings interest 6'286.00, at most 1'800.00 (single, paying into a pension fund or pillar 3a): 1'800.00.",
+            "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2025-ifd-frais-professionnels-progression p. 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          }
+        ],
+        "netIncome": {
+          "amount": 6366300,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 6366300,
+          "how": "Net income 63'663.00 less the social deductions 0.00: 63'663.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2025-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 6360000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 63'600.00.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD); ch-2025-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "single",
+        "scaleTax": {
+          "amount": 77832,
+          "how": "The single scale at 63'600.00: 778.32.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 0,
+          "how": "No child.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 77830,
+          "how": "778.32 less 0.00, rounded down to 5 centimes: 778.30.",
+          "source": "ch-2025-ifd-frais-professionnels-progression p. 3 (Barèmes 2025, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 883090, "how": "ICC 8'052.60 + IFD 778.30.", "source": "" }
+    },
+    "2026": {
+      "taxYear": 2026,
+      "provisional": true,
+      "commune": "Carouge",
+      "icc": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 8820000,
+            "how": "Gross salary, box 8 of the salary certificate: 88'200.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -608600,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 6'086.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -531400,
+            "how": "Pension fund contributions, box 10.1: 5'314.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 22000,
+            "how": "Banque Exemple SA, e-tax statement: gross income subject to the withholding tax 220.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "31.50",
+            "person": "A",
+            "amount": -181700,
+            "how": "Flat professional costs: 3 % of 76'800.00 (11.00 - 31.10 - 31.12), between 640 and 1'812: 1'817.00; higher than the actual costs (travel 500.00, no meals: the trip is under 2 hours a day).",
+            "source": "ge-2026-rcepf art. 6 al. 2; ge-na-law-lipp art. 29 al. 2; ge-2025-guide-declaration-pp p. 22 (example 1)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-na-law-lipp art. 31 let. c (within the limits of federal law); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.21",
+            "person": "household",
+            "amount": -775400,
+            "how": "Health insurance premiums paid (basic and supplementary) 7'754.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
+          }
+        ],
+        "grossIncome": {
+          "amount": 8842000,
+          "how": "Total of the gross income lines (91.00).",
+          "source": "ge-2025-guide-declaration-pp p. 13"
+        },
+        "netIncome": {
+          "amount": 6019100,
+          "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
+          "source": "ge-2025-guide-declaration-pp p. 13 to 15"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 6019100,
+          "how": "Net income 60'191.00 less the family charges 0.00: 60'191.00 (99.00).",
+          "source": "ge-2025-guide-declaration-pp p. 15"
+        },
+        "splitting": "none",
+        "rateIncome": {
+          "amount": 6019100,
+          "how": "No splitting: the taxable income itself.",
+          "source": "ge-na-law-lipp art. 41 al. 2"
+        },
+        "incomeBase": {
+          "amount": 470000,
+          "how": "The scale at 60'191.00: the total of the step below plus the rest at the step's rate, to 5 centimes (example 2): 4'700.00.",
+          "source": "ge-2026-rcepf art. 17; ge-2025-icc-tariff-pdf p. 3"
+        },
+        "cantonalIncome": {
+          "amount": 614760,
+          "how": "Base 4'700.00 + 47.5 % 2'232.50 - 12 % of 6'932.50 831.90 + 1 % home care 47.00 = 6'147.60 (each exact).",
+          "source": "ge-na-law-lcacant art. 2 al. 1"
+        },
+        "communalIncome": {
+          "amount": 188000,
+          "how": "40 centimes of Carouge on the base 4'700.00: 1'880.00 (all income earned in Carouge, so no share for another commune).",
+          "source": "ge-2026-communal-centimes-arca; ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
+        },
+        "wealthLines": [
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 4272000,
+            "how": "Banque Exemple SA, e-tax statement (relevé fiscal, F4): taxable value on 31 December 42'720.00.",
+            "source": "ge-2025-guide-declaration-pp p. 43"
+          }
+        ],
+        "grossWealth": {
+          "amount": 4272000,
+          "how": "Total gross wealth.",
+          "source": "ge-2025-guide-declaration-pp p. 16"
+        },
+        "netWealth": {
+          "amount": 4272000,
+          "how": "Gross wealth less debts.",
+          "source": "ge-2025-guide-declaration-pp p. 37"
+        },
+        "wealthSocialDeduction": {
+          "amount": -4272000,
+          "how": "Single person, at most the net wealth: 42'720.00.",
+          "source": "ge-2026-rcepf art. 16 al. 1"
+        },
+        "taxableWealth": {
+          "amount": 0,
+          "how": "Net wealth 42'720.00 less 42'720.00: 0.00.",
+          "source": "ge-2026-rcepf art. 16 al. 1"
+        },
+        "wealthBase": {
+          "amount": 0,
+          "how": "The base wealth scale at 0.00: 0.00.",
+          "source": "ge-2026-rcepf art. 18 al. 1"
+        },
+        "wealthSupplementary": {
+          "amount": 0,
+          "how": "The supplementary scale at 0.00: 0.00, no centimes on it.",
+          "source": "ge-2026-rcepf art. 18 al. 2; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+        },
+        "cantonalWealth": {
+          "amount": 0,
+          "how": "Base 0.00 + 47.5 % 0.00 + 1 % 0.00 + supplementary 0.00 = 0.00.",
+          "source": "ge-na-law-lcacant art. 2 al. 1"
+        },
+        "communalWealth": {
+          "amount": 0,
+          "how": "40 centimes on 0.00: 0.00.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "communal": {
+          "amount": 188000,
+          "how": "Communal income and wealth tax.",
+          "source": "ge-2026-communal-centimes-arca"
+        },
+        "personalTax": {
+          "amount": 2500,
+          "how": "Taxe personnelle, one per household.",
+          "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
+        },
+        "total": {
+          "amount": 805260,
+          "how": "Cantonal income 6'147.60 + cantonal wealth 0.00 + communal 1'880.00 + taxe personnelle 25.00 = 8'052.60. Provisional: Geneva’s 2026 ceiling for health insurance premiums is not published yet; the premiums are under the 2025 one.",
+          "source": "ge-2025-guide-declaration-pp p. 48 and 49"
+        },
+        "withholdingTaxCredit": {
+          "amount": 7700,
+          "how": "35 % of the income subject to the withholding tax, to 5 centimes: 77.00 (an imputation on the bordereau, not part of the tax).",
+          "source": "ge-2025-guide-declaration-pp p. 39"
+        }
+      },
+      "ifd": {
+        "lines": [
+          {
+            "code": "11.10",
+            "person": "A",
+            "amount": 8820000,
+            "how": "Gross salary, box 8 of the salary certificate: 88'200.00.",
+            "source": "ge-2025-guide-declaration-pp p. 17"
+          },
+          {
+            "code": "31.10",
+            "person": "A",
+            "amount": -608600,
+            "how": "AVS/AI/APG/AC/AANP contributions, box 9: 6'086.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "31.12",
+            "person": "A",
+            "amount": -531400,
+            "how": "Pension fund contributions, box 10.1: 5'314.00.",
+            "source": "ge-2025-guide-declaration-pp p. 18"
+          },
+          {
+            "code": "14.00",
+            "person": "A",
+            "amount": 22000,
+            "how": "Banque Exemple SA, e-tax statement: gross income subject to the withholding tax 220.00 (dividends of Swiss securities; not savings interest).",
+            "source": "ge-2025-guide-declaration-pp p. 41 and 43"
+          },
+          {
+            "code": "31.71",
+            "person": "A",
+            "amount": -50000,
+            "how": "Travel by public transport, the yearly pass: 500.00 (under the maximum).",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 6 (frais de déplacement); ge-2025-guide-declaration-pp p. 20 and 21 (31.71)"
+          },
+          {
+            "code": "31.20",
+            "person": "A",
+            "amount": -230400,
+            "how": "Other professional costs, flat: 3 % of the net salary 76'800.00, between 2'000 and 4'000: 2'304.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 6 (autres frais professionnels); ge-2025-guide-declaration-pp p. 19 (31.20)"
+          },
+          {
+            "code": "31.40",
+            "person": "A",
+            "amount": -725800,
+            "how": "Pillar 3a paid in the year 7'258.00; affiliated to a pension fund: at most 7'258.00.",
+            "source": "ge-na-law-lipp art. 31 let. c (within the limits of federal law); ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)"
+          },
+          {
+            "code": "52.00",
+            "person": "household",
+            "amount": -180000,
+            "how": "Insurance premiums and savings interest 7'754.00, at most 1'800.00 (single, paying into a pension fund or pillar 3a): 1'800.00.",
+            "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2026-ifd-progression-deductions p. 1 and 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
+          }
+        ],
+        "netIncome": {
+          "amount": 6515800,
+          "how": "Net income (before the social deductions).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 and 9"
+        },
+        "socialDeductions": [],
+        "taxableIncome": {
+          "amount": 6515800,
+          "how": "Net income 65'158.00 less the social deductions 0.00: 65'158.00 (chiffre 24, revenu imposable).",
+          "source": "ch-2026-ifd-instructions-personnes-physiques p. 9 (chiffre 24)"
+        },
+        "scaleIncome": {
+          "amount": 6510000,
+          "how": "The scale is read at the taxable income without its fraction under CHF 100: 65'100.00.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD); ch-2026-ifd-instructions-personnes-physiques p. 10 (barème, note 1: \"Les fractions inférieures à CHF 100 sont abandonnées\")"
+        },
+        "scale": "single",
+        "scaleTax": {
+          "amount": 82287,
+          "how": "The single scale at 65'100.00: 822.87.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD)"
+        },
+        "childReduction": {
+          "amount": 0,
+          "how": "No child.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis)"
+        },
+        "tax": {
+          "amount": 82285,
+          "how": "822.87 less 0.00, rounded down to 5 centimes: 822.85.",
+          "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis and 3)"
+        }
+      },
+      "total": { "amount": 887545, "how": "ICC 8'052.60 + IFD 822.85.", "source": "" }
+    }
+  }
+}

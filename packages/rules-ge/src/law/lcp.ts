@@ -26,3 +26,15 @@ export const PERSONAL_TAX: Cited<{
 export const COMMUNAL_SPLIT = {
   source: 'ge-na-law-lcp art. 293 let. A, art. 295A al. 1 and 2',
 } as const;
+
+/**
+ * The share of another commune, where a salary is earned (art. 293 let. A ch. 1 let. c and ch. 2
+ * let. c): the Conseil d'Etat's communiqué of each year says the privileged share goes to the
+ * commune of residence, "le solde étant attribué à la commune d'activité (au taux de centime de la
+ * commune d'activité)"; the guide asks the commune of work on each salary (p. 17). How the rest is
+ * measured when there is other income is not spelled out (NOTE.communalSplit, ../engine/explain.ts).
+ */
+export const WORK_COMMUNE_SHARE: Readonly<Record<2025 | 2026, string>> = {
+  2025: 'ge-2025-part-privilegiee-communique p. 8; ge-2025-guide-declaration-pp p. 17',
+  2026: 'ge-2026-part-privilegiee-communique p. 12; ge-2025-guide-declaration-pp p. 17',
+};

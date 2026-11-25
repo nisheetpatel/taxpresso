@@ -20,6 +20,7 @@ import { createApi, type DashboardState } from '../src/api.js';
 import { TXAB_KEYS } from '../src/barcode.js';
 import { Dashboard } from '../src/dashboard.js';
 import type { ApiRequest } from '../src/dashboard.js';
+import { holdings } from '../src/holdings.js';
 import { createTaxpressoServer } from '../src/server.js';
 import type { Workspace } from '../src/workspace.js';
 import { makeUiDir, makeWorkspace } from './helpers.js';
@@ -301,6 +302,20 @@ describe('the e-tax statement barcode', () => {
         estimate: false,
         needsOk: false,
       });
+      // The interest of its accounts is interest on savings capital: the statement's own column on
+      // F4 (ge-2025-guide-declaration-pp p. 41; ge-2025-declaration-specimen p. 24), then 56.30.
+      const interest = ws
+        .countedFacts()
+        .filter(
+          (f) =>
+            (f.key === 'accounts.income_a_chf' || f.key === 'accounts.income_b_chf') &&
+            f.source.docId === doc.id,
+        )
+        .reduce((s, f) => s + (f.value as number), 0);
+      expect(interest).toBeGreaterThan(0);
+      const etat = holdings(ws);
+      expect(etat.lines.find((l) => l.id === doc.id)?.columns.savingsInterest).toBe(interest);
+      expect(etat.items.find((i) => i.code === '56.30')?.centimes).toBe(interest);
       // The client's name and number stay out of the folder.
       const saved = await readFile(path.join(ws.vault.dir, 'ledger.json'), 'utf8');
       expect(saved).not.toMatch(/TXP-000001|Dupont/);

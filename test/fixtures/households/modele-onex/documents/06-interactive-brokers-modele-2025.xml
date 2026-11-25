@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Made-up Interactive Brokers Flex Query export for a Taxpresso test household: the account,
+     the securities (TXPRS ISINs, no real security) and every amount are invented. -->
+<FlexQueryResponse queryName="Annual tax 2025" type="AF">
+  <FlexStatements count="1">
+    <FlexStatement accountId="U0000501" fromDate="20250101" toDate="20251231" period="LastYear" whenGenerated="20260110;101500">
+      <AccountInformation accountId="U0000501" acctAlias="" currency="CHF" name="Nadia Modèle (fictive)" accountType="Individual" />
+      <OpenPositions>
+        <OpenPosition accountId="U0000501" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="FPHA" description="FICTION PHARMA SA" conid="700001" securityID="CHTXPRS01065" securityIDType="ISIN" isin="CHTXPRS01065" listingExchange="EBS" issuerCountryCode="CH" multiplier="1" reportDate="20251231" position="120" markPrice="89.5" positionValue="10740.00" side="Long" levelOfDetail="SUMMARY" />
+        <OpenPosition accountId="U0000501" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="EXAS" description="EXEMPLE ASSURANCES SA" conid="700002" securityID="CHTXPRS01073" securityIDType="ISIN" isin="CHTXPRS01073" listingExchange="EBS" issuerCountryCode="CH" multiplier="1" reportDate="20251231" position="40" markPrice="512" positionValue="20480.00" side="Long" levelOfDetail="SUMMARY" />
+      </OpenPositions>
+      <CashTransactions>
+        <CashTransaction accountId="U0000501" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="FPHA" description="FPHA(CHTXPRS01065) CASH DIVIDEND CHF 3.20 PER SHARE (Ordinary Dividend)" conid="" securityID="CHTXPRS01065" securityIDType="ISIN" isin="CHTXPRS01065" issuerCountryCode="CH" dateTime="20250412;201000" settleDate="20250412" amount="384.00" type="Dividends" levelOfDetail="DETAIL" reportDate="20250412" transactionID="9100001" />
+        <CashTransaction accountId="U0000501" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="FPHA" description="FPHA(CHTXPRS01065) CASH DIVIDEND CHF 3.20 PER SHARE - CH TAX" conid="" securityID="CHTXPRS01065" securityIDType="ISIN" isin="CHTXPRS01065" issuerCountryCode="CH" dateTime="20250412;201000" settleDate="20250412" amount="-134.40" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="20250412" transactionID="9100002" />
+        <CashTransaction accountId="U0000501" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="EXAS" description="EXAS(CHTXPRS01073) CASH DIVIDEND CHF 24.00 PER SHARE (Ordinary Dividend)" conid="" securityID="CHTXPRS01073" securityIDType="ISIN" isin="CHTXPRS01073" issuerCountryCode="CH" dateTime="20250512;201000" settleDate="20250512" amount="960.00" type="Dividends" levelOfDetail="DETAIL" reportDate="20250512" transactionID="9100003" />
+        <CashTransaction accountId="U0000501" currency="CHF" fxRateToBase="1" assetCategory="STK" symbol="EXAS" description="EXAS(CHTXPRS01073) CASH DIVIDEND CHF 24.00 PER SHARE - CH TAX" conid="" securityID="CHTXPRS01073" securityIDType="ISIN" isin="CHTXPRS01073" issuerCountryCode="CH" dateTime="20250512;201000" settleDate="20250512" amount="-336.00" type="Withholding Tax" levelOfDetail="DETAIL" reportDate="20250512" transactionID="9100004" />
+      </CashTransactions>
+    </FlexStatement>
+  </FlexStatements>
+</FlexQueryResponse>

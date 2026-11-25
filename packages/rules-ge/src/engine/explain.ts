@@ -9,8 +9,8 @@ const NB = '\u00a0';
 
 export const ESTIMATE_TEXT: Record<EstimateReason, Text> = {
   'ge-2026-unpublished': {
-    en: 'Geneva publishes its 2026 scales and amounts in January 2027. Until then the 2025 values are used for the cantonal and communal tax, so its figures are estimates.',
-    fr: `Genève publie ses barèmes et montants 2026 en janvier 2027. D’ici là, les valeurs 2025 sont utilisées pour l’impôt cantonal et communal${NB}: ses montants sont des estimations.`,
+    en: 'Geneva has not published two of its 2026 amounts yet: the limit for health insurance premiums (52.21) and the amounts for meals (31.60). They come with the 2026 guide, in January 2027. Until then the 2025 ones are used, so the cantonal and communal tax is an estimate where they count. The 2026 scales and the other 2026 amounts are the official ones.',
+    fr: `Genève n’a pas encore publié deux de ses montants 2026${NB}: la limite des primes d’assurance-maladie (52.21) et les montants pour les repas (31.60). Ils arrivent avec le guide 2026, en janvier 2027. D’ici là, ceux de 2025 sont utilisés${NB}: l’impôt cantonal et communal est une estimation là où ils comptent. Les barèmes 2026 et les autres montants 2026 sont les officiels.`,
   },
 };
 
@@ -70,8 +70,8 @@ export const NOTE = {
     fr: `Chaque ligne cantonale et communale (centimes, diminution, aide à domicile, parts communales) est arrondie aux 5 centimes les plus proches, comme tous les montants du barème officiel${NB}; le barème ne précise pas l’arrondi de ces lignes.`,
   },
   communalSplit: {
-    en: 'Salary earned in another commune: the rest of the base tax after the privileged share is split in proportion to the gross salary earned in each commune (LCP art. 295A).',
-    fr: `Salaire gagné dans une autre commune${NB}: le solde de l’impôt de base après la part privilégiée est réparti au prorata du salaire brut gagné dans chaque commune (LCP art. 295A).`,
+    en: 'Salary earned in another commune: your home commune taxes its privileged share of the base tax, and the rest goes to the communes in proportion to the income earned in each (LCP art. 295A). No document says which income measures it: Taxpresso takes the gross income (91.00), each salary in the commune where it is earned and all your other income in your home commune. The tax office may share it otherwise.',
+    fr: `Salaire gagné dans une autre commune${NB}: votre commune de domicile impose sa part privilégiée de l’impôt de base, et le solde revient aux communes au prorata du revenu gagné dans chacune (LCP art. 295A). Aucun document ne dit quel revenu le mesure${NB}: Taxpresso prend le revenu brut (91.00), chaque salaire dans la commune où il est gagné et tous vos autres revenus dans votre commune de domicile. L’administration fiscale peut le répartir autrement.`,
   },
   subsidyIfd: {
     en: 'Health insurance subsidy: income for the cantonal tax (guide p. 27); for the federal tax it is left out of income (LIFD art. 24 let. d) and only the premiums left to pay are deducted. The Geneva guide does not say how the federal tax treats it.',
@@ -92,6 +92,11 @@ export const NOTE = {
   capitalRounding: {
     en: 'Tax on pension capital, cantonal and communal: a fifth of the scale’s tax and each line after it are rounded to the nearest 5 centimes, and the commune of residence taxes the whole base. The AFC’s capital tariffs give the same rates to the hundredth of a percent (ge-2025-source-capital-icc-tariff); they don’t spell out the rounding of each line.',
     fr: `Impôt cantonal et communal sur les prestations en capital${NB}: le cinquième de l’impôt du barème et chaque ligne qui suit sont arrondis aux 5 centimes les plus proches, et la commune de domicile impose toute la base. Les barèmes de l’AFC pour les prestations en capital donnent les mêmes taux au centième de pour cent (ge-2025-source-capital-icc-tariff)${NB}; ils ne précisent pas l’arrondi de chaque ligne.`,
+  },
+  /** The same for 2026: its own tariff, where one line of 622 comes out a hundredth apart. */
+  capitalRounding2026: {
+    en: 'Tax on pension capital, cantonal and communal: a fifth of the scale’s tax and each line after it are rounded to the nearest 5 centimes, and the commune of residence taxes the whole base. The AFC’s 2026 capital tariff gives the same rates to the hundredth of a percent, but for one of its 622 lines (ge-2026-source-capital-icc-tariff); it doesn’t spell out the rounding of each line.',
+    fr: `Impôt cantonal et communal sur les prestations en capital${NB}: le cinquième de l’impôt du barème et chaque ligne qui suit sont arrondis aux 5 centimes les plus proches, et la commune de domicile impose toute la base. Le barème 2026 de l’AFC pour les prestations en capital donne les mêmes taux au centième de pour cent, sauf pour une de ses 622 lignes (ge-2026-source-capital-icc-tariff)${NB}; il ne précise pas l’arrondi de chaque ligne.`,
   },
   halfFranc: {
     en: 'Life insurance limit (52.15): half as much again gives a half franc, rounded down.',

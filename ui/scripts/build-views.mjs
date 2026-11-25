@@ -2,6 +2,7 @@
 // Builds each MCP Apps view (src/views/<name>.{html,tsx}) into one self-contained HTML file in
 // dist/views/. Hosts render these in a sandboxed iframe with no network, so everything is inline:
 // script, styles and fonts (as bytes the view hands to the browser, see src/views/fonts.ts).
+// `--plugin` builds the Claude plugin's copy into dist/plugin/views instead (see below).
 
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -60,15 +61,20 @@ const embeddedFonts = {
   },
 };
 
-await rm(path.join(root, 'dist/views'), { recursive: true, force: true });
-await mkdir(path.join(root, 'dist/views'), { recursive: true });
+// `--plugin`: the Claude plugin's views (src/shared/distribution.ts), into dist/plugin/views and
+// not minified, so a reviewer can read them (docs/spikes/S4.md). Otherwise the .mcpb's, as before.
+const plugin = process.argv.includes('--plugin');
+const outDir = path.join(root, plugin ? 'dist/plugin/views' : 'dist/views');
+
+await rm(outDir, { recursive: true, force: true });
+await mkdir(outDir, { recursive: true });
 for (const name of VIEWS) {
   const { outputFiles } = await build({
     entryPoints: [path.join(root, 'src/views', `${name}.tsx`)],
     bundle: true,
-    minify: true,
+    minify: !plugin,
     write: false,
-    outdir: path.join(root, 'dist/views/.build'),
+    outdir: path.join(outDir, '.build'),
     format: 'esm',
     platform: 'browser',
     target: 'es2022',
@@ -76,6 +82,11 @@ for (const name of VIEWS) {
     jsxImportSource: 'preact',
     legalComments: 'none',
     logLevel: 'warning',
+    define: {
+      __TAXPRESSO_DISTRIBUTION__: JSON.stringify(plugin ? 'plugin' : 'mcpb'),
+      // What esbuild assumes when it minifies; said explicitly for the build that doesn't.
+      ...(plugin && { 'process.env.NODE_ENV': JSON.stringify('production') }),
+    },
     plugins: [zodWithoutLocales, embeddedFonts],
   });
   const js = outputFiles.find((f) => f.path.endsWith('.js'))?.text ?? '';
@@ -84,6 +95,8 @@ for (const name of VIEWS) {
   const html = template
     .replace('/*__STYLE__*/', () => css.replace(/<\/style/gi, '<\\/style'))
     .replace('/*__SCRIPT__*/', () => js.replace(/<\/script/gi, '<\\/script'));
-  await writeFile(path.join(root, 'dist/views', `${name}.html`), html);
-  console.log(`views/${name}.html  ${Math.round(html.length / 1024)} KB`);
+  await writeFile(path.join(outDir, `${name}.html`), html);
+  console.log(
+    `${path.relative(path.join(root, 'dist'), outDir)}/${name}.html  ${Math.round(html.length / 1024)} KB`,
+  );
 }

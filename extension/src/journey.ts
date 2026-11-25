@@ -2,6 +2,7 @@
 // (get_status) and the dashboard. Derived from the workspace on every read, never stored. Ids and
 // numbers only, plus Claude's instruction in English: the dashboard words each id in the page's
 // language (ui/src/dashboard/i18n-journey.ts), get_status in English (journeyText below).
+import type { Slot } from '@taxpresso/questionnaire';
 import { SUPPORTED_CANTONS, type Text } from '@taxpresso/rules-ch';
 import { officialLinks, SOURCE_TAX_FACTS } from '@taxpresso/rules-ge';
 import { abroadFacts, abroadHint, ownsPropertyAbroad } from './abroad.js';
@@ -288,10 +289,22 @@ function withSources(ws: Workspace, facts: Fact[]): Fact[] {
   );
 }
 
+/**
+ * A question the next step waits for (docs/design/three-pages.md, section 3): the basics and the
+ * details. Special cases, deductions and plans are offered on their pages and never hold it, except
+ * the details of a special case the household said applies (a special question asked only because
+ * of an earlier answer, such as the day of an arrival or a business's questions): the tax can't do
+ * without them.
+ */
+export const waitedFor = (slot: Slot): boolean =>
+  slot.question.group === 'basics' ||
+  slot.question.group === 'detail' ||
+  (slot.question.group === 'special' && slot.question.when !== undefined);
+
 export function journey(ws: Workspace): Journey {
   const snap = ws.snapshot();
   const answered = snap.slots.filter((s) => s.value !== undefined).length;
-  const open = snap.slots.length - answered;
+  const open = snap.slots.filter((s) => s.value === undefined && waitedFor(s)).length;
   const canton = ws.canton();
   const vault = ws.vaultInfo();
   const notSupported = ws.engine.notSupported(snap);

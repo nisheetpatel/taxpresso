@@ -1,0 +1,38 @@
+{
+  "kit": "temoin-lancy",
+  "household": "Thomas and Laura Témoin, married, two salaries, two children in a crèche, Lancy",
+  "note": "The answers this invented household gives, as answer_question takes them (id: value), money in francs: the same for every year, plus each year’s own (answersByYear).",
+  "answers": {
+    "canton": "GE",
+    "civil_status": "married",
+    "children": 2,
+    "children_custody": "with_household",
+    "childcare": "creche_or_daycare",
+    "commune": "Lancy",
+    "moved": "no",
+    "income_sources:p1": ["salary"],
+    "income_sources:p2": ["salary"],
+    "employers:p1": 1,
+    "employers:p2": 1,
+    "work_commune:p1": "Lancy",
+    "work_commune:p2": "Lancy",
+    "residence:p1": "swiss",
+    "pillar3a:p1": true,
+    "pillar3a:p2": true,
+    "lpp_buyin:p1": false,
+    "lpp_buyin:p2": false,
+    "commute:p1": "public_transport",
+    "commute_transit_cost:p1": 500,
+    "commute:p2": "walk",
+    "meal_days:p1": 220,
+    "meal_days:p2": 0,
+    "banks": 1,
+    "crypto": false,
+    "payments": ["donations"],
+    "special": []
+  },
+  "answersByYear": {
+    "2025": { "child_care:child1": 14200, "child_care:child2": 16800 },
+    "2026": { "child_care:child1": 11400, "child_care:child2": 17400 }
+  }
+}

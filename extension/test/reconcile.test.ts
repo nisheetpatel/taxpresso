@@ -300,8 +300,8 @@ describe('check before you transmit', () => {
     expect(detail).toMatch(
       /Matching:\n- PG3 71\.00 Frais médicaux .*, contribuable A: matches \(1200\)\./,
     );
-    expect(detail).toMatch(/- A1 31\.00 Total .*: ICC 19877, IFD 20682, adds up\./);
-    expect(detail).toMatch(/- PG3 31\.00 .*: ICC 19877, IFD 20682, same as on A1\./);
+    expect(detail).toMatch(/- A1 31\.00 Total .*: ICC 19882, IFD 20682, adds up\./);
+    expect(detail).toMatch(/- PG3 31\.00 .*: ICC 19882, IFD 20682, same as on A1\./);
     // Annotated read-only: it changes nothing.
     const { tools } = await client.listTools();
     expect(tools.find((t) => t.name === 'reconcile_official_pdf')?.annotations).toMatchObject({

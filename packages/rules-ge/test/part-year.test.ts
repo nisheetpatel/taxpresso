@@ -18,11 +18,14 @@
 //   "réduite de manière appropriée" (ch-na-ordonnance-frais-professionnels art. 7 al. 2): their
 //   minimum and maximum in proportion; pillar 3a, the whole year's maximum (ch-na-law-opp3 art. 7).
 //
-// The other documents: the ICC scale (ge-2025-icc-tariff-pdf p. 2, also used for 2026), its
-// surcharges (p. 4: 47.5 %, the 12 % reduction, 1 %); the federal scales (2026: LIFD art. 36 as
+// The other documents: the ICC scale (2025: ge-2025-icc-tariff-pdf p. 2; 2026: ge-2026-rcepf art.
+// 17, cumulative tax 3'149.00 at 48'441 and 7'015.15 at 77'730, then 13.2 % and 14.2 %), its
+// surcharges (tariff p. 4: 47.5 %, the 12 % reduction, 1 %; the laws', the same in 2026); Geneva's
+// 2026 amounts (ge-2026-rcepf art. 6 al. 2: flat professional costs at most 1'817; art. 10: two
+// earners 1'054; art. 13: family charge with childcare 10'536); the federal scales (2026: LIFD art. 36 as
 // consolidated on 1 January 2026; 2025: Form. 58c 2025 rows 58'000/58'100, 82'100, 94'900 and
 // 120'600); the communes (ge-2025-communal-centimes-pdf: Genève PP 28 % CA 45.49, Meyrin PP 30 % CA
-// 42, Carouge PP 27 % CA 40; ge-2026-part-privilegiee-communique p. 11: Genève 29 %, Meyrin 29 %,
+// 42, Carouge PP 27 % CA 40; ge-2026-part-privilegiee-communique p. 12: Genève 29 %, Meyrin 29 %,
 // Carouge 27 %; ge-2026-communal-centimes-arca: 45.49, 42, 40). Rounding: each ICC line to 5
 // centimes, flat deductions and prorated amounts to the franc, the federal tax rounded down to 5
 // centimes. The same figures were checked by a separate script written from these documents.
@@ -144,34 +147,62 @@ describe('Lena Brandt: single, arrived on 1 April, a salary', () => {
   // reduction -762.30, home care 43.05: cantonal 5,633.35; communal 45.49 % of the privileged
   // share and of the rest: 548.55 + 1,410.60 (2025: 28 %) = 1,959.15; personal tax 25 (due from the
   // first day of residence, directives ch. 8.8): ICC 7,617.50.
+  // ICC 2026 (ge-2026-rcepf): the flat at most 1,817 (art. 6 al. 2), in the period and in the
+  // year: 50,217 and 69,981. Scale (art. 17) at 69,981: 3,149.00 + 21,540 x 13.2 % (2,843.28 ->
+  // 2,843.30) = 5,992.30; base 50,217 x 5,992.30 / 69,981 = 4,299.9575 -> 4,299.95; centimes
+  // 2,042.47625 -> 2,042.50, reduction 12 % of 6,342.45 = 761.094 -> -761.10, home care 42.9995 ->
+  // 43.00: cantonal 5,624.35; communal 45.49 % of the privileged share (29 %: 1,246.9855 ->
+  // 1,247.00) and of the rest (3,052.95): 567.25 + 1,388.80 = 1,956.05; personal tax 25: ICC
+  // 7,605.40.
   // IFD, the period: 72,000 - 8,208 - 7,258 - 1,914 (3 % of 63,792, between 1,500 and 3,000: 2,000
   // and 4,000 x 270/360) - 400 transport - 1,350 (insurance, 1,800 x 270/360) = 52,870. The year:
   // 96,000 - 10,944 - 7,258 - 2,552 - 533 - 1,800 = 72,913, for the scale 72,900: 1,054.50 (2025
   // and 2026 alike); 52,800 x 1,054.50 / 72,900 = 763.75.
+  const cases = {
+    2025: {
+      flat: 1_812,
+      taxable: 50_222,
+      rate: 69_986,
+      base: 4_306.85,
+      cantonal: 5_633.35,
+      communal: 1_959.15,
+      icc: 7_617.5,
+    },
+    2026: {
+      flat: 1_817,
+      taxable: 50_217,
+      rate: 69_981,
+      base: 4_299.95,
+      cantonal: 5_624.35,
+      communal: 1_956.05,
+      icc: 7_605.4,
+    },
+  } as const;
   for (const y of [2025, 2026] as const) {
     it(`${y}: the income of the period at a full year's rate`, () => {
+      const c = cases[y];
       const r = computeReturn(brandt(y));
       expect(r.unsupported).toEqual([]);
       expect(r.partYear).toMatchObject({ kind: 'arrival', from: `${y}-04-01`, days: 270 });
-      expect(item(r, 'icc', '31.50')).toBe(chf(-1_812));
-      expect(r.icc!.taxableIncome.amount).toBe(chf(50_222));
-      expect(r.icc!.rateIncome.amount).toBe(chf(69_986));
-      expect(r.icc!.taxes.incomeBase.amount).toBe(chf(4_306.85));
-      expect(r.icc!.taxes.incomeCantonal.amount).toBe(chf(5_633.35));
-      expect(r.icc!.taxes.communalIncomeTotal.amount).toBe(chf(1_959.15));
+      expect(item(r, 'icc', '31.50')).toBe(chf(-c.flat));
+      expect(r.icc!.taxableIncome.amount).toBe(chf(c.taxable));
+      expect(r.icc!.rateIncome.amount).toBe(chf(c.rate));
+      expect(r.icc!.taxes.incomeBase.amount).toBe(chf(c.base));
+      expect(r.icc!.taxes.incomeCantonal.amount).toBe(chf(c.cantonal));
+      expect(r.icc!.taxes.communalIncomeTotal.amount).toBe(chf(c.communal));
       expect(r.icc!.taxes.wealthCantonal.amount).toBe(0);
       expect(r.icc!.taxes.personalTax.amount).toBe(chf(25));
-      expect(r.icc!.taxes.total.amount).toBe(chf(7_617.5));
+      expect(r.icc!.taxes.total.amount).toBe(chf(c.icc));
       expect(item(r, 'ifd', '31.20')).toBe(chf(-1_914));
       expect(item(r, 'ifd', '52.00')).toBe(chf(-1_350));
       expect(r.ifd!.taxableIncome.amount).toBe(chf(52_870));
       expect(r.ifd!.scaleIncome.amount).toBe(chf(72_900));
       expect(r.ifd!.scaleTax.amount).toBe(chf(1_054.5));
       expect(r.ifd!.tax.amount).toBe(chf(763.75));
-      expect(r.total).toBe(chf(7_617.5 + 763.75));
+      expect(r.total).toBe(chf(c.icc) + chf(763.75));
       // The form's lines for the rate: 95.00 the year's net income, 97.00 the rest.
-      expect(r.partYear!.icc!.rateTotal.amount).toBe(chf(69_986));
-      expect(r.partYear!.icc!.notTaxed.amount).toBe(chf(69_986 - 50_222));
+      expect(r.partYear!.icc!.rateTotal.amount).toBe(chf(c.rate));
+      expect(r.partYear!.icc!.notTaxed.amount).toBe(chf(c.rate - c.taxable));
       expect(r.partYear!.ifd!.rateTotal.amount).toBe(chf(72_913));
       expect(r.partYear!.ifd!.notTaxed.amount).toBe(chf(72_913 - 52_870));
       // Said, with the documents' readings Taxpresso takes.
@@ -185,8 +216,9 @@ describe('Lena Brandt: single, arrived on 1 April, a salary', () => {
     delete whole.period;
     const r = computeReturn(whole);
     expect(r.partYear).toBeUndefined();
-    expect(r.icc!.taxableIncome.amount).toBe(chf(50_222));
-    expect(r.icc!.rateIncome.amount).toBe(chf(50_222));
+    // 2026: 72,000 - 4,608 - 3,600 - 7,258 - 1,817 - 4,500.
+    expect(r.icc!.taxableIncome.amount).toBe(chf(50_217));
+    expect(r.icc!.rateIncome.amount).toBe(chf(50_217));
     expect(r.ifd!.atRate).toBeUndefined();
   });
 });
@@ -195,28 +227,59 @@ describe('Noor and Samir Haddad: married, arrived together on 1 July, one child,
   // 180 days. ICC: p1 66,000 - 4,224 - 3,300 - 3,000 - 1,754 (3 %); p2 30,000 - 1,920 - 1,500 - 797
   // - 1,051 (two earners, not reduced); premiums 4,200; childcare 6,000; family charge with
   // childcare 10,508 x 180/360 = 5,254 (LIPP art. 65 al. 2): 63,000. The year: 132,000 - 8,448 -
-  // 6,600 - 3,000 - 1,812; 60,000 - 3,840 - 3,000 - 1,594 - 1,051; 8,400; 12,000; 10,508 in full:
-  // 131,746, splitting 50 %: 65,873. Scale at 65,873: 3,140.40 + 17,564 x 13.2 % = 5,458.85; base
-  // 63,000 x 5,458.85 / 65,873 = 5,220.75; cantonal 6,828.75; communal (42) 2,192.75; personal
-  // tax 25: ICC 9,046.50.
+  // 6,600 - 3,000 - 1,812; 60,000 - 3,840 - 3,000 - 1,595 (3 % of 53,160 = 1,594.80) - 1,051;
+  // 8,400; 12,000; 10,508 in full: 131,746, splitting 50 %: 65,873. Scale at 65,873: 3,140.40 +
+  // 17,564 x 13.2 % = 5,458.85; base 63,000 x 5,458.85 / 65,873 = 5,220.75; cantonal 6,828.75;
+  // communal (42) 2,192.75; personal tax 25: ICC 9,046.50.
+  // ICC 2026 (ge-2026-rcepf): two earners 1,054 (art. 10), the flat at most 1,817 (art. 6 al. 2),
+  // the family charge with childcare 10,536 (art. 13), x 180/360 = 5,268. The period: 53,722 (p1,
+  // as in 2025) + 30,000 - 1,920 - 1,500 - 797 - 1,054 (24,729) - 4,200 - 6,000 - 5,268 = 62,983.
+  // The year: 132,000 - 8,448 - 6,600 - 3,000 - 1,817 (112,135) + 60,000 - 3,840 - 3,000 - 1,595 -
+  // 1,054 (50,511) - 8,400 - 12,000 - 10,536 = 131,710, splitting 50 %: 65,855. Scale (art. 17) at
+  // 65,855: 3,149.00 + 17,414 x 13.2 % (2,298.648 -> 2,298.65) = 5,447.65; base 62,983 x 5,447.65
+  // / 65,855 = 5,210.0727 -> 5,210.05; centimes 2,474.75, reduction 12 % of 7,684.80 = 922.176 ->
+  // -922.20, home care 52.10: cantonal 6,814.70; communal (42; privileged 29 %: 1,510.90, rest
+  // 3,699.15) 634.60 + 1,553.65 = 2,188.25; personal tax 25: ICC 9,027.95.
   // IFD: flats 1,754 and 1,000 (2,000 x 1/2); two earners 50 % of 25,580, at most 14,100 x 1/2 =
   // 7,050; insurance (3,700 + 700) x 1/2 = 2,200; childcare 6,000; married 1,400; child 3,400:
   // 59,252. The year: 121,503, married scale at 121,500: 2025 2,967 + 9 x 7 = 3,030, 2026 2,965 +
   // 63 = 3,028; 59,200 x 3,030 / 121,500 = 1,476.30 (2026: 1,475.35); the reduction per child
   // 263 x 59,200 / 121,500 = 128.10 (circular 30 ch. 13.4.6): 1,348.20 (2026: 1,347.25).
   const cases = [
-    { y: 2025, iccTotal: 9_046.5, ifdTax: 1_348.2, at: 1_476.3, year: 3_030 },
-    { y: 2026, iccTotal: 9_046.5, ifdTax: 1_347.25, at: 1_475.35, year: 3_028 },
+    {
+      y: 2025,
+      twoEarners: 1_051,
+      charge: 5_254,
+      taxable: 63_000,
+      rate: 65_873,
+      base: 5_220.75,
+      iccTotal: 9_046.5,
+      ifdTax: 1_348.2,
+      at: 1_476.3,
+      year: 3_030,
+    },
+    {
+      y: 2026,
+      twoEarners: 1_054,
+      charge: 5_268,
+      taxable: 62_983,
+      rate: 65_855,
+      base: 5_210.05,
+      iccTotal: 9_027.95,
+      ifdTax: 1_347.25,
+      at: 1_475.35,
+      year: 3_028,
+    },
   ] as const;
   for (const c of cases) {
     it(`${c.y}: the couple's tax at the rate of 132,000 converted`, () => {
       const r = computeReturn(haddad(c.y, 66_000));
       expect(r.unsupported).toEqual([]);
-      expect(item(r, 'icc', '41.95')).toBe(chf(-1_051));
-      expect(item(r, 'icc', '61.25')).toBe(chf(-5_254));
-      expect(r.icc!.taxableIncome.amount).toBe(chf(63_000));
-      expect(r.icc!.rateIncome.amount).toBe(chf(65_873));
-      expect(r.icc!.taxes.incomeBase.amount).toBe(chf(5_220.75));
+      expect(item(r, 'icc', '41.95')).toBe(chf(-c.twoEarners));
+      expect(item(r, 'icc', '61.25')).toBe(chf(-c.charge));
+      expect(r.icc!.taxableIncome.amount).toBe(chf(c.taxable));
+      expect(r.icc!.rateIncome.amount).toBe(chf(c.rate));
+      expect(r.icc!.taxes.incomeBase.amount).toBe(chf(c.base));
       expect(r.icc!.taxes.total.amount).toBe(chf(c.iccTotal));
       expect(item(r, 'ifd', '41.20')).toBe(chf(-1_000));
       expect(item(r, 'ifd', '41.90')).toBe(chf(-7_050));
@@ -233,13 +296,19 @@ describe('Noor and Samir Haddad: married, arrived together on 1 July, one child,
   }
 
   it('2026: a lower salary, 108,000 converted (TOU a choice): the same rules', () => {
-    // ICC 52,687 at the rate of 110,482 split (55,241): base 3,867.90, ICC 6,708.75. IFD 48,939 at
-    // the rate of 100,877 (married scale at 100,800: 1,561 + 59 x 5 = 1,856): 900.35, less 127.55
-    // for the child: 772.80.
+    // ICC (ge-2026-rcepf): p1 54,000 - 3,456 - 2,700 - 3,000 - 1,435 (3 %) = 43,409; with p2's
+    // 24,729, less 4,200, 6,000 and 5,268: 52,670. The year: 108,000 - 6,912 - 5,400 - 3,000 - 1,817
+    // (90,871) + 50,511 - 8,400 - 12,000 - 10,536 = 110,446, split: 55,223. Scale at 55,223:
+    // 3,149.00 + 6,782 x 13.2 % (895.224 -> 895.20) = 4,044.20; base 52,670 x 4,044.20 / 55,223 =
+    // 3,857.2337 -> 3,857.25; centimes 1,832.20, reduction -682.75, home care 38.55: cantonal
+    // 5,045.25; communal (42; privileged 29 %: 1,118.60, rest 2,738.65) 469.80 + 1,150.25 =
+    // 1,620.05; personal tax 25: ICC 6,690.30. IFD 48,939 at the rate of 100,877 (married scale at
+    // 100,800: 1,561 + 59 x 5 = 1,856): 900.35, less 127.55 for the child: 772.80.
     const r = computeReturn(haddad(2026, 54_000));
-    expect(r.icc!.taxableIncome.amount).toBe(chf(52_687));
-    expect(r.icc!.rateIncome.amount).toBe(chf(55_241));
-    expect(r.icc!.taxes.total.amount).toBe(chf(6_708.75));
+    expect(r.icc!.taxableIncome.amount).toBe(chf(52_670));
+    expect(r.icc!.rateIncome.amount).toBe(chf(55_223));
+    expect(r.icc!.taxes.incomeBase.amount).toBe(chf(3_857.25));
+    expect(r.icc!.taxes.total.amount).toBe(chf(6_690.3));
     expect(r.ifd!.taxableIncome.amount).toBe(chf(48_939));
     expect(r.ifd!.scaleTax.amount).toBe(chf(1_856));
     expect(r.ifd!.tax.amount).toBe(chf(772.8));
@@ -252,21 +321,27 @@ describe('Jonas Lindqvist: single, left Switzerland on 30 September', () => {
   // 14,932 x 14.2 % (2,120.35) = 9,116.35; base 67,070 x 9,116.35 / 92,450 = 6,613.65; cantonal
   // 8,650.70; communal (40) 2,645.50; personal tax 25: ICC 11,321.20. Wealth 20,000 on the day he
   // left, under the deduction: no wealth tax.
+  // ICC 2026 (ge-2026-rcepf): the flat at most 1,817 (art. 6 al. 2): 67,065; the year 92,445.
+  // Scale (art. 17) at 92,445: 7,015.15 + 14,715 x 14.2 % (2,089.53 -> 2,089.55) = 9,104.70; base
+  // 67,065 x 9,104.70 / 92,445 = 6,605.0809 -> 6,605.10; centimes 3,137.40, reduction 12 % of
+  // 9,742.50 = -1,169.10, home care 66.05: cantonal 8,639.45; communal (40; privileged 27 %:
+  // 1,783.40, rest 4,821.70) 713.35 + 1,928.70 = 2,642.05; personal tax 25: ICC 11,306.50.
   // IFD: 79,740 - 7,258 - 2,392 (3 %) - 1,350 = 68,740; the year: 106,320 - 7,258 - 3,190 - 1,800 =
   // 94,072; single scale at 94,000: 2025 1,506.60 + 119 x 6.60 = 2,292.00, 2026 1,502.95 + 785.40 =
   // 2,288.35; 68,700 x 2,292 / 94,000 = 1,675.10 (2026: 1,672.40).
-  for (const [y, ifd] of [
-    [2025, 1_675.1],
-    [2026, 1_672.4],
+  for (const c of [
+    { y: 2025, taxable: 67_070, rate: 92_450, base: 6_613.65, icc: 11_321.2, ifd: 1_675.1 },
+    { y: 2026, taxable: 67_065, rate: 92_445, base: 6_605.1, icc: 11_306.5, ifd: 1_672.4 },
   ] as const) {
+    const { y, ifd } = c;
     it(`${y}: the income to the day of departure, the wealth on that day`, () => {
       const r = computeReturn(lindqvist(y));
       expect(r.unsupported).toEqual([]);
       expect(r.partYear).toMatchObject({ kind: 'departure', to: `${y}-09-30`, days: 270 });
-      expect(r.icc!.taxableIncome.amount).toBe(chf(67_070));
-      expect(r.icc!.rateIncome.amount).toBe(chf(92_450));
-      expect(r.icc!.taxes.incomeBase.amount).toBe(chf(6_613.65));
-      expect(r.icc!.taxes.total.amount).toBe(chf(11_321.2));
+      expect(r.icc!.taxableIncome.amount).toBe(chf(c.taxable));
+      expect(r.icc!.rateIncome.amount).toBe(chf(c.rate));
+      expect(r.icc!.taxes.incomeBase.amount).toBe(chf(c.base));
+      expect(r.icc!.taxes.total.amount).toBe(chf(c.icc));
       expect(r.icc!.wealth.taxableWealth.amount).toBe(0);
       expect(r.ifd!.taxableIncome.amount).toBe(chf(68_740));
       expect(r.ifd!.tax.amount).toBe(chf(ifd));

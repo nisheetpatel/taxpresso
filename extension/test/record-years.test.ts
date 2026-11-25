@@ -18,7 +18,16 @@
 // (docs/design/three-pages.md): a dashboard state's page, confidence, groups and rough (kept beside
 // the hash, groups as their own hash), get_status's line of stages or pages (kept in full), and
 // the dashboard named in a value's "what makes it final" (Documents, then Your tax). So the rest
-// can be proved unchanged, and the additions listed.
+// can be proved unchanged, and the additions listed. It also sets apart what 0.2.0 added to the
+// state: each document's status (Make it exact), kept as a list beside the hash.
+// TAXPRESSO_RECORD_PARTS=1, with the split, keeps beside each record's hash a hash of each part of
+// its data (a dashboard state's keys, a tool's structured keys, and one level down in those that
+// are objects) and the next step's id in full: a difference can then be named part by part, and
+// the parts that hold the tax, the form's values and the plans proved unchanged on their own.
+// TAXPRESSO_RECORD_WORK_HOME=1 answers each salaried person's commune of work (Geneva,
+// profile.work_commune) with the commune of residence as soon as it applies, straight into the
+// ledger: not recorded, no random draw, no activity line. A walk recorded before that question
+// existed then lines up with one after, call for call (data/ge/2026/questionnaire.yaml, work_commune).
 //
 //   TAXPRESSO_RECORD=/tmp/before.jsonl TAXPRESSO_RECORD_N=20 pnpm vitest run extension/test/record-years.test.ts
 import { createHash } from 'node:crypto';
@@ -39,6 +48,8 @@ const HASH = process.env.TAXPRESSO_RECORD_HASH === '1';
 const SPLIT = process.env.TAXPRESSO_RECORD_SPLIT === '1';
 const FACTS = SPLIT && process.env.TAXPRESSO_RECORD_FACTS === '1';
 const PAGES = SPLIT && process.env.TAXPRESSO_RECORD_PAGES === '1';
+const PARTS = SPLIT && process.env.TAXPRESSO_RECORD_PARTS === '1';
+const WORK_HOME = process.env.TAXPRESSO_RECORD_WORK_HOME === '1';
 const ONLY = process.env.TAXPRESSO_RECORD_ONLY?.split(',');
 const CANTONS = (process.env.TAXPRESSO_RECORD_CANTONS ?? 'GE,ZH,BE,BL,VD,BS,ZG,LU,SG').split(',');
 /** Another tax year than the default, opened first with open_tax_year (only once it exists). */
@@ -161,13 +172,52 @@ function splitPages(kind: string, data: unknown): { data: unknown; pages: unknow
   const body = r.body;
   if (!body || typeof body !== 'object' || !('journey' in body)) return { data, pages: null };
   const { page, confidence, groups, rough, ...rest } = body;
+  // Each document's status (0.2.0): out of the documents, in their place, as a list.
+  const docs = rest.documents;
+  let statuses: unknown[] | undefined;
+  if (Array.isArray(docs) && docs.some((d) => d && typeof d === 'object' && 'status' in d)) {
+    statuses = docs.map((d: Record<string, unknown>) => d.status);
+    rest.documents = docs.map((d: Record<string, unknown>) => {
+      const { status, ...kept } = d;
+      void status;
+      return kept;
+    });
+  }
   const pages = {
     ...(page !== undefined ? { page } : {}),
     ...(confidence !== undefined ? { confidence } : {}),
     ...(rough !== undefined ? { rough } : {}),
     ...(groups !== undefined ? { groups: sha16(groups) } : {}),
+    ...(statuses ? { documents: statuses } : {}),
   };
   return { data: { ...r, body: rest }, pages: Object.keys(pages).length ? pages : null };
+}
+
+/**
+ * Each part of a record's data as its own hash (TAXPRESSO_RECORD_PARTS): a dashboard state's keys
+ * or a tool's structured keys, one level down in those that are objects, and the rest of the
+ * record as "(rest)"; with the next step's id in full (get_status, a dashboard state).
+ */
+function partsOf(
+  kind: string,
+  data: unknown,
+  hash: (value: unknown) => string,
+): { next?: string; parts: Record<string, string> } | null {
+  if (!data || typeof data !== 'object') return null;
+  const field = kind === 'tool' ? 'structured' : kind === 'api' ? 'body' : undefined;
+  const r = data as Record<string, unknown>;
+  const top = field ? r[field] : undefined;
+  if (!field || !top || typeof top !== 'object' || Array.isArray(top)) return null;
+  const parts: Record<string, string> = { '(rest)': hash({ ...r, [field]: null }) };
+  const isObject = (v: unknown): v is Record<string, unknown> =>
+    !!v && typeof v === 'object' && !Array.isArray(v);
+  for (const [k, v] of Object.entries(top)) {
+    parts[k] = hash(v);
+    if (isObject(v)) for (const [k2, v2] of Object.entries(v)) parts[`${k}.${k2}`] = hash(v2);
+  }
+  const t = top as { next?: { id?: unknown }; journey?: { next?: { id?: unknown } } };
+  const next = t.next?.id ?? t.journey?.next?.id;
+  return { ...(typeof next === 'string' ? { next } : {}), parts };
 }
 
 /** The dashboard named in a value's "what makes it final": Documents, then the page Your tax. */
@@ -266,6 +316,14 @@ async function run(h: Household): Promise<void> {
       const line = PAGES ? pageWords(normalized) : normalized;
       const sha = createHash('sha256').update(line).digest('hex').slice(0, 16);
       const said = JSON.parse(normalize(split.text, root)) as string[];
+      const hashPart = (value: unknown) => {
+        const text = normalize(value ?? null, root);
+        return createHash('sha256')
+          .update(PAGES ? pageWords(text) : text)
+          .digest('hex')
+          .slice(0, 16);
+      };
+      const parts = PARTS ? partsOf(kind, data, hashPart) : null;
       appendFileSync(
         OUT!,
         JSON.stringify({
@@ -277,6 +335,7 @@ async function run(h: Household): Promise<void> {
           text: said,
           ...(facts ? { facts: JSON.parse(normalize(facts, root)) as unknown } : {}),
           ...(pages ? { pages: JSON.parse(normalize(pages, root)) as unknown } : {}),
+          ...(parts ?? {}),
         }) + '\n',
         'utf8',
       );
@@ -327,9 +386,23 @@ async function run(h: Household): Promise<void> {
       await call('open_tax_year', { year: YEAR });
       cur = (await import('../src/years.js')).TaxYears.of(ws).current;
     }
+    /** The commune of work, where it applies, as the commune of residence (WORK_HOME). */
+    const workHome = async () => {
+      if (!WORK_HOME) return;
+      const snap = cur.snapshot();
+      const home = snap.answers.get('profile.commune|household');
+      const open = snap.slots.filter(
+        (s) => s.question.key === 'profile.work_commune' && s.value === undefined,
+      );
+      if (typeof home !== 'string' || !open.length) return;
+      for (const s of open)
+        cur.engine.answer(cur.ledger, s.id, home, { method: 'user', via: 'chat' });
+      await cur.vault.saveLedger(cur.ledger);
+    };
     await call('get_status');
     // Questions, answered in the chat or in the dashboard, with random valid answers.
     for (let i = 0; i < 40; i++) {
+      await workHome();
       const q = (await call('next_questions', { limit: 1 })).structured as
         | {
             questions: {
@@ -360,6 +433,7 @@ async function run(h: Household): Promise<void> {
       } else value = pick((question.options ?? []).map((o) => o.value));
       if (random() < 0.3) await api('POST', '/answer', { id: question.id, value });
       else await call('answer_question', { id: question.id, value });
+      await workHome();
       if (random() < 0.15) await call('get_status');
     }
     await call('get_status');

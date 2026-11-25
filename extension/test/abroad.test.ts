@@ -5,7 +5,11 @@
 // Carouge (a flat let in Portugal), Tomas and Ilse Varga in Lancy (a holiday home in France with a
 // mortgage there, a car loan here), Paolo Ferri in Meyrin (a holiday home in Italy whose mortgage
 // makes a loss abroad: fail closed). Their taxes were derived by hand from the official documents
-// in packages/rules-ge/test/abroad.test.ts (A1 to A3), whose figures these must match.
+// in packages/rules-ge/test/abroad.test.ts (A1 to A3), whose figures these must match; the 2026
+// cantonal figures again here, step by step at A1 and A2, with Geneva's 2026 scales and amounts
+// (ge-2026-rcepf art. 17: cumulative tax 3,149.00 at 48,441 and 7,015.15 at 77,730; art. 18: wealth
+// 1.49 per mille up to 118,722, 403.65 at 237,443 then 2.34 per mille; supplementary 11.35 at
+// 237,443 then 0.1169 per mille). The federal tax is the same as before.
 import path from 'node:path';
 import { mkdtemp } from 'node:fs/promises';
 import os from 'node:os';
@@ -140,6 +144,7 @@ async function varela() {
     ['moved', 'no'],
     ['income_sources:p1', ['salary']],
     ['employers:p1', 1],
+    ['work_commune:p1', 'Carouge'],
     ['residence:p1', 'swiss'],
     ['pillar3a:p1', false],
     ['lpp_buyin:p1', false],
@@ -178,9 +183,11 @@ async function varga() {
     ['moved', 'no'],
     ['income_sources:p1', ['salary']],
     ['employers:p1', 1],
+    ['work_commune:p1', 'Lancy'],
     ['residence:p1', 'swiss'],
     ['income_sources:p2', ['salary']],
     ['employers:p2', 1],
+    ['work_commune:p2', 'Lancy'],
     ['pillar3a:p1', false],
     ['pillar3a:p2', false],
     ['lpp_buyin:p1', false],
@@ -233,6 +240,7 @@ async function ferri() {
     ['moved', 'no'],
     ['income_sources:p1', ['salary']],
     ['employers:p1', 1],
+    ['work_commune:p1', 'Meyrin'],
     ['residence:p1', 'permit_c'],
     ['pillar3a:p1', false],
     ['lpp_buyin:p1', false],
@@ -285,12 +293,27 @@ describe('a property abroad in Geneva, end to end (2026)', () => {
     const res = await call('compute_tax', { detail: true });
     const out = res.structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [], notSupported: [] });
-    // 2026: the euros at the 2025 rates as estimates; the figures of A1 for 2026.
-    expect(out.icc!.total).toBe(1_294_690);
-    expect(out.icc!.taxableIncome).toBe(7_919_300);
-    expect(out.icc!.taxableWealth).toBe(1_114_200);
+    // 2026: the euros at the 2025 rates as estimates (value 139,575.00, rents 8,433.31, costs
+    // 1,265.00); Geneva's own 2026 scales and amounts. By hand:
+    // ICC: 98,000 - 6,174 - 5,400 - 1,817 (3 % x 86,426, at most 1,817: ge-2026-rcepf art. 6 al. 2)
+    // + 8,433.31 - 1,265 = 91,777.31, the whole net income; less the premiums 5,880: 95.00 =
+    // 85,897.31. The flat's net income 7,168.31: 97.00 = 85,897 x 7,168.31 / 91,777.31 = 6,709.03
+    // -> 6,709; 99.00 = 79,188. Rate on 85,897: 7,015.15 + 8,167 x 14.20 % = 1,159.714 -> 1,159.70:
+    // 8,174.85. Base 79,188 x 8,174.85 / 85,897 = 7,536.352 -> 7,536.35. Centimes 3,579.766 ->
+    // 3,579.75; reduction 12 % of 11,116.10 = 1,333.932 -> 1,333.95; home care 75.3635 -> 75.35;
+    // cantonal 9,857.50. Carouge: 27 % x 7,536.35 = 2,034.8145 -> 2,034.80, x 40 % = 813.92 ->
+    // 813.90; rest 5,501.55 x 40 % = 2,200.62 -> 2,200.60: 3,014.50.
+    // Wealth: 24,000 + 139,575 = 163,575, less 87,872 (ge-2026-rcepf art. 16 al. 1): 95.00 = 75,703;
+    // 97.00 = 75,703 x 139,575 / 163,575 = 64,595.7 -> 64,596; 99.00 = 11,107. Base: the scale at
+    // 75,703, 1.49 per mille = 112.797 -> 112.80, x 11,107 / 75,703 = 16.5498 -> 16.55; centimes
+    // 7.861 -> 7.85; home care 0.1655 -> 0.15; supplementary 0: 24.55. Communal: 27 % x 16.55 =
+    // 4.4685 -> 4.45, x 40 % = 1.78 -> 1.80; rest 12.10 x 40 % = 4.84 -> 4.85: 6.65.
+    // ICC 9,857.50 + 24.55 + 3,014.50 + 6.65 + 25 = 12,928.20. IFD as before: 1,794.30.
+    expect(out.icc!.total).toBe(1_292_820);
+    expect(out.icc!.taxableIncome).toBe(7_918_800);
+    expect(out.icc!.taxableWealth).toBe(1_110_700);
     expect(out.ifd).toMatchObject({ tax: 179_430, taxableIncome: 8_216_700, scale: 'single' });
-    expect(out.total).toBe(1_294_690 + 179_430);
+    expect(out.total).toBe(1_292_820 + 179_430);
     expect(out.unverifiedRules.join(' ')).toMatch(/97\.00/);
     const text = texts(res);
     expect(text).toMatch(/15\.20 Immeubles locatifs ou loués/);
@@ -306,7 +329,7 @@ describe('a property abroad in Geneva, end to end (2026)', () => {
     // "Why?", the kinds of the property's documents, the estimate, and the copy panel's annexe D
     // and 97.00.
     const s = await state();
-    expect(s.estimate).toMatchObject({ total: 1_294_690 + 179_430 });
+    expect(s.estimate).toMatchObject({ total: 1_292_820 + 179_430 });
     const facts = s.journey.about.filter((f) => f.id === 'abroad');
     expect(facts).toHaveLength(1);
     expect(facts[0]!.text!.fr).toBe(
@@ -353,9 +376,9 @@ describe('a property abroad in Geneva, end to end (2026)', () => {
       expect.arrayContaining([
         ['58.00', '1265', 'icc'],
         ['58.00', '1687', 'ifd'],
-        ['95.00', '85902', 'icc'],
+        ['95.00', '85897', 'icc'],
         ['97.00', '6709', 'icc'],
-        ['99.00', '79193', 'icc'],
+        ['99.00', '79188', 'icc'],
         ['97.00', '6612', 'ifd'],
         ['99.00', '82167', 'ifd'],
       ]),
@@ -363,9 +386,9 @@ describe('a property abroad in Geneva, end to end (2026)', () => {
     expect(at('PG4')).toEqual(
       expect.arrayContaining([
         ['15.00', '139575', 'wealth'],
-        ['95.00', '75943', 'wealth'],
-        ['97.00', '64801', 'wealth'],
-        ['99.00', '11142', 'wealth'],
+        ['95.00', '75703', 'wealth'],
+        ['97.00', '64596', 'wealth'],
+        ['99.00', '11107', 'wealth'],
       ]),
     );
     expect(s.copyPanel.unplaced).toEqual([]);
@@ -433,7 +456,25 @@ describe('a property abroad in Geneva, end to end (2026)', () => {
     await varga();
     const out = (await call('compute_tax')).structuredContent as TaxOut;
     expect(out).toMatchObject({ taxYear: 2026, computed: true, unsupported: [] });
-    expect(out.icc!.total).toBe(2_466_870);
+    // By hand, 2026 (the split of the debts as in 2025: 1,964.59 of interest abroad).
+    // ICC: 130,000 - 8,190 - 9,750 - 1,817 (ge-2026-rcepf art. 6 al. 2); 64,000 - 4,032 - 3,200 -
+    // 1,703; 2,800; 5,809.62 - 1,452 (25 %); two earners -1,054 (art. 10); interest -3,812: the
+    // whole net income 167,599.62; less 11,000 premiums and 2,800 savings interest: 95.00 =
+    // 153,799.62. The home's net income 2,393.03: 97.00 = 153,799 x 2,393.03 / 167,599.62 = 2,195.98
+    // -> 2,196; 99.00 = 151,603. Rate: 50 % of 153,799 = 76,899.5 -> 76,900: 3,149.00 + 28,459 x
+    // 13.20 % = 3,756.588 -> 3,756.60: 6,905.60. Base 151,603 x 6,905.60 / 76,900 = 13,613.91 ->
+    // 13,613.90. Centimes 6,466.6025 -> 6,466.60; reduction 12 % of 20,080.50 = 2,409.66 ->
+    // 2,409.65; home care 136.139 -> 136.15; cantonal 17,807.00. Lancy 2026 (47, privileged share
+    // 51 %): 6,943.089 -> 6,943.10, x 47 % = 3,263.257 -> 3,263.25; rest 6,670.80 x 47 % =
+    // 3,135.276 -> 3,135.30: 6,398.55.
+    // Wealth: 577,760 - 157,575 = 420,185; couple 175,743 (art. 16 al. 1): 95.00 = 244,442; 97.00 =
+    // 244,442 x 297,760 / 577,760 = 125,978.0; 99.00 = 118,464. Base: the scale at 244,442 = 403.65
+    // + 6,999 x 2.34 per mille = 16.378 -> 16.40: 420.05, x 118,464 / 244,442 = 203.569 -> 203.55;
+    // centimes 96.686 -> 96.70; home care 2.0355 -> 2.05; supplementary 11.35 + 6,999 x 0.1169 per
+    // mille = 0.818 -> 0.80: 12.15, x 118,464 / 244,442 = 5.888 -> 5.90: cantonal 308.20. Communal:
+    // 51 % x 203.55 = 103.8105 -> 103.80, x 47 % = 48.786 -> 48.80; rest 99.75 x 47 % = 46.8825 ->
+    // 46.90: 95.70. ICC 17,807.00 + 308.20 + 6,398.55 + 95.70 + 25 = 24,634.45. IFD as before.
+    expect(out.icc!.total).toBe(2_463_445);
     expect(out.ifd).toMatchObject({ tax: 495_150, taxableIncome: 14_393_200 });
     expect(out.assumptions.join(' ')).toMatch(/exemption avec réserve de progression/);
   });

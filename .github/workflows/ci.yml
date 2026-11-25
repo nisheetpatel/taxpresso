@@ -32,6 +32,12 @@ jobs:
       - run: pnpm build:site
       - name: Dependency allowlist and shipped files (C2)
         run: pnpm check:bundle
+      # The Claude plugin (Claude Code and Cowork), built from the same sources as the .mcpb:
+      # the same C2 checks on its split server, then the directory's pre-submission rules
+      # (scripts/check-plugin.mjs; docs/spikes/S5.md).
+      - run: pnpm build:plugin
+      - name: Claude plugin, C2 and pre-submission checks
+        run: pnpm check:plugin
 
       # SPEC.md section 13 item 8: the whole flow passes with networking disabled. The container has
       # only a loopback interface, and the network guard inside the server records any attempt.
@@ -50,10 +56,30 @@ jobs:
             echo "::endgroup::"
           done
 
+      # The same, against the unzipped plugin zip, its server started as its .mcp.json says.
+      - name: Offline test of the Claude plugin (docker --network none)
+        run: |
+          mkdir -p "$RUNNER_TEMP/plugin"
+          unzip -q build/taxpresso-plugin-*.zip -d "$RUNNER_TEMP/plugin"
+          for node in 22 24; do
+            echo "::group::Node $node"
+            docker run --rm --network none \
+              -e TAXPRESSO_EXPECT_NO_NETWORK=1 \
+              -e TAXPRESSO_EXTENSION_DIR=/plugin \
+              -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/plugin/taxpresso:/plugin:ro" -w /repo \
+              "node:${node}-bookworm-slim" node test/offline/run.mjs
+            echo "::endgroup::"
+          done
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: taxpresso-mcpb
           path: build/*.mcpb
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: taxpresso-plugin
+          path: build/taxpresso-plugin-*.zip
           if-no-files-found: error
 
   offline-desktop-platforms:

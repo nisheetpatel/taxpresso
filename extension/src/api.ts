@@ -33,7 +33,7 @@ import { WorkspaceError, type PlanKey, type Workspace } from './workspace.js';
 import { CANTONS } from './cantons.js';
 import { TaxYears } from './years.js';
 import { journey, pageOf } from './journey.js';
-import { pagesState, ROUGH_INCOME } from './pages.js';
+import { documentStatus, pagesState, ROUGH_INCOME } from './pages.js';
 import type { FolderOpener } from './open-folder.js';
 
 const Answer = z.object({
@@ -178,6 +178,7 @@ export function dashboardState(
     ...(j.about.some((f) => f.id === 'source_tax') ? ['profile.taxed_at_source'] : []),
     ...(j.about.some((f) => f.id === 'tou_already') ? ['profile.tou'] : []),
   ]);
+  const status = documentStatus(ws);
   // "Your assessment" compares this year's assessment; an earlier year's feeds the review.
   const otherYear = new Set(
     ws.documents
@@ -249,6 +250,7 @@ export function dashboardState(
         // Taken from other answers (a return started before the canton question).
         ...(s.assumed ? { assumed: true } : {}),
       })),
+    // Each with what it turned out to be, as Make it exact says it (./pages.ts).
     documents: ws.activeDocuments().map((d) => ({
       id: d.id,
       filename: d.filename,
@@ -261,6 +263,7 @@ export function dashboardState(
       ...(isBarcodeDocument(d)
         ? { barcode: d.parse.method === BARCODE_PENDING ? 'pending' : 'read' }
         : {}),
+      status: status(d),
     })),
     // A property's documents, abroad or in Geneva, only for a household that has one (simple first).
     kinds: KIND_ORDER.filter(

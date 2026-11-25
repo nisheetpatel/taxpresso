@@ -161,7 +161,8 @@ function statementFacts(s: Ech0196Statement, doc: VaultDocument): Wanted[] {
   };
   // The statement's totals are its one line of the securities list (relevés fiscaux, F4;
   // ge-2025-guide-declaration-pp p. 43). Its accounts, loans and securities below are its detail:
-  // the securities list counts the total, never the positions again.
+  // the securities list counts the total, never the positions again; its accounts' interest fills
+  // the line's column of interest on savings capital (p. 41; ge-2025-declaration-specimen p. 24).
   add('tax_statement.taxable_value', doc.id, s.totals.valueChf);
   add('tax_statement.income_subject_ia', doc.id, s.totals.incomeA);
   add('tax_statement.income_not_subject_ia', doc.id, s.totals.incomeB);

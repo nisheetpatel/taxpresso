@@ -229,7 +229,7 @@ export const COMMUNES_2026: Cited<readonly LuCommune[]> = {
     {
       name: 'Hohenrain',
       units: 20500,
-      catholic: { units: 4500, parish: null },
+      catholic: { units: 4000, parish: null },
       reformed: { units: 2200, parish: 'Hochdorf' },
     },
     {

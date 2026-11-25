@@ -45,6 +45,11 @@ export interface RoughView {
   /** The kinds this canton takes, in the card's order (a business's profit is Geneva's only). */
   kinds: { kind: RoughKind; key: string; field: RoughField }[];
   people: RoughPerson[];
+  /**
+   * How far the documents moved the tax from what the rough numbers said, in centimes (below zero:
+   * less), once a document replaced a rough figure and the tax no longer rests on one; else null.
+   */
+  moved: number | null;
 }
 
 /** The fields GET /state has for the three pages. */
@@ -66,15 +71,22 @@ export const shownPage = (page: PageView, tab: PageId | null): PageId =>
 export const followPage = (shown: PageId | null, before: PageId | null, now: PageId): PageId =>
   shown === null || shown === before ? now : shown;
 
-/** The commune question with its options, when they are known. */
+/**
+ * The commune question with its options, when they are known. Another commune question (the
+ * commune where each person works) takes the same communes, then its own choices, which the state
+ * keeps (outside the canton).
+ */
 export function withCommunes(state: State, options: Question['options']): PagesFields {
   const commune = state.groups.basics.find((q) => q.type === 'commune' && !q.options);
+  const fill = (q: GroupQuestion): GroupQuestion =>
+    q.type !== 'commune' || !options
+      ? q
+      : q.id === commune?.id
+        ? { ...q, options }
+        : { ...q, options: [...options, ...(q.options ?? [])] };
   const groups =
     commune && options
-      ? {
-          ...state.groups,
-          basics: state.groups.basics.map((q) => (q.id === commune.id ? { ...q, options } : q)),
-        }
+      ? (Object.fromEntries(GROUPS.map((g) => [g, state.groups[g].map(fill)])) as Groups)
       : state.groups;
   return { page: state.page, confidence: state.confidence, groups, rough: state.rough };
 }

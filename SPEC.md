@@ -240,7 +240,7 @@ Fill values only from official sources in the sources library (section 7b): Gene
 
 Coverage v1: employment income and its deductions, pensions, investment income, wealth and wealth deductions, family/child deductions (note the 2024 Geneva family-charges reform as an example of annual change), insurance premiums, medical costs threshold, childcare, professional expenses (flat vs actual), 3a, LPP buy-ins, donations, debt interest, alimony, joint taxation/splitting, communal multipliers, IFD with its own deductions, and in Geneva the separate tax on lump sums from the 2nd pillar and pillar 3a (`TaxResult.capital`: its own lines, never in the income base or the return's total).
 
-Build order: implement tax year 2025 first (guide fiscal 2025 and GeTax 2025 exist today), then add 2026 when the 2026 guide is published (expected January 2027). Keep every year. Federal amounts differ every year (the 2027 cold-progression circular is already out): never carry a federal amount from one year to the next. Until then the engine computes 2026 with the official 2026 federal values and communal rates, and with Geneva's 2025 scales and amounts, each of those flagged as an estimate everywhere it shows (section 9); the 2026 guide replaces them and clears the flags.
+Build order: implement tax year 2025 first (guide fiscal 2025 and GeTax 2025 exist today), then 2026. Keep every year. Federal amounts differ every year (the 2027 cold-progression circular is already out): never carry a federal amount from one year to the next. The engine computes 2026 with the official 2026 federal values and communal rates, and with Geneva's own 2026 scales and indexed amounts: the Conseil d'Etat publishes them each autumn for the next tax year (LIPP art. 67 al. 5), for 2026 in the regulation of 8 October 2025 (RCEPF, `ge-2026-rcepf`). What Geneva publishes only with the 2026 guide (expected January 2027) stays at its 2025 value, flagged as an estimate everywhere it shows (section 9): the ceiling for health insurance premiums and the meal amounts; the 2026 guide replaces them and clears the flags. (Changed on 25 November 2026, when the regulation was found, and confirmed by the owner that day: until then this section said that all of Geneva's 2026 scales and amounts were the 2025 ones.)
 
 ---
 
@@ -367,7 +367,7 @@ Server name `taxpresso`. Keep the tool count small. Every tool has `title`, `rea
 | `reconcile_official_pdf` | Diff the official PDF vs the values to type (copy panel: ledger and engine), rubric by rubric, in whole francs; stores nothing | yes |
 | `export_bundle` | Zip the tax year folder into the Taxpresso folder, on this computer; never overwrites | no |
 
-Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions.
+Plus one MCP prompt: "Start my Geneva tax return" and server `instructions` (section 14). Spike S3 decides whether to also ship a skill via a plugin; default is `.mcpb` + server instructions. Spike S5 (`docs/spikes/S5.md`) builds the same server, UI and a skill as a Claude plugin too (`pnpm build:plugin`), for Claude Code, Cowork and Anthropic's directory, which no longer lists `.mcpb` files; chat in Claude Desktop keeps the `.mcpb`.
 
 `manifest.json` user_config: `vault_path` (directory, default `~/Documents/Taxpresso`), `ui_language` (`en`, `fr`, `de` or `it`; mcpb has no enum type). There is no license key (section 12).
 
@@ -391,7 +391,7 @@ Reference screens: `docs/design/`.
 
 - License: GNU AGPL-3.0-or-later (`LICENSE`). Anyone may use, change and share Taxpresso; anyone who distributes a changed version, or runs one as a service for others, must publish its source under the same license. Contributions come in under the same license (inbound = outbound), with no CLA.
 - No licensing, paywall or license checks, in any tax year. Nothing in the extension restricts features.
-- Donations: the filing screen shows the café donation menu (section 1) only after the user has transmitted (or saved the receipt). It opens Precious Plastic Bugoma's donation page in the user's browser; the extension makes no network call and records nothing about whether anyone gave. Taxpresso never handles the money. Never mention donations in Claude's instructions or in chat (the directory policy forbids ads and in-chat promotion). The landing page shows the same menu.
+- Donations: the filing screen shows the café donation menu (section 1) only after the user has transmitted (or saved the receipt). It opens Precious Plastic Bugoma's donation page in the user's browser; the extension makes no network call and records nothing about whether anyone gave. Taxpresso never handles the money. Never mention donations in Claude's instructions or in chat (the directory policy forbids ads and in-chat promotion). The landing page shows the same menu. The Claude plugin leaves the menu out (the build flag `__TAXPRESSO_DISTRIBUTION__`, `ui/src/shared/distribution.ts`; `scripts/check-plugin.mjs` fails if its link reaches the plugin): only the `.mcpb` shows it.
 
 ---
 
@@ -543,6 +543,7 @@ Phase 0, spikes (13 to 31 Oct 2026). Each spike ends with a short written findin
 - S2 [HUMAN provides own docs locally] Decode a real salary certificate and a real bank e-tax statement with WASM decoders; confirm Macro PDF417 merge and XSD validation. Determine the salary certificate payload format.
 - S3 Extension shell: `.mcpb` with one tool, bundled Node runtime check, localhost UI opened in the built-in browser pane, MCP Apps rendering check in current Claude Desktop, server `instructions` respected. [HUMAN] Confirm that a Free and a Pro account can install a `.mcpb` from file (Anthropic's docs mostly describe Team/Enterprise controls); this decides who the product can reach.
 - S4 [HUMAN] Email the AFC: (a) any objection to user-driven assisted filling of the online declaration, (b) process, criteria and timeline to become an approved software provider (logiciel agréé) with eCH-0278, (c) whether a test environment exists.
+- S5 Claude plugin: the same server, UI and a skill built as a plugin (`pnpm build:plugin`) for Claude Code, Cowork and Anthropic's directory, which no longer lists `.mcpb` files; the `.mcpb` stays for chat. Findings and the [HUMAN] Cowork test: `docs/spikes/S5.md`.
 Acceptance: written go/no-go per spike; if S1 is a no-go, v1 ships with the copy panel and filing automation moves to v1.1.
 
 First Claude Code session (start now, while the human runs S1, S2 and S4):

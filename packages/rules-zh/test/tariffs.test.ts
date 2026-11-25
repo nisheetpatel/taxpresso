@@ -4,10 +4,14 @@
 // sample taxes for these tariffs; the official worked example (official-example.test.ts) stops at
 // the taxable income and wealth.
 import { describe, expect, it } from 'vitest';
-import { stepsTotal, tariffFraction, zhParamsFor, type StepTariff } from '../src/index.js';
+import { assess, stepsTotal, tariffFraction, zhParamsFor, type StepTariff } from '../src/index.js';
 
 const chf = (francs: number) => Math.round(francs * 100);
-/** The simple tax on whole francs, in centimes, rounded to the centime as the engine does. */
+/**
+ * The tariff itself on whole francs, in centimes, to the centime: the steps as the law prints
+ * them. The tax bill rounds the amount down first and the simple tax down to whole francs
+ * (Weisung ZStB 173.1 Rz 45 and 71: "as the tax bill rounds" below, and estv-golden.test.ts).
+ */
 const tax = (t: StepTariff, francs: number) => {
   const num = tariffFraction(t, chf(francs));
   return Math.floor((2 * num + t.denominator) / (2 * t.denominator));
@@ -69,8 +73,48 @@ describe('tariffs 2025 and 2026', () => {
 
   it('2025 wealth, married tariff: CHF 458,373 (the taxable wealth of the official example)', () => {
     // 159,000 free; 239,000 x 0.5 per mille = 119.50 (to 398,000); 60,373 x 1 per mille = 60.373.
-    // Total 179.873, to the centime 179.87.
+    // Total 179.873, to the centime 179.87. (The bill takes 458,000: 179.50, so 179.)
     expect(tax(zhParamsFor(2025).wealthTariff.married.value, 458_373)).toBe(chf(179.87));
+  });
+
+  it('as the tax bill rounds: income down to CHF 100, wealth to CHF 1,000, the simple tax to whole francs, each tax to 5 Rappen', () => {
+    // zh-na-tariff-weisung-steuerrechnungen-zstb-173-1 Rz 45 (p. 8): "Fr. 23654 ist auf Fr. 23600
+    // abzurunden", "Fr. 87789 ist auf Fr. 87000 abzurunden"; Rz 71 (p. 11): "Fr. 45.29 ist auf
+    // Fr. 45.-- abzurunden"; Rz 78 (p. 13): to the nearest 5 Rappen.
+    // Single, Zürich 2026 (95 % and 119 %), taxable income 23,654 and wealth 87,789.
+    // Income 23,600, basic tariff 2026: 5,000 x 2 % (100) + 4,800 x 3 % (144) = 244 at 16,800;
+    // (23,600 - 16,800) x 4 % = 272; 516. Wealth 87,000: 81,000 free; 6,000 x 0.5 per mille =
+    // 3.00; 3. Simple tax 519. Staatssteuer 95 %: 493.05. Gemeindesteuer 119 %: 617.61, to 5
+    // Rappen 617.60. Personalsteuer 24. Total 1,134.65.
+    const single = (income: number, wealth: number) =>
+      assess({
+        taxYear: 2026,
+        commune: 261,
+        tariff: 'basic',
+        adults: 1,
+        incomeItems: [{ code: '100', person: 'p1', amount: chf(income) }],
+        wealthItems: [{ code: '400', person: 'p1', amount: chf(wealth) }],
+      });
+    const r = single(23_654, 87_789);
+    expect(r.taxableIncome.amount).toBe(chf(23_654)); // line 390, as declared
+    expect(r.wealth.taxableWealth.amount).toBe(chf(87_789)); // line 490
+    expect(r.taxes.simpleIncome.amount).toBe(chf(516));
+    expect(r.taxes.simpleWealth.amount).toBe(chf(3));
+    expect(r.taxes.cantonal.amount).toBe(chf(493.05));
+    expect(r.taxes.communal.amount).toBe(chf(617.6));
+    expect(r.taxes.total.amount).toBe(chf(1_134.65));
+    // The same tax anywhere in the same CHF 100 of income and CHF 1,000 of wealth.
+    expect(single(23_600, 87_000).taxes.total.amount).toBe(chf(1_134.65));
+    expect(single(23_699, 87_999).taxes.total.amount).toBe(chf(1_134.65));
+    // Wealth 150,000: (150,000 - 81,000) x 0.5 per mille = 34.50, in whole francs 34.
+    expect(single(0, 150_000).taxes.simpleWealth.amount).toBe(chf(34));
+    // The text says what was done.
+    expect(r.taxes.simpleIncome.how.en).toContain(
+      'taken as CHF 23’600.00 (rounded down to CHF 100)',
+    );
+    expect(r.taxes.simpleWealth.how.en).toContain(
+      'taken as CHF 87’000.00 (rounded down to CHF 1’000)',
+    );
   });
 
   it('nothing on a zero or negative amount, and nothing in the free first step', () => {

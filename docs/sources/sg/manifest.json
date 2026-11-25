@@ -202,10 +202,10 @@
     "format": "pdf",
     "publisher": "Kantonales Steueramt St.Gallen (Finanzdepartement)",
     "published": null,
-    "verified_on": "2026-10-13",
+    "verified_on": "2026-11-25",
     "priority": "core",
     "why_needed": "2026 income and wealth tariff (einfache Steuer), same structure as 2025 with indexed brackets.",
-    "notes": "105 pages, created 26 Mar 2026. Page 1 has the same rules as 2025 with a slightly higher top threshold. Matches StG Stand 1.1.2026 Art. 50 (changed 2025-044, in force 1.1.2026)."
+    "notes": "105 pages, created 27 Oct 2026: the canton replaced the file of 26 Mar 2026 at the same address, with the same page 1 and the same 5,191 rows (scripts/sg-tariff.mjs --check). Downloaded again on 2026-11-25. Page 1 has the same rules as 2025 with a slightly higher top threshold. Matches StG Stand 1.1.2026 Art. 50 (changed 2025-044, in force 1.1.2026)."
   },
   {
     "id": "sg-2026-tariff-kantonssteuerfuss",

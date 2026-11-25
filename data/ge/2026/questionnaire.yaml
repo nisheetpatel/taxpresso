@@ -101,7 +101,8 @@ questions:
       it: 'Asilo nido, doposcuola o tata. Sul modulo ufficiale: frais de garde.'
 
   # The childcare maximum is per child, for both taxes (ge-2025-guide-declaration-pp p. 30: "pour
-  # chaque enfant ... jusqu'à concurrence de", 26'320 for 59.10 and 25'800 for 59.12;
+  # chaque enfant ... jusqu'à concurrence de", 26'320 for 59.10 in 2025, 26'392 in 2026 by
+  # ge-2026-rcepf art. 9, and 25'800 for 59.12;
   # ch-2026-ifd-instructions-personnes-physiques p. 8, ch-2025-ifd-instructions-personnes-physiques
   # p. 8: "25 800 fr. par enfant"). Invoices for the household (childcare.costs) above the smaller
   # maximum, 25'800 in 2025 and 2026 (2,580,000 centimes), with several children: how they split
@@ -406,6 +407,94 @@ questions:
         fr: 'Guide fiscal 2025, p. 17 : Activité dépendante'
         de: 'Genfer Steuerwegleitung 2025, S. 17: unselbständige Erwerbstätigkeit, auf Französisch'
         it: 'Guida fiscale di Ginevra 2025, p. 17: reddito da attività dipendente'
+
+  # Where each salaried person works. The commune of residence taxes all income except a salary
+  # earned exclusively in another commune, which that commune taxes (ge-na-law-lcp art. 293 let. A
+  # ch. 1 let. c and ch. 2 let. c): the commune of residence takes its privileged share of each base
+  # tax, and the rest goes to the communes concerned, the commune of residence included, in
+  # proportion to the income earned in each (art. 295A al. 1 and 2; "le solde étant attribué à la
+  # commune d'activité": ge-2025-part-privilegiee-communique p. 8 for 2025,
+  # ge-2026-part-privilegiee-communique p. 12 for 2026). The form asks the code of the commune of
+  # work on each salary line (ge-2025-declaration-specimen p. 5 and 6), the guide says which (p. 17,
+  # cited for 2025 and, until the 2026 guide, for 2026): in another canton, the commune of
+  # residence. Abroad: no Geneva commune but the home one can tax it (art. 293), so the same.
+  # Basics: it moves the tax by up to a sixth of the cantonal base tax (living in Cologny, 25
+  # centimes, privileged share 20 %, and working in the City of Geneva, 45.49). Not answered, the
+  # salary counts for the commune of residence, and the tax says so. Several communes at once (two
+  # employers, or one job in two places) can't be told with one answer: not supported yet.
+  - id: work_commune
+    key: profile.work_commune
+    group: basics
+    type: commune
+    perPerson: true
+    when: { key: profile.income_sources, includes: salary }
+    explain:
+      en: 'Your home commune taxes its privileged share of your communal tax (part privilégiée); the rest goes to the commune where you work, at its own rate (centimes additionnels). If you work where you live, choose your own commune. Outside the canton of Geneva, your home commune keeps it all.'
+      fr: 'Votre commune de domicile impose sa part privilégiée de votre impôt communal ; le reste revient à la commune où vous travaillez, à son propre taux (centimes additionnels). Si vous travaillez là où vous habitez, choisissez votre commune. Hors du canton de Genève, votre commune de domicile garde tout.'
+      de: 'Deine Wohngemeinde besteuert ihren bevorzugten Anteil deiner Gemeindesteuer (part privilégiée); der Rest geht an die Gemeinde, in der du arbeitest, zu ihrem eigenen Satz (centimes additionnels). Arbeitest du dort, wo du wohnst, wähl deine Gemeinde. Ausserhalb des Kantons Genf behält deine Wohngemeinde alles.'
+      it: 'Il tuo Comune di domicilio tassa la sua quota privilegiata della tua imposta comunale (part privilégiée); il resto va al Comune in cui lavori, alla sua aliquota (centimes additionnels). Se lavori dove abiti, scegli il tuo Comune. Fuori dal Cantone di Ginevra, il tuo Comune di domicilio tiene tutto.'
+    # ge-2025-guide-declaration-pp p. 17
+    learnMore:
+      year: 2025
+      url: 'https://www.ge.ch/document/41995/annexe/file/573038#page=17'
+      label:
+        en: 'Geneva tax guide 2025, p. 17: the commune where you work'
+        fr: 'Guide fiscal 2025, p. 17 : Code de la commune dans laquelle vous travaillez'
+        de: 'Genfer Steuerwegleitung 2025, S. 17: die Gemeinde, in der du arbeitest, auf Französisch'
+        it: 'Guida fiscale di Ginevra 2025, p. 17: il Comune in cui lavori, in francese'
+    text:
+      p1:
+        en: 'In which commune do you work?'
+        fr: 'Dans quelle commune travaillez-vous ?'
+        de: 'In welcher Gemeinde arbeitest du?'
+        it: 'In quale Comune lavori?'
+      p2:
+        en: 'In which commune does your spouse or partner work?'
+        fr: 'Dans quelle commune votre conjoint ou partenaire travaille-t-il ?'
+        de: 'In welcher Gemeinde arbeitet dein Partner oder deine Partnerin?'
+        it: 'In quale Comune lavora il tuo coniuge o partner?'
+    help:
+      en: 'The commune of your workplace (lieu de travail): Genève for the City of Geneva. If you work where you live, choose your own commune. On the official form: code commune, on each salary line.'
+      fr: 'La commune de votre lieu de travail : Genève pour la Ville de Genève. Si vous travaillez là où vous habitez, choisissez votre commune. Sur le formulaire officiel : code commune, sur chaque ligne de salaire.'
+      de: 'Die Gemeinde deines Arbeitsorts (lieu de travail): Genève für die Stadt Genf. Arbeitest du dort, wo du wohnst, wähl deine Gemeinde. Auf dem offiziellen Formular: code commune, auf jeder Lohnzeile.'
+      it: 'Il Comune del tuo luogo di lavoro (lieu de travail): Genève per la Città di Ginevra. Se lavori dove abiti, scegli il tuo Comune. Sul modulo ufficiale: code commune, su ogni riga di salario.'
+    chip:
+      {
+        en: 'Works in {commune}',
+        fr: 'Travaille à {commune}',
+        de: 'Arbeitet in {commune}',
+        it: 'Lavora a {commune}',
+      }
+    # Besides the 45 communes.
+    options:
+      - value: outside_geneva
+        label:
+          {
+            en: 'Outside the canton of Geneva',
+            fr: 'Hors du canton de Genève',
+            de: 'Ausserhalb des Kantons Genf',
+            it: 'Fuori dal Cantone di Ginevra',
+          }
+        chip:
+          {
+            en: 'Works outside Geneva',
+            fr: 'Travaille hors du canton',
+            de: 'Arbeitet ausserhalb von Genf',
+            it: 'Lavora fuori da Ginevra',
+          }
+      - value: several_communes
+        label:
+          {
+            en: 'In more than one Geneva commune',
+            fr: 'Dans plusieurs communes genevoises',
+            de: 'In mehreren Genfer Gemeinden',
+            it: 'In più Comuni ginevrini',
+          }
+        notSupported:
+          en: 'Work in more than one Geneva commune (the communal tax is shared between them)'
+          fr: 'Un travail dans plusieurs communes genevoises (l’impôt communal est réparti entre elles)'
+          de: 'Arbeit in mehreren Genfer Gemeinden (die Gemeindesteuer wird zwischen ihnen aufgeteilt)'
+          it: 'Un lavoro in più Comuni ginevrini (l’imposta comunale è ripartita tra loro)'
 
   # Swiss, a C permit or another permit: who is taxed at source follows from it and the income
   # (ge-na-law-lisp art. 1 and 2; ge-<year>-source-directives p. 6, ch. 1.1.1 and 1.1.2, the same

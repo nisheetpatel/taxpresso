@@ -2292,10 +2292,14 @@
     "status": "ok"
   },
   "ch-na-ifd-chiffres-reperes-3a": {
-    "url": "https://www.bsv.admin.ch/dam/bsv/fr/dokumente/bv/anleitungen/masszahlen-2025-2026.pdf.download.pdf/masszahlen-2025-2026.pdf",
-    "status": "failed",
-    "error": "HTTP 502",
-    "tried_at": "2026-10-13T17:31:37.337Z"
+    "url": "https://www.bsv.admin.ch/dam/fr/sd-web/GZplHByBJoFc/Internet_Masszahlenarticles_25_26_f.pdf",
+    "final_url": "https://www.bsv.admin.ch/dam/fr/sd-web/GZplHByBJoFc/Internet_Masszahlenarticles_25_26_f.pdf",
+    "file": "ch/files/ch-na-ifd-chiffres-reperes-3a.pdf",
+    "bytes": 419825,
+    "sha256": "c63dc238ee19baffd8fa935b54d68320f969adb3697489010ce7fbd438a4cebf",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-11-25T16:09:33.183Z",
+    "status": "ok"
   },
   "ch-na-remboursement-impot-anticipe": {
     "url": "https://www.estv.admin.ch/fr/remboursement-impot-anticipe",
@@ -2308,10 +2312,14 @@
     "status": "ok"
   },
   "ch-na-is-faq-circulaire-45": {
-    "url": "https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf",
-    "status": "failed",
-    "error": "HTTP 502",
-    "tried_at": "2026-10-13T17:31:37.343Z"
+    "url": "https://www.estv.admin.ch/dam/fr/sd-web/a7vG5hlZeAdW/dbst-ks-2022-1-045-d-faq-fr.pdf",
+    "final_url": "https://www.estv.admin.ch/dam/fr/sd-web/a7vG5hlZeAdW/dbst-ks-2022-1-045-d-faq-fr.pdf",
+    "file": "ch/files/ch-na-is-faq-circulaire-45.pdf",
+    "bytes": 265935,
+    "sha256": "582b3d8a87da5782b5be767966574d02728cb58ddec6aede2e3fb7bb0025ebe4",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-11-25T16:09:33.141Z",
+    "status": "ok"
   },
   "ch-2026-is-bases-de-calcul": {
     "url": "https://www.estv.admin.ch/dam/fr/sd-web/nuQbhdzXDPm0/qst-berechnungsgrundlagen-2026-fr.pdf",
@@ -4097,10 +4105,10 @@
     "url": "https://steuern.lu.ch/-/media/Steuern/Dokumente/Publikationen/2026/Steuereinheiten_2026_NP.pdf",
     "final_url": "https://steuern.lu.ch/-/media/Steuern/Dokumente/Publikationen/2026/Steuereinheiten_2026_NP.pdf",
     "file": "lu/files/lu-2026-communal-steuereinheiten.pdf",
-    "bytes": 212368,
-    "sha256": "85779bafeb9077b243fd667ac4efb20dd22475a139db403841cfc15379b93a7e",
+    "bytes": 264085,
+    "sha256": "b51d5f7f38052c7081359b6709135e4db21f567080eaaab1c93bf08e85d0e1ab",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-13T22:01:19.600Z",
+    "retrieved_at": "2026-11-25T17:31:28.873Z",
     "status": "ok"
   },
   "lu-2026-deductions-abzuege-auf-einen-blick": {
@@ -4947,10 +4955,10 @@
     "url": "https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/tarife-und-steuerfuesse/tarife-privatpersonen-gueltig-ab/Tarif_2026_SG_DEF.pdf",
     "final_url": "https://www.sg.ch/content/dam/sgch/steuern-finanzen/steuern/formulare-und-wegleitungen/einkommens-und-vermoegenssteuer/tarife-und-steuerfuesse/tarife-privatpersonen-gueltig-ab/Tarif_2026_SG_DEF.pdf",
     "file": "sg/files/sg-2026-tariff-einkommen-vermoegen.pdf",
-    "bytes": 2997244,
-    "sha256": "b2929a1acc0a642191280e476aa5289f9dc1ca2587b036b1cc342f919bbda0c7",
+    "bytes": 386950,
+    "sha256": "eed1ab548d447da45bda3aae6317f84d0a41ff580240ad68a65a4e5597b4778a",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-13T22:01:29.010Z",
+    "retrieved_at": "2026-11-25T17:43:31.334Z",
     "status": "ok"
   },
   "sg-na-source-tax-faq": {
@@ -5700,7 +5708,7 @@
     "bytes": 665495,
     "sha256": "e1433250fb998428dd2bfb96681ed7354bc37c733240a2e42b957762f814dde1",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-13T23:04:00.443Z",
+    "retrieved_at": "2026-11-25T16:06:18.671Z",
     "status": "ok"
   },
   "vd-na-law-rifam": {
@@ -5770,7 +5778,7 @@
     "bytes": 109438,
     "sha256": "1d3c1c24c05c4b0f2a3481dcce524bc46ab2f7f6b49ba28bcd2418a43dbeba87",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T03:22:45.527Z",
+    "retrieved_at": "2026-11-25T17:42:25.736Z",
     "status": "ok"
   },
   "ti-2025-form-modulo-1-de": {
@@ -5780,7 +5788,7 @@
     "bytes": 714084,
     "sha256": "b2fd44813240553d787e52a35e477998040adbbb34780f874a0d423b60c83871",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T03:22:45.663Z",
+    "retrieved_at": "2026-11-25T17:42:25.872Z",
     "status": "ok"
   },
   "bl-na-law-steuerfussdekret-331-2": {
@@ -5800,7 +5808,7 @@
     "bytes": 510337,
     "sha256": "d2946db6c15f78a4db2cc09efdbafe66366f437992d1805a9853e71a923ed336",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T13:12:48.163Z",
+    "retrieved_at": "2026-11-25T16:06:18.623Z",
     "status": "ok"
   },
   "ge-2025-guide-independants": {
@@ -5810,7 +5818,7 @@
     "bytes": 775829,
     "sha256": "c3dd11bc31b6b72bc1bdeccea23f617bd75b8e9fe02f3c03f059a11dc71c3579",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T13:12:48.225Z",
+    "retrieved_at": "2026-11-25T16:06:17.425Z",
     "status": "ok"
   },
   "ge-na-law-ldirpp": {
@@ -5820,7 +5828,7 @@
     "bytes": 14294,
     "sha256": "aac5f6aa7a085cdf53e7fcdd6cd62fb97382b9bd7a93203dc572894723b85c2b",
     "content_type": "text/html",
-    "retrieved_at": "2026-10-14T13:14:20.640Z",
+    "retrieved_at": "2026-11-25T16:06:17.626Z",
     "status": "ok"
   },
   "ge-na-law-lcacant": {
@@ -5830,7 +5838,7 @@
     "bytes": 16564,
     "sha256": "dbe6eac7fcfd400ad59ebfec1888e7da7ec566f25064c4c06334e1aa38412cb9",
     "content_type": "text/html",
-    "retrieved_at": "2026-10-14T13:14:20.642Z",
+    "retrieved_at": "2026-11-25T16:06:17.561Z",
     "status": "ok"
   },
   "ge-2026-source-capital-icc-tariff": {
@@ -5840,7 +5848,7 @@
     "bytes": 76480,
     "sha256": "2f1cd19647e0baa7f930a9f364571908df7b5fd29568b21132677f0860132e63",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T13:14:20.704Z",
+    "retrieved_at": "2026-11-25T16:06:17.705Z",
     "status": "ok"
   },
   "ge-2025-source-capital-icc-tariff": {
@@ -5850,7 +5858,7 @@
     "bytes": 155772,
     "sha256": "bd8012f29b25b8606282091fb28fc045d671741bb1f8a1a9ab61d40ca568437a",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T13:14:20.828Z",
+    "retrieved_at": "2026-11-25T16:06:17.737Z",
     "status": "ok"
   },
   "ch-na-ordonnance-frais-professionnels": {
@@ -5860,7 +5868,7 @@
     "bytes": 348656,
     "sha256": "6d2f07a94a85f280309e78244f46fbbf141b88a698b6dcdd9ad17bec762e5f4f",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T19:00:10.528Z",
+    "retrieved_at": "2026-11-25T16:06:18.845Z",
     "status": "ok"
   },
   "ch-2026-afc-guide-futur-contribuable": {
@@ -5870,17 +5878,17 @@
     "bytes": 2477565,
     "sha256": "13a5f54be8588040785c919ef89b909269e9a40d5e6a2fceeec0ae958d1ad5b4",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T19:00:11.088Z",
+    "retrieved_at": "2026-11-25T16:06:18.675Z",
     "status": "ok"
   },
   "ge-na-valeur-fiscale-page": {
     "url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
     "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/valeur-fiscale-impot-fortune",
     "file": "ge/files/ge-na-valeur-fiscale-page.html",
-    "bytes": 116001,
-    "sha256": "8432cf61fc27e64803f488c8ef6e828340849ea0a3da732b151bb85280d1825f",
+    "bytes": 116002,
+    "sha256": "c70a43b1985866e650a481cc97cada313232dc80905663d4b707855a1ae721fc",
     "content_type": "text/html; charset=UTF-8",
-    "retrieved_at": "2026-10-14T17:40:45.406Z",
+    "retrieved_at": "2026-11-25T16:06:17.875Z",
     "status": "ok"
   },
   "zh-na-zstb-5-3": {
@@ -5890,27 +5898,27 @@
     "bytes": 109532,
     "sha256": "024e11eb9ff58b2e9c6a28699a94847026c40d06e83d671c86e3bef2afd7a8dd",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T17:40:45.488Z",
+    "retrieved_at": "2026-11-25T16:09:33.068Z",
     "status": "ok"
   },
   "ge-na-revenu-immobilier-page": {
     "url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
     "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/revenu-immobilier-impot-revenu",
     "file": "ge/files/ge-na-revenu-immobilier-page.html",
-    "bytes": 114679,
-    "sha256": "33fe00e82621188066c546532bdbedac9c7e628a2114adaa0675aa419bcf063d",
+    "bytes": 114680,
+    "sha256": "7df7b39541f2acfcf587bde8f4a4cba51620c0798566d67b029c603ece1ba9a0",
     "content_type": "text/html; charset=UTF-8",
-    "retrieved_at": "2026-10-14T17:46:00.000Z",
+    "retrieved_at": "2026-11-25T16:06:17.673Z",
     "status": "ok"
   },
   "ge-na-charges-deductibles-page": {
     "url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
     "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/charges-frais-deductibles",
     "file": "ge/files/ge-na-charges-deductibles-page.html",
-    "bytes": 119314,
-    "sha256": "4d95c6556c9fc6e593edd94c104941a5dfb098a0bc91b3b6a32242d656c1328d",
+    "bytes": 115307,
+    "sha256": "024a681b291fd5882dcb3ebb3a76d32cacc57e8d0f04ac3462a16a381ccdaac5",
     "content_type": "text/html; charset=UTF-8",
-    "retrieved_at": "2026-10-14T19:17:00.000Z",
+    "retrieved_at": "2026-11-25T16:06:17.641Z",
     "status": "ok"
   },
   "ge-na-information-1-2021-frais-entretien": {
@@ -5920,7 +5928,7 @@
     "bytes": 2493865,
     "sha256": "6dfc7c0e0e4303cd765b8a34367400c9e911882a181a065c8ba747fc4c093f43",
     "content_type": "application/pdf",
-    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "retrieved_at": "2026-11-25T16:06:17.503Z",
     "status": "ok"
   },
   "ge-na-iic-page": {
@@ -5928,9 +5936,9 @@
     "final_url": "https://www.ge.ch/impot-proprietaires-immobiliers/impot-immobilier-complementaire",
     "file": "ge/files/ge-na-iic-page.html",
     "bytes": 114164,
-    "sha256": "fc4655474908ea8a486f900071ba28c567d4d52088a572dcb6a746861b464417",
+    "sha256": "12478f654f6a6c2bbb2c72abc12d55c98ad51cd65166c113b2e37cb4cc49b137",
     "content_type": "text/html; charset=UTF-8",
-    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "retrieved_at": "2026-11-25T16:06:17.660Z",
     "status": "ok"
   },
   "ge-na-law-lefi": {
@@ -5940,7 +5948,7 @@
     "bytes": 27027,
     "sha256": "ae54d9c174dcf9da36060f68140311c8754f6f6bd1e5482c788d738a1eb1749c",
     "content_type": "text/html",
-    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "retrieved_at": "2026-11-25T16:06:17.601Z",
     "status": "ok"
   },
   "ge-na-law-rivfi": {
@@ -5950,17 +5958,97 @@
     "bytes": 34747,
     "sha256": "d8c38fd40bc11333e173b38c8d5e2e919721e705863b5c31cc2e4c69270aa0d5",
     "content_type": "text/html",
-    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "retrieved_at": "2026-11-25T16:06:17.898Z",
     "status": "ok"
   },
   "ch-na-reforme-valeur-locative-2029": {
     "url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
     "final_url": "https://www.estv.admin.ch/fr/newnsb/yGTqBPowRqyVh0zPokW-q",
     "file": "ch/files/ch-na-reforme-valeur-locative-2029.html",
-    "bytes": 334860,
-    "sha256": "f76e2201f462429f00360477d9ab7784dd05ba7c3e20d5dc08ea159850667c02",
-    "content_type": "text/html;charset=UTF-8",
-    "retrieved_at": "2026-10-14T19:34:00.000Z",
+    "bytes": 340802,
+    "sha256": "f67170b7facc72f9add2088993737843f2c2ee96f3d9b9b7b450a7c0ac486e9e",
+    "content_type": "text/html;charset=utf-8",
+    "retrieved_at": "2026-11-25T16:06:18.999Z",
+    "status": "ok"
+  },
+  "ge-na-part-privilegiee-page": {
+    "url": "https://www.ge.ch/document/fiscalite-communes-part-privilegiee",
+    "final_url": "https://www.ge.ch/document/fiscalite-communes-part-privilegiee",
+    "file": "ge/files/ge-na-part-privilegiee-page.html",
+    "bytes": 95676,
+    "sha256": "9e1e3eb6852c006678d13ea6394b2a2d64d8adf9950cff1fe1d522b870fadc37",
+    "content_type": "text/html; charset=UTF-8",
+    "retrieved_at": "2026-11-25T16:06:17.997Z",
+    "status": "ok"
+  },
+  "ge-na-law-rdlcp": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_05p04.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_05p04.htm",
+    "file": "ge/files/ge-na-law-rdlcp.html",
+    "bytes": 354792,
+    "sha256": "9f306cc8eb8f567e57c7ac14711821778f2ec862e1ce93c928f4e444f2a70c38",
+    "content_type": "text/html",
+    "retrieved_at": "2026-11-25T16:06:17.982Z",
+    "status": "ok"
+  },
+  "ge-2025-part-privilegiee-communique": {
+    "url": "https://www.ge.ch/document/37160/telecharger",
+    "final_url": "https://www.ge.ch/document/37160/telecharger",
+    "file": "ge/files/ge-2025-part-privilegiee-communique.pdf",
+    "bytes": 178737,
+    "sha256": "ff165a52bf74a72f56b5b60d6dd9b7cdfd3c3f88f9eee49db1d179474fade422",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-11-25T16:06:18.026Z",
+    "status": "ok"
+  },
+  "ge-na-ata-920-2014-repartition-intercommunale": {
+    "url": "https://justice.ge.ch/apps/decis/fr/ata/file/2014/0009/ATA_000920_2014_A_3652_2012.pdf",
+    "final_url": "https://justice.ge.ch/apps/decis/fr/ata/file/2014/0009/ATA_000920_2014_A_3652_2012.pdf",
+    "file": "ge/files/ge-na-ata-920-2014-repartition-intercommunale.pdf",
+    "bytes": 168234,
+    "sha256": "c18a992c6b2a5dd816c511e554f8858271a4ff66a3448e0be882900078fbb1fc",
+    "content_type": "application/x-download;name=\"ATA_000920_2014_A_3652_2012.pdf\"",
+    "retrieved_at": "2026-11-25T16:06:18.320Z",
+    "status": "ok"
+  },
+  "ge-2026-rcepf": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_08p05.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_08p05.htm",
+    "file": "ge/files/ge-2026-rcepf.html",
+    "bytes": 122809,
+    "sha256": "8ea384f71a6e635cb126fc55dd73927d03ff48a4ed53f2374a2f99174fea242a",
+    "content_type": "text/html",
+    "retrieved_at": "2026-11-25T16:18:14.161Z",
+    "status": "ok"
+  },
+  "zh-na-tariff-weisung-steuerrechnungen-zstb-173-1": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-173-1.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-173-1.pdf",
+    "file": "zh/files/zh-na-tariff-weisung-steuerrechnungen-zstb-173-1.pdf",
+    "bytes": 211855,
+    "sha256": "1bc622eb704c045ad302187ccc8e51a3c770eb4ae27fade865230278414cc0fc",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-11-25T17:05:40.202Z",
+    "status": "ok"
+  },
+  "ti-2025-communal-moltiplicatore-coordinato": {
+    "url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Perequazione/FU-MCC2025.pdf",
+    "final_url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Perequazione/FU-MCC2025.pdf",
+    "file": "ti/files/ti-2025-communal-moltiplicatore-coordinato.pdf",
+    "bytes": 171152,
+    "sha256": "a6b28e4f8d39911c28614bf8793813bfef6c9ff02bc2a6cd7571bc86b651b5a6",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-11-25T17:42:25.757Z",
+    "status": "ok"
+  },
+  "ti-2025-communal-numero-comuni": {
+    "url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Elenco_comuni/numero_comuni_2025.xlsx",
+    "final_url": "https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Elenco_comuni/numero_comuni_2025.xlsx",
+    "file": "ti/files/ti-2025-communal-numero-comuni.xlsx",
+    "bytes": 19040,
+    "sha256": "0598a12330b3d2f1ae0d4eea72049f163300bea20f1bae2e6d1190b588b05b8f",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "retrieved_at": "2026-11-25T17:42:25.761Z",
     "status": "ok"
   }
 }

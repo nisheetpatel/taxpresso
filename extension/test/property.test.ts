@@ -7,7 +7,11 @@
 // Carouge (a flat let), Georges and Monique Perrenoud in Onex (the taux d'effort: fail closed),
 // Antoine and Claire Vuilleumier in Meyrin (a house here and a holiday home in France). Their taxes
 // were derived by hand from the official documents in packages/rules-ge/test/property.test.ts (P1
-// to P5), whose figures these must match.
+// to P5), whose figures these must match; the 2026 cantonal figures again here, step by step at P1
+// and P2, with Geneva's 2026 scales and amounts (ge-2026-rcepf art. 17: cumulative tax 7,015.15 at
+// 77,730, then 14.20 %; art. 18: wealth 1.49 per mille up to 118,722, 1,639.55 at 712,330 then 2.98
+// per mille; supplementary 121.10 at 712,330 then 0.4463 per mille). The federal tax is the same as
+// before.
 import path from 'node:path';
 import { mkdtemp } from 'node:fs/promises';
 import os from 'node:os';
@@ -118,10 +122,11 @@ const salary = (person: 'p1' | 'p2', gross: string, social: string, lpp: string)
     ['salary.lpp_ordinary', lpp],
   ]);
 
-/** The answers of one salaried person who walks to work and has no 3a or buy-in. */
-const worker = (p: 'p1' | 'p2'): [string, unknown][] => [
+/** The answers of one salaried person who works in `commune`, walks there and has no 3a or buy-in. */
+const worker = (p: 'p1' | 'p2', commune: string): [string, unknown][] => [
   [`income_sources:${p}`, ['salary']],
   [`employers:${p}`, 1],
+  [`work_commune:${p}`, commune],
   ...(p === 'p1' ? ([[`residence:${p}`, 'swiss']] as [string, unknown][]) : []),
 ];
 const plain = (people: ('p1' | 'p2')[]): [string, unknown][] => [
@@ -155,8 +160,8 @@ async function chevalley() {
     ['children', 0],
     ['commune', 'Lancy'],
     ['moved', 'no'],
-    ...worker('p1'),
-    ...worker('p2'),
+    ...worker('p1', 'Lancy'),
+    ...worker('p2', 'Lancy'),
     ...plain(['p1', 'p2']),
     ['special', ['real_estate']],
     ...PROPERTY('own_flat', 'both', [
@@ -192,7 +197,7 @@ async function bertholet() {
     ['children', 0],
     ['commune', 'Thônex'],
     ['moved', 'no'],
-    ...worker('p1'),
+    ...worker('p1', 'Thônex'),
     ...plain(['p1']),
     ['special', ['real_estate']],
     ...PROPERTY('own_house', 'p1', [
@@ -224,7 +229,7 @@ async function sandoz() {
     ['children', 0],
     ['commune', 'Carouge'],
     ['moved', 'no'],
-    ...worker('p1'),
+    ...worker('p1', 'Carouge'),
     ...plain(['p1']),
     ['special', ['real_estate']],
     ...PROPERTY('let', 'p1', [
@@ -315,11 +320,25 @@ describe('a property in Geneva, end to end (2026)', () => {
     const res = await call('compute_tax', { detail: true });
     const out = res.structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [], notSupported: [] });
-    expect(out.icc!.total).toBe(2_760_970);
-    expect(out.icc!.taxableIncome).toBe(16_527_100);
-    expect(out.icc!.taxableWealth).toBe(4_213_600);
+    // By hand, 2026. Abattement 2019 to 2026, 8 years x 4 % = 32 %: tax value 930,000 - 297,600 =
+    // 632,400; cantonal rental value 27,600 - 8,832 = 18,768; flat upkeep 25 % = 4,692.
+    // ICC: 118,000 - 7,434 - 8,260 - 1,817 (ge-2026-rcepf art. 6 al. 2) = 100,489; 82,000 - 5,166 -
+    // 4,920 - 1,817 = 70,097; 15.10 18,768; 58.00 -4,692; 41.95 two earners -1,054 (art. 10); 52.21
+    // -11,600; 55.10 -6,750: 95.00 = 165,258. Rate 50 % = 82,629: 7,015.15 + 4,899 x 14.20 % =
+    // 695.658 -> 695.65: 7,710.80; base 165,258 x 7,710.80 / 82,629 = 15,421.60. Centimes 7,325.26
+    // -> 7,325.25; reduction 12 % of 22,746.85 = 2,729.622 -> 2,729.60; home care 154.216 ->
+    // 154.20; cantonal 20,171.45. Lancy 2026 (47, privileged share 51 %): 7,865.016 -> 7,865.00, x
+    // 47 % = 3,696.55; rest 7,556.60 x 47 % = 3,551.602 -> 3,551.60: 7,248.15.
+    // Wealth: 35,000 + 632,400 - 450,000 = 217,400; couple 175,743 (art. 16 al. 1): 41,657. Scale
+    // 1.49 per mille: 62.069 -> 62.05; centimes 29.47375 -> 29.45; home care 0.6205 -> 0.60;
+    // supplementary 0: 92.10. Communal: 51 % x 62.05 = 31.6455 -> 31.65, x 47 % = 14.8755 -> 14.90;
+    // rest 30.40 x 47 % = 14.288 -> 14.30: 29.20.
+    // ICC 20,171.45 + 92.10 + 7,248.15 + 29.20 + 25 = 27,565.90. IFD as before: 7,161.00.
+    expect(out.icc!.total).toBe(2_756_590);
+    expect(out.icc!.taxableIncome).toBe(16_525_800);
+    expect(out.icc!.taxableWealth).toBe(4_165_700);
     expect(out.ifd).toMatchObject({ tax: 716_100, taxableIncome: 16_372_400, scale: 'married' });
-    expect(out.total).toBe(2_760_970 + 716_100);
+    expect(out.total).toBe(2_756_590 + 716_100);
     const text = texts(res);
     expect(text).toMatch(/15\.10 Valeur locative après abattement \(15\.10\)/);
     expect(text).toMatch(
@@ -336,7 +355,7 @@ describe('a property in Geneva, end to end (2026)', () => {
     // The dashboard: the fact in each language, the kinds of the property's documents, the IIC
     // apart from the total, and the copy panel's annexe D and E1.
     const s = await state();
-    expect(s.estimate).toMatchObject({ total: 2_760_970 + 716_100 });
+    expect(s.estimate).toMatchObject({ total: 2_756_590 + 716_100 });
     const est = s.estimate as { rows: { id: string; label: string; amount: number }[] };
     expect(est.rows.find((r) => r.id === 'iic')).toMatchObject({
       amount: 18_600,
@@ -390,14 +409,14 @@ describe('a property in Geneva, end to end (2026)', () => {
       expect.arrayContaining([
         ['58.00', '4692', 'icc'],
         ['58.00', '5520', 'ifd'],
-        ['99.00', '165271', 'icc'],
+        ['99.00', '165258', 'icc'],
         ['99.00', '163724', 'ifd'],
       ]),
     );
     expect(at(s, 'PG4')).toEqual(
       expect.arrayContaining([
         ['15.00', '632400', 'wealth'],
-        ['99.00', '42136', 'wealth'],
+        ['99.00', '41657', 'wealth'],
       ]),
     );
     expect(s.copyPanel.unplaced).toEqual([]);
@@ -443,7 +462,20 @@ describe('a property in Geneva, end to end (2026)', () => {
     await bertholet();
     const out = (await call('compute_tax')).structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [] });
-    expect(out.icc!.total).toBe(2_444_820);
+    // By hand, 2026. Abattement 40 % (23 years): tax value 690,000, cantonal rental value 19,440.
+    // ICC: 136,000 - 8,568 - 10,880 - 1,817 (ge-2026-rcepf art. 6 al. 2) + 19,440 - 14,800 - 6,200
+    // = 113,175. Scale: 7,015.15 + 35,445 x 14.20 % = 5,033.19 -> 5,033.20: 12,048.35. Centimes
+    // 5,722.966 -> 5,722.95; reduction 12 % of 17,771.30 = 2,132.556 -> 2,132.55; home care
+    // 120.4835 -> 120.50; cantonal 15,759.25. Thônex (44, privileged share 77 %): 9,277.2295 ->
+    // 9,277.25, x 44 % = 4,081.99 -> 4,082.00; rest 2,771.10 x 44 % = 1,219.284 -> 1,219.30:
+    // 5,301.30.
+    // Wealth: 120,000 + 690,000 = 810,000; single 87,872 (art. 16 al. 1): 722,128. Scale: 1,639.55
+    // + 9,798 x 2.98 per mille = 29.198 -> 29.20: 1,668.75; centimes 792.656 -> 792.65; home care
+    // 16.6875 -> 16.70; supplementary 121.10 + 9,798 x 0.4463 per mille = 4.373 -> 4.35: 125.45;
+    // cantonal 2,603.55. Communal: 77 % = 1,284.9375 -> 1,284.95, x 44 % = 565.378 -> 565.40; rest
+    // 383.80 x 44 % = 168.872 -> 168.85: 734.25.
+    // ICC 15,759.25 + 2,603.55 + 5,301.30 + 734.25 + 25 = 24,423.35. IFD as before: 5,022.95.
+    expect(out.icc!.total).toBe(2_442_335);
     expect(out.ifd).toMatchObject({ tax: 502_295, taxableIncome: 12_885_500, scale: 'single' });
     const s = await state();
     const d1 = rowsOf(s).find((r) => r.page === 'D1')!;
@@ -506,7 +538,7 @@ describe('a property in Geneva, end to end (2026)', () => {
       ['children', 0],
       ['commune', 'Thônex'],
       ['moved', 'no'],
-      ...worker('p1'),
+      ...worker('p1', 'Thônex'),
       ...plain(['p1']),
       ['special', ['real_estate']],
       ...PROPERTY('own_house', 'p1', [

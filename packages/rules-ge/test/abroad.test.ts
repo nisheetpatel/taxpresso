@@ -20,10 +20,15 @@
 //   wealth deductions split by the assets (LIPP art. 58 al. 3).
 //
 // The other documents, as in households.test.ts: the ICC scales (ge-2025-guide-declaration-pp p. 47
-// to 50, the same as ge-2025-icc-tariff-pdf); the federal scales (Form. 58c 2025 and 2026:
+// to 50, the same as ge-2025-icc-tariff-pdf); Geneva's 2026 scales and amounts (ge-2026-rcepf:
+// income scale art. 17, 3'149.00 cumulated at 48'441 and 7'015.15 at 77'730; wealth scales art. 18,
+// 1.49 per mille up to 118'722, 403.65 and 11.35 at 237'443; flat professional deduction at most
+// 1'817, art. 6 al. 2; two earners 1'054, art. 10; savings interest for spouses up to 3'528, art.
+// 8; wealth deduction 87'872, 175'743 for a couple, art. 16; the health premium ceiling of 2026
+// is not published yet: the 2025 one, an estimate); the federal scales (Form. 58c 2025 and 2026:
 // single 1'698.00 at 85'000 and 6.60 a CHF 100 above it, 2026 1'694.35; married 4'825.00 at
 // 144'300 and 10.00 a CHF 100 above it, 2026 4'821.00); the communes (ge-2025-communal-centimes-pdf:
-// Carouge PP 27 % CA 40, Lancy PP 49 % CA 47; ge-2026-part-privilegiee-communique p. 11: Carouge 27
+// Carouge PP 27 % CA 40, Lancy PP 49 % CA 47; ge-2026-part-privilegiee-communique p. 12: Carouge 27
 // %, Lancy 51 %; ge-2026-communal-centimes-arca: Carouge 40, Lancy 47). Rounding: each ICC line to
 // 5 centimes, flat deductions and 97.00 to the franc, the federal tax rounded down to 5 centimes.
 import { Ledger, type FactValue, type Owner, type VaultDocument } from '@taxpresso/ledger';
@@ -81,16 +86,29 @@ function without<T extends object, K extends keyof T>(o: T, ...keys: K[]): Omit<
 // income 8'433.31 - 1'265 = 7'168.31 (no debts). 97.00 = 85'902 x 7'168.31 / 91'782.31 =
 // 6'709.0, to the franc 6'709; 99.00 = 85'902 - 6'709 = 79'193. Rate on 85'902 (no splitting):
 // 6'996.00 at 77'518 + 8'384 x 14.20 % = 1'190.53 -> 1'190.55: 8'186.55. Base 79'193 x 8'186.55 /
-// 85'902 = 7'547.198 -> 7'547.20. Centimes 47.5 %: 3'584.92 -> 3'584.90; reduction 12 % of
+// 85'902 = 7'547.175 -> 7'547.20. Centimes 47.5 %: 3'584.92 -> 3'584.90; reduction 12 % of
 // 11'132.10 = 1'335.852 -> 1'335.85; home care 75.472 -> 75.45; cantonal 9'871.70. Carouge: PP
 // 27 % x 7'547.20 = 2'037.744 -> 2'037.75, x 40 % = 815.10; rest 5'509.45 x 40 % = 2'203.78 ->
-// 2'203.80 (both years).
+// 2'203.80.
 // Wealth: account 24'000 + the flat 139'575 = 163'575; no debts; social deduction 87'632: 95.00 =
 // 75'943; 97.00 = 75'943 x 139'575 / 163'575 = 64'800.6 -> 64'801; 99.00 = 11'142. Base: the scale
 // at 75'943, 1.49 per mille = 113.155 -> 113.15, x 11'142 / 75'943 = 16.601 -> 16.60; centimes
 // 7.885 -> 7.90; home care 0.166 -> 0.15; supplementary 0 (0 per mille below 118'398): 24.65.
 // Communal: 27 % x 16.60 = 4.482 -> 4.50, x 40 % = 1.80; rest 12.10 x 40 % = 4.84 -> 4.85.
 // Taxe personnelle 25. ICC 9'871.70 + 24.65 + 3'018.90 + 6.65 + 25 = 12'946.90.
+// ICC 2026 (ge-2026-rcepf): 31.50 at most 1'817 (art. 6 al. 2): 95.00 = 85'897.31; the whole net
+// income 91'777.31; 97.00 = 85'897 x 7'168.31 / 91'777.31 = 6'709.03 -> 6'709; 99.00 = 79'188.
+// Rate on 85'897: scale (art. 17) 7'015.15 at 77'730 + 8'167 x 14.20 % = 1'159.714 -> 1'159.70:
+// 8'174.85. Base 79'188 x 8'174.85 / 85'897 = 7'536.352 -> 7'536.35. Centimes 3'579.76625 ->
+// 3'579.75; reduction 12 % of 11'116.10 = 1'333.932 -> 1'333.95; home care 75.3635 -> 75.35;
+// cantonal 9'857.50. Carouge: PP 27 % x 7'536.35 = 2'034.8145 -> 2'034.80, x 40 % = 813.92 ->
+// 813.90; rest 5'501.55 x 40 % = 2'200.62 -> 2'200.60.
+// Wealth 2026: social deduction 87'872 (art. 16 al. 1): 95.00 = 75'703; 97.00 = 75'703 x 139'575 /
+// 163'575 = 64'595.7 -> 64'596; 99.00 = 11'107. Base: the scale (art. 18) at 75'703, 1.49 per
+// mille = 112.7975 -> 112.80, x 11'107 / 75'703 = 16.5498 -> 16.55; centimes 7.86125 -> 7.85; home
+// care 0.1655 -> 0.15; supplementary 0 (0 per mille below 118'722): 24.55. Communal: 27 % x 16.55
+// = 4.4685 -> 4.45, x 40 % = 1.78 -> 1.80; rest 12.10 x 40 % = 4.84 -> 4.85. ICC 9'857.50 + 24.55
+// + 3'014.50 + 6.65 + 25 = 12'928.20.
 // IFD: 31.20 3 % x 86'426 = 2'593 (between 2'000 and 4'000); 58.00 max(1'265, 20 % x 8'433.31 =
 // 1'686.66 -> 1'687) = 1'687; 52.00 1'800. 95.00 = 88'779.31; whole net income 90'579.31; the
 // flat's 8'433.31 - 1'687 = 6'746.31; 97.00 = 88'779 x 6'746.31 / 90'579.31 = 6'612.2 -> 6'612;
@@ -139,16 +157,29 @@ function varela(taxYear: 2025 | 2026): EngineInput {
 // 28'595 x 13.20 % = 3'774.54 -> 3'774.55: 6'914.95. Base 151'611 x 6'914.95 / 76'904 =
 // 13'632.36 -> 13'632.35. Centimes 6'475.366 -> 6'475.35; reduction 12 % of 20'107.70 = 2'412.92
 // -> 2'412.90; home care 136.3235 -> 136.30; cantonal 17'831.10. Lancy 2025: PP 49 % = 6'679.85,
-// x 47 % = 3'139.53 -> 3'139.55; rest 6'952.50 x 47 % = 3'267.675 -> 3'267.70. Lancy 2026: PP 51
-// % = 6'952.50 -> 3'267.70; rest 6'679.85 -> 3'139.55. Communal 6'407.25 both years.
+// x 47 % = 3'139.53 -> 3'139.55; rest 6'952.50 x 47 % = 3'267.675 -> 3'267.70. Communal 6'407.25.
 // Wealth: 577'760 - 157'575 = 420'185; couple 175'264: 95.00 = 244'921; 97.00 = 244'921 x
-// 297'760 / 577'760 = 126'224.6 -> 126'225; 99.00 = 118'696. Base: the scale at 244'921 = 402.55 +
-// 8'126 x 2.34 per mille = 19.01 -> 19.00: 421.55, x 118'696 / 244'921 = 204.297 -> 204.30;
+// 297'760 / 577'760 = 126'224.9 -> 126'225; 99.00 = 118'696. Base: the scale at 244'921 = 402.55 +
+// 8'126 x 2.34 per mille = 19.01 -> 19.00: 421.55, x 118'696 / 244'921 = 204.296 -> 204.30;
 // centimes 97.04 -> 97.05; home care 2.043 -> 2.05; supplementary: 11.30 + 8'126 x 0.1169 per
 // mille = 0.95: 12.25, x 118'696 / 244'921 = 5.937 -> 5.95: cantonal 309.35. Communal: 2025 49 %
-// x 204.30 = 100.107 -> 100.10, x 47 % = 47.05; rest 104.20 x 47 % = 48.97 -> 48.95; 2026 51 % =
-// 104.193 -> 104.20 -> 48.95, rest 100.10 -> 47.05. 96.00. ICC 17'831.10 + 309.35 + 6'407.25 +
-// 96.00 + 25 = 24'668.70.
+// x 204.30 = 100.107 -> 100.10, x 47 % = 47.05; rest 104.20 x 47 % = 48.97 -> 48.95: 96.00. ICC
+// 2025 17'831.10 + 309.35 + 6'407.25 + 96.00 + 25 = 24'668.70.
+// ICC 2026 (ge-2026-rcepf): 31.50 -1'817 (art. 6 al. 2), 41.50 -1'703, 41.95 -1'054 (art. 10),
+// 52.15 -2'800 (under 3'528, art. 8). 95.00 = 153'799.62. Whole net income 202'609.62 - 29'746 -
+// 1'452 - 3'812 = 167'599.62; 97.00 = 153'799 x 2'393.03 / 167'599.62 = 2'195.98 -> 2'196; 99.00 =
+// 151'603. Rate: 50 % of 153'799 = 76'899.5 -> 76'900: scale (art. 17) 3'149.00 at 48'441 + 28'459
+// x 13.20 % = 3'756.588 -> 3'756.60: 6'905.60. Base 151'603 x 6'905.60 / 76'900 = 13'613.91 ->
+// 13'613.90. Centimes 6'466.6025 -> 6'466.60; reduction 12 % of 20'080.50 = 2'409.66 -> 2'409.65;
+// home care 136.139 -> 136.15; cantonal 17'807.00. Lancy 2026: PP 51 % = 6'943.089 -> 6'943.10, x
+// 47 % = 3'263.257 -> 3'263.25; rest 6'670.80 x 47 % = 3'135.276 -> 3'135.30. Communal 6'398.55.
+// Wealth 2026: couple 175'743 (art. 16 al. 1): 95.00 = 244'442; 97.00 = 244'442 x 297'760 /
+// 577'760 = 125'978.0 -> 125'978; 99.00 = 118'464. Base: the scale (art. 18) at 244'442 = 403.65
+// at 237'443 + 6'999 x 2.34 per mille = 16.3777 -> 16.40: 420.05, x 118'464 / 244'442 = 203.569 ->
+// 203.55; centimes 96.68625 -> 96.70; home care 2.0355 -> 2.05; supplementary: 11.35 + 6'999 x
+// 0.1169 per mille = 0.8182 -> 0.80: 12.15, x 118'464 / 244'442 = 5.8883 -> 5.90: cantonal 308.20.
+// Communal: 51 % x 203.55 = 103.8105 -> 103.80, x 47 % = 48.786 -> 48.80; rest 99.75 x 47 % =
+// 46.8825 -> 46.90: 95.70. ICC 2026 17'807.00 + 308.20 + 6'398.55 + 95.70 + 25 = 24'634.45.
 // IFD: 31.20 3 % x 112'060 = 3'362; 41.20 3 % x 56'768 = 1'703, at least 2'000; 58.00 20 % x
 // 5'809.62 = 1'161.92 -> -1'162; 41.90 two earners 50 % of 54'768, at most 14'100 (2025 and 2026);
 // 52.00 couple with pension funds 3'700; 55.10 -3'812; 59.20 2'800. 95.00 = 146'501.62; whole net
@@ -220,6 +251,48 @@ function ferri(taxYear: 2025 | 2026): EngineInput {
 describe('A1 Inès Varela: a flat let in Portugal, a salary (single, Carouge)', () => {
   for (const year of [2025, 2026] as const) {
     it(`${year}: the flat counts for the rate only, every line derived by hand`, () => {
+      const e = {
+        2025: {
+          flat: '-1812.00',
+          total: 85_902.31,
+          taxable: 79_193,
+          rate: 85_902,
+          base: 7_547.2,
+          cc: 3_584.9,
+          reduction: 1_335.85,
+          homeCare: 75.45,
+          cantonal: 9_871.7,
+          privileged: 815.1,
+          rest: 2_203.8,
+          rateWealth: 75_943,
+          exemptWealth: 64_801,
+          taxableWealth: 11_142,
+          wealthBase: 16.6,
+          wealthCc: 7.9,
+          wealthCantonal: 24.65,
+          icc: 12_946.9,
+        },
+        2026: {
+          flat: '-1817.00',
+          total: 85_897.31,
+          taxable: 79_188,
+          rate: 85_897,
+          base: 7_536.35,
+          cc: 3_579.75,
+          reduction: 1_333.95,
+          homeCare: 75.35,
+          cantonal: 9_857.5,
+          privileged: 813.9,
+          rest: 2_200.6,
+          rateWealth: 75_703,
+          exemptWealth: 64_596,
+          taxableWealth: 11_107,
+          wealthBase: 16.55,
+          wealthCc: 7.85,
+          wealthCantonal: 24.55,
+          icc: 12_928.2,
+        },
+      }[year];
       const r = computeReturn(varela(year));
       expect(r.unsupported).toEqual([]);
       const i = r.icc!;
@@ -227,35 +300,35 @@ describe('A1 Inès Varela: a flat let in Portugal, a salary (single, Carouge)', 
         '11.10 98000.00',
         '31.10 -6174.00',
         '31.12 -5400.00',
-        '31.50 -1812.00',
+        `31.50 ${e.flat}`,
         '15.20 8433.31',
         '58.00 -1265.00',
         '52.21 -5880.00',
       ]);
-      expect(i.totalIncome.amount).toBe(chf(85_902.31));
+      expect(i.totalIncome.amount).toBe(chf(e.total));
       expect(i.exemptIncome!.amount).toBe(chf(6_709));
-      expect(i.taxableIncome.amount).toBe(chf(79_193));
-      expect(i.rateIncome.amount).toBe(chf(85_902));
+      expect(i.taxableIncome.amount).toBe(chf(e.taxable));
+      expect(i.rateIncome.amount).toBe(chf(e.rate));
       const x = i.taxes;
-      expect(x.incomeBase.amount).toBe(chf(7_547.2));
-      expect(x.incomeCantonalCentimes.amount).toBe(chf(3_584.9));
-      expect(x.incomeReduction12.amount).toBe(chf(-1_335.85));
-      expect(x.incomeHomeCare.amount).toBe(chf(75.45));
-      expect(x.incomeCantonal.amount).toBe(chf(9_871.7));
-      expect(x.communalIncome.privileged.tax.amount).toBe(chf(815.1));
-      expect(x.communalIncome.rest.map((s) => s.tax.amount)).toEqual([chf(2_203.8)]);
+      expect(x.incomeBase.amount).toBe(chf(e.base));
+      expect(x.incomeCantonalCentimes.amount).toBe(chf(e.cc));
+      expect(x.incomeReduction12.amount).toBe(chf(-e.reduction));
+      expect(x.incomeHomeCare.amount).toBe(chf(e.homeCare));
+      expect(x.incomeCantonal.amount).toBe(chf(e.cantonal));
+      expect(x.communalIncome.privileged.tax.amount).toBe(chf(e.privileged));
+      expect(x.communalIncome.rest.map((s) => s.tax.amount)).toEqual([chf(e.rest)]);
       expect(i.wealth.grossWealth.amount).toBe(chf(163_575));
-      expect(i.wealth.rateWealth!.amount).toBe(chf(75_943));
-      expect(i.wealth.exemptWealth!.amount).toBe(chf(64_801));
-      expect(i.wealth.taxableWealth.amount).toBe(chf(11_142));
-      expect(x.wealthBase.amount).toBe(chf(16.6));
-      expect(x.wealthCantonalCentimes.amount).toBe(chf(7.9));
+      expect(i.wealth.rateWealth!.amount).toBe(chf(e.rateWealth));
+      expect(i.wealth.exemptWealth!.amount).toBe(chf(e.exemptWealth));
+      expect(i.wealth.taxableWealth.amount).toBe(chf(e.taxableWealth));
+      expect(x.wealthBase.amount).toBe(chf(e.wealthBase));
+      expect(x.wealthCantonalCentimes.amount).toBe(chf(e.wealthCc));
       expect(x.wealthHomeCare.amount).toBe(chf(0.15));
       expect(x.wealthSupplementary.amount).toBe(0);
-      expect(x.wealthCantonal.amount).toBe(chf(24.65));
+      expect(x.wealthCantonal.amount).toBe(chf(e.wealthCantonal));
       expect(x.communalWealthTotal.amount).toBe(chf(6.65));
       expect(x.personalTax.amount).toBe(chf(25));
-      expect(x.total.amount).toBe(chf(12_946.9));
+      expect(x.total.amount).toBe(chf(e.icc));
 
       const f = r.ifd!;
       expect(codes(f.items)).toEqual([
@@ -273,7 +346,7 @@ describe('A1 Inès Varela: a flat let in Portugal, a salary (single, Carouge)', 
       expect(f.scaleIncome.amount).toBe(chf(88_700));
       expect(f.scaleTax.amount).toBe(chf(year === 2025 ? 1_942.2 : 1_938.55));
       expect(f.tax.amount).toBe(chf(year === 2025 ? 1_797.65 : 1_794.3));
-      expect(r.total).toBe(chf(12_946.9) + chf(year === 2025 ? 1_797.65 : 1_794.3));
+      expect(r.total).toBe(chf(e.icc) + chf(year === 2025 ? 1_797.65 : 1_794.3));
 
       // The property abroad in the result, its rules said plainly.
       expect(r.abroad).toMatchObject({ owner: 'p1', use: 'let', shareBp: 8533 });
@@ -285,8 +358,10 @@ describe('A1 Inès Varela: a flat let in Portugal, a salary (single, Carouge)', 
       expect(r.limits).toContainEqual(
         expect.objectContaining({ code: '58.00', tax: 'ifd', kind: 'choice', counted: 168_700 }),
       );
-      // 2026: Geneva's 2025 values, flagged; the federal values are 2026's.
-      expect(r.estimates.map((e) => e.id)).toEqual(year === 2025 ? [] : ['ge-2026-unpublished']);
+      // 2026: her health premiums (52.21) meet a ceiling Geneva has not published yet, the 2025
+      // one, flagged; the scales and the other amounts are ge-2026-rcepf's, the federal values
+      // 2026's.
+      expect(r.estimates.map((n) => n.id)).toEqual(year === 2025 ? [] : ['ge-2026-unpublished']);
     });
   }
 });
@@ -294,6 +369,54 @@ describe('A1 Inès Varela: a flat let in Portugal, a salary (single, Carouge)', 
 describe('A2 Tomas and Ilse Varga: a holiday home in France, a mortgage there, a car loan here', () => {
   for (const year of [2025, 2026] as const) {
     it(`${year}: the debts and interest split by the assets, every line derived by hand`, () => {
+      const e = {
+        2025: {
+          flat: '-1812.00',
+          twoEarners: '-1051.00',
+          total: 153_807.62,
+          taxable: 151_611,
+          rate: 76_904,
+          base: 13_632.35,
+          cc: 6_475.35,
+          reduction: 2_412.9,
+          homeCare: 136.3,
+          cantonal: 17_831.1,
+          privileged: 3_139.55,
+          rest: 3_267.7,
+          rateWealth: 244_921,
+          exemptWealth: 126_225,
+          taxableWealth: 118_696,
+          wealthBase: 204.3,
+          wealthCc: 97.05,
+          wealthSupplementary: 5.95,
+          wealthCantonal: 309.35,
+          wealthCommunal: 96,
+          icc: 24_668.7,
+        },
+        2026: {
+          flat: '-1817.00',
+          twoEarners: '-1054.00',
+          total: 153_799.62,
+          taxable: 151_603,
+          rate: 76_900,
+          base: 13_613.9,
+          cc: 6_466.6,
+          reduction: 2_409.65,
+          homeCare: 136.15,
+          cantonal: 17_807,
+          privileged: 3_263.25,
+          rest: 3_135.3,
+          rateWealth: 244_442,
+          exemptWealth: 125_978,
+          taxableWealth: 118_464,
+          wealthBase: 203.55,
+          wealthCc: 96.7,
+          wealthSupplementary: 5.9,
+          wealthCantonal: 308.2,
+          wealthCommunal: 95.7,
+          icc: 24_634.45,
+        },
+      }[year];
       const r = computeReturn(varga(year));
       expect(r.unsupported).toEqual([]);
       const i = r.icc!;
@@ -301,7 +424,7 @@ describe('A2 Tomas and Ilse Varga: a holiday home in France, a mortgage there, a
         '11.10 130000.00',
         '31.10 -8190.00',
         '31.12 -9750.00',
-        '31.50 -1812.00',
+        `31.50 ${e.flat}`,
         '21.10 64000.00',
         '41.10 -4032.00',
         '41.12 -3200.00',
@@ -309,7 +432,7 @@ describe('A2 Tomas and Ilse Varga: a holiday home in France, a mortgage there, a
         '14.00 2800.00',
         '15.10 5809.62',
         '58.00 -1452.00',
-        '41.95 -1051.00',
+        `41.95 ${e.twoEarners}`,
         '52.21 -11000.00',
         '52.15 -2800.00',
         '55.10 -3812.00',
@@ -318,32 +441,30 @@ describe('A2 Tomas and Ilse Varga: a holiday home in France, a mortgage there, a
       expect(r.abroad!.debts!.amount).toBe(chf(81_209.38));
       expect(r.abroad!.interestIcc!.amount).toBe(chf(1_964.59));
       expect(r.abroad!.interestIfd!.amount).toBe(chf(1_964.59));
-      expect(i.totalIncome.amount).toBe(chf(153_807.62));
+      expect(i.totalIncome.amount).toBe(chf(e.total));
       expect(i.exemptIncome!.amount).toBe(chf(2_196));
-      expect(i.taxableIncome.amount).toBe(chf(151_611));
-      expect(i.rateIncome.amount).toBe(chf(76_904));
+      expect(i.taxableIncome.amount).toBe(chf(e.taxable));
+      expect(i.rateIncome.amount).toBe(chf(e.rate));
       const x = i.taxes;
-      expect(x.incomeBase.amount).toBe(chf(13_632.35));
-      expect(x.incomeCantonalCentimes.amount).toBe(chf(6_475.35));
-      expect(x.incomeReduction12.amount).toBe(chf(-2_412.9));
-      expect(x.incomeHomeCare.amount).toBe(chf(136.3));
-      expect(x.incomeCantonal.amount).toBe(chf(17_831.1));
-      expect(x.communalIncome.privileged.tax.amount).toBe(chf(year === 2025 ? 3_139.55 : 3_267.7));
-      expect(x.communalIncome.rest.map((s) => s.tax.amount)).toEqual([
-        chf(year === 2025 ? 3_267.7 : 3_139.55),
-      ]);
+      expect(x.incomeBase.amount).toBe(chf(e.base));
+      expect(x.incomeCantonalCentimes.amount).toBe(chf(e.cc));
+      expect(x.incomeReduction12.amount).toBe(chf(-e.reduction));
+      expect(x.incomeHomeCare.amount).toBe(chf(e.homeCare));
+      expect(x.incomeCantonal.amount).toBe(chf(e.cantonal));
+      expect(x.communalIncome.privileged.tax.amount).toBe(chf(e.privileged));
+      expect(x.communalIncome.rest.map((s) => s.tax.amount)).toEqual([chf(e.rest)]);
       expect(i.wealth.grossWealth.amount).toBe(chf(577_760));
       expect(i.wealth.netWealth.amount).toBe(chf(420_185));
-      expect(i.wealth.rateWealth!.amount).toBe(chf(244_921));
-      expect(i.wealth.exemptWealth!.amount).toBe(chf(126_225));
-      expect(i.wealth.taxableWealth.amount).toBe(chf(118_696));
-      expect(x.wealthBase.amount).toBe(chf(204.3));
-      expect(x.wealthCantonalCentimes.amount).toBe(chf(97.05));
+      expect(i.wealth.rateWealth!.amount).toBe(chf(e.rateWealth));
+      expect(i.wealth.exemptWealth!.amount).toBe(chf(e.exemptWealth));
+      expect(i.wealth.taxableWealth.amount).toBe(chf(e.taxableWealth));
+      expect(x.wealthBase.amount).toBe(chf(e.wealthBase));
+      expect(x.wealthCantonalCentimes.amount).toBe(chf(e.wealthCc));
       expect(x.wealthHomeCare.amount).toBe(chf(2.05));
-      expect(x.wealthSupplementary.amount).toBe(chf(5.95));
-      expect(x.wealthCantonal.amount).toBe(chf(309.35));
-      expect(x.communalWealthTotal.amount).toBe(chf(96));
-      expect(x.total.amount).toBe(chf(24_668.7));
+      expect(x.wealthSupplementary.amount).toBe(chf(e.wealthSupplementary));
+      expect(x.wealthCantonal.amount).toBe(chf(e.wealthCantonal));
+      expect(x.communalWealthTotal.amount).toBe(chf(e.wealthCommunal));
+      expect(x.total.amount).toBe(chf(e.icc));
 
       const f = r.ifd!;
       expect(codes(f.items)).toEqual([
@@ -368,7 +489,7 @@ describe('A2 Tomas and Ilse Varga: a holiday home in France, a mortgage there, a
       expect(f.taxableIncome.amount).toBe(chf(143_932));
       expect(f.scaleTax.amount).toBe(chf(year === 2025 ? 5_045 : 5_041));
       expect(f.tax.amount).toBe(chf(year === 2025 ? 4_955.45 : 4_951.5));
-      expect(r.total).toBe(chf(24_668.7) + chf(year === 2025 ? 4_955.45 : 4_951.5));
+      expect(r.total).toBe(chf(e.icc) + chf(year === 2025 ? 4_955.45 : 4_951.5));
     });
   }
 
