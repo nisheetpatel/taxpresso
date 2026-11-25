@@ -6020,5 +6020,15 @@
     "content_type": "text/html",
     "retrieved_at": "2026-11-25T16:18:14.161Z",
     "status": "ok"
+  },
+  "zh-na-tariff-weisung-steuerrechnungen-zstb-173-1": {
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-173-1.pdf",
+    "final_url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-173-1.pdf",
+    "file": "zh/files/zh-na-tariff-weisung-steuerrechnungen-zstb-173-1.pdf",
+    "bytes": 211855,
+    "sha256": "1bc622eb704c045ad302187ccc8e51a3c770eb4ae27fade865230278414cc0fc",
+    "content_type": "application/pdf",
+    "retrieved_at": "2026-11-25T17:05:40.202Z",
+    "status": "ok"
   }
 }

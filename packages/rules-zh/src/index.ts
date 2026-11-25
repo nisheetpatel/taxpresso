@@ -40,7 +40,7 @@ export {
   pillar3aCap,
   twoEarner,
 } from './rules.js';
-export { churchSplit, multipliers, personalTax, tariffRule } from './law.js';
+export { billRounding, churchSplit, multipliers, personalTax, tariffRule } from './law.js';
 export { ESTIMATE_TEXT, NOTE } from './explain.js';
 export { chf } from './calc.js';
 export type { Cited } from '@taxpresso/rules-ch';

@@ -4,6 +4,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  billRounding,
   churchSplit,
   multipliers,
   personalTax,
@@ -48,6 +49,7 @@ describe('citations', () => {
         ['church split', churchSplit(year)],
         ['multipliers', multipliers(year)],
         ['tariff rule', tariffRule(year)],
+        ['bill rounding', billRounding()],
         ...(Object.entries(P.amounts) as [string, Cited<unknown>][]),
       ];
       for (const [name, c] of all) expectCited(c.source, `${year} ${name}`);

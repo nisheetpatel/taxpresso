@@ -25,6 +25,27 @@ export function churchSplit(taxYear: ZhTaxYear): Cited<{ spouseShareBp: number }
   return { value: { spouseShareBp: 5000 }, source: `${LAW[taxYear]} § 202 (p. 74)` };
 }
 
+/**
+ * How the tax bill is computed and rounded (Weisung der Finanzdirektion über die Ausstellung von
+ * Steuerrechnungen, Zürcher Steuerbuch Nr. 173.1), amounts in centimes: the taxable and the
+ * rate-determining income are rounded down to the next CHF 100, the wealth to the next CHF 1,000
+ * (Rz 45); the einfache Staatssteuer (100 %) computed on income and on wealth is rounded down to
+ * whole francs (Rz 71); the Staats- und Gemeindesteuer amounts are rounded to the nearest 5
+ * Rappen (Rz 78).
+ */
+export function billRounding(): Cited<{
+  income: number;
+  wealth: number;
+  simpleTax: number;
+  tax: number;
+}> {
+  return {
+    value: { income: 10_000, wealth: 100_000, simpleTax: 100, tax: 5 },
+    source:
+      'zh-na-tariff-weisung-steuerrechnungen-zstb-173-1 p. 8 (Rz 45), p. 11 (Rz 71), p. 13 (Rz 78)',
+  };
+}
+
 /** The einfache Staatssteuer is the tax from the tariffs; multipliers are percent of it. */
 export function multipliers(taxYear: ZhTaxYear): Cited<null> {
   return { value: null, source: `${LAW[taxYear]} § 2 Abs. 1 and 2 (p. 1), § 188 (p. 73)` };

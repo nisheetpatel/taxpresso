@@ -1102,5 +1102,21 @@
     "priority": "core",
     "why_needed": "How income, deductions, debts and debt interest are split between Switzerland and abroad for a person living in Switzerland with real estate abroad, for the federal tax (DBG art. 6 al. 3, art. 7 al. 1, art. 35 al. 3) and the cantonal tax, with the Federal Supreme Court decisions: property income and costs by object, debts and debt interest in proportion to where all gross assets lie, general deductions by their link to an income or else by net income, social deductions by net income, losses abroad only for the rate, the rate of the whole worldwide income.",
     "notes": "8 pages, dated 5 March 2026 (PDF created 23 March 2026). Section 1.1 (Grundstück im Ausland, natürliche Personen) p. 1 and 2; 1.2 (Geschäftsbetrieb im Ausland) p. 3 and 4; 2 (no residence in Switzerland) p. 5 to 8. Page https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-nr-5-3.html. Cited for the federal rules, which every canton applies; the Geneva documents don't spell them out (ge/NOTES.md, Property abroad). Added 14 October 2026 by the property abroad agent."
+  },
+  {
+    "id": "zh-na-tariff-weisung-steuerrechnungen-zstb-173-1",
+    "canton": "ZH",
+    "doc_type": "tariff",
+    "title": "Weisung der Finanzdirektion über die Ausstellung von Steuerrechnungen (vom 9. Dezember 2008), Zürcher Steuerbuch Nr. 173.1",
+    "tax_year": null,
+    "language": "de",
+    "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-173-1.pdf",
+    "format": "pdf",
+    "publisher": "Finanzdirektion des Kantons Zürich (Zürcher Steuerbuch Nr. 173.1)",
+    "published": "2008-12-09",
+    "verified_on": "2026-11-25",
+    "priority": "core",
+    "why_needed": "The only Zurich document that states how the Staats- und Gemeindesteuern are computed and rounded on the tax bill: the taxable and the rate-determining income are rounded down to CHF 100 and the wealth to CHF 1,000 before the tariff (Rz 45), the einfache Staatssteuer on income and on wealth is rounded down to whole francs (Rz 71), it is multiplied by the multipliers (Rz 50, 72 to 76), and the Staats- und Gemeindesteuer amounts are rounded to 5 Rappen (Rz 78); the Personalsteuer has no multiplier (Rz 77).",
+    "notes": "24 pages; the pages still carry the old number Nr. 33/202. Rz 41 (one einfache Staatssteuer per Steuerobjekt: income, wealth) p. 7; Rz 45 p. 8; Rz 50 p. 9; Rz 67 (rates to three decimals) and Rz 71 p. 11; Rz 72 to 76 p. 12; Rz 77 and 78 p. 13. Listed as in force in the Zürcher Steuerbuch (page https://www.zh.ch/de/steuern-finanzen/steuern/treuhaender/steuerbuch/steuerbuch-definition/zstb-173-1.html, Erlass and gültig ab 9.12.2008). Older than the current law in places: Rz 55 still says a tenth for capital payments where StG section 37 now says a twentieth. Added 25 November 2026 while checking rules-zh against the federal tax calculator."
   }
 ]

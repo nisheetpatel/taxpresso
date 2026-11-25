@@ -140,4 +140,10 @@ export const ZH_OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> =
     url: 'https://www.zh.ch/de/steuern-finanzen/steuern/quellensteuer/nachtraegliche-ordentliche-veranlagung-oder-quellensteuerkorrekt.html',
     pdf: false,
   },
+  'zh-na-tariff-weisung-steuerrechnungen-zstb-173-1': {
+    title:
+      'Weisung der Finanzdirektion über die Ausstellung von Steuerrechnungen (vom 9. Dezember 2008), Zürcher Steuerbuch Nr. 173.1',
+    url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-173-1.pdf',
+    pdf: true,
+  },
 };
