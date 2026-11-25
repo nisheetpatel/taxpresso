@@ -15,6 +15,17 @@ const rule = (source: string): Cited<null> => ({ value: null, source });
 export const wholeFrancs = () => rule(`${GUIDE} p. 4 (Erfassen Sie bitte keine Rappenbeträge)`);
 
 /**
+ * The tax is computed on the taxable income rounded down to the next hundred francs and on the
+ * taxable wealth rounded down to the next thousand (Verordnung § 43: "wird auf das nächste Hundert
+ * und beim Vermögen oder Kapital auf das nächste Tausend abgerundet"). The return's own totals (490,
+ * 690) stay in whole francs (the guide's sample return, p. 18 and 19). Steps in centimes.
+ */
+export const tariffRounding = (): Cited<{ income: number; wealth: number }> => ({
+  value: { income: 10_000, wealth: 100_000 },
+  source: `${ORD} § 43 (p. 13)`,
+});
+
+/**
  * The tariffs give the einfache Steuer (100 %); the canton, the commune, the parishes and the
  * Bürgergemeinden each levy their Steuerfuss of it, those in force at the end of the year (StG § 2
  * Abs. 1 and 4, §§ 168 to 170).

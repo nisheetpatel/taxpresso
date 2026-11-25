@@ -74,6 +74,7 @@ export {
   rentRule,
   sharedCustody,
   simpleTaxRule,
+  tariffRounding,
   tariffRule,
   twoEarnerRule,
   wealthAllowance,

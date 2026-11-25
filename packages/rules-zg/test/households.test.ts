@@ -1,7 +1,9 @@
 // Synthetic households (no real data), each derived by hand from the cited constants, line by line,
 // in the comment above it. Amounts in CHF; the engine works in centimes. The einfache Steuer is read
-// on the tariff sheets' brackets (test/tariffs.test.ts) and rounded to the centime; each Steuerfuss
-// of it to the nearest 5 centimes (NOTE.rounding).
+// on the tariff sheets' brackets (test/tariffs.test.ts) at the taxable income rounded down to CHF
+// 100 and the taxable wealth rounded down to CHF 1,000 (zg-na-law-verordnung-steuergesetz § 43,
+// p. 13) and rounded to the centime; each Steuerfuss of it to the nearest 5 centimes
+// (NOTE.rounding).
 import { describe, expect, it } from 'vitest';
 import {
   allLines,
@@ -28,10 +30,11 @@ describe('H1: single, Zug, 2025, employed, renting, Roman Catholic', () => {
   // 190: 104,720. 280: 6,859 + 7,258 + 3,500 = 17,617. 287: 87,103.
   // 296: 500 (at least 100, at most 20 % of 87,103). 299: 86,603.
   // 402: 12,000. 407: 30 % of the net rent 30,000 = 9,000 (at most 10,800). 490: 65,603.
-  // Grundtarif 2025 at 65,603: 2,531.50 at 59,700 + 5,903 x 6.5 % = 383.695: 2,915.195, 2,915.20.
+  // Rounded down to CHF 100 for the tariff (Verordnung § 43): 65,600.
+  // Grundtarif 2025 at 65,600: 2,531.50 at 59,700 + 5,900 x 6.5 % = 383.50: 2,915.00.
   // 600: 80,000; 672: -204,000; 690: 0, no wealth tax.
-  // Canton 82 %: 2,390.464, to 5 centimes 2,390.45. Zug 52.11 %: 1,519.11072, 1,519.10.
-  // Roman Catholic parish of Zug 7 %: 204.064, 204.05. Total 4,113.60.
+  // Canton 82 %: 2,390.30. Zug 52.11 %: 1,519.0065, to 5 centimes 1,519.00.
+  // Roman Catholic parish of Zug 7 %: 204.05. Total 4,113.35.
   // The Bund column: 201 the same 6,859 (travel 729, at most 3,300; meals 3,000; the 3 % flat 3,130);
   // 220 7,258; 230 paid 4,800, single with contributions, at most 1,800. 280: 15,917. 287: 88,803.
   // 296: 500. 299 and 490: 88,303 (no social deduction of the Bund column for a single person).
@@ -81,14 +84,14 @@ describe('H1: single, Zug, 2025, employed, renting, Roman Catholic', () => {
 
   it('taxes', () => {
     const x = r.icc!.taxes;
-    expect(x.simpleIncome.amount).toBe(chf(2_915.2));
+    expect(x.simpleIncome.amount).toBe(chf(2_915));
     expect(x.simpleWealth.amount).toBe(0);
-    expect(x.cantonal.amount).toBe(chf(2_390.45));
-    expect(x.communal.amount).toBe(chf(1_519.1));
+    expect(x.cantonal.amount).toBe(chf(2_390.3));
+    expect(x.communal.amount).toBe(chf(1_519));
     expect(x.church?.amount).toBe(chf(204.05));
     expect(x.citizens).toBeNull();
     // The cantonal, communal and church tax; the total adds the federal tax (./federal.test.ts).
-    expect(x.total.amount).toBe(chf(4_113.6));
+    expect(x.total.amount).toBe(chf(4_113.35));
     expect(r.total).toBe(x.total.amount + r.ifd!.tax.amount);
     expect(r.commune).toEqual({ bfs: null, name: 'Zug', rate: 5_211 });
     const federal = (code: string) =>
@@ -133,10 +136,11 @@ describe('H2: married, two earners, two children, Baar, 2026, Evangelical Reform
   // 280: 9,365 + 2,800 + 600 + 7,258 + 3,000 + 12,400 + 18,000 + 4,600 = 58,023. 287: 109,017.
   // 295: 6,000 less 5 % of 109,017 (5,450.85, 5,451) = 549. 299: 108,468.
   // 400: 24,000. 403: 2 x 12,600 = 25,200. 403a: the older child (16) 12,200. 490: 47,068.
-  // Mehrpersonentarif 2026 at 47,068: 1,151 at 42,200 + 4,868 x 4 % = 194.72: 1,345.72.
+  // Rounded down to CHF 100 for the tariff (Verordnung § 43): 47,000.
+  // Mehrpersonentarif 2026 at 47,000: 1,151 at 42,200 + 4,800 x 4 % = 192.00: 1,343.00.
   // 600: 150,000; 640: -20,000; 660: 130,000; 671: -408,000; 673: 2 minors x -102,000; 690: 0.
-  // Canton 78 %: 1,049.6616, 1,049.65. Baar 47.53 %: 639.620716, 639.60.
-  // Evangelical Reformed parish 6 %: 80.7432, 80.75. Total 1,770.00.
+  // Canton 78 %: 1,047.54, to 5 centimes 1,047.55. Baar 47.53 %: 638.3279, 638.35.
+  // Evangelical Reformed parish 6 %: 80.58, 80.60. Total 1,766.50.
   const input: ZgEngineInput = {
     taxYear: 2026,
     commune: 'Baar',
@@ -211,12 +215,12 @@ describe('H2: married, two earners, two children, Baar, 2026, Evangelical Reform
 
   it('taxes', () => {
     const x = r.icc!.taxes;
-    expect(x.simpleIncome.amount).toBe(chf(1_345.72));
-    expect(x.cantonal.amount).toBe(chf(1_049.65));
-    expect(x.communal.amount).toBe(chf(639.6));
-    expect(x.church?.amount).toBe(chf(80.75));
+    expect(x.simpleIncome.amount).toBe(chf(1_343));
+    expect(x.cantonal.amount).toBe(chf(1_047.55));
+    expect(x.communal.amount).toBe(chf(638.35));
+    expect(x.church?.amount).toBe(chf(80.6));
     // The cantonal, communal and church tax; the total adds the federal tax (./federal.test.ts).
-    expect(r.icc!.taxes.total.amount).toBe(chf(1_770));
+    expect(r.icc!.taxes.total.amount).toBe(chf(1_766.5));
     expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.notCounted).toContainEqual(NOTE.rentNotGiven);
     expect(r.notCounted).toContainEqual(NOTE.citizensNotAsked);
@@ -257,9 +261,10 @@ describe('H3: single parent, one child, Cham, 2025, receives child support', () 
   // 280: 2,988 + 5,000 + 4,600 = 12,588. 287 and 299: 74,772.
   // 400: 24,000 (she lives with a child who counts for her). 403: 12,600. 404: 12,200.
   // 407: 30 % of 24,000 = 7,200. 490: 74,772 - 56,000 = 18,772.
-  // Mehrpersonentarif 2025 at 18,772: 167 at 12,200 + 6,572 x 3 % = 197.16: 364.16.
+  // Rounded down to CHF 100 for the tariff (Verordnung § 43): 18,700.
+  // Mehrpersonentarif 2025 at 18,700: 167 at 12,200 + 6,500 x 3 % = 195.00: 362.00.
   // 600: 20,000; 672: -204,000; 673: -102,000; 690: 0.
-  // Canton 82 %: 298.6112, 298.60. Cham 54 %: 196.6464, 196.65. Total 495.25.
+  // Canton 82 %: 296.84, to 5 centimes 296.85. Cham 54 %: 195.48, 195.50. Total 492.35.
   const r = computeReturn({
     taxYear: 2025,
     commune: 'Cham',
@@ -301,12 +306,12 @@ describe('H3: single parent, one child, Cham, 2025, receives child support', () 
     expect(r.icc?.tariff).toBe('married');
     expect(wealth(r, '673')).toBe(chf(-102_000));
     const x = r.icc!.taxes;
-    expect(x.simpleIncome.amount).toBe(chf(364.16));
-    expect(x.cantonal.amount).toBe(chf(298.6));
-    expect(x.communal.amount).toBe(chf(196.65));
+    expect(x.simpleIncome.amount).toBe(chf(362));
+    expect(x.cantonal.amount).toBe(chf(296.85));
+    expect(x.communal.amount).toBe(chf(195.5));
     expect(x.church).toBeNull();
     // The cantonal and communal tax; the total adds the federal tax (./federal.test.ts).
-    expect(r.icc!.taxes.total.amount).toBe(chf(495.25));
+    expect(r.icc!.taxes.total.amount).toBe(chf(492.35));
     expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.ownCareInstead);
     expect(r.notCounted).toContainEqual(NOTE.churchNotAsked);
@@ -320,11 +325,12 @@ describe('H4: retiree with wealth, Walchwil, 2026, Roman Catholic, Ortsbürger o
   // 600: 900,000; 601: 10,000; 603: 50,000; 630 and 660: 960,000; 672: -204,000; 690: 756,000.
   // 406: none, the net wealth 960,000 is above 400,000. 402: 12,000. 407: 30 % of 21,600 = 6,480.
   // 490: 54,275 - 18,480 = 35,795.
-  // Grundtarif 2026 at 35,795: 1,167.50 at 34,900 + 895 x 5.5 % = 49.225: 1,216.725, 1,216.73.
-  // Wealth at 756,000: 323.85 at 508,000 + 248,000 x 0.1275 % = 316.20: 640.05.
-  // Einfache Steuer 1,856.78. Canton 78 %: 1,448.2884, 1,448.30. Walchwil 51 %: 946.9578, 946.95.
-  // Roman Catholic parish of Walchwil 11 %: 204.2458, 204.25. The Bürgergemeinde Walchwil taxes
-  // only special taxes (the table's footnote 3): none. Total 2,599.50.
+  // Rounded down to CHF 100 for the tariff (Verordnung § 43): 35,700.
+  // Grundtarif 2026 at 35,700: 1,167.50 at 34,900 + 800 x 5.5 % = 44.00: 1,211.50.
+  // Wealth at 756,000 (a whole CHF 1,000): 323.85 at 508,000 + 248,000 x 0.1275 % = 316.20: 640.05.
+  // Einfache Steuer 1,851.55. Canton 78 %: 1,444.209, 1,444.20. Walchwil 51 %: 944.2905, 944.30.
+  // Roman Catholic parish of Walchwil 11 %: 203.6705, 203.65. The Bürgergemeinde Walchwil taxes
+  // only special taxes (the table's footnote 3): none. Total 2,592.15.
   const r = computeReturn({
     taxYear: 2026,
     commune: 'Walchwil',
@@ -357,16 +363,16 @@ describe('H4: retiree with wealth, Walchwil, 2026, Roman Catholic, Ortsbürger o
     expect(r.icc?.wealth.taxableWealth.amount).toBe(chf(756_000));
     expect(r.icc?.taxableIncome.amount).toBe(chf(35_795));
     const x = r.icc!.taxes;
-    expect(x.simpleIncome.amount).toBe(chf(1_216.73));
+    expect(x.simpleIncome.amount).toBe(chf(1_211.5));
     expect(x.simpleWealth.amount).toBe(chf(640.05));
-    expect(x.simple.amount).toBe(chf(1_856.78));
-    expect(x.cantonal.amount).toBe(chf(1_448.3));
-    expect(x.communal.amount).toBe(chf(946.95));
-    expect(x.church?.amount).toBe(chf(204.25));
+    expect(x.simple.amount).toBe(chf(1_851.55));
+    expect(x.cantonal.amount).toBe(chf(1_444.2));
+    expect(x.communal.amount).toBe(chf(944.3));
+    expect(x.church?.amount).toBe(chf(203.65));
     expect(x.citizens).toBeNull();
     expect(r.assumptions).toContainEqual(NOTE.citizensSpecial);
     // The cantonal, communal and church tax; the total adds the federal tax (./federal.test.ts).
-    expect(r.icc!.taxes.total.amount).toBe(chf(2_599.5));
+    expect(r.icc!.taxes.total.amount).toBe(chf(2_592.15));
     expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
   });
 
@@ -400,8 +406,9 @@ describe('H5: shared custody without child support, Steinhausen, 2026', () => {
   // what was paid: 5,000. 280: 3,247 + 7,258 + 5,000 = 15,505. 287 and 299: 68,415.
   // You have the larger share of care (Verordnung § 18 Abs. 2): 400: 24,000; 403: 12,600;
   // 404: 12,200 (childcare 6,000 is less). 407: 30 % of 26,000 = 7,800. 490: 11,815.
-  // Mehrpersonentarif 2026 at 11,815: 55 at 6,600 + 5,215 x 2 % = 104.30: 159.30.
-  // Canton 78 %: 124.254, 124.25. Steinhausen 53 %: 84.429, 84.45. Total 208.70.
+  // Rounded down to CHF 100 for the tariff (Verordnung § 43): 11,800.
+  // Mehrpersonentarif 2026 at 11,800: 55 at 6,600 + 5,200 x 2 % = 104.00: 159.00.
+  // Canton 78 %: 124.02, to 5 centimes 124.00. Steinhausen 53 %: 84.27, 84.25. Total 208.25.
   const input: ZgEngineInput = {
     taxYear: 2026,
     commune: 'Steinhausen',
@@ -437,11 +444,11 @@ describe('H5: shared custody without child support, Steinhausen, 2026', () => {
     expect(find(r, '407')).toBe(chf(-7_800));
     expect(r.icc?.taxableIncome.amount).toBe(chf(11_815));
     expect(r.icc?.tariff).toBe('married');
-    expect(r.icc?.taxes.simpleIncome.amount).toBe(chf(159.3));
-    expect(r.icc?.taxes.cantonal.amount).toBe(chf(124.25));
-    expect(r.icc?.taxes.communal.amount).toBe(chf(84.45));
+    expect(r.icc?.taxes.simpleIncome.amount).toBe(chf(159));
+    expect(r.icc?.taxes.cantonal.amount).toBe(chf(124));
+    expect(r.icc?.taxes.communal.amount).toBe(chf(84.25));
     // The cantonal and communal tax; the total adds the federal tax (./federal.test.ts).
-    expect(r.icc!.taxes.total.amount).toBe(chf(208.7));
+    expect(r.icc!.taxes.total.amount).toBe(chf(208.25));
     expect(r.total).toBe(r.icc!.taxes.total.amount + r.ifd!.tax.amount);
     expect(r.assumptions).toContainEqual(NOTE.mainCareYes);
   });
@@ -449,8 +456,9 @@ describe('H5: shared custody without child support, Steinhausen, 2026', () => {
   it('the other parent: Grundtarif, small personal deduction, half the insurance for the child', () => {
     // 230: single with contributions 4,600 + 800 = 5,400; paid 5,000: 5,000. The childcare paid
     // counts for the parent the child counts for. 402: 12,000. 490: 68,415 - 12,000 - 7,800 =
-    // 48,615. Grundtarif 2026 at 48,615: 1,800 at 46,400 + 2,215 x 5.5 % = 121.825: 1,921.825,
-    // 1,921.83. Canton 78 %: 1,499.0274, 1,499.05. Steinhausen 53 %: 1,018.5699, 1,018.55.
+    // 48,615, for the tariff 48,600 (Verordnung § 43). Grundtarif 2026 at 48,600: 1,800 at
+    // 46,400 + 2,200 x 5.5 % = 121.00: 1,921.00. Canton 78 %: 1,498.38, to 5 centimes 1,498.40.
+    // Steinhausen 53 %: 1,018.13, 1,018.15.
     const r = computeReturn({ ...input, mainCare: false });
     expect(r.unsupported).toEqual([]);
     expect(find(r, '230')).toBe(chf(-5_000));
@@ -459,9 +467,9 @@ describe('H5: shared custody without child support, Steinhausen, 2026', () => {
     expect(find(r, '404')).toBe(0);
     expect(r.icc?.tariff).toBe('single');
     expect(r.icc?.taxableIncome.amount).toBe(chf(48_615));
-    expect(r.icc?.taxes.simpleIncome.amount).toBe(chf(1_921.83));
-    expect(r.icc?.taxes.cantonal.amount).toBe(chf(1_499.05));
-    expect(r.icc?.taxes.communal.amount).toBe(chf(1_018.55));
+    expect(r.icc?.taxes.simpleIncome.amount).toBe(chf(1_921));
+    expect(r.icc?.taxes.cantonal.amount).toBe(chf(1_498.4));
+    expect(r.icc?.taxes.communal.amount).toBe(chf(1_018.15));
     expect(r.assumptions).toContainEqual(NOTE.mainCareNo);
     expect(r.notCounted).toContainEqual(NOTE.childcareOther);
   });
