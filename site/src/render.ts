@@ -550,7 +550,7 @@ ${header(lang, startPath)}
 </div>
 <ul class="platforms" aria-label="Claude Desktop">${platforms}</ul>
 </div>
-<div class="start-hero-art tp-play" aria-hidden="true">${CUP_SVG}</div>
+<div class="start-hero-art" aria-hidden="true">${CUP_SVG}</div>
 </section>
 
 <section class="start-sec" aria-labelledby="needs-title">
