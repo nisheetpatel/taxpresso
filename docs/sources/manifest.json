@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-16",
+  "generated": "2026-11-25",
   "note": "Merged from the per-canton manifest.json files. Edit those, then run scripts/merge-manifests.mjs.",
   "entries": [
     {
@@ -6457,11 +6457,11 @@
       "title": "Merkblatt des kantonalen Steueramtes Zürich zu den Abzügen der Krankheits- und Unfallkosten sowie der behinderungsbedingten Kosten",
       "tax_year": null,
       "language": "de",
-      "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-32-1.pdf",
+      "url": "https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-32-1/zstb-nr-32-1.pdf",
       "format": "pdf",
       "publisher": "Kantonales Steueramt Zürich (Zürcher Steuerbuch Nr. 32.1)",
       "published": "2013-06-05",
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "useful",
       "why_needed": "Rules for medical and accident costs (with the 5 percent threshold) and disability costs.",
       "notes": "6 pages, version of 19 July 2005 as amended 18 September 2012 and 5 June 2013. Header still shows the old number 19/002."
@@ -9225,11 +9225,11 @@
       "title": "Chiffres repères dans la prévoyance professionnelle",
       "tax_year": null,
       "language": "fr",
-      "url": "https://www.bsv.admin.ch/dam/bsv/fr/dokumente/bv/anleitungen/masszahlen-2025-2026.pdf.download.pdf/masszahlen-2025-2026.pdf",
+      "url": "https://www.bsv.admin.ch/dam/fr/sd-web/GZplHByBJoFc/Internet_Masszahlenarticles_25_26_f.pdf",
       "format": "pdf",
       "publisher": "OFAS (BSV)",
       "published": null,
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "core",
       "why_needed": "Official pillar 3a maximum table (section 9), legal basis OPP 3 art. 7 para. 1",
       "notes": "Marked 2026. Extraction shows the same values in both year columns, so confirm the 2025 values in the PDF before use."
@@ -9305,11 +9305,11 @@
       "title": "FAQ 2022 - Circulaire n° 45 AFC, impôt à la source",
       "tax_year": null,
       "language": "fr",
-      "url": "https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf",
+      "url": "https://www.estv.admin.ch/dam/fr/sd-web/a7vG5hlZeAdW/dbst-ks-2022-1-045-d-faq-fr.pdf",
       "format": "pdf",
       "publisher": "AFC (ESTV), groupe de travail impôt à la source (CSI)",
       "published": "2022-09-26",
-      "verified_on": "2026-10-13",
+      "verified_on": "2026-11-25",
       "priority": "core",
       "why_needed": "Official FAQ on source-tax circular 45 (employee withholding rules)",
       "notes": "FAQ attached to circular 45; the base circular itself was not located. Question 15.1 marked as revised 09/22."

@@ -340,7 +340,7 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
   },
   'ch-na-ifd-chiffres-reperes-3a': {
     title: 'Chiffres repères dans la prévoyance professionnelle',
-    url: 'https://www.bsv.admin.ch/dam/bsv/fr/dokumente/bv/anleitungen/masszahlen-2025-2026.pdf.download.pdf/masszahlen-2025-2026.pdf',
+    url: 'https://www.bsv.admin.ch/dam/fr/sd-web/GZplHByBJoFc/Internet_Masszahlenarticles_25_26_f.pdf',
     pdf: true,
   },
   'ch-na-remboursement-impot-anticipe': {
@@ -361,7 +361,7 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
   },
   'ch-na-is-faq-circulaire-45': {
     title: 'FAQ 2022 - Circulaire n° 45 AFC, impôt à la source',
-    url: 'https://www.estv.admin.ch/dam/estv/fr/dokumente/dbst/kreisschreiben/dbst-ks-2022-1-045-d-faq-fr.pdf.download.pdf/dbst-ks-2022-1-045-d-faq-fr.pdf',
+    url: 'https://www.estv.admin.ch/dam/fr/sd-web/a7vG5hlZeAdW/dbst-ks-2022-1-045-d-faq-fr.pdf',
     pdf: true,
   },
   'ch-na-is-recordformat-salaires': {

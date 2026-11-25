@@ -906,7 +906,7 @@ requirements:
 
   - use: medical
     learnMore:
-      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-32-1.pdf'
+      url: 'https://www.zh.ch/content/dam/zhweb/bilder-dokumente/themen/steuern-finanzen/steuern/vertreter/steuerbuch/zstb-nr-32-1/zstb-nr-32-1.pdf'
       label:
         en: 'Zurich tax office leaflet: medical and accident costs'
         fr: 'Notice de l’administration fiscale zurichoise : frais de maladie et d’accident'
