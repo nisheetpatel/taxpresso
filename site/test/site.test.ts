@@ -118,6 +118,8 @@ describe('landing page', () => {
       const html = renderStart(lang);
       expect(html).toContain(`<html lang="${lang}">`);
       expect(html).toContain('/releases/latest');
+      // The home page's cup flies here (styles.css, page transitions) and lands on a full cup.
+      expect(html).toContain('<div class="start-hero-art" aria-hidden="true">');
       expect(html).not.toMatch(RUNNABLE_SCRIPT);
       for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
     }
