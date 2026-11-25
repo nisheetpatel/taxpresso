@@ -15,6 +15,12 @@
 //   ge-2025-icc-tariff-pdf p. 2 (income: 667.50 cumulated at 26'962, then 10.00 %; 2'565.15 at
 //     43'815, then 12.80 %; 3'140.40 at 48'309, then 13.20 %), p. 5 (wealth: 1.49 per mille up to
 //     118'398, supplementary tax 0 there), p. 4 and 6 (+ 47.5 %, - 12 % on income, + 1 % home care).
+//   ge-2026-rcepf, Geneva's values for 2026: art. 17 (income: 669.40 cumulated at 27'036, then
+//     10.00 %; 2'572.25 at 43'935, then 12.80 %; 3'149.00 at 48'441, then 13.20 %), art. 18 (wealth:
+//     1.49 per mille up to 118'722, supplementary tax 0 there), art. 6 al. 2 (flat professional
+//     deduction 641 to 1'817), art. 10 (two earners 1'054), art. 16 (wealth deduction 87'872,
+//     175'743 for a couple; 51.60 at most 534'500). The surcharges are the laws', the same in
+//     2026. The health premium ceiling of 2026 is not published yet: the 2025 one, an estimate.
 //   ch-2025-ifd-frais-professionnels-progression p. 3 and ch-2026-ifd-progression-deductions p. 4
 //     (federal scales: single 0.77 per 100 from 15'200; 612.00 at 58'000, then 2.97 per 100;
 //     married 395.00 at 61'300, then 3.00 per 100; the same in 2025 and 2026 at these incomes), p. 2
@@ -95,10 +101,15 @@ function both(
       check(r, expected[2025]);
       expect(r.estimates).toEqual([]);
     });
-    it('2026: Geneva values flagged as estimates, federal values official', () => {
+    // S1, S2 and S3 all have health premiums (52.21), whose 2026 ceiling Geneva has not published
+    // yet: that, and nothing else, makes the cantonal tax an estimate.
+    it('2026: Geneva’s 2026 values, the health premium ceiling an estimate, federal values official', () => {
       const r = computeReturn(input(2026));
       check(r, expected[2026]);
       expect(r.estimates.map((e) => e.id)).toEqual(['ge-2026-unpublished']);
+      expect(r.icc!.items.find((i) => i.code === '52.21')!.estimates).toContain(
+        'ge-2026-unpublished',
+      );
       expect(r.ifd!.tax.estimates).toBeUndefined();
     });
   });
@@ -117,6 +128,15 @@ function both(
 // = 48.228 -> 48.25; centimes 22.919 -> 22.90; home care 0.4825 -> 0.50; supplementary 0: 71.65.
 // Communal: 13.0275 -> 13.05 x 40 % = 5.22 -> 5.20; rest 35.20 x 40 % = 14.08 -> 14.10: 19.30.
 // ICC 6'609.60 + 71.65 + 2'021.30 + 19.30 + 25 = 8'746.85.
+// ICC 2026 (ge-2026-rcepf): the same taxable 62'800. Base (art. 17) 3'149.00 + 14'359 x 13.20 % =
+// 1'895.388 -> 1'895.40: 5'044.40. Centimes 2'396.09 -> 2'396.10; reduction 12 % x 7'440.50 =
+// 892.86 -> 892.85; home care 50.444 -> 50.45; cantonal income 6'598.10. Communal (PP 27 %):
+// 1'361.988 -> 1'362.00 x 40 % = 544.80; rest 3'682.40 x 40 % = 1'472.96 -> 1'472.95: 2'017.75.
+// Wealth: 51.60 120'000 (under 534'500, art. 16 al. 2); 120'000 less 87'872 (art. 16 al. 1):
+// 32'128. Base (art. 18) 32'128 x 1.49 per mille = 47.8707 -> 47.85; centimes 22.72875 -> 22.75;
+// home care 0.4785 -> 0.50; supplementary 0: 71.10. Communal: 12.9195 -> 12.90 x 40 % = 5.16 ->
+// 5.15; rest 34.95 x 40 % = 13.98 -> 14.00: 19.15. ICC 6'598.10 + 71.10 + 2'017.75 + 19.15 + 25 =
+// 8'731.10.
 // IFD: 52.00 min(6'000, 1'800). 95'000 - 9'000 - 17'200 - 1'800 = 67'000: 612.00 + 90 x 2.97 =
 // 879.30.
 const lea = (taxYear: 2025 | 2026): EngineInput => ({
@@ -193,7 +213,18 @@ const S1: Expected = {
   ifdTaxable: 67_000,
   ifdTax: 879.3,
 };
-both('S1 single self-employed, Carouge', lea, { 2025: S1, 2026: S1 });
+both('S1 single self-employed, Carouge', lea, {
+  2025: S1,
+  2026: {
+    ...S1,
+    cantonalIncome: 6_598.1,
+    communalIncome: 2_017.75,
+    taxableWealth: 32_128,
+    cantonalWealth: 71.1,
+    communalWealth: 19.15,
+    iccTotal: 8_731.1,
+  },
+});
 
 // S2. Marc and Sofia Dupuis, married, Vernier. Marc is salaried (90'000, AVS 5'800, pension fund
 // 6'500, 3a 7'258); Sofia translates in her own name, without a pension fund: 12.08 48'000, 12.21
@@ -206,9 +237,16 @@ both('S1 single self-employed, Carouge', lea, { 2025: S1, 2026: S1 });
 // x 2'625.95 / 44'290 = 5'251.84 -> 5'251.85. Centimes 2'494.629 -> 2'494.65; reduction 12 % x
 // 7'746.50 = 929.58 -> 929.60; home care 52.5185 -> 52.50; cantonal income 6'869.40. Communal
 // 2025 (PP 80 %): 4'201.48 -> 4'201.50 x 50 % = 2'100.75; rest 1'050.35 x 50 % = 525.175 -> 525.20:
-// 2'625.95. 2026 (PP 75 %): 3'938.8875 -> 3'938.90 x 50 % = 1'969.45; rest 1'312.95 x 50 % =
-// 656.475 -> 656.50: 2'625.95. Wealth 15'000 - 3'000 - 6'000 = 6'000, under 175'264: 0.
-// ICC 6'869.40 + 2'625.95 + 25 = 9'520.35 (both years).
+// 2'625.95. Wealth 15'000 - 3'000 - 6'000 = 6'000, under 175'264: 0. ICC 6'869.40 + 2'625.95 +
+// 25 = 9'520.35.
+// ICC 2026 (ge-2026-rcepf): Marc's flat at most 1'817 (art. 6 al. 2); two earners 1'054 (art. 10):
+// Marc 68'625, Sofia 30'000, lower: 32.95 -1'054. Taxable 130'000 - 41'429 = 88'571, rate 50 %:
+// 44'285.5 -> 44'286. Scale (art. 17) at 44'286: 2'572.25 + 351 x 12.80 % = 44.928 -> 44.95:
+// 2'617.20; base 88'571 x 2'617.20 / 44'286 = 5'234.3409 -> 5'234.35. Centimes 2'486.31625 ->
+// 2'486.30; reduction 12 % x 7'720.65 = 926.478 -> 926.50; home care 52.3435 -> 52.35; cantonal
+// income 6'846.50. Communal (PP 75 %): 3'925.7625 -> 3'925.75 x 50 % = 1'962.875 -> 1'962.90; rest
+// 1'308.60 x 50 % = 654.30: 2'617.20. Wealth 6'000, under 175'743 (art. 16 al. 1): 0. ICC
+// 6'846.50 + 2'617.20 + 25 = 9'488.70.
 // IFD: Marc's 31.20 3 % x 77'700 = 2'331; two earners: Sofia 30'000 is the lower, 50 % = 15'000, at
 // most 14'100 (32.90); 52.00 min(9'000, 3'700); 59.20 2'800. Taxable 130'000 - 52'489 = 77'511,
 // at 77'500: 395.00 + 162 x 3.00 = 881.00.
@@ -307,9 +345,30 @@ const S2 = (communal: number): Expected => ({
   ifdTaxable: 77_511,
   ifdTax: 881,
 });
+const S2_2025 = S2(2_625.95);
 both('S2 couple, one salaried and one self-employed, Vernier', dupuis, {
-  2025: S2(2_625.95),
-  2026: S2(2_625.95),
+  2025: S2_2025,
+  2026: {
+    ...S2_2025,
+    icc: S2_2025.icc.map(([code, person, amount]): [string, string, number] => [
+      code,
+      person,
+      code === '31.50' ? -1_817 : code === '32.95' ? -1_054 : amount,
+    ]),
+    // 32.00, annexe B's deductions: 4'000 + 6'000 + 1'054.
+    sheet: {
+      ...S2_2025.sheet,
+      icc: S2_2025.sheet.icc.map(([code, amount]): [string, number] => [
+        code,
+        code === '32.00' ? -11_054 : amount,
+      ]),
+    },
+    taxable: 88_571,
+    rate: 44_286,
+    cantonalIncome: 6_846.5,
+    communalIncome: 2_617.2,
+    iccTotal: 9_488.7,
+  },
 });
 
 // S3. Noé Favre, single, Onex: a part-time salary (50'000, AVS 3'200, pension fund 2'500, 3a
@@ -324,6 +383,11 @@ both('S2 couple, one salaried and one self-employed, Vernier', dupuis, {
 // 6.90; cantonal income 900.45. Communal (PP 80 %): 550.72 -> 550.70 x 50.5 % = 278.1035 -> 278.10;
 // rest 137.70 x 50.5 % = 69.5385 -> 69.55: 347.65. Wealth 1'500, under 87'632: 0.
 // ICC 900.45 + 347.65 + 25 = 1'273.10.
+// ICC 2026 (ge-2026-rcepf): the flat 1'329 (between 641 and 1'817, art. 6 al. 2), the same taxable
+// 27'171. Base (art. 17) 669.40 + (27'171 - 27'036) x 10 % = 13.50: 682.90. Centimes 324.3775 ->
+// 324.40; reduction 12 % x 1'007.30 = 120.876 -> 120.90; home care 6.829 -> 6.85; cantonal income
+// 893.25. Communal (PP 80 %): 546.32 -> 546.30 x 50.5 % = 275.8815 -> 275.90; rest 136.60 x 50.5 %
+// = 68.983 -> 69.00: 344.90. Wealth 1'500, under 87'872: 0. ICC 893.25 + 344.90 + 25 = 1'263.15.
 // IFD: 31.20 3 % x 44'300 = 1'329, at least 2'000; 52.00 min(4'000, 1'800). Taxable 50'000 -
 // 21'300 = 28'700: 135 x 0.77 = 103.95.
 const favre = (taxYear: 2025 | 2026): EngineInput => ({
@@ -416,7 +480,7 @@ const S3: Expected = {
 };
 both('S3 self-employed with a loss and earlier losses, also salaried, Onex', favre, {
   2025: S3,
-  2026: S3,
+  2026: { ...S3, cantonalIncome: 893.25, communalIncome: 344.9, iccTotal: 1_263.15 },
 });
 
 describe('the rules of the simple case', () => {
@@ -440,12 +504,16 @@ describe('the rules of the simple case', () => {
         limit: chf(17_200),
         counted: chf(17_200),
       });
-      expect(r.limits.find((l) => l.code === '51.60')).toMatchObject({
+      // The maximum: 533'042 in 2025 (guide p. 18), 534'500 in 2026 (ge-2026-rcepf art. 16 al. 2).
+      // Published for both years: not an estimate.
+      const max = r.limits.find((l) => l.code === '51.60')!;
+      expect(max).toMatchObject({
         given: chf(120_000),
-        limit: chf(533_042),
+        limit: chf(year === 2025 ? 533_042 : 534_500),
         counted: chf(120_000),
-        ...(year === 2026 ? { estimate: true } : {}),
       });
+      expect(max).not.toHaveProperty('estimate');
+      if (year === 2026) expect(max.source).toMatch(/ge-2026-rcepf art\. 16 al\. 2/);
     }
     const losses = computeReturn(favre(2026)).icc!.items.find((i) => i.code === '57.20')!;
     expect(losses.sources.join(' ')).toMatch(/ch-2026-ifd-instructions-personnes-physiques p\. 3/);
@@ -467,6 +535,14 @@ describe('the rules of the simple case', () => {
       given: chf(755_000),
       counted: chf(533_042),
     });
+    // 2026: at most 534'500 (ge-2026-rcepf art. 16 al. 2).
+    const big26 = lea(2026);
+    const p26 = big26.people[0]!;
+    const r26 = computeReturn({
+      ...big26,
+      people: [{ ...p26, business: { ...p26.business!, currentAssets: amt(1_500_000) } }],
+    });
+    expect(r26.icc!.wealth.items.find((i) => i.code === '51.60')!.amount).toBe(chf(-534_500));
   });
 
   it('deducts no 3a when the activities make a loss in all, and says why', () => {
@@ -598,7 +674,8 @@ describe('from the ledger: answers and the business’s documents', () => {
     expect(b.turnover).toMatchObject({ value: chf(120_000), status: 'stated' });
     expect(b.avsYear).toMatchObject({ value: chf(9_000), status: 'extracted' });
     const r = computeReturn(input!);
-    expect(r.icc!.taxes.total.amount).toBe(chf(8_746.85));
+    // S1's figures of 2026 (the ledger is 2026's).
+    expect(r.icc!.taxes.total.amount).toBe(chf(8_731.1));
     expect(r.ifd!.tax.amount).toBe(chf(879.3));
     // The AVS contributions still need the user's OK: so do the lines resting on them.
     expect(r.icc!.items.find((i) => i.code === '32.10')!.needsOk).toBe(true);

@@ -71,7 +71,6 @@ const RW = {
 const WHO: Record<string, string> = { p1: 'you', p2: 'your spouse or partner' };
 const chf = (centimes: number) => `CHF ${Math.round(centimes / 100).toLocaleString('en-US')}`;
 const ASSUMPTION_TEXT: Record<string, string> = {
-  icc_2025_scale: 'Geneva tax uses the 2025 scale; the 2026 scale is published in January 2027.',
   flat_deductions_only:
     'Health premiums, childcare and other costs not given yet are not counted, so the real saving may be a little different.',
   home_commune_rate: 'All income is taken as earned in the home commune.',

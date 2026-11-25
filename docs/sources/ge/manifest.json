@@ -528,6 +528,22 @@
     "notes": "rsGE D 3 05, adopted 9 November 1887, consolidated text with modifications up to 1 January 2026. Art. 295A al. 2: the privileged share (20% to 80%) of each cantonal tax on income and wealth goes to the commune of residence, the rest to the communes concerned in proportion to the income and wealth attributable to each. Art. 375: taxe personnelle of 25 francs; art. 377: exemptions."
   },
   {
+    "id": "ge-2026-rcepf",
+    "canton": "GE",
+    "doc_type": "law",
+    "title": "Règlement relatif à la compensation des effets de la progression à froid (RCEPF), rsGE D 3 08.05, du 8 octobre 2025",
+    "tax_year": 2026,
+    "language": "fr",
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_08p05.htm",
+    "format": "html",
+    "publisher": "SILGENEVE",
+    "published": "2025-10-08",
+    "verified_on": "2026-11-25",
+    "priority": "core",
+    "why_needed": "Geneva's own amounts and scales for tax year 2026, indexed by the Conseil d'Etat (LIPP art. 67 and 72): the income scale (art. 17), the two wealth scales (art. 18) and every indexed deduction (art. 4 to 16: commuting, flat professional costs, life insurance and savings interest, childcare, two earners, training, family charges, AVS/AI pensioners, the social deductions on wealth).",
+    "notes": "Adopted 8 October 2025, in force 1 January 2026; index 110.0 for tax period 2026 (art. 1); amounts and bracket limits rounded to the franc (art. 2 al. 3). It replaces the regulation of 11 December 2024 (art. 19), and the next one will replace it at the same address: the snapshot fetched on 25 November 2026 is the 2026 text. Not in it, because not indexed or set elsewhere: the cantonal centimes, the 12 % reduction, the health premium ceiling (twice the cantonal average premium, LIPP art. 32), meals, pillar 3a."
+  },
+  {
     "id": "ge-2026-part-privilegiee-communique",
     "canton": "GE",
     "doc_type": "communal_rates",

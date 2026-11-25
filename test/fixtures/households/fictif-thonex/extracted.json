@@ -128,7 +128,7 @@
         "read": "claude",
         "person": "household",
         "taxYear": 2026,
-        "values": [{ "key": "health.premiums", "value": "15'279.00", "page": 1 }]
+        "values": [{ "key": "health.premiums", "value": "14'767.00", "page": 1 }]
       },
       {
         "file": "06-releve-fiscal-banque-privee-exemple-sa-2026.pdf",

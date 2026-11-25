@@ -1,5 +1,6 @@
 // Childcare per child, end to end through the extension: the maximum is per child, for the
-// cantonal and the federal tax (ge-2025-guide-declaration-pp p. 30; StG ZH § 31 Abs. 1 lit. j;
+// cantonal and the federal tax (ge-2025-guide-declaration-pp p. 30, Geneva's 2026 amount in
+// ge-2026-rcepf art. 9; StG ZH § 31 Abs. 1 lit. j;
 // ch-2026-ifd-instructions-personnes-physiques p. 8). Crèche invoices for the household come as one
 // total: within one child's maximum every split gives the same deduction, and nothing more is
 // asked; above it, with several children, the question per child appears and the tax waits for it.
@@ -166,9 +167,10 @@ describe('childcare paid for two children in Geneva', () => {
       ['child_care:child2', 5_000],
     ]);
     expect(open()).toEqual([]);
-    // 26,320 + 5,000 for the ICC (59.10), 25,800 + 5,000 for the IFD (59.12).
+    // 26,392 + 5,000 for the ICC (59.10: the 2026 maximum per child, ge-2026-rcepf art. 9), 25,800
+    // + 5,000 for the IFD (59.12).
     const r = ws.taxEstimate().result!;
-    expect(ded(r.icc?.items, '59.10')).toBe(3_132_000);
+    expect(ded(r.icc?.items, '59.10')).toBe(3_139_200);
     expect(ded(r.ifd?.items, '59.12')).toBe(3_080_000);
   });
 });

@@ -451,10 +451,7 @@ export function computeReturn(input: ZhEngineInput): ZhTaxResult {
   const P = zhParamsFor(input.taxYear);
   const A = P.amounts;
   const notes = new Notes();
-  const unverified: Text[] = [
-    ...(input.taxYear === 2026 ? [NOTE.cantonalRate2026] : []),
-    NOTE.rounding,
-  ];
+  const unverified: Text[] = input.taxYear === 2026 ? [NOTE.cantonalRate2026] : [];
   const couple = input.civilStatus === 'married';
   const people = [...input.people].sort((a, b) => a.id.localeCompare(b.id));
   if (!people.some((p) => p.id === 'p1')) throw new ZhInputError('people must include p1');

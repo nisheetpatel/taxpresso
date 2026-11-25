@@ -605,7 +605,7 @@ function dupont2026() {
       [
         '31.00',
         'Déductions activité dépendante c.A',
-        { annex: 'A1', icc: "19'877", ifd: "20'682" },
+        { annex: 'A1', icc: "19'882", ifd: "20'682" },
       ],
       [
         '41.00',
@@ -613,7 +613,7 @@ function dupont2026() {
         { annex: 'A2', icc: "14'367", ifd: "14'978" },
       ],
       ['59.00', 'Autres déductions', { annex: 'C4', icc: "6'000", ifd: "6'000" }],
-      ['92.20', 'Sous-total', { icc: "109'756", ifd: "108'340" }],
+      ['92.20', 'Sous-total', { icc: "109'751", ifd: "108'340" }],
       ['71.00', 'Frais médicaux', {}],
       (y) => [
         [90, y, 'Contribuable A'],
@@ -633,7 +633,7 @@ function dupont2026() {
         [250, y, '92.20'],
         [c.ifd, y, '0', 9, 'right'],
       ],
-      ['92.40', 'Revenu net avant déduction des dons', { icc: "109'105", ifd: "108'340" }],
+      ['92.40', 'Revenu net avant déduction des dons', { icc: "109'100", ifd: "108'340" }],
     ]),
     ...f(3),
   ];
@@ -663,9 +663,10 @@ function dupont2026() {
       ['31.10', 'Cotisations AVS / AI / APG / Chômage', { icc: "5'880", ifd: "5'880", box: '9' }],
       ['31.12', 'Cotisations 2e pilier', { icc: "4'900", ifd: "4'900", box: '10.1' }],
       ['31.20', 'Déduction forfaitaire IFD frais prof.', { marks: true, ifd: "2'617" }],
-      ['31.50', 'Déduction forfaitaire ICC frais prof.', { icc: "1'812" }],
+      // 3 % of the net salary 87'220 is over the 2026 maximum (ge-2026-rcepf art. 6 al. 2).
+      ['31.50', 'Déduction forfaitaire ICC frais prof.', { icc: "1'817" }],
       ['31.40', 'Cotisations 3e pilier A', { icc: "7'285", ifd: "7'285" }],
-      ['31.00', 'Total des déductions', { icc: "19'877", ifd: "20'682" }],
+      ['31.00', 'Total des déductions', { icc: "19'882", ifd: "20'682" }],
     ]),
     ...f(5),
   ];

@@ -16,10 +16,11 @@
 // the communal tax then goes to it whatever measures the shares (gross or net, not spelled out).
 //
 // Tax year 2026: the federal values are published (ch-2026-ifd-progression-deductions), and so are
-// the communal centimes (ge-2026-communal-centimes-arca); Geneva's own 2026 scales and amounts are
-// published with the 2026 guide in January 2027. Until then the 2026 cantonal figures here use the
-// 2025 ones, as SPEC.md section 7 says the app must, and are marked provisional.
-import { mkdirSync, writeFileSync } from 'node:fs';
+// the communal centimes (ge-2026-communal-centimes-arca) and Geneva's own scales and indexed
+// amounts (ge-2026-rcepf, the regulation of 8 October 2025). Only the ceiling for health insurance
+// premiums of 2026 comes with the 2026 guide in January 2027: the kits' premiums are under the 2025
+// ceiling, the figure is marked provisional for it, and the year with it.
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as prettier from 'prettier';
@@ -31,7 +32,7 @@ const GUIDE = 'ge-2025-guide-declaration-pp';
 const TARIFF = 'ge-2025-icc-tariff-pdf';
 const INDEP = 'ge-2025-guide-independants';
 
-// ---- Geneva, 2025 (also used for 2026 until the 2026 guide is published) ----------------------
+// ---- Geneva, 2025 ----------------------------------------------------------------------------------
 
 /**
  * Income tax scale 2025 as printed: [from, to, rate in hundredths of a percent, total tax at "to"
@@ -85,7 +86,7 @@ const ICC_WEALTH_SUPPLEMENTARY = [
   [3_551_933, Infinity, 11_475, null],
 ];
 
-const GE = {
+const GE_2025 = {
   incomeScale: { value: ICC_INCOME_SCALE, source: `${GUIDE} p. 47; ${TARIFF} p. 2` },
   wealthScale: { value: ICC_WEALTH_SCALE, source: `${GUIDE} p. 49; ${TARIFF} p. 5` },
   wealthSupplementary: {
@@ -145,6 +146,116 @@ const GE = {
     source: 'ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c',
   },
 };
+
+// ---- Geneva, 2026 ----------------------------------------------------------------------------------
+// ge-2026-rcepf: the regulation of 8 October 2025 (rsGE D 3 08.05), index 110.0 (art. 1).
+
+const RCEPF = 'ge-2026-rcepf';
+
+/**
+ * Income tax scale 2026: [from, to, rate in hundredths of a percent, total tax at "to" in
+ * centimes]. The regulation prints the brackets and their rates (art. 17), not the totals: each is
+ * the total below plus the bracket at its rate, to 5 centimes, as the 2025 tariff builds its own
+ * (selfCheck verifies that reading on the 2025 scale and on the 2026 wealth scales, whose totals
+ * the regulation does print).
+ */
+const ICC_INCOME_SCALE_2026 = [
+  [0, 18_700, 0, 0],
+  [18_701, 22_530, 730, 27_960],
+  [22_531, 24_784, 820, 46_445],
+  [24_785, 27_036, 910, 66_940],
+  [27_037, 29_290, 1000, 89_480],
+  [29_291, 34_922, 1090, 150_870],
+  [34_923, 39_428, 1130, 201_790],
+  [39_429, 43_935, 1230, 257_225],
+  [43_936, 48_441, 1280, 314_900],
+  [48_442, 77_730, 1320, 701_515],
+  [77_731, 127_297, 1420, 1_405_365],
+  [127_298, 171_231, 1500, 2_064_375],
+  [171_232, 193_762, 1560, 2_415_860],
+  [193_763, 277_125, 1580, 3_732_995],
+  [277_126, 295_150, 1600, 4_021_395],
+  [295_151, 415_688, 1680, 6_046_435],
+  [415_689, 651_131, 1760, 10_190_230],
+  [651_132, Infinity, 1800, null],
+];
+/** Base wealth tax 2026, with the totals as printed. ge-2026-rcepf art. 18 al. 1. */
+const ICC_WEALTH_SCALE_2026 = [
+  [1, 118_722, 14_900, 17_690],
+  [118_723, 237_443, 19_100, 40_365],
+  [237_444, 356_165, 23_400, 68_145],
+  [356_166, 474_886, 25_500, 98_420],
+  [474_887, 712_330, 27_600, 163_955],
+  [712_331, 949_772, 29_800, 234_715],
+  [949_773, 1_187_215, 31_900, 310_460],
+  [1_187_216, 1_424_658, 34_000, 391_190],
+  [1_424_659, 1_780_823, 36_100, 519_765],
+  [1_780_824, Infinity, 38_300, null],
+];
+/** Supplementary wealth tax 2026, with the totals as printed. ge-2026-rcepf art. 18 al. 2. */
+const ICC_WEALTH_SUPPLEMENTARY_2026 = [
+  [1, 118_722, 0, 0],
+  [118_723, 237_443, 956, 1_135],
+  [237_444, 356_165, 1169, 2_525],
+  [356_166, 474_886, 2550, 5_550],
+  [474_887, 712_330, 2763, 12_110],
+  [712_331, 949_772, 4463, 22_705],
+  [949_773, 1_187_215, 4781, 34_055],
+  [1_187_216, 1_424_658, 6800, 50_200],
+  [1_424_659, 1_780_823, 7225, 75_935],
+  [1_780_824, 3_561_646, 9563, 246_235],
+  [3_561_647, Infinity, 11_475, null],
+];
+
+/**
+ * 2026: what the regulation indexes, from the regulation; what a law fixes, from the law. The
+ * health premium ceiling of 2026 is not published: the 2025 one, which the kits stay under.
+ */
+const GE_2026 = {
+  ...GE_2025,
+  incomeScale: { value: ICC_INCOME_SCALE_2026, source: `${RCEPF} art. 17` },
+  wealthScale: { value: ICC_WEALTH_SCALE_2026, source: `${RCEPF} art. 18 al. 1` },
+  wealthSupplementary: {
+    value: ICC_WEALTH_SUPPLEMENTARY_2026,
+    source: `${RCEPF} art. 18 al. 2; ge-na-law-lipp art. 59 al. 2 (no centimes on it)`,
+  },
+  splitting: { value: 50, source: 'ge-na-law-lipp art. 41 al. 2' },
+  cantonalCentimes: { value: 475, source: 'ge-na-law-lcacant art. 2 al. 1' },
+  reduction: { value: 120, source: 'ge-na-law-ldirpp art. 1' },
+  homeCare: { value: 10, source: 'ge-na-law-lcacant art. 2 al. 2' },
+  flatCosts: {
+    value: { rate: 3, min: 641_00, max: 1_817_00 },
+    source: `${RCEPF} art. 6 al. 2; ge-na-law-lipp art. 29 al. 2`,
+  },
+  travel: { value: 536_00, source: `${RCEPF} art. 6 al. 1` },
+  twoEarner: { value: 1_054_00, source: `${RCEPF} art. 10` },
+  pillar3a: {
+    value: { withFund: 7_258_00, without: 36_288_00, share: 20 },
+    source: 'ge-na-law-lipp art. 31 let. c (within the limits of federal law)',
+  },
+  lifeAndSavings: {
+    value: { single: 2_352_00, couple: 3_528_00, perCharge: 962_00 },
+    source: `${RCEPF} art. 8`,
+  },
+  childcare: { value: 26_392_00, source: `${RCEPF} art. 9` },
+  donations: { value: 20, source: 'ge-na-law-lipp art. 37 al. 1' },
+  medical: { value: 0.5, source: 'ge-na-law-lipp art. 32 let. b' },
+  familyCharge: {
+    value: { full: 13_698_00, withChildcare: 10_536_00 },
+    source: `${RCEPF} art. 13 al. 1`,
+  },
+  pensionerDeduction: {
+    value: { coupleLimit: 98_348_00, singleLimit: 85_520_00 },
+    source: `${RCEPF} art. 14`,
+  },
+  wealthSocial: {
+    value: { single: 87_872_00, couple: 175_743_00, perCharge: 43_936_00 },
+    source: `${RCEPF} art. 16 al. 1`,
+  },
+  debtInterest: { value: 50_000_00, source: 'ge-na-law-lipp art. 34 let. a' },
+};
+
+const GE_BY_YEAR = { 2025: GE_2025, 2026: GE_2026 };
 
 /** Communal centimes, in hundredths (45.49 -> 4549). */
 const COMMUNES = {
@@ -370,10 +481,10 @@ export function computeKit(kit, year) {
   const couple = kit.civil === 'married';
   const people = kit.people.map((p) => p.id);
   const children = kit.children ?? [];
-  const provisional = year !== 2025;
-  const estimateNote = provisional
-    ? ' (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)'
-    : '';
+  const GE = GE_BY_YEAR[year];
+  // 2026: the ceiling for health insurance premiums is the 2025 one until the 2026 guide.
+  const provisional = year !== 2025 && (Y.health?.members ?? []).length > 0;
+  const estimateNote = '';
   const icc = [];
   const ifd = [];
   const wealth = [];
@@ -1115,7 +1226,7 @@ export function computeKit(kit, year) {
       ),
       total: r(
         iccTotal,
-        `Cantonal income ${fr(cantonalIncome)} + cantonal wealth ${fr(cantonalWealth)} + communal ${fr(inc.comm + wl.comm)} + taxe personnelle ${fr(personalTax)} = ${fr(iccTotal)}.${provisional ? ' Provisional: Geneva 2026 scales and amounts not published yet.' : ''}`,
+        `Cantonal income ${fr(cantonalIncome)} + cantonal wealth ${fr(cantonalWealth)} + communal ${fr(inc.comm + wl.comm)} + taxe personnelle ${fr(personalTax)} = ${fr(iccTotal)}.${provisional ? ' Provisional: Geneva’s 2026 ceiling for health insurance premiums is not published yet; the premiums are under the 2025 one.' : ''}`,
         `${GUIDE} p. 48 and 49`,
       ),
       ...((Y.salaries ?? []).some((x) => x.sourceTax)
@@ -1241,6 +1352,9 @@ export function selfCheck() {
     ['income', ICC_INCOME_SCALE, 10_000],
     ['wealth', ICC_WEALTH_SCALE, 10_000_000],
     ['supplementary', ICC_WEALTH_SUPPLEMENTARY, 10_000_000],
+    ['income 2026', ICC_INCOME_SCALE_2026, 10_000],
+    ['wealth 2026', ICC_WEALTH_SCALE_2026, 10_000_000],
+    ['supplementary 2026', ICC_WEALTH_SUPPLEMENTARY_2026, 10_000_000],
   ]) {
     let prevTo = 0;
     let prevTotal = 0;
@@ -1274,6 +1388,30 @@ export function selfCheck() {
   checks.forEach(([got, want], i) => {
     if (got !== want) fail(`example ${i + 1}: ${got} instead of ${want}`);
   });
+  // The scales of both years give the base taxes the Geneva tax administration's own estimator
+  // returns for a person alone (no splitting), at every step of the scales and in between:
+  // test/golden/afc, recorded from ge.ch/afcaelp1dmapublic by scripts/ge-afc-golden.mjs.
+  for (const year of [2025, 2026]) {
+    const { cases } = JSON.parse(
+      readFileSync(path.join(here, '..', '..', 'golden', 'afc', `ge-${year}.json`), 'utf8'),
+    );
+    const G = GE_BY_YEAR[year];
+    let checked = 0;
+    for (const c of cases.filter((x) => x.household === 'single')) {
+      const at = `${year}, income ${c.income}, wealth ${c.wealth}`;
+      if (genevaScale(G.incomeScale.value, c.afc.iccIncome, 10_000) !== c.afc.income.base)
+        fail(`the estimator's base income tax, ${at}`);
+      if (genevaScale(G.wealthScale.value, c.afc.iccWealth, 10_000_000) !== c.afc.wealth.base)
+        fail(`the estimator's base wealth tax, ${at}`);
+      if (
+        genevaScale(G.wealthSupplementary.value, c.afc.iccWealth, 10_000_000) !==
+        c.afc.wealth.supplementary
+      )
+        fail(`the estimator's supplementary wealth tax, ${at}`);
+      checked++;
+    }
+    if (checked < 100) fail(`only ${checked} cases of the estimator for ${year}`);
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

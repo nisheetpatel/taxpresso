@@ -7,6 +7,18 @@ import type { OfficialDocument } from '@taxpresso/rules-ch';
 export type { OfficialDocument } from '@taxpresso/rules-ch';
 
 export const TI_OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
+  'ti-2025-communal-moltiplicatore-coordinato': {
+    title:
+      'Moltiplicatore comunale coordinato 2025 valido per la determinazione del contributo di livellamento 2026 (Foglio ufficiale, 3 luglio 2025)',
+    url: 'https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Perequazione/FU-MCC2025.pdf',
+    pdf: true,
+  },
+  'ti-2025-communal-numero-comuni': {
+    title:
+      'Numero di comuni a fine anno dal 1980 (mutazioni), Sezione degli enti locali, aprile 2025',
+    url: 'https://www4.ti.ch/fileadmin/DI/DI_DI/SEL/Comuni/Elenco_comuni/numero_comuni_2025.xlsx',
+    pdf: false,
+  },
   'ti-2025-communal-rates': {
     title: 'Moltiplicatori comunali',
     url: 'https://www4.ti.ch/dfe/dc/sportello/moltiplicatori-comunali',

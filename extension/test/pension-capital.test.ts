@@ -3,7 +3,11 @@
 // reason read there), the separate tax for Claude (compute_tax) and in the dashboard's estimate, the
 // final check and the values to type (98.12). Synthetic households on a temporary vault, made-up
 // people: Hélène Favre (Carouge), Lucas Morel (Lancy), Pierre and Anne Rochat (Vernier). Their
-// figures are worked out by hand in packages/rules-ge/test/capital.test.ts.
+// figures are worked out by hand in packages/rules-ge/test/capital.test.ts; the 2026 ones again
+// here, at each household, on Geneva's 2026 scale (ge-2026-rcepf art. 17: cumulative tax 3'149.00
+// at 48'441, 7'015.15 at 77'730, 20'643.75 at 171'231). The same steps give the printed rate on 621
+// of the 622 rows of the AFC's 2026 capital tariff (ge-2026-source-capital-icc-tariff, 43.44 % of
+// communal centimes), among them 3.30 % at 85'000, 2.72 % at 60'000 and 4.26 % at 180'000.
 import { mkdtemp } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -175,16 +179,21 @@ describe('a pillar 3a paid out at retirement (Favre)', () => {
     await confirmed('pillar3a_capital_attestation', 'p1', favreAttestation());
     const res = await call('compute_tax');
     const out = res.structuredContent as Record<string, unknown>;
+    // By hand, 2026. ICC, no splitting (ge-2026-rcepf art. 17): 7'015.15 at 77'730 + 7'270 x
+    // 14.20 % = 1'032.34 -> 1'032.35; 8'047.50. A fifth: 1'609.50. Centimes 47.5 %: 764.5125 ->
+    // 764.50. 12 % of 2'374.00: 284.88 -> 284.90. Home care 1 %: 16.095 -> 16.10. Cantonal
+    // 2'105.20. Carouge 40 %: 643.80. ICC 2'749.00. IFD 2026, single scale: 1'502.95 at 82'100 +
+    // 29 x 6.60 = 1'694.35, a fifth 338.87 -> 338.85. Together 3'087.85.
     expect(out.capital).toEqual({
       amount: 8_500_000,
       items: [{ code: '98.12', person: 'p1', amount: 8_500_000 }],
-      icc: 275_280,
+      icc: 274_900,
       ifd: 33_885,
-      total: 309_165,
+      total: 308_785,
     });
     const text = texts(res);
     expect(text).toMatch(
-      /Pension capital of the year \(prestations en capital du 2e et 3e pilier A, 98\.12\): CHF 85’000\.00 \(98\.12 \(you\) CHF 85’000\.00\)\. A tax of its own, apart from the tax on income, at a fifth of the scale, never in the total: cantonal and communal CHF 2’752\.80, federal CHF 338\.85; together CHF 3’091\.65\./,
+      /Pension capital of the year \(prestations en capital du 2e et 3e pilier A, 98\.12\): CHF 85’000\.00 \(98\.12 \(you\) CHF 85’000\.00\)\. A tax of its own, apart from the tax on income, at a fifth of the scale, never in the total: cantonal and communal CHF 2’749\.00, federal CHF 338\.85; together CHF 3’087\.85\./,
     );
     // Nothing assumed: the reason was read on the attestation.
     expect(text).not.toMatch(/motif du versement/);
@@ -215,7 +224,7 @@ describe('a pillar 3a paid out at retirement (Favre)', () => {
     ]);
     for (const l of lines) expect(l.sources.length, l.id).toBeGreaterThan(0);
     expect(texts(detail)).toMatch(
-      /- Base tax on pension capital .*: CHF 1’611\.70\. A fifth of CHF 8’058\.45/,
+      /- Base tax on pension capital .*: CHF 1’609\.50\. A fifth of CHF 8’047\.50/,
     );
     expect(texts(detail)).toMatch(/ge-na-law-lipp art\. 45 al\. 2/);
     expect(texts(detail)).toMatch(/ge-na-law-ldirpp art\. 1/);
@@ -228,7 +237,7 @@ describe('a pillar 3a paid out at retirement (Favre)', () => {
       {
         id: 'capital.icc',
         label: 'Pension capital, cantonal and communal tax (not in the total)',
-        amount: 275_280,
+        amount: 274_900,
       },
       {
         id: 'capital.ifd',
@@ -251,11 +260,11 @@ describe('a pillar 3a paid out at retirement (Favre)', () => {
       'Prestations en capital, impôt fédéral direct (non compris dans le total)',
     ]);
     const de = await estimate('de');
-    expect(capitalRows(de).map((r) => r.amount)).toEqual([275_280, 33_885]);
+    expect(capitalRows(de).map((r) => r.amount)).toEqual([274_900, 33_885]);
     // Geneva's content reads in English on German and Italian pages (extension/src/lang.ts).
     const it = await estimate('it');
     expect(capitalRows(it).map((r) => [r.label, r.amount])).toEqual([
-      ['Pension capital, cantonal and communal tax (not in the total)', 275_280],
+      ['Pension capital, cantonal and communal tax (not in the total)', 274_900],
       ['Pension capital, federal direct tax (not in the total)', 33_885],
     ]);
   });
@@ -267,7 +276,7 @@ describe('a pillar 3a paid out at retirement (Favre)', () => {
     const item = check.know.find((i) => i.id === 'capital:taxed_apart')!;
     expect(item).toMatchObject({ kind: 'capital', code: '98.12' });
     expect(item.detail).toMatch(/CHF 85’000\.00 received this year/);
-    expect(item.detail).toMatch(/CHF 3’091\.65 together/);
+    expect(item.detail).toMatch(/CHF 3’087\.85 together/);
     expect(item.sources.map((s) => s.id)).toEqual([
       'ge-2025-guide-declaration-pp',
       'ge-na-law-lipp',
@@ -322,11 +331,18 @@ describe('a 2nd pillar lump sum for a home (Morel)', () => {
   it('taxes it on the parental scale and full splitting, and recalls the buy-in rule', async () => {
     await morel();
     const out = (await call('compute_tax')).structuredContent as { capital: unknown };
+    // By hand, 2026. ICC, full splitting (LIPP art. 41 al. 3, kept by art. 45 al. 3), the scale of
+    // ge-2026-rcepf art. 17: rate at 60'000: 3'149.00 at 48'441 + 11'559 x 13.20 % = 1'525.788 ->
+    // 1'525.80; 4'674.80. On the whole amount: 120'000 x 4'674.80 / 60'000 = 9'349.60. A fifth:
+    // 1'869.92 -> 1'869.90. Centimes: 888.2025 -> 888.20. 12 % of 2'758.10: 330.972 -> 330.95. Home
+    // care: 18.699 -> 18.70. Cantonal 2'445.85. Lancy 47 %: 878.853 -> 878.85. ICC 3'324.70.
+    // IFD 2026, parental scale: 2'251.00 at 108'700 + 113 x 6.00 = 2'929.00, a fifth 585.80.
+    // Together 3'910.50.
     expect(out.capital).toMatchObject({
       amount: 12_000_000,
-      icc: 333_100,
+      icc: 332_470,
       ifd: 58_580,
-      total: 391_680,
+      total: 391_050,
     });
     const check = await finalCheck();
     const buyIns = check.know.find((i) => i.id === 'capital:buy_ins')!;
@@ -346,7 +362,7 @@ describe('a 2nd pillar lump sum for a home (Morel)', () => {
         .map((x) => x.what.en),
     ).toEqual(['A property in another canton']);
     const out = (await call('compute_tax')).structuredContent as { capital: { total: number } };
-    expect(out.capital.total).toBe(391_680);
+    expect(out.capital.total).toBe(391_050);
   });
 
   it('stops the income tax when a buy-in falls in the same year', async () => {
@@ -355,7 +371,7 @@ describe('a 2nd pillar lump sum for a home (Morel)', () => {
     const res = await call('compute_tax');
     const out = res.structuredContent as { total: number | null; capital: { total: number } };
     expect(out.total).toBeNull();
-    expect(out.capital.total).toBe(391_680);
+    expect(out.capital.total).toBe(391_050);
     expect(texts(res)).toMatch(/Not computed: .*LPP art\. 79b al\. 3/);
   });
 });
@@ -386,15 +402,21 @@ describe('two lump sums of a married couple in the same year (Rochat)', () => {
       ['capital.reason', 'retirement'],
     ]);
     const out = (await call('compute_tax')).structuredContent as { capital: unknown };
+    // By hand, 2026. ICC, full splitting, the scale of ge-2026-rcepf art. 17: rate at 180'000:
+    // 20'643.75 at 171'231 + 8'769 x 15.60 % = 1'367.964 -> 1'367.95; 22'011.70. On the whole
+    // amount: 360'000 x 22'011.70 / 180'000 = 44'023.40. A fifth: 8'804.68 -> 8'804.70. Centimes:
+    // 4'182.2325 -> 4'182.25. 12 % of 12'986.95: 1'558.434 -> 1'558.45. Home care: 88.047 -> 88.05.
+    // Cantonal 11'516.55. Vernier 50 %: 4'402.35. ICC 15'918.90. IFD 2026, married scale: 5'692.00
+    // at 152'400 + 2'076 x 13.00 = 32'680.00, a fifth 6'536.00. Together 22'454.90.
     expect(out.capital).toEqual({
       amount: 36_000_000,
       items: [
         { code: '98.12', person: 'p1', amount: 30_000_000 },
         { code: '98.12', person: 'p2', amount: 6_000_000 },
       ],
-      icc: 1_593_080,
+      icc: 1_591_890,
       ifd: 653_600,
-      total: 2_246_680,
+      total: 2_245_490,
     });
     const en = await estimate();
     expect(en.items.filter((i) => i.code === '98.12').map((i) => [i.who, i.amount])).toEqual([
@@ -402,7 +424,7 @@ describe('two lump sums of a married couple in the same year (Rochat)', () => {
       ['your spouse', 6_000_000],
     ]);
     expect(en.rows.filter((r) => r.id.startsWith('capital.')).map((r) => r.amount)).toEqual([
-      1_593_080, 653_600,
+      1_591_890, 653_600,
     ]);
     const form = await call('get_form_values', { section: 'PG2' });
     const rows = (form.structuredContent as { rows: { ref: string; copy?: string }[] }).rows;
@@ -447,7 +469,7 @@ describe('what fails closed', () => {
     await favre();
     await confirmed('pillar3a_capital_attestation', 'p1', favreAttestation().slice(0, 2));
     const res = await call('compute_tax');
-    expect((res.structuredContent as { capital: { total: number } }).capital.total).toBe(309_165);
+    expect((res.structuredContent as { capital: { total: number } }).capital.total).toBe(308_785);
     const check = await finalCheck();
     expect(
       check.know.some((i) => i.kind === 'assumption' && /motif du versement/.test(i.detail)),
@@ -508,7 +530,8 @@ describe('the 2025 return (the 2025 rules, the 2025 form)', () => {
     const res = await call('compute_tax', { detail: true });
     const out = res.structuredContent as Record<string, unknown>;
     expect(out.taxYear).toBe(2025);
-    // Hand-checked: ICC 2’752.80 (the same scale both years), IFD 2025 1’698.00 / 5 = 339.60.
+    // Hand-checked: ICC 2’752.80 (the 2025 scale: 6’996.00 at 77’518 + 7’482 x 14.20 %, where 2026
+    // has its own), IFD 2025 1’698.00 / 5 = 339.60.
     expect(out.capital).toEqual({
       amount: 8_500_000,
       items: [{ code: '98.12', person: 'p1', amount: 8_500_000 }],

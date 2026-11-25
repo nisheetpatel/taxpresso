@@ -9,8 +9,9 @@
 //
 // Taxes (StG § 2, § 35, § 44, §§ 168 to 170): the Grundtarif or the Mehrpersonentarif gives the
 // einfache Steuer on the taxable income, the wealth tariff the einfache Steuer on the taxable
-// wealth; the canton, the commune and, when asked for, the parish and the Bürgergemeinde each levy
-// their Steuerfuss of the two together.
+// wealth, the income rounded down to CHF 100 and the wealth to CHF 1,000 first (Verordnung § 43);
+// the canton, the commune and, when asked for, the parish and the Bürgergemeinde each levy their
+// Steuerfuss of the two together.
 import { chf, Trace, type Cited } from '@taxpresso/rules-ch';
 import { communeByName, type ZgCommune } from './communes.js';
 import {
@@ -18,6 +19,7 @@ import {
   citizensRule,
   communeAtYearEnd,
   simpleTaxRule,
+  tariffRounding,
   tariffRule,
   wholeFrancs,
 } from './law.js';
@@ -269,11 +271,14 @@ export function assess(input: ZgAssessInput): ZgIccResult {
     ),
   );
 
-  // The einfache Steuer.
+  // The einfache Steuer, on the taxable income in whole CHF 100 and the taxable wealth in whole
+  // CHF 1,000 (Verordnung § 43).
   const trInc = new Trace().from(taxableIncome).src(...(input.familySources ?? []));
   const scale = trInc.p(P.income)[input.tariff];
   trInc.p(tariffRule(y));
-  const simpleIncomeAmount = simpleTax(scale, taxable);
+  const steps = trInc.p(tariffRounding());
+  const tariffIncome = Math.floor(taxable / steps.income) * steps.income;
+  const simpleIncomeAmount = simpleTax(scale, tariffIncome);
   const tariffName =
     input.tariff === 'married'
       ? t(
@@ -288,13 +293,15 @@ export function assess(input: ZgAssessInput): ZgIccResult {
       de: 'Einfache Steuer vom Einkommen',
     },
     t(
-      `${chf(taxable)} by ${tariffName.en}, bracket by bracket, to the centime: ${chf(simpleIncomeAmount)}.`,
-      `${chf(taxable)} selon ${tariffName.fr}, tranche par tranche, au centime${NB}: ${chf(simpleIncomeAmount)}.`,
+      `${chf(tariffIncome)}, the taxable income in whole CHF 100, by ${tariffName.en}, bracket by bracket, to the centime: ${chf(simpleIncomeAmount)}.`,
+      `${chf(tariffIncome)}, le revenu imposable par CHF 100 entiers, selon ${tariffName.fr}, tranche par tranche, au centime${NB}: ${chf(simpleIncomeAmount)}.`,
     ),
   );
   const trW = new Trace().from(taxableWealth);
   const wealthScale = trW.p(P.wealth);
-  const simpleWealthAmount = simpleTax(wealthScale, taxableWealthAmount);
+  const wealthStep = trW.p(tariffRounding()).wealth;
+  const tariffWealth = Math.floor(taxableWealthAmount / wealthStep) * wealthStep;
+  const simpleWealthAmount = simpleTax(wealthScale, tariffWealth);
   const simpleWealth = trW.line(
     simpleWealthAmount,
     {
@@ -302,8 +309,8 @@ export function assess(input: ZgAssessInput): ZgIccResult {
       de: 'Einfache Steuer vom Vermögen',
     },
     t(
-      `${chf(taxableWealthAmount)} by the wealth tariff, bracket by bracket, to the centime: ${chf(simpleWealthAmount)}.`,
-      `${chf(taxableWealthAmount)} selon le barème de la fortune, tranche par tranche, au centime${NB}: ${chf(simpleWealthAmount)}.`,
+      `${chf(tariffWealth)}, the taxable wealth in whole CHF 1,000, by the wealth tariff, bracket by bracket, to the centime: ${chf(simpleWealthAmount)}.`,
+      `${chf(tariffWealth)}, la fortune imposable par CHF 1’000 entiers, selon le barème de la fortune, tranche par tranche, au centime${NB}: ${chf(simpleWealthAmount)}.`,
     ),
   );
   const simpleAmount = simpleIncomeAmount + simpleWealthAmount;
@@ -466,6 +473,7 @@ export const ASSESS_RULES = (y: ZgTaxYear): Cited<unknown>[] => [
   wholeFrancs(),
   simpleTaxRule(y),
   tariffRule(y),
+  tariffRounding(),
   communeAtYearEnd(y),
   churchRule(y),
   citizensRule(y),

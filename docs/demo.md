@@ -55,9 +55,11 @@ your choice, then do the same with the `2026` folder and "Open tax year 2026":
 node test/fixtures/households/make.mjs --year 2026 --out kits-2026 essai-carouge
 ```
 
-For 2026, Geneva's own scales and amounts are not published yet (the 2026 guide comes out in
-January 2027), so the cantonal figures in `expected.json` for 2026 use the 2025 ones, as Taxpresso
-does, and are marked provisional. The federal figures for 2026 are final.
+For 2026, Geneva's scales and indexed amounts are the official ones (the regulation of 8 October
+2025, `ge-2026-rcepf`), and so are the federal figures. Only the ceiling for health insurance
+premiums of 2026 comes with the 2026 guide in January 2027: the households' premiums are under the
+2025 ceiling, and `expected.json` marks the 2026 figures provisional for that reason alone, as
+Taxpresso flags them as estimates.
 
 ## For developers
 

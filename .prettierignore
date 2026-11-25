@@ -14,3 +14,7 @@ scripts/merge-manifests.mjs
 
 # Claude Code worktrees of this repo (each is its own checkout).
 .claude/
+
+# Recorded from the official calculators, one case a line so a new recording reads as a diff.
+test/golden/estv/
+test/golden/afc/

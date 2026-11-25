@@ -1002,8 +1002,8 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
       kind: 'estimate_rule',
       status: 'estimate',
       title: t(
-        `Geneva’s ${Y} amounts are not published yet`,
-        `Les montants genevois ${Y} ne sont pas encore publiés`,
+        `Some of Geneva’s ${Y} amounts are not published yet`,
+        `Certains montants genevois ${Y} ne sont pas encore publiés`,
       ),
       detail: ESTIMATE_TEXT[e.id as EstimateReason] ?? e.what,
       ...(todo ? { todo: todo(Y) } : {}),

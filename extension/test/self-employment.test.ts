@@ -3,7 +3,11 @@
 // copy panel's annexe B, and the 3a room before 31 December. Synthetic households on a temporary
 // vault, never the real one: Léa Martin in Carouge, Marc and Sofia Dupuis in Vernier, Noé Favre in
 // Onex. Their taxes were derived by hand from the official documents in
-// packages/rules-ge/test/self-employment.test.ts (S1 to S3), whose figures these must match.
+// packages/rules-ge/test/self-employment.test.ts (S1 to S3), whose figures these must match; the
+// 2026 cantonal figures again here, step by step at each household, with Geneva's 2026 scales and
+// amounts (ge-2026-rcepf art. 17: 669.40 cumulated at 27,036, then 10.00 %; 2,572.25 at 43,935,
+// then 12.80 %; 3,149.00 at 48,441, then 13.20 %; art. 18: wealth 1.49 per mille up to 118,722,
+// supplementary tax 0 there). The federal tax is the same as before.
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
@@ -271,11 +275,21 @@ describe('self-employment in Geneva, end to end', () => {
     const res = await call('compute_tax', { detail: true });
     const out = res.structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [], notSupported: [] });
-    expect(out.icc.total).toBe(874_685);
+    // By hand, 2026. ICC: 95,000 - 9,000 (AVS) - 17,200 (3a, 20 % of 86,000) - 6,000 (premiums) =
+    // 62,800. Base 3,149.00 + 14,359 x 13.20 % = 1,895.388 -> 1,895.40: 5,044.40. Centimes
+    // 2,396.09 -> 2,396.10; reduction 12 % x 7,440.50 = 892.86 -> 892.85; home care 50.444 ->
+    // 50.45; cantonal income 6,598.10. Communal (Carouge 40, privileged share 27 %): 1,361.988 ->
+    // 1,362.00 x 40 % = 544.80; rest 3,682.40 x 40 % = 1,472.96 -> 1,472.95: 2,017.75.
+    // Wealth: 250,000 - 10,000 - 120,000 (51.60, half of 240,000, under 534,500: ge-2026-rcepf
+    // art. 16 al. 2) = 120,000, less 87,872 (art. 16 al. 1): 32,128. Base 32,128 x 1.49 per mille =
+    // 47.87 -> 47.85; centimes 22.72875 -> 22.75; home care 0.4785 -> 0.50; supplementary 0: 71.10.
+    // Communal: 12.9195 -> 12.90 x 40 % = 5.16 -> 5.15; rest 34.95 x 40 % = 13.98 -> 14.00: 19.15.
+    // ICC 6,598.10 + 71.10 + 2,017.75 + 19.15 + 25 = 8,731.10. IFD as before: 879.30.
+    expect(out.icc.total).toBe(873_110);
     expect(out.icc.taxableIncome).toBe(6_280_000);
-    expect(out.icc.taxableWealth).toBe(3_236_800);
+    expect(out.icc.taxableWealth).toBe(3_212_800);
     expect(out.ifd).toMatchObject({ tax: 87_930, taxableIncome: 6_700_000, scale: 'single' });
-    expect(out.total).toBe(874_685 + 87_930);
+    expect(out.total).toBe(873_110 + 87_930);
     expect(out.unverifiedRules.join(' ')).toMatch(/51\.60/);
     const text = texts(res);
     expect(text).toMatch(/12\.01 Bénéfice net \(you\) CHF 95’000/);
@@ -283,7 +297,7 @@ describe('self-employment in Geneva, end to end', () => {
 
     // The dashboard: the same tax, and annexe B on the copy panel in the form's order.
     const s = await state();
-    expect(s.estimate).toMatchObject({ total: 874_685 + 87_930 });
+    expect(s.estimate).toMatchObject({ total: 873_110 + 87_930 });
     const rows = rowsOf(s);
     const at = (page: string) => rows.filter((r) => r.page === page).map((r) => [r.ref, r.copy]);
     expect(at('B1')).toEqual([
@@ -378,8 +392,18 @@ describe('self-employment in Geneva, end to end', () => {
     await dupuis();
     const out = (await call('compute_tax')).structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [], notSupported: [] });
-    expect(out.icc.total).toBe(952_035);
-    expect(out.icc.taxableIncome).toBe(8_857_900);
+    // By hand, 2026. ICC: Marc's flat professional deduction 3 % x 77,700 = 2,331, at most 1,817
+    // (ge-2026-rcepf art. 6 al. 2): 90,000 - 5,800 - 6,500 - 7,258 - 1,817 = 68,625; Sofia 40,000 -
+    // 4,000 - 6,000 = 30,000, the lower: 1,054 on annexe B (32.95, ge-2026-rcepf art. 10); premiums
+    // 9,000. Taxable 98,625 - 10,054 = 88,571, rate 50 %: 44,285.5 -> 44,286. Scale at 44,286:
+    // 2,572.25 + 351 x 12.80 % = 44.928 -> 44.95: 2,617.20; base 88,571 x 2,617.20 / 44,286 =
+    // 5,234.34 -> 5,234.35. Centimes 2,486.316 -> 2,486.30; reduction 12 % x 7,720.65 = 926.478 ->
+    // 926.50; home care 52.3435 -> 52.35; cantonal income 6,846.50. Communal (Vernier 50, privileged
+    // share 75 %): 3,925.7625 -> 3,925.75 x 50 % = 1,962.875 -> 1,962.90; rest 1,308.60 x 50 % =
+    // 654.30: 2,617.20. Wealth 15,000 - 3,000 - 6,000 = 6,000, under 175,743 (art. 16 al. 1): 0.
+    // ICC 6,846.50 + 2,617.20 + 25 = 9,488.70. IFD as before: 881.00.
+    expect(out.icc.total).toBe(948_870);
+    expect(out.icc.taxableIncome).toBe(8_857_100);
     expect(out.ifd).toMatchObject({ tax: 88_100, taxableIncome: 7_751_100, scale: 'married' });
     const rows = rowsOf(await state('fr'));
     // Sofia's sheet is taxpayer B's; Marc's 3a stays on A1, hers goes to B4.
@@ -392,8 +416,8 @@ describe('self-employment in Geneva, end to end', () => {
       ['32.10', '4000', 'icc+ifd'],
       ['32.40', '6000', 'icc+ifd'],
       ['32.90', '14100', 'ifd'],
-      ['32.95', '1051', 'icc'],
-      ['32.00', '11051', 'icc'],
+      ['32.95', '1054', 'icc'],
+      ['32.00', '11054', 'icc'],
       ['32.00', '24100', 'ifd'],
     ]);
     expect(rows.find((r) => r.page === 'A1' && r.ref === '31.40')!.copy).toBe('7258');
@@ -405,7 +429,14 @@ describe('self-employment in Geneva, end to end', () => {
     await favre();
     const out = (await call('compute_tax')).structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [] });
-    expect(out.icc.total).toBe(127_310);
+    // By hand, 2026. ICC: flat 3 % x 44,300 = 1,329 (between 641 and 1,817: ge-2026-rcepf art. 6
+    // al. 2). Taxable 50,000 - 3,200 - 2,500 - 3,000 - 1,329 - 6,000 - 2,000 - 800 - 4,000 = 27,171.
+    // Base 669.40 + 135 x 10 % = 13.50: 682.90. Centimes 324.3775 -> 324.40; reduction 12 % x
+    // 1,007.30 = 120.876 -> 120.90; home care 6.829 -> 6.85; cantonal income 893.25. Communal (Onex
+    // 50.5, privileged share 80 %): 546.32 -> 546.30 x 50.5 % = 275.8815 -> 275.90; rest 136.60 x
+    // 50.5 % = 68.983 -> 69.00: 344.90. Wealth 1,500, under 87,872: 0. ICC 893.25 + 344.90 + 25 =
+    // 1,263.15. IFD as before: 103.95.
+    expect(out.icc.total).toBe(126_315);
     expect(out.icc.taxableIncome).toBe(2_717_100);
     expect(out.ifd).toMatchObject({ tax: 10_395, taxableIncome: 2_870_000 });
     const rows = rowsOf(await state());
@@ -725,8 +756,9 @@ describe('self-employment in Geneva, tax year 2025', () => {
     const res = await call('compute_tax', { detail: true });
     const out = res.structuredContent as TaxOut & { taxYear: number };
     expect(out).toMatchObject({ taxYear: 2025, computed: true, unsupported: [] });
-    // The same figures as 2026: Carouge's rates and the tariffs at these incomes are the same
-    // (packages/rules-ge/test/self-employment.test.ts, S1).
+    // The 2025 figures (packages/rules-ge/test/self-employment.test.ts, S1): the 2025 scale and
+    // the 2025 deduction on wealth (87,632), where 2026 has its own (S1 above). Carouge's rates and
+    // the federal tax at this income are the same both years.
     expect(out.icc.total).toBe(874_685);
     expect(out.icc.taxableWealth).toBe(3_236_800);
     expect(out.ifd).toMatchObject({ tax: 87_930, taxableIncome: 6_700_000 });

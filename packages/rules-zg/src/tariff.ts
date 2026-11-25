@@ -4,9 +4,10 @@
 // year (§ 45), so each year's amounts are those of the Steuerverwaltung's tariff sheets
 // (zg-2026-tariff-grundtarif, zg-2026-tariff-mehrpersonentarif: page 1 is 2026, page 2 is 2025).
 //
-// The tax is computed exactly on whole francs (the return takes no Rappen, zg-2025-guide-wegleitung
-// p. 4), then rounded to the centime: the documents print every bracket's tax in centimes but do
-// not say how a tax between two bracket ends is rounded (NOTE.rounding).
+// The tax is computed exactly on the francs given, then rounded to the centime: the documents print
+// every bracket's tax in centimes but do not say how a tax between two bracket ends is rounded
+// (NOTE.rounding). The amount given is the taxable income in whole CHF 100 or the taxable wealth in
+// whole CHF 1,000: ./assess.ts rounds them down first (Verordnung § 43, ./law.ts tariffRounding).
 // scripts/zg-tariff.mjs --check compares each year's brackets with the sheets and this function
 // with every amount they print. No imports of values: the script reads this module with Node's
 // type stripping.

@@ -30,8 +30,18 @@ Early preview for tax year 2026 (returns filed in early 2027), and for tax year 
   - every value in the official form's order, ready to copy into your declaration;
   - a final check before you file, a check of the official PDF before you transmit, and a review of what you could have saved last year;
   - your tax assessment checked against your return, with the deadline to object.
-- Coming next: Geneva's 2026 rates when the canton publishes them, and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
+- Coming next: the two Geneva amounts of 2026 that come only with the canton's 2026 guide in January 2027 (the limit for health insurance premiums and the meal amounts; the 2026 scales and the other amounts are the official ones already), and Claude filling in the official online declaration (e-démarches) in Claude in Chrome or its built-in browser, while you press transmit yourself.
 - Geneva; and as a preview, Zurich, Bern, Vaud, Basel-Stadt, Basel-Landschaft, Zug, Lucerne, St. Gallen, Fribourg, Ticino and Aargau. The goal is all 26 cantons.
+
+## How the numbers are checked
+
+Every tax constant comes from an official document and says which one, page or article. On top of that, at every change:
+
+- Geneva's engine is compared with the Geneva tax administration's own estimator, line by line and to the centime, on 412 made-up cases (2025 and 2026, all 45 communes, six kinds of household, every step of the scales), and with the Federal Tax Administration's calculator on 1,210 more, to the franc.
+- Six invented households go through the whole app, from their documents to their tax, and must come out at the figure worked out by hand from the official documents.
+- Where an official calculator and an official document disagree, the document wins, and the difference is written down ([test/golden](test/golden/README.md)).
+
+It isn't tax advice, and no check replaces yours: you review the official declaration and you press transmit.
 
 ## Install
 

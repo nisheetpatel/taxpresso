@@ -368,13 +368,13 @@
             "person": "household",
             "amount": -448000,
             "how": "Mortgage interest paid in the year 4'480.00, under its limit (gross income from wealth 19'348.00 + 50'000).",
-            "source": "ge-2025-guide-declaration-pp p. 37; ge-na-law-lipp art. 34 let. a"
+            "source": "ge-na-law-lipp art. 34 let. a"
           },
           {
             "code": "52.21",
             "person": "household",
-            "amount": -1527900,
-            "how": "Health insurance premiums paid (basic and supplementary) 15'279.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
+            "amount": -1476700,
+            "how": "Health insurance premiums paid (basic and supplementary) 14'767.00; each person's under twice the cantonal average premium for their age (adult 17'122.00, child 3'965.00).",
             "source": "ge-2025-guide-declaration-pp p. 11 and 29 (52.21)"
           }
         ],
@@ -384,43 +384,43 @@
           "source": "ge-2025-guide-declaration-pp p. 13"
         },
         "netIncome": {
-          "amount": 11040000,
+          "amount": 11091200,
           "how": "Gross income less every deduction before the social deductions (92.40 after donations).",
           "source": "ge-2025-guide-declaration-pp p. 13 to 15"
         },
         "socialDeductions": [],
         "taxableIncome": {
-          "amount": 11040000,
-          "how": "Net income 110'400.00 less the family charges 0.00: 110'400.00 (99.00). (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
+          "amount": 11091200,
+          "how": "Net income 110'912.00 less the family charges 0.00: 110'912.00 (99.00).",
           "source": "ge-2025-guide-declaration-pp p. 15"
         },
         "splitting": "full",
         "rateIncome": {
-          "amount": 5520000,
-          "how": "Full splitting: half of 110'400.00 = 55'200.00.",
-          "source": "ge-2025-guide-declaration-pp p. 47; ge-na-law-lipp art. 41 al. 2"
+          "amount": 5545600,
+          "how": "Full splitting: half of 110'912.00 = 55'456.00.",
+          "source": "ge-na-law-lipp art. 41 al. 2"
         },
         "incomeBase": {
-          "amount": 810000,
-          "how": "The scale at 55'200.00 gives 4'050.00; x 110'400.00 / 55'200.00 = 8'100.00 (example 3). (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
-          "source": "ge-2025-guide-declaration-pp p. 47; ge-2025-icc-tariff-pdf p. 2; ge-2025-icc-tariff-pdf p. 3"
+          "amount": 815000,
+          "how": "The scale at 55'456.00 gives 4'075.00; x 110'912.00 / 55'456.00 = 8'150.00 (example 3).",
+          "source": "ge-2026-rcepf art. 17; ge-2025-icc-tariff-pdf p. 3"
         },
         "cantonalIncome": {
-          "amount": 1059480,
-          "how": "Base 8'100.00 + 47.5 % 3'847.50 - 12 % of 11'947.50 1'433.70 + 1 % home care 81.00 = 10'594.80 (each exact).",
-          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+          "amount": 1066020,
+          "how": "Base 8'150.00 + 47.5 % 3'871.25 - 12 % of 12'021.25 1'442.55 + 1 % home care 81.50 = 10'660.20 (each exact).",
+          "source": "ge-na-law-lcacant art. 2 al. 1"
         },
         "communalIncome": {
-          "amount": 356400,
-          "how": "44 centimes of Thônex on the base 8'100.00: 3'564.00 (all income earned in Thônex, so no share for another commune).",
+          "amount": 358600,
+          "how": "44 centimes of Thônex on the base 8'150.00: 3'586.00 (all income earned in Thônex, so no share for another commune).",
           "source": "ge-2026-communal-centimes-arca; ge-2025-guide-declaration-pp p. 48; ge-na-law-lcp art. 293 let. A and 295A"
         },
         "wealthLines": [
           {
             "code": "14.00",
             "person": "household",
-            "amount": 22948500,
-            "how": "Banque Privée Exemple SA, e-tax statement (relevé fiscal, F4): taxable value on 31 December 229'485.00.",
+            "amount": 23000100,
+            "how": "Banque Privée Exemple SA, e-tax statement (relevé fiscal, F4): taxable value on 31 December 230'001.00.",
             "source": "ge-2025-guide-declaration-pp p. 43"
           },
           {
@@ -439,39 +439,39 @@
           }
         ],
         "grossWealth": {
-          "amount": 65956500,
+          "amount": 66008100,
           "how": "Total gross wealth.",
           "source": "ge-2025-guide-declaration-pp p. 16"
         },
         "netWealth": {
-          "amount": 38456500,
+          "amount": 38508100,
           "how": "Gross wealth less debts.",
           "source": "ge-2025-guide-declaration-pp p. 37"
         },
         "wealthSocialDeduction": {
-          "amount": -17526400,
-          "how": "Married couple, at most the net wealth: 175'264.00.",
-          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+          "amount": -17574300,
+          "how": "Married couple, at most the net wealth: 175'743.00.",
+          "source": "ge-2026-rcepf art. 16 al. 1"
         },
         "taxableWealth": {
-          "amount": 20930100,
-          "how": "Net wealth 384'565.00 less 175'264.00: 209'301.00. (Geneva 2026 amount not published yet: the 2025 one, as SPEC.md section 7 prescribes)",
-          "source": "ge-2025-guide-declaration-pp p. 16 (51.50); ge-na-law-lipp art. 58 al. 1"
+          "amount": 20933800,
+          "how": "Net wealth 385'081.00 less 175'743.00: 209'338.00.",
+          "source": "ge-2026-rcepf art. 16 al. 1"
         },
         "wealthBase": {
           "amount": 35000,
-          "how": "The base wealth scale at 209'301.00: 350.00.",
-          "source": "ge-2025-guide-declaration-pp p. 49; ge-2025-icc-tariff-pdf p. 5"
+          "how": "The base wealth scale at 209'338.00: 350.00.",
+          "source": "ge-2026-rcepf art. 18 al. 1"
         },
         "wealthSupplementary": {
-          "amount": 870,
-          "how": "The supplementary scale at 209'301.00: 8.70, no centimes on it.",
-          "source": "ge-2025-guide-declaration-pp p. 50; ge-2025-icc-tariff-pdf p. 5; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
+          "amount": 865,
+          "how": "The supplementary scale at 209'338.00: 8.65, no centimes on it.",
+          "source": "ge-2026-rcepf art. 18 al. 2; ge-na-law-lipp art. 59 al. 2 (no centimes on it)"
         },
         "cantonalWealth": {
-          "amount": 52845,
-          "how": "Base 350.00 + 47.5 % 166.25 + 1 % 3.50 + supplementary 8.70 = 528.45.",
-          "source": "ge-2025-guide-declaration-pp p. 48 and 49; ge-2025-icc-tariff-pdf p. 4 and 6"
+          "amount": 52840,
+          "how": "Base 350.00 + 47.5 % 166.25 + 1 % 3.50 + supplementary 8.65 = 528.40.",
+          "source": "ge-na-law-lcacant art. 2 al. 1"
         },
         "communalWealth": {
           "amount": 15400,
@@ -479,7 +479,7 @@
           "source": "ge-2026-communal-centimes-arca"
         },
         "communal": {
-          "amount": 371800,
+          "amount": 374000,
           "how": "Communal income and wealth tax.",
           "source": "ge-2026-communal-centimes-arca"
         },
@@ -489,8 +489,8 @@
           "source": "ge-na-law-lcp art. 374 al. 2, art. 375 and art. 377 let. c"
         },
         "total": {
-          "amount": 1486625,
-          "how": "Cantonal income 10'594.80 + cantonal wealth 528.45 + communal 3'718.00 + taxe personnelle 25.00 = 14'866.25. Provisional: Geneva 2026 scales and amounts not published yet.",
+          "amount": 1495360,
+          "how": "Cantonal income 10'660.20 + cantonal wealth 528.40 + communal 3'740.00 + taxe personnelle 25.00 = 14'953.60. Provisional: Geneva’s 2026 ceiling for health insurance premiums is not published yet; the premiums are under the 2025 one.",
           "source": "ge-2025-guide-declaration-pp p. 48 and 49"
         },
         "withholdingTaxCredit": {
@@ -566,7 +566,7 @@
             "code": "52.00",
             "person": "household",
             "amount": -555000,
-            "how": "Insurance premiums and savings interest 15'279.00, at most 5'550.00 (married couple, without pension fund or pillar 3a contributions): 5'550.00.",
+            "how": "Insurance premiums and savings interest 14'767.00, at most 5'550.00 (married couple, without pension fund or pillar 3a contributions): 5'550.00.",
             "source": "ch-2026-ifd-instructions-personnes-physiques p. 8 (chiffre 14); ch-2026-ifd-progression-deductions p. 1 and 2; ge-2025-guide-declaration-pp p. 28 (52.00)"
           }
         ],
@@ -611,7 +611,7 @@
           "source": "ch-2026-ifd-progression-deductions p. 3 and 4 (Barèmes 2026, art. 36 LIFD) (al. 2bis and 3)"
         }
       },
-      "total": { "amount": 1820925, "how": "ICC 14'866.25 + IFD 3'343.00.", "source": "" }
+      "total": { "amount": 1829660, "how": "ICC 14'953.60 + IFD 3'343.00.", "source": "" }
     }
   }
 }

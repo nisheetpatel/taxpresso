@@ -77,7 +77,7 @@
         "read": "claude",
         "person": "household",
         "taxYear": 2026,
-        "values": [{ "key": "health.premiums", "value": "16'201.00", "page": 1 }]
+        "values": [{ "key": "health.premiums", "value": "16'001.00", "page": 1 }]
       },
       {
         "file": "05-attestation-bancaire-banque-exemple-sa-2026.pdf",

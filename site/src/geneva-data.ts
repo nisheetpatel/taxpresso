@@ -11,7 +11,7 @@
 // it runs TypeScript, so `node build.ts` needs no bundler.
 
 import manifest from '../../docs/sources/manifest.json' with { type: 'json' };
-import { ICC_2025_PROFESSIONAL_FLAT } from '../../packages/rules-ge/src/2025/icc.ts';
+import { ICC_2026 } from '../../packages/rules-ge/src/2026/icc.ts';
 import { ICC_OBJECTION_2026 } from '../../packages/rules-ge/src/2026/objection.ts';
 import { COMMUNE_CENTIMES_2026, COMMUNES_2026 } from '../../packages/rules-ge/src/2026/communes.ts';
 import {
@@ -247,13 +247,13 @@ export const DEDUCTIONS: Record<DeductionId, Line[]> = {
   professional: [
     {
       tax: 'icc',
-      year: 2025,
+      year: TAX_YEAR,
       figures: {
-        rate: { pct: ICC_2025_PROFESSIONAL_FLAT.value.rateBp },
-        min: { chf: ICC_2025_PROFESSIONAL_FLAT.value.min },
-        max: { chf: ICC_2025_PROFESSIONAL_FLAT.value.max },
+        rate: { pct: ICC_2026.professionalFlat.value.rateBp },
+        min: { chf: ICC_2026.professionalFlat.value.min },
+        max: { chf: ICC_2026.professionalFlat.value.max },
       },
-      sources: cite(ICC_2025_PROFESSIONAL_FLAT.source),
+      sources: cite(ICC_2026.professionalFlat.source),
     },
     {
       tax: 'ifd',

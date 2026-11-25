@@ -146,9 +146,27 @@ describe('limits the engine applied', () => {
     }
   });
 
-  it('flags a Geneva limit of 2026 as an estimate, never a federal one', () => {
+  it('flags a Geneva limit of 2026 not published yet as an estimate, never a published or a federal one', () => {
     const r = computeReturn(dupont(2026));
-    expect(r.limits.find((l) => l.code === '52.21')?.estimate).toBe(true);
+    // The health premium ceiling of 2026 comes with the 2026 guide: the 2025 one, an estimate.
+    expect(r.limits.find((l) => l.code === '52.21')).toMatchObject({
+      limit: chf(42_174),
+      estimate: true,
+    });
+    // The regulation's limits of 2026 (ge-2026-rcepf) are published: childcare at most 26'392
+    // (art. 9); the flat professional deduction at most 1'817 (art. 6 al. 2) against A's actual
+    // costs, the commute, at most 536 (art. 6 al. 1).
+    const childcare = r.limits.find((l) => l.code === '59.10')!;
+    expect(childcare).toMatchObject({
+      given: chf(15_000),
+      limit: chf(26_392),
+      counted: chf(15_000),
+      source: 'ge-2026-rcepf art. 9',
+    });
+    expect(childcare).not.toHaveProperty('estimate');
+    const flat = r.limits.find((l) => l.code === '31.50' && l.kind === 'choice')!;
+    expect(flat).toMatchObject({ given: chf(536), limit: chf(1_817), counted: chf(1_817) });
+    expect(flat).not.toHaveProperty('estimate');
     expect(r.limits.find((l) => l.code === '52.00')).not.toHaveProperty('estimate');
     expect(r.limits.find((l) => l.code === '31.40')?.source).toBe(
       'ch-2026-ifd-instructions-personnes-physiques p. 7 (chiffre 13)',
@@ -217,10 +235,19 @@ describe('final check: Dupont', () => {
   });
 
   it('is not ready for 2026 while Geneva’s amounts are estimates, and says what makes them final', () => {
+    // The Duponts have health premiums (52.21): the 2026 ceiling is one of the two amounts Geneva
+    // has not published yet.
     const check = finalCheck(clear(dupont(2026)));
     expect(check.verdict).toBe('not_ready');
     expect(check.fix.map((i) => i.kind)).toEqual(['estimate_rule']);
     expect(check.fix[0]!.status).toBe('estimate');
+    expect(check.fix[0]!.title).toEqual({
+      en: 'Some of Geneva’s 2026 amounts are not published yet',
+      fr: 'Certains montants genevois 2026 ne sont pas encore publiés',
+    });
+    expect(check.fix[0]!.detail.en).toMatch(
+      /the limit for health insurance premiums \(52\.21\) and the amounts for meals \(31\.60\)/,
+    );
     expect(check.fix[0]!.todo?.en).toMatch(/Geneva publishes its 2026 guide \(January 2027\)/);
     expect(limits(check.know)).toEqual(['31.40 both cap at', '52.00 ifd cap over']);
   });
@@ -431,11 +458,28 @@ describe('final check: Ribeiro', () => {
       position: 'below',
       counted: 0,
     });
-    expect(medical.detail.en).toMatch(
-      /^Medical costs: CHF 260\.00, CHF \d+\.00 under the threshold of CHF \d+\.00: nothing is deducted, only the part above it counts\. This limit is an estimate until Geneva publishes its amounts for the year\.$/,
+    // The threshold: 0.5 % of the subtotal 92.20, 54'056 in 2026 (H10 of households.test.ts): 270.28
+    // -> 270. The rate is the law's (ge-na-law-lipp art. 32 let. b), not indexed: no estimate.
+    expect(medical.detail.en).toBe(
+      'Medical costs: CHF 260.00, CHF 10.00 under the threshold of CHF 270.00: nothing is deducted, only the part above it counts.',
     );
-    expect(medical.sources[0]?.url).toBe(
-      'https://www.ge.ch/document/41995/annexe/file/573038#page=14',
+    expect(medical.limit).not.toHaveProperty('estimate');
+    expect(medical.sources.map((s) => `${s.id} ${s.where}`)).toEqual([
+      'ge-na-law-lipp art. 32 let. b',
+    ]);
+    expect(medical.sources[0]?.url).toBe('https://silgeneve.ch/legis/data/rsg_d3_08.htm');
+    // 2026: the travel maximum is the regulation's, 536, not an estimate.
+    const travel = check.know.find((i) => i.limit?.code === '31.70')!;
+    expect(travel.detail.en).toBe(
+      'Travel costs: CHF 1’200.00; the limit is CHF 536.00, so CHF 536.00 is deducted and CHF 664.00 is not.',
+    );
+    expect(travel.sources.map((s) => `${s.id} ${s.where}`)).toEqual(['ge-2026-rcepf art. 6 al. 1']);
+    // The meal amounts are one of the two Geneva has not published for 2026: the 2025 ones (15 a
+    // day, 3'200 a year), and the final check says the limit is an estimate.
+    const meals = check.know.find((i) => i.limit?.code === '31.60' && i.limit.tax === 'icc')!;
+    expect(meals.limit).toMatchObject({ estimate: true, limit: chf(3_200) });
+    expect(meals.detail.en).toBe(
+      'Meals away from home: CHF 3’150.00, CHF 50.00 under the limit of CHF 3’200.00: all of it is deducted. This limit is an estimate until Geneva publishes its amounts for the year.',
     );
     const gifts = check.know.find((i) => i.limit?.kind === 'minimum')!;
     expect(gifts.detail.en).toBe(

@@ -10,11 +10,11 @@
 // fiscaux)"), and the form gives each relevé fiscal a column for it (ge-2025-declaration-specimen
 // p. 24, F4), carried to 56.30 (F1 p. 21, C3 p. 13). 56.30 adds to the life insurance premiums
 // within 52.15 for the cantonal tax: single 2'345, doubled without pension fund or 3a (guide p. 28;
-// ge-na-law-lipp art. 31 let. d). For the federal tax it adds to the insurance premiums within
+// ge-na-law-lipp art. 31 let. d; 2026: 2'352, ge-2026-rcepf art. 8). For the federal tax it adds to the insurance premiums within
 // 52.00: single 1'800 with a pension fund (ch-2025- and ch-2026-ifd-instructions-personnes-
 // physiques p. 8, chiffre 14: "les intérêts de capitaux d'épargne indiqués dans l'état des titres").
 //
-// By hand, both years (Geneva's 2025 values for 2026 too, until the 2026 guide):
+// By hand, 2025 first, then what Geneva's 2026 values change (ge-2026-rcepf):
 // ICC: 11.10 90'000; 31.10 -6'210; 31.12 -5'390; 31.40 -7'000; 31.50 3 % x 78'400 = 2'352, at most
 // 1'812 (guide p. 11, 19); 14.00 700 (400 + 300); 52.15 -300 (under 2'345); 52.21 -5'500 (under
 // 17'122). Taxable 64'488 (64'788 before: no 52.15 for a statement). Scale (guide p. 47): 3'140.40
@@ -24,6 +24,13 @@
 // ge-2026-part-privilegiee-communique p. 12, ge-2026-communal-centimes-arca): privileged
 // 1'424.5335 -> 1'424.55 x 40 % = 569.82 -> 569.80; the rest 3'851.50 x 40 % = 1'540.60.
 // ICC 6'901.05 + 569.80 + 1'540.60 + 25 = 9'036.45 (9'104.15 before).
+// ICC 2026: 31.50 at most 1'817 (ge-2026-rcepf art. 6 al. 2); 52.15 -300 (under 2'352, art. 8);
+// 52.21 -5'500 (the 2025 ceiling 17'122, an estimate until the 2026 guide). Taxable 64'483 (64'783
+// before). Scale (art. 17): 3'149.00 at 48'441 + 16'042 x 13.20 % = 2'117.544 -> 2'117.55: base
+// 5'266.55. Centimes 2'501.61125 -> 2'501.60; reduction 12 % x 7'768.15 = 932.178 -> 932.20; home
+// care 52.6655 -> 52.65; cantonal 6'888.60. Communal, Carouge: privileged 1'421.9685 -> 1'421.95 x
+// 40 % = 568.78 -> 568.80; the rest 3'844.60 x 40 % = 1'537.84 -> 1'537.85. ICC 6'888.60 + 568.80
+// + 1'537.85 + 25 = 9'020.25 (9'087.85 before).
 // IFD: 31.20 2'352 (3 % of the net salary, 2'000 to 4'000); 52.00: premiums 5'500 + savings 300 =
 // 5'800, at most 1'800. Taxable 67'948, at 67'900 (single scale, 2025 and 2026 alike there): 612.00
 // + 99 x 2.97 = 906.03 -> 906.00 (rounded down to 5 centimes).
@@ -114,27 +121,49 @@ const at = (items: readonly { code: string; amount: number }[], code: string) =>
   items.filter((i) => i.code === code).map((i) => i.amount);
 
 describe('interest on savings capital in an e-tax statement, by hand', () => {
-  for (const taxYear of [2025, 2026]) {
+  const expected = {
+    2025: {
+      flat: -1_812_00,
+      taxable: 64_488_00,
+      base: 5_276_05,
+      cantonal: 6_901_05,
+      privileged: 569_80,
+      rest: 1_540_60,
+      icc: 9_036_45,
+    },
+    2026: {
+      flat: -1_817_00,
+      taxable: 64_483_00,
+      base: 5_266_55,
+      cantonal: 6_888_60,
+      privileged: 568_80,
+      rest: 1_537_85,
+      icc: 9_020_25,
+    },
+  } as const;
+  for (const taxYear of [2025, 2026] as const) {
     for (const statement of ['barcode', 'claude'] as const) {
       it(`${taxYear}, statement read ${statement === 'barcode' ? 'from its barcode' : 'by Claude'}`, () => {
+        const e = expected[taxYear];
         const { facts, documents } = claire(taxYear, statement);
         const { input, missing } = engineInputFromFacts(taxYear, facts, documents);
         expect(missing).toEqual([]);
         const r = computeReturn(input!);
         const icc = r.icc!;
         const ifd = r.ifd!;
+        expect(at(icc.items, '31.50')).toEqual([e.flat]);
         expect(at(icc.items, '14.00')).toEqual([700_00]);
         expect(at(icc.items, '52.15')).toEqual([-300_00]);
         expect(at(icc.items, '52.21')).toEqual([-5_500_00]);
-        expect(icc.taxableIncome.amount).toBe(64_488_00);
-        expect(icc.taxes.incomeBase.amount).toBe(5_276_05);
-        expect(icc.taxes.incomeCantonal.amount).toBe(6_901_05);
-        expect(icc.taxes.communalIncome.privileged.tax.amount).toBe(569_80);
+        expect(icc.taxableIncome.amount).toBe(e.taxable);
+        expect(icc.taxes.incomeBase.amount).toBe(e.base);
+        expect(icc.taxes.incomeCantonal.amount).toBe(e.cantonal);
+        expect(icc.taxes.communalIncome.privileged.tax.amount).toBe(e.privileged);
         expect(icc.taxes.communalIncome.rest.map((s) => [s.commune, s.tax.amount])).toEqual([
-          ['carouge', 1_540_60],
+          ['carouge', e.rest],
         ]);
         expect(icc.taxes.personalTax.amount).toBe(25_00);
-        expect(icc.taxes.total.amount).toBe(9_036_45);
+        expect(icc.taxes.total.amount).toBe(e.icc);
         expect(icc.credits.withholdingTax?.amount).toBe(245_00);
         // The federal tax: premiums and savings interest together, at most 1'800.
         expect(at(ifd.items, '52.00')).toEqual([-1_800_00]);

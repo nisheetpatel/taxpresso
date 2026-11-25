@@ -54,8 +54,6 @@ export const messages = {
     planCon3: 'Only payments made in {year} count: leave a few days for the transfer.',
     planNew: 'New: from 2026 you can make up missed years since 2025, under conditions.',
     planSources: 'Sources',
-    'assume.icc_2025_scale':
-      'Geneva tax uses the 2025 scale: the 2026 one is published in January 2027.',
     'assume.flat_deductions_only':
       'Health premiums, childcare and other costs you haven’t given yet are not counted, so your real saving may be a little different.',
     'assume.home_commune_rate': 'All your income is taken as earned in your commune.',
@@ -167,7 +165,6 @@ export const messages = {
     planCon3: `Seuls les versements faits en {year} comptent${NB}: prévoyez quelques jours pour le virement.`,
     planNew: `Nouveau${NB}: dès 2026, vous pouvez rattraper les années manquées depuis 2025, sous conditions.`,
     planSources: 'Sources',
-    'assume.icc_2025_scale': `L’impôt genevois utilise le barème 2025${NB}: celui de 2026 paraît en janvier 2027.`,
     'assume.flat_deductions_only':
       'Les primes maladie, les frais de garde et les autres frais pas encore indiqués ne sont pas comptés, donc l’économie réelle peut être un peu différente.',
     'assume.home_commune_rate': 'Tous vos revenus sont comptés comme gagnés dans votre commune.',
@@ -268,8 +265,6 @@ export const messages = {
       'Nur Einzahlungen im Jahr {year} zählen: Rechne ein paar Tage für die Überweisung ein.',
     planNew: 'Neu: Ab 2026 kannst du verpasste Jahre seit 2025 nachholen, unter Bedingungen.',
     planSources: 'Quellen',
-    'assume.icc_2025_scale':
-      'Die Genfer Steuer verwendet den Tarif 2025: Der Tarif 2026 erscheint im Januar 2027.',
     'assume.flat_deductions_only':
       'Krankenkassenprämien, Kinderbetreuung und andere Kosten, die du noch nicht angegeben hast, sind nicht gezählt. Deine tatsächliche Ersparnis kann etwas anders sein.',
     'assume.home_commune_rate': 'Dein ganzes Einkommen gilt als in deiner Gemeinde verdient.',
@@ -383,8 +378,6 @@ export const messages = {
     planNew:
       'Novità: dal 2026 puoi recuperare i versamenti mancati dal 2025 in poi, a certe condizioni.',
     planSources: 'Fonti',
-    'assume.icc_2025_scale':
-      'L’imposta di Ginevra usa la tariffa 2025: quella del 2026 viene pubblicata a gennaio 2027.',
     'assume.flat_deductions_only':
       'I premi dell’assicurazione malattia, la custodia dei figli e le altre spese che non hai ancora indicato non vengono conteggiati, quindi il tuo risparmio reale può essere un po’ diverso.',
     'assume.home_commune_rate': 'Tutto il tuo reddito è considerato guadagnato nel tuo Comune.',

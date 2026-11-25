@@ -52,7 +52,7 @@ describe('TOU comparison', () => {
     expect(tou.compulsory).toBe('no');
     // None of the compulsory cases: a real choice, with the comparison.
     expect(tou.mode).toBe('choice');
-    expect(tou.assumptions).toEqual(expect.arrayContaining(['income_tax_only', 'icc_2025_scale']));
+    expect(tou.assumptions).toEqual(expect.arrayContaining(['income_tax_only']));
     // Flat deductions only make the ordinary tax too high here: said the TOU way round.
     expect(tou.assumptions).toContain('ordinary_may_be_lower');
     expect(tou.assumptions).not.toContain('flat_deductions_only');

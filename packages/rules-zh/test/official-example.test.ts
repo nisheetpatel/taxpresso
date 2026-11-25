@@ -4,7 +4,8 @@
 // children under 18, both employed, their own home, Zürich. The guide fills in the return down to
 // the taxable income (p. 37, line 390: 88,251 for the Staatssteuer) and the taxable wealth
 // (p. 38, line 490: 458,373); it prints no tax. The taxes below are worked out by hand from the
-// tariff and the multipliers, not printed by the canton.
+// tariff, the multipliers and the rounding of the tax bill (Weisung ZStB 173.1), not printed by
+// the canton.
 //
 // zh-2026-guide-unterjaehrig p. 35 and 37: the same couple in 2026, liable for 150 days only. Its
 // deductions are cut to 150/360, so only the totals of the return are checked, not a tax.
@@ -99,14 +100,17 @@ describe('Wegleitung 2025, Beispiel (p. 33 to 38)', () => {
   });
 
   it('its taxes, by hand: Zürich 2025, married tariff', () => {
-    // Income 88,251, married tariff 2025: to 63,300, 6,300 x 2 % (126) + 8,000 x 3 % (240)
-    // + 9,700 x 4 % (388) + 11,100 x 5 % (555) + 14,300 x 6 % (858) = 2,167; then
-    // (88,251 - 63,300) x 7 % = 24,951 x 7 % = 1,746.57. Simple income tax 3,913.57.
-    // Wealth 458,373: 179.87 (tariffs.test.ts). Simple tax 4,093.44.
-    // Staatssteuer 98 %: 4,011.5712, to the centime 4,011.57. Gemeindesteuer Zürich 119 %:
-    // 4,871.1936, 4,871.19. Personalsteuer 2 x 24 = 48. Total 8,930.76.
+    // As the tax bill is made out (zh-na-tariff-weisung-steuerrechnungen-zstb-173-1): income
+    // 88,251 is taken as 88,200 and wealth 458,373 as 458,000 (Rz 45, p. 8).
+    // Married tariff 2025: to 63,300, 6,300 x 2 % (126) + 8,000 x 3 % (240) + 9,700 x 4 % (388)
+    // + 11,100 x 5 % (555) + 14,300 x 6 % (858) = 2,167; then (88,200 - 63,300) x 7 % =
+    // 24,900 x 7 % = 1,743. Simple income tax 3,910.
+    // Wealth, married tariff 2025: 159,000 free; 239,000 x 0.5 per mille = 119.50 (to 398,000);
+    // 60,000 x 1 per mille = 60; 179.50, in whole francs 179 (Rz 71, p. 11). Simple tax 4,089.
+    // Staatssteuer 98 %: 4,007.22, to 5 Rappen 4,007.20 (Rz 78, p. 13). Gemeindesteuer Zürich
+    // 119 %: 4,865.91, to 5 Rappen 4,865.90. Personalsteuer 2 x 24 = 48. Total 8,921.10.
     // With church tax, as on p. 33 Felix is Roman Catholic and Regula Reformed (Zürich 2025: 10 %
-    // each): each church half, 5 % + 5 % = 10 % of 4,093.44 = 409.344, 409.34.
+    // each): each church half, 5 % + 5 % = 10 % of 4,089 = 408.90. Total 9,330.00.
     const r = assess({
       taxYear: 2025,
       commune: 261,
@@ -116,14 +120,17 @@ describe('Wegleitung 2025, Beispiel (p. 33 to 38)', () => {
       incomeItems,
       wealthItems,
     });
-    expect(r.taxes.simpleIncome.amount).toBe(chf(3_913.57));
-    expect(r.taxes.simpleWealth.amount).toBe(chf(179.87));
-    expect(r.taxes.simple.amount).toBe(chf(4_093.44));
-    expect(r.taxes.cantonal.amount).toBe(chf(4_011.57));
-    expect(r.taxes.communal.amount).toBe(chf(4_871.19));
-    expect(r.taxes.church?.amount).toBe(chf(409.34));
+    expect(r.taxes.simpleIncome.amount).toBe(chf(3_910));
+    expect(r.taxes.simpleWealth.amount).toBe(chf(179));
+    expect(r.taxes.simple.amount).toBe(chf(4_089));
+    expect(r.taxes.cantonal.amount).toBe(chf(4_007.2));
+    expect(r.taxes.communal.amount).toBe(chf(4_865.9));
+    expect(r.taxes.church?.amount).toBe(chf(408.9));
     expect(r.taxes.personalTax.amount).toBe(chf(48));
-    expect(r.taxes.total.amount).toBe(chf(8_930.76 + 409.34));
+    expect(r.taxes.total.amount).toBe(chf(9_330));
+    // The lines of the return stay as declared.
+    expect(r.taxableIncome.amount).toBe(chf(88_251));
+    expect(r.wealth.taxableWealth.amount).toBe(chf(458_373));
   });
 
   it('labels each printed line with its official term', () => {
