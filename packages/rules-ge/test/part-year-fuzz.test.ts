@@ -93,7 +93,10 @@ function household(seed: number): Case {
     period: { kind, date },
   };
   // Above the largest wealth deduction of a household like this one: the cantonal tax fails closed.
-  return { input, closed, iccClosed: wealth > 175_264 + 43_936 * children };
+  // Spouses and each charge: 175,264 and 43,816 in 2025 (guide p. 16), 175,743 and 43,936 in 2026
+  // (ge-2026-rcepf art. 16 al. 1).
+  const [couples, perCharge] = taxYear === 2025 ? [175_264, 43_816] : [175_743, 43_936];
+  return { input, closed, iccClosed: wealth > couples + perCharge * children };
 }
 
 const N = 1500;

@@ -228,16 +228,44 @@ describe('MCP surface', () => {
     }>(res);
     expect(s.computed).toBe(true);
     expect(s.total).toBe(s.icc.total + s.ifd.tax);
-    expect(s.estimates.join(' ')).toMatch(/January 2027/);
+    // The rough salary is the only estimate. No health premiums and no meals in this return: every
+    // Geneva amount in it is the official 2026 one (ge-2026-rcepf), so Geneva's own estimate (the
+    // two amounts that come with the 2026 guide, in January 2027) is not flagged.
+    expect(s.estimates).toEqual([expect.stringMatching(/^Figures you gave as estimates: 11\.10/)]);
+    expect(s.estimates.join(' ')).not.toMatch(/January 2027/);
     expect(text(res)).toMatch(/Cantonal and communal tax \(ICC\): CHF/);
     expect(text(res)).toMatch(/11\.10 Salaires bruts \(you\) CHF 85’000\.00 \[estimate\]/);
     expect(text(res)).toMatch(/detail: true/);
 
     const detailed = await call('compute_tax', { detail: true });
     expect(text(detailed)).toMatch(/- 31\.50 Déduction forfaitaire pour frais professionnels ICC/);
-    expect(text(detailed)).toMatch(/ge-2025-guide-declaration-pp p\. 11, p\. 19 \(31\.50\)/);
+    // The 2026 flat deduction (3 % of 85,000, at most 1,817) and the 2026 scale, each with the
+    // article of Geneva's regulation it is read in; the rubric with its page of the guide.
+    expect(text(detailed)).toMatch(
+      /- 31\.50 .*between CHF 641\.00 and CHF 1’817\.00: CHF 1’817\.00\. \[ge-2026-rcepf art\. 6 al\. 2; ge-na-law-lipp art\. 29 al\. 2; .*ge-2025-guide-declaration-pp p\. 19\]/,
+    );
+    expect(text(detailed)).toMatch(/- Base income tax .*\[ge-2026-rcepf art\. 17\]/);
     expect(structured<{ detail: { lines: { id: string }[] } }>(detailed).detail.lines).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: 'icc.incomeBase' })]),
+    );
+
+    // The year's health premiums come in: Geneva's limit for them (52.21) is one of the two amounts
+    // it publishes with the 2026 guide only, so the 2025 one is used and flagged as an estimate.
+    const { document } = await ws.addDocument(
+      Buffer.from('%PDF-1.7 synthetic health premiums attestation'),
+      'primes-2026.pdf',
+      'dashboard',
+    );
+    await ws.proposeExtraction(
+      document.id,
+      { kind: 'health_premiums', taxYear: 2026, person: 'household' },
+      [{ key: 'health.premiums', value: "5'400.00", page: 1 }],
+    );
+    await ws.confirmDocument(document.id, 'dashboard');
+    const withPremiums = structured<{ estimates: string[] }>(await call('compute_tax'));
+    expect(withPremiums.estimates).toHaveLength(2);
+    expect(withPremiums.estimates.join(' ')).toMatch(
+      /the limit for health insurance premiums \(52\.21\) and the amounts for meals \(31\.60\)\. They come with the 2026 guide, in January 2027\./,
     );
   });
 

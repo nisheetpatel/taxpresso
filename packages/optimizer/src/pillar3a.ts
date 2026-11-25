@@ -1,7 +1,7 @@
 // "Before 31 December": pillar 3a room and the tax it would save (SPEC.md section 8, group B).
 // The saving is the rules engine run twice, with and without paying the room in. It is an
-// estimate: in Geneva on its 2025 scale (2026 is published in January 2027); in Zurich with the
-// rules its documents don't spell out applied as in the estimate.
+// estimate: from rough figures and flat deductions only; in Zurich with the rules its documents
+// don't spell out applied as in the estimate.
 import { PILLAR3A_2026 } from '@taxpresso/rules-ch';
 import {
   type Assumption,
@@ -50,7 +50,7 @@ export function pillar3aPlan(h: HouseholdInput): Pillar3aResult {
   const assumptions = new Set<Assumption>(
     h.other
       ? [h.other.plan.assumptions.preview, 'flat_deductions_only']
-      : ['icc_2025_scale', 'flat_deductions_only', 'home_commune_rate'],
+      : ['flat_deductions_only', 'home_commune_rate'],
   );
   const people: PersonResult[] = h.people.map((p) => {
     const { cap, isMaximum } = capOf(p);

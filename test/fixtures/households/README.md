@@ -35,7 +35,11 @@ Each kit folder holds:
   `../make-prior-fixtures.mjs`. `--year 2026 --out <folder>` writes a year's documents elsewhere.
 - `ground-truth.mjs`: the hand calculation. It imports nothing from Taxpresso: its constants were
   read in `docs/sources/ge/files` and `docs/sources/ch/files`, each cited, and it checks its own
-  transcription against the documents' worked examples before writing `expected.json`.
+  transcription against the documents' worked examples before writing `expected.json`, and its
+  scales of both years against the base taxes the Geneva tax administration's own estimator returns
+  (`test/golden/afc`, recorded from ge.ch). Tax year 2026 uses Geneva's 2026 scales and amounts
+  (`ge-2026-rcepf`); only the ceiling for health insurance premiums of 2026 is not published yet,
+  so the kits keep their premiums under the 2025 one and mark the year provisional.
 
 Where the documents leave a case open, the households avoid it, and `ground-truth.mjs` throws if
 one doesn't: whole francs on every document; even taxable incomes for split households (the rate

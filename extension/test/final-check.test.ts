@@ -129,10 +129,17 @@ describe('final check', () => {
 
   it('lists the value to confirm, Geneva’s estimates, an open check and the limits, in both places', async () => {
     await dupont();
-    // A health insurance attestation for last year: a "Check this" item.
+    // A health insurance attestation for last year: a "Check this" item; its premiums don't count.
     await confirmed('health_premiums', 'household', [['health.premiums', "6'000.00"]], {
       taxYear: 2025,
     });
+    // Neither the year's health premiums nor meals in this return yet: every Geneva amount in it is
+    // the official 2026 one (ge-2026-rcepf), so nothing of Geneva's is listed as an estimate.
+    const official = (await call('final_check')).structuredContent as FinalCheckState;
+    expect(official.fix.some((i) => i.kind === 'estimate_rule')).toBe(false);
+    // The year's premiums come in: their limit (52.21) is one of the two amounts Geneva publishes
+    // with the 2026 guide only, so the 2025 one is used and said as an estimate.
+    await confirmed('health_premiums', 'household', [['health.premiums', "9'000.00"]]);
     const before = await readFile(path.join(ws.config.vaultPath, '2026', 'ledger.json'), 'utf8');
 
     const res = await call('final_check');
@@ -149,7 +156,16 @@ describe('final check', () => {
       /^CHF 7’258\.00, read from “pillar3a_attestation-\d+\.pdf”, page 1: still Needs your OK\.$/,
     );
     expect(out.fix.find((i) => i.kind === 'check')?.title).toBe('A document for another year');
-    expect(out.fix.find((i) => i.kind === 'estimate_rule')?.todo).toMatch(/January 2027/);
+    const rule = out.fix.find((i) => i.kind === 'estimate_rule')!;
+    expect(rule).toMatchObject({
+      id: 'estimate_rule:ge-2026-unpublished',
+      status: 'estimate',
+      title: 'Some of Geneva’s 2026 amounts are not published yet',
+    });
+    expect(rule.detail).toMatch(
+      /the limit for health insurance premiums \(52\.21\) and the amounts for meals \(31\.60\)/,
+    );
+    expect(rule.todo).toMatch(/January 2027/);
     // B's 3a is exactly at the federal limit (A's still needs the user's OK, but it is counted).
     const limit = out.know.find((i) => i.kind === 'limit' && i.code === '41.40')!;
     expect(limit.detail).toBe(
@@ -180,6 +196,9 @@ describe('final check', () => {
     expect(en.fix.map((i) => i.id)).toEqual(out.fix.map((i) => i.id));
     expect(en.know.map((i) => i.id)).toEqual(out.know.map((i) => i.id));
     const fr = await card('fr');
+    expect(fr.fix.find((i) => i.kind === 'estimate_rule')?.title).toBe(
+      'Certains montants genevois 2026 ne sont pas encore publiés',
+    );
     expect(fr.fix.find((i) => i.kind === 'needs_ok')?.detail).toMatch(/encore À confirmer\.$/);
     expect(fr.know.find((i) => i.code === '41.40')?.detail).toBe(
       'Versé au 3e pilier A\u00a0: CHF 7’258.00, exactement la limite\u00a0: tout est déduit.',

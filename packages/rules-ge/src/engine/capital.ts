@@ -431,7 +431,7 @@ export function capitalTax(
     label: t(name, name),
     sources: [centimes.source],
   });
-  add(notes.unverified, NOTE.capitalRounding);
+  add(notes.unverified, P.taxYear === 2026 ? NOTE.capitalRounding2026 : NOTE.capitalRounding);
 
   let ifd: CapitalTax['ifd'] = null;
   if (!ctx.ifdScale) {

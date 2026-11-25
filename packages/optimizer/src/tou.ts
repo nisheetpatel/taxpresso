@@ -15,7 +15,7 @@ import { type TouThresholds, TOU_FACTS, touDeadline, touThresholds } from '@taxp
 import {
   type Assumption,
   type Deduction,
-  ESTIMATE_SOURCES,
+  genevaEstimateSources,
   type HouseholdInput,
   ordinaryTaxEstimator,
   type TaxEstimate,
@@ -221,7 +221,7 @@ export function touPlan(input: TouInput): TouResult {
       TOU_FACTS.deadline,
       TOU_FACTS.irrevocable,
       TOU_FACTS.everyYearAfter,
-      ...ESTIMATE_SOURCES,
+      ...genevaEstimateSources(input.taxYear),
     ],
   };
   if (!result.applies) return result;

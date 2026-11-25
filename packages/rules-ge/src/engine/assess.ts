@@ -804,10 +804,12 @@ export function assess(input: AssessInput): Assessment {
             `Not due: no taxable wealth and a taxable income of at most ${chf(limit)}.`,
             `Pas due${NB}: aucune fortune imposable et un revenu imposable d’au plus ${chf(limit)}.`,
           )
-      : t(
-          `${chf(pt.amount)} a year, one for a married couple.`,
-          `${chf(pt.amount)} par an, une seule pour un couple marié.`,
-        ),
+      : input.couple
+        ? t(
+            `${chf(pt.amount)} a year, one for a married couple.`,
+            `${chf(pt.amount)} par an, une seule pour un couple marié.`,
+          )
+        : t(`${chf(pt.amount)} a year.`, `${chf(pt.amount)} par an.`),
   );
 
   const iccTotal =

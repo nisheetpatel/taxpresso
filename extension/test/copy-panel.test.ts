@@ -83,19 +83,20 @@ describe('the copy panel in the dashboard', () => {
     expect(s.copyPanel.sections.map((x) => x.page)).toEqual(['PG1', 'PG3', 'A1']);
     expect(rowsOf(s).map((r) => [r.page, r.ref, r.copy, r.status, r.final])).toEqual([
       ['PG1', 'PG1-COMMUNE', '6630', 'stated', true],
-      // From the tax engine: net and taxable income, ICC then IFD (85,000 - 5,413 - 1,812 and
+      // From the tax engine: net and taxable income, ICC then IFD (85,000 - 5,413 - 1,817 and
       // - 2,388), not final while the certificate needs the user's OK.
-      ['PG3', '95.00', '77775', 'extracted', false],
+      ['PG3', '95.00', '77770', 'extracted', false],
       ['PG3', '95.00', '77199', 'extracted', false],
-      ['PG3', '99.00', '77775', 'extracted', false],
+      ['PG3', '99.00', '77770', 'extracted', false],
       ['PG3', '99.00', '77199', 'extracted', false],
       ['A1', '11.10-1', '84000', 'extracted', false],
       ['A1', '11.15', '1000', 'extracted', false],
       ['A1', 'CS-G', undefined, 'extracted', false],
       ['A1', '31.10', '5413', 'extracted', false],
-      // The flat professional deductions, IFD (3 % of 79,587) and ICC (maximum 1,812).
+      // The flat professional deductions, IFD (3 % of 79,587) and ICC (3 % too, 2,388, at most
+      // the 2026 maximum of 1,817: ge-2026-rcepf art. 6 al. 2).
       ['A1', '31.20', '2388', 'extracted', false],
-      ['A1', '31.50', '1812', 'extracted', false],
+      ['A1', '31.50', '1817', 'extracted', false],
     ]);
     const salary = rowsOf(s).find((r) => r.ref === '11.10-1')!;
     expect(salary).toMatchObject({
@@ -126,11 +127,13 @@ describe('the copy panel in the dashboard', () => {
 
     await ws.confirmDocument(docId, 'dashboard');
     let s = await state('/form/entered', { id: pending.id, entered: true });
-    // The ICC flat deduction stays an estimate until Geneva publishes its 2026 values.
+    // Nothing stays pending: the ICC flat deduction is Geneva's official 2026 amount (ge-2026-rcepf
+    // art. 6 al. 2), no longer an estimate. Only the health premium limit and the meal amounts still
+    // are (the meals below).
     expect(s.copyPanel.sections.find((x) => x.page === 'A1')).toMatchObject({
       entered: 1,
       total: 4,
-      pending: 1,
+      pending: 0,
     });
     const file = JSON.parse(await readFile(path.join(ws.vault.dir, 'entered.json'), 'utf8')) as {
       form: Record<string, string>;
@@ -165,10 +168,15 @@ describe('the copy panel in the dashboard', () => {
     const row = (ref: string) => rows.find((r) => r.ref === ref);
     // Federal: the pass 1,200 (under 3,300); meals 210 x 7.50, half as box G is ticked (under 1,600).
     expect(row('31.71')).toMatchObject({ copy: '1200', columns: [{ id: 'ifd' }] });
-    // Geneva: travel at most 534 and the same meals (a trip of over 2 hours): 2,109 beats the flat
-    // 1,812, so actual costs replace 31.50. The Geneva meals rest on the 2025 amounts (an estimate
-    // until the 2026 guide), so 31.60 has one line per column.
-    expect(row('31.70')).toMatchObject({ copy: '534', columns: [{ id: 'icc' }] });
+    // Geneva: travel at most 536 (ge-2026-rcepf art. 6 al. 1) and the same meals (a trip of over 2
+    // hours): 2,111 beats the flat 1,817 (art. 6 al. 2), so actual costs replace 31.50. The Geneva
+    // meals rest on the 2025 amounts (an estimate until the 2026 guide), so 31.60 has one line per
+    // column; the travel maximum is the official 2026 one, not an estimate.
+    expect(row('31.70')).toMatchObject({
+      copy: '536',
+      status: 'computed',
+      columns: [{ id: 'icc' }],
+    });
     expect(
       rows
         .filter((r) => r.ref === '31.60')

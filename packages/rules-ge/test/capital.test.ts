@@ -9,12 +9,24 @@
 //     170'765), the splitting examples 3 and 4, and the order of the surcharges: + 47.5 % cantonal
 //     centimes, - 12 % of base and centimes, + 1 % home care, + the communal centimes on the base
 //     (ge-na-law-lcacant art. 2; ge-na-law-ldirpp art. 1).
+//   ge-2026-rcepf art. 17: the 2026 scale (0 % up to 18'700, 13.20 % from 48'442, 14.20 % from
+//     77'731, 15.00 % from 127'298, 15.60 % from 171'232; cumulative tax, each bracket to 5
+//     centimes: 3'149.00 at 48'441, 7'015.15 at 77'730, 14'053.65 at 127'297, 20'643.75 at
+//     171'231). The surcharges are the laws', the same in 2026.
 //   ge-2025-communal-centimes-pdf and ge-2026-communal-centimes-arca: Carouge 40, Lancy 47,
 //     Vernier 50 centimes, in 2025 and 2026.
 //   ge-2025-source-capital-icc-tariff p. 1 to 4: the AFC's own rates of this tax at a flat 43.69 %
 //     of communal centimes, for a single person: each range's rate is the tax at its middle,
 //     rounded to the hundredth of a percent (all 623 rows match: extension/test/capital-tariff.test.ts
 //     reads every row where the file was downloaded; the rows written out here always run).
+//   ge-2026-source-capital-icc-tariff p. 1 to 4: the same table for 2026, at a flat 43.44 %. By
+//     hand with the 2026 scale, 621 of its 622 rows (the first, 0 to 18'699 at 0.00, counted) are
+//     the tax at the middle of the range; with the 2025 scale, 411. The row 20'200 to 20'299
+//     prints 0.19 where the lines rounded to 5 centimes give 39.50 on 20'250, 0.19506 % (39.43
+//     and 0.1947 % without rounding the lines; how each line is rounded is not spelled out:
+//     docs/sources/README.md). The rows of the three households below: 84'800 to 85'299 3.30
+//     (Favre, 85'000), 60'000 to 60'299 2.72 (Morel, at 60'000), 179'000 to 180'499 4.26 (Rochat,
+//     at 180'000).
 //   ch-na-law-lifd art. 38 (p. 32): a fifth of the scales of art. 36 al. 1, 2 and 2bis first
 //     sentence; art. 9 al. 1 (p. 5): the spouses' income added up. Form. 58c (ch-2025- and
 //     ch-2026-ifd-tarif-personnes-physiques p. 1): "aussi pour des prestations en capital", the
@@ -77,6 +89,52 @@ describe('the AFC capital tariff 2025 (ge-2025-source-capital-icc-tariff)', () =
       const r = capitalIcc(P, amount(mid), 'none', flat43_69);
       expect(ratePct(r.tax.amount, mid), `${from} to ${to}`).toBe(rate);
     }
+  });
+});
+
+describe('the AFC capital tariff 2026 (ge-2026-source-capital-icc-tariff)', () => {
+  // [from, to, rate %], as printed (p. 1 to 4), at a flat 43.44 % of communal centimes. The 2026
+  // scale (ge-2026-rcepf art. 17) gives each of them; the rows holding the three households'
+  // amounts (85'000, 60'000, 180'000) are among them.
+  const rows: [number, number, string][] = [
+    [18_700, 18_799, '0.01'],
+    [23_900, 23_999, '0.58'],
+    [29_700, 29_799, '1.11'],
+    [36_700, 36_899, '1.63'],
+    [49_900, 50_199, '2.34'],
+    [59_100, 59_399, '2.69'],
+    [60_000, 60_299, '2.72'],
+    [79_500, 79_899, '3.19'],
+    [80_900, 81_299, '3.22'],
+    [84_800, 85_299, '3.30'],
+    [99_900, 100_499, '3.55'],
+    [116_500, 117_499, '3.75'],
+    [179_000, 180_499, '4.26'],
+    [182_000, 183_499, '4.28'],
+    [247_000, 249_499, '4.60'],
+    [311_000, 313_999, '4.81'],
+    [476_500, 481_999, '5.21'],
+    [554_000, 560_999, '5.34'],
+    [992_000, 1_009_999, '5.74'],
+    [1_310_000, 1_339_999, '5.87'],
+    [3_180_000, 3_379_999, '6.11'],
+    [9_250_000, 11_189_999, '6.22'],
+    [69_790_000, 111_999_999, '6.27'],
+  ];
+  const flat43_44 = { bp: 4344, label: { en: 'average', fr: 'moyenne' }, sources: [] };
+  it('gives the printed rate at the middle of each range with the 2026 scale', () => {
+    for (const [from, to, rate] of rows) {
+      const mid = chf((from + to + 1) / 2);
+      const r = capitalIcc(paramsFor(2026), amount(mid), 'none', flat43_44);
+      expect(ratePct(r.tax.amount, mid), `${from} to ${to}`).toBe(rate);
+    }
+  });
+  it('nothing up to 18’700, the first bracket of the 2026 scale (18’649 in 2025)', () => {
+    // The table's first row: 0 to 18'699, 0.00.
+    expect(capitalIcc(paramsFor(2026), amount(chf(18_700)), 'none', flat43_44).tax.amount).toBe(0);
+    expect(
+      capitalIcc(paramsFor(2025), amount(chf(18_700)), 'none', flat43_44).tax.amount,
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -237,34 +295,67 @@ describe('three households, hand-checked', () => {
   // ICC, no splitting: 6'996.00 at 77'518 + 7'482 x 14.20 % = 1'062.444 -> 1'062.45; 8'058.45.
   //   A fifth: 1'611.69 -> 1'611.70. Centimes 47.5 %: 765.5575 -> 765.55. 12 % of 2'377.25:
   //   285.27 -> 285.25. Home care 1 %: 16.117 -> 16.10. Cantonal 2'108.10. Carouge 40 %: 644.68
-  //   -> 644.70. ICC 2'752.80 (2025 and 2026: Geneva's 2026 scale is the 2025 one, an estimate).
+  //   -> 644.70. ICC 2'752.80.
+  // ICC 2026 (ge-2026-rcepf art. 17): 7'015.15 at 77'730 + 7'270 x 14.20 % = 1'032.34 ->
+  //   1'032.35; 8'047.50. A fifth: 1'609.50. Centimes 47.5 %: 764.5125 -> 764.50. 12 % of
+  //   2'374.00: 284.88 -> 284.90. Home care 1 %: 16.095 -> 16.10. Cantonal 2'105.20. Carouge
+  //   40 %: 643.80. ICC 2'749.00. (At the AFC's flat 43.44 %: 2'804.35, 3.2992 % of 85'000; the
+  //   2026 tariff prints 3.30 for 84'800 to 85'299.)
   // IFD, single scale: 2025: 1'500.00 at 82'000 + 30 x 6.60 = 1'698.00, a fifth 339.60;
   //   2026: 1'502.95 at 82'100 + 29 x 6.60 = 1'694.35 (Form. 58c 2026 prints it at 85'000), a fifth
   //   338.87 -> 338.85.
   const FAVRE = {
-    amount: 85_000,
-    rate: 85_000,
-    scale: 8_058.45,
-    base: 1_611.7,
-    cc: 765.55,
-    reduction: 285.25,
-    homeCare: 16.1,
-    cantonal: 2_108.1,
-    communal: 644.7,
-    icc: 2_752.8,
+    2025: {
+      amount: 85_000,
+      rate: 85_000,
+      scale: 8_058.45,
+      base: 1_611.7,
+      cc: 765.55,
+      reduction: 285.25,
+      homeCare: 16.1,
+      cantonal: 2_108.1,
+      communal: 644.7,
+      icc: 2_752.8,
+    },
+    2026: {
+      amount: 85_000,
+      rate: 85_000,
+      scale: 8_047.5,
+      base: 1_609.5,
+      cc: 764.5,
+      reduction: 284.9,
+      homeCare: 16.1,
+      cantonal: 2_105.2,
+      communal: 643.8,
+      icc: 2_749,
+    },
   };
   it('Favre: pillar 3a at retirement', () => {
     check(computeReturn(favre(2025, favreCapital(2025))), {
-      ...FAVRE,
+      ...FAVRE[2025],
       ifdScale: 1_698,
       ifd: 339.6,
       total: 3_092.4,
     });
     const r = computeReturn(favre(2026, favreCapital(2026)));
-    check(r, { ...FAVRE, ifdScale: 1_694.35, ifd: 338.85, total: 3_091.65 });
-    expect(r.estimates.map((e) => e.id)).toContain('ge-2026-unpublished');
-    expect(r.capital!.icc!.tax.estimates).toContain('ge-2026-unpublished');
+    check(r, { ...FAVRE[2026], ifdScale: 1_694.35, ifd: 338.85, total: 3_087.85 });
+    // 2026: the scale is the regulation's (ge-2026-rcepf art. 17) and the surcharges are the
+    // laws': the tax on the lump sum is no estimate. Nor is anything else here: she has no health
+    // premiums and no meals, the two amounts Geneva has not published for 2026 yet.
+    expect(r.estimates).toEqual([]);
+    expect(r.capital!.icc!.tax.estimates).toBeUndefined();
     expect(r.capital!.ifd!.tax.estimates).toBeUndefined();
+    expect(r.capital!.icc!.scaleTax.sources.join(' ')).toMatch(/ge-2026-rcepf art\. 17/);
+    // With health premiums (52.21, the 2025 ceiling until the 2026 guide), the tax on her income
+    // is an estimate; the tax on the lump sum, which no premium enters, still is not.
+    const withPremiums = computeReturn({
+      ...favre(2026, favreCapital(2026)),
+      household: { healthPremiums: { value: chf(5_000) } },
+    });
+    expect(withPremiums.estimates.map((e) => e.id)).toEqual(['ge-2026-unpublished']);
+    expect(withPremiums.icc!.taxes.total.estimates).toContain('ge-2026-unpublished');
+    expect(withPremiums.capital!.icc!.tax.estimates).toBeUndefined();
+    expect(withPremiums.capital!.icc!.tax.amount).toBe(chf(2_749));
   });
 
   // Lucas Morel, Lancy, lives with his child: 2nd pillar paid out to buy shares of a housing
@@ -274,30 +365,50 @@ describe('three households, hand-checked', () => {
   //   120'000 x 4'683.60 / 60'000 = 9'367.20. A fifth: 1'873.44 -> 1'873.45. Centimes: 889.888 ->
   //   889.90. 12 % of 2'763.35: 331.602 -> 331.60. Home care: 18.7345 -> 18.75. Cantonal
   //   2'450.50. Lancy 47 %: 880.5215 -> 880.50. ICC 3'331.00.
+  // ICC 2026 (ge-2026-rcepf art. 17), rate at 60'000: 3'149.00 at 48'441 + 11'559 x 13.20 % =
+  //   1'525.788 -> 1'525.80; 4'674.80. On the whole amount: 120'000 x 4'674.80 / 60'000 =
+  //   9'349.60. A fifth: 1'869.92 -> 1'869.90. Centimes: 888.2025 -> 888.20. 12 % of 2'758.10:
+  //   330.972 -> 330.95. Home care: 18.699 -> 18.70. Cantonal 2'445.85. Lancy 47 %: 878.853 ->
+  //   878.85. ICC 3'324.70. (At the AFC's flat 43.44 %: 3'258.15, 2.7151 %; the 2026 tariff prints
+  //   2.72 for 60'000 to 60'299, the half the splitting takes.)
   // IFD, parental scale (the married scale, without the 263 per child: LIFD art. 38 al. 2):
   //   2025: 2'246.00 at 108'600 + 114 x 6.00 = 2'930.00, a fifth 586.00; 2026: 2'251.00 at
   //   108'700 + 113 x 6.00 = 2'929.00, a fifth 585.80.
   const MOREL = {
-    amount: 120_000,
-    rate: 60_000,
-    scale: 9_367.2,
-    base: 1_873.45,
-    cc: 889.9,
-    reduction: 331.6,
-    homeCare: 18.75,
-    cantonal: 2_450.5,
-    communal: 880.5,
-    icc: 3_331,
+    2025: {
+      amount: 120_000,
+      rate: 60_000,
+      scale: 9_367.2,
+      base: 1_873.45,
+      cc: 889.9,
+      reduction: 331.6,
+      homeCare: 18.75,
+      cantonal: 2_450.5,
+      communal: 880.5,
+      icc: 3_331,
+    },
+    2026: {
+      amount: 120_000,
+      rate: 60_000,
+      scale: 9_349.6,
+      base: 1_869.9,
+      cc: 888.2,
+      reduction: 330.95,
+      homeCare: 18.7,
+      cantonal: 2_445.85,
+      communal: 878.85,
+      icc: 3_324.7,
+    },
   };
   it('Morel: 2nd pillar for his own home, a single parent', () => {
     check(computeReturn(morel(2025, morelCapital(2025))), {
-      ...MOREL,
+      ...MOREL[2025],
       ifdScale: 2_930,
       ifd: 586,
       total: 3_917,
     });
     const r = computeReturn(morel(2026, morelCapital(2026)));
-    check(r, { ...MOREL, ifdScale: 2_929, ifd: 585.8, total: 3_916.8 });
+    check(r, { ...MOREL[2026], ifdScale: 2_929, ifd: 585.8, total: 3_910.5 });
     expect(r.capital!.ifd!.scale).toBe('parental');
     expect(r.capital!.secondPillar).toBe(true);
   });
@@ -309,29 +420,52 @@ describe('three households, hand-checked', () => {
   //   1'440.80; 22'028.25. On the whole amount: 360'000 x 22'028.25 / 180'000 = 44'056.50. A fifth:
   //   8'811.30. Centimes: 4'185.3675 -> 4'185.35. 12 % of 12'996.65: 1'559.598 -> 1'559.60. Home
   //   care: 88.113 -> 88.10. Cantonal 11'525.15. Vernier 50 %: 4'405.65. ICC 15'930.80.
+  // ICC 2026 (ge-2026-rcepf art. 17), rate at 180'000: 20'643.75 at 171'231 + 8'769 x 15.60 % =
+  //   1'367.964 -> 1'367.95; 22'011.70. On the whole amount: 360'000 x 22'011.70 / 180'000 =
+  //   44'023.40. A fifth: 8'804.68 -> 8'804.70. Centimes: 4'182.2325 -> 4'182.25. 12 % of
+  //   12'986.95: 1'558.434 -> 1'558.45. Home care: 88.047 -> 88.05. Cantonal 11'516.55. Vernier
+  //   50 %: 4'402.35. ICC 15'918.90. (At the AFC's flat 43.44 %: 15'341.30, 4.2615 %; the 2026
+  //   tariff prints 4.26 for 179'000 to 180'499.) His lump sum alone, 300'000 at the rate of
+  //   150'000: 14'053.65 at 127'297 + 22'703 x 15.00 % = 3'405.45; 17'459.10, x 2 = 34'918.20; a
+  //   fifth 6'983.64 -> 6'983.65; centimes 3'317.25; 12 % of 10'300.90: 1'236.10; home care 69.85;
+  //   cantonal 9'134.65; Vernier 3'491.85. ICC 12'626.50.
   // IFD, married scale: 2025: 5'686.00 at 152'300 + 2'077 x 13.00 = 32'687.00, a fifth 6'537.40;
   //   2026: 5'692.00 at 152'400 + 2'076 x 13.00 = 32'680.00, a fifth 6'536.00.
   const ROCHAT = {
-    amount: 360_000,
-    rate: 180_000,
-    scale: 44_056.5,
-    base: 8_811.3,
-    cc: 4_185.35,
-    reduction: 1_559.6,
-    homeCare: 88.1,
-    cantonal: 11_525.15,
-    communal: 4_405.65,
-    icc: 15_930.8,
+    2025: {
+      amount: 360_000,
+      rate: 180_000,
+      scale: 44_056.5,
+      base: 8_811.3,
+      cc: 4_185.35,
+      reduction: 1_559.6,
+      homeCare: 88.1,
+      cantonal: 11_525.15,
+      communal: 4_405.65,
+      icc: 15_930.8,
+    },
+    2026: {
+      amount: 360_000,
+      rate: 180_000,
+      scale: 44_023.4,
+      base: 8_804.7,
+      cc: 4_182.25,
+      reduction: 1_558.45,
+      homeCare: 88.05,
+      cantonal: 11_516.55,
+      communal: 4_402.35,
+      icc: 15_918.9,
+    },
   };
   it('Rochat: two lump sums of a married couple in the same year, taxed together', () => {
     check(computeReturn(rochat(2025, rochatCapital(2025))), {
-      ...ROCHAT,
+      ...ROCHAT[2025],
       ifdScale: 32_687,
       ifd: 6_537.4,
       total: 22_468.2,
     });
     const r = computeReturn(rochat(2026, rochatCapital(2026)));
-    check(r, { ...ROCHAT, ifdScale: 32_680, ifd: 6_536, total: 22_466.8 });
+    check(r, { ...ROCHAT[2026], ifdScale: 32_680, ifd: 6_536, total: 22_454.9 });
     expect(r.capital!.items.map((i) => [i.code, i.person, i.amount])).toEqual([
       ['98.12', 'p1', chf(300_000)],
       ['98.12', 'p2', chf(60_000)],
@@ -340,6 +474,7 @@ describe('three households, hand-checked', () => {
     const alone = computeReturn(
       rochat(2026, { ...rochatCapital(2026), benefits: rochatCapital(2026).benefits.slice(0, 1) }),
     );
+    expect(alone.capital!.icc!.tax.amount).toBe(chf(12_626.5));
     expect(alone.capital!.icc!.tax.amount).toBeLessThan(r.capital!.icc!.tax.amount);
   });
 
@@ -355,6 +490,8 @@ describe('three households, hand-checked', () => {
       'ge-na-law-ldirpp',
       'ge-na-law-lcp',
       'ch-na-law-lifd',
+      // The 2026 scale, and the 2025 tariff for the order of the surcharges (its worked examples).
+      'ge-2026-rcepf',
       'ge-2025-icc-tariff-pdf',
       'ch-2026-ifd-tarif-personnes-physiques',
     ]) {
@@ -420,8 +557,9 @@ describe('what is counted, and what fails closed', () => {
     const two = base({
       benefits: [one(), one({ amount: { value: chf(45_000) } })],
     });
+    // 40'000 + 45'000 = 85'000: Favre's tax of 2026 above.
     expect(two.capital!.amount.amount).toBe(chf(85_000));
-    expect(two.capital!.icc!.tax.amount).toBe(chf(2_752.8));
+    expect(two.capital!.icc!.tax.amount).toBe(chf(2_749));
   });
 
   it('leaves out a lump sum paid another year (LIFD art. 38 al. 1bis)', () => {
@@ -490,8 +628,8 @@ describe('what is counted, and what fails closed', () => {
     expect(r.ifd).toBeNull();
     expect(r.total).toBeNull();
     expect(r.unsupported.some((n) => n.en.includes('79b'))).toBe(true);
-    // The tax on the lump sum itself is computed.
-    expect(r.capital!.total!.amount).toBe(chf(3_916.8));
+    // The tax on the lump sum itself is computed: Morel's of 2026 above, 3'324.70 + 585.80.
+    expect(r.capital!.total!.amount).toBe(chf(3_910.5));
     // A buy-in with a pillar 3a lump sum is fine.
     const favreBuyIn = computeReturn({
       ...favre(2026, favreCapital(2026)),

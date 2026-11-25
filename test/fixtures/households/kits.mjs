@@ -237,7 +237,7 @@ export const KITS = [
         pillar3a: [{ person: 'p1', paid: chf(7_258) }],
         health: {
           members: [
-            { person: 'p1', name: 'Sophie Essai', basic: chf(5_887), supplementary: chf(1_560) },
+            { person: 'p1', name: 'Sophie Essai', basic: chf(6_194), supplementary: chf(1_560) },
           ],
         },
         statements: [
@@ -423,7 +423,7 @@ export const KITS = [
         ],
         health: {
           members: [
-            { person: 'p1', name: 'Thomas Témoin', basic: chf(6_364), supplementary: chf(984) },
+            { person: 'p1', name: 'Thomas Témoin', basic: chf(6_626), supplementary: chf(984) },
             { person: 'p2', name: 'Laura Témoin', basic: chf(6_336), supplementary: chf(984) },
             { person: 'c1', name: 'Hugo Témoin', basic: chf(1_308), supplementary: chf(216) },
             { person: 'c2', name: 'Inès Témoin', basic: chf(1_308), supplementary: chf(216) },
@@ -602,7 +602,7 @@ export const KITS = [
         pillar3a: [{ person: 'p1', paid: chf(3_500) }],
         health: {
           members: [
-            { person: 'p1', name: 'Tiago Exemplo', basic: chf(5_961), supplementary: chf(870) },
+            { person: 'p1', name: 'Tiago Exemplo', basic: chf(5_761), supplementary: chf(870) },
             { person: 'p2', name: 'Marta Exemplo', basic: chf(5_640), supplementary: chf(870) },
             { person: 'c1', name: 'Leo Exemplo', basic: chf(1_240), supplementary: chf(190) },
             { person: 'c2', name: 'Mia Exemplo', basic: chf(1_240), supplementary: chf(190) },
@@ -776,7 +776,7 @@ export const KITS = [
         ],
         health: {
           members: [
-            { person: 'p1', name: 'Bernard Fictif', basic: chf(6_819), supplementary: chf(870) },
+            { person: 'p1', name: 'Bernard Fictif', basic: chf(6_307), supplementary: chf(870) },
             { person: 'p2', name: 'Monique Fictif', basic: chf(6_720), supplementary: chf(870) },
           ],
         },
@@ -787,7 +787,7 @@ export const KITS = [
             client: 'TXP-0104',
             depot: 'D-0001044',
             accounts: [
-              { iban: 'CH0000000000000104001', name: 'Compte courant', balance: chf(9_785) },
+              { iban: 'CH0000000000000104001', name: 'Compte courant', balance: chf(10_301) },
             ],
             securities: [
               {
@@ -933,7 +933,7 @@ export const KITS = [
         pillar3a: [{ person: 'p1', paid: chf(16_000) }],
         health: {
           members: [
-            { person: 'p1', name: 'Nadia Modèle', basic: chf(5_786), supplementary: chf(860) },
+            { person: 'p1', name: 'Nadia Modèle', basic: chf(5_709), supplementary: chf(860) },
           ],
         },
         brokers: [
@@ -1078,7 +1078,7 @@ export const KITS = [
         pillar3a: [{ person: 'p1', paid: chf(7_258) }],
         health: {
           members: [
-            { person: 'p1', name: 'Léa Spécimen', basic: chf(5_457), supplementary: chf(600) },
+            { person: 'p1', name: 'Léa Spécimen', basic: chf(5_375), supplementary: chf(600) },
           ],
         },
         bankAccounts: [

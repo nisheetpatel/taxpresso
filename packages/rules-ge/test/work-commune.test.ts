@@ -26,9 +26,15 @@
 // 3'141.85: Genève 3'141.85 x 100'000 / 100'150 = 3'137.144 -> 3'137.15 x 45.49 % = 1'427.089 ->
 // 1'427.10; Lancy keeps 4.70 x 47 % = 2.209 -> 2.20. Communal 2'848.05 (2'895.40 if the salary
 // were earned in Lancy). ICC 8'057.85 + 2'848.05 + 25 = 10'930.90.
-// 2026, Lancy PP 51 %: privileged 3'141.8295 -> 3'141.85 x 47 % = 1'476.6695 -> 1'476.65; the rest
-// 3'018.60: Genève 3'014.0789 -> 3'014.10 x 45.49 % = 1'371.114 -> 1'371.10; Lancy keeps 4.50 x
-// 47 % = 2.115 -> 2.10. Communal 2'849.85. ICC 10'932.70.
+// ICC 2026 (ge-2026-rcepf): 31.50 at most 1'817 (art. 6 al. 2); 52.15 -150 (under 2'352, art. 8).
+// Taxable 71'183: scale (art. 17) 3'149.00 at 48'441 + 22'742 x 13.20 % = 3'001.944 -> 3'001.95:
+// base 6'150.95. Centimes 2'921.70125 -> 2'921.70; reduction 12 % x 9'072.65 = 1'088.718 ->
+// 1'088.70; home care 61.5095 -> 61.50; cantonal 8'045.45.
+// 2026, Lancy PP 51 %: privileged 3'136.9845 -> 3'137.00 x 47 % = 1'474.39 -> 1'474.40; the rest
+// 3'013.95: Genève 3'013.95 x 100'000 / 100'150 = 3'009.4358 -> 3'009.45 x 45.49 % = 1'368.9988 ->
+// 1'369.00; Lancy keeps 4.50 x 47 % = 2.115 -> 2.10. Communal 2'845.50 (2'890.95 if the salary
+// were earned in Lancy: the rest 3'013.95 x 47 % = 1'416.5565 -> 1'416.55). ICC 8'045.45 +
+// 2'845.50 + 25 = 10'915.95.
 // IFD: 31.20 2'580; 52.00 6'000 + 150, at most 1'800. Taxable 74'770, at 74'700: 612.00 + 167 x
 // 2.97 = 1'107.99 -> 1'107.95 (both years: under the 2026 step at 76'200).
 //
@@ -43,7 +49,17 @@
 // the rest 1'505.90 by the gross income 150'200: Genève 1'505.90 x 90'000 / 150'200 = 902.337 ->
 // 902.35 x 45.49 % = 410.479 -> 410.50; Carouge 1'505.90 x 60'000 / 150'200 = 601.558 -> 601.55 x
 // 40 % = 240.62 -> 240.60; Onex keeps 2.00 x 50.5 % = 1.01 -> 1.00. Communal 3'694.00 (3'802.40 if
-// both worked in Onex). ICC 9'848.60 + 3'694.00 + 25 = 13'567.60, both years.
+// both worked in Onex). ICC 2025 9'848.60 + 3'694.00 + 25 = 13'567.60.
+// ICC 2026 (ge-2026-rcepf): A's 31.50 at most 1'817 (art. 6 al. 2); 41.95 -1'054 (art. 10).
+// Taxable 106'070, full splitting at 53'035: scale (art. 17) 3'149.00 at 48'441 + 4'594 x 13.20 %
+// = 606.408 -> 606.40: 3'755.40 x 2 = base 7'510.80. Centimes 3'567.63 -> 3'567.65; reduction 12 %
+// x 11'078.45 = 1'329.414 -> 1'329.40; home care 75.108 -> 75.10; cantonal 9'824.15. Communal,
+// Onex PP 80 %: privileged 6'008.64 -> 6'008.65 x 50.5 % = 3'034.368 -> 3'034.35; the rest
+// 1'502.15 by the gross income 150'200: Genève 1'502.15 x 90'000 / 150'200 = 900.0899 -> 900.10 x
+// 45.49 % = 409.4555 -> 409.45; Carouge 1'502.15 x 60'000 / 150'200 = 600.0599 -> 600.05 x 40 % =
+// 240.02 -> 240.00; Onex keeps 2.00 x 50.5 % = 1.01 -> 1.00. Communal 3'684.80 (3'792.95 if both
+// worked in Onex: the rest 1'502.15 x 50.5 % = 758.5857 -> 758.60). ICC 9'824.15 + 3'684.80 + 25 =
+// 13'533.95.
 // IFD: A 31.20 2'325; B 41.20 2'000 (3 % of 52'000 is under 2'000); 41.90 50 % of B's 50'000, at
 // most 14'100; 52.00 11'999 + 200, at most 3'700; 59.20 2'800. Taxable 97'775, at 97'700 (married
 // scale): 1'561.00 + 28 x 5.00 = 1'701.00, both years.
@@ -186,22 +202,62 @@ const shares = (r: ReturnType<typeof computeReturn>) =>
 describe('a salary earned in another commune, from the answers, by hand', () => {
   const W1 = {
     2025: {
+      taxable: 71_188_00,
+      base: 6_160_45,
+      cantonal: 8_057_85,
       privileged: 1_418_75,
       rest: [
         ['lancy', 4_70, 2_20],
         ['geneve', 3_137_15, 1_427_10],
       ],
       communal: 2_848_05,
+      atHome: 2_895_40,
       icc: 10_930_90,
     },
     2026: {
-      privileged: 1_476_65,
+      taxable: 71_183_00,
+      base: 6_150_95,
+      cantonal: 8_045_45,
+      privileged: 1_474_40,
       rest: [
         ['lancy', 4_50, 2_10],
-        ['geneve', 3_014_10, 1_371_10],
+        ['geneve', 3_009_45, 1_369_00],
       ],
-      communal: 2_849_85,
-      icc: 10_932_70,
+      communal: 2_845_50,
+      atHome: 2_890_95,
+      icc: 10_915_95,
+    },
+  } as const;
+  const W2 = {
+    2025: {
+      taxable: 106_078_00,
+      rate: 53_039_00,
+      base: 7_529_50,
+      cantonal: 9_848_60,
+      privileged: 3_041_90,
+      rest: [
+        ['onex', 2_00, 1_00],
+        ['geneve', 902_35, 410_50],
+        ['carouge', 601_55, 240_60],
+      ],
+      communal: 3_694_00,
+      atHome: 3_802_40,
+      icc: 13_567_60,
+    },
+    2026: {
+      taxable: 106_070_00,
+      rate: 53_035_00,
+      base: 7_510_80,
+      cantonal: 9_824_15,
+      privileged: 3_034_35,
+      rest: [
+        ['onex', 2_00, 1_00],
+        ['geneve', 900_10, 409_45],
+        ['carouge', 600_05, 240_00],
+      ],
+      communal: 3_684_80,
+      atHome: 3_792_95,
+      icc: 13_533_95,
     },
   } as const;
   for (const taxYear of [2025, 2026] as const) {
@@ -212,10 +268,10 @@ describe('a salary earned in another commune, from the answers, by hand', () => 
       expect(notes.map((n) => n.en).join(' ')).not.toMatch(/not answered yet/);
       const r = computeReturn(input!);
       const x = r.icc!.taxes;
-      expect(r.icc!.taxableIncome.amount).toBe(71_188_00);
-      expect(x.incomeBase.amount).toBe(6_160_45);
-      expect(x.incomeCantonal.amount).toBe(8_057_85);
       const e = W1[taxYear];
+      expect(r.icc!.taxableIncome.amount).toBe(e.taxable);
+      expect(x.incomeBase.amount).toBe(e.base);
+      expect(x.incomeCantonal.amount).toBe(e.cantonal);
       expect(x.communalIncome.privileged.tax.amount).toBe(e.privileged);
       expect(shares(r)).toEqual(e.rest);
       expect(x.communalIncomeTotal.amount).toBe(e.communal);
@@ -237,7 +293,7 @@ describe('a salary earned in another commune, from the answers, by hand', () => 
         const { input } = w1(taxYear, work);
         const r = computeReturn(input!);
         expect(shares(r).map(([c]) => c)).toEqual(['lancy']);
-        expect(r.icc!.taxes.communalIncomeTotal.amount).toBe(2_895_40);
+        expect(r.icc!.taxes.communalIncomeTotal.amount).toBe(W1[taxYear].atHome);
         expect(r.unverifiedRules.some((u) => SPLIT.test(u.en))).toBe(false);
       }
     });
@@ -247,23 +303,20 @@ describe('a salary earned in another commune, from the answers, by hand', () => 
       expect(missing).toEqual([]);
       const r = computeReturn(input!);
       const x = r.icc!.taxes;
-      expect(r.icc!.taxableIncome.amount).toBe(106_078_00);
-      expect(r.icc!.rateIncome.amount).toBe(53_039_00);
-      expect(x.incomeBase.amount).toBe(7_529_50);
-      expect(x.incomeCantonal.amount).toBe(9_848_60);
-      expect(x.communalIncome.privileged.tax.amount).toBe(3_041_90);
-      expect(shares(r)).toEqual([
-        ['onex', 2_00, 1_00],
-        ['geneve', 902_35, 410_50],
-        ['carouge', 601_55, 240_60],
-      ]);
-      expect(x.communalIncomeTotal.amount).toBe(3_694_00);
-      expect(x.total.amount).toBe(13_567_60);
+      const e = W2[taxYear];
+      expect(r.icc!.taxableIncome.amount).toBe(e.taxable);
+      expect(r.icc!.rateIncome.amount).toBe(e.rate);
+      expect(x.incomeBase.amount).toBe(e.base);
+      expect(x.incomeCantonal.amount).toBe(e.cantonal);
+      expect(x.communalIncome.privileged.tax.amount).toBe(e.privileged);
+      expect(shares(r)).toEqual(e.rest);
+      expect(x.communalIncomeTotal.amount).toBe(e.communal);
+      expect(x.total.amount).toBe(e.icc);
       expect(r.ifd!.taxableIncome.amount).toBe(97_775_00);
       expect(r.ifd!.tax.amount).toBe(1_701_00);
-      // Both at home: Onex taxes it all, 3'802.40.
+      // Both at home: Onex taxes it all, 3'802.40 (2026: 3'792.95).
       const home = computeReturn(w2(taxYear, 'onex', 'onex').input!);
-      expect(home.icc!.taxes.communalIncomeTotal.amount).toBe(3_802_40);
+      expect(home.icc!.taxes.communalIncomeTotal.amount).toBe(e.atHome);
     });
   }
 

@@ -252,6 +252,12 @@ export const OFFICIAL_DOCUMENTS: Readonly<Record<string, OfficialDocument>> = {
     url: 'https://silgeneve.ch/legis/data/rsg_d3_06.htm',
     pdf: false,
   },
+  'ge-2026-rcepf': {
+    title:
+      'Règlement relatif à la compensation des effets de la progression à froid (RCEPF), rsGE D 3 08.05, du 8 octobre 2025',
+    url: 'https://silgeneve.ch/legis/data/rsg_d3_08p05.htm',
+    pdf: false,
+  },
   'ge-na-law-lcacant': {
     title: 'Loi sur les centimes additionnels cantonaux (LCACant), rsGE D 3 07',
     url: 'https://silgeneve.ch/legis/data/rsg_d3_07.htm',

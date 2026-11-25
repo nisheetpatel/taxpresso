@@ -622,7 +622,6 @@ const TOU_ASSUMPTION_TEXT: Record<string, string> = {
   tariff_c_correction:
     'Both spouses work (tariff C): the AFC may correct the tax withheld on both real incomes.',
   values_to_confirm: 'Some figures come from documents the user has not confirmed yet.',
-  icc_2025_scale: 'Geneva tax on the 2025 scale (2026 is published in January 2027).',
   home_commune_rate: 'The communal part at the home commune rate only.',
   work_commune_split:
     'The communal part shared with the commune where the salary is earned, by gross income (not spelled out in the documents).',

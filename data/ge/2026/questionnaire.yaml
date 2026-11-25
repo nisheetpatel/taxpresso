@@ -101,7 +101,8 @@ questions:
       it: 'Asilo nido, doposcuola o tata. Sul modulo ufficiale: frais de garde.'
 
   # The childcare maximum is per child, for both taxes (ge-2025-guide-declaration-pp p. 30: "pour
-  # chaque enfant ... jusqu'à concurrence de", 26'320 for 59.10 and 25'800 for 59.12;
+  # chaque enfant ... jusqu'à concurrence de", 26'320 for 59.10 in 2025, 26'392 in 2026 by
+  # ge-2026-rcepf art. 9, and 25'800 for 59.12;
   # ch-2026-ifd-instructions-personnes-physiques p. 8, ch-2025-ifd-instructions-personnes-physiques
   # p. 8: "25 800 fr. par enfant"). Invoices for the household (childcare.costs) above the smaller
   # maximum, 25'800 in 2025 and 2026 (2,580,000 centimes), with several children: how they split

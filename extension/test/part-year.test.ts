@@ -6,7 +6,10 @@
 // households on a temporary vault, never the real one: Lena Brandt (Genève, arrived on 1 April),
 // Noor and Samir Haddad (Meyrin, arrived on 1 July, taxed at source), Jonas Lindqvist (Carouge,
 // left on 30 September). Their taxes were derived by hand from the official documents in
-// packages/rules-ge/test/part-year.test.ts, whose figures these must match.
+// packages/rules-ge/test/part-year.test.ts, whose figures these must match; the 2026 cantonal
+// figures again here, step by step at each household, with Geneva's 2026 scale and amounts
+// (ge-2026-rcepf art. 17: cumulative tax 3,149.00 at 48,441 and 7,015.15 at 77,730; art. 6, 10 and
+// 13). The federal tax is the same as before.
 import path from 'node:path';
 import { mkdtemp } from 'node:fs/promises';
 import os from 'node:os';
@@ -338,18 +341,26 @@ describe('Lena Brandt, arrived from abroad on 1 April 2026', () => {
     const res = await call('compute_tax', { detail: true });
     const out = res.structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [], notSupported: [] });
-    expect(out.icc).toMatchObject({ total: 761_750, taxableIncome: 5_022_200, taxableWealth: 0 });
+    // By hand, 2026, 270 days. ICC, the period: 72,000 - 4,608 - 3,600 - 7,258 (3a) - 1,817 (3 % of
+    // 63,792 = 1,914, at most 1,817: ge-2026-rcepf art. 6 al. 2) - 4,500 premiums = 50,217. The
+    // year: 96,000 - 6,144 - 4,800 - 7,258 - 1,817 - 6,000 = 69,981. Scale at 69,981 (ge-2026-rcepf
+    // art. 17): 3,149.00 + 21,540 x 13.2 % (2,843.28 -> 2,843.30) = 5,992.30; base 50,217 x
+    // 5,992.30 / 69,981 = 4,299.9575 -> 4,299.95; centimes 2,042.50, reduction 12 % of 6,342.45 =
+    // -761.10, home care 43.00: cantonal 5,624.35; communal 45.49 % of the privileged share (29 %:
+    // 1,247.00) and of the rest (3,052.95): 567.25 + 1,388.80 = 1,956.05; personal tax 25: ICC
+    // 7,605.40. IFD as before: 52,870 at the rate of 72,913, 763.75.
+    expect(out.icc).toMatchObject({ total: 760_540, taxableIncome: 5_021_700, taxableWealth: 0 });
     expect(out.ifd).toMatchObject({ tax: 76_375, taxableIncome: 5_287_000, scale: 'single' });
-    expect(out.total).toBe(761_750 + 76_375);
+    expect(out.total).toBe(760_540 + 76_375);
     expect(texts(res)).toMatch(
-      /A year of arrival from abroad: the taxes are on the income of 2026-04-01 to 2026-12-31 \(270 of 360 days\), at the rate of a full year's income \(revenu net pour le taux, 95\.00: CHF 69,986 cantonal, CHF 72,913 federal\)\. Say it as it is; never present a full year's tax/,
+      /A year of arrival from abroad: the taxes are on the income of 2026-04-01 to 2026-12-31 \(270 of 360 days\), at the rate of a full year's income \(revenu net pour le taux, 95\.00: CHF 69,981 cantonal, CHF 72,913 federal\)\. Say it as it is; never present a full year's tax/,
     );
 
     // get_status and the dashboard: the fact in "About you", one short sentence in every
     // language, the rate behind "Why?".
     const status = texts(await call('get_status'));
     expect(status).toMatch(
-      /You arrived on 1 April 2026: Geneva taxes your income from that day\. Your income is taxed at the rate of a full year’s income \(CHF.69’986 for the rate, revenu net pour le taux\), and your wealth as it is on 31 December\./,
+      /You arrived on 1 April 2026: Geneva taxes your income from that day\. Your income is taxed at the rate of a full year’s income \(CHF.69’981 for the rate, revenu net pour le taux\), and your wealth as it is on 31 December\./,
     );
     const s = await state();
     const fact = s.journey.about.find((f) => f.id === 'part_year')!;
@@ -362,14 +373,14 @@ describe('Lena Brandt, arrived from abroad on 1 April 2026', () => {
     expect(fact.text!.de).toMatch(/^Du bist am 1\. April 2026 zugezogen/);
     expect(fact.text!.it).toMatch(/^Sei arrivato il 1° aprile 2026/);
     expect(fact.why!.fr).toMatch(
-      /^Votre revenu est imposé au taux d’un revenu annuel \(CHF.69’986/,
+      /^Votre revenu est imposé au taux d’un revenu annuel \(CHF.69’981/,
     );
     expect(fact.sources!.map((x) => x.id)).toEqual([
       'ge-2025-guide-declaration-pp',
       'ge-na-law-lipp',
       'ch-na-law-lifd',
     ]);
-    expect(s.estimate).toMatchObject({ total: 761_750 + 76_375 });
+    expect(s.estimate).toMatchObject({ total: 760_540 + 76_375 });
 
     // The salary certificate matches the day of arrival: nothing to check.
     expect(ws.checks().filter((c) => c.rule === 'salary_period')).toEqual([]);
@@ -386,9 +397,9 @@ describe('Lena Brandt, arrived from abroad on 1 April 2026', () => {
       .map((r) => [r.ref, r.columns.map((c) => c.id).join('+'), r.copy, r.noCheck ?? false]);
     expect(recap).toEqual(
       expect.arrayContaining([
-        ['95.00', 'icc', '69986', true],
+        ['95.00', 'icc', '69981', true],
         ['97.00', 'icc', '19764', true],
-        ['99.00', 'icc', '50222', false],
+        ['99.00', 'icc', '50217', false],
         ['95.00', 'ifd', '72913', true],
         ['97.00', 'ifd', '20043', true],
         ['99.00', 'ifd', '52870', false],
@@ -428,7 +439,17 @@ describe('Noor and Samir Haddad, arrived together on 1 July 2026, taxed at sourc
   it('66,000 from July is 132,000 for a year: TOU is compulsory, a fact', async () => {
     await haddad(66_000);
     const out = (await call('compute_tax')).structuredContent as TaxOut;
-    expect(out.icc!.total).toBe(904_650);
+    // By hand, 2026, 180 days. ICC, the period: p1 66,000 - 4,224 - 3,300 - 3,000 - 1,754 (3 %) =
+    // 53,722; p2 30,000 - 1,920 - 1,500 - 797 - 1,054 (two earners, ge-2026-rcepf art. 10) = 24,729;
+    // premiums 4,200; childcare 6,000; family charge with childcare 10,536 x 180/360 = 5,268
+    // (ge-2026-rcepf art. 13): 62,983. The year: 132,000 - 8,448 - 6,600 - 3,000 - 1,817 (art. 6
+    // al. 2) = 112,135; 60,000 - 3,840 - 3,000 - 1,595 (3 % of 53,160) - 1,054 = 50,511; 8,400;
+    // 12,000; 10,536 in full: 131,710, splitting 50 %: 65,855. Scale at 65,855 (art. 17): 3,149.00
+    // + 17,414 x 13.2 % (2,298.65) = 5,447.65; base 62,983 x 5,447.65 / 65,855 = 5,210.0727 ->
+    // 5,210.05; centimes 2,474.75, reduction 12 % of 7,684.80 = -922.20, home care 52.10: cantonal
+    // 6,814.70; communal (Meyrin 42, privileged share 29 %): 634.60 + 1,553.65 = 2,188.25; personal
+    // tax 25: ICC 9,027.95. IFD as before: 1,347.25.
+    expect(out.icc!.total).toBe(902_795);
     expect(out.ifd!.tax).toBe(134_725);
     const status = texts(await call('get_status'));
     expect(status).toMatch(/TOU is compulsory/);
@@ -445,7 +466,14 @@ describe('Noor and Samir Haddad, arrived together on 1 July 2026, taxed at sourc
   it('54,000 from July is 108,000 for a year: TOU is a choice, with the comparison', async () => {
     await haddad(54_000);
     const out = (await call('compute_tax')).structuredContent as TaxOut;
-    expect(out.icc!.total).toBe(670_875);
+    // By hand, 2026. ICC, the period: p1 54,000 - 3,456 - 2,700 - 3,000 - 1,435 (3 %) = 43,409; p2
+    // 24,729; less 4,200, 6,000 and 5,268: 52,670. The year: 108,000 - 6,912 - 5,400 - 3,000 - 1,817
+    // = 90,871; 50,511; less 8,400, 12,000 and 10,536: 110,446, splitting 50 %: 55,223. Scale at
+    // 55,223: 3,149.00 + 6,782 x 13.2 % (895.20) = 4,044.20; base 52,670 x 4,044.20 / 55,223 =
+    // 3,857.2337 -> 3,857.25; centimes 1,832.20, reduction 12 % of 5,689.45 = -682.75, home care
+    // 38.55: cantonal 5,045.25; communal 469.80 + 1,150.25 = 1,620.05; personal tax 25: ICC
+    // 6,690.30. IFD as before: 772.80.
+    expect(out.icc!.total).toBe(669_030);
     expect(out.ifd!.tax).toBe(77_280);
     const s = await state();
     expect(s.journey.touChoice).toBe(true);
@@ -460,7 +488,14 @@ describe('Jonas Lindqvist, leaving Switzerland on 30 September 2026', () => {
     await lindqvist();
     const out = (await call('compute_tax')).structuredContent as TaxOut;
     expect(out).toMatchObject({ computed: true, unsupported: [] });
-    expect(out.icc).toMatchObject({ total: 1_132_120, taxableIncome: 6_707_000 });
+    // By hand, 2026, 270 days. ICC: 90,000 - 5,760 - 4,500 - 7,258 - 1,817 (ge-2026-rcepf art. 6
+    // al. 2) - 3,600 = 67,065; the year: 106,320 net converted (79,740 x 4/3) - 7,258 - 1,817 -
+    // 4,800 = 92,445. Scale at 92,445 (art. 17): 7,015.15 + 14,715 x 14.2 % (2,089.53 -> 2,089.55)
+    // = 9,104.70; base 67,065 x 9,104.70 / 92,445 = 6,605.0809 -> 6,605.10; centimes 3,137.40,
+    // reduction 12 % of 9,742.50 = -1,169.10, home care 66.05: cantonal 8,639.45; communal (Carouge
+    // 40, privileged share 27 %): 713.35 + 1,928.70 = 2,642.05; personal tax 25: ICC 11,306.50.
+    // IFD as before: 68,740 at the rate of 94,072, 1,672.40.
+    expect(out.icc).toMatchObject({ total: 1_130_650, taxableIncome: 6_706_500 });
     expect(out.ifd).toMatchObject({ tax: 167_240, taxableIncome: 6_874_000 });
     const s = await state();
     // What to do in the sentence; how Geneva taxes the period behind "Why?".

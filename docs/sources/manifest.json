@@ -243,6 +243,22 @@
       "notes": "36 pages, file guide-independants-2025.pdf. Landing page: https://www.ge.ch/document/guide-fiscal-2025-independants (published 8 September 2026). PDF page n is printed page n. Annexe B: p. 10 to 24; documents to attach: p. 25; the simplified declaration: p. 26 to 28. Added by the self-employment agent on 14 October 2026."
     },
     {
+      "id": "ge-2026-rcepf",
+      "canton": "GE",
+      "doc_type": "law",
+      "title": "Règlement relatif à la compensation des effets de la progression à froid (RCEPF), rsGE D 3 08.05, du 8 octobre 2025",
+      "tax_year": 2026,
+      "language": "fr",
+      "url": "https://silgeneve.ch/legis/data/rsg_d3_08p05.htm",
+      "format": "html",
+      "publisher": "SILGENEVE",
+      "published": "2025-10-08",
+      "verified_on": "2026-11-25",
+      "priority": "core",
+      "why_needed": "Geneva's own amounts and scales for tax year 2026, indexed by the Conseil d'Etat (LIPP art. 67 and 72): the income scale (art. 17), the two wealth scales (art. 18) and every indexed deduction (art. 4 to 16: commuting, flat professional costs, life insurance and savings interest, childcare, two earners, training, family charges, AVS/AI pensioners, the social deductions on wealth).",
+      "notes": "Adopted 8 October 2025, in force 1 January 2026; index 110.0 for tax period 2026 (art. 1); amounts and bracket limits rounded to the franc (art. 2 al. 3). It replaces the regulation of 11 December 2024 (art. 19), and the next one will replace it at the same address: the snapshot fetched on 25 November 2026 is the 2026 text. Not in it, because not indexed or set elsewhere: the cantonal centimes, the 12 % reduction, the health premium ceiling (twice the cantonal average premium, LIPP art. 32), meals, pillar 3a."
+    },
+    {
       "id": "ge-na-law-lcacant",
       "canton": "GE",
       "doc_type": "law",

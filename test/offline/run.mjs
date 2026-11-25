@@ -2034,9 +2034,9 @@ describe('offline end to end', { timeout: 60_000 }, () => {
           { code: '98.12', person: 'p1', amount: 30_000_000 },
           { code: '98.12', person: 'p2', amount: 6_000_000 },
         ],
-        icc: 1_593_080,
+        icc: 1_591_890,
         ifd: 653_600,
-        total: 2_246_680,
+        total: 2_245_490,
       });
       assert.match(tax.content[0].text, /never in the total/);
       assert.match(tax.content[0].text, /rest on values that still need the user's OK/);
@@ -2164,7 +2164,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "6'000.00"]]],
       },
       {
-        icc: 874_685,
+        icc: 873_110,
         ifd: 87_930,
         b2: [/12\.01 Bénéfice net/, /12\.52 Capital propre/],
         verdict: 'not_ready',
@@ -2223,7 +2223,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         '3a-sofia-2026.pdf': ['pillar3a_attestation', 'p2', [['pillar3a.paid', "6'000.00"]]],
         'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "9'000.00"]]],
       },
-      { icc: 952_035, ifd: 88_100, b2: [/12\.01 Bénéfice net/], verdict: 'not_ready' },
+      { icc: 948_870, ifd: 88_100, b2: [/12\.01 Bénéfice net/], verdict: 'not_ready' },
     );
   });
 
@@ -2277,7 +2277,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
         'lamal-2026.pdf': ['health_premiums', 'household', [['health.premiums', "4'000.00"]]],
       },
       {
-        icc: 127_310,
+        icc: 126_315,
         ifd: 10_395,
         b2: [/57\.10 Perte commerciale/, /57\.20 Pertes non compensées/, /57\.00 Perte nette/],
         verdict: 'not_ready',
@@ -2399,7 +2399,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
     try {
       const tax = await varela.call('compute_tax');
-      assert.equal(tax.structuredContent.icc.total, 1_294_690);
+      assert.equal(tax.structuredContent.icc.total, 1_292_820);
       assert.equal(tax.structuredContent.ifd.tax, 179_430);
       assert.deepEqual(tax.structuredContent.unsupported, []);
       assert.deepEqual(tax.structuredContent.notSupported, []);
@@ -2585,7 +2585,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
       const tax = await brandt.call('compute_tax');
       // Without the transport to work (walk): ICC 50,222 at the rate of 69,986; IFD 53,270.
       assert.deepEqual(tax.structuredContent.unsupported, []);
-      assert.equal(tax.structuredContent.icc.taxableIncome, 5_022_200);
+      assert.equal(tax.structuredContent.icc.taxableIncome, 5_021_700);
       assert.match(tax.content[0].text, /A year of arrival from abroad/);
       const pg1 = await brandt.call('get_form_values', { section: 'PG1' });
       assert.match(pg1.content[0].text, /Date d’arrivée[\s\S]*01\.04\.2026/);
@@ -2754,7 +2754,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
     try {
       const tax = await chevalley.call('compute_tax');
-      assert.equal(tax.structuredContent.icc.total, 2_760_970, tax.content[0].text);
+      assert.equal(tax.structuredContent.icc.total, 2_756_590, tax.content[0].text);
       assert.equal(tax.structuredContent.ifd.tax, 716_100);
       assert.deepEqual(tax.structuredContent.unsupported, []);
       assert.deepEqual(tax.structuredContent.notSupported, []);
@@ -2820,7 +2820,16 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     );
     try {
       const tax = await sandoz.call('compute_tax');
-      assert.equal(tax.structuredContent.icc.total, 1_635_610, tax.content[0].text);
+      // 2026, by hand with the 2026 values (ge-2026-rcepf). Income: 92'000 - 5'796 - 5'520 =
+      // 80'684; 3 % of it is over the maximum, 1'817 (art. 6 al. 2); rents 26'400 - 2'150 costs;
+      // interest 4'940; premiums 5'400: 92'777. Scale (art. 17): 7'015.15 at 77'730 + 15'047 x
+      // 14.2 % (2'136.65) = 9'151.80; + 47.5 % (4'347.10) - 12 % of 13'498.90 (1'619.85) + 1 %
+      // (91.50) = 11'970.55. Wealth: 40'000 + 640'000 - 380'000 = 300'000, less 87'872 (art. 16):
+      // 212'128; 176.90 + 93'406 x 1.91 per mille (178.40) = 355.30 (art. 18); + 47.5 % (168.75)
+      // + 1 % (3.55) + the supplementary tax 93'406 x 0.0956 per mille (8.95) = 536.55. Carouge,
+      // 40 centimes, 27 % privileged: income 988.40 + 2'672.30, wealth 38.40 + 103.75 = 3'802.85.
+      // With the taxe personnelle of 25: 16'334.95.
+      assert.equal(tax.structuredContent.icc.total, 1_633_495, tax.content[0].text);
       assert.equal(tax.structuredContent.ifd.tax, 236_755);
       assert.deepEqual(tax.structuredContent.unsupported, []);
       const d2 = await sandoz.call('get_form_values', { section: 'D2' });

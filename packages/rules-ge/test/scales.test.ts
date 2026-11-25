@@ -90,6 +90,78 @@ describe('ICC 2025 wealth scales (ge-2025-icc-tariff-pdf p. 5)', () => {
   });
 });
 
+describe('ICC 2026 scales (ge-2026-rcepf art. 17 and 18)', () => {
+  const p = paramsFor(2026).icc;
+
+  it('has the brackets and rates of art. 17, read again in the regulation', () => {
+    // [last franc of the bracket, rate in hundredths of a percent], as printed; above 651'131,
+    // 18.00 %.
+    const printed: [number, number][] = [
+      [18_700, 0],
+      [22_530, 730],
+      [24_784, 820],
+      [27_036, 910],
+      [29_290, 1000],
+      [34_922, 1090],
+      [39_428, 1130],
+      [43_935, 1230],
+      [48_441, 1280],
+      [77_730, 1320],
+      [127_297, 1420],
+      [171_231, 1500],
+      [193_762, 1560],
+      [277_125, 1580],
+      [295_150, 1600],
+      [415_688, 1680],
+      [651_131, 1760],
+    ];
+    const { brackets, denominator } = p.incomeScale.value;
+    expect(denominator).toBe(10_000);
+    expect(brackets.slice(0, -1)).toEqual(printed);
+    expect(brackets.at(-1)).toEqual([Number.POSITIVE_INFINITY, 1800]);
+    // The cumulative tax, each bracket to 5 centimes, by hand: nothing up to 18'700; 3'149.00 at
+    // 48'441; 7'015.15 at 77'730; 20'643.75 at 171'231; 101'902.30 at 651'131.
+    expect(bracketTax(p.incomeScale.value, 18_700_00)).toBe(0);
+    expect(bracketTax(p.incomeScale.value, 48_441_00)).toBe(314_900);
+    expect(bracketTax(p.incomeScale.value, 77_730_00)).toBe(701_515);
+    expect(bracketTax(p.incomeScale.value, 171_231_00)).toBe(2_064_375);
+    expect(bracketTax(p.incomeScale.value, 651_131_00)).toBe(10_190_230);
+  });
+
+  it('matches the "Impôt total" column of the base wealth scale (art. 18 al. 1)', () => {
+    const totals: [number, number][] = [
+      [118_722, 17_690],
+      [237_443, 40_365],
+      [356_165, 68_145],
+      [474_886, 98_420],
+      [712_330, 163_955],
+      [949_772, 234_715],
+      [1_187_215, 310_460],
+      [1_424_658, 391_190],
+      [1_780_823, 519_765],
+    ];
+    for (const [wealth, tax] of totals)
+      expect(bracketTax(p.wealthScale.value, wealth * 100), String(wealth)).toBe(tax);
+  });
+
+  it('matches the "Impôt total" column of the supplementary scale (art. 18 al. 2)', () => {
+    const totals: [number, number][] = [
+      [118_722, 0],
+      [237_443, 1_135],
+      [356_165, 2_525],
+      [474_886, 5_550],
+      [712_330, 12_110],
+      [949_772, 22_705],
+      [1_187_215, 34_055],
+      [1_424_658, 50_200],
+      [1_780_823, 75_935],
+      [3_561_646, 246_235],
+    ];
+    for (const [wealth, tax] of totals)
+      expect(bracketTax(p.wealthSupplementaryScale.value, wealth * 100), String(wealth)).toBe(tax);
+  });
+});
+
 describe('ICC income scale through the engine', () => {
   it('gives the same base tax as the existing 2025 function, every few thousand francs', () => {
     const scale = paramsFor(2025).icc.incomeScale.value;
@@ -350,9 +422,37 @@ describe('tax years', () => {
     expect(() => paramsFor(2024)).toThrow(/not supported/);
     expect(() => paramsFor(2027)).toThrow(/not supported/);
   });
-  it('flags every Geneva value of 2026 as an estimate, and no federal one', () => {
+  it('flags only the two Geneva amounts of 2026 not published yet, and no federal value', () => {
     const p = paramsFor(2026);
-    for (const v of Object.values(p.icc)) expect(v.estimate).toBe('ge-2026-unpublished');
+    // The ceiling for health premiums (52.21) and the meal amounts (31.60) come with the 2026 guide
+    // (January 2027): until then the 2025 ones, flagged. Every other Geneva value of 2026 is the
+    // regulation's (ge-2026-rcepf) or a law's: official.
+    for (const [name, v] of Object.entries(p.icc)) {
+      if (name === 'healthCap' || name === 'meals') {
+        expect(v.estimate, name).toBe('ge-2026-unpublished');
+        expect(v.value, name).toEqual(paramsFor(2025).icc[name].value);
+      } else {
+        expect(v, name).not.toHaveProperty('estimate');
+      }
+    }
+    // What the regulation indexes is cited from it, the scales first.
+    expect(p.icc.incomeScale.source).toBe('ge-2026-rcepf art. 17');
+    expect(p.icc.wealthScale.source).toBe('ge-2026-rcepf art. 18 al. 1');
+    expect(p.icc.wealthSupplementaryScale.source).toMatch(/^ge-2026-rcepf art\. 18 al\. 2/);
+    for (const name of [
+      'professionalFlat',
+      'commuteMax',
+      'twoEarner',
+      'lifeInsurance',
+      'childcareMax',
+      'trainingMax',
+      'familyCharge',
+      'avsDeduction',
+      'wealthSocial',
+      'businessWealth',
+    ] as const) {
+      expect(p.icc[name].source, name).toMatch(/^ge-2026-rcepf art\. /);
+    }
     for (const v of Object.values(p.ifd)) expect(v).not.toHaveProperty('estimate');
     expect(p.communes.centimes).not.toHaveProperty('estimate');
     expect(p.communes.privilegedShare).not.toHaveProperty('estimate');

@@ -59,8 +59,22 @@ describe('this year against last year', () => {
       icc: r.icc!.taxableIncome.amount,
       ifd: r.ifd!.taxableIncome.amount,
     });
-    // 2026: the cantonal figures rest on Geneva's 2025 values, so they are provisional.
+    // 2026: Geneva's scales and amounts are the regulation's (ge-2026-rcepf); this household has
+    // neither health premiums nor meals, the two amounts not published yet: nothing provisional.
+    expect(rows[2]!.thisYearProvisional).toBe(false);
+    expect(r.estimates).toEqual([]);
+  });
+
+  it('marks this year’s taxable income provisional when a 2026 amount not published yet enters it', () => {
+    // Health premiums (52.21): their 2026 ceiling comes with the 2026 guide, so the 2025 one
+    // counts, as an estimate, and the taxable income that rests on it is provisional. The salary
+    // line is not.
+    const r = computeReturn({ ...input, household: { healthPremiums: { value: chf(5_000) } } });
+    const rows = compareWithLastYear(r, lastYear());
+    expect(rows.map((x) => x.code)).toEqual(['11.00', '31.40', '99.00']);
     expect(rows[2]!.thisYearProvisional).toBe(true);
+    expect(rows[0]!.thisYearProvisional).toBe(false);
+    expect(r.estimates.map((e) => e.id)).toEqual(['ge-2026-unpublished']);
   });
 
   it('never lets last year’s figures into this year’s calculation', () => {

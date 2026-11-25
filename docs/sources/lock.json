@@ -6010,5 +6010,15 @@
     "content_type": "application/x-download;name=\"ATA_000920_2014_A_3652_2012.pdf\"",
     "retrieved_at": "2026-11-25T16:06:18.320Z",
     "status": "ok"
+  },
+  "ge-2026-rcepf": {
+    "url": "https://silgeneve.ch/legis/data/rsg_d3_08p05.htm",
+    "final_url": "https://silgeneve.ch/legis/data/rsg_d3_08p05.htm",
+    "file": "ge/files/ge-2026-rcepf.html",
+    "bytes": 122809,
+    "sha256": "8ea384f71a6e635cb126fc55dd73927d03ff48a4ed53f2374a2f99174fea242a",
+    "content_type": "text/html",
+    "retrieved_at": "2026-11-25T16:18:14.161Z",
+    "status": "ok"
   }
 }
