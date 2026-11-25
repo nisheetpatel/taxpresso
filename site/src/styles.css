@@ -1,6 +1,9 @@
-/* Taxpresso website, in the coffee theme (SPEC.md section 11b). The receipt printer and the
-   principle cards are the loud elements; everything else stays quiet. The logo's own rules come
-   from ui/src/shared/logo.css, added by build.ts. */
+/* Taxpresso website, in the coffee theme (SPEC.md section 11b). The home page alternates foam with
+   three roast bands: the hero (hero.css), the principles and the footer, which every page shares.
+   Motion is CSS only: the hero cup plays once when the page opens, and in How it works a coffee line
+   runs down the steps as you scroll while the receipt beside it fills in. Without scroll-driven
+   animations, or with reduced motion, everything shows finished. The logo's own rules come from
+   ui/src/shared/logo.css, added by build.ts. */
 
 :root {
   --foam: #f6f0e8;
@@ -15,6 +18,9 @@
   --line: #e4d8ca;
   --matcha: #dcead9;
   --swiss: #da291c;
+  --milk: #f3ebe1;
+  --oat: #b8a999;
+  --deep: #3a2418;
 
   --font: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -278,28 +284,7 @@ a:hover {
   color: var(--caramel);
 }
 
-/* Hero: the tagline and the receipt */
-
-.hero {
-  max-width: var(--page);
-  margin: 0 auto;
-  padding: 48px var(--gutter) 104px;
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
-  gap: 64px;
-  align-items: start;
-}
-
-.hero h1 {
-  margin: 0;
-  max-width: 13ch;
-  font-size: clamp(3rem, 7vw, 5.9rem);
-  line-height: 0.96;
-  font-weight: 800;
-  letter-spacing: -0.048em;
-  text-wrap: balance;
-  hyphens: manual;
-}
+/* Hero text, shared by the pages that open with a lead (the home page's hero is in hero.css) */
 
 .lead {
   margin: 30px 0 0;
@@ -347,14 +332,17 @@ a:hover {
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
-/* The receipt printer. The ticket prints once when the page opens. */
+/* The receipt printer, beside the steps of How it works: the bill for one return. It stays in view
+   while the steps scroll by. */
 
 .printer {
-  margin: 8px 0 0;
+  margin: 0;
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   justify-self: end;
-  transform: rotate(1.6deg);
+  position: sticky;
+  top: 32px;
+  transform: rotate(1.2deg);
 }
 
 .slot {
@@ -389,16 +377,6 @@ a:hover {
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--tooth)
       calc(var(--tooth) / 2) repeat-x,
     linear-gradient(#000 0 0) top / 100% calc(100% - var(--tooth) / 2 + 1px) no-repeat;
-  animation: print 1.7s cubic-bezier(0.2, 0.75, 0.25, 1) 0.2s both;
-}
-
-@keyframes print {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
 }
 
 .t-head {
@@ -517,15 +495,6 @@ a:hover {
   color: var(--mocha);
 }
 
-.steps {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 48px;
-}
-
 .num {
   width: 38px;
   height: 38px;
@@ -541,65 +510,376 @@ a:hover {
   flex: none;
 }
 
-.steps p {
+/* How it works: the steps on a coffee line, and the receipt beside them. */
+
+.how {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  gap: 64px;
+  align-items: start;
+}
+
+.brew {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 34em;
+}
+
+.brew li {
+  position: relative;
+  padding: 5px 0 52px 64px;
+}
+
+.brew li:last-child {
+  padding-bottom: 0;
+}
+
+.brew .num {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  margin: 0;
+  background: var(--roast-dark);
+  color: var(--milk);
+}
+
+.brew p {
   color: var(--mocha);
 }
 
-/* Principles: one cup of latte art per card, each card its own drink */
+/* The coffee line from one step's number down to the next: a track, and the coffee in it. */
+.brew li:not(:last-child)::before,
+.brew li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 38px;
+  bottom: 0;
+  width: 4px;
+}
 
-.pgrid {
-  margin: 0;
+.brew li:not(:last-child)::before {
+  background: var(--line);
+}
+
+.brew li:not(:last-child)::after {
+  background: var(--roast-dark);
+  transform-origin: top;
+}
+
+/* As you scroll, each step's line fills while that step crosses a line a little above the middle
+   of the window, and the next number lights up when the coffee reaches it. The receipt (wide
+   screens only, where it sits beside the steps) fills in step by step: the documents with the
+   questions, the deductions with the savings, the declaration and its transmission last, then the
+   cup of the total. The paper feeds out of the printer as the section comes up. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .how {
+      view-timeline: --how block;
+    }
+
+    .brew li {
+      view-timeline-axis: block;
+      view-timeline-inset: 0% 45%;
+    }
+
+    .brew li:nth-child(1) {
+      view-timeline-name: --step-1;
+    }
+
+    .brew li:nth-child(2) {
+      view-timeline-name: --step-2;
+    }
+
+    .brew li:nth-child(3) {
+      view-timeline-name: --step-3;
+    }
+
+    .brew li:not(:last-child)::after {
+      animation: brew-fill linear both;
+      animation-range: entry 0% entry 100%;
+    }
+
+    .brew .num {
+      animation: brew-lit linear both;
+      animation-range: entry 0% entry 6%;
+    }
+
+    .brew li:nth-child(1)::after,
+    .brew li:nth-child(1) .num {
+      animation-timeline: --step-1;
+    }
+
+    .brew li:nth-child(2)::after,
+    .brew li:nth-child(2) .num {
+      animation-timeline: --step-2;
+    }
+
+    .brew li:nth-child(3) .num {
+      animation-timeline: --step-3;
+    }
+
+    .ticket {
+      animation: brew-feed linear both;
+      animation-timeline: --how;
+      animation-range: entry 15% entry 55%;
+    }
+  }
+}
+
+@supports (animation-timeline: view()) and (timeline-scope: none) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 961px) {
+    .how {
+      timeline-scope: --step-1, --step-2, --step-3;
+    }
+
+    .t-lines .st {
+      position: relative;
+      display: inline-block;
+      animation: brew-status linear both;
+    }
+
+    .t-lines .st::before {
+      content: '…';
+      position: absolute;
+      right: 0;
+      color: #b8a999;
+      font-weight: 400;
+      animation: brew-wait linear both;
+    }
+
+    .t-s1 .st,
+    .t-s1 .st::before {
+      animation-timeline: --step-1;
+    }
+
+    .t-s2 .st,
+    .t-s2 .st::before {
+      animation-timeline: --step-2;
+    }
+
+    .t-s3 .st,
+    .t-s3 .st::before {
+      animation-timeline: --step-3;
+    }
+
+    .t-lines li:nth-child(1) .st,
+    .t-lines li:nth-child(1) .st::before {
+      animation-range: entry 10% entry 22%;
+    }
+
+    .t-lines li:nth-child(2) .st,
+    .t-lines li:nth-child(2) .st::before {
+      animation-range: entry 30% entry 42%;
+    }
+
+    .t-lines li:nth-child(3) .st,
+    .t-lines li:nth-child(3) .st::before {
+      animation-range: entry 50% entry 62%;
+    }
+
+    .t-lines li:nth-child(4) .st,
+    .t-lines li:nth-child(4) .st::before {
+      animation-range: entry 70% entry 82%;
+    }
+
+    .t-lines li:nth-child(5) .st,
+    .t-lines li:nth-child(5) .st::before {
+      animation-range: entry 35% entry 55%;
+    }
+
+    .t-lines li:nth-child(6) .st,
+    .t-lines li:nth-child(6) .st::before {
+      animation-range: entry 5% entry 20%;
+    }
+
+    .t-lines li:nth-child(7) .st,
+    .t-lines li:nth-child(7) .st::before {
+      animation-range: entry 25% entry 40%;
+    }
+
+    .t-total .tp-coffee {
+      animation: brew-pour linear both;
+      animation-timeline: --step-3;
+      animation-range: entry 45% entry 65%;
+    }
+
+    .t-total .tp-check {
+      stroke-dasharray: 100 110;
+      animation: brew-check linear both;
+      animation-timeline: --step-3;
+      animation-range: entry 65% entry 85%;
+    }
+  }
+}
+
+@keyframes brew-fill {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes brew-lit {
+  from {
+    background: var(--foam);
+    color: var(--mocha);
+    box-shadow: inset 0 0 0 2px var(--line);
+  }
+  to {
+    background: var(--roast-dark);
+    color: var(--milk);
+    box-shadow: inset 0 0 0 2px var(--roast-dark);
+  }
+}
+
+@keyframes brew-feed {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes brew-status {
+  from {
+    color: transparent;
+  }
+}
+
+@keyframes brew-wait {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes brew-pour {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes brew-check {
+  from {
+    stroke-dashoffset: 101;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Principles: cups of latte art on a roast counter. The first leads, with a big cup; the art turns
+   a little when you point at a cup. */
+
+.counter {
+  --tp-coffee: #2a170e;
+  --tp-crema: #94562a;
+  background: var(--deep);
+  color: var(--milk);
+}
+
+.counter h2,
+.counter h3 {
+  color: var(--milk);
+}
+
+.counter .band-lead,
+.counter p {
+  color: var(--oat);
+}
+
+.counter a {
+  color: var(--milk);
+}
+
+.counter a:hover {
+  color: var(--crema);
+}
+
+.counter :focus-visible {
+  outline-color: var(--crema);
+}
+
+.pc-cup {
+  display: block;
+  flex: none;
+}
+
+.lead-cup {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgb(243 235 225 / 0.14);
+}
+
+.lead-cup .pc-cup {
+  width: 160px;
+  height: 160px;
+}
+
+.lead-cup h3 {
+  font-size: clamp(24px, 2.6vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.lead-cup p {
+  font-size: 19px;
+  max-width: 34em;
+}
+
+.cups {
+  margin: 48px 0 0;
   padding: 0;
   list-style: none;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 52px 44px;
 }
 
-.pc {
-  --tp-rim: currentColor;
-  --tp-crema: #9a5a28;
-  --milk: #f6f0e8;
-  min-height: 240px;
-  padding: 26px 28px 30px;
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+.cups .pc-cup {
+  width: 76px;
+  height: 76px;
+  margin-bottom: 20px;
 }
 
-.pc h3 {
-  margin: 0 0 6px;
-  font-size: 21px;
-}
-
-.pc p {
+.cups p {
   font-size: 16px;
   line-height: 1.5;
-  opacity: 0.86;
 }
 
-.pc-cup {
-  width: 64px;
-  height: 64px;
-  flex: none;
+.la-saucer {
+  fill: var(--roast);
 }
 
-.pc-wide {
-  grid-column: span 2;
-  flex-direction: row;
-  align-items: center;
-  gap: 32px;
+.la-porcelain {
+  fill: #efe5d8;
+  stroke: #d9cbbb;
+  stroke-width: 1.5;
 }
 
-.pc-wide .pc-cup {
-  width: 112px;
-  height: 112px;
+.la-art {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 1.4s cubic-bezier(0.3, 0.7, 0.3, 1);
 }
 
-.pc-wide h3 {
-  font-size: clamp(22px, 2.4vw, 28px);
-  letter-spacing: -0.02em;
+.cups li:hover .la-art,
+.lead-cup:hover .la-art {
+  transform: rotate(24deg);
 }
 
 .la {
@@ -632,42 +912,6 @@ a:hover {
   opacity: 0.55;
 }
 
-.pc-espresso {
-  background: var(--espresso);
-  color: #f3ebe1;
-}
-
-.pc-crema {
-  background: var(--crema);
-  color: var(--espresso);
-}
-
-.pc-white {
-  background: var(--cup);
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-
-.pc-latte {
-  background: var(--latte);
-}
-
-.pc-roast {
-  background: var(--roast);
-  color: #f6f0e8;
-}
-
-.pc-matcha {
-  background: var(--matcha);
-  color: #1d3b2c;
-}
-
-.pc-swiss .ch {
-  width: 56px;
-  height: 56px;
-  flex: none;
-  border-radius: 10px;
-}
-
 /* Free, for good: a star (free) or a tip (for the association) */
 
 .free-intro p {
@@ -676,11 +920,11 @@ a:hover {
 }
 
 .free-grid {
-  margin-top: 36px;
+  margin-top: 40px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
-  gap: 18px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 56px;
+  align-items: start;
 }
 
 .star-card,
@@ -692,9 +936,10 @@ a:hover {
   gap: 12px;
 }
 
+/* What people say sits on the page, not in a card: the words are the point. */
 .star-card {
-  background: var(--cup);
-  box-shadow: inset 0 0 0 1px var(--line);
+  padding: 0;
+  border-radius: 0;
 }
 
 .star-card h3,
@@ -739,10 +984,10 @@ a:hover {
   stroke: var(--crema);
 }
 
-/* The tip menu: a café chalkboard. */
+/* The tip menu: a café menu board, the one card left on the page. */
 .tip-card {
-  background: var(--espresso);
-  color: #f3ebe1;
+  background: var(--roast-dark);
+  color: var(--milk);
 }
 
 .menu {
@@ -761,7 +1006,7 @@ a:hover {
 }
 
 .tip-card .dots {
-  border-bottom-color: #5a4a3e;
+  border-bottom-color: rgb(201 185 166 / 0.45);
 }
 
 .amount {
@@ -812,7 +1057,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-left: 2px solid #5a4a3e;
+  border-left: 2px solid rgb(201 185 166 / 0.35);
   font-size: 15px;
 }
 
@@ -923,14 +1168,17 @@ a:hover {
 
 .voice blockquote {
   margin: 0;
-  font-size: 19px;
-  line-height: 1.45;
-  letter-spacing: -0.01em;
-  color: var(--roast);
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--espresso);
 }
 
 .voice blockquote p {
   margin: 0;
+  font-size: inherit;
+  color: inherit;
 }
 
 .voice blockquote p::before {
@@ -948,8 +1196,9 @@ a:hover {
 }
 
 .voices-more {
-  margin-top: auto !important;
-  padding-top: 8px;
+  margin-top: 28px !important;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
   font-size: 15px !important;
 }
 
@@ -980,7 +1229,11 @@ a:hover {
   color: var(--mocha);
 }
 
-/* Make it better with us */
+/* Make it better with us: a plain grid on an oat-milk band, no cards. */
+
+.help-band {
+  background: #efe6da;
+}
 
 .help-grid {
   margin: 0;
@@ -988,25 +1241,28 @@ a:hover {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 36px 40px;
 }
 
 .help-card {
   height: 100%;
-  padding: 22px 22px 24px;
-  border-radius: 20px;
-  background: var(--cup);
-  box-shadow: inset 0 0 0 1px var(--line);
+  padding: 18px 0 0;
+  border-top: 1px solid #dccdbb;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
   color: var(--espresso);
 }
 
 .help-card:hover {
   color: var(--espresso);
-  box-shadow: inset 0 0 0 1.5px var(--roast);
+}
+
+.help-card:hover h3 {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
 }
 
 .help-card svg {
@@ -1023,34 +1279,21 @@ a:hover {
   color: var(--mocha);
 }
 
-/* The fine print */
+/* Questions, then the fine print: a heading column and a text column. */
 
-.fine {
-  padding-top: 24px;
-}
-
+.faq,
 .fine-box {
-  padding: 28px 30px;
-  border-radius: 20px;
-  background: var(--latte);
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
 }
 
-.fine-box h2 {
-  margin: 0 0 10px;
-  font-size: 20px;
-  letter-spacing: -0.01em;
+.faq-head h2 {
+  margin-bottom: 0;
 }
-
-.fine-box p {
-  max-width: 62em;
-  font-size: 15.5px;
-  color: #4e443d;
-}
-
-/* Questions */
 
 .qa {
-  max-width: 46em;
   border-top: 1px solid var(--line);
 }
 
@@ -1080,8 +1323,8 @@ a:hover {
   right: 8px;
   font-size: 24px;
   font-weight: 400;
-  color: var(--mocha);
-  transition: transform 0.2s ease;
+  color: var(--caramel);
+  transition: transform 0.3s cubic-bezier(0.3, 0.7, 0.3, 1);
 }
 
 .qa details[open] summary::after {
@@ -1090,6 +1333,32 @@ a:hover {
 
 .qa details p {
   padding: 0 0 22px;
+  color: var(--mocha);
+}
+
+/* Two classes, so the phone padding of .band doesn't put a gap back under the questions. */
+.band.faq {
+  padding-bottom: 48px;
+}
+
+.band.fine {
+  padding-top: 0;
+}
+
+.fine-box {
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.fine-box h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+.fine-box p {
+  max-width: 46em;
+  font-size: 15.5px;
   color: var(--mocha);
 }
 
@@ -1910,18 +2179,23 @@ a:hover {
   color: var(--espresso);
 }
 
-/* Footer */
+/* Footer: a roast band on every page, the wordmark large. Its cup fills and the check is drawn as
+   the wordmark scrolls into view (scroll-driven; finished without it). */
 
 .foot {
+  --tp-coffee: #2a170e;
+  background: var(--roast-dark);
+  color: var(--oat);
+}
+
+.foot-in {
   max-width: var(--page);
   margin: 0 auto;
-  padding: 36px var(--gutter) 56px;
-  border-top: 1px solid var(--line);
+  padding: 64px var(--gutter) 56px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   font-size: 14px;
-  color: var(--mocha);
 }
 
 .foot p {
@@ -1929,24 +2203,75 @@ a:hover {
   max-width: 60em;
 }
 
-.foot-links {
-  margin-bottom: 10px;
+.foot-top {
+  margin-bottom: 28px;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px 56px;
+}
+
+.foot-mark,
+.foot-mark:hover {
+  font-size: clamp(48px, 6.5vw, 80px);
+  color: var(--milk);
+  text-decoration: none;
+}
+
+.foot-links {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 8px 36px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--espresso);
+}
+
+.foot-links a {
+  color: var(--milk);
+  text-decoration: none;
+}
+
+.foot a:hover {
+  color: var(--crema);
+}
+
+.foot :focus-visible {
+  outline-color: var(--crema);
+}
+
+.foot .badge {
+  margin-bottom: 6px;
+  color: var(--milk);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .foot-mark {
+      view-timeline: --foot-mark block;
+    }
+
+    .foot-mark .tp-coffee {
+      animation: brew-pour linear both;
+      animation-timeline: --foot-mark;
+      animation-range: entry 10% entry 100%;
+    }
+
+    .foot-mark .tp-check {
+      stroke-dasharray: 100 110;
+      animation: brew-check linear both;
+      animation-timeline: --foot-mark;
+      animation-range: entry 100% cover 25%;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  .ticket {
-    animation: none;
-  }
-  .qa summary::after {
+  .qa summary::after,
+  .la-art {
     transition: none;
   }
 }
@@ -1958,26 +2283,33 @@ a:hover {
   .top-start {
     margin-left: auto;
   }
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 56px;
-    padding-bottom: 80px;
-  }
+  /* The receipt comes after the steps, lined up with their text: the bill at the end of the line. */
   .printer {
     justify-self: start;
+    position: static;
+    margin-left: 64px;
   }
-  .steps {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 40px;
-  }
-  .pgrid,
+  .cups,
   .help-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .how,
+  .faq,
+  .fine-box,
   .free-grid,
   .needs,
   .start-hero {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .how {
+    gap: 56px;
+  }
+  .free-grid {
+    gap: 40px;
+  }
+  .faq,
+  .fine-box {
+    gap: 20px;
   }
   .guide-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2006,9 +2338,6 @@ a:hover {
     padding: 8px 12px;
     font-size: 14px;
   }
-  .hero {
-    padding-top: 24px;
-  }
   .lead {
     font-size: 18px;
     margin-top: 22px;
@@ -2017,10 +2346,15 @@ a:hover {
     padding-top: 64px;
     padding-bottom: 64px;
   }
+  /* On a phone the receipt would only repeat the steps above it, a screen further down: leave it
+     out. */
   .printer {
-    transform: rotate(1deg);
+    display: none;
   }
-  .pgrid,
+  .how {
+    gap: 0;
+  }
+  .cups,
   .help-grid,
   .notes,
   .guide-list {
@@ -2054,15 +2388,58 @@ a:hover {
   .mock-body {
     flex-wrap: wrap;
   }
-  .pc-wide {
-    grid-column: auto;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
+  /* Principles on a phone: the lead cup above its words, then each cup beside its own. */
+  .lead-cup {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding-bottom: 36px;
   }
-  .pc-wide .pc-cup {
-    width: 72px;
-    height: 72px;
+  .lead-cup .pc-cup {
+    width: 104px;
+    height: 104px;
+  }
+  .lead-cup p {
+    font-size: 17px;
+  }
+  .cups {
+    margin-top: 36px;
+    gap: 30px;
+  }
+  .help-grid {
+    gap: 22px;
+  }
+  .cups li {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    column-gap: 18px;
+    align-items: start;
+  }
+  .cups .pc-cup {
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+  }
+  .cups li > :not(svg) {
+    grid-column: 2;
+  }
+  .cups h3 {
+    margin-top: 4px;
+  }
+  .cups p {
+    font-size: 15.5px;
+  }
+  .foot-in {
+    padding-top: 48px;
+    padding-bottom: 40px;
+  }
+  .foot-top {
+    margin-bottom: 16px;
+  }
+  .foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
   }
 }
 

@@ -1,80 +1,179 @@
-/* The hero's tagline: the last o of "espresso" is the cup from the logo (render.ts cupO()). It plays
-   the logo's motion once, a moment after the logo in the bar, and a warm glow blooms behind it when
-   the check lands. The letter stays in the text, transparent, and the cup is drawn over it. With
-   reduced motion the cup shows the finished mark and nothing glows. */
+/* The home page's hero: a roast band with the tagline, and the logo's cup, large, on its saucer. The
+   cup plays the logo's motion once when the page opens (ui/src/shared/logo.css), a little slower
+   than the logo in the bar would, since it is so much bigger: the espresso pours, a cube of sugar
+   drops in, two ripples run out and the check is drawn in the crema. With reduced motion the cup
+   shows the finished mark. The top bar sits on the same band (.brew-top), so the two read as one. */
 
-.hero h1 {
+.brew-top,
+.hero {
+  background: var(--roast-dark);
+  color: var(--milk);
+}
+
+/* The shadow covers the seam a fractional pixel can leave between the bar and the hero. */
+.brew-top {
+  --tp-coffee: #2a170e;
   position: relative;
-  z-index: 0;
+  z-index: 2;
+  box-shadow: 0 1px 0 var(--roast-dark);
 }
 
-/* The cup is wider than the letter o: let the heading reach into the gap beside it, so it wraps as
-   the plain text would. */
-@media (min-width: 961px) {
-  .hero h1 {
-    margin-right: -0.36em;
-  }
+.brew-top .brand,
+.brew-top .brand:hover {
+  color: var(--milk);
 }
 
-.hero .cupo-word {
-  white-space: nowrap;
+.brew-top .sections a {
+  color: var(--oat);
 }
 
-.hero .cupo {
-  --tp-delay: 0.35s;
-  position: relative;
-  display: inline-block;
-  width: 0.86em;
-  margin: 0 0.012em 0 0.04em;
-  color: transparent;
-  text-align: center;
+.brew-top .sections a:hover {
+  color: var(--milk);
 }
 
-.hero .cupo .tp-cup {
-  position: absolute;
-  left: 0;
-  bottom: -0.035em;
-  width: 0.86em;
-  height: 0.86em;
+.brew-top .top-start {
+  background: var(--crema);
   color: var(--espresso);
 }
 
-.hero .cupo::before {
+.brew-top .top-start:hover {
+  background: #e2b98a;
+  color: var(--espresso);
+}
+
+.brew-top .langs summary {
+  background: transparent;
+  color: var(--oat);
+  box-shadow: inset 0 0 0 1px rgb(243 235 225 / 0.22);
+}
+
+.brew-top .langs summary:hover,
+.brew-top .langs[open] summary {
+  color: var(--milk);
+}
+
+.brew-top :focus-visible,
+.hero :focus-visible {
+  outline-color: var(--crema);
+}
+
+.hero-in {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 40px var(--gutter) 96px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 1fr);
+  gap: 48px;
+  align-items: center;
+}
+
+.hero h1 {
+  margin: 0;
+  max-width: 13ch;
+  font-size: clamp(3rem, 7vw, 5.9rem);
+  line-height: 0.96;
+  font-weight: 800;
+  letter-spacing: -0.048em;
+  text-wrap: balance;
+  hyphens: manual;
+}
+
+.hero .lead {
+  color: var(--oat);
+}
+
+.hero .more {
+  color: var(--milk);
+}
+
+.hero .more:hover {
+  color: var(--crema);
+}
+
+.hero .avail {
+  color: var(--oat);
+}
+
+/* Two plain facts under the button, not pills. */
+.hero .badges {
+  gap: 8px 22px;
+}
+
+.hero .badges .badge {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--milk);
+  font-weight: 500;
+  --tp-rim: var(--milk);
+  --tp-coffee: #2a170e;
+}
+
+/* The saucer is a disc behind the cup; it shows through between the coffee and the rim. */
+.saucer {
+  --tp-rim: var(--milk);
+  --tp-coffee: #2a170e;
+  --tp-delay: 0.3s;
+  --tp-pace: 1.6;
+  position: relative;
+  justify-self: center;
+  width: clamp(220px, 26vw, 330px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.saucer::before {
   content: '';
   position: absolute;
-  z-index: -1;
-  left: 50%;
-  bottom: 0.395em;
-  width: 2.2em;
-  height: 2.2em;
-  margin: 0 0 -1.1em -1.1em;
+  inset: 0;
   border-radius: 50%;
-  background: radial-gradient(
-    closest-side,
-    rgb(215 168 110 / 0.5),
-    rgb(215 168 110 / 0.18) 55%,
-    rgb(215 168 110 / 0)
-  );
-  opacity: 0;
-  pointer-events: none;
+  background: var(--roast);
+  box-shadow: inset 0 0 0 1px rgb(243 235 225 / 0.08);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero .cupo::before {
-    animation: cupo-bloom 1.5s calc(var(--tp-delay) + 1.2s) cubic-bezier(0.3, 0, 0.3, 1) backwards;
+/* The inside of the cup, darker than the saucer, under the rim. */
+.saucer::after {
+  content: '';
+  position: absolute;
+  inset: 21%;
+  border-radius: 50%;
+  background: var(--deep);
+}
+
+.saucer .tp-cup {
+  position: relative;
+  z-index: 1;
+  width: 82%;
+  height: 82%;
+}
+
+/* Tablets keep the cup beside the text, smaller; phones put it above the headline, like the mark
+   at the top of a menu, so the pour is the first thing on screen. These rules come after the ones
+   above (this file is added after styles.css). */
+@media (max-width: 960px) {
+  .hero-in {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    padding-bottom: 72px;
+  }
+
+  .saucer {
+    width: clamp(170px, 27vw, 240px);
   }
 }
 
-@keyframes cupo-bloom {
-  from {
-    opacity: 0;
-    transform: scale(0.4);
+@media (max-width: 640px) {
+  .hero-in {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-top: 16px;
+    padding-bottom: 64px;
   }
-  35% {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.05);
+
+  .saucer {
+    order: -1;
+    justify-self: start;
+    width: 128px;
   }
 }

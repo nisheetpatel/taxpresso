@@ -123,15 +123,25 @@ describe('landing page', () => {
     }
   });
 
-  it('keeps the tagline as plain text in the heading, with the cup drawn over its last o', () => {
+  it('keeps the tagline as plain text in the heading, beside the cup that plays once', () => {
     for (const { lang } of LANGS) {
-      const h1 = /<h1>(.*?)<\/h1>/s.exec(render(lang))?.[1] ?? '';
-      const text = h1
-        .replace(/<svg[\s\S]*?<\/svg>/g, '')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&amp;/g, '&');
-      expect(text, lang).toBe(copy[lang].tagline);
-      expect(h1, lang).toContain('class="cupo tp-play"');
+      const html = render(lang);
+      const h1 = /<h1>(.*?)<\/h1>/s.exec(html)?.[1] ?? '';
+      expect(h1.replace(/&amp;/g, '&'), lang).toBe(copy[lang].tagline);
+      expect(html, lang).toContain('<div class="saucer tp-play" aria-hidden="true">');
+      // Only the hero cup plays: the logo in the bar stays still on the home page.
+      expect(html.split('tp-play').length - 1, lang).toBe(1);
+    }
+  });
+
+  it('ties every line of the receipt to a step of How it works', () => {
+    for (const { lang } of LANGS) {
+      const ticket = /<ul class="t-lines">([\s\S]*?)<\/ul>/.exec(render(lang))?.[1] ?? '';
+      const steps = [...ticket.matchAll(/<li class="t-s(\d)">/g)].map((m) => Number(m[1]));
+      expect(steps, lang).toHaveLength(copy[lang].ticket.lines.length);
+      expect(steps, lang).toEqual([...steps].sort());
+      expect(new Set(steps), lang).toEqual(new Set([1, 2, 3]));
+      expect(copy[lang].how.steps, lang).toHaveLength(3);
     }
   });
 

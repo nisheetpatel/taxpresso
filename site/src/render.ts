@@ -75,21 +75,6 @@ const out = (href: string) => `href="${href}" target="_blank" rel="noopener"`;
 
 const icon = (d: string, size = 22) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-/**
- * The tagline with the last o of "espresso" (or "expresso") drawn as the logo's cup (hero.css). The
- * letter stays in the text for screen readers, search and copy; the cup is drawn over it.
- */
-function cupO(tagline: string): string {
-  const m = /^(.*\be[sx]press)(o)(\S*)$/i.exec(tagline);
-  if (!m) return esc(tagline);
-  const [, before = '', o = '', after = ''] = m;
-  const cut = before.lastIndexOf(' ') + 1;
-  return (
-    esc(before.slice(0, cut)) +
-    `<span class="cupo-word">${esc(before.slice(cut))}<span class="cupo tp-play">${o}${CUP_SVG}</span>${esc(after)}</span>`
-  );
-}
-
 const CHECK = icon('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 16);
 const GLOBE = icon(
   '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/>',
@@ -118,8 +103,10 @@ const HELP_ICON: Record<keyof typeof ISSUE_URL, string> = {
 /** The Swiss cross: a white cross with arms one sixth longer than wide, on red. */
 const SWISS = `<svg class="ch" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="4" fill="#DA291C"/><path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" fill="#FFFFFF"/></svg>`;
 
-/** Milk shapes on the crema, on a 96-unit grid centred on 0. */
-const ART: Record<Art, string> = {
+/** Milk shapes on the crema, on a 96-unit grid centred on 0. The Swiss cross's arms are one sixth
+ * longer than wide, as on the flag. */
+const ART: Record<Art | 'swiss', string> = {
+  swiss: '<path class="la" d="M-4-13.3h8v9.3h9.3v8H4v9.3h-8V4h-9.3v-8H-4z"/>',
   heart:
     '<path class="la" d="M0 12C-3 9-15 2-15-5C-15-11-9-14-5-12C-2-11 0-8 0-6C0-8 2-11 5-12C9-14 15-11 15-5C15 2 3 9 0 12Z"/>',
   tulip:
@@ -132,18 +119,16 @@ const ART: Record<Art, string> = {
     '<path class="la-line" d="M0 0A3 3 0 0 0 6 0A6 6 0 0 0 -6 0A9 9 0 0 0 12 0A12 12 0 0 0 -12 0A15 15 0 0 0 18 0"/>',
 };
 
-const latte = (art: Art) =>
-  `<svg class="pc-cup" viewBox="0 0 96 96" aria-hidden="true"><g transform="translate(48 48)"><circle class="tp-rim" r="40"/><circle class="tp-coffee" r="24"/><circle class="tp-crema" r="21"/>${ART[art]}</g></svg>`;
+/** A cup of latte art seen from above, on its saucer: one per principle (styles.css, "counter"). */
+const latte = (art: Art | 'swiss') =>
+  `<svg class="pc-cup" viewBox="0 0 96 96" aria-hidden="true"><g transform="translate(48 48)"><circle class="la-saucer" r="47"/><circle class="la-porcelain" r="37"/><circle class="tp-coffee" r="26"/><circle class="tp-crema" r="23"/><g class="la-art">${ART[art]}</g></g></svg>`;
 
-/** One look per principle card, in the order of the copy; the Swiss card comes last. */
-const CARD_LOOK = [
-  'pc-espresso pc-wide',
-  'pc-crema',
-  'pc-white',
-  'pc-latte',
-  'pc-roast',
-  'pc-matcha pc-wide',
-];
+/**
+ * Which step of "How it works" each line of the receipt belongs to, in the order of the copy: the
+ * four documents come with the questions, the deductions with the savings, the declaration and its
+ * transmission with checking and filing. The receipt fills in as the coffee line reaches each step.
+ */
+const TICKET_STEP = [1, 1, 1, 1, 2, 3, 3] as const;
 
 const TONE_CLASS: Record<Tone, string> = { ok: 'st st-ok', confirm: 'st st-confirm', plain: 'st' };
 
@@ -222,9 +207,10 @@ ${(meta.data ?? []).map(jsonLd).join('\n')}
 
 /**
  * The top bar. `alt` gives this page's address in another language (its path prefix in), for the
- * language menu; on any page but the home page, the section links go back to the home page.
+ * language menu; on any page but the home page, the section links go back to the home page. `play`
+ * animates the logo once; the home page leaves it still, since its hero cup plays instead.
  */
-function header(lang: Lang, alt: (path: string) => string = (p) => p) {
+function header(lang: Lang, alt: (path: string) => string = (p) => p, play = true) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   const choices = LANGS.map((l) => {
@@ -234,7 +220,7 @@ function header(lang: Lang, alt: (path: string) => string = (p) => p) {
   const onStart = alt(here.path) === startPath(here.path);
   return `<a class="skip" href="#main">${esc(t.skip)}</a>
 <header class="top">
-<a class="brand" href="${here.path}">${wordmark(true)}</a>
+<a class="brand" href="${here.path}">${wordmark(play)}</a>
 <nav class="sections" aria-label="${esc(t.navLabel)}"><a href="${home}#how">${esc(t.nav.how)}</a><a href="${home}#principles">${esc(t.nav.principles)}</a><a href="${home}#faq">${esc(t.nav.faq)}</a></nav>
 <a class="top-start" href="${startPath(here.path)}"${onStart ? ' aria-current="page"' : ''}>${esc(t.nav.start)}</a>
 <details class="langs">
@@ -251,10 +237,16 @@ function footer(lang: Lang) {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
   return `<footer class="foot">
-<div class="foot-links"><span class="badge">${SWISS}Swiss made</span><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a href="${cantonsPath(here.path)}">${esc(cantonPages[lang].index.link)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="${privacyPath(here.path)}">${esc(privacy[lang].link)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
+<div class="foot-in">
+<div class="foot-top">
+<a class="foot-mark" href="${here.path}">${wordmark()}</a>
+<div class="foot-links"><a href="${startPath(here.path)}">${esc(t.nav.start)}</a><a href="${guidesPath(here.path)}">${esc(t.nav.guides)}</a><a href="${cantonsPath(here.path)}">${esc(cantonPages[lang].index.link)}</a><a ${out(SOURCE_URL)}>${esc(t.footer.source)}</a><a href="${privacyPath(here.path)}">${esc(privacy[lang].link)}</a><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></div>
+</div>
+<p class="badge">${SWISS}Swiss made</p>
 <p>${esc(t.footer.independent)}</p>
 <p>${esc(t.footer.noTracking)}</p>
 <p>© 2026 Taxpresso</p>
+</div>
 </footer>
 </body>
 </html>
@@ -266,10 +258,14 @@ export function render(lang: Lang, cssVersion = ''): string {
   const t = copy[lang];
   const here = LANGS.find((l) => l.lang === lang)!;
 
+  if (t.ticket.lines.length !== TICKET_STEP.length)
+    throw new Error(
+      `${lang}: the receipt has ${t.ticket.lines.length} lines, TICKET_STEP ${TICKET_STEP.length}`,
+    );
   const ticketLines = t.ticket.lines
     .map(
-      ([label, value, tone]) =>
-        `<li><span>${esc(label)}</span><span class="dots" aria-hidden="true"></span><span class="${TONE_CLASS[tone]}">${esc(value)}</span></li>`,
+      ([label, value, tone], i) =>
+        `<li class="t-s${TICKET_STEP[i]}"><span>${esc(label)}</span><span class="dots" aria-hidden="true"></span><span class="${TONE_CLASS[tone]}">${esc(value)}</span></li>`,
     )
     .join('\n');
 
@@ -280,13 +276,17 @@ export function render(lang: Lang, cssVersion = ''): string {
     )
     .join('\n');
 
-  const cards = t.principles.items
-    .map(
-      ([title, text, art], i) =>
-        `<li class="pc ${CARD_LOOK[i] ?? 'pc-white'}">${latte(art)}<div><h3>${esc(title)}</h3><p>${rich(text)}</p></div></li>`,
-    )
-    .join('\n');
+  // The first principle leads, with a big cup; the others and Swiss made follow in a grid.
+  const [lead, ...others] = t.principles.items;
+  if (!lead) throw new Error(`${lang}: no principles`);
+  const [leadTitle, leadText, leadArt] = lead;
   const [swissTitle, swissText] = t.principles.swiss;
+  const cups = [
+    ...others.map(
+      ([title, text, art]) => `<li>${latte(art)}<h3>${esc(title)}</h3><p>${rich(text)}</p></li>`,
+    ),
+    `<li>${latte('swiss')}<h3>${esc(swissTitle)}</h3><p>${esc(swissText)}</p></li>`,
+  ].join('\n');
 
   // The free item opens, when clicked, to the ways to leave a review (a <details>, no script): a
   // star on GitHub, or a few words in a text box. The box posts to api/review.mjs, which saves the
@@ -369,15 +369,18 @@ ${words}
     cssVersion,
   )}
 <body>
-${header(lang)}
+<div class="brew-top">
+${header(lang, undefined, false)}
+</div>
 
 <main id="main">
 <section class="hero">
+<div class="hero-in">
 <div class="hero-text">
-<h1>${cupO(t.tagline)}</h1>
+<h1>${esc(t.tagline)}</h1>
 <p class="lead">${esc(t.lead)}</p>
 <div class="cta">
-<a class="btn btn-primary" href="${startPath(here.path)}">${esc(t.getStarted)}</a>
+<a class="btn btn-crema" href="${startPath(here.path)}">${esc(t.getStarted)}</a>
 <a class="more" href="#how">${esc(t.seeHow)}</a>
 </div>
 <p class="avail">${esc(t.available)}</p>
@@ -385,6 +388,17 @@ ${header(lang)}
 <li class="badge">${SWISS}${esc(t.badges.swiss)}</li>
 <li class="badge">${CUP_SVG}${esc(t.badges.open)}</li>
 </ul>
+</div>
+<div class="saucer tp-play" aria-hidden="true">${CUP_SVG}</div>
+</div>
+</section>
+
+<section id="how" class="band how" aria-labelledby="how-title">
+<div class="how-steps">
+<h2 id="how-title">${esc(t.how.title)}</h2>
+<ol class="brew">
+${steps}
+</ol>
 </div>
 <figure class="printer">
 <div class="slot" aria-hidden="true"></div>
@@ -403,20 +417,15 @@ ${ticketLines}
 </figure>
 </section>
 
-<section id="how" class="band how" aria-labelledby="how-title">
-<h2 id="how-title">${esc(t.how.title)}</h2>
-<ol class="steps">
-${steps}
-</ol>
-</section>
-
-<section id="principles" class="band principles" aria-labelledby="principles-title">
+<section id="principles" class="counter" aria-labelledby="principles-title">
+<div class="band">
 <h2 id="principles-title">${esc(t.principles.title)}</h2>
 <p class="band-lead">${esc(t.principles.lead)}</p>
-<ul class="pgrid">
-${cards}
-<li class="pc pc-white pc-swiss">${SWISS}<div><h3>${esc(swissTitle)}</h3><p>${esc(swissText)}</p></div></li>
+<div class="lead-cup">${latte(leadArt)}<div><h3>${esc(leadTitle)}</h3><p>${rich(leadText)}</p></div></div>
+<ul class="cups">
+${cups}
 </ul>
+</div>
 </section>
 
 <section id="free" class="band free" aria-labelledby="free-title">
@@ -444,20 +453,24 @@ ${menu}
 <p class="ppb">${rich(t.support.ppb)}</p>
 </section>
 
-<section id="help" class="band help" aria-labelledby="help-title">
+<section id="help" class="help-band" aria-labelledby="help-title">
+<div class="band help">
 <h2 id="help-title">${esc(t.contribute.title)}</h2>
 <p class="band-lead">${esc(t.contribute.lead)}</p>
 <ul class="help-grid">
 ${help}
 </ul>
+</div>
 </section>
 
 <section id="faq" class="band faq" aria-labelledby="faq-title">
+<div class="faq-head">
 <h2 id="faq-title">${esc(t.faq.title)}</h2>
+<p class="qa-more">${rich(t.faq.more)}</p>
+</div>
 <div class="qa">
 ${faq}
 </div>
-<p class="qa-more">${rich(t.faq.more)}</p>
 </section>
 
 <section class="band fine" aria-labelledby="fine-title">
