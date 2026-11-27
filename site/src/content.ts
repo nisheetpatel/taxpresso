@@ -22,8 +22,22 @@ export const BASE_URL = 'https://www.taxpresso.ch';
 
 /** The public repository, where releases, issues and the contributing guide live. */
 export const SOURCE_URL = 'https://github.com/nisheetpatel/taxpresso';
-export const DOWNLOAD_URL = `${SOURCE_URL}/releases/latest`;
+/** The file people install. Every release carries it under this one name, beside the versioned one. */
+export const DOWNLOAD_FILE = 'taxpresso.mcpb';
+/** The latest release's file on GitHub: where the site's own download address sends the browser (vercel.json). */
+export const RELEASE_FILE_URL = `${SOURCE_URL}/releases/latest/download/${DOWNLOAD_FILE}`;
+/** The file's address on this site: a redirect to the latest release, so no page names a version. */
+export const DOWNLOAD_URL = `/download/${DOWNLOAD_FILE}`;
 export const CONTACT_EMAIL = 'hello@taxpresso.ch';
+/**
+ * Asking for Taxpresso in ChatGPT (the greyed-out button on Get started). A +1 is one email, ready
+ * to send, under the same subject in every language, so the requests can be counted with one
+ * search of the inbox; saying more is the ideas form on GitHub, its title filled in.
+ */
+export const WANT_CHATGPT = {
+  mail: `mailto:${CONTACT_EMAIL}?subject=Taxpresso%20for%20ChatGPT%3A%20%2B1&body=%2B1`,
+  issue: `${SOURCE_URL}/issues/new?template=idea.yml&title=Taxpresso+for+ChatGPT`,
+};
 export const ISSUE_URL = {
   bug: `${SOURCE_URL}/issues/new?template=bug.yml`,
   idea: `${SOURCE_URL}/issues/new?template=idea.yml`,
@@ -283,7 +297,7 @@ const fr = {
     items: [
       [
         `Faut-il Claude${NB}?`,
-        'Oui, pour l’instant. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. ChatGPT n’est pas encore disponible.',
+        'Oui, pour l’instant. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. ChatGPT n’est pas encore disponible. [Demandez-le](/fr/start/#chatgpt).',
       ],
       [`Quels cantons sont disponibles${NB}?`, cantonsAnswer('fr')],
       [
@@ -322,6 +336,17 @@ const fr = {
     lead: 'Taxpresso est une extension pour Claude Desktop. Elle s’installe en une minute, et tout reste sur votre ordinateur.',
     download: 'Télécharger Taxpresso',
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
+    downloadFor: 'Télécharger pour',
+    chatgpt: {
+      tag: 'En cours',
+      title: 'Taxpresso pour ChatGPT',
+      text: 'Nous y travaillons, et ce n’est pas encore prêt. Pour l’instant, Taxpresso fonctionne dans Claude Desktop.',
+      ask: `Vous le voulez${NB}? Dites-le-nous, pour que nous sachions combien vous êtes à l’attendre.`,
+      plus: 'Envoyer un +1',
+      plusNote: 'Un +1 ouvre un e-mail prêt à envoyer.',
+      more: 'En dire plus sur GitHub',
+      close: 'Fermer',
+    },
     platforms: ['Linux (bêta)', 'macOS', 'Windows'],
     needsTitle: 'Ce qu’il vous faut',
     guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/fr/guides/) expliquent l’essentiel pour Genève, avec les liens officiels.`,
@@ -340,7 +365,7 @@ const fr = {
     steps: [
       [
         'Téléchargez Taxpresso',
-        'Un seul fichier gratuit, taxpresso-version.mcpb, sur la page des versions du projet.',
+        'Un seul fichier gratuit, taxpresso.mcpb. Cliquez sur le bouton, le téléchargement démarre tout de suite.',
       ],
       [
         'Installez-le',
@@ -386,6 +411,15 @@ const fr = {
       ],
     ] as [string, string][],
     back: 'Retour à l’accueil',
+    after: {
+      htmlTitle: 'Votre téléchargement de Taxpresso a commencé',
+      metaDescription:
+        'Taxpresso se télécharge. Ouvrez le fichier, cliquez sur Installer dans Claude Desktop, puis dites bonjour.',
+      title: 'Votre téléchargement a commencé',
+      lead: 'Encore trois choses à faire, et c’est prêt.',
+      retry: `Rien ne s’est téléchargé${NB}?`,
+      retryLink: 'Télécharger taxpresso.mcpb',
+    },
   },
 
   footer: {
@@ -557,7 +591,7 @@ const en: Copy = {
     items: [
       [
         'Do I need Claude?',
-        'Yes, for now. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. ChatGPT isn’t available yet.',
+        'Yes, for now. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. ChatGPT isn’t available yet. [Ask for it](/en/start/#chatgpt).',
       ],
       ['Which cantons work?', cantonsAnswer('en')],
       [
@@ -596,6 +630,17 @@ const en: Copy = {
     lead: 'Taxpresso is an extension for Claude Desktop. It installs in a minute, and everything stays on your computer.',
     download: 'Download Taxpresso',
     downloadNote: 'Free. One file, for Claude Desktop.',
+    downloadFor: 'Download for',
+    chatgpt: {
+      tag: 'In progress',
+      title: 'Taxpresso for ChatGPT',
+      text: 'We’re working on it, and it isn’t ready yet. For now, Taxpresso runs in Claude Desktop.',
+      ask: 'Want it? Tell us, so we know how many of you are waiting.',
+      plus: 'Send a +1',
+      plusNote: 'A +1 opens an email that is ready to send.',
+      more: 'Say more on GitHub',
+      close: 'Close',
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'What you need',
     guides:
@@ -615,7 +660,7 @@ const en: Copy = {
     steps: [
       [
         'Download Taxpresso',
-        'One free file, taxpresso-version.mcpb, from the project’s releases page.',
+        'One free file, taxpresso.mcpb. Click the button and the download starts right away.',
       ],
       [
         'Install it',
@@ -661,6 +706,15 @@ const en: Copy = {
       ],
     ],
     back: 'Back to the home page',
+    after: {
+      htmlTitle: 'Your Taxpresso download has started',
+      metaDescription:
+        'Taxpresso is downloading. Open the file, click Install in Claude Desktop, then say hello.',
+      title: 'Your download has started',
+      lead: 'Three things left to do, and you’re set.',
+      retry: 'Nothing downloaded?',
+      retryLink: 'Download taxpresso.mcpb',
+    },
   },
 
   footer: {
@@ -846,7 +900,7 @@ const de: Copy = {
     items: [
       [
         'Brauche ich Claude?',
-        'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar.',
+        'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar. [Wünsch es dir](/de/start/#chatgpt).',
       ],
       ['Welche Kantone funktionieren?', cantonsAnswer('de')],
       [
@@ -885,6 +939,17 @@ const de: Copy = {
     lead: 'Taxpresso ist eine Erweiterung für Claude Desktop. Sie ist in einer Minute installiert, und alles bleibt auf deinem Computer.',
     download: 'Taxpresso herunterladen',
     downloadNote: 'Kostenlos. Eine Datei, für Claude Desktop.',
+    downloadFor: 'Download für',
+    chatgpt: {
+      tag: 'In Arbeit',
+      title: 'Taxpresso für ChatGPT',
+      text: 'Wir arbeiten daran, und es ist noch nicht fertig. Vorerst läuft Taxpresso in Claude Desktop.',
+      ask: 'Willst du es? Sag es uns, damit wir wissen, wie viele darauf warten.',
+      plus: 'Ein +1 schicken',
+      plusNote: 'Ein +1 öffnet eine E-Mail, bereit zum Senden.',
+      more: 'Mehr sagen auf GitHub',
+      close: 'Schliessen',
+    },
     platforms: ['Linux (Beta)', 'macOS', 'Windows'],
     needsTitle: 'Was du brauchst',
     guides:
@@ -904,7 +969,7 @@ const de: Copy = {
     steps: [
       [
         'Lade Taxpresso herunter',
-        'Eine einzige kostenlose Datei, taxpresso-version.mcpb, von der Versionsseite des Projekts.',
+        'Eine einzige kostenlose Datei, taxpresso.mcpb. Klick auf den Button, und der Download startet sofort.',
       ],
       [
         'Installiere es',
@@ -950,6 +1015,15 @@ const de: Copy = {
       ],
     ],
     back: 'Zurück zur Startseite',
+    after: {
+      htmlTitle: 'Dein Taxpresso-Download läuft',
+      metaDescription:
+        'Taxpresso wird heruntergeladen. Öffne die Datei, klick in Claude Desktop auf Installieren und sag Hallo.',
+      title: 'Dein Download läuft',
+      lead: 'Noch drei Dinge, dann bist du bereit.',
+      retry: 'Nichts heruntergeladen?',
+      retryLink: 'taxpresso.mcpb herunterladen',
+    },
   },
 
   footer: {
@@ -1128,7 +1202,7 @@ const it: Copy = {
     items: [
       [
         'Mi serve Claude?',
-        'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile.',
+        'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile. [Chiedilo](/it/start/#chatgpt).',
       ],
       ['Quali cantoni funzionano?', cantonsAnswer('it')],
       [
@@ -1167,6 +1241,17 @@ const it: Copy = {
     lead: 'Taxpresso è un’estensione per Claude Desktop. Si installa in un minuto, e tutto resta sul tuo computer.',
     download: 'Scarica Taxpresso',
     downloadNote: 'Gratis. Un solo file, per Claude Desktop.',
+    downloadFor: 'Scarica per',
+    chatgpt: {
+      tag: 'In corso',
+      title: 'Taxpresso per ChatGPT',
+      text: 'Ci stiamo lavorando, e non è ancora pronto. Per ora Taxpresso funziona in Claude Desktop.',
+      ask: 'Lo vuoi? Diccelo, così sappiamo in quanti lo aspettate.',
+      plus: 'Manda un +1',
+      plusNote: 'Un +1 apre un’e-mail pronta da inviare.',
+      more: 'Dicci di più su GitHub',
+      close: 'Chiudi',
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Cosa ti serve',
     guides:
@@ -1186,7 +1271,7 @@ const it: Copy = {
     steps: [
       [
         'Scarica Taxpresso',
-        'Un solo file gratuito, taxpresso-version.mcpb, dalla pagina delle versioni del progetto.',
+        'Un solo file gratuito, taxpresso.mcpb. Clicca sul pulsante e il download parte subito.',
       ],
       [
         'Installalo',
@@ -1232,6 +1317,15 @@ const it: Copy = {
       ],
     ],
     back: 'Torna alla pagina iniziale',
+    after: {
+      htmlTitle: 'Il download di Taxpresso è partito',
+      metaDescription:
+        'Taxpresso si sta scaricando. Apri il file, clicca su Installa in Claude Desktop, poi saluta.',
+      title: 'Il download è partito',
+      lead: 'Ancora tre cose da fare, ed è fatta.',
+      retry: 'Non si è scaricato niente?',
+      retryLink: 'Scarica taxpresso.mcpb',
+    },
   },
 
   footer: {
@@ -1405,7 +1499,7 @@ const es: Copy = {
     items: [
       [
         '¿Necesito Claude?',
-        'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible.',
+        'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible. [Pídelo](/es/start/#chatgpt).',
       ],
       ['¿Qué cantones funcionan?', cantonsAnswer('es')],
       [
@@ -1444,6 +1538,17 @@ const es: Copy = {
     lead: 'Taxpresso es una extensión para Claude Desktop. Se instala en un minuto, y todo se queda en tu ordenador.',
     download: 'Descarga Taxpresso',
     downloadNote: 'Gratis. Un solo archivo, para Claude Desktop.',
+    downloadFor: 'Descarga para',
+    chatgpt: {
+      tag: 'En curso',
+      title: 'Taxpresso para ChatGPT',
+      text: 'Estamos trabajando en ello, y aún no está listo. Por ahora, Taxpresso funciona en Claude Desktop.',
+      ask: '¿Lo quieres? Dínoslo, para saber cuántas personas lo esperan.',
+      plus: 'Envía un +1',
+      plusNote: 'Un +1 abre un correo listo para enviar.',
+      more: 'Cuéntanos más en GitHub',
+      close: 'Cerrar',
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Qué necesitas',
     guides:
@@ -1463,7 +1568,7 @@ const es: Copy = {
     steps: [
       [
         'Descarga Taxpresso',
-        'Un solo archivo gratuito, taxpresso-version.mcpb, en la página de versiones del proyecto.',
+        'Un solo archivo gratuito, taxpresso.mcpb. Haz clic en el botón y la descarga empieza enseguida.',
       ],
       [
         'Instálalo',
@@ -1509,6 +1614,15 @@ const es: Copy = {
       ],
     ],
     back: 'Volver a la página de inicio',
+    after: {
+      htmlTitle: 'Tu descarga de Taxpresso ha empezado',
+      metaDescription:
+        'Taxpresso se está descargando. Abre el archivo, haz clic en Instalar en Claude Desktop y saluda.',
+      title: 'Tu descarga ha empezado',
+      lead: 'Te quedan tres cosas por hacer, y listo.',
+      retry: '¿No se ha descargado nada?',
+      retryLink: 'Descarga taxpresso.mcpb',
+    },
   },
 
   footer: {
@@ -1690,7 +1804,7 @@ const pt: Copy = {
     items: [
       [
         'Preciso do Claude?',
-        'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível.',
+        'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível. [Pede-o](/pt/start/#chatgpt).',
       ],
       ['Que cantões funcionam?', cantonsAnswer('pt')],
       [
@@ -1729,6 +1843,17 @@ const pt: Copy = {
     lead: 'O Taxpresso é uma extensão para o Claude Desktop. Instala-se num minuto, e tudo fica no teu computador.',
     download: 'Descarrega o Taxpresso',
     downloadNote: 'Grátis. Um só ficheiro, para o Claude Desktop.',
+    downloadFor: 'Descarrega para o',
+    chatgpt: {
+      tag: 'Em curso',
+      title: 'Taxpresso para o ChatGPT',
+      text: 'Estamos a trabalhar nisso, e ainda não está pronto. Por agora, o Taxpresso funciona no Claude Desktop.',
+      ask: 'Queres? Diz-nos, para sabermos quantas pessoas estão à espera.',
+      plus: 'Envia um +1',
+      plusNote: 'Um +1 abre um e-mail pronto a enviar.',
+      more: 'Diz-nos mais no GitHub',
+      close: 'Fechar',
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Do que precisas',
     guides:
@@ -1748,7 +1873,7 @@ const pt: Copy = {
     steps: [
       [
         'Descarrega o Taxpresso',
-        'Um só ficheiro gratuito, taxpresso-version.mcpb, na página de versões do projeto.',
+        'Um só ficheiro gratuito, taxpresso.mcpb. Clica no botão e a descarga começa logo.',
       ],
       [
         'Instala-o',
@@ -1794,6 +1919,15 @@ const pt: Copy = {
       ],
     ],
     back: 'Voltar à página inicial',
+    after: {
+      htmlTitle: 'A descarga do Taxpresso começou',
+      metaDescription:
+        'O Taxpresso está a ser descarregado. Abre o ficheiro, clica em Instalar no Claude Desktop e diz olá.',
+      title: 'A tua descarga começou',
+      lead: 'Faltam três coisas, e está feito.',
+      retry: 'Não descarregou nada?',
+      retryLink: 'Descarrega o taxpresso.mcpb',
+    },
   },
 
   footer: {
@@ -1822,3 +1956,5 @@ export const DEFAULT_LANG: Lang = 'en';
 
 /** The Get started page of a language. */
 export const startPath = (path: string) => `${path}start/`;
+/** The page the download button opens: it starts the download and shows what is left to do. */
+export const downloadPath = (path: string) => `${path}download/`;
