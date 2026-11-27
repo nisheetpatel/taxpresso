@@ -5,7 +5,9 @@
 // plugin first): the server and the UI are that build's files, copied as they are, so the .mcpb and
 // the Claude plugin stay what they were. scripts/check-chatgpt-plugin.mjs checks the result.
 //
-//   build/chatgpt-plugin/                    a marketplace root, for a local test
+//   build/taxpresso-chatgpt-<version>.zip    what people download: the folder below, zipped
+//   build/taxpresso-chatgpt.zip              the same bytes, under a name that never changes
+//   build/chatgpt-plugin/                    a marketplace root
 //     .agents/plugins/marketplace.json       names the package below (never inside the package)
 //     taxpresso/
 //       plugin.json                          the manifest; OpenAI's fields under extensions["com.openai"]
@@ -26,7 +28,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { extDir, repoRoot } from './build-common.mjs';
 import { iconPng } from './make-icon.mjs';
-import { walk } from './zip-folder.mjs';
+import { walk, zipFolder } from './zip-folder.mjs';
 
 /** The plugin's name: the same as the Claude plugin's and the .mcpb's. */
 const NAME = 'taxpresso';
@@ -180,11 +182,12 @@ if (testVault)
   );
 await writeFile(path.join(out, 'mcp.json'), JSON.stringify(mcpJson, null, 2) + '\n');
 
-// 6. A marketplace file for a local test, outside the package: build/chatgpt-plugin is the
-//    marketplace's root, and the package's path is relative to it (plugins/build/plugins.md).
+// 6. A marketplace file, outside the package: the folder above the package is the marketplace's
+//    root, and the package's path is relative to it (plugins/build/plugins.md). It is how the app
+//    learns about a plugin that is not in OpenAI's directory.
 const marketplace = {
-  name: 'taxpresso-local',
-  interface: { displayName: 'Taxpresso (local test)' },
+  name: testVault ? 'taxpresso-local' : NAME,
+  interface: { displayName: testVault ? 'Taxpresso (local test)' : 'Taxpresso' },
   plugins: [
     {
       name: NAME,
@@ -200,6 +203,19 @@ await writeFile(
   JSON.stringify(marketplace, null, 2) + '\n',
 );
 
+// 7. The zip people download: the marketplace's folder as its single top-level entry, and the same
+//    bytes under a name that never changes, as for the .mcpb (extension/scripts/pack.mjs). Once
+//    unzipped, the folder is what `codex plugin marketplace add` takes.
+const top = testVault ? 'taxpresso-chatgpt-test' : 'taxpresso-chatgpt';
+const zip = await zipFolder(marketplaceRoot, top);
+const zips = testVault
+  ? [path.join(repoRoot, 'build', `${top}.zip`)]
+  : [
+      path.join(repoRoot, 'build', `${top}-${pkg.version}.zip`),
+      path.join(repoRoot, 'build', `${top}.zip`),
+    ];
+for (const file of zips) await writeFile(file, zip);
+
 let total = 0;
 const files = await walk(out);
 for (const f of files) total += (await stat(f)).size;
@@ -207,5 +223,6 @@ console.log(
   `built ${path.relative(repoRoot, out)} (Taxpresso ${pkg.version}): ${files.length} files, ` +
     `${(total / 1024 / 1024).toFixed(1)} MiB\n` +
     `${path.relative(process.cwd(), path.join(marketplaceRoot, '.agents', 'plugins', 'marketplace.json'))}` +
+    `\n${zips.map((f) => path.relative(process.cwd(), f)).join('\n')}` +
     (testVault ? `\ntest build: the tax folder is ${path.resolve(testVault)}` : ''),
 );
