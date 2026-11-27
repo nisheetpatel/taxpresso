@@ -15,8 +15,9 @@
 //       assets/logo.png, assets/composer-icon.png
 //       README.md, LICENSE, THIRD_PARTY_NOTICES.txt
 //
-// Not tried in the ChatGPT desktop app yet: S6 has the [HUMAN] test plan. For that test, pin the tax
-// folder to an empty one, so a try-out never opens the real ~/Documents/Taxpresso:
+// Tried through the ChatGPT desktop app's own engine (S6); the checks that need the app's window
+// are its [HUMAN] test plan. For any try-out, pin the tax folder to an empty one, so it never opens
+// the real ~/Documents/Taxpresso. A test build goes to build/chatgpt-plugin-test/ instead:
 //
 //   node extension/scripts/build-chatgpt-plugin.mjs --vault /absolute/path/to/an/empty/folder
 
@@ -29,14 +30,14 @@ import { walk } from './zip-folder.mjs';
 
 /** The plugin's name: the same as the Claude plugin's and the .mcpb's. */
 const NAME = 'taxpresso';
+/** A test build's entry point, beside the server's own (see --vault). */
+const TEST_LAUNCH = 'test-launch.mjs';
 /** OpenAI's limits on the listing's fields (plugins/deploy/submission.md). */
 const SHORT_DESCRIPTION = 'Your Swiss tax return';
 /** The directory's category list is in OpenAI's dashboard; the docs' own example uses this one. */
 const CATEGORY = 'Productivity';
 
 const claudePlugin = path.join(repoRoot, 'build', 'plugin', NAME);
-const marketplaceRoot = path.join(repoRoot, 'build', 'chatgpt-plugin');
-const out = path.join(marketplaceRoot, NAME);
 const sources = path.join(extDir, 'chatgpt-plugin');
 
 // --vault <folder>: a test build whose server uses this folder (mcp.json's env).
@@ -54,6 +55,15 @@ if (vaultAt >= 0) {
     process.exit(1);
   }
 }
+
+// A test build has a folder of its own, build/chatgpt-plugin-test: once an app has it as a
+// marketplace, a normal build must never land there, since that one opens the real tax folder.
+const marketplaceRoot = path.join(
+  repoRoot,
+  'build',
+  testVault ? 'chatgpt-plugin-test' : 'chatgpt-plugin',
+);
+const out = path.join(marketplaceRoot, NAME);
 
 const pkg = JSON.parse(await readFile(path.join(extDir, 'package.json'), 'utf8'));
 const manifest = JSON.parse(await readFile(path.join(extDir, 'manifest.json'), 'utf8'));
@@ -153,12 +163,21 @@ const mcpJson = {
     [NAME]: {
       type: 'stdio',
       command: 'node',
-      args: ['${PLUGIN_ROOT}/server/index.mjs'],
+      args: [`\${PLUGIN_ROOT}/server/${testVault ? TEST_LAUNCH : 'index.mjs'}`],
       cwd: '${PLUGIN_ROOT}',
       ...(testVault ? { env: { TAXPRESSO_VAULT_PATH: path.resolve(testVault) } } : {}),
     },
   },
 };
+// A test build starts through a small file that fixes the tax folder before the server loads: it
+// can never open the real ~/Documents/Taxpresso, whether or not the host passes mcp.json's env on.
+if (testVault)
+  await writeFile(
+    path.join(out, 'server', TEST_LAUNCH),
+    `// A test build (build-chatgpt-plugin.mjs --vault): never ship it.\n` +
+      `process.env.TAXPRESSO_VAULT_PATH = ${JSON.stringify(path.resolve(testVault))};\n` +
+      `await import('./index.mjs');\n`,
+  );
 await writeFile(path.join(out, 'mcp.json'), JSON.stringify(mcpJson, null, 2) + '\n');
 
 // 6. A marketplace file for a local test, outside the package: build/chatgpt-plugin is the
@@ -185,7 +204,7 @@ let total = 0;
 const files = await walk(out);
 for (const f of files) total += (await stat(f)).size;
 console.log(
-  `built build/chatgpt-plugin/${NAME} (Taxpresso ${pkg.version}): ${files.length} files, ` +
+  `built ${path.relative(repoRoot, out)} (Taxpresso ${pkg.version}): ${files.length} files, ` +
     `${(total / 1024 / 1024).toFixed(1)} MiB\n` +
     `${path.relative(process.cwd(), path.join(marketplaceRoot, '.agents', 'plugins', 'marketplace.json'))}` +
     (testVault ? `\ntest build: the tax folder is ${path.resolve(testVault)}` : ''),

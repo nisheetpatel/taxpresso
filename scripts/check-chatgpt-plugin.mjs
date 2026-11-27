@@ -27,6 +27,8 @@ const DONATION = /preciousplasticbugoma|precious plastic bugoma/i;
 /** Wording of the other packages, which the files written for ChatGPT must not carry. */
 const OTHER_HOST = /claude|cowork|\.mcpb/i;
 const TEXT_FILE = /\.(md|json|mjs|js|html|css|txt|yaml|yml)$/i;
+/** A test build's entry point (build-chatgpt-plugin.mjs --vault): it fixes the tax folder. */
+const TEST_LAUNCH = 'server/test-launch.mjs';
 /** What a package for ChatGPT never has: the other formats' files, and what a plugin never ships. */
 const FORBIDDEN = [
   '.claude-plugin',
@@ -156,8 +158,11 @@ export async function checkChatgptPlugin(dir, opts = {}) {
   for (const [name, s] of servers) {
     if (s.type !== 'stdio') errors.push(`mcp.json: ${name} must have "type": "stdio"`);
     if (s.command !== 'node') errors.push(`mcp.json: ${name} must be started with node`);
-    if (JSON.stringify(s.args) !== JSON.stringify(['${PLUGIN_ROOT}/server/index.mjs']))
-      errors.push(`mcp.json: ${name} must run \${PLUGIN_ROOT}/server/index.mjs and nothing else`);
+    // A test build (--vault) starts through server/test-launch.mjs, which fixes the tax folder.
+    const pinned = typeof s.env?.TAXPRESSO_VAULT_PATH === 'string' && has(TEST_LAUNCH);
+    const entry = pinned ? TEST_LAUNCH : 'server/index.mjs';
+    if (JSON.stringify(s.args) !== JSON.stringify([`\${PLUGIN_ROOT}/${entry}`]))
+      errors.push(`mcp.json: ${name} must run \${PLUGIN_ROOT}/${entry} and nothing else`);
     if (s.cwd !== undefined && s.cwd !== '${PLUGIN_ROOT}')
       errors.push(`mcp.json: ${name}'s working directory must be \${PLUGIN_ROOT}`);
     // A test build may pin the tax folder (build-chatgpt-plugin.mjs --vault); nothing else is set.
@@ -180,8 +185,10 @@ export async function checkChatgptPlugin(dir, opts = {}) {
   }
 
   // What we wrote for ChatGPT names no other host; nothing in the package carries the donation link.
+  // (A test build's folder is a path on this computer, not wording: it is left out.)
+  const mcpWording = JSON.stringify(mcp, (key, value) => (key === 'env' ? undefined : value));
   for (const f of ['plugin.json', 'mcp.json', 'skills/taxpresso/SKILL.md', 'README.md']) {
-    const hit = (await text(f)).match(OTHER_HOST);
+    const hit = (f === 'mcp.json' ? mcpWording : await text(f)).match(OTHER_HOST);
     if (hit) errors.push(`${f}: names "${hit[0]}", wording of another package`);
   }
   let naming = 0;
@@ -198,7 +205,7 @@ export async function checkChatgptPlugin(dir, opts = {}) {
   if (opts.claudePlugin) {
     let differ = 0;
     const theirs = (await listFiles(opts.claudePlugin)).filter((f) => /^(server|ui)\//.test(f));
-    const ours = files.filter((f) => /^(server|ui)\//.test(f));
+    const ours = files.filter((f) => /^(server|ui)\//.test(f) && f !== TEST_LAUNCH);
     if (theirs.join() !== ours.join())
       errors.push("server/ and ui/ are not the Claude plugin's files");
     else

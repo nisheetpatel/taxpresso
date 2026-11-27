@@ -59,6 +59,9 @@ function pluginServer() {
   assert.equal(servers.length, 1, 'the plugin starts one server');
   assert.equal(servers[0].command, 'node', 'the plugin starts its server with node');
   if (isChatgptPlugin) assert.equal(servers[0].type, 'stdio', 'a local server, over stdio');
+  // A test build (build-chatgpt-plugin.mjs --vault) fixes its own tax folder and would ignore this
+  // test's temporary one.
+  assert.equal(servers[0].env, undefined, 'a test build pins its tax folder: test a normal build');
   return servers[0];
 }
 /** The plugin's folder, as each host names it in the server's arguments. */

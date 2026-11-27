@@ -167,6 +167,20 @@ describe('the ChatGPT plugin check', () => {
     expect(notes.join('\n')).toMatch(/a test build: the tax folder is \/tmp\/Taxpresso-demo/);
   });
 
+  it('lets a test build start through the file that fixes its folder, and only a test build', async () => {
+    const launch = { args: ['${PLUGIN_ROOT}/server/test-launch.mjs'] };
+    await validPackage({
+      'mcp.json': withServer({ ...launch, env: { TAXPRESSO_VAULT_PATH: '/tmp/Taxpresso-demo' } }),
+      'server/test-launch.mjs': "await import('./index.mjs');\n",
+    });
+    expect((await checkChatgptPlugin(dir)).errors).toEqual([]);
+
+    await writeFile(path.join(dir, 'mcp.json'), withServer(launch));
+    expect((await checkChatgptPlugin(dir)).errors).toEqual([
+      'mcp.json: taxpresso must run ${PLUGIN_ROOT}/server/index.mjs and nothing else',
+    ]);
+  });
+
   it('refuses another host’s wording, extra frontmatter and the donation link', async () => {
     await validPackage({
       'README.md': '# Taxpresso\n\nInstall the .mcpb in Claude Desktop.\n',
