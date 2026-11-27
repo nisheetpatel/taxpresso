@@ -338,7 +338,7 @@ const fr = {
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
     downloadFor: 'Télécharger pour',
     chatgpt: {
-      tag: 'En cours',
+      tag: 'Alpha',
       title: 'Taxpresso pour ChatGPT',
       text: 'Nous y travaillons, et ce n’est pas encore prêt. Pour l’instant, Taxpresso fonctionne dans Claude Desktop.',
       ask: `Vous le voulez${NB}? Dites-le-nous, pour que nous sachions combien vous êtes à l’attendre.`,
@@ -632,7 +632,7 @@ const en: Copy = {
     downloadNote: 'Free. One file, for Claude Desktop.',
     downloadFor: 'Download for',
     chatgpt: {
-      tag: 'In progress',
+      tag: 'Alpha',
       title: 'Taxpresso for ChatGPT',
       text: 'We’re working on it, and it isn’t ready yet. For now, Taxpresso runs in Claude Desktop.',
       ask: 'Want it? Tell us, so we know how many of you are waiting.',
@@ -941,7 +941,7 @@ const de: Copy = {
     downloadNote: 'Kostenlos. Eine Datei, für Claude Desktop.',
     downloadFor: 'Download für',
     chatgpt: {
-      tag: 'In Arbeit',
+      tag: 'Alpha',
       title: 'Taxpresso für ChatGPT',
       text: 'Wir arbeiten daran, und es ist noch nicht fertig. Vorerst läuft Taxpresso in Claude Desktop.',
       ask: 'Willst du es? Sag es uns, damit wir wissen, wie viele darauf warten.',
@@ -1243,7 +1243,7 @@ const it: Copy = {
     downloadNote: 'Gratis. Un solo file, per Claude Desktop.',
     downloadFor: 'Scarica per',
     chatgpt: {
-      tag: 'In corso',
+      tag: 'Alpha',
       title: 'Taxpresso per ChatGPT',
       text: 'Ci stiamo lavorando, e non è ancora pronto. Per ora Taxpresso funziona in Claude Desktop.',
       ask: 'Lo vuoi? Diccelo, così sappiamo in quanti lo aspettate.',
@@ -1540,7 +1540,7 @@ const es: Copy = {
     downloadNote: 'Gratis. Un solo archivo, para Claude Desktop.',
     downloadFor: 'Descarga para',
     chatgpt: {
-      tag: 'En curso',
+      tag: 'Alfa',
       title: 'Taxpresso para ChatGPT',
       text: 'Estamos trabajando en ello, y aún no está listo. Por ahora, Taxpresso funciona en Claude Desktop.',
       ask: '¿Lo quieres? Dínoslo, para saber cuántas personas lo esperan.',
@@ -1845,7 +1845,7 @@ const pt: Copy = {
     downloadNote: 'Grátis. Um só ficheiro, para o Claude Desktop.',
     downloadFor: 'Descarrega para o',
     chatgpt: {
-      tag: 'Em curso',
+      tag: 'Alfa',
       title: 'Taxpresso para o ChatGPT',
       text: 'Estamos a trabalhar nisso, e ainda não está pronto. Por agora, o Taxpresso funciona no Claude Desktop.',
       ask: 'Queres? Diz-nos, para sabermos quantas pessoas estão à espera.',

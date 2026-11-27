@@ -134,7 +134,7 @@ describe('landing page', () => {
     }
   });
 
-  it('offers two platforms, Claude to download and ChatGPT in progress, which opens a note', () => {
+  it('offers two platforms worded alike, Claude to download and ChatGPT as an alpha, which opens a note', () => {
     // One subject for every language, so the requests can be counted in one search.
     expect(WANT_CHATGPT.mail).toBe(
       'mailto:hello@taxpresso.ch?subject=Taxpresso%20for%20ChatGPT%3A%20%2B1&body=%2B1',
@@ -154,12 +154,13 @@ describe('landing page', () => {
       expect(pair, lang).toContain(
         `<span class="plat-small">${s.downloadFor}</span><span class="plat-name">Claude</span>`,
       );
-      // ChatGPT is a button, never a link to nowhere: it opens the note below, with no script.
+      // ChatGPT reads the same, "Download for ChatGPT", with a mark that says how early it is.
+      // It is a button, never a link to nowhere: it opens the note below, with no script.
       expect(pair, lang).toContain(
         '<button class="plat plat-wait" type="button" id="chatgpt" popovertarget="chatgpt-ask">',
       );
       expect(pair, lang).toContain(
-        `<span class="plat-tag">${c.tag}</span><span class="plat-name">ChatGPT</span>`,
+        `<span class="plat-small">${s.downloadFor}</span><span class="plat-name">ChatGPT<span class="plat-tag">${c.tag}</span></span>`,
       );
       // The note: where it stands, and two ways to ask that can be counted. A +1 is one email,
       // ready to send; saying more is the ideas form on GitHub.
