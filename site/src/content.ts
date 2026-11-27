@@ -29,6 +29,15 @@ export const RELEASE_FILE_URL = `${SOURCE_URL}/releases/latest/download/${DOWNLO
 /** The file's address on this site: a redirect to the latest release, so no page names a version. */
 export const DOWNLOAD_URL = `/download/${DOWNLOAD_FILE}`;
 export const CONTACT_EMAIL = 'hello@taxpresso.ch';
+/**
+ * Asking for Taxpresso in ChatGPT (the greyed-out button on Get started). A +1 is one email, ready
+ * to send, under the same subject in every language, so the requests can be counted with one
+ * search of the inbox; saying more is the ideas form on GitHub, its title filled in.
+ */
+export const WANT_CHATGPT = {
+  mail: `mailto:${CONTACT_EMAIL}?subject=Taxpresso%20for%20ChatGPT%3A%20%2B1&body=%2B1`,
+  issue: `${SOURCE_URL}/issues/new?template=idea.yml&title=Taxpresso+for+ChatGPT`,
+};
 export const ISSUE_URL = {
   bug: `${SOURCE_URL}/issues/new?template=bug.yml`,
   idea: `${SOURCE_URL}/issues/new?template=idea.yml`,
@@ -288,7 +297,7 @@ const fr = {
     items: [
       [
         `Faut-il Claude${NB}?`,
-        'Oui, pour l’instant. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. ChatGPT n’est pas encore disponible.',
+        'Oui, pour l’instant. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. ChatGPT n’est pas encore disponible. [Demandez-le](/fr/start/#chatgpt).',
       ],
       [`Quels cantons sont disponibles${NB}?`, cantonsAnswer('fr')],
       [
@@ -327,6 +336,11 @@ const fr = {
     lead: 'Taxpresso est une extension pour Claude Desktop. Elle s’installe en une minute, et tout reste sur votre ordinateur.',
     download: 'Télécharger Taxpresso',
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
+    chatgpt: {
+      label: 'Taxpresso pour ChatGPT',
+      tag: 'Pas encore',
+      want: `Vous le voulez${NB}? [Envoyez un +1](${WANT_CHATGPT.mail}) ou [dites-en plus sur GitHub](${WANT_CHATGPT.issue}).`,
+    },
     platforms: ['Linux (bêta)', 'macOS', 'Windows'],
     needsTitle: 'Ce qu’il vous faut',
     guides: `Quels documents rassembler, le 3e pilier A, la TOU, l’avis de taxation${NB}: [nos guides](/fr/guides/) expliquent l’essentiel pour Genève, avec les liens officiels.`,
@@ -571,7 +585,7 @@ const en: Copy = {
     items: [
       [
         'Do I need Claude?',
-        'Yes, for now. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. ChatGPT isn’t available yet.',
+        'Yes, for now. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. ChatGPT isn’t available yet. [Ask for it](/en/start/#chatgpt).',
       ],
       ['Which cantons work?', cantonsAnswer('en')],
       [
@@ -610,6 +624,11 @@ const en: Copy = {
     lead: 'Taxpresso is an extension for Claude Desktop. It installs in a minute, and everything stays on your computer.',
     download: 'Download Taxpresso',
     downloadNote: 'Free. One file, for Claude Desktop.',
+    chatgpt: {
+      label: 'Taxpresso for ChatGPT',
+      tag: 'Not yet',
+      want: `Want it? [Send a +1](${WANT_CHATGPT.mail}) or [say more on GitHub](${WANT_CHATGPT.issue}).`,
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'What you need',
     guides:
@@ -869,7 +888,7 @@ const de: Copy = {
     items: [
       [
         'Brauche ich Claude?',
-        'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar.',
+        'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar. [Wünsch es dir](/de/start/#chatgpt).',
       ],
       ['Welche Kantone funktionieren?', cantonsAnswer('de')],
       [
@@ -908,6 +927,11 @@ const de: Copy = {
     lead: 'Taxpresso ist eine Erweiterung für Claude Desktop. Sie ist in einer Minute installiert, und alles bleibt auf deinem Computer.',
     download: 'Taxpresso herunterladen',
     downloadNote: 'Kostenlos. Eine Datei, für Claude Desktop.',
+    chatgpt: {
+      label: 'Taxpresso für ChatGPT',
+      tag: 'Noch nicht',
+      want: `Willst du es? [Schick ein +1](${WANT_CHATGPT.mail}) oder [sag mehr auf GitHub](${WANT_CHATGPT.issue}).`,
+    },
     platforms: ['Linux (Beta)', 'macOS', 'Windows'],
     needsTitle: 'Was du brauchst',
     guides:
@@ -1160,7 +1184,7 @@ const it: Copy = {
     items: [
       [
         'Mi serve Claude?',
-        'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile.',
+        'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile. [Chiedilo](/it/start/#chatgpt).',
       ],
       ['Quali cantoni funzionano?', cantonsAnswer('it')],
       [
@@ -1199,6 +1223,11 @@ const it: Copy = {
     lead: 'Taxpresso è un’estensione per Claude Desktop. Si installa in un minuto, e tutto resta sul tuo computer.',
     download: 'Scarica Taxpresso',
     downloadNote: 'Gratis. Un solo file, per Claude Desktop.',
+    chatgpt: {
+      label: 'Taxpresso per ChatGPT',
+      tag: 'Non ancora',
+      want: `Lo vuoi? [Manda un +1](${WANT_CHATGPT.mail}) o [dicci di più su GitHub](${WANT_CHATGPT.issue}).`,
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Cosa ti serve',
     guides:
@@ -1446,7 +1475,7 @@ const es: Copy = {
     items: [
       [
         '¿Necesito Claude?',
-        'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible.',
+        'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible. [Pídelo](/es/start/#chatgpt).',
       ],
       ['¿Qué cantones funcionan?', cantonsAnswer('es')],
       [
@@ -1485,6 +1514,11 @@ const es: Copy = {
     lead: 'Taxpresso es una extensión para Claude Desktop. Se instala en un minuto, y todo se queda en tu ordenador.',
     download: 'Descarga Taxpresso',
     downloadNote: 'Gratis. Un solo archivo, para Claude Desktop.',
+    chatgpt: {
+      label: 'Taxpresso para ChatGPT',
+      tag: 'Todavía no',
+      want: `¿Lo quieres? [Envía un +1](${WANT_CHATGPT.mail}) o [cuéntanos más en GitHub](${WANT_CHATGPT.issue}).`,
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Qué necesitas',
     guides:
@@ -1740,7 +1774,7 @@ const pt: Copy = {
     items: [
       [
         'Preciso do Claude?',
-        'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível.',
+        'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível. [Pede-o](/pt/start/#chatgpt).',
       ],
       ['Que cantões funcionam?', cantonsAnswer('pt')],
       [
@@ -1779,6 +1813,11 @@ const pt: Copy = {
     lead: 'O Taxpresso é uma extensão para o Claude Desktop. Instala-se num minuto, e tudo fica no teu computador.',
     download: 'Descarrega o Taxpresso',
     downloadNote: 'Grátis. Um só ficheiro, para o Claude Desktop.',
+    chatgpt: {
+      label: 'Taxpresso para o ChatGPT',
+      tag: 'Ainda não',
+      want: `Queres? [Envia um +1](${WANT_CHATGPT.mail}) ou [diz-nos mais no GitHub](${WANT_CHATGPT.issue}).`,
+    },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
     needsTitle: 'Do que precisas',
     guides:

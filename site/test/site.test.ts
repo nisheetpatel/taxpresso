@@ -27,6 +27,7 @@ import {
   RELEASE_FILE_URL,
   SOURCE_URL,
   startPath,
+  WANT_CHATGPT,
 } from '../src/content.ts';
 import { GENEVA_IDS, geneva, genevaPath } from '../src/geneva.ts';
 import {
@@ -130,6 +131,39 @@ describe('landing page', () => {
       expect(html).toContain('<div class="start-hero-art" aria-hidden="true">');
       expect(html).not.toMatch(RUNNABLE_SCRIPT);
       for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
+    }
+  });
+
+  it('shows ChatGPT as not yet there, with a way to ask for it that can be counted', () => {
+    // One subject for every language, so the requests can be counted in one search.
+    expect(WANT_CHATGPT.mail).toBe(
+      'mailto:hello@taxpresso.ch?subject=Taxpresso%20for%20ChatGPT%3A%20%2B1&body=%2B1',
+    );
+    expect(WANT_CHATGPT.issue).toBe(
+      `${SOURCE_URL}/issues/new?template=idea.yml&title=Taxpresso+for+ChatGPT`,
+    );
+    for (const { lang, path: p } of LANGS) {
+      const html = renderStart(lang);
+      const c = copy[lang].start.chatgpt;
+      // Greyed out and not a link: nothing to click that leads nowhere.
+      expect(html, lang).toContain(
+        `<span class="btn btn-big btn-off">${c.label}<span class="btn-tag">${c.tag}</span></span>`,
+      );
+      expect(html, lang).not.toMatch(/<a [^>]*btn-off/);
+      expect(html, lang).toContain('<div class="dl-row dl-later" id="chatgpt">');
+      // A +1 is one email, ready to send; saying more is the ideas form on GitHub.
+      expect(html, lang).toContain(`<a href="${WANT_CHATGPT.mail.replace(/&/g, '&amp;')}">`);
+      expect(html, lang).toContain(
+        `<a href="${WANT_CHATGPT.issue.replace(/&/g, '&amp;')}" rel="noopener">`,
+      );
+      expect(c.want, lang).toContain(`](${WANT_CHATGPT.mail})`);
+      expect(c.want, lang).toContain(`](${WANT_CHATGPT.issue})`);
+      // It never promises a date.
+      expect(`${c.label} ${c.tag} ${c.want}`, lang).not.toMatch(
+        /soon|bientôt|bald|presto|pronto|breve/i,
+      );
+      // The home page's answer about ChatGPT leads here.
+      expect(render(lang), lang).toContain(`<a href="${startPath(p)}#chatgpt">`);
     }
   });
 

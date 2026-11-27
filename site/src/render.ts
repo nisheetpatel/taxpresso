@@ -618,6 +618,10 @@ ${header(lang, startPath)}
 <span class="dl-note">${esc(s.downloadNote)}</span>
 </div>
 <ul class="platforms" aria-label="Claude Desktop">${platforms}</ul>
+<div class="dl-row dl-later" id="chatgpt">
+<span class="btn btn-big btn-off">${esc(s.chatgpt.label)}<span class="btn-tag">${esc(s.chatgpt.tag)}</span></span>
+<span class="dl-note">${rich(s.chatgpt.want)}</span>
+</div>
 </div>
 <div class="start-hero-art" aria-hidden="true">${CUP_SVG}</div>
 </section>
