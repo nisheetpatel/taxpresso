@@ -1413,6 +1413,17 @@ a:hover {
   color: #c9b8a6;
 }
 
+/* On the page after the download: the way to ask for the file again. */
+.dl-again {
+  margin: 18px 0 0 !important;
+  font-size: 15px;
+  color: #c9b8a6;
+}
+
+.dl-again a {
+  color: var(--milk);
+}
+
 .platforms {
   margin: 22px 0 0;
   padding: 0;

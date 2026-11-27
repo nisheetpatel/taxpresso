@@ -46,6 +46,16 @@
       "source": "/guides/:slug{/}?",
       "destination": "/fr/guides/:slug/",
       "permanent": true
+    },
+    {
+      "source": "/download/taxpresso.mcpb",
+      "destination": "https://github.com/nisheetpatel/taxpresso/releases/latest/download/taxpresso.mcpb",
+      "permanent": false
+    },
+    {
+      "source": "/download{/}?",
+      "destination": "/en/download/",
+      "permanent": false
     }
   ]
 }

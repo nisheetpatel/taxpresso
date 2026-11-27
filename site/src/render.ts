@@ -8,6 +8,7 @@ import {
   copy,
   DONATE_URL,
   DOWNLOAD_URL,
+  downloadPath,
   ISSUE_URL,
   REVIEW_URL,
   type Lang,
@@ -151,6 +152,10 @@ interface Meta {
   type?: 'website' | 'article';
   /** Structured data (JSON-LD), one block per object. */
   data?: Record<string, unknown>[];
+  /** An address the browser asks for a second after the page shows: a file, so the page stays. */
+  refresh?: string;
+  /** Kept out of search engines. */
+  noindex?: boolean;
 }
 
 /** Numbers and dates are written the Swiss way, in the page's language. */
@@ -185,6 +190,8 @@ function head(lang: Lang, meta: Meta, cssVersion: string) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+${meta.refresh ? `<meta http-equiv="refresh" content="1; url=${meta.refresh}">` : ''}
+${meta.noindex ? '<meta name="robots" content="noindex">' : ''}
 <title>${esc(meta.title)}</title>
 <meta name="description" content="${esc(meta.description)}">
 <link rel="canonical" href="${url}">
@@ -347,7 +354,7 @@ ${words}
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'Linux, macOS, Windows',
     softwareRequirements: 'Claude Desktop',
-    downloadUrl: DOWNLOAD_URL,
+    downloadUrl: absoluteUrl(DOWNLOAD_URL),
     license: 'https://www.gnu.org/licenses/agpl-3.0.html',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'CHF' },
@@ -484,6 +491,82 @@ ${faq}
 ${footer(lang)}`;
 }
 
+/**
+ * One step of Get started, shown as number `n`: its title, its text and what goes with it (the
+ * download button, the Install button's picture, the sentence to write). The page after the
+ * download shows the same steps from the second on, so the two can never say different things.
+ */
+function startStep(lang: Lang, i: number, n: number): string {
+  const s = copy[lang].start;
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const [title, text] = s.steps[i]!;
+  const extra =
+    i === 0
+      ? `<p class="dl"><a class="btn btn-primary" href="${downloadPath(here.path)}">${esc(s.download)}</a></p>`
+      : i === 1
+        ? `<div class="mock" aria-hidden="true"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body"><span class="mock-icon">${ICON_SVG}</span><span class="mock-name"><strong>Taxpresso</strong><span>${esc(s.mockExtension)}</span></span><span class="mock-btn">${esc(s.mockInstall)}</span></div></div>`
+        : i === 3
+          ? `<figure class="prompt"><figcaption>${esc(s.promptLabel)}</figcaption><p>${esc(s.prompt)}</p></figure>`
+          : '';
+  return `<li><span class="num" aria-hidden="true">${n}</span><div class="step-body"><h3>${esc(title)}</h3><p>${rich(text)}</p>${extra}</div></li>`;
+}
+
+/**
+ * The page the download button opens. It has no script: a second after it shows, the page itself
+ * asks the browser for the file (DOWNLOAD_URL, a redirect to the latest release), which downloads
+ * while the page stays, with the three things left to do: install, keep the folder, say hello.
+ * Search engines leave it alone, and its language menu goes to Get started, so that changing the
+ * language never downloads the file again.
+ */
+export function renderDownload(lang: Lang, cssVersion = ''): string {
+  const s = copy[lang].start;
+  const a = s.after;
+  const here = LANGS.find((l) => l.lang === lang)!;
+  const steps = [1, 2, 3].map((i) => startStep(lang, i, i)).join('\n');
+  const [claudeTitle, claudeText] = s.needs[0]!;
+
+  return `${head(
+    lang,
+    {
+      title: a.htmlTitle,
+      description: a.metaDescription,
+      at: downloadPath,
+      refresh: DOWNLOAD_URL,
+      noindex: true,
+    },
+    cssVersion,
+  )}
+<body>
+${header(lang, startPath)}
+
+<main id="main" class="start">
+<section class="start-hero">
+<div class="start-hero-text">
+<h1>${esc(a.title)}</h1>
+<p class="lead">${esc(a.lead)}</p>
+<p class="dl-again">${esc(a.retry)} <a href="${DOWNLOAD_URL}">${esc(a.retryLink)}</a></p>
+</div>
+<div class="start-hero-art" aria-hidden="true">${CUP_SVG}</div>
+</section>
+
+<section class="start-sec" aria-label="${esc(a.lead)}">
+<ol class="timeline">
+${steps}
+</ol>
+</section>
+
+<section class="start-sec">
+<ul class="needs">
+<li class="need"><span class="need-mark" aria-hidden="true">${CHECK}</span><h3>${esc(claudeTitle)}</h3><p>${rich(claudeText)}</p></li>
+</ul>
+</section>
+
+<p class="back"><a href="${startPath(here.path)}">${esc(copy[lang].nav.start)}</a></p>
+</main>
+
+${footer(lang)}`;
+}
+
 /** The Get started page: download, install, first steps. */
 export function renderStart(lang: Lang, cssVersion = ''): string {
   const t = copy[lang];
@@ -498,21 +581,7 @@ export function renderStart(lang: Lang, cssVersion = ''): string {
     )
     .join('\n');
 
-  const extra = (i: number) => {
-    if (i === 0)
-      return `<p class="dl"><a class="btn btn-primary" href="${DOWNLOAD_URL}" rel="noopener">${esc(s.download)}</a></p>`;
-    if (i === 1)
-      return `<div class="mock" aria-hidden="true"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body"><span class="mock-icon">${ICON_SVG}</span><span class="mock-name"><strong>Taxpresso</strong><span>${esc(s.mockExtension)}</span></span><span class="mock-btn">${esc(s.mockInstall)}</span></div></div>`;
-    if (i === 3)
-      return `<figure class="prompt"><figcaption>${esc(s.promptLabel)}</figcaption><p>${esc(s.prompt)}</p></figure>`;
-    return '';
-  };
-  const steps = s.steps
-    .map(
-      ([title, text], i) =>
-        `<li><span class="num" aria-hidden="true">${i + 1}</span><div class="step-body"><h3>${esc(title)}</h3><p>${rich(text)}</p>${extra(i)}</div></li>`,
-    )
-    .join('\n');
+  const steps = s.steps.map((_, i) => startStep(lang, i, i + 1)).join('\n');
   const notes = s.notes
     .map(([title, text]) => `<li class="note"><h3>${esc(title)}</h3><p>${rich(text)}</p></li>`)
     .join('\n');
@@ -545,7 +614,7 @@ ${header(lang, startPath)}
 <h1>${esc(s.title)}</h1>
 <p class="lead">${esc(s.lead)}</p>
 <div class="dl-row">
-<a class="btn btn-crema btn-big" href="${DOWNLOAD_URL}" rel="noopener">${esc(s.download)}</a>
+<a class="btn btn-crema btn-big" href="${downloadPath(here.path)}">${esc(s.download)}</a>
 <span class="dl-note">${esc(s.downloadNote)}</span>
 </div>
 <ul class="platforms" aria-label="Claude Desktop">${platforms}</ul>

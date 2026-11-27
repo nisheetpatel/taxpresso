@@ -19,9 +19,12 @@ import { CANTONS, listOf, NEXT_CANTONS } from '../src/cantons.ts';
 import {
   BASE_URL,
   copy,
+  DOWNLOAD_URL,
+  downloadPath,
   ISSUE_URL,
   type Lang,
   LANGS,
+  RELEASE_FILE_URL,
   SOURCE_URL,
   startPath,
 } from '../src/content.ts';
@@ -45,6 +48,7 @@ import {
   render,
   renderCanton,
   renderCantons,
+  renderDownload,
   renderGeneva,
   renderGenevaPage,
   renderGuide,
@@ -113,16 +117,78 @@ describe('landing page', () => {
     }
   });
 
-  it('renders each Get started page with its download link and no script', () => {
-    for (const { lang } of LANGS) {
+  it('renders each Get started page with its download button and no script', () => {
+    for (const { lang, path: p } of LANGS) {
       const html = renderStart(lang);
       expect(html).toContain(`<html lang="${lang}">`);
-      expect(html).toContain('/releases/latest');
+      // One click downloads the file: the button opens this language's download page, which
+      // starts the download itself. Nobody is sent to GitHub's releases page to find the file.
+      expect(html.split(`href="${downloadPath(p)}"`).length - 1, lang).toBe(2);
+      expect(html, lang).not.toContain('/releases');
+      expect(copy[lang].start.steps[0]![1], lang).toContain('taxpresso.mcpb');
       // The home page's cup flies here (styles.css, page transitions) and lands on a full cup.
       expect(html).toContain('<div class="start-hero-art" aria-hidden="true">');
       expect(html).not.toMatch(RUNNABLE_SCRIPT);
       for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
     }
+  });
+
+  it('starts the download from the page after the button, and shows what is left to do', () => {
+    expect(DOWNLOAD_URL).toBe('/download/taxpresso.mcpb');
+    for (const { lang, path: p } of LANGS) {
+      const html = renderDownload(lang);
+      const s = copy[lang].start;
+      expect(html).toContain(`<html lang="${lang}">`);
+      // No script: the page itself asks the browser for the file, a second after it shows.
+      expect(html).toContain(`<meta http-equiv="refresh" content="1; url=${DOWNLOAD_URL}">`);
+      expect(html).toContain(`<a href="${DOWNLOAD_URL}">${s.after.retryLink}</a>`);
+      // Opening the page downloads a file, so search engines never send anyone here.
+      expect(html).toContain('<meta name="robots" content="noindex">');
+      expect(html).toContain(`<h1>${s.after.title}</h1>`);
+      // What is left: install, keep the folder, say hello, as on the Get started page, numbered
+      // from 1, with the Install button's picture and the sentence to write.
+      const items = [...html.matchAll(/<li><span class="num" aria-hidden="true">(\d)<\/span>/g)];
+      expect(
+        items.map((m) => m[1]),
+        lang,
+      ).toEqual(['1', '2', '3']);
+      for (const [title] of s.steps.slice(1, 4))
+        expect(html, `${lang}: ${title}`).toContain(`<h3>${title.replace(/&/g, '&amp;')}</h3>`);
+      expect(html).not.toContain(`<h3>${s.steps[0]![0]}</h3>`);
+      expect(html).toContain('<div class="mock" aria-hidden="true">');
+      expect(html).toContain(`<figure class="prompt">`);
+      expect(html).toContain('href="https://claude.com/download"');
+      // Changing the language must not download the file again: the menu goes to Get started.
+      for (const other of LANGS.filter((l) => l.lang !== lang))
+        expect(html, `${lang} -> ${other.lang}`).not.toContain(
+          `<a href="${downloadPath(other.path)}"`,
+        );
+      expect(html).toContain(`<a href="${startPath(p)}">`);
+      expect(html).not.toMatch(RUNNABLE_SCRIPT);
+      for (const re of REMOTE_LOAD) expect(html, `${lang} ${String(re)}`).not.toMatch(re);
+    }
+  });
+
+  it('sends the download address to the latest release file, whatever its version', async () => {
+    expect(RELEASE_FILE_URL).toBe(`${SOURCE_URL}/releases/latest/download/taxpresso.mcpb`);
+    const vercel = JSON.parse(
+      await readFile(path.join(here, '..', '..', 'vercel.json'), 'utf8'),
+    ) as { redirects: { source: string; destination: string; permanent: boolean }[] };
+    // Not permanent, so the address can point somewhere else one day.
+    expect(vercel.redirects).toContainEqual({
+      source: DOWNLOAD_URL,
+      destination: RELEASE_FILE_URL,
+      permanent: false,
+    });
+    // The packing script writes the file under that one name, beside the versioned one.
+    const pack = await readFile(
+      path.join(here, '..', '..', 'extension', 'scripts', 'pack.mjs'),
+      'utf8',
+    );
+    expect(pack).toContain("'taxpresso.mcpb'");
+    // Structured data names the same file, by its full address.
+    const app = structured(render('en'))[0] as { downloadUrl: string };
+    expect(app.downloadUrl).toBe(`${BASE_URL}${DOWNLOAD_URL}`);
   });
 
   it('keeps the tagline as plain text in the heading, beside the cup that plays once', () => {
@@ -277,6 +343,8 @@ describe('guides', () => {
     for (const page of pages) {
       for (const [, href] of page.html.matchAll(/href="(\/[^"]*)"/g)) {
         if (assets.test(href!)) continue;
+        // The file itself: a redirect to the latest release (vercel.json; its own test above).
+        if (href === DOWNLOAD_URL) continue;
         expect(built, `${page.path} links to ${href}`).toContain(href!.replace(/#.*$/, ''));
       }
     }
@@ -641,8 +709,12 @@ describe('search', () => {
   it('lists every page in the sitemap, with the same alternates as the page', () => {
     const map = sitemap();
     const locs = [...map.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-    expect(locs).toHaveLength(PAGES.length * LANGS.length);
-    expect(new Set(locs)).toEqual(new Set(pages.map((page) => `${BASE_URL}${page.path}`)));
+    const listed = pages.filter((page) => !page.unlisted);
+    expect(pages.filter((page) => page.unlisted).map((page) => page.path)).toEqual(
+      LANGS.map((l) => downloadPath(l.path)),
+    );
+    expect(locs).toHaveLength((PAGES.length - 1) * LANGS.length);
+    expect(new Set(locs)).toEqual(new Set(listed.map((page) => `${BASE_URL}${page.path}`)));
     for (const block of map.split('<url>').slice(1)) {
       const loc = /<loc>([^<]+)<\/loc>/.exec(block)![1]!;
       const html = pages.find((page) => `${BASE_URL}${page.path}` === loc)!.html;

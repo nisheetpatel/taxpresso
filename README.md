@@ -45,7 +45,7 @@ It isn't tax advice, and no check replaces yours: you review the official declar
 
 ## Install
 
-1. Download the `.mcpb` file of the [latest release](https://github.com/nisheetpatel/taxpresso/releases/latest), or build it (below).
+1. Download [`taxpresso.mcpb`](https://github.com/nisheetpatel/taxpresso/releases/latest/download/taxpresso.mcpb), the latest release, or build it (below).
 2. Double-click it, or drag it onto Claude Desktop's Settings, Extensions page. Click Install.
 3. In a new chat, ask Claude: "Help me with my taxes using Taxpresso."
 

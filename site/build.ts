@@ -53,7 +53,8 @@ const css = `/* Geist and Geist Mono, SIL Open Font License 1.1: /fonts/OFL.txt 
 const cssVersion = createHash('sha256').update(css).digest('hex').slice(0, 10);
 await writeFile(path.join(dist, 'styles.css'), css);
 await writeFile(path.join(dist, 'favicon.svg'), ICON_SVG);
-for (const page of builtPages(cssVersion)) {
+const pages = builtPages(cssVersion);
+for (const page of pages) {
   const dir = path.join(dist, page.path);
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, 'index.html'), page.html());
@@ -62,15 +63,19 @@ const map = sitemap();
 await writeFile(path.join(dist, 'sitemap.xml'), map);
 await writeFile(path.join(dist, 'robots.txt'), robots());
 
-// Every page written is in the sitemap, and the sitemap lists nothing else.
+// Every page written is in the sitemap, except the unlisted ones (the download page), and the
+// sitemap lists nothing else.
+const unlisted = new Set(pages.filter((p) => p.unlisted).map((p) => `${BASE_URL}${p.path}`));
 const written = (await readdir(dist, { recursive: true }))
   .filter((f) => path.basename(f) === 'index.html')
   .map((f) => `${BASE_URL}/${path.dirname(f).split(path.sep).join('/')}/`)
   .sort();
 const listed = [...map.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!).sort();
-const missing = written.filter((u) => !listed.includes(u));
+const missing = written.filter((u) => !listed.includes(u) && !unlisted.has(u));
 const extra = listed.filter((u) => !written.includes(u));
 if (missing.length || extra.length)
   throw new Error(`sitemap.xml: missing ${missing.join(' ')}; not built ${extra.join(' ')}`);
 
-console.log(`site/dist: ${PAGES.length} pages in ${LANGS.length} languages, all in sitemap.xml`);
+console.log(
+  `site/dist: ${PAGES.length} pages in ${LANGS.length} languages; all but the download page in sitemap.xml`,
+);
