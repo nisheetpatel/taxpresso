@@ -134,7 +134,7 @@ describe('landing page', () => {
     }
   });
 
-  it('shows ChatGPT as not yet there, with a way to ask for it that can be counted', () => {
+  it('offers two platforms, Claude to download and ChatGPT in progress, which opens a note', () => {
     // One subject for every language, so the requests can be counted in one search.
     expect(WANT_CHATGPT.mail).toBe(
       'mailto:hello@taxpresso.ch?subject=Taxpresso%20for%20ChatGPT%3A%20%2B1&body=%2B1',
@@ -142,28 +142,51 @@ describe('landing page', () => {
     expect(WANT_CHATGPT.issue).toBe(
       `${SOURCE_URL}/issues/new?template=idea.yml&title=Taxpresso+for+ChatGPT`,
     );
+    const amp = (url: string) => url.replace(/&/g, '&amp;');
     for (const { lang, path: p } of LANGS) {
       const html = renderStart(lang);
-      const c = copy[lang].start.chatgpt;
-      // Greyed out and not a link: nothing to click that leads nowhere.
-      expect(html, lang).toContain(
-        `<span class="btn btn-big btn-off">${c.label}<span class="btn-tag">${c.tag}</span></span>`,
+      const s = copy[lang].start;
+      const c = s.chatgpt;
+      // Two buttons of one shape, side by side: the download, and ChatGPT with its tag.
+      const pair = /<div class="dl-pair">(.*?)<\/div>/s.exec(html)?.[1] ?? '';
+      expect(pair.match(/class="plat /g), lang).toHaveLength(2);
+      expect(pair, lang).toContain(`<a class="plat plat-go" href="${downloadPath(p)}">`);
+      expect(pair, lang).toContain(
+        `<span class="plat-small">${s.downloadFor}</span><span class="plat-name">Claude</span>`,
       );
-      expect(html, lang).not.toMatch(/<a [^>]*btn-off/);
-      expect(html, lang).toContain('<div class="dl-row dl-later" id="chatgpt">');
-      // A +1 is one email, ready to send; saying more is the ideas form on GitHub.
-      expect(html, lang).toContain(`<a href="${WANT_CHATGPT.mail.replace(/&/g, '&amp;')}">`);
-      expect(html, lang).toContain(
-        `<a href="${WANT_CHATGPT.issue.replace(/&/g, '&amp;')}" rel="noopener">`,
+      // ChatGPT is a button, never a link to nowhere: it opens the note below, with no script.
+      expect(pair, lang).toContain(
+        '<button class="plat plat-wait" type="button" id="chatgpt" popovertarget="chatgpt-ask">',
       );
-      expect(c.want, lang).toContain(`](${WANT_CHATGPT.mail})`);
-      expect(c.want, lang).toContain(`](${WANT_CHATGPT.issue})`);
+      expect(pair, lang).toContain(
+        `<span class="plat-tag">${c.tag}</span><span class="plat-name">ChatGPT</span>`,
+      );
+      // The note: where it stands, and two ways to ask that can be counted. A +1 is one email,
+      // ready to send; saying more is the ideas form on GitHub.
+      const pop = /<div class="pop" id="chatgpt-ask" popover[^>]*>(.*?)<\/div>\n<\/div>/s.exec(
+        html,
+      )?.[1];
+      expect(pop, lang).toBeDefined();
+      expect(html, lang).toContain(
+        '<div class="pop" id="chatgpt-ask" popover role="dialog" aria-labelledby="chatgpt-ask-title">',
+      );
+      expect(pop, lang).toContain(`<h2 id="chatgpt-ask-title">${c.title}</h2>`);
+      expect(pop, lang).toContain(
+        `<a class="btn btn-primary" href="${amp(WANT_CHATGPT.mail)}">${c.plus}</a>`,
+      );
+      expect(pop, lang).toContain(
+        `<a class="btn btn-quiet" href="${amp(WANT_CHATGPT.issue)}" target="_blank" rel="noopener">${c.more}</a>`,
+      );
+      expect(pop, lang).toContain(
+        `<button class="pop-close" type="button" popovertarget="chatgpt-ask" popovertargetaction="hide" aria-label="${c.close}">`,
+      );
       // It never promises a date.
-      expect(`${c.label} ${c.tag} ${c.want}`, lang).not.toMatch(
-        /soon|bientôt|bald|presto|pronto|breve/i,
+      expect(strings(c).join(' '), lang).not.toMatch(
+        /coming soon|bientôt|\bbald\b|\bpresto\b|in arrivo|próximamente|pronto llegará|em breve|en breve/i,
       );
-      // The home page's answer about ChatGPT leads here.
+      // The home page's answer about ChatGPT leads to the button.
       expect(render(lang), lang).toContain(`<a href="${startPath(p)}#chatgpt">`);
+      expect(html).not.toMatch(RUNNABLE_SCRIPT);
     }
   });
 

@@ -15,6 +15,7 @@ import {
   LANGS,
   SOURCE_URL,
   startPath,
+  WANT_CHATGPT,
   type Tone,
 } from './content.ts';
 import { TESTIMONIALS } from './testimonials.ts';
@@ -82,6 +83,10 @@ const GLOBE = icon(
   18,
 );
 const CHEVRON = icon('<path d="M6 9l6 6 6-6"/>', 14);
+/** The two platform buttons on Get started, and the note's close button. */
+const DOWN = icon('<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>');
+const CLOCK = icon('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>');
+const CLOSE = icon('<path d="M6 6l12 12M18 6L6 18"/>', 18);
 const STAR = icon(
   '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
 );
@@ -571,6 +576,7 @@ ${footer(lang)}`;
 export function renderStart(lang: Lang, cssVersion = ''): string {
   const t = copy[lang];
   const s = t.start;
+  const c = s.chatgpt;
   const here = LANGS.find((l) => l.lang === lang)!;
 
   const platforms = s.platforms.map((p) => `<li>${esc(p)}</li>`).join('');
@@ -613,14 +619,21 @@ ${header(lang, startPath)}
 <div class="start-hero-text">
 <h1>${esc(s.title)}</h1>
 <p class="lead">${esc(s.lead)}</p>
-<div class="dl-row">
-<a class="btn btn-crema btn-big" href="${downloadPath(here.path)}">${esc(s.download)}</a>
-<span class="dl-note">${esc(s.downloadNote)}</span>
+<div class="dl-pair">
+<a class="plat plat-go" href="${downloadPath(here.path)}">${DOWN}<span class="plat-text"><span class="plat-small">${esc(s.downloadFor)}</span><span class="plat-name">Claude</span></span></a>
+<button class="plat plat-wait" type="button" id="chatgpt" popovertarget="chatgpt-ask">${CLOCK}<span class="plat-text"><span class="plat-tag">${esc(c.tag)}</span><span class="plat-name">ChatGPT</span></span></button>
 </div>
+<p class="dl-note">${esc(s.downloadNote)}</p>
 <ul class="platforms" aria-label="Claude Desktop">${platforms}</ul>
-<div class="dl-row dl-later" id="chatgpt">
-<span class="btn btn-big btn-off">${esc(s.chatgpt.label)}<span class="btn-tag">${esc(s.chatgpt.tag)}</span></span>
-<span class="dl-note">${rich(s.chatgpt.want)}</span>
+<div class="pop" id="chatgpt-ask" popover role="dialog" aria-labelledby="chatgpt-ask-title">
+<div class="pop-card">
+<button class="pop-close" type="button" popovertarget="chatgpt-ask" popovertargetaction="hide" aria-label="${esc(c.close)}">${CLOSE}</button>
+<h2 id="chatgpt-ask-title">${esc(c.title)}</h2>
+<p>${esc(c.text)}</p>
+<p>${esc(c.ask)}</p>
+<p class="pop-actions"><a class="btn btn-primary" href="${esc(WANT_CHATGPT.mail)}">${esc(c.plus)}</a><a class="btn btn-quiet" href="${esc(WANT_CHATGPT.issue)}" target="_blank" rel="noopener">${esc(c.more)}</a></p>
+<p class="pop-note">${esc(c.plusNote)}</p>
+</div>
 </div>
 </div>
 <div class="start-hero-art" aria-hidden="true">${CUP_SVG}</div>
