@@ -1418,8 +1418,8 @@ a:hover {
 }
 
 /*
- * The two platforms on Get started, as two buttons of one shape: Claude, the download, and ChatGPT,
- * in progress. Each has a small line over the platform's name; on ChatGPT that line is its tag.
+ * The two platforms on Get started, as two buttons of one shape and one wording: "Download for"
+ * over the platform's name. ChatGPT's name carries a mark (Alpha): its button opens a note.
  */
 .dl-pair {
   margin-top: 30px;
@@ -1468,6 +1468,9 @@ a:hover {
 }
 
 .plat-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   font-size: 21px;
   font-weight: 750;
   line-height: 1.1;
@@ -1495,7 +1498,6 @@ a:hover {
 }
 
 .plat-tag {
-  margin-left: -2px;
   padding: 2px 9px;
   border-radius: 999px;
   background: var(--deep);
@@ -1503,6 +1505,7 @@ a:hover {
   font-size: 12px;
   font-weight: 650;
   line-height: 1.35;
+  letter-spacing: 0;
 }
 
 .start-hero :focus-visible {

@@ -85,7 +85,6 @@ const GLOBE = icon(
 const CHEVRON = icon('<path d="M6 9l6 6 6-6"/>', 14);
 /** The two platform buttons on Get started, and the note's close button. */
 const DOWN = icon('<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>');
-const CLOCK = icon('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>');
 const CLOSE = icon('<path d="M6 6l12 12M18 6L6 18"/>', 18);
 const STAR = icon(
   '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
@@ -621,7 +620,7 @@ ${header(lang, startPath)}
 <p class="lead">${esc(s.lead)}</p>
 <div class="dl-pair">
 <a class="plat plat-go" href="${downloadPath(here.path)}">${DOWN}<span class="plat-text"><span class="plat-small">${esc(s.downloadFor)}</span><span class="plat-name">Claude</span></span></a>
-<button class="plat plat-wait" type="button" id="chatgpt" popovertarget="chatgpt-ask">${CLOCK}<span class="plat-text"><span class="plat-tag">${esc(c.tag)}</span><span class="plat-name">ChatGPT</span></span></button>
+<button class="plat plat-wait" type="button" id="chatgpt" popovertarget="chatgpt-ask">${DOWN}<span class="plat-text"><span class="plat-small">${esc(s.downloadFor)}</span><span class="plat-name">ChatGPT<span class="plat-tag">${esc(c.tag)}</span></span></span></button>
 </div>
 <p class="dl-note">${esc(s.downloadNote)}</p>
 <ul class="platforms" aria-label="Claude Desktop">${platforms}</ul>
