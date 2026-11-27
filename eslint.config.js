@@ -71,6 +71,8 @@ export default defineConfig(
             'test/fixtures/households/make.d.mts',
             // The Claude plugin's check, typed for its test (extension/test/plugin.test.ts).
             'scripts/check-plugin.d.mts',
+            // The ChatGPT plugin's check (spike S6), typed for extension/test/chatgpt-plugin.test.ts.
+            'scripts/check-chatgpt-plugin.d.mts',
           ],
         },
         tsconfigRootDir: import.meta.dirname,

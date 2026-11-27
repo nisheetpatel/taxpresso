@@ -7,6 +7,9 @@
 //   TAXPRESSO_EXTENSION_DIR=<unpacked .mcpb> node ...    tests another copy, e.g. an unzipped .mcpb
 //   node test/offline/run.mjs build/plugin/taxpresso   tests the Claude plugin (`pnpm build:plugin`),
 //                                                      its server started as its .mcp.json says
+//   node test/offline/run.mjs build/chatgpt-plugin/taxpresso   tests the ChatGPT plugin
+//                                                      (`pnpm build:chatgpt`, docs/spikes/S6.md),
+//                                                      its server started as its mcp.json says
 //   TAXPRESSO_EXPECT_NO_NETWORK=1                        also proves the sandbox itself is offline
 
 import assert from 'node:assert/strict';
@@ -35,30 +38,45 @@ const extDir = path.resolve(
   process.argv[2] ?? process.env.TAXPRESSO_EXTENSION_DIR ?? path.join(root, 'extension', 'dist'),
 );
 /** The Claude plugin (build/plugin/taxpresso) rather than the .mcpb's folder. */
-const isPlugin = existsSync(path.join(extDir, '.claude-plugin', 'plugin.json'));
+const isClaudePlugin = existsSync(path.join(extDir, '.claude-plugin', 'plugin.json'));
+/** The ChatGPT plugin (build/chatgpt-plugin/taxpresso): OpenAI's package, mcp.json at its root. */
+const isChatgptPlugin = !isClaudePlugin && existsSync(path.join(extDir, 'mcp.json'));
+/** Either plugin: the same server files, built with the plugin flag. */
+const isPlugin = isClaudePlugin || isChatgptPlugin;
 // What Claude Code and Cowork give a plugin's server (code.claude.com/docs/en/plugins/manifest-reference).
-if (isPlugin) process.env.CLAUDE_PLUGIN_ROOT = extDir;
+if (isClaudePlugin) process.env.CLAUDE_PLUGIN_ROOT = extDir;
 /** The tools and prompt Claude can call: the .mcpb's manifest (the plugin has none; same source). */
 const manifestFile = isPlugin
   ? path.join(root, 'extension', 'manifest.json')
   : path.join(extDir, 'manifest.json');
 const guard = pathToFileURL(path.join(here, 'net-guard.mjs')).href;
 
-/**
- * The server's arguments after node, with the network guard first: the .mcpb's server/index.mjs,
- * or exactly what the plugin's .mcp.json says, ${CLAUDE_PLUGIN_ROOT} being the plugin's folder.
- */
-function serverArgs() {
-  if (!isPlugin) return ['--import', guard, path.join(extDir, 'server', 'index.mjs')];
-  const { mcpServers } = JSON.parse(readFileSync(path.join(extDir, '.mcp.json'), 'utf8'));
+/** The plugin's one server, as its .mcp.json (Claude) or mcp.json (ChatGPT) starts it. */
+function pluginServer() {
+  const file = isChatgptPlugin ? 'mcp.json' : '.mcp.json';
+  const { mcpServers } = JSON.parse(readFileSync(path.join(extDir, file), 'utf8'));
   const servers = Object.values(mcpServers);
   assert.equal(servers.length, 1, 'the plugin starts one server');
   assert.equal(servers[0].command, 'node', 'the plugin starts its server with node');
-  return [
-    '--import',
-    guard,
-    ...servers[0].args.map((a) => a.replaceAll('${CLAUDE_PLUGIN_ROOT}', extDir)),
-  ];
+  if (isChatgptPlugin) assert.equal(servers[0].type, 'stdio', 'a local server, over stdio');
+  return servers[0];
+}
+/** The plugin's folder, as each host names it in the server's arguments. */
+const PLUGIN_ROOT = isChatgptPlugin ? '${PLUGIN_ROOT}' : '${CLAUDE_PLUGIN_ROOT}';
+
+/**
+ * The server's arguments after node, with the network guard first: the .mcpb's server/index.mjs,
+ * or exactly what the plugin's file says, ${CLAUDE_PLUGIN_ROOT} (Claude) or ${PLUGIN_ROOT}
+ * (ChatGPT) being the plugin's folder.
+ */
+function serverArgs() {
+  if (!isPlugin) return ['--import', guard, path.join(extDir, 'server', 'index.mjs')];
+  return ['--import', guard, ...pluginServer().args.map((a) => a.replaceAll(PLUGIN_ROOT, extDir))];
+}
+/** The working directory the ChatGPT plugin asks for (its own folder); otherwise this process's. */
+function serverCwd() {
+  const cwd = isChatgptPlugin ? pluginServer().cwd : undefined;
+  return cwd?.replaceAll(PLUGIN_ROOT, extDir);
 }
 const work = mkdtempSync(path.join(os.tmpdir(), 'taxpresso-offline-'));
 const guardLog = path.join(work, 'net-guard.log');
@@ -104,6 +122,7 @@ before(async () => {
   transport = new StdioClientTransport({
     command: process.execPath,
     args: serverArgs(),
+    cwd: serverCwd(),
     env: {
       ...process.env,
       TAXPRESSO_VAULT_PATH: vault,
