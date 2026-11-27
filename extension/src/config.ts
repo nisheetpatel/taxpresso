@@ -7,13 +7,71 @@ declare const __TAXPRESSO_VERSION__: string | undefined;
 declare const __TAXPRESSO_DISTRIBUTION__: string | undefined;
 
 /**
- * Which build runs: the desktop extension for Claude Desktop ('mcpb', also tests and development)
- * or the Claude plugin for Claude Code and Cowork ('plugin', `pnpm build:plugin`).
+ * Which build runs: the desktop extension for Claude Desktop ('mcpb', also tests and development),
+ * the Claude plugin for Claude Code and Cowork ('plugin', `pnpm build:plugin`), or the ChatGPT
+ * plugin for the ChatGPT desktop app ('chatgpt', `pnpm build:chatgpt`, docs/spikes/S6.md).
  */
-export const DISTRIBUTION: 'mcpb' | 'plugin' =
-  typeof __TAXPRESSO_DISTRIBUTION__ === 'string' && __TAXPRESSO_DISTRIBUTION__ === 'plugin'
-    ? 'plugin'
+export type Distribution = 'mcpb' | 'plugin' | 'chatgpt';
+export const DISTRIBUTION: Distribution =
+  typeof __TAXPRESSO_DISTRIBUTION__ === 'string' &&
+  (__TAXPRESSO_DISTRIBUTION__ === 'plugin' || __TAXPRESSO_DISTRIBUTION__ === 'chatgpt')
+    ? __TAXPRESSO_DISTRIBUTION__
     : 'mcpb';
+
+// What this build calls the assistant and its apps. Everything the server says that differs between
+// Claude and ChatGPT is here, each written `(flag && ChatGPT's words) || Claude's words` on the
+// build flag itself: esbuild folds that form even when it doesn't minify, where it would keep both
+// sides of a `?:`. So a build holds its own words only, and scripts/check-chatgpt-plugin.mjs fails
+// if the ChatGPT package names Claude anywhere. The UI has the same (ui/src/shared/distribution.ts).
+
+/** The assistant the user talks to: every sentence that names it takes the name from here. */
+export const ASSISTANT: string =
+  (typeof __TAXPRESSO_DISTRIBUTION__ === 'string' &&
+    __TAXPRESSO_DISTRIBUTION__ === 'chatgpt' &&
+    'ChatGPT') ||
+  'Claude';
+
+/** The app the server runs in, as a sentence names it: "while … is running". */
+export const ASSISTANT_APP: string =
+  (typeof __TAXPRESSO_DISTRIBUTION__ === 'string' &&
+    __TAXPRESSO_DISTRIBUTION__ === 'chatgpt' &&
+    'the ChatGPT desktop app') ||
+  'Claude Desktop';
+
+/**
+ * open_dashboard, for the assistant: where the dashboard stays while the user works. For ChatGPT,
+ * only what OpenAI documents (docs/spikes/S6.md): a view can show in the conversation; nothing
+ * about the app's buttons or panes, which nobody has looked at yet.
+ */
+export const KEEP_DASHBOARD_BESIDE: string =
+  (typeof __TAXPRESSO_DISTRIBUTION__ === 'string' &&
+    __TAXPRESSO_DISTRIBUTION__ === 'chatgpt' &&
+    'Keep it beside the chat: it shows in the conversation where the app allows it; if it does not show there, give the user this link to open in a browser on this computer.') ||
+  'Keep it beside the chat: in the chat it floats next to the conversation where the app allows it; in Cowork or the Code tab, open this link in the built-in browser pane next to the chat.';
+
+/** get_status's runtime.distribution, described for the host. */
+export const DISTRIBUTION_NOTE: string =
+  (typeof __TAXPRESSO_DISTRIBUTION__ === 'string' &&
+    __TAXPRESSO_DISTRIBUTION__ === 'chatgpt' &&
+    'Set when this is the ChatGPT plugin (the ChatGPT desktop app).') ||
+  'Set when this is the Claude plugin (Claude Code, Cowork), not the desktop extension.';
+
+/**
+ * Fills the assistant's name into texts that come from the libraries and the questionnaire data
+ * (packages/, data/): they are pure and know no build, so they write `{assistant}` where a sentence
+ * names it. The server calls this where it takes such a result, before anything reads it.
+ */
+export function named<T>(value: T): T {
+  if (typeof value === 'string') return value.replaceAll('{assistant}', ASSISTANT) as T;
+  if (Array.isArray(value)) return value.map(named) as T;
+  if (
+    value !== null &&
+    typeof value === 'object' &&
+    Object.getPrototypeOf(value) === Object.prototype
+  )
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, named(v)])) as T;
+  return value;
+}
 
 /**
  * The tax year this release prepares by default (SPEC.md section 1): the year that opens when the

@@ -186,6 +186,7 @@ import {
   type AargauCantonal,
   type AgTaxResult,
 } from '@taxpresso/rules-ag';
+import { named } from './config.js';
 import { movableWealth } from './wealth.js';
 
 /** A canton's name in the UI languages. */
@@ -929,7 +930,8 @@ export class CantonRegistry {
     const asked = canton?.code ?? 'shared';
     const known = this.#engines.get(`for:${asked}`);
     if (known) return known;
-    const file = canton?.questionnaire(this.taxYear);
+    // The questionnaires name the assistant as {assistant}: filled here, once, for every reader.
+    const file = named(canton?.questionnaire(this.taxYear));
     const id = file && canton ? canton.code : 'shared';
     let engine = this.#engines.get(id);
     if (!engine) {
@@ -940,7 +942,7 @@ export class CantonRegistry {
             // payments to political parties), which the shared question doesn't ask about. The
             // cantons not offered this year say so in the canton question.
             new QuestionnaireEngine(
-              sharedQuestionnaire(this.taxYear, this.offered),
+              named(sharedQuestionnaire(this.taxYear, this.offered)),
               { ...this.ledgerKeys, ...KEYS_HOUSEHOLD_2026 },
               [],
             );

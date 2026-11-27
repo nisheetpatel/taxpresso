@@ -1,6 +1,7 @@
 // UI strings for "Last year, reviewed" (Review.tsx): second person, plain words, the official French
 // term next to its gloss. Status labels come from SPEC.md 11b: Computed, Estimate, Fix ("Check
 // this" for a total that doesn't match, as in the "Check this" list).
+import { ASSISTANT } from '../shared/distribution';
 import type { Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -66,10 +67,8 @@ export const messages = {
       'The date printed on your assessment always wins. If you disagree, you write the objection (réclamation) yourself; Taxpresso never sends it.',
     noAssessment:
       'If you have your {year} assessment (avis de taxation), drop it in: Taxpresso shows its deadline to object.',
-    unknownYear:
-      '{n} assessment in your documents has no tax year yet: tell Claude which year it is for.',
-    unknownYears:
-      '{n} assessments in your documents have no tax year yet: tell Claude which year each is for.',
+    unknownYear: `{n} assessment in your documents has no tax year yet: tell ${ASSISTANT} which year it is for.`,
+    unknownYears: `{n} assessments in your documents have no tax year yet: tell ${ASSISTANT} which year each is for.`,
     final:
       'Once an assessment is final, it can’t simply be changed: a revision (révision) is refused for anything you could have raised before, with reasonable care.',
     how: 'How it’s worked out',
@@ -177,8 +176,8 @@ export const messages = {
     deadlineNoDate: `Taxpresso ne connaît pas la date de votre taxation {year}${NB}: le délai de réclamation y est imprimé.`,
     deadlineNote: `Le délai imprimé sur votre avis de taxation fait foi. Si vous n’êtes pas d’accord, vous écrivez vous-même la réclamation${NB}; Taxpresso ne l’envoie jamais.`,
     noAssessment: `Si vous avez votre avis de taxation {year}, déposez-le${NB}: Taxpresso affiche son délai de réclamation.`,
-    unknownYear: `{n} avis de taxation dans vos documents n’a pas encore d’année fiscale${NB}: dites à Claude à quelle année il se rapporte.`,
-    unknownYears: `{n} avis de taxation dans vos documents n’ont pas encore d’année fiscale${NB}: dites à Claude à quelle année chacun se rapporte.`,
+    unknownYear: `{n} avis de taxation dans vos documents n’a pas encore d’année fiscale${NB}: dites à ${ASSISTANT} à quelle année il se rapporte.`,
+    unknownYears: `{n} avis de taxation dans vos documents n’ont pas encore d’année fiscale${NB}: dites à ${ASSISTANT} à quelle année chacun se rapporte.`,
     final: `Une fois votre taxation entrée en force, elle ne peut pas simplement être modifiée${NB}: une révision est refusée pour tout ce que vous auriez pu faire valoir avant, en faisant preuve de la diligence voulue.`,
     how: 'Comment c’est calculé',
     assumptions: 'Ce que Taxpresso a supposé',
@@ -286,10 +285,8 @@ export const messages = {
       'Das Datum auf deiner Veranlagung gilt immer. Wenn du nicht einverstanden bist, schreibst du die Einsprache (réclamation) selbst; Taxpresso schickt sie nie.',
     noAssessment:
       'Wenn du deine Veranlagung {year} (avis de taxation) hast, leg sie ab: Taxpresso zeigt ihre Einsprachefrist.',
-    unknownYear:
-      '{n} Veranlagung in deinen Dokumenten hat noch kein Steuerjahr: Sag Claude, für welches Jahr sie ist.',
-    unknownYears:
-      '{n} Veranlagungen in deinen Dokumenten haben noch kein Steuerjahr: Sag Claude, für welches Jahr jede ist.',
+    unknownYear: `{n} Veranlagung in deinen Dokumenten hat noch kein Steuerjahr: Sag ${ASSISTANT}, für welches Jahr sie ist.`,
+    unknownYears: `{n} Veranlagungen in deinen Dokumenten haben noch kein Steuerjahr: Sag ${ASSISTANT}, für welches Jahr jede ist.`,
     final:
       'Ist eine Veranlagung rechtskräftig, kann sie nicht einfach geändert werden: Eine Revision (révision) wird für alles abgelehnt, was du mit zumutbarer Sorgfalt vorher hättest geltend machen können.',
     how: 'So wird es berechnet',
@@ -409,10 +406,8 @@ export const messages = {
       'Fa sempre stato la data stampata sulla tua decisione di tassazione. Se non sei d’accordo, il reclamo (réclamation) lo scrivi tu: Taxpresso non lo invia mai.',
     noAssessment:
       'Se hai la tua decisione di tassazione {year} (avis de taxation), aggiungila: Taxpresso mostra il termine per il reclamo.',
-    unknownYear:
-      '{n} decisione di tassazione nei tuoi documenti non ha ancora un anno fiscale: indica a Claude a quale anno si riferisce.',
-    unknownYears:
-      '{n} decisioni di tassazione nei tuoi documenti non hanno ancora un anno fiscale: indica a Claude a quale anno si riferisce ciascuna.',
+    unknownYear: `{n} decisione di tassazione nei tuoi documenti non ha ancora un anno fiscale: indica a ${ASSISTANT} a quale anno si riferisce.`,
+    unknownYears: `{n} decisioni di tassazione nei tuoi documenti non hanno ancora un anno fiscale: indica a ${ASSISTANT} a quale anno si riferisce ciascuna.`,
     final:
       'Quando una decisione di tassazione è definitiva, non si può semplicemente cambiare: una revisione (révision) viene rifiutata per tutto quello che avresti potuto far valere prima, con la dovuta diligenza.',
     how: 'Come si calcola',

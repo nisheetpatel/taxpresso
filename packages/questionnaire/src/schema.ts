@@ -183,7 +183,7 @@ export const Question = z
     derive: z.array(Derivation).optional(),
     text: z.union([Text, PerPersonText]),
     help: Text.optional(),
-    /** Plain-language "what is this?", shown on hover and given to Claude. */
+    /** Plain-language "what is this?", shown on hover and given to the assistant. */
     explain: Text.optional(),
     learnMore: LearnMore.optional(),
     /** A page of the project, e.g. where to vote for the next canton. */

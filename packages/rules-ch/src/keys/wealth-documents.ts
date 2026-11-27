@@ -57,7 +57,7 @@ export const DOCUMENT_KEYS_WEALTH_2026 = {
   /**
    * An account in another currency with no CHF amount printed: the amounts in that currency, as
    * printed. Taxpresso converts them at the official rate (rules-ch,
-   * withholding/exchange-rates.ts), never Claude.
+   * withholding/exchange-rates.ts), never the assistant.
    */
   'bank.balance_in_currency': {
     ...perDocument,

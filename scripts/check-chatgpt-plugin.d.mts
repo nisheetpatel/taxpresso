@@ -8,9 +8,6 @@ export interface ChatgptPluginCheck {
   files: string[];
 }
 
-export function checkChatgptPlugin(
-  dir: string,
-  opts?: { claudePlugin?: string },
-): Promise<ChatgptPluginCheck>;
+export function checkChatgptPlugin(dir: string): Promise<ChatgptPluginCheck>;
 /** What is wrong with a value against a JSON schema, as "path: reason". */
 export function validate(schema: object, value: unknown): string[];

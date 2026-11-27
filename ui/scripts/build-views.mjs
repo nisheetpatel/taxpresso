@@ -2,7 +2,8 @@
 // Builds each MCP Apps view (src/views/<name>.{html,tsx}) into one self-contained HTML file in
 // dist/views/. Hosts render these in a sandboxed iframe with no network, so everything is inline:
 // script, styles and fonts (as bytes the view hands to the browser, see src/views/fonts.ts).
-// `--plugin` builds the Claude plugin's copy into dist/plugin/views instead (see below).
+// `--plugin` builds the Claude plugin's copy into dist/plugin/views instead, `--chatgpt` the ChatGPT
+// plugin's into dist/chatgpt/views (see below).
 
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -62,9 +63,15 @@ const embeddedFonts = {
 };
 
 // `--plugin`: the Claude plugin's views (src/shared/distribution.ts), into dist/plugin/views and
-// not minified, so a reviewer can read them (docs/spikes/S4.md). Otherwise the .mcpb's, as before.
-const plugin = process.argv.includes('--plugin');
-const outDir = path.join(root, plugin ? 'dist/plugin/views' : 'dist/views');
+// not minified, so a reviewer can read them (docs/spikes/S4.md). `--chatgpt`: the ChatGPT plugin's,
+// built the same way with its own flag, into dist/chatgpt/views. Otherwise the .mcpb's, as before.
+const distribution = process.argv.includes('--chatgpt')
+  ? 'chatgpt'
+  : process.argv.includes('--plugin')
+    ? 'plugin'
+    : 'mcpb';
+const plugin = distribution !== 'mcpb';
+const outDir = path.join(root, plugin ? `dist/${distribution}/views` : 'dist/views');
 
 await rm(outDir, { recursive: true, force: true });
 await mkdir(outDir, { recursive: true });
@@ -83,7 +90,7 @@ for (const name of VIEWS) {
     legalComments: 'none',
     logLevel: 'warning',
     define: {
-      __TAXPRESSO_DISTRIBUTION__: JSON.stringify(plugin ? 'plugin' : 'mcpb'),
+      __TAXPRESSO_DISTRIBUTION__: JSON.stringify(distribution),
       // What esbuild assumes when it minifies; said explicitly for the build that doesn't.
       ...(plugin && { 'process.env.NODE_ENV': JSON.stringify('production') }),
     },

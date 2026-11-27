@@ -3,6 +3,7 @@
 // (section 9: estimates are flagged everywhere). Amounts arrive as integer centimes from the
 // extension (extension/src/estimate.ts, estimateView); nothing is computed here.
 import type { JSX } from 'preact';
+import { ASSISTANT } from '../shared/distribution';
 import { cantonKey, t, type Language } from './i18n';
 import './estimate.css';
 
@@ -85,7 +86,7 @@ export const text = {
     thisYearCol: 'This year',
     icc: 'cantonal',
     ifd: 'federal',
-    foot: 'Computed on this computer by Taxpresso from the official documents. Ask Claude why any figure is what it is.',
+    foot: `Computed on this computer by Taxpresso from the official documents. Ask ${ASSISTANT} why any figure is what it is.`,
     officialZh: 'Steuern {year}',
     breakdownZh: 'What the cantonal and communal tax (Staats- und Gemeindesteuern) is made of',
     taxableZh:
@@ -160,7 +161,7 @@ export const text = {
     thisYearCol: 'Cette année',
     icc: 'cantonal',
     ifd: 'fédéral',
-    foot: 'Calculé sur cet ordinateur par Taxpresso à partir des documents officiels. Demandez à Claude pourquoi un montant est ce qu’il est.',
+    foot: `Calculé sur cet ordinateur par Taxpresso à partir des documents officiels. Demandez à ${ASSISTANT} pourquoi un montant est ce qu’il est.`,
     officialZh: 'Steuern {year}',
     breakdownZh: 'Ce qui compose l’impôt cantonal et communal (Staats- und Gemeindesteuern)',
     taxableZh: `Revenu imposable (steuerbares Einkommen)${NB}: cantonal {icc}, fédéral {ifd}. Fortune imposable (steuerbares Vermögen)${NB}: {wealth}.`,
@@ -227,7 +228,7 @@ export const text = {
     thisYearCol: 'Dieses Jahr',
     icc: 'Kanton',
     ifd: 'Bund',
-    foot: 'Von Taxpresso auf diesem Computer aus den offiziellen Dokumenten berechnet. Frag Claude, warum eine Zahl so ist, wie sie ist.',
+    foot: `Von Taxpresso auf diesem Computer aus den offiziellen Dokumenten berechnet. Frag ${ASSISTANT}, warum eine Zahl so ist, wie sie ist.`,
     officialZh: 'Steuern {year}',
     breakdownZh: 'Woraus die Staats- und Gemeindesteuern bestehen',
     taxableZh:
@@ -298,7 +299,7 @@ export const text = {
     thisYearCol: 'Quest’anno',
     icc: 'cantonale',
     ifd: 'federale',
-    foot: 'Calcolato da Taxpresso su questo computer a partire dai documenti ufficiali. Chiedi a Claude perché una cifra è quella che è.',
+    foot: `Calcolato da Taxpresso su questo computer a partire dai documenti ufficiali. Chiedi a ${ASSISTANT} perché una cifra è quella che è.`,
     officialZh: 'Steuern {year}',
     breakdownZh: 'Di cosa si compone l’imposta cantonale e comunale (Staats- und Gemeindesteuern)',
     taxableZh:

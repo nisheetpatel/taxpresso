@@ -3,17 +3,18 @@ import { defineConfig } from 'vite';
 // The dashboard is served by the extension on 127.0.0.1 under a strict CSP
 // (extension/src/dashboard.ts): no inline scripts or styles, every asset a file.
 //
-// Two builds (ui/src/shared/distribution.ts): `vite build` for the .mcpb, into dist/dashboard;
-// `vite build --mode plugin` for the Claude plugin, into dist/plugin/dashboard. The plugin's is
-// readable (not minified) and split into files under 256 KiB, as Anthropic's plugin directory asks
-// (docs/spikes/S4.md).
+// Three builds (ui/src/shared/distribution.ts): `vite build` for the .mcpb, into dist/dashboard;
+// `vite build --mode plugin` for the Claude plugin, into dist/plugin/dashboard; `vite build --mode
+// chatgpt` for the ChatGPT plugin, into dist/chatgpt/dashboard. A plugin's is readable (not
+// minified) and split into files under 256 KiB, as Anthropic's plugin directory asks
+// (docs/spikes/S4.md); the ChatGPT plugin's is built the same way, with its own flag.
 export default defineConfig(({ mode }) => {
-  const plugin = mode === 'plugin';
+  const plugin = mode === 'plugin' || mode === 'chatgpt';
   return {
     base: '/',
-    define: { __TAXPRESSO_DISTRIBUTION__: JSON.stringify(plugin ? 'plugin' : 'mcpb') },
+    define: { __TAXPRESSO_DISTRIBUTION__: JSON.stringify(plugin ? mode : 'mcpb') },
     build: {
-      outDir: plugin ? 'dist/plugin/dashboard' : 'dist/dashboard',
+      outDir: plugin ? `dist/${mode}/dashboard` : 'dist/dashboard',
       emptyOutDir: true,
       assetsInlineLimit: 0,
       modulePreload: { polyfill: false },

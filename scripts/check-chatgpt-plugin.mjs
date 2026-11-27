@@ -3,8 +3,9 @@
 // docs/spikes/S6.md) against what OpenAI documents for a plugin with a local server
 // (developers.openai.com/plugins/build/plugins.md, deploy/desktop-only.md, deploy/submission.md,
 // build/skills.md, read 27 November 2026): the files and their places, the manifest's fields and
-// limits, how the server starts, the skill's frontmatter, the icons, and Taxpresso's own rules (no
-// donation link, the wording we wrote names ChatGPT only).
+// limits, how the server starts, the skill's frontmatter, the icons, and Taxpresso's own rules: no
+// donation link, and no other host's name anywhere, in the files written for ChatGPT and in the
+// server and the UI built for it (the build flag at 'chatgpt', extension/src/config.ts).
 //
 //   node scripts/check-chatgpt-plugin.mjs [plugin folder]             offline
 //   node scripts/check-chatgpt-plugin.mjs [plugin folder] --schemas   also fetches the two JSON
@@ -14,7 +15,7 @@
 // It can't tell whether the ChatGPT desktop app accepts the package: that is S6's [HUMAN] test.
 // Exit code 1 when there is an error.
 
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
@@ -26,7 +27,13 @@ const MCP_SCHEMA = 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json';
 const DONATION = /preciousplasticbugoma|precious plastic bugoma/i;
 /** Wording of the other packages, which the files written for ChatGPT must not carry. */
 const OTHER_HOST = /claude|cowork|\.mcpb/i;
-const TEXT_FILE = /\.(md|json|mjs|js|html|css|txt|yaml|yml)$/i;
+/**
+ * The same in the server and the UI built for ChatGPT, as words: "Claude", "Cowork", ".mcpb". Their
+ * code keeps identifiers that are not wording (the ledger's `claude` as a value's origin, a
+ * function named askClaude), so here the names count only as whole words, in their own spelling.
+ */
+const OTHER_HOST_WORD = /\bClaude\b|\bCowork\b|\.mcpb\b/g;
+const TEXT_FILE = /\.(md|json|mjs|js|html|css|svg|txt|yaml|yml)$/i;
 /** A test build's entry point (build-chatgpt-plugin.mjs --vault): it fixes the tax folder. */
 const TEST_LAUNCH = 'server/test-launch.mjs';
 /** What a package for ChatGPT never has: the other formats' files, and what a plugin never ships. */
@@ -53,10 +60,9 @@ async function listFiles(dir, rel = '') {
 /**
  * Checks a ChatGPT plugin folder.
  * @param {string} dir the folder with plugin.json and mcp.json at its root
- * @param {{ claudePlugin?: string }} [opts] the Claude plugin's folder, to compare server/ and ui/
  * @returns {Promise<{ errors: string[], notes: string[], files: string[] }>}
  */
-export async function checkChatgptPlugin(dir, opts = {}) {
+export async function checkChatgptPlugin(dir) {
   const errors = [];
   const notes = [];
   const root = path.resolve(dir);
@@ -191,32 +197,19 @@ export async function checkChatgptPlugin(dir, opts = {}) {
     const hit = (f === 'mcp.json' ? mcpWording : await text(f)).match(OTHER_HOST);
     if (hit) errors.push(`${f}: names "${hit[0]}", wording of another package`);
   }
-  let naming = 0;
+  // The server and the UI are built for ChatGPT: the assistant is ChatGPT in every sentence, and a
+  // comment that reaches a built file counts too. (A test build's launch file names its folder, a
+  // path on this computer: it is left out, like mcp.json's env above.)
   for (const f of files.filter((n) => TEXT_FILE.test(n))) {
     const body = await text(f);
     if (DONATION.test(body))
       errors.push(`${f}: mentions the donation menu's destination (SPEC.md section 12)`);
-    if (/^(server|ui)\//.test(f) && /\bClaude\b/.test(body)) naming += 1;
-  }
-  if (naming)
-    notes.push(`${naming} files of server/ and ui/ name Claude in their wording (S6, finding 1)`);
-
-  // server/ and ui/ are the Claude plugin's files, byte for byte.
-  if (opts.claudePlugin) {
-    let differ = 0;
-    const theirs = (await listFiles(opts.claudePlugin)).filter((f) => /^(server|ui)\//.test(f));
-    const ours = files.filter((f) => /^(server|ui)\//.test(f) && f !== TEST_LAUNCH);
-    if (theirs.join() !== ours.join())
-      errors.push("server/ and ui/ are not the Claude plugin's files");
-    else
-      for (const f of ours)
-        if (
-          !(await readFile(path.join(root, f))).equals(
-            await readFile(path.join(opts.claudePlugin, f)),
-          )
-        )
-          differ += 1;
-    if (differ) errors.push(`${differ} files of server/ and ui/ differ from the Claude plugin's`);
+    if (!/^(server|ui)\//.test(f) || f === TEST_LAUNCH) continue;
+    const hits = body.match(OTHER_HOST_WORD) ?? [];
+    for (const word of new Set(hits))
+      errors.push(
+        `${f}: names "${word}" ${hits.filter((h) => h === word).length} time(s), wording of another package`,
+      );
   }
   return { errors, notes, files };
 }
@@ -313,14 +306,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     args.find((a) => !a.startsWith('--')) ??
       path.join(root, 'build', 'chatgpt-plugin', 'taxpresso'),
   );
-  const claudePlugin = path.join(root, 'build', 'plugin', 'taxpresso');
   let result;
   try {
-    const compare = await stat(claudePlugin).then(
-      () => true,
-      () => false,
-    );
-    result = await checkChatgptPlugin(dir, compare ? { claudePlugin } : {});
+    result = await checkChatgptPlugin(dir);
   } catch (e) {
     console.error(
       `check-chatgpt-plugin: can't read ${dir} (${e.message}). Run: pnpm build:chatgpt`,

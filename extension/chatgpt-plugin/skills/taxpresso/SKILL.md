@@ -18,7 +18,7 @@ Taxpresso's server runs on the user's computer, so its tools exist only in the C
 3. Ask only the questions `next_questions` gives, a few at a time, in plain words. Never ask your own questions about their tax situation.
 4. Before reading documents, ask once for the user's OK to read the documents waiting: reading one sends its content to you.
 5. Give `compute_tax`'s figures exactly as it returns them, and say which are estimates.
-6. Each tool result says what to do with it when that matters. Follow it. Where a result or the dashboard names another assistant, it means you.
+6. Each tool result says what to do with it when that matters. Follow it.
 
 When you name an item of the official form, add its official term in parentheses. Never send the user around the dashboard: anything they can click there, they can tell you.
 

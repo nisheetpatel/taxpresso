@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/server';
 import { DOCUMENT_KINDS, LedgerError, type FactValue } from '@taxpresso/ledger';
 import type { RenderedQuestion, Slot } from '@taxpresso/questionnaire';
 import * as z from 'zod/v4';
+import { ASSISTANT_APP, KEEP_DASHBOARD_BESIDE } from './config.js';
 import { formValues } from './copy-panel.js';
 import type { Dashboard } from './dashboard.js';
 import { DASHBOARD_VIEW_URI, registerDashboardView } from './dashboard-view.js';
@@ -1081,7 +1082,7 @@ export function createTaxpressoServer(deps: ServerDeps): McpServer {
         content: [
           {
             type: 'text',
-            text: `Dashboard: ${url}\nIt only works on this computer while Claude Desktop is running. Keep it beside the chat: in the chat it floats next to the conversation where the app allows it; in Cowork or the Code tab, open this link in the built-in browser pane next to the chat. Then guide the user from the chat: the dashboard follows by itself, so don't open it again in this conversation. Its buttons are only shortcuts for what is easier by hand: adding documents, a one-tap confirm, the year switch.`,
+            text: `Dashboard: ${url}\nIt only works on this computer while ${ASSISTANT_APP} is running. ${KEEP_DASHBOARD_BESIDE} Then guide the user from the chat: the dashboard follows by itself, so don't open it again in this conversation. Its buttons are only shortcuts for what is easier by hand: adding documents, a one-tap confirm, the year switch.`,
           },
         ],
         structuredContent: { url, status: status(ws) },

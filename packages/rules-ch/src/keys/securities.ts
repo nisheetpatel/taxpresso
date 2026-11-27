@@ -100,7 +100,7 @@ export const KEYS_SECURITIES_2026 = {
   },
   /**
    * The official taxable value on 31 December from the ESTV price list (liste des cours, ICTax),
-   * for the whole holding, as the user or Claude read it there. It replaces the broker's estimate
+   * for the whole holding, as the user or the assistant read it there. It replaces the broker's estimate
    * (securities.value_chf). The fact's note says where it came from. The extension never fetches it.
    */
   'securities.value_official_chf': {

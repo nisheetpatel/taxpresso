@@ -13,6 +13,7 @@ import {
   type McpUiHostContext,
 } from '@modelcontextprotocol/ext-apps';
 import { render } from 'preact';
+import { ASSISTANT } from '../shared/distribution';
 import { useEffect, useState } from 'preact/hooks';
 import { App } from '../dashboard/App';
 import { setTransport } from '../dashboard/api';
@@ -27,7 +28,7 @@ const strings = {
     inline: 'Back into the chat',
     browser: 'Open in your browser',
     copyLink: 'If nothing opens, copy this link into a browser on this computer:',
-    alone: 'Ask Claude to open your Taxpresso dashboard.',
+    alone: `Ask ${ASSISTANT} to open your Taxpresso dashboard.`,
     noTools: 'Your dashboard can’t run inside this chat. Open it in your browser on this computer.',
   },
   fr: {
@@ -37,7 +38,7 @@ const strings = {
     inline: 'Remettre dans la conversation',
     browser: 'Ouvrir dans le navigateur',
     copyLink: 'Si rien ne s’ouvre, copiez ce lien dans un navigateur de cet ordinateur :',
-    alone: 'Demandez à Claude d’ouvrir votre tableau de bord Taxpresso.',
+    alone: `Demandez à ${ASSISTANT} d’ouvrir votre tableau de bord Taxpresso.`,
     noTools:
       'Votre tableau de bord ne peut pas s’afficher dans ce chat. Ouvrez-le dans le navigateur de cet ordinateur.',
   },
@@ -48,7 +49,7 @@ const strings = {
     inline: 'Zurück in den Chat',
     browser: 'Im Browser öffnen',
     copyLink: 'Wenn sich nichts öffnet, kopiere diesen Link in einen Browser auf diesem Computer:',
-    alone: 'Bitte Claude, dein Taxpresso-Dashboard zu öffnen.',
+    alone: `Bitte ${ASSISTANT}, dein Taxpresso-Dashboard zu öffnen.`,
     noTools:
       'Dein Dashboard kann in diesem Chat nicht laufen. Öffne es im Browser auf diesem Computer.',
   },
@@ -59,7 +60,7 @@ const strings = {
     inline: 'Rimetti nella chat',
     browser: 'Apri nel browser',
     copyLink: 'Se non si apre niente, copia questo link in un browser su questo computer:',
-    alone: 'Chiedi a Claude di aprire la tua dashboard Taxpresso.',
+    alone: `Chiedi a ${ASSISTANT} di aprire la tua dashboard Taxpresso.`,
     noTools:
       'La tua dashboard non può funzionare in questa chat. Aprila nel browser su questo computer.',
   },

@@ -159,8 +159,8 @@ export function Why({
 }
 
 /**
- * A button that hands a request to Claude: as the user's message in the chat inside Claude
- * Desktop, otherwise copied for the user to paste (the page never calls a model, SPEC.md C1).
+ * A button that hands a request to the assistant: as the user's message in the chat inside its
+ * app, otherwise copied for the user to paste (the page never calls a model, SPEC.md C1).
  */
 export function AskClaude({
   text,

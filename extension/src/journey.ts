@@ -10,6 +10,7 @@ import { propertyFacts, propertyHint, propertyReadingHint } from './property.js'
 import { partYearFacts, partYearHint } from './part-year.js';
 import { cantonNames, type CantonEntry } from './cantons.js';
 import { BARCODE_PENDING } from './barcode.js';
+import { ASSISTANT } from './config.js';
 import { hasFigures } from './estimate.js';
 import { planningView, savingsTotal, type SavingsTotal } from './planning.js';
 import { sourceTaxFacts as shortFacts, sourceTaxOf } from './source-tax.js';
@@ -735,11 +736,11 @@ export function nextText(j: Journey, year: number): string {
     case 'not_supported':
       return 'Taxpresso can’t prepare part of your situation yet.';
     case 'start':
-      return 'Drop what you have: last year’s declaration or tax bill, this year’s documents. Or just tell Claude about yourself.';
+      return `Drop what you have: last year’s declaration or tax bill, this year’s documents. Or just tell ${ASSISTANT} about yourself.`;
     case 'read':
       return n === 1
-        ? 'Taxpresso has a document to read. Ask Claude to read it, or say what it is.'
-        : `Taxpresso has ${n} documents to read. Ask Claude to read them, or say what each one is.`;
+        ? `Taxpresso has a document to read. Ask ${ASSISTANT} to read it, or say what it is.`
+        : `Taxpresso has ${n} documents to read. Ask ${ASSISTANT} to read them, or say what each one is.`;
     case 'whose':
       return `Say whose ${n === 1 ? 'this certificate is' : 'each certificate is'}.`;
     case 'canton':
@@ -759,7 +760,7 @@ export function nextText(j: Journey, year: number): string {
     case 'documents':
       return `Add your ${plural(n, 'missing document')}.`;
     case 'income':
-      return 'Tell Claude roughly what you earn this year, so Taxpresso can estimate your tax.';
+      return `Tell ${ASSISTANT} roughly what you earn this year, so Taxpresso can estimate your tax.`;
     case 'save':
       return j.savings
         ? `You could save about ${about(j.savings.totalCentimes)} before 31 December: see how.`

@@ -1,7 +1,7 @@
 // The ChatGPT plugin's check (scripts/check-chatgpt-plugin.mjs, spike S6, docs/spikes/S6.md): what
-// OpenAI documents for a plugin with a local server, and the small JSON Schema check behind
-// `--schemas`. The built package itself is checked by `pnpm check:chatgpt` and run end to end by
-// the offline test (`pnpm test:offline:chatgpt`).
+// OpenAI documents for a plugin with a local server, that nothing in the package names another
+// host, and the small JSON Schema check behind `--schemas`. The built package itself is checked by
+// `pnpm check:chatgpt` and run end to end by the offline test (`pnpm test:offline:chatgpt`).
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -195,33 +195,46 @@ describe('the ChatGPT plugin check', () => {
     ]);
   });
 
-  it('counts the files of the server and the UI that still name Claude', async () => {
+  it('refuses a server or a UI that names Claude, Cowork or the .mcpb, even in a comment', async () => {
     await validPackage({
-      'server/index.mjs': 'export const next = "Tell Claude about yourself.";',
+      'server/index.mjs':
+        'export const next = "Tell Claude about yourself. Claude Desktop must be running.";',
+      'server/taxpresso.mjs': '/** What Claude reads. */\nexport const where = "in Cowork";',
+      'ui/dashboard/assets/app.js': 'const lost = "Install the .mcpb again.";',
+      'ui/views/dashboard.html': '<!doctype html><p>Ask Claude to open your dashboard.</p>',
     });
-    const { errors, notes } = await checkChatgptPlugin(dir);
-    expect(errors).toEqual([]);
-    expect(notes.join('\n')).toMatch(/1 files of server\/ and ui\/ name Claude/);
+    const { errors } = await checkChatgptPlugin(dir);
+    expect(errors).toEqual([
+      'server/index.mjs: names "Claude" 2 time(s), wording of another package',
+      'server/taxpresso.mjs: names "Claude" 1 time(s), wording of another package',
+      'server/taxpresso.mjs: names "Cowork" 1 time(s), wording of another package',
+      'ui/dashboard/assets/app.js: names ".mcpb" 1 time(s), wording of another package',
+      'ui/views/dashboard.html: names "Claude" 1 time(s), wording of another package',
+    ]);
   });
 
-  it('compares the server and the UI with the Claude plugin’s, byte for byte', async () => {
-    await validPackage();
-    const other = path.join(dir, '..', `${path.basename(dir)}-claude`);
-    try {
-      for (const [name, body] of [
-        ['server/index.mjs', 'export {};\n'],
-        ['server/zxing_reader.wasm', Buffer.from([0, 0x61, 0x73, 0x6d])],
-        ['ui/views/dashboard.html', '<!doctype html><title>Taxpresso</title>'],
-        ['ui/dashboard/index.html', '<!doctype html><title>Other</title>'],
-      ] as const) {
-        await mkdir(path.dirname(path.join(other, name)), { recursive: true });
-        await writeFile(path.join(other, name), body);
-      }
-      const { errors } = await checkChatgptPlugin(dir, { claudePlugin: other });
-      expect(errors).toEqual(["1 files of server/ and ui/ differ from the Claude plugin's"]);
-    } finally {
-      await rm(other, { recursive: true, force: true });
-    }
+  it('passes a server and a UI that name ChatGPT, and identifiers that are not wording', async () => {
+    await validPackage({
+      'server/index.mjs':
+        'export const next = "Tell ChatGPT about yourself.";\n' +
+        'ws.record(via === "chat" ? "claude" : "you", "answer");\n' +
+        'function imageForClaude(img) {}\nif (cls.mcpBrand) askClaude(text);\n',
+      'ui/views/dashboard.html': '<!doctype html><p>Ask ChatGPT to open your dashboard.</p>',
+    });
+    expect((await checkChatgptPlugin(dir)).errors).toEqual([]);
+  });
+
+  it('leaves a test build’s launch file out of the wording: its folder is a path', async () => {
+    await validPackage({
+      'mcp.json': withServer({
+        args: ['${PLUGIN_ROOT}/server/test-launch.mjs'],
+        env: { TAXPRESSO_VAULT_PATH: '/Users/claude/Claude/Taxpresso-demo' },
+      }),
+      'server/test-launch.mjs':
+        'process.env.TAXPRESSO_VAULT_PATH = "/Users/claude/Claude/Taxpresso-demo";\n' +
+        "await import('./index.mjs');\n",
+    });
+    expect((await checkChatgptPlugin(dir)).errors).toEqual([]);
   });
 });
 

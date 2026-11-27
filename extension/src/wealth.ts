@@ -9,6 +9,7 @@
 import type { Fact, VaultDocument } from '@taxpresso/ledger';
 import type { Amount, MovableAsset, MovableWealth, Text } from '@taxpresso/rules-ch';
 import { etatDesTitres } from '@taxpresso/rules-ge';
+import { named } from './config.js';
 
 /**
  * The movable wealth of the ledger, on the shared household fields. `valuables`: what to note when
@@ -22,7 +23,7 @@ export function movableWealth(
   documents: readonly VaultDocument[],
   valuables?: Text,
 ): MovableWealth {
-  const etat = etatDesTitres({ taxYear, people: [...people], facts, documents });
+  const etat = named(etatDesTitres({ taxYear, people: [...people], facts, documents }));
   const movable: MovableAsset[] = [];
   const household: NonNullable<MovableWealth['household']> = {};
   const notes: Text[] = [];

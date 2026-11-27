@@ -1,6 +1,7 @@
 // UI strings for the copy panel (SPEC.md 10.5). Second person, plain words, the official label
 // (French in Geneva and Vaud, German in Zurich and Bern) always next to its gloss. Status labels follow SPEC.md
 // section 11b.
+import { ASSISTANT } from '../shared/distribution';
 import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -20,7 +21,7 @@ export const messages = {
     entered: 'Entered',
     tick: 'Tick this box',
     rounded: 'From {amount}, rounded to the franc',
-    confirmFirst: 'Check it first, in “What Claude read in your documents”.',
+    confirmFirst: `Check it first, in “What ${ASSISTANT} read in your documents”.`,
     estimateFirst: 'An estimate: settle it before you type it.',
     formWorksOut: 'The form works this out: check it shows this.',
     from: 'Read from {files}',
@@ -91,7 +92,7 @@ export const messages = {
     entered: 'Saisi',
     tick: 'Cochez cette case',
     rounded: 'De {amount}, arrondi au franc',
-    confirmFirst: `Vérifiez-la d’abord, dans «${NB}Ce que Claude a lu dans vos documents${NB}».`,
+    confirmFirst: `Vérifiez-la d’abord, dans «${NB}Ce que ${ASSISTANT} a lu dans vos documents${NB}».`,
     estimateFirst: `Une estimation${NB}: réglez-la avant de la saisir.`,
     formWorksOut: `Le formulaire le calcule${NB}: vérifiez qu’il affiche ce montant.`,
     from: 'Lu dans {files}',
@@ -143,7 +144,7 @@ export const messages = {
     entered: 'Eingetragen',
     tick: 'Dieses Feld ankreuzen',
     rounded: 'Aus {amount}, auf den Franken gerundet',
-    confirmFirst: 'Prüfe es zuerst, unter «Was Claude in deinen Dokumenten gelesen hat».',
+    confirmFirst: `Prüfe es zuerst, unter «Was ${ASSISTANT} in deinen Dokumenten gelesen hat».`,
     estimateFirst: 'Eine Schätzung: Kläre sie, bevor du sie einträgst.',
     formWorksOut: 'Das Formular rechnet das aus: Prüfe, ob es diesen Betrag zeigt.',
     from: 'Gelesen in {files}',
@@ -216,7 +217,7 @@ export const messages = {
     entered: 'Inserito',
     tick: 'Spunta questa casella',
     rounded: 'Da {amount}, arrotondato al franco',
-    confirmFirst: 'Controllalo prima, in “Cosa ha letto Claude nei tuoi documenti”.',
+    confirmFirst: `Controllalo prima, in “Cosa ha letto ${ASSISTANT} nei tuoi documenti”.`,
     estimateFirst: 'Una stima: sistemala prima di inserirla.',
     formWorksOut: 'Il modulo lo calcola: controlla che mostri questo importo.',
     from: 'Letto in {files}',

@@ -3,6 +3,7 @@
 // carries a random marker so a document can't fake its end.
 import { randomBytes } from 'node:crypto';
 import { MAX_IMAGE_BYTES, readForReview, type ReviewResult } from '@taxpresso/intake';
+import { ASSISTANT } from './config.js';
 import { fieldsGuide } from './extraction.js';
 import { KIND_LABELS } from './kinds.js';
 import type { Workspace } from './workspace.js';
@@ -70,7 +71,7 @@ export async function reviewDocument(
     ...(result.problem ? { problem: result.problem } : {}),
   };
   const kind = doc.kind
-    ? `${KIND_LABELS[doc.kind].en} (${doc.kindSource === 'user' ? 'said by the user' : 'read by Claude, not confirmed yet'})`
+    ? `${KIND_LABELS[doc.kind].en} (${doc.kindSource === 'user' ? 'said by the user' : `read by ${ASSISTANT}, not confirmed yet`})`
     : 'not known yet';
   const head = [
     `Document ${doc.id}: “${doc.filename}” (${result.format.toUpperCase()}${result.pages ? `, ${result.pages} page${result.pages === 1 ? '' : 's'}` : ''}). Kind: ${kind}.${doc.person ? ` Whose: ${WHOSE[doc.person] ?? doc.person}.` : ''}`,

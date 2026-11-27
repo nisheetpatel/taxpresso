@@ -9,7 +9,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
-import { UI_LANGUAGES } from './config.js';
+import { ASSISTANT, UI_LANGUAGES } from './config.js';
 import type { ApiResponse, Dashboard } from './dashboard.js';
 import type { Workspace } from './workspace.js';
 import { TaxYears } from './years.js';
@@ -33,8 +33,7 @@ const VIEW_META = {
 /** Written into the view's HTML: the key every dashboard_api call must carry (see below). */
 export const VIEW_KEY_META = 'taxpresso-view-key';
 
-const NOT_THE_VIEW =
-  'Only the dashboard shown in the conversation uses this. Ask Claude to open the dashboard again.';
+const NOT_THE_VIEW = `Only the dashboard shown in the conversation uses this. Ask ${ASSISTANT} to open the dashboard again.`;
 const NO_DOCUMENTS =
   'To keep your documents out of the chat app, add them in the dashboard in your browser, or put them in your Taxpresso folder.';
 

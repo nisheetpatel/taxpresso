@@ -15,9 +15,8 @@ Taxpresso is free and open source, under the GNU AGPL-3.0-or-later.
 
 ## A test build
 
-This package is a test build. It has not been tried in the ChatGPT desktop app yet, and parts of
-Taxpresso still name another assistant in their wording. The project's notes say what is known and
-what is left to check:
+This package is a test build. It has not been tried in the ChatGPT desktop app yet. The project's
+notes say what is known and what is left to check:
 [docs/spikes/S6.md](https://github.com/nisheetpatel/taxpresso/blob/main/docs/spikes/S6.md).
 
 ## Where it runs

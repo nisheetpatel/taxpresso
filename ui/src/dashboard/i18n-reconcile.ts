@@ -1,6 +1,7 @@
 // UI strings for "Check before you transmit" (SPEC.md 10.4).
 // Second person, plain words, official French terms next to their gloss. Status labels follow
 // SPEC.md section 11b: a difference is "Fix".
+import { ASSISTANT } from '../shared/distribution';
 import { cantonKey, type Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -79,8 +80,7 @@ export const messages = {
     transmitTitle: 'Your turn: transmit',
     transmit1: 'Fix any difference in GeTax or the online declaration.',
     transmit2: 'Download the PDF again and add it here, until everything matches.',
-    transmit3:
-      'Press Transmettre (transmit) yourself. Neither Taxpresso nor Claude ever transmits your declaration.',
+    transmit3: `Press Transmettre (transmit) yourself. Neither Taxpresso nor ${ASSISTANT} ever transmits your declaration.`,
     statusNeedsOk: 'Needs your OK',
     statusEstimate: 'Estimate',
     colon: ': ',
@@ -154,8 +154,7 @@ export const messages = {
     transmit1: 'Corrigez chaque différence dans GeTax ou la déclaration en ligne.',
     transmit2:
       'Téléchargez à nouveau le PDF et ajoutez-le ici, jusqu’à ce que tout soit identique.',
-    transmit3:
-      'Appuyez vous-même sur Transmettre. Ni Taxpresso ni Claude ne transmettent jamais votre déclaration.',
+    transmit3: `Appuyez vous-même sur Transmettre. Ni Taxpresso ni ${ASSISTANT} ne transmettent jamais votre déclaration.`,
     statusNeedsOk: 'À confirmer',
     statusEstimate: 'Estimation',
     colon: `${NB}: `,
@@ -237,8 +236,7 @@ export const messages = {
     transmitTitle: 'Du bist dran: übermitteln',
     transmit1: 'Korrigiere jede Differenz in GeTax oder der Online-Steuererklärung.',
     transmit2: 'Lade das PDF nochmals herunter und füge es hier hinzu, bis alles stimmt.',
-    transmit3:
-      'Drück selbst auf Transmettre (übermitteln). Weder Taxpresso noch Claude übermitteln je deine Steuererklärung.',
+    transmit3: `Drück selbst auf Transmettre (übermitteln). Weder Taxpresso noch ${ASSISTANT} übermitteln je deine Steuererklärung.`,
     statusNeedsOk: 'Braucht dein OK',
     statusEstimate: 'Schätzung',
     colon: ': ',
@@ -322,8 +320,7 @@ export const messages = {
     transmitTitle: 'Tocca a te: trasmetti',
     transmit1: 'Correggi ogni differenza in GeTax o nella dichiarazione online.',
     transmit2: 'Scarica di nuovo il PDF e aggiungilo qui, finché tutto corrisponde.',
-    transmit3:
-      'Premi tu Transmettre (trasmetti). Né Taxpresso né Claude trasmettono mai la tua dichiarazione.',
+    transmit3: `Premi tu Transmettre (trasmetti). Né Taxpresso né ${ASSISTANT} trasmettono mai la tua dichiarazione.`,
     statusNeedsOk: 'Da confermare',
     statusEstimate: 'Stima',
     colon: ': ',

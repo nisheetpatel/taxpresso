@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // Spike S6 (docs/spikes/S6.md): packages Taxpresso as a ChatGPT plugin, OpenAI's portable "Agent
 // Plugins" package (developers.openai.com/plugins/build/plugins.md and deploy/desktop-only.md, read
-// 27 November 2026), around the same local server. Run `pnpm build:chatgpt` (it builds the Claude
-// plugin first): the server and the UI are that build's files, copied as they are, so the .mcpb and
-// the Claude plugin stay what they were. scripts/check-chatgpt-plugin.mjs checks the result.
+// 27 November 2026), around the same local server. Run `pnpm build:chatgpt` (it builds this
+// package's UI first). The server and the UI are built here from the same sources as the .mcpb's
+// and the Claude plugin's, with the build flag at 'chatgpt': the assistant is called ChatGPT in
+// every sentence (extension/src/config.ts, ui/src/shared/distribution.ts), and the other two
+// builds stay what they were. scripts/check-chatgpt-plugin.mjs checks the result.
 //
 //   build/taxpresso-chatgpt-<version>.zip    what people download: the folder below, zipped
 //   build/taxpresso-chatgpt.zip              the same bytes, under a name that never changes
@@ -13,7 +15,8 @@
 //       plugin.json                          the manifest; OpenAI's fields under extensions["com.openai"]
 //       mcp.json                             starts the server: node ${PLUGIN_ROOT}/server/index.mjs
 //       skills/taxpresso/SKILL.md            when and how to use Taxpresso (extension/chatgpt-plugin/)
-//       server/, ui/                         as in build/plugin/taxpresso
+//       server/                              the server, readable and split as the Claude plugin's
+//       ui/dashboard/, ui/views/             this package's UI build (ui: `build:chatgpt`)
 //       assets/logo.png, assets/composer-icon.png
 //       README.md, LICENSE, THIRD_PARTY_NOTICES.txt
 //
@@ -22,11 +25,14 @@
 // the real ~/Documents/Taxpresso. A test build goes to build/chatgpt-plugin-test/ instead:
 //
 //   node extension/scripts/build-chatgpt-plugin.mjs --vault /absolute/path/to/an/empty/folder
+//
+// The esbuild metafile goes to extension/build-meta/chatgpt-server.json (not shipped) for
+// scripts/check-bundle.mjs --chatgpt. No bin/, no package.json, no node_modules.
 
 import { access, cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { extDir, repoRoot } from './build-common.mjs';
+import { buildSplitServer, extDir, repoRoot, writeNotices } from './build-common.mjs';
 import { iconPng } from './make-icon.mjs';
 import { walk, zipFolder } from './zip-folder.mjs';
 
@@ -39,7 +45,7 @@ const SHORT_DESCRIPTION = 'Your Swiss tax return';
 /** The directory's category list is in OpenAI's dashboard; the docs' own example uses this one. */
 const CATEGORY = 'Productivity';
 
-const claudePlugin = path.join(repoRoot, 'build', 'plugin', NAME);
+const uiDist = path.join(repoRoot, 'ui', 'dist', 'chatgpt');
 const sources = path.join(extDir, 'chatgpt-plugin');
 
 // --vault <folder>: a test build whose server uses this folder (mcp.json's env).
@@ -70,29 +76,18 @@ const out = path.join(marketplaceRoot, NAME);
 const pkg = JSON.parse(await readFile(path.join(extDir, 'package.json'), 'utf8'));
 const manifest = JSON.parse(await readFile(path.join(extDir, 'manifest.json'), 'utf8'));
 
-// The server and the UI come from the Claude plugin's build, of this version.
-let built;
 try {
-  await access(path.join(claudePlugin, 'server', 'index.mjs'));
-  await access(path.join(claudePlugin, 'ui', 'views', 'dashboard.html'));
-  built = JSON.parse(
-    await readFile(path.join(claudePlugin, '.claude-plugin', 'plugin.json'), 'utf8'),
-  );
+  await access(path.join(uiDist, 'dashboard', 'index.html'));
+  await access(path.join(uiDist, 'views', 'dashboard.html'));
 } catch {
-  console.error('The Claude plugin is not built. Run: pnpm build:plugin');
-  process.exit(1);
-}
-if (built.version !== pkg.version) {
-  console.error(
-    `build/plugin/${NAME} is version ${built.version}, not ${pkg.version}. Run: pnpm build:plugin`,
-  );
+  console.error("This package's UI is not built. Run: pnpm --filter @taxpresso/ui build:chatgpt");
   process.exit(1);
 }
 
 /**
- * The .mcpb's wording for ChatGPT. The manifest's texts name Claude; here the assistant's name is
- * swapped, so the packages say the same. A spike's shortcut: S6 proposes the name behind the build
- * flag instead.
+ * The .mcpb's listing texts for ChatGPT (extension/manifest.json: the description and the long
+ * description). They name Claude; here the assistant's name is swapped, so the packages say the
+ * same. The server's and the UI's own sentences take the name from the build flag instead.
  */
 function forChatgpt(text) {
   const swapped = text.replaceAll('Claude', 'ChatGPT');
@@ -103,11 +98,18 @@ function forChatgpt(text) {
 await rm(marketplaceRoot, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
 
-// 1. The server, the UI, the license and the notices: the Claude plugin's files, unchanged.
-for (const name of ['server', 'ui'])
-  await cp(path.join(claudePlugin, name), path.join(out, name), { recursive: true });
-for (const name of ['LICENSE', 'THIRD_PARTY_NOTICES.txt'])
-  await cp(path.join(claudePlugin, name), path.join(out, name));
+// 1. The server, built for ChatGPT: the same sources and the same layout as the Claude plugin's
+//    (build-common.mjs), the flag at 'chatgpt'. Then this package's UI, the license, the notices.
+const metafile = await buildSplitServer({
+  version: pkg.version,
+  distribution: 'chatgpt',
+  serverDir: path.join(out, 'server'),
+  metaName: testVault ? 'chatgpt-test-server.json' : 'chatgpt-server.json',
+});
+await cp(path.join(uiDist, 'dashboard'), path.join(out, 'ui', 'dashboard'), { recursive: true });
+await cp(path.join(uiDist, 'views'), path.join(out, 'ui', 'views'), { recursive: true });
+await cp(path.join(repoRoot, 'LICENSE'), path.join(out, 'LICENSE'));
+await writeNotices(metafile, path.join(out, 'THIRD_PARTY_NOTICES.txt'), pkg.version);
 
 // 2. The skill and the README, worded for ChatGPT.
 await cp(path.join(sources, 'skills'), path.join(out, 'skills'), { recursive: true });
