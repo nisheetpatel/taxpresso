@@ -38,6 +38,14 @@ jobs:
       - run: pnpm build:plugin
       - name: Claude plugin, C2 and pre-submission checks
         run: pnpm check:plugin
+      # Taxpresso for ChatGPT, a beta (docs/spikes/S6.md): the same server and UI in OpenAI's plugin
+      # format, its zip, its format check and the offline test with its server started as its
+      # mcp.json says.
+      - run: pnpm build:chatgpt
+      - name: ChatGPT plugin, format and limits
+        run: pnpm check:chatgpt
+      - name: Offline test of the ChatGPT plugin (network guard)
+        run: pnpm test:offline:chatgpt
 
       # SPEC.md section 13 item 8: the whole flow passes with networking disabled. The container has
       # only a loopback interface, and the network guard inside the server records any attempt.
@@ -80,6 +88,11 @@ jobs:
         with:
           name: taxpresso-plugin
           path: build/taxpresso-plugin-*.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: taxpresso-chatgpt
+          path: build/taxpresso-chatgpt*.zip
           if-no-files-found: error
 
   offline-desktop-platforms:

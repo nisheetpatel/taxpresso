@@ -51,7 +51,7 @@ It isn't tax advice, and no check replaces yours: you review the official declar
 
 Your tax folder is `~/Documents/Taxpresso` unless you choose another one at install. The website has a [Get started](https://taxpresso.ch/en/start/) page with every step.
 
-Nothing leaves your computer, except what you share with the AI you use: today that's Claude, under your own account and your own privacy settings. ChatGPT isn't available yet.
+Nothing leaves your computer, except what you share with the AI you use: that's Claude, or ChatGPT (a beta, in its desktop app on a Mac), under your own account and your own privacy settings.
 
 ## Build from source
 

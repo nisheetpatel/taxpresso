@@ -53,6 +53,11 @@
       "permanent": false
     },
     {
+      "source": "/download/taxpresso-chatgpt.zip",
+      "destination": "https://github.com/nisheetpatel/taxpresso/releases/latest/download/taxpresso-chatgpt.zip",
+      "permanent": false
+    },
+    {
       "source": "/download{/}?",
       "destination": "/en/download/",
       "permanent": false

@@ -9,10 +9,12 @@ import { SOURCE_URL, type Lang } from './content.ts';
 import { frenchSpacing, type Section } from './guides.ts';
 
 /** The day this policy last changed (YYYY-MM-DD), shown at the top of the page. */
-export const PRIVACY_UPDATED = '2026-10-14';
+export const PRIVACY_UPDATED = '2026-11-27';
 
 /** Anthropic's privacy policy, for what happens in Claude. */
 const ANTHROPIC_PRIVACY = 'https://www.anthropic.com/legal/privacy';
+/** OpenAI's privacy policy, for what happens in ChatGPT (the beta). */
+const OPENAI_PRIVACY = 'https://openai.com/policies/privacy-policy/';
 const MAIL = '[hello@taxpresso.ch](mailto:hello@taxpresso.ch)';
 
 export interface PrivacyCopy {
@@ -62,6 +64,7 @@ const fr: PrivacyCopy = frenchSpacing({
         'Vous gardez la main : dans les paramètres de Claude, rubrique Confidentialité, vous décidez si vos conversations peuvent servir à améliorer Claude, et vous les supprimez quand vous voulez.',
         'Taxpresso ne lit jamais votre historique de conversations, la mémoire de Claude ni les fichiers que vous envoyez à Claude : il ne lit que les documents de votre dossier fiscal.',
         `Lisez la [politique de confidentialité d’Anthropic](${ANTHROPIC_PRIVACY}).`,
+        `Dans ChatGPT (bêta), il en va de même avec OpenAI : ce que vous partagez dans une conversation va à OpenAI, avec votre propre compte ChatGPT et ses réglages. Lisez la [politique de confidentialité d’OpenAI](${OPENAI_PRIVACY}).`,
       ],
     },
     {
@@ -130,6 +133,7 @@ const en: PrivacyCopy = {
         'You stay in control: in Claude’s settings, under Privacy, you decide whether your chats may be used to improve Claude, and you delete your conversations whenever you like.',
         'Taxpresso never reads your chat history, Claude’s memory or the files you upload to Claude: it only reads the documents in your tax folder.',
         `Read [Anthropic’s privacy policy](${ANTHROPIC_PRIVACY}).`,
+        `In ChatGPT (beta), the same goes for OpenAI: what you share in a conversation goes to OpenAI, under your own ChatGPT account and its settings. Read [OpenAI’s privacy policy](${OPENAI_PRIVACY}).`,
       ],
     },
     {
@@ -198,6 +202,7 @@ const de: PrivacyCopy = {
         'Du behältst die Kontrolle: In den Einstellungen von Claude, unter Datenschutz, entscheidest du, ob deine Chats helfen dürfen, Claude zu verbessern, und du löschst deine Unterhaltungen, wann du willst.',
         'Taxpresso liest nie deinen Chatverlauf, das Gedächtnis von Claude oder die Dateien, die du in Claude hochlädst: Es liest nur die Dokumente in deinem Steuerordner.',
         `Lies die [Datenschutzerklärung von Anthropic](${ANTHROPIC_PRIVACY}).`,
+        `In ChatGPT (Beta) gilt dasselbe mit OpenAI: Was du in einem Chat teilst, geht an OpenAI, mit deinem eigenen ChatGPT-Konto und dessen Einstellungen. Lies die [Datenschutzerklärung von OpenAI](${OPENAI_PRIVACY}).`,
       ],
     },
     {
@@ -266,6 +271,7 @@ const it: PrivacyCopy = {
         'Hai tu il controllo: nelle impostazioni di Claude, alla voce Privacy, decidi se le tue chat possono servire a migliorare Claude, e cancelli le conversazioni quando vuoi.',
         'Taxpresso non legge mai la cronologia delle chat, la memoria di Claude né i file che carichi su Claude: legge solo i documenti nella tua cartella fiscale.',
         `Leggi l’[informativa sulla privacy di Anthropic](${ANTHROPIC_PRIVACY}).`,
+        `In ChatGPT (beta) vale lo stesso con OpenAI: quello che condividi in una conversazione va a OpenAI, con il tuo account ChatGPT e le sue impostazioni. Leggi l’[informativa sulla privacy di OpenAI](${OPENAI_PRIVACY}).`,
       ],
     },
     {
@@ -334,6 +340,7 @@ const es: PrivacyCopy = {
         'Tú decides: en los ajustes de Claude, en Privacidad, eliges si tus chats pueden servir para mejorar Claude, y borras tus conversaciones cuando quieras.',
         'Taxpresso nunca lee tu historial de chats, la memoria de Claude ni los archivos que subes a Claude: solo lee los documentos de tu carpeta fiscal.',
         `Lee la [política de privacidad de Anthropic](${ANTHROPIC_PRIVACY}).`,
+        `En ChatGPT (beta) ocurre lo mismo con OpenAI: lo que compartes en una conversación va a OpenAI, con tu propia cuenta de ChatGPT y sus ajustes. Lee la [política de privacidad de OpenAI](${OPENAI_PRIVACY}).`,
       ],
     },
     {
@@ -402,6 +409,7 @@ const pt: PrivacyCopy = {
         'Tu decides: nas configurações do Claude, em Privacidade, escolhes se as tuas conversas podem ajudar a melhorar o Claude, e apagas as tuas conversas quando quiseres.',
         'O Taxpresso nunca lê o teu histórico de conversas, a memória do Claude nem os ficheiros que carregas no Claude: só lê os documentos da tua pasta fiscal.',
         `Lê a [política de privacidade da Anthropic](${ANTHROPIC_PRIVACY}).`,
+        `No ChatGPT (beta), passa-se o mesmo com a OpenAI: o que partilhas numa conversa vai para a OpenAI, com a tua própria conta ChatGPT e as suas definições. Lê a [política de privacidade da OpenAI](${OPENAI_PRIVACY}).`,
       ],
     },
     {
