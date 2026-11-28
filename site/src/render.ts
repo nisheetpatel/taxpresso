@@ -4,6 +4,9 @@
 import { CUP_SVG, ICON_SVG, wordmark } from '../../ui/src/shared/logo.ts';
 import {
   type Art,
+  CHATGPT_DOWNLOAD_URL,
+  CHATGPT_FEEDBACK,
+  CHATGPT_INSTALL,
   CONTACT_EMAIL,
   copy,
   DONATE_URL,
@@ -15,7 +18,6 @@ import {
   LANGS,
   SOURCE_URL,
   startPath,
-  WANT_CHATGPT,
   type Tone,
 } from './content.ts';
 import { TESTIMONIALS } from './testimonials.ts';
@@ -620,7 +622,7 @@ ${header(lang, startPath)}
 <p class="lead">${esc(s.lead)}</p>
 <div class="dl-pair">
 <a class="plat plat-go" href="${downloadPath(here.path)}">${DOWN}<span class="plat-text"><span class="plat-small">${esc(s.downloadFor)}</span><span class="plat-name">Claude</span></span></a>
-<button class="plat plat-wait" type="button" id="chatgpt" popovertarget="chatgpt-ask">${DOWN}<span class="plat-text"><span class="plat-small">${esc(s.downloadFor)}</span><span class="plat-name">ChatGPT<span class="plat-tag">${esc(c.tag)}</span></span></span></button>
+<button class="plat plat-go" type="button" id="chatgpt" popovertarget="chatgpt-ask">${DOWN}<span class="plat-text"><span class="plat-small">${esc(s.downloadFor)}</span><span class="plat-name">ChatGPT<span class="plat-tag">${esc(c.tag)}</span></span></span></button>
 </div>
 <p class="dl-note">${esc(s.downloadNote)}</p>
 <ul class="platforms" aria-label="Claude Desktop">${platforms}</ul>
@@ -629,9 +631,16 @@ ${header(lang, startPath)}
 <button class="pop-close" type="button" popovertarget="chatgpt-ask" popovertargetaction="hide" aria-label="${esc(c.close)}">${CLOSE}</button>
 <h2 id="chatgpt-ask-title">${esc(c.title)}</h2>
 <p>${esc(c.text)}</p>
-<p>${esc(c.ask)}</p>
-<p class="pop-actions"><a class="btn btn-primary" href="${esc(WANT_CHATGPT.mail)}">${esc(c.plus)}</a><a class="btn btn-quiet" href="${esc(WANT_CHATGPT.issue)}" target="_blank" rel="noopener">${esc(c.more)}</a></p>
-<p class="pop-note">${esc(c.plusNote)}</p>
+<ol class="pop-steps">
+<li>${esc(c.steps[0]!)}</li>
+<li>${esc(c.steps[1]!)}
+<p class="pop-actions"><a class="btn btn-primary" href="${CHATGPT_DOWNLOAD_URL}">${esc(s.downloadFor)} ChatGPT</a></p></li>
+<li>${esc(c.steps[2]!)}
+<pre class="pop-code"><code>${CHATGPT_INSTALL.map(esc).join('\n')}</code></pre></li>
+<li>${esc(c.steps[3]!)} <q>${esc(s.prompt)}</q></li>
+</ol>
+<p class="pop-note">${esc(c.note)}</p>
+<p class="pop-note"><a href="${esc(CHATGPT_FEEDBACK)}" target="_blank" rel="noopener">${esc(c.feedback)}</a></p>
 </div>
 </div>
 </div>

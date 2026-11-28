@@ -8,6 +8,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:plugin": "node scripts/build-plugin.mjs",
+    "build:chatgpt": "node scripts/build-chatgpt-plugin.mjs",
     "pack:mcpb": "node scripts/pack.mjs",
     "typecheck": "tsc -p ."
   },

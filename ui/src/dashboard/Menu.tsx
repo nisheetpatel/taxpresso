@@ -18,7 +18,7 @@ const NAMES: Record<Language, string> = {
   it: 'Italiano',
 };
 
-/** What Claude and you did, last first (the activity card of before, now in the menu). */
+/** What the assistant and you did, last first (the activity card of before, now in the menu). */
 export function ActivityLog({ state, lang }: { state: State; lang: Language }) {
   const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' });
   const items = state.activity.filter((a) => isMessageKey(`act.${a.by}.${a.what}`)).slice(0, 8);

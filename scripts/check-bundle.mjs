@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // C2 static checks on the staged extension (extension/dist), run after `pnpm build`, or with
-// `--plugin` on the Claude plugin (build/plugin/taxpresso), run after `pnpm build:plugin`:
+// `--plugin` on the Claude plugin (build/plugin/taxpresso), run after `pnpm build:plugin`, or with
+// `--chatgpt` on the ChatGPT plugin (build/chatgpt-plugin/taxpresso), run after `pnpm build:chatgpt`:
 //  1. every npm package bundled into the server is in extension/allowed-dependencies.json;
 //  2. every Node built-in it imports, or loads at run time (process.getBuiltinModule, require), is
 //     allowlisted, and none of the network ones ever is; node:child_process is imported by the one
@@ -17,9 +18,28 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const extDir = path.join(root, 'extension');
-const plugin = process.argv.includes('--plugin');
-const dist = plugin ? path.join(root, 'build', 'plugin', 'taxpresso') : path.join(extDir, 'dist');
-const metaFile = path.join(extDir, 'build-meta', plugin ? 'plugin-server.json' : 'server.json');
+/** Which build is checked: its folder, its metafile, and the command that makes them. */
+const TARGETS = {
+  mcpb: { dist: path.join(extDir, 'dist'), meta: 'server.json', build: 'pnpm build' },
+  plugin: {
+    dist: path.join(root, 'build', 'plugin', 'taxpresso'),
+    meta: 'plugin-server.json',
+    build: 'pnpm build:plugin',
+  },
+  chatgpt: {
+    dist: path.join(root, 'build', 'chatgpt-plugin', 'taxpresso'),
+    meta: 'chatgpt-server.json',
+    build: 'pnpm build:chatgpt',
+  },
+};
+const which = process.argv.includes('--chatgpt')
+  ? 'chatgpt'
+  : process.argv.includes('--plugin')
+    ? 'plugin'
+    : 'mcpb';
+const target = TARGETS[which];
+const dist = target.dist;
+const metaFile = path.join(extDir, 'build-meta', target.meta);
 
 const NEVER = [
   'https',
@@ -45,7 +65,7 @@ let meta;
 try {
   meta = JSON.parse(await readFile(metaFile, 'utf8'));
 } catch {
-  console.error(`No build metadata. Run: ${plugin ? 'pnpm build:plugin' : 'pnpm build'}`);
+  console.error(`No build metadata. Run: ${target.build}`);
   process.exit(1);
 }
 const allow = JSON.parse(await readFile(path.join(extDir, 'allowed-dependencies.json'), 'utf8'));
@@ -84,7 +104,7 @@ for (const [b, files] of builtins) {
 
 // Built-ins loaded at run time without an import (process.getBuiltinModule, require): same rules.
 // PDF.js, inside unpdf, reaches fs, url, stream and module this way. The .mcpb's server is one
-// file; the plugin's is split into many (extension/scripts/build-plugin.mjs): each is read.
+// file; a plugin's is split into many (extension/scripts/build-common.mjs): each is read.
 const BANNER = [
   'const __taxpressoNoFetch = () => Promise.reject(',
   'class __taxpressoNoXhr { constructor() { throw ',
@@ -152,7 +172,7 @@ for (const file of await walk(dist)) {
   }
 }
 
-const what = plugin ? 'check-bundle --plugin' : 'check-bundle';
+const what = which === 'mcpb' ? 'check-bundle' : `check-bundle --${which}`;
 if (errors.length) {
   console.error(`${what}: ${errors.length} problem(s)\n  ${errors.join('\n  ')}`);
   process.exit(1);

@@ -3,6 +3,7 @@
 // get_status says them in English for Claude (nextText, stageLine; a test checks every id has its
 // words); the facts that need no decision, worded from their id; and "Change the figures".
 // Second person, plain words, official French terms next to their gloss, no em dashes.
+import { ASSISTANT } from '../shared/distribution';
 import type { Language } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -38,17 +39,15 @@ export const messages = {
     'line.tax.waiting': 'Appears once Taxpresso knows an income',
     'line.save.total': 'You could save about {amount} before 31 December',
     'line.save.tou': 'Decide on TOU by {date}',
-    'line.save.ask': 'Ask Claude how to lower your tax',
+    'line.save.ask': `Ask ${ASSISTANT} how to lower your tax`,
     'line.save.over': '{year} is over',
     'line.file.later': 'When you’re ready to file',
     'line.file.open': 'Ready to check',
     'next.folder': 'Your Taxpresso folder can’t be used.',
     'next.not_supported': 'Taxpresso can’t prepare part of your situation yet.',
-    'next.start':
-      'Drop what you have: last year’s declaration or tax bill, this year’s documents. Or just tell Claude about yourself.',
-    'next.read':
-      'Taxpresso has {n} documents to read. Ask Claude to read them, or say what each one is.',
-    'next.readOne': 'Taxpresso has a document to read. Ask Claude to read it, or say what it is.',
+    'next.start': `Drop what you have: last year’s declaration or tax bill, this year’s documents. Or just tell ${ASSISTANT} about yourself.`,
+    'next.read': `Taxpresso has {n} documents to read. Ask ${ASSISTANT} to read them, or say what each one is.`,
+    'next.readOne': `Taxpresso has a document to read. Ask ${ASSISTANT} to read it, or say what it is.`,
     'next.whose': 'Say whose each certificate is.',
     'next.canton': 'Where did you live on 31 December {year}?',
     'next.prior':
@@ -63,8 +62,7 @@ export const messages = {
     'next.assessment': 'Compare your assessment with your declaration.',
     'next.documents': 'Add your {n} missing documents.',
     'next.documentsOne': 'Add your missing document.',
-    'next.income':
-      'Tell Claude roughly what you earn this year, so Taxpresso can estimate your tax.',
+    'next.income': `Tell ${ASSISTANT} roughly what you earn this year, so Taxpresso can estimate your tax.`,
     'next.save': 'You could save about {amount} before 31 December: see how.',
     'next.saveTou': 'Decide whether to ask for TOU (taxation ordinaire ultérieure) by {date}.',
     'next.later': 'Your {year} documents come after 31 December. Add them when they arrive.',
@@ -117,17 +115,15 @@ export const messages = {
     'line.tax.waiting': 'Apparaît dès que Taxpresso connaît un revenu',
     'line.save.total': 'Vous pourriez économiser environ {amount} avant le 31 décembre',
     'line.save.tou': 'Décider de la TOU d’ici au {date}',
-    'line.save.ask': 'Demandez à Claude comment payer moins d’impôt',
+    'line.save.ask': `Demandez à ${ASSISTANT} comment payer moins d’impôt`,
     'line.save.over': 'L’année {year} est terminée',
     'line.file.later': 'Quand vous serez prêt à déclarer',
     'line.file.open': 'Prêt à vérifier',
     'next.folder': 'Votre dossier Taxpresso ne peut pas être utilisé.',
     'next.not_supported': 'Taxpresso ne peut pas encore préparer une partie de votre situation.',
-    'next.start': `Déposez ce que vous avez${NB}: la déclaration ou le bordereau de l’an dernier, les documents de cette année. Ou parlez simplement de vous à Claude.`,
-    'next.read':
-      'Taxpresso a {n} documents à lire. Demandez à Claude de les lire, ou dites ce qu’est chacun.',
-    'next.readOne':
-      'Taxpresso a un document à lire. Demandez à Claude de le lire, ou dites ce que c’est.',
+    'next.start': `Déposez ce que vous avez${NB}: la déclaration ou le bordereau de l’an dernier, les documents de cette année. Ou parlez simplement de vous à ${ASSISTANT}.`,
+    'next.read': `Taxpresso a {n} documents à lire. Demandez à ${ASSISTANT} de les lire, ou dites ce qu’est chacun.`,
+    'next.readOne': `Taxpresso a un document à lire. Demandez à ${ASSISTANT} de le lire, ou dites ce que c’est.`,
     'next.whose': 'Dites à qui est chaque certificat.',
     'next.canton': `Où habitiez-vous au 31 décembre {year}${NB}?`,
     'next.prior': `Ajoutez la déclaration ou le bordereau de l’an dernier${NB}: Taxpresso en tire la plupart des réponses.`,
@@ -141,8 +137,7 @@ export const messages = {
     'next.assessment': 'Comparez votre avis de taxation avec votre déclaration.',
     'next.documents': 'Ajoutez vos {n} documents manquants.',
     'next.documentsOne': 'Ajoutez votre document manquant.',
-    'next.income':
-      'Dites à Claude ce que vous gagnez à peu près cette année, pour que Taxpresso estime votre impôt.',
+    'next.income': `Dites à ${ASSISTANT} ce que vous gagnez à peu près cette année, pour que Taxpresso estime votre impôt.`,
     'next.save': `Vous pourriez économiser environ {amount} avant le 31 décembre${NB}: voyez comment.`,
     'next.saveTou':
       'Décidez d’ici au {date} si vous demandez la TOU (taxation ordinaire ultérieure).',
@@ -189,18 +184,15 @@ export const messages = {
     'line.tax.waiting': 'Erscheint, sobald Taxpresso ein Einkommen kennt',
     'line.save.total': 'Du könntest vor dem 31. Dezember etwa {amount} sparen',
     'line.save.tou': 'Bis {date} über die TOU entscheiden',
-    'line.save.ask': 'Frag Claude, wie du weniger Steuern zahlst',
+    'line.save.ask': `Frag ${ASSISTANT}, wie du weniger Steuern zahlst`,
     'line.save.over': '{year} ist vorbei',
     'line.file.later': 'Wenn du bereit bist einzureichen',
     'line.file.open': 'Bereit zum Prüfen',
     'next.folder': 'Dein Taxpresso-Ordner kann nicht verwendet werden.',
     'next.not_supported': 'Einen Teil deiner Situation kann Taxpresso noch nicht vorbereiten.',
-    'next.start':
-      'Leg hin, was du hast: die Steuererklärung oder Steuerrechnung vom letzten Jahr, die Dokumente von diesem Jahr. Oder erzähl Claude einfach von dir.',
-    'next.read':
-      'Taxpresso hat {n} Dokumente zu lesen. Bitte Claude, sie zu lesen, oder sag, was jedes ist.',
-    'next.readOne':
-      'Taxpresso hat ein Dokument zu lesen. Bitte Claude, es zu lesen, oder sag, was es ist.',
+    'next.start': `Leg hin, was du hast: die Steuererklärung oder Steuerrechnung vom letzten Jahr, die Dokumente von diesem Jahr. Oder erzähl ${ASSISTANT} einfach von dir.`,
+    'next.read': `Taxpresso hat {n} Dokumente zu lesen. Bitte ${ASSISTANT}, sie zu lesen, oder sag, was jedes ist.`,
+    'next.readOne': `Taxpresso hat ein Dokument zu lesen. Bitte ${ASSISTANT}, es zu lesen, oder sag, was es ist.`,
     'next.whose': 'Sag, wem jeder Ausweis gehört.',
     'next.canton': 'Wo hast du am 31. Dezember {year} gewohnt?',
     'next.prior':
@@ -215,8 +207,7 @@ export const messages = {
     'next.assessment': 'Vergleich deine Veranlagung mit deiner Steuererklärung.',
     'next.documents': 'Füg deine {n} fehlenden Dokumente hinzu.',
     'next.documentsOne': 'Füg dein fehlendes Dokument hinzu.',
-    'next.income':
-      'Sag Claude ungefähr, was du dieses Jahr verdienst, damit Taxpresso deine Steuern schätzen kann.',
+    'next.income': `Sag ${ASSISTANT} ungefähr, was du dieses Jahr verdienst, damit Taxpresso deine Steuern schätzen kann.`,
     'next.save': 'Du könntest vor dem 31. Dezember etwa {amount} sparen: so geht’s.',
     'next.saveTou':
       'Entscheide bis {date}, ob du die TOU (taxation ordinaire ultérieure) beantragst.',
@@ -272,18 +263,15 @@ export const messages = {
     'line.tax.waiting': 'Appare quando Taxpresso conosce un reddito',
     'line.save.total': 'Potresti risparmiare circa {amount} prima del 31 dicembre',
     'line.save.tou': 'Decidi sulla TOU entro il {date}',
-    'line.save.ask': 'Chiedi a Claude come pagare meno imposte',
+    'line.save.ask': `Chiedi a ${ASSISTANT} come pagare meno imposte`,
     'line.save.over': 'Il {year} è finito',
     'line.file.later': 'Quando sei pronto a dichiarare',
     'line.file.open': 'Pronto da controllare',
     'next.folder': 'La tua cartella Taxpresso non si può usare.',
     'next.not_supported': 'Taxpresso non può ancora preparare una parte della tua situazione.',
-    'next.start':
-      'Deposita quello che hai: la dichiarazione o la notifica di tassazione dell’anno scorso, i documenti di quest’anno. Oppure parla semplicemente di te a Claude.',
-    'next.read':
-      'Taxpresso ha {n} documenti da leggere. Chiedi a Claude di leggerli, oppure di’ cos’è ciascuno.',
-    'next.readOne':
-      'Taxpresso ha un documento da leggere. Chiedi a Claude di leggerlo, oppure di’ cos’è.',
+    'next.start': `Deposita quello che hai: la dichiarazione o la notifica di tassazione dell’anno scorso, i documenti di quest’anno. Oppure parla semplicemente di te a ${ASSISTANT}.`,
+    'next.read': `Taxpresso ha {n} documenti da leggere. Chiedi a ${ASSISTANT} di leggerli, oppure di’ cos’è ciascuno.`,
+    'next.readOne': `Taxpresso ha un documento da leggere. Chiedi a ${ASSISTANT} di leggerlo, oppure di’ cos’è.`,
     'next.whose': 'Di’ di chi è ogni certificato.',
     'next.canton': 'Dove abitavi il 31 dicembre {year}?',
     'next.prior':
@@ -298,8 +286,7 @@ export const messages = {
     'next.assessment': 'Confronta la tua tassazione con la tua dichiarazione.',
     'next.documents': 'Aggiungi i tuoi {n} documenti mancanti.',
     'next.documentsOne': 'Aggiungi il tuo documento mancante.',
-    'next.income':
-      'Di’ a Claude quanto guadagni più o meno quest’anno, così Taxpresso può stimare le tue imposte.',
+    'next.income': `Di’ a ${ASSISTANT} quanto guadagni più o meno quest’anno, così Taxpresso può stimare le tue imposte.`,
     'next.save': 'Potresti risparmiare circa {amount} prima del 31 dicembre: scopri come.',
     'next.saveTou': 'Decidi entro il {date} se chiedere la TOU (taxation ordinaire ultérieure).',
     'next.later':

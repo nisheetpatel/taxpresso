@@ -1517,12 +1517,12 @@ a:hover {
 }
 
 /*
- * The note the ChatGPT button opens: a popover, so the browser shows it over the page, closes it
- * on Escape or a click outside, and no script is needed. A browser without popovers shows it in
- * the page, under the buttons.
+ * What the ChatGPT button opens, the steps to install the beta: a popover, so the browser shows it
+ * over the page, closes it on Escape or a click outside, and no script is needed. A browser
+ * without popovers shows it in the page, under the buttons.
  */
 .pop {
-  width: min(440px, calc(100vw - 32px));
+  width: min(580px, calc(100vw - 32px));
   margin: auto;
   padding: 0;
   border: 0;
@@ -1570,6 +1570,37 @@ a:hover {
   margin-top: 12px;
   font-size: 14px;
   color: var(--mocha);
+}
+
+.pop-steps {
+  margin: 16px 0 0;
+  padding-left: 22px;
+  color: var(--deep);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.pop-steps li + li {
+  margin-top: 12px;
+}
+
+.pop-steps p.pop-actions {
+  margin-top: 10px;
+}
+
+/* The two lines to paste: they stay on one line each, and scroll sideways when they don't fit. */
+.pop-code {
+  margin: 8px 0 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--espresso);
+  color: var(--foam);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre;
+  user-select: all;
 }
 
 .pop-close {

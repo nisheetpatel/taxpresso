@@ -10,6 +10,9 @@
 // Official passages are not attached yet: bundling text from the official documents waits for the
 // legal check (SPEC.md 7b, [HUMAN]). Each rule is cited by manifest id, page or article, and the
 // official link (../law/official-documents.ts).
+//
+// A sentence that names the assistant the user talks to says {assistant}: this library knows no
+// build, and the server puts the name there (extension/src/config.ts, named).
 import type { ConsistencyCheck, Text } from '../2026/checks.js';
 import {
   officialLinks,
@@ -964,8 +967,8 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
         `Documents${NB}: ${parts.map((p) => p.fr).join(', ')}. Leurs montants ne sont pas encore comptés.`,
       ),
       todo: t(
-        'Say what each one is and whose it is in the dashboard, or ask Claude to read it.',
-        'Indiquez ce qu’est chacun et à qui il est dans le tableau de bord, ou demandez à Claude de le lire.',
+        'Say what each one is and whose it is in the dashboard, or ask {assistant} to read it.',
+        'Indiquez ce qu’est chacun et à qui il est dans le tableau de bord, ou demandez à {assistant} de le lire.',
       ),
       sources: [],
     });
@@ -1059,8 +1062,8 @@ export function finalCheck(input: FinalCheckInput): FinalCheck {
   // The check of the official PDF.
   const pdf = input.officialPdf;
   const transmit = t(
-    'You transmit the declaration yourself; Taxpresso and Claude never do.',
-    `Vous transmettez la déclaration vous-même${NB}; ni Taxpresso ni Claude ne le font.`,
+    'You transmit the declaration yourself; Taxpresso and {assistant} never do.',
+    `Vous transmettez la déclaration vous-même${NB}; ni Taxpresso ni {assistant} ne le font.`,
   );
   if (pdf.status === 'not_available') {
     know.push({

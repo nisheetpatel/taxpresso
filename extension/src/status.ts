@@ -1,7 +1,14 @@
 import { SUPPORTED_CANTONS, type SupportedCanton } from '@taxpresso/rules-ch';
 import * as z from 'zod/v4';
 import { CANTONS, cantonNames } from './cantons.js';
-import { CURRENT_TAX_YEAR, DISTRIBUTION, UI_LANGUAGES } from './config.js';
+import {
+  ASSISTANT,
+  CURRENT_TAX_YEAR,
+  DISTRIBUTION,
+  DISTRIBUTION_NOTE,
+  UI_LANGUAGES,
+  type Distribution,
+} from './config.js';
 import { holdings, holdingsStatusText } from './holdings.js';
 import { priorStatusText } from './prior.js';
 import { securitiesStatusText } from './securities.js';
@@ -48,11 +55,13 @@ export const StatusSchema = z.object({
     questionsOpen: z.number().int(),
     documents: z.number().int(),
     documentsToIdentify: z.number().int(),
-    documentsToRead: z.number().int().describe('Documents Claude has not read yet.'),
+    documentsToRead: z.number().int().describe(`Documents ${ASSISTANT} has not read yet.`),
     documentsFromBarcode: z
       .number()
       .int()
-      .describe('Documents read from their barcode: verified values, nothing for Claude to read.'),
+      .describe(
+        `Documents read from their barcode: verified values, nothing for ${ASSISTANT} to read.`,
+      ),
     documentsWaitingForWhose: z
       .number()
       .int()
@@ -110,7 +119,7 @@ export const StatusSchema = z.object({
   stages: z.array(z.object({ id: z.enum(STAGES), status: z.string() })),
   about: z.array(z.string()).describe('Facts shown on "Your tax" that need no decision.'),
   journey: z.array(z.string()).describe('The pages and facts in a few lines.'),
-  nextStep: z.string().describe('What Claude does next.'),
+  nextStep: z.string().describe(`What ${ASSISTANT} does next.`),
   vault: z.object({ path: z.string(), exists: z.boolean(), problem: z.string().optional() }),
   dashboard: z.object({ running: z.boolean() }),
   uiLanguage: z.enum(UI_LANGUAGES),
@@ -120,12 +129,11 @@ export const StatusSchema = z.object({
       platform: z.string(),
       arch: z.string(),
       execPath: z.string(),
+      // One value per build, so each build's schema is its own.
       distribution: z
-        .literal('plugin')
+        .literal(DISTRIBUTION === 'chatgpt' ? 'chatgpt' : 'plugin')
         .optional()
-        .describe(
-          'Set when this is the Claude plugin (Claude Code, Cowork), not the desktop extension.',
-        ),
+        .describe(DISTRIBUTION_NOTE),
     })
     .optional()
     .describe('Only with detail: the Node runtime this extension runs on.'),
@@ -142,7 +150,7 @@ export function buildStatus(
     execPath?: string;
     years?: TaxYears;
     /** Which build runs (./config.ts); tests give one. */
-    distribution?: 'mcpb' | 'plugin';
+    distribution?: Distribution;
   },
 ): Status {
   const years = opts.years ?? TaxYears.of(ws);
@@ -246,13 +254,15 @@ export function buildStatus(
     uiLanguage: ws.config.uiLanguage,
   };
   if (opts.detail) {
+    const distribution = opts.distribution ?? DISTRIBUTION;
     status.runtime = {
       node: process.version,
       platform: process.platform,
       arch: process.arch,
       execPath: opts.execPath ?? process.execPath,
-      // The plugin's Node is the user's own, the .mcpb's Claude Desktop's (docs/spikes/S4.md).
-      ...((opts.distribution ?? DISTRIBUTION) === 'plugin' && { distribution: 'plugin' as const }),
+      // A plugin says which one it is; the desktop extension says nothing, as before. Which Node
+      // each runs on: docs/spikes/S4.md and S6.md.
+      ...(distribution !== 'mcpb' && { distribution }),
     };
   }
   return status;
@@ -357,7 +367,7 @@ export function statusText(s: Status): string {
   );
   if (s.runtime) {
     lines.push(
-      `Runtime: Node ${s.runtime.node} (${s.runtime.platform} ${s.runtime.arch}) at ${s.runtime.execPath}${s.runtime.distribution === 'plugin' ? ', Claude plugin' : ''}`,
+      `Runtime: Node ${s.runtime.node} (${s.runtime.platform} ${s.runtime.arch}) at ${s.runtime.execPath}${s.runtime.distribution ? `, ${ASSISTANT} plugin` : ''}`,
     );
   }
   return lines.join('\n');

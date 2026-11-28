@@ -1,6 +1,7 @@
 // UI strings for the pension fund buy-in, the 3a catch-up and the TOU card (SPEC.md section 8,
 // groups B and C). Second person, plain words, official terms next to their gloss (French in
 // Geneva, German in Zurich).
+import { ASSISTANT } from '../shared/distribution';
 import { cantonKey, isMessageKey, type Language, t } from './i18n';
 
 const NB = String.fromCharCode(0xa0);
@@ -101,8 +102,7 @@ export const messages = {
       'A pension is part of your income, and this comparison doesn’t count pensions yet. The tax office (AFC) can tell you which is better.',
     touNeedComparison: 'You can record your choice here once the comparison is shown.',
     touNotKnown: 'Not known yet',
-    touWithheldLater:
-      'Taxpresso shows the tax taken at source once it knows your salary, from your salary certificate or from what you tell Claude.',
+    touWithheldLater: `Taxpresso shows the tax taken at source once it knows your salary, from your salary certificate or from what you tell ${ASSISTANT}.`,
     'assume.income_tax_only':
       'The ordinary tax here is income tax only (cantonal, communal and federal). Wealth tax isn’t counted: with taxable wealth, TOU is compulsory anyway.',
     'assume.withheld_from_tariff':
@@ -268,8 +268,7 @@ export const messages = {
       'Une rente fait partie de vos revenus, et cette comparaison ne compte pas encore les rentes. L’administration fiscale (AFC) peut vous dire ce qui est le plus avantageux.',
     touNeedComparison: 'Vous pourrez enregistrer votre choix ici une fois la comparaison affichée.',
     touNotKnown: 'Pas encore connu',
-    touWithheldLater:
-      'Taxpresso affiche l’impôt retenu à la source dès qu’il connaît votre salaire, par votre certificat de salaire ou ce que vous dites à Claude.',
+    touWithheldLater: `Taxpresso affiche l’impôt retenu à la source dès qu’il connaît votre salaire, par votre certificat de salaire ou ce que vous dites à ${ASSISTANT}.`,
     'assume.income_tax_only': `L’impôt ordinaire est ici l’impôt sur le revenu seul (cantonal, communal et fédéral). L’impôt sur la fortune n’est pas compté${NB}: avec une fortune imposable, la TOU est de toute façon obligatoire.`,
     'assume.withheld_from_tariff':
       'L’impôt retenu à la source est estimé avec votre barème et votre salaire brut annuel. Votre certificat de salaire (chiffre 12) indique le vrai montant.',
@@ -427,8 +426,7 @@ export const messages = {
       'Eine Rente gehört zu deinen Einkünften, und dieser Vergleich zählt Renten noch nicht. Die Steuerverwaltung (AFC) kann dir sagen, was günstiger ist.',
     touNeedComparison: 'Du kannst deine Wahl hier festhalten, sobald der Vergleich angezeigt wird.',
     touNotKnown: 'Noch nicht bekannt',
-    touWithheldLater:
-      'Taxpresso zeigt die Quellensteuer, sobald es deinen Lohn kennt: aus deinem Lohnausweis oder aus dem, was du Claude sagst.',
+    touWithheldLater: `Taxpresso zeigt die Quellensteuer, sobald es deinen Lohn kennt: aus deinem Lohnausweis oder aus dem, was du ${ASSISTANT} sagst.`,
     'assume.income_tax_only':
       'Die ordentliche Steuer ist hier nur die Einkommenssteuer (Kanton, Gemeinde und Bund). Die Vermögenssteuer ist nicht gezählt: Mit steuerbarem Vermögen ist die TOU ohnehin obligatorisch.',
     'assume.withheld_from_tariff':
@@ -611,8 +609,7 @@ export const messages = {
       'Una rendita fa parte dei tuoi redditi, e questo confronto non conta ancora le rendite. L’amministrazione fiscale (AFC) può dirti cosa conviene.',
     touNeedComparison: 'Potrai registrare qui la tua scelta quando sarà visibile il confronto.',
     touNotKnown: 'Non ancora noto',
-    touWithheldLater:
-      'Taxpresso mostra l’imposta trattenuta alla fonte quando conosce il tuo salario, dal tuo certificato di salario o da quello che dici a Claude.',
+    touWithheldLater: `Taxpresso mostra l’imposta trattenuta alla fonte quando conosce il tuo salario, dal tuo certificato di salario o da quello che dici a ${ASSISTANT}.`,
     'assume.income_tax_only':
       'Qui l’imposta ordinaria è solo l’imposta sul reddito (cantonale, comunale e federale). L’imposta sulla sostanza non è conteggiata: con una sostanza imponibile, la TOU è comunque obbligatoria.',
     'assume.withheld_from_tariff':

@@ -59,7 +59,7 @@ export const api = {
     remember(await call<State>({ method: 'GET', path: '/state', query: lang ? { lang } : {} })),
   question: (id: string, lang: Language) =>
     call<Question>({ method: 'GET', path: '/question', query: { id, lang } }),
-  /** Opens a tax year: the same choice as asking Claude in the chat (open_tax_year). */
+  /** Opens a tax year: the same choice as asking the assistant in the chat (open_tax_year). */
   year: (year: number, lang: Language) => post('/year', lang, { year }),
   answer: (id: string, value: Value, lang: Language) => post('/answer', lang, { id, value }),
   skip: (id: string, lang: Language) => post('/skip', lang, { id }),

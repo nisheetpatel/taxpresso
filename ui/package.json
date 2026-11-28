@@ -8,6 +8,7 @@
   "scripts": {
     "build": "vite build && node scripts/build-views.mjs",
     "build:plugin": "vite build --mode plugin && node scripts/build-views.mjs --plugin",
+    "build:chatgpt": "vite build --mode chatgpt && node scripts/build-views.mjs --chatgpt",
     "dev": "vite",
     "typecheck": "tsc -p .",
     "preview:card": "node scripts/build-preview.mjs",

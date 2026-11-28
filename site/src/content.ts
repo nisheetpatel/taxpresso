@@ -30,14 +30,25 @@ export const RELEASE_FILE_URL = `${SOURCE_URL}/releases/latest/download/${DOWNLO
 export const DOWNLOAD_URL = `/download/${DOWNLOAD_FILE}`;
 export const CONTACT_EMAIL = 'hello@taxpresso.ch';
 /**
- * Asking for Taxpresso in ChatGPT (the greyed-out button on Get started). A +1 is one email, ready
- * to send, under the same subject in every language, so the requests can be counted with one
- * search of the inbox; saying more is the ideas form on GitHub, its title filled in.
+ * Taxpresso for ChatGPT, a beta (docs/spikes/S6.md): a zip every release carries under this one
+ * name, beside the versioned one (extension/scripts/build-chatgpt-plugin.mjs), and its address on
+ * this site, a redirect to the latest release (vercel.json), as for the .mcpb.
  */
-export const WANT_CHATGPT = {
-  mail: `mailto:${CONTACT_EMAIL}?subject=Taxpresso%20for%20ChatGPT%3A%20%2B1&body=%2B1`,
-  issue: `${SOURCE_URL}/issues/new?template=idea.yml&title=Taxpresso+for+ChatGPT`,
-};
+export const CHATGPT_FILE = 'taxpresso-chatgpt.zip';
+export const CHATGPT_RELEASE_FILE_URL = `${SOURCE_URL}/releases/latest/download/${CHATGPT_FILE}`;
+export const CHATGPT_DOWNLOAD_URL = `/download/${CHATGPT_FILE}`;
+/** The tool inside the ChatGPT desktop app on a Mac, which adds a plugin that is in no directory. */
+const CHATGPT_TOOL = '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex';
+/**
+ * The two lines that install it, pasted into Terminal (tried on 27 November 2026, S6). The folder
+ * is where a browser puts the unzipped download; the names are the marketplace's and the plugin's.
+ */
+export const CHATGPT_INSTALL = [
+  `${CHATGPT_TOOL} plugin marketplace add ~/Downloads/taxpresso-chatgpt`,
+  `${CHATGPT_TOOL} plugin add taxpresso@taxpresso`,
+];
+/** Where people say how it went: the ideas form on GitHub, its title filled in. */
+export const CHATGPT_FEEDBACK = `${SOURCE_URL}/issues/new?template=idea.yml&title=Taxpresso+for+ChatGPT`;
 export const ISSUE_URL = {
   bug: `${SOURCE_URL}/issues/new?template=bug.yml`,
   idea: `${SOURCE_URL}/issues/new?template=idea.yml`,
@@ -187,7 +198,7 @@ const fr = {
       ],
       [
         'Sauf l’IA que vous utilisez',
-        'Aujourd’hui, c’est Claude, avec votre propre compte : il voit ce que vous partagez dans la conversation. ChatGPT n’est pas encore disponible.',
+        'C’est Claude ou ChatGPT, avec votre propre compte : il voit ce que vous partagez dans la conversation.',
         'tulip',
       ],
       [
@@ -297,7 +308,7 @@ const fr = {
     items: [
       [
         `Faut-il Claude${NB}?`,
-        'Oui, pour l’instant. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. ChatGPT n’est pas encore disponible. [Demandez-le](/fr/start/#chatgpt).',
+        `Il vous faut Claude ou ChatGPT. Taxpresso s’installe dans [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) et fonctionne avec votre propre compte Claude. En bêta, il fonctionne aussi dans l’application ChatGPT pour Mac${NB}: [voyez comment](/fr/start/#chatgpt).`,
       ],
       [`Quels cantons sont disponibles${NB}?`, cantonsAnswer('fr')],
       [
@@ -333,18 +344,22 @@ const fr = {
     metaDescription:
       'Installez Taxpresso dans Claude Desktop et préparez votre déclaration d’impôt suisse, pas à pas.',
     title: 'Commencer',
-    lead: 'Taxpresso est une extension pour Claude Desktop. Elle s’installe en une minute, et tout reste sur votre ordinateur.',
+    lead: 'Taxpresso est une extension pour Claude Desktop. Elle s’installe en une minute, et tout reste sur votre ordinateur. Aussi pour ChatGPT, en bêta.',
     download: 'Télécharger Taxpresso',
     downloadNote: 'Gratuit. Un seul fichier, pour Claude Desktop.',
     downloadFor: 'Télécharger pour',
     chatgpt: {
-      tag: 'Alpha',
+      tag: 'Bêta',
       title: 'Taxpresso pour ChatGPT',
-      text: 'Nous y travaillons, et ce n’est pas encore prêt. Pour l’instant, Taxpresso fonctionne dans Claude Desktop.',
-      ask: `Vous le voulez${NB}? Dites-le-nous, pour que nous sachions combien vous êtes à l’attendre.`,
-      plus: 'Envoyer un +1',
-      plusNote: 'Un +1 ouvre un e-mail prêt à envoyer.',
-      more: 'En dire plus sur GitHub',
+      text: `Taxpresso fonctionne dans l’application ChatGPT pour Mac. C’est une bêta${NB}: pour l’installer, vous collez deux lignes dans le Terminal. Un compte ChatGPT gratuit a suffi lors de nos essais.`,
+      steps: [
+        'Installez l’application ChatGPT pour Mac et connectez-vous.',
+        `Téléchargez Taxpresso pour ChatGPT et décompressez le fichier. Laissez le dossier taxpresso-chatgpt dans vos Téléchargements${NB}: ChatGPT retient où il se trouve.`,
+        `Ouvrez le Terminal et collez ces deux lignes, l’une après l’autre${NB}:`,
+        `Quittez ChatGPT et rouvrez-le. Ouvrez une nouvelle conversation et écrivez${NB}:`,
+      ],
+      note: 'Gratuit. Un fichier zip, pour l’application ChatGPT sur Mac. Pas pour le site ni pour l’application mobile de ChatGPT.',
+      feedback: 'Dites-nous comment ça se passe',
       close: 'Fermer',
     },
     platforms: ['Linux (bêta)', 'macOS', 'Windows'],
@@ -501,7 +516,7 @@ const en: Copy = {
       ],
       [
         'Except the AI you use',
-        'Today that’s Claude, under your own account: it sees what you share in the conversation. ChatGPT isn’t available yet.',
+        'That’s Claude or ChatGPT, under your own account: it sees what you share in the conversation.',
         'tulip',
       ],
       [
@@ -591,7 +606,7 @@ const en: Copy = {
     items: [
       [
         'Do I need Claude?',
-        'Yes, for now. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. ChatGPT isn’t available yet. [Ask for it](/en/start/#chatgpt).',
+        'You need Claude or ChatGPT. Taxpresso installs in [Claude Desktop](https://claude.com/download) (Linux, macOS or Windows) and works with your own Claude account. In beta, it also runs in the ChatGPT desktop app on a Mac: [see how](/en/start/#chatgpt).',
       ],
       ['Which cantons work?', cantonsAnswer('en')],
       [
@@ -627,18 +642,22 @@ const en: Copy = {
     metaDescription:
       'Install Taxpresso in Claude Desktop and prepare your Swiss tax return, step by step.',
     title: 'Get started',
-    lead: 'Taxpresso is an extension for Claude Desktop. It installs in a minute, and everything stays on your computer.',
+    lead: 'Taxpresso is an extension for Claude Desktop. It installs in a minute, and everything stays on your computer. Also for ChatGPT, as a beta.',
     download: 'Download Taxpresso',
     downloadNote: 'Free. One file, for Claude Desktop.',
     downloadFor: 'Download for',
     chatgpt: {
-      tag: 'Alpha',
+      tag: 'Beta',
       title: 'Taxpresso for ChatGPT',
-      text: 'We’re working on it, and it isn’t ready yet. For now, Taxpresso runs in Claude Desktop.',
-      ask: 'Want it? Tell us, so we know how many of you are waiting.',
-      plus: 'Send a +1',
-      plusNote: 'A +1 opens an email that is ready to send.',
-      more: 'Say more on GitHub',
+      text: 'Taxpresso runs in the ChatGPT desktop app on a Mac. It’s a beta: to install it, you paste two lines into Terminal. A free ChatGPT account was enough in our tests.',
+      steps: [
+        'Install the ChatGPT desktop app for Mac and sign in.',
+        'Download Taxpresso for ChatGPT and unzip the file. Leave the taxpresso-chatgpt folder in your Downloads: ChatGPT remembers where it is.',
+        'Open Terminal and paste these two lines, one after the other:',
+        'Quit ChatGPT and open it again. Start a new chat and write:',
+      ],
+      note: 'Free. One zip file, for the ChatGPT desktop app on a Mac. Not for the ChatGPT website or phone app.',
+      feedback: 'Tell us how it goes',
       close: 'Close',
     },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
@@ -794,7 +813,7 @@ const de: Copy = {
       ],
       [
         'Ausser der KI, die du nutzt',
-        'Heute ist das Claude, mit deinem eigenen Konto: Claude sieht, was du im Chat teilst. ChatGPT ist noch nicht verfügbar.',
+        'Das ist Claude oder ChatGPT, mit deinem eigenen Konto: Die KI sieht, was du im Chat teilst.',
         'tulip',
       ],
       [
@@ -900,7 +919,7 @@ const de: Copy = {
     items: [
       [
         'Brauche ich Claude?',
-        'Ja, vorerst. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. ChatGPT ist noch nicht verfügbar. [Wünsch es dir](/de/start/#chatgpt).',
+        'Du brauchst Claude oder ChatGPT. Taxpresso wird in [Claude Desktop](https://claude.com/download) (Linux, macOS oder Windows) installiert und läuft mit deinem eigenen Claude-Konto. Als Beta läuft es auch in der ChatGPT-App für den Mac: [so geht es](/de/start/#chatgpt).',
       ],
       ['Welche Kantone funktionieren?', cantonsAnswer('de')],
       [
@@ -936,18 +955,22 @@ const de: Copy = {
     metaDescription:
       'Installiere Taxpresso in Claude Desktop und erstelle deine Schweizer Steuererklärung, Schritt für Schritt.',
     title: 'Loslegen',
-    lead: 'Taxpresso ist eine Erweiterung für Claude Desktop. Sie ist in einer Minute installiert, und alles bleibt auf deinem Computer.',
+    lead: 'Taxpresso ist eine Erweiterung für Claude Desktop. Sie ist in einer Minute installiert, und alles bleibt auf deinem Computer. Auch für ChatGPT, als Beta.',
     download: 'Taxpresso herunterladen',
     downloadNote: 'Kostenlos. Eine Datei, für Claude Desktop.',
     downloadFor: 'Download für',
     chatgpt: {
-      tag: 'Alpha',
+      tag: 'Beta',
       title: 'Taxpresso für ChatGPT',
-      text: 'Wir arbeiten daran, und es ist noch nicht fertig. Vorerst läuft Taxpresso in Claude Desktop.',
-      ask: 'Willst du es? Sag es uns, damit wir wissen, wie viele darauf warten.',
-      plus: 'Ein +1 schicken',
-      plusNote: 'Ein +1 öffnet eine E-Mail, bereit zum Senden.',
-      more: 'Mehr sagen auf GitHub',
+      text: 'Taxpresso läuft in der ChatGPT-App für den Mac. Es ist eine Beta: Zum Installieren fügst du zwei Zeilen ins Terminal ein. In unseren Tests hat ein kostenloses ChatGPT-Konto gereicht.',
+      steps: [
+        'Installiere die ChatGPT-App für den Mac und melde dich an.',
+        'Lade Taxpresso für ChatGPT herunter und entpacke die Datei. Lass den Ordner taxpresso-chatgpt in deinen Downloads: ChatGPT merkt sich, wo er liegt.',
+        'Öffne das Terminal und füge diese zwei Zeilen ein, eine nach der anderen:',
+        'Beende ChatGPT und öffne es wieder. Öffne einen neuen Chat und schreib:',
+      ],
+      note: 'Kostenlos. Eine Zip-Datei, für die ChatGPT-App auf dem Mac. Nicht für die ChatGPT-Website oder die Handy-App.',
+      feedback: 'Sag uns, wie es läuft',
       close: 'Schliessen',
     },
     platforms: ['Linux (Beta)', 'macOS', 'Windows'],
@@ -1104,7 +1127,7 @@ const it: Copy = {
       ],
       [
         'Tranne l’IA che usi',
-        'Oggi è Claude, con il tuo account: vede quello che condividi nella conversazione. ChatGPT non è ancora disponibile.',
+        'È Claude o ChatGPT, con il tuo account: vede quello che condividi nella conversazione.',
         'tulip',
       ],
       [
@@ -1202,7 +1225,7 @@ const it: Copy = {
     items: [
       [
         'Mi serve Claude?',
-        'Sì, per ora. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. ChatGPT non è ancora disponibile. [Chiedilo](/it/start/#chatgpt).',
+        'Ti serve Claude o ChatGPT. Taxpresso si installa in [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) e funziona con il tuo account Claude. In beta funziona anche nell’app ChatGPT per Mac: [ecco come](/it/start/#chatgpt).',
       ],
       ['Quali cantoni funzionano?', cantonsAnswer('it')],
       [
@@ -1238,18 +1261,22 @@ const it: Copy = {
     metaDescription:
       'Installa Taxpresso in Claude Desktop e prepara la tua dichiarazione d’imposta svizzera, passo dopo passo.',
     title: 'Inizia',
-    lead: 'Taxpresso è un’estensione per Claude Desktop. Si installa in un minuto, e tutto resta sul tuo computer.',
+    lead: 'Taxpresso è un’estensione per Claude Desktop. Si installa in un minuto, e tutto resta sul tuo computer. Anche per ChatGPT, in beta.',
     download: 'Scarica Taxpresso',
     downloadNote: 'Gratis. Un solo file, per Claude Desktop.',
     downloadFor: 'Scarica per',
     chatgpt: {
-      tag: 'Alpha',
+      tag: 'Beta',
       title: 'Taxpresso per ChatGPT',
-      text: 'Ci stiamo lavorando, e non è ancora pronto. Per ora Taxpresso funziona in Claude Desktop.',
-      ask: 'Lo vuoi? Diccelo, così sappiamo in quanti lo aspettate.',
-      plus: 'Manda un +1',
-      plusNote: 'Un +1 apre un’e-mail pronta da inviare.',
-      more: 'Dicci di più su GitHub',
+      text: 'Taxpresso funziona nell’app ChatGPT per Mac. È una beta: per installarlo incolli due righe nel Terminale. Nelle nostre prove è bastato un account ChatGPT gratuito.',
+      steps: [
+        'Installa l’app ChatGPT per Mac e accedi.',
+        'Scarica Taxpresso per ChatGPT e decomprimi il file. Lascia la cartella taxpresso-chatgpt nei tuoi Download: ChatGPT ricorda dove si trova.',
+        'Apri il Terminale e incolla queste due righe, una dopo l’altra:',
+        'Chiudi ChatGPT e riaprilo. Apri una nuova chat e scrivi:',
+      ],
+      note: 'Gratis. Un file zip, per l’app ChatGPT su Mac. Non per il sito né per l’app mobile di ChatGPT.',
+      feedback: 'Dicci come va',
       close: 'Chiudi',
     },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
@@ -1405,7 +1432,7 @@ const es: Copy = {
       ],
       [
         'Salvo la IA que usas',
-        'Hoy es Claude, con tu propia cuenta: ve lo que compartes en la conversación. ChatGPT aún no está disponible.',
+        'Es Claude o ChatGPT, con tu propia cuenta: ve lo que compartes en la conversación.',
         'tulip',
       ],
       [
@@ -1499,7 +1526,7 @@ const es: Copy = {
     items: [
       [
         '¿Necesito Claude?',
-        'Sí, por ahora. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. ChatGPT aún no está disponible. [Pídelo](/es/start/#chatgpt).',
+        'Necesitas Claude o ChatGPT. Taxpresso se instala en [Claude Desktop](https://claude.com/download) (Linux, macOS o Windows) y funciona con tu propia cuenta de Claude. En beta, también funciona en la app de ChatGPT para Mac: [mira cómo](/es/start/#chatgpt).',
       ],
       ['¿Qué cantones funcionan?', cantonsAnswer('es')],
       [
@@ -1535,18 +1562,22 @@ const es: Copy = {
     metaDescription:
       'Instala Taxpresso en Claude Desktop y prepara tu declaración de impuestos suiza, paso a paso.',
     title: 'Empieza',
-    lead: 'Taxpresso es una extensión para Claude Desktop. Se instala en un minuto, y todo se queda en tu ordenador.',
+    lead: 'Taxpresso es una extensión para Claude Desktop. Se instala en un minuto, y todo se queda en tu ordenador. También para ChatGPT, en beta.',
     download: 'Descarga Taxpresso',
     downloadNote: 'Gratis. Un solo archivo, para Claude Desktop.',
     downloadFor: 'Descarga para',
     chatgpt: {
-      tag: 'Alfa',
+      tag: 'Beta',
       title: 'Taxpresso para ChatGPT',
-      text: 'Estamos trabajando en ello, y aún no está listo. Por ahora, Taxpresso funciona en Claude Desktop.',
-      ask: '¿Lo quieres? Dínoslo, para saber cuántas personas lo esperan.',
-      plus: 'Envía un +1',
-      plusNote: 'Un +1 abre un correo listo para enviar.',
-      more: 'Cuéntanos más en GitHub',
+      text: 'Taxpresso funciona en la app de ChatGPT para Mac. Es una beta: para instalarlo, pegas dos líneas en la Terminal. En nuestras pruebas bastó una cuenta gratuita de ChatGPT.',
+      steps: [
+        'Instala la app de ChatGPT para Mac e inicia sesión.',
+        'Descarga Taxpresso para ChatGPT y descomprime el archivo. Deja la carpeta taxpresso-chatgpt en tus Descargas: ChatGPT recuerda dónde está.',
+        'Abre la Terminal y pega estas dos líneas, una después de la otra:',
+        'Cierra ChatGPT y vuelve a abrirlo. Abre un chat nuevo y escribe:',
+      ],
+      note: 'Gratis. Un archivo zip, para la app de ChatGPT en Mac. No para la web ni para la app móvil de ChatGPT.',
+      feedback: 'Cuéntanos cómo te va',
       close: 'Cerrar',
     },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],
@@ -1702,7 +1733,7 @@ const pt: Copy = {
       ],
       [
         'Exceto a IA que usas',
-        'Hoje é o Claude, com a tua própria conta: ele vê o que partilhas na conversa. O ChatGPT ainda não está disponível.',
+        'É o Claude ou o ChatGPT, com a tua própria conta: vê o que partilhas na conversa.',
         'tulip',
       ],
       [
@@ -1804,7 +1835,7 @@ const pt: Copy = {
     items: [
       [
         'Preciso do Claude?',
-        'Sim, por agora. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. O ChatGPT ainda não está disponível. [Pede-o](/pt/start/#chatgpt).',
+        'Precisas do Claude ou do ChatGPT. O Taxpresso instala-se no [Claude Desktop](https://claude.com/download) (Linux, macOS ou Windows) e funciona com a tua própria conta Claude. Em beta, também funciona na app do ChatGPT para Mac: [vê como](/pt/start/#chatgpt).',
       ],
       ['Que cantões funcionam?', cantonsAnswer('pt')],
       [
@@ -1840,18 +1871,22 @@ const pt: Copy = {
     metaDescription:
       'Instala o Taxpresso no Claude Desktop e prepara a tua declaração de impostos suíça, passo a passo.',
     title: 'Começa',
-    lead: 'O Taxpresso é uma extensão para o Claude Desktop. Instala-se num minuto, e tudo fica no teu computador.',
+    lead: 'O Taxpresso é uma extensão para o Claude Desktop. Instala-se num minuto, e tudo fica no teu computador. Também para o ChatGPT, em beta.',
     download: 'Descarrega o Taxpresso',
     downloadNote: 'Grátis. Um só ficheiro, para o Claude Desktop.',
     downloadFor: 'Descarrega para o',
     chatgpt: {
-      tag: 'Alfa',
+      tag: 'Beta',
       title: 'Taxpresso para o ChatGPT',
-      text: 'Estamos a trabalhar nisso, e ainda não está pronto. Por agora, o Taxpresso funciona no Claude Desktop.',
-      ask: 'Queres? Diz-nos, para sabermos quantas pessoas estão à espera.',
-      plus: 'Envia um +1',
-      plusNote: 'Um +1 abre um e-mail pronto a enviar.',
-      more: 'Diz-nos mais no GitHub',
+      text: 'O Taxpresso funciona na app do ChatGPT para Mac. É uma beta: para o instalar, colas duas linhas no Terminal. Nos nossos testes, bastou uma conta gratuita do ChatGPT.',
+      steps: [
+        'Instala a app do ChatGPT para Mac e inicia sessão.',
+        'Descarrega o Taxpresso para o ChatGPT e descomprime o ficheiro. Deixa a pasta taxpresso-chatgpt nas tuas Transferências: o ChatGPT lembra-se de onde está.',
+        'Abre o Terminal e cola estas duas linhas, uma a seguir à outra:',
+        'Fecha o ChatGPT e volta a abri-lo. Abre uma conversa nova e escreve:',
+      ],
+      note: 'Grátis. Um ficheiro zip, para a app do ChatGPT no Mac. Não para o site nem para a app móvel do ChatGPT.',
+      feedback: 'Diz-nos como corre',
       close: 'Fechar',
     },
     platforms: ['Linux (beta)', 'macOS', 'Windows'],

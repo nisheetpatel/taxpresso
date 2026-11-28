@@ -251,7 +251,7 @@ export class Workspace {
   #securities: { summary: SecuritiesSummary; unreadable: string[] } | undefined;
   /** Derived results kept while nothing they read changed (./workspace.ts, memo). */
   readonly #memo = new Map<string, { key: string; value: unknown }>();
-  /** Documents the folder watch sorted that Claude hasn't heard of yet (ingest_vault). */
+  /** Documents the folder watch sorted that the assistant hasn't heard of yet (ingest_vault). */
   #landed: string[] = [];
 
   constructor(config: Config, cantons: CantonRegistry) {
@@ -486,7 +486,7 @@ export class Workspace {
     };
   }
 
-  /** Documents Claude hasn't read yet and that can give values or still need a kind. */
+  /** Documents the assistant hasn't read yet and that can give values or still need a kind. */
   toRead(): VaultDocument[] {
     return this.activeDocuments().filter(
       (d) => d.parse.method === 'none' && (!d.kind || documentFields(d.kind).length > 0),
@@ -583,7 +583,7 @@ export class Workspace {
   /**
    * Picks up files the user put into the tax-year folder directly. `auto`: the folder watch
    * (./folder-watch.ts) sorting them as they land; what it finds is said in the activity only when
-   * there is something, and Claude hears of it with its next look at the folder (ingest_vault).
+   * there is something, and the assistant hears of it with its next look at the folder (ingest_vault).
    */
   async scan(by: ActivityEntry['by'], opts: { auto?: boolean } = {}): Promise<VaultDocument[]> {
     return this.#write(async () => {
@@ -615,7 +615,7 @@ export class Workspace {
     });
   }
 
-  /** The documents the watch sorted since Claude last looked at the folder, once. */
+  /** The documents the watch sorted since the assistant last looked at the folder, once. */
   #takeLanded(): VaultDocument[] {
     const ids = new Set(this.#landed);
     this.#landed = [];
@@ -838,7 +838,7 @@ export class Workspace {
   }
 
   /**
-   * Stores what Claude read in one document (SPEC.md section 5.5): its details, and each value as
+   * Stores what the assistant read in one document (SPEC.md section 5.5): its details, and each value as
    * "extracted" (Needs your OK) with the page and box it came from. All or nothing: one value that
    * doesn't fit refuses the whole proposal. A value the user already confirmed is never overwritten.
    */
@@ -1350,7 +1350,7 @@ export class Workspace {
   }
 
   /**
-   * Whose a certificate is, when that is certain: the person the user (or Claude, relaying the
+   * Whose a certificate is, when that is certain: the person the user (or the assistant, relaying the
    * user) gave the document, or the only person of a household known to be single. Names on the
    * certificate are not used: the household's names are not asked.
    */

@@ -18,6 +18,10 @@ import { cantonPages } from '../src/canton-pages.ts';
 import { CANTONS, listOf, NEXT_CANTONS } from '../src/cantons.ts';
 import {
   BASE_URL,
+  CHATGPT_DOWNLOAD_URL,
+  CHATGPT_FEEDBACK,
+  CHATGPT_INSTALL,
+  CHATGPT_RELEASE_FILE_URL,
   copy,
   DOWNLOAD_URL,
   downloadPath,
@@ -27,7 +31,6 @@ import {
   RELEASE_FILE_URL,
   SOURCE_URL,
   startPath,
-  WANT_CHATGPT,
 } from '../src/content.ts';
 import { GENEVA_IDS, geneva, genevaPath } from '../src/geneva.ts';
 import {
@@ -134,14 +137,17 @@ describe('landing page', () => {
     }
   });
 
-  it('offers two platforms worded alike, Claude to download and ChatGPT as an alpha, which opens a note', () => {
-    // One subject for every language, so the requests can be counted in one search.
-    expect(WANT_CHATGPT.mail).toBe(
-      'mailto:hello@taxpresso.ch?subject=Taxpresso%20for%20ChatGPT%3A%20%2B1&body=%2B1',
-    );
-    expect(WANT_CHATGPT.issue).toBe(
+  it('offers two platforms worded alike: Claude to download, and ChatGPT as a beta with its own steps', () => {
+    expect(CHATGPT_DOWNLOAD_URL).toBe('/download/taxpresso-chatgpt.zip');
+    expect(CHATGPT_FEEDBACK).toBe(
       `${SOURCE_URL}/issues/new?template=idea.yml&title=Taxpresso+for+ChatGPT`,
     );
+    // The two lines people paste: the tool inside the ChatGPT app, the unzipped folder, and the
+    // names the build gives the marketplace and the plugin (docs/spikes/S6.md).
+    expect(CHATGPT_INSTALL).toEqual([
+      '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex plugin marketplace add ~/Downloads/taxpresso-chatgpt',
+      '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex plugin add taxpresso@taxpresso',
+    ]);
     const amp = (url: string) => url.replace(/&/g, '&amp;');
     for (const { lang, path: p } of LANGS) {
       const html = renderStart(lang);
@@ -154,16 +160,15 @@ describe('landing page', () => {
       expect(pair, lang).toContain(
         `<span class="plat-small">${s.downloadFor}</span><span class="plat-name">Claude</span>`,
       );
-      // ChatGPT reads the same, "Download for ChatGPT", with a mark that says how early it is.
-      // It is a button, never a link to nowhere: it opens the note below, with no script.
+      // ChatGPT reads the same, "Download for ChatGPT", with a mark that says it is a beta. It is
+      // a button that opens its steps, with no script: the download is the second of them.
       expect(pair, lang).toContain(
-        '<button class="plat plat-wait" type="button" id="chatgpt" popovertarget="chatgpt-ask">',
+        '<button class="plat plat-go" type="button" id="chatgpt" popovertarget="chatgpt-ask">',
       );
       expect(pair, lang).toContain(
         `<span class="plat-small">${s.downloadFor}</span><span class="plat-name">ChatGPT<span class="plat-tag">${c.tag}</span></span>`,
       );
-      // The note: where it stands, and two ways to ask that can be counted. A +1 is one email,
-      // ready to send; saying more is the ideas form on GitHub.
+      expect(c.tag, lang).toMatch(/^B[eê]ta$/);
       const pop = /<div class="pop" id="chatgpt-ask" popover[^>]*>(.*?)<\/div>\n<\/div>/s.exec(
         html,
       )?.[1];
@@ -172,23 +177,57 @@ describe('landing page', () => {
         '<div class="pop" id="chatgpt-ask" popover role="dialog" aria-labelledby="chatgpt-ask-title">',
       );
       expect(pop, lang).toContain(`<h2 id="chatgpt-ask-title">${c.title}</h2>`);
+      // Four steps: the app, the download, the two lines, a new chat with the first sentence.
+      expect(c.steps, lang).toHaveLength(4);
+      expect(pop?.match(/<li>/g), lang).toHaveLength(4);
       expect(pop, lang).toContain(
-        `<a class="btn btn-primary" href="${amp(WANT_CHATGPT.mail)}">${c.plus}</a>`,
+        `<a class="btn btn-primary" href="${CHATGPT_DOWNLOAD_URL}">${s.downloadFor} ChatGPT</a>`,
       );
       expect(pop, lang).toContain(
-        `<a class="btn btn-quiet" href="${amp(WANT_CHATGPT.issue)}" target="_blank" rel="noopener">${c.more}</a>`,
+        `<pre class="pop-code"><code>${CHATGPT_INSTALL.join('\n')}</code></pre>`,
+      );
+      expect(pop, lang).toContain(`<q>${s.prompt}</q>`);
+      // It says where it runs and that it is not a double click: a Mac, Terminal.
+      expect(strings(c).join(' '), lang).toMatch(/Mac/);
+      expect(strings(c).join(' '), lang).toMatch(/Terminal/);
+      expect(strings(c).join(' '), lang).toContain('taxpresso-chatgpt');
+      expect(pop, lang).toContain(
+        `<a href="${amp(CHATGPT_FEEDBACK)}" target="_blank" rel="noopener">${c.feedback}</a>`,
       );
       expect(pop, lang).toContain(
         `<button class="pop-close" type="button" popovertarget="chatgpt-ask" popovertargetaction="hide" aria-label="${c.close}">`,
       );
-      // It never promises a date.
-      expect(strings(c).join(' '), lang).not.toMatch(
-        /coming soon|bientôt|\bbald\b|\bpresto\b|in arrivo|próximamente|pronto llegará|em breve|en breve/i,
+      // No page says any more that ChatGPT is not available.
+      expect(render(lang), lang).not.toMatch(
+        /isn’t available yet|pas encore disponible|noch nicht verfügbar|non è ancora disponibile|aún no está disponible|ainda não está disponível/,
       );
       // The home page's answer about ChatGPT leads to the button.
       expect(render(lang), lang).toContain(`<a href="${startPath(p)}#chatgpt">`);
       expect(html).not.toMatch(RUNNABLE_SCRIPT);
     }
+  });
+
+  it('sends the ChatGPT download to the latest release file, as for Claude', async () => {
+    expect(CHATGPT_RELEASE_FILE_URL).toBe(
+      `${SOURCE_URL}/releases/latest/download/taxpresso-chatgpt.zip`,
+    );
+    const vercel = JSON.parse(
+      await readFile(path.join(here, '..', '..', 'vercel.json'), 'utf8'),
+    ) as { redirects: { source: string; destination: string; permanent: boolean }[] };
+    expect(vercel.redirects).toContainEqual({
+      source: CHATGPT_DOWNLOAD_URL,
+      destination: CHATGPT_RELEASE_FILE_URL,
+      permanent: false,
+    });
+    // The build writes the zip under that one name, its folder and the names the two lines use.
+    const build = await readFile(
+      path.join(here, '..', '..', 'extension', 'scripts', 'build-chatgpt-plugin.mjs'),
+      'utf8',
+    );
+    expect(build).toContain("'taxpresso-chatgpt'");
+    expect(build).toContain('`${top}.zip`');
+    expect(build).toContain("const NAME = 'taxpresso';");
+    expect(build).toContain("name: testVault ? 'taxpresso-local' : NAME,");
   });
 
   it('starts the download from the page after the button, and shows what is left to do', () => {
@@ -401,8 +440,8 @@ describe('guides', () => {
     for (const page of pages) {
       for (const [, href] of page.html.matchAll(/href="(\/[^"]*)"/g)) {
         if (assets.test(href!)) continue;
-        // The file itself: a redirect to the latest release (vercel.json; its own test above).
-        if (href === DOWNLOAD_URL) continue;
+        // The files themselves: redirects to the latest release (vercel.json; their own tests above).
+        if (href === DOWNLOAD_URL || href === CHATGPT_DOWNLOAD_URL) continue;
         expect(built, `${page.path} links to ${href}`).toContain(href!.replace(/#.*$/, ''));
       }
     }

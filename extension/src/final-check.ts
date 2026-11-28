@@ -20,6 +20,7 @@ import {
 import * as z from 'zod/v4';
 import { BARCODE_PENDING } from './barcode.js';
 import { CANTONS, type CantonEntry } from './cantons.js';
+import { named } from './config.js';
 import { ENUM_LABELS } from './extraction.js';
 import { holdings } from './holdings.js';
 import { declarationCheckReady, declarationCheckView } from './reconcile.js';
@@ -416,7 +417,7 @@ function itemView(i: FinalCheckItem, lang: Lang): FinalCheckItemView {
 
 export function finalCheckView(ws: Workspace, lang: Lang): FinalCheckView {
   const input = finalCheckInput(ws);
-  const check = finalCheck(input);
+  const check = named(finalCheck(input));
   const terms = ws.canton().canton?.terms;
   const moreTime = check.fix.some((i) => i.kind === 'estimate')
     ? terms

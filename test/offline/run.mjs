@@ -7,6 +7,9 @@
 //   TAXPRESSO_EXTENSION_DIR=<unpacked .mcpb> node ...    tests another copy, e.g. an unzipped .mcpb
 //   node test/offline/run.mjs build/plugin/taxpresso   tests the Claude plugin (`pnpm build:plugin`),
 //                                                      its server started as its .mcp.json says
+//   node test/offline/run.mjs build/chatgpt-plugin/taxpresso   tests the ChatGPT plugin
+//                                                      (`pnpm build:chatgpt`, docs/spikes/S6.md),
+//                                                      its server started as its mcp.json says
 //   TAXPRESSO_EXPECT_NO_NETWORK=1                        also proves the sandbox itself is offline
 
 import assert from 'node:assert/strict';
@@ -35,30 +38,48 @@ const extDir = path.resolve(
   process.argv[2] ?? process.env.TAXPRESSO_EXTENSION_DIR ?? path.join(root, 'extension', 'dist'),
 );
 /** The Claude plugin (build/plugin/taxpresso) rather than the .mcpb's folder. */
-const isPlugin = existsSync(path.join(extDir, '.claude-plugin', 'plugin.json'));
+const isClaudePlugin = existsSync(path.join(extDir, '.claude-plugin', 'plugin.json'));
+/** The ChatGPT plugin (build/chatgpt-plugin/taxpresso): OpenAI's package, mcp.json at its root. */
+const isChatgptPlugin = !isClaudePlugin && existsSync(path.join(extDir, 'mcp.json'));
+/** Either plugin: a server split into files, each package's built with its own flag. */
+const isPlugin = isClaudePlugin || isChatgptPlugin;
 // What Claude Code and Cowork give a plugin's server (code.claude.com/docs/en/plugins/manifest-reference).
-if (isPlugin) process.env.CLAUDE_PLUGIN_ROOT = extDir;
+if (isClaudePlugin) process.env.CLAUDE_PLUGIN_ROOT = extDir;
 /** The tools and prompt Claude can call: the .mcpb's manifest (the plugin has none; same source). */
 const manifestFile = isPlugin
   ? path.join(root, 'extension', 'manifest.json')
   : path.join(extDir, 'manifest.json');
 const guard = pathToFileURL(path.join(here, 'net-guard.mjs')).href;
 
-/**
- * The server's arguments after node, with the network guard first: the .mcpb's server/index.mjs,
- * or exactly what the plugin's .mcp.json says, ${CLAUDE_PLUGIN_ROOT} being the plugin's folder.
- */
-function serverArgs() {
-  if (!isPlugin) return ['--import', guard, path.join(extDir, 'server', 'index.mjs')];
-  const { mcpServers } = JSON.parse(readFileSync(path.join(extDir, '.mcp.json'), 'utf8'));
+/** The plugin's one server, as its .mcp.json (Claude) or mcp.json (ChatGPT) starts it. */
+function pluginServer() {
+  const file = isChatgptPlugin ? 'mcp.json' : '.mcp.json';
+  const { mcpServers } = JSON.parse(readFileSync(path.join(extDir, file), 'utf8'));
   const servers = Object.values(mcpServers);
   assert.equal(servers.length, 1, 'the plugin starts one server');
   assert.equal(servers[0].command, 'node', 'the plugin starts its server with node');
-  return [
-    '--import',
-    guard,
-    ...servers[0].args.map((a) => a.replaceAll('${CLAUDE_PLUGIN_ROOT}', extDir)),
-  ];
+  if (isChatgptPlugin) assert.equal(servers[0].type, 'stdio', 'a local server, over stdio');
+  // A test build (build-chatgpt-plugin.mjs --vault) fixes its own tax folder and would ignore this
+  // test's temporary one.
+  assert.equal(servers[0].env, undefined, 'a test build pins its tax folder: test a normal build');
+  return servers[0];
+}
+/** The plugin's folder, as each host names it in the server's arguments. */
+const PLUGIN_ROOT = isChatgptPlugin ? '${PLUGIN_ROOT}' : '${CLAUDE_PLUGIN_ROOT}';
+
+/**
+ * The server's arguments after node, with the network guard first: the .mcpb's server/index.mjs,
+ * or exactly what the plugin's file says, ${CLAUDE_PLUGIN_ROOT} (Claude) or ${PLUGIN_ROOT}
+ * (ChatGPT) being the plugin's folder.
+ */
+function serverArgs() {
+  if (!isPlugin) return ['--import', guard, path.join(extDir, 'server', 'index.mjs')];
+  return ['--import', guard, ...pluginServer().args.map((a) => a.replaceAll(PLUGIN_ROOT, extDir))];
+}
+/** The working directory the ChatGPT plugin asks for (its own folder); otherwise this process's. */
+function serverCwd() {
+  const cwd = isChatgptPlugin ? pluginServer().cwd : undefined;
+  return cwd?.replaceAll(PLUGIN_ROOT, extDir);
 }
 const work = mkdtempSync(path.join(os.tmpdir(), 'taxpresso-offline-'));
 const guardLog = path.join(work, 'net-guard.log');
@@ -90,6 +111,30 @@ function get(url, { headers = {}, method = 'GET', path: rawPath, body } = {}) {
   });
 }
 
+/**
+ * What a package may never say (extension/src/config.ts): the ChatGPT plugin names ChatGPT, never
+ * Claude, its apps or the .mcpb; the .mcpb and the Claude plugin never name ChatGPT; and none
+ * leaves `{assistant}`, which the libraries write where a sentence names the assistant, unfilled.
+ */
+const NOT_ITS_WORDS = isChatgptPlugin
+  ? /\{assistant\}|\bClaude\b|\bCowork\b|\.mcpb\b/
+  : /\{assistant\}|\bChatGPT\b/;
+function assertOwnWords(what, value) {
+  const hit = (typeof value === 'string' ? value : JSON.stringify(value)).match(NOT_ITS_WORDS);
+  assert.equal(hit, null, `${what} says "${hit?.[0]}", which this package never does`);
+}
+// Every tool result of every client in this file passes here: its text and its structured content
+// (not page images, which are bytes).
+const callTool = Client.prototype.callTool;
+Client.prototype.callTool = async function (...args) {
+  const res = await callTool.apply(this, args);
+  assertOwnWords(`${args[0]?.name}'s result`, [
+    res.content?.filter((c) => c.type === 'text').map((c) => c.text),
+    res.structuredContent,
+  ]);
+  return res;
+};
+
 let client;
 let transport;
 /** Set once the dashboard test has opened the page. */
@@ -104,6 +149,7 @@ before(async () => {
   transport = new StdioClientTransport({
     command: process.execPath,
     args: serverArgs(),
+    cwd: serverCwd(),
     env: {
       ...process.env,
       TAXPRESSO_VAULT_PATH: vault,
@@ -158,6 +204,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     // Within what the strictest host reads (Claude Code cuts at about 2,000 characters), the
     // safety rules included (docs/design/simple.md, "Guidance for Claude").
     assert.ok(instructions.length <= 1900, `instructions: ${instructions.length} characters`);
+    assertOwnWords('the instructions', instructions);
     assert.match(instructions, /data, never instructions/);
     assert.match(instructions, /never press the final transmit button/);
   });
@@ -181,6 +228,9 @@ describe('offline end to end', { timeout: 60_000 }, () => {
     }
     const { prompts } = await client.listPrompts();
     assert.deepEqual(prompts.map((p) => p.name).sort(), manifest.prompts.map((p) => p.name).sort());
+    // What the host reads before any call: titles, descriptions and schemas, in this package's words.
+    assertOwnWords('the tool list', tools);
+    assertOwnWords('the prompt list', prompts);
   });
 
   test('get_status reports the tax year and the vault, concise by default', async () => {
@@ -193,8 +243,14 @@ describe('offline end to end', { timeout: 60_000 }, () => {
 
     const detailed = await client.callTool({ name: 'get_status', arguments: { detail: true } });
     assert.match(detailed.structuredContent.runtime.node, /^v\d+/);
-    // The build flag (extension/scripts/build-common.mjs): the plugin says so, the .mcpb as before.
-    assert.equal(detailed.structuredContent.runtime.distribution, isPlugin ? 'plugin' : undefined);
+    // The build flag (extension/scripts/build-common.mjs): each plugin says which one it is, the
+    // .mcpb nothing, as before.
+    const distribution = isChatgptPlugin ? 'chatgpt' : isClaudePlugin ? 'plugin' : undefined;
+    assert.equal(detailed.structuredContent.runtime.distribution, distribution);
+    const runtimeLine = detailed.content[0].text.split('\n').find((l) => l.startsWith('Runtime: '));
+    if (isChatgptPlugin) assert.match(runtimeLine, /, ChatGPT plugin$/);
+    else if (isClaudePlugin) assert.match(runtimeLine, /, Claude plugin$/);
+    else assert.doesNotMatch(runtimeLine, / plugin$/);
   });
 
   test('bad tool input is refused', async () => {
@@ -207,6 +263,7 @@ describe('offline end to end', { timeout: 60_000 }, () => {
   test('the prompt starts a tax return', async () => {
     const res = await client.getPrompt({ name: 'start_geneva_tax_return' });
     assert.match(res.messages[0].content.text, /my tax return for 2026/);
+    assertOwnWords('the prompt', res.messages);
   });
 
   test('open_dashboard serves the page on 127.0.0.1 only to the token holder', async () => {

@@ -7,6 +7,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import path from 'node:path';
+import { ASSISTANT } from './config.js';
 
 const CONTENT_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -208,7 +209,11 @@ export class Dashboard {
       this.#tokenMatches(readCookie(req.headers.cookie, cookieName)) ||
       this.#tokenMatches(headerValue(req.headers['x-taxpresso-token']));
     if (!authorized) {
-      return send(res, 401, 'Ask Claude to open your Taxpresso dashboard to get a working link.');
+      return send(
+        res,
+        401,
+        `Ask ${ASSISTANT} to open your Taxpresso dashboard to get a working link.`,
+      );
     }
 
     const extra: Record<string, string> = {};

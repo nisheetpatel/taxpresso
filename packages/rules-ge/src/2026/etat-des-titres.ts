@@ -28,6 +28,9 @@
 // statement says which are fixed-rate bonds without a conversion right or pure bond funds), the
 // renovation funds left out of savings interest (p. 41: nothing says which account is one), the
 // dates of opening, closing, purchase and sale (p. 40, 41).
+//
+// An issue that names the assistant the user talks to says {assistant}: this library knows no
+// build, and the server puts the name there (extension/src/config.ts, named).
 import {
   parseMoney,
   type Fact,
@@ -635,8 +638,8 @@ export function etatDesTitres(input: EtatInput): EtatDesTitres {
         'not_read',
         'missing',
         {
-          en: `${name}: not read yet. Ask Claude to read it, or enter its figures.`,
-          fr: `${name} : pas encore lu. Demandez à Claude de le lire, ou saisissez ses montants.`,
+          en: `${name}: not read yet. Ask {assistant} to read it, or enter its figures.`,
+          fr: `${name} : pas encore lu. Demandez à {assistant} de le lire, ou saisissez ses montants.`,
         },
         doc.id,
       );

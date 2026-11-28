@@ -10,6 +10,7 @@ import {
   type FactValue,
   type Owner,
 } from '@taxpresso/ledger';
+import { named } from './config.js';
 import type { ContentLang as Lang } from './lang.js';
 import {
   CIVILITE,
@@ -30,12 +31,14 @@ import { WorkspaceError, type Via, type Workspace } from './workspace.js';
 
 /** The état des titres for the workspace's tax year, from the values that count. */
 export function holdings(ws: Workspace): EtatDesTitres {
-  return etatDesTitres({
-    taxYear: ws.engine.taxYear,
-    people: ws.snapshot().people,
-    facts: ws.countedFacts(),
-    documents: ws.activeDocuments(),
-  });
+  return named(
+    etatDesTitres({
+      taxYear: ws.engine.taxYear,
+      people: ws.snapshot().people,
+      facts: ws.countedFacts(),
+      documents: ws.activeDocuments(),
+    }),
+  );
 }
 
 /** The amounts the tax engine takes, by official rubric code and person. */

@@ -11,7 +11,8 @@
 #
 # French: write plain spaces before ? ! : ; and the loader makes them non-breaking. German: informal
 # "du", Swiss spelling (ss), the official German term next to its gloss. Texts per person (p1, p2)
-# where the grammar differs; {n} is replaced by the number.
+# where the grammar differs; {n} is replaced by the number. {assistant} is the assistant the user
+# talks to: the server puts its name there (extension/src/config.ts, named).
 #
 # One file for every year it serves (taxYears): {year} is the tax year being prepared ({prevYear} the
 # one before). A citation of one year's document carries `year:` (a source names it in its ids): for
@@ -275,10 +276,10 @@ questions:
     min: 0
     max: 12
     explain:
-      en: 'Count the children who live with you or whom you support financially. Unsure about an adult child? Ask Claude.'
-      fr: 'Comptez les enfants qui vivent avec vous ou que vous entretenez. Un doute pour un enfant majeur ? Demandez à Claude.'
-      de: 'Zähl die Kinder, die bei dir leben oder für deren Unterhalt du aufkommst. Unsicher bei einem volljährigen Kind? Frag Claude.'
-      it: 'Conta i figli che vivono con te o che mantieni. Hai un dubbio su un figlio maggiorenne? Chiedi a Claude.'
+      en: 'Count the children who live with you or whom you support financially. Unsure about an adult child? Ask {assistant}.'
+      fr: 'Comptez les enfants qui vivent avec vous ou que vous entretenez. Un doute pour un enfant majeur ? Demandez à {assistant}.'
+      de: 'Zähl die Kinder, die bei dir leben oder für deren Unterhalt du aufkommst. Unsicher bei einem volljährigen Kind? Frag {assistant}.'
+      it: 'Conta i figli che vivono con te o che mantieni. Hai un dubbio su un figlio maggiorenne? Chiedi a {assistant}.'
     learnMore:
       year: 2026
       url: 'https://www.estv.admin.ch/dam/fr/sd-web/oQ0wWcDmCJTS/2a-2026-fr.pdf#page=1'

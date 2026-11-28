@@ -11,6 +11,7 @@ import {
   type PriorDeclaration,
 } from '@taxpresso/intake';
 import type { Fact, Ledger, Owner, Vault, VaultDocument } from '@taxpresso/ledger';
+import { ASSISTANT } from './config.js';
 import type { ContentLang as Lang } from './lang.js';
 import {
   communeByCode,
@@ -30,8 +31,7 @@ import { markOfficialDeclaration } from './official.js';
 export const PRIOR_METHOD = 'prior_declaration';
 
 /** Why a document the user said is last year's declaration was not read (for Claude). */
-const NOT_READ =
-  'Taxpresso can’t read this file as a Geneva declaration: it needs the PDF from GeTax, the online declaration or approved tax software, with its text. Claude can read it instead, with the user’s OK.';
+const NOT_READ = `Taxpresso can’t read this file as a Geneva declaration: it needs the PDF from GeTax, the online declaration or approved tax software, with its text. ${ASSISTANT} can read it instead, with the user’s OK.`;
 const NOT_LAST_YEAR = (year: number) =>
   `This is the declaration for ${year}, not for an earlier year: Taxpresso doesn’t use it to suggest answers.`;
 

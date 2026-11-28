@@ -17,6 +17,7 @@ import {
 } from '@taxpresso/filing-ge';
 import { readPriorDeclaration } from '@taxpresso/intake';
 import type { VaultDocument } from '@taxpresso/ledger';
+import { ASSISTANT } from './config.js';
 import type { ContentLang as Lang } from './lang.js';
 import { copyPanelView } from './copy-panel.js';
 import { OFFICIAL_KIND, rememberDeclaration, rememberedDeclaration } from './official.js';
@@ -178,8 +179,7 @@ export interface DeclarationCheckResult {
   structured: Record<string, unknown>;
 }
 
-const TRANSMIT =
-  'The user transmits the declaration themselves, in GeTax or the online declaration, once they have checked it. Taxpresso and Claude never transmit it and never press Transmettre.';
+const TRANSMIT = `The user transmits the declaration themselves, in GeTax or the online declaration, once they have checked it. Taxpresso and ${ASSISTANT} never transmit it and never press Transmettre.`;
 
 /** reconcile_official_pdf: differences first, matches and every computed line only with detail. */
 export function declarationCheckResult(
